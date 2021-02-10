@@ -1,0 +1,49 @@
+#fullscreen_section {
+  background-color: #1c2d39;
+  height: 100vh;
+  width: 100%;
+  background-size: cover;
+  display: table;
+  position: relative;
+}
+
+#content {
+  display:table-cell;
+  text-align: center;
+  vertical-align: middle;
+  color: white;
+}
+
+#logo{
+  padding-bottom: 25px;
+  max-width: 450px;
+}
+
+#more-arrows {
+  width: 75px;
+  height: 65px;
+  padding-bottom: 0;
+}
+#more-arrows:hover polygon {
+  fill: #FFF;
+  transition: all .2s ease-out;
+}
+#more-arrows:hover polygon.arrow-bottom {
+  -webkit-transform: translateY(-18px);
+          transform: translateY(-18px);
+}
+#more-arrows:hover polygon.arrow-top {
+  -webkit-transform: translateY(18px);
+          transform: translateY(18px);
+}
+
+polygon {
+  fill: #FFF;
+  transition: all .2s ease-out;
+}
+polygon.arrow-middle {
+  opacity: 0.75;
+}
+polygon.arrow-top {
+  opacity: 0.5;
+}
