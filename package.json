@@ -2,11 +2,6 @@
   "name": "gce-website",
   "version": "0.1.0",
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.34",
-    "@fortawesome/free-brands-svg-icons": "^5.15.2",
-    "@fortawesome/free-solid-svg-icons": "^5.15.2",
-    "@fortawesome/react-fontawesome": "^0.1.14",
-    "bootstrap": "^4.6.0",
     "contentful": "^8.1.7",
     "react": "^16.14.0",
     "react-bootstrap": "^1.4.3",

@@ -1,5 +1,4 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import NavigationBar from '../components/NavigationBar/NavigationBar';
 import LandingPageHero from '../components/LandingPageHero/LandingPageHero';
 import LandingPageSection from '../components/LandingPageSection/LandingPageSection';

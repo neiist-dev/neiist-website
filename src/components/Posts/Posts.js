@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import Card from 'react-bootstrap/Card'
 var contentful = require('contentful')
 
 const client = contentful.createClient({
@@ -6,22 +8,45 @@ const client = contentful.createClient({
     accessToken: 'x0O62SjaVOT0-u8kYH31lCZdp-hDHiXoo6hDd1espeo'
 })
 
-const PostList = () => {
-    const [posts, setPosts] = useState()
+const Posts = () => {
+    const [posts, setPosts] = useState([])
 
     useEffect(() => {
-        client.getEntries({
-            'content_type': 'post'
-        })
+        client.getEntries({ 'content_type': 'post' })
             .then((entries) => {
-                console.log(entries);
+                console.log(entries.items)
+                setPosts(entries.items)
             })
     }, [])
 
-    return null
+    if (!posts)
+        return <p>Loading ...</p>
+
+    return (
+        <>
+            {
+                posts.map(post => {
+                    return (
+                        <Card key={post.sys.id} style={{ width: '20rem' }}>
+                            <Card.Img variant="top" src={post.fields.cover.fields.file.url} />
+                            <Card.Body>
+                                <Card.Title>{post.fields.title}</Card.Title>
+                                <Card.Subtitle className="mb-2 text-muted">{post.fields.date}</Card.Subtitle>
+                                <Card.Text>
+                                    <ReactMarkdown>
+                                        {post.fields.content}
+                                    </ReactMarkdown>
+                                </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    )
+                })
+            }
+        </>
+    )
 }
 
-export default PostList
+export default Posts
 
 /*import React from "react"
 import { Link } from "react-router-dom"

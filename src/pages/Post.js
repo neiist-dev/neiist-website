@@ -1,7 +1,13 @@
 import React from 'react'
+import NavigationBar from '../components/NavigationBar/NavigationBar'
+import Footer from '../components/Footer/Footer'
 
 const Post = () =>
-    <h1>Post</h1>
+    <>
+        <NavigationBar />
+        <h1>Post</h1>
+        <Footer />
+    </>
 
 export default Post
 
