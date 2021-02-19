@@ -1,10 +1,10 @@
 import React from "react"
-import NavigationBar from '../components/NavigationBar/NavigationBar'
+import NavBar from '../components/NavBar/NavBar'
 import Footer from '../components/Footer/Footer'
 
 const HashCode = () =>
     <>
-        <NavigationBar />
+        <NavBar />
         <h1>This is the Hash Code Page.</h1>
         <Footer />
     </>

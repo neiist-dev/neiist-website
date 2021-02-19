@@ -1,8 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import facebookSvg from './facebook.svg'
-
 const StyledFooter = styled.footer`
     padding: 2rem 8rem;
     background-color: #182c39;

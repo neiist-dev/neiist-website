@@ -1,10 +1,10 @@
 import React from "react"
-import NavigationBar from '../components/NavigationBar/NavigationBar'
+import NavBar from '../components/NavBar/NavBar'
 import Footer from '../components/Footer/Footer'
 
 const About = () =>
     <>
-        <NavigationBar />
+        <NavBar />
         <h1>This is the About Page.</h1>
         <Footer />
     </>
