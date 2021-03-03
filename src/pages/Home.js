@@ -1,12 +1,12 @@
 import React from 'react';
-import NavBar from '../components/NavBar/NavBar';
+import MyAppBar from '../components/MyAppBar/MyAppBar';
 import LandingPageHero from '../components/LandingPageHero/LandingPageHero';
 import LandingPageSection from '../components/LandingPageSection/LandingPageSection';
 import Footer from '../components/Footer/Footer';
 
 const LandingPage = () =>
   <>
-    <NavBar />
+    <MyAppBar />
     <LandingPageHero />
     <LandingPageSection
       id="thesis"

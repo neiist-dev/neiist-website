@@ -1,11 +1,11 @@
 import React from "react"
-import NavBar from '../components/NavBar/NavBar'
+import MyAppBar from '../components/MyAppBar/MyAppBar'
 import Posts from "../components/Posts/Posts"
 import Footer from '../components/Footer/Footer'
 
 const Home = () =>
     <>
-        <NavBar />
+        <MyAppBar />
         <Posts />
         <Footer />
     </>
