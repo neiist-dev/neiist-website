@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
+import { Button } from '@material-ui/core';
 import './LandingPageSection.css';
 
 function LandingPageSection({ id, position, title, body_text, button_text }) {
@@ -8,7 +8,7 @@ function LandingPageSection({ id, position, title, body_text, button_text }) {
             <div className={`content ${position}`}>
                 <h1 className="title">{title}</h1>
                 <p className="body_text">{body_text}</p>
-                <Button className="btt" variant="primary" size="lg">{button_text}</Button>
+                <Button color="primary">{button_text}</Button>
             </div>
         </section>
     );

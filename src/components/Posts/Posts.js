@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
-import Card from 'react-bootstrap/Card'
+
 var contentful = require('contentful')
 
 const client = contentful.createClient({
@@ -9,7 +9,8 @@ const client = contentful.createClient({
 })
 
 const Posts = () => {
-    const [posts, setPosts] = useState([])
+    <p> Posts </p>
+    /* const [posts, setPosts] = useState([])
 
     useEffect(() => {
         client.getEntries({ 'content_type': 'post' })
@@ -43,7 +44,7 @@ const Posts = () => {
                 })
             }
         </>
-    )
+    ) */
 }
 
 export default Posts

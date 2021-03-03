@@ -2,14 +2,13 @@
   "name": "gce-website",
   "version": "0.1.0",
   "dependencies": {
-    "contentful": "^8.1.7",
+    "@material-ui/core": "^4.11.3",
+    "contentful": "^8.1.8",
     "react": "^16.14.0",
-    "react-bootstrap": "^1.4.3",
     "react-dom": "^16.14.0",
     "react-markdown": "^4.3.1",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^4.0.1",
-    "styled-components": "^5.2.1"
+    "react-scripts": "^4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",

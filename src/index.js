@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom';
 
-import { createGlobalStyle } from 'styled-components';
+//import { createGlobalStyle } from 'styled-components';
 
 import {
   BrowserRouter as Router,
@@ -16,17 +16,17 @@ import About from "./pages/About"
 import Blog from "./pages/Blog"
 import Post from "./pages/Post"
 
-const GlobalStyle = createGlobalStyle`
+/*const GlobalStyle = createGlobalStyle`
 body {
   margin: 0;
   padding: 0;
   font-family: Helvetica;
 }
-`
+`*/
 
 ReactDOM.render(
   <>
-    <GlobalStyle />
+  
     <Router>
       <Switch>
         <Route exact path="/" component={Home} />
