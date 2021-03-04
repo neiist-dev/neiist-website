@@ -2,10 +2,10 @@
   "name": "gce-website",
   "version": "0.1.0",
   "dependencies": {
-    "@material-ui/core": "^4.11.3",
-    "@material-ui/icons": "^4.11.2",
+    "bootstrap": "^4.6.0",
     "contentful": "^8.1.8",
     "react": "^16.14.0",
+    "react-bootstrap": "^1.5.1",
     "react-dom": "^16.14.0",
     "react-markdown": "^4.3.1",
     "react-router-dom": "^5.2.0",
