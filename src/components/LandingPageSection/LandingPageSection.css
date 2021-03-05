@@ -13,17 +13,17 @@
 }
 
 #thesis {
-    background: url("thesis_bg.jpg") no-repeat center center fixed;
+    background: url("../../images/thesis_bg.jpg") no-repeat center center fixed;
     background-size: cover;
 }
 
 #hashcode {
-    background: url("hashcode_bg.jpg") no-repeat center center fixed;
+    background: url("../../images/hashcode_bg.jpg") no-repeat center center fixed;
     background-size: cover;
 }
 
 #articles {
-    background: url("articles_bg.jpg") no-repeat center center fixed;
+    background: url("../../images/articles_bg.jpg") no-repeat center center fixed;
     background-size: cover;
 }
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../components/NavBar/NavBar'
+import NavBar from '../components/NavBar'
 import CardColumns from 'react-bootstrap/CardColumns'
 import Card from 'react-bootstrap/Card'
-import Footer from '../components/Footer/Footer'
+import Footer from '../components/Footer'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -29,12 +29,12 @@ const Blog = () => {
     return (
         <>
             <NavBar />
-            <CardColumns>
+            <div style={{ display: "flex", justifyContent: "center", alignContent: "space-around", flexWrap: "wrap", padding: "10px" }}>
                 {
                     posts.map(post => {
                         return (
-                            <Card key={post.sys.id}>
-                                <Card.Img variant="top" src={post.fields.cover.fields.file.url} />
+                            <Card style={{ margin: "10px" }} key={post.sys.id}>
+                                <Card.Img style={{ height: "20rem", width: "auto", objectFit: "cover" }} variant="top" src={post.fields.cover.fields.file.url} />
                                 <Card.Body>
                                     <Card.Title>{post.fields.title}</Card.Title>
                                     <Card.Text>{post.fields.description}</Card.Text>
@@ -42,12 +42,13 @@ const Blog = () => {
                                         <Button variant="outline-secondary" size="sm">{post.fields.type}</Button>
                                         <small className="text-muted">{post.fields.date}</small>
                                     </div>
+                                    <a href={`/blog/${post.fields.link}`} class="stretched-link" target="_blank" />
                                 </Card.Body>
                             </Card>
                         )
                     })
                 }
-            </CardColumns>
+            </div>
             < Footer />
         </>
     )

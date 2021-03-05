@@ -24,7 +24,7 @@ ReactDOM.render(
       <Route path='/sobre' component={About} />
       <Route path='/hash-code' component={HashCode} />
       <Route exact path='/blog' component={Blog} />
-      <Route path='/blog/post/:id' render={props => <Post {...props} />} />
+      <Route path='/blog/:id' component={Post} />
       <Route path='/*'><Redirect to='/' /></Route>
     </Switch>
   </Router>,

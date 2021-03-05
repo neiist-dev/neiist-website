@@ -1,13 +1,38 @@
-import React from 'react'
-import NavBar from '../components/NavBar/NavBar'
-import Footer from '../components/Footer/Footer'
+import React, { useState, useEffect } from 'react'
+import NavBar from '../components/NavBar'
+import Footer from '../components/Footer'
+import { useParams } from "react-router-dom"
+import Markdown from "react-markdown"
 
-const Post = () =>
-    <>
-        <NavBar />
-        <h1>Post</h1>
-        <Footer />
-    </>
+var contentful = require('contentful')
+
+const client = contentful.createClient({
+    space: '2o7jx8ja37r4',
+    accessToken: 'x0O62SjaVOT0-u8kYH31lCZdp-hDHiXoo6hDd1espeo'
+})
+
+const Post = () => {
+    let { id } = useParams();
+
+    const [post, setPost] = useState([])
+
+    useEffect(() => {
+        client.getEntries({ 'fields.link': `${id}`, 'content_type': 'post' })
+            .then((entries) => {
+                console.log(entries.items)
+                setPost(entries.items[0])
+            })
+    }, [])
+
+    return (
+        <>
+            <NavBar />
+            <h1>Post: {id}</h1>
+            {/* <Markdown source={post.fields.content} escapeHtml={false} /> */}
+            <Footer />
+        </>
+    )
+}
 
 export default Post
 

@@ -1,8 +1,8 @@
 import React from 'react'
-import NavBar from '../components/NavBar/NavBar'
+import NavBar from '../components/NavBar'
 import LandingPageHero from '../components/LandingPageHero/LandingPageHero'
 import LandingPageSection from '../components/LandingPageSection/LandingPageSection'
-import Footer from '../components/Footer/Footer'
+import Footer from '../components/Footer'
 
 const LandingPage = () =>
   <>
