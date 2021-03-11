@@ -1,6 +1,8 @@
 import React from 'react'
 
-const Footer = () => 
-    <p>This is the footer</p>
+const Footer = () =>
+    null
 
 export default Footer
+
+//<p>This is the footer</p>
