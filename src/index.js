@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
 
 import {
   BrowserRouter as Router,
@@ -16,6 +15,7 @@ import Blog from './pages/Blog'
 import Post from './pages/Post'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
+import './index.css'
 
 ReactDOM.render(
   <Router>

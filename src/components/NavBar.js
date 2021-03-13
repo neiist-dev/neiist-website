@@ -5,7 +5,7 @@ import logo from '../images/logo.png';
 
 
 const NavBar = () =>
-    <Navbar bg='dark' expand="sm">
+    <Navbar bg="dark" variant="dark" expand="sm">
         <Navbar.Brand href="/" >
             <img src={logo} width="40" height="40" className="d-inline-block align-top" alt="GCE logo" />
         </Navbar.Brand >
