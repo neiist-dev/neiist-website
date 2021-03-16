@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import NavBar from '../components/NavBar'
-import CardColumns from 'react-bootstrap/CardColumns'
 import Card from 'react-bootstrap/Card'
 import Footer from '../components/Footer'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 
 var contentful = require('contentful')
@@ -24,7 +20,7 @@ const Blog = () => {
                 console.log(entries.items)
                 setPosts(entries.items)
             })
-    }, [])
+    })
 
     return (
         <>
@@ -42,7 +38,7 @@ const Blog = () => {
                                         <Button variant="outline-secondary" size="sm">{post.fields.type}</Button>
                                         <small className="text-muted">{post.fields.date}</small>
                                     </div>
-                                    <a href={`/blog/${post.fields.link}`} class="stretched-link" target="_blank" />
+                                    <a href={`/blog/${post.fields.link}`} class="stretched-link" target="_blank" rel="noreferrer" />
                                 </Card.Body>
                             </Card>
                         )

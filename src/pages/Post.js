@@ -13,8 +13,7 @@ const client = contentful.createClient({
 })
 
 const Post = () => {
-    let { id } = useParams();
-
+    const { id } = useParams();
     const [post, setPost] = useState(null)
 
     useEffect(() => {
@@ -23,7 +22,7 @@ const Post = () => {
                 console.log(entries.items)
                 setPost(entries.items[0])
             })
-    }, [])
+    })
 
     const renderers = {
         //This custom renderer changes how images are rendered

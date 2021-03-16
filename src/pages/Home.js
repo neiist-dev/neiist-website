@@ -4,36 +4,7 @@ import Footer from '../components/Footer'
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
 
-const LandingPageSection = ({ title, body_text, button_text }) =>
-  <section style={{
-    height: "100vh",
-    alignContent: "center"
-  }}>
-    <div style={{
-      verticalAlign: "middle",
-      color: "white",
-      textAlign: "left",
-      paddingLeft: "60px",
-      paddingRight: "60px"
-    }}>
-      <h1 style={{
-        fontSize: "3.5rem",
-        fontWeight: "bold"
-      }}>
-        {title}
-      </h1>
-      <p style={{
-        fontSize: "1.4rem",
-        whiteSpace: "pre-wrap",
-        lineHeight: "normal"
-      }}>
-        {body_text}
-      </p>
-      <Button color="primary">{button_text}</Button>
-    </div>
-  </section>
-
-const LandingPage = () =>
+const Home = () =>
   <>
     <NavBar />
     <div style={{ backgroundColor: "#1c2d39", display: "flex", justifyContent: "center" }}>
@@ -76,4 +47,4 @@ const LandingPage = () =>
     <Footer />
   </>
 
-export default LandingPage
+export default Home
