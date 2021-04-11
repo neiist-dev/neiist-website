@@ -5,14 +5,7 @@ import { useParams } from "react-router-dom"
 import Card from 'react-bootstrap/Card'
 import Markdown from "react-markdown"
 
-var contentful = require('contentful')
-
-const client = contentful.createClient({
-    space: '2o7jx8ja37r4',
-    accessToken: 'x0O62SjaVOT0-u8kYH31lCZdp-hDHiXoo6hDd1espeo'
-})
-
-const Post = () => {
+const Post = ({ client }) => {
     const { id } = useParams();
     const [post, setPost] = useState(null)
 

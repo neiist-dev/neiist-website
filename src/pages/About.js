@@ -3,14 +3,7 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import Card from 'react-bootstrap/Card'
 
-var contentful = require('contentful')
-
-const client = contentful.createClient({
-    space: '2o7jx8ja37r4',
-    accessToken: 'x0O62SjaVOT0-u8kYH31lCZdp-hDHiXoo6hDd1espeo'
-})
-
-const About = () => {
+const About = ({ client }) => {
     const [members, setMembers] = useState([])
 
     useEffect(() => {

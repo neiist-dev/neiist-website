@@ -4,14 +4,7 @@ import Card from 'react-bootstrap/Card'
 import Footer from '../components/Footer'
 import Button from 'react-bootstrap/Button'
 
-var contentful = require('contentful')
-
-const client = contentful.createClient({
-    space: '2o7jx8ja37r4',
-    accessToken: 'x0O62SjaVOT0-u8kYH31lCZdp-hDHiXoo6hDd1espeo'
-})
-
-const Blog = () => {
+const Blog = ({ client }) => {
     const [posts, setPosts] = useState([])
 
     useEffect(() => {
