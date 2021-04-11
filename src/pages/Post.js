@@ -15,7 +15,7 @@ const Post = ({ client }) => {
                 console.log(entries.items)
                 setPost(entries.items[0])
             })
-    })
+    }, [])
 
     const renderers = {
         //This custom renderer changes how images are rendered

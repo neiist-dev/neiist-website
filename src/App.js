@@ -31,14 +31,18 @@ const App = () => {
                 <Route path='/sobre'>
                     <About client={client} />
                 </Route>
-                <Route path='/hash-code' component={HashCode} />
+                <Route path='/hash-code'>
+                    <HashCode client={client} />
+                </Route>
                 <Route exact path='/blog'>
                     <Blog client={client} />
                 </Route>
                 <Route path='/blog/:id'>
                     <Post client={client} />
                 </Route>
-                <Route path='/*'><Redirect to='/' /></Route>
+                <Route path='/*'>
+                    <Redirect to='/' />
+                </Route>
             </Switch>
         </Router >
     )

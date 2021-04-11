@@ -12,7 +12,7 @@ const About = ({ client }) => {
                 console.log(entries.items)
                 setMembers(entries.items)
             })
-    })
+    }, [])
 
     return (
         <>

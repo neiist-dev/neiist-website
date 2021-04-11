@@ -13,7 +13,7 @@ const Blog = ({ client }) => {
                 console.log(entries.items)
                 setPosts(entries.items)
             })
-    })
+    }, [])
 
     return (
         <>
