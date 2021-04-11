@@ -20,8 +20,8 @@ const contentful = require("contentful")
 
 const App = () => {
     const client = contentful.createClient({
-        space: '2o7jx8ja37r4',
-        accessToken: 'x0O62SjaVOT0-u8kYH31lCZdp-hDHiXoo6hDd1espeo'
+        space: process.env.REACT_APP_CONTENTFUL_SPACE,
+        accessToken: process.env.REACT_APP_CONTENTFUL_ACCESSTOKEN
     })
 
     return (
