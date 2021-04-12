@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react"
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import Carousel from 'react-bootstrap/Carousel'
-import hashTalks from '../images/hash_talks.jpg'
-import hashCode1 from '../images/hash_code_1.jpg'
-import hashCode2 from '../images/hash_code_2.jpg'
 
 const HashCode = ({ client }) => {
     const [carouselImages, setCarouselImages] = useState([])
@@ -25,8 +22,8 @@ const HashCode = ({ client }) => {
                     carouselImages.map(carouselImage =>
                         <Carousel.Item key={carouselImage.sys.id}>
                             <img
-                                className="d-block w-100"
-                                src={`https:${carouselImage.fields.image.fields.file.url}`}
+                                style={{ display: "block", width: "100%" }}
+                                src={`https:${carouselImage.fields.image.fields.file.url}?w=1500`}
                                 alt={carouselImage.fields.title}
                             />
                             <Carousel.Caption>
