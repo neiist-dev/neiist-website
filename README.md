@@ -107,6 +107,10 @@ You can verify that the installation has been successful by running
 
 2. Open http://localhost:3000 to view it in the browser
 
+### Deploying
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gce-neiist/gce-website)
+
 <!-- USAGE EXAMPLES -->
 <!--
 ## Usage
