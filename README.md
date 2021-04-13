@@ -1,10 +1,31 @@
 <!-- PROJECT SHIELDS -->
+<!--
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
+[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
+[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
+[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
+[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
+[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
+[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
+[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://linkedin.com/in/othneildrew
+[product-screenshot]: images/screenshot.png
 [![Netlify Status](https://api.netlify.com/api/v1/badges/040ac5c1-a9c6-4024-9e2b-866363e5e459/deploy-status)](https://app.netlify.com/sites/gce-website/deploys)
+-->
 
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/gce-neiist/gce-website">
+  <a href="https://gce-website.netlify.app/">
     <img src="readme/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -13,21 +34,21 @@
   <p align="center">
     A showcase website and a blog all in one!
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Go to Website »</strong></a>
+    <a href="https://gce-website.netlify.app/"><strong>Go to Website »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
+    <a href="https://github.com/gce-neiist/gce-website/issues">Report Bug</a>
     ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+    <a href="https://github.com/gce-neiist/gce-website/issues">Request Feature</a>
   </p>
 </p>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Screenshot](./readme/screenshot.png)
-
 A showcase website and a blog all in one where you can learn all about GCE and what we are up to and read about LMeic related stuff.
+
+![Screenshot](./readme/screenshot.png)
 
 ### Built With
 * [React](https://reactjs.org/)
@@ -37,32 +58,54 @@ A showcase website and a blog all in one where you can learn all about GCE and w
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To get a local copy up and running follow these simple example steps.
+### Pre-Requisites
 
-### Prerequisites
-
-* [Node.js and NPM](https://nodejs.org/en/download/)
+1. Install [Node.js and NPM](https://nodejs.org/en/download/)
 You can verify that the installation has been successful by running
-  ```sh
-  node -v
-  npm -v
-  ```
+    ```sh
+    node -v
+    npm -v
+    ```
 
-### Installation
+### Installation and Configuration
 
 1. Clone the Github repository
-  ```sh
-   git clone https://github.com/gce-neiist/gce-website.git
-   ```
+    ```sh
+    git clone https://github.com/gce-neiist/gce-website.git
+    ```
+
 2. Install the required NPM packages
-   ```sh
-   npm install
-   ```
-3. Log into [contentful](https://be.contentful.com/login)
-4. Enter your API in `config.js`
-   ```JS
-   const API_KEY = 'ENTER YOUR API';
-   ```
+    ```sh
+    npm install
+    ```
+
+3. Log into [Contentful](https://be.contentful.com/login)
+
+4. Open GCE Website's space (the top left corner lists all spaces)
+
+5. Navigate to the Settings > API keys > React Website
+
+6. Get the *Space ID* and the *Content Delivery API - Access Token*
+
+7. Duplicate *.env.example* and name it *.env*
+    ```sh
+    cp .env.example .env
+    ```
+
+8. Fill in the *.env* with the API keys you just got from Contentful so that it looks like
+    ```javascript
+    REACT_APP_CONTENTFUL_SPACE=the_space_id_goes_here
+    REACT_APP_CONTENTFUL_ACCESSTOKEN=the_access_token_goes_here
+    ```
+
+### Running
+
+1. Run the app in development mode
+    ```sh
+    npm start
+    ```
+
+2. Open http://localhost:3000 to view it in the browser
 
 <!-- USAGE EXAMPLES -->
 <!--
