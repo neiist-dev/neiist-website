@@ -111,7 +111,7 @@ You can verify that the installation has been successful by running
 
 1. Click this button
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gce-neiist/gce-website)
+    [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gce-neiist/gce-website)
 
 2. Fill in the with the *Space ID* and the *Content Delivery API - Access Token* from Contentful
 
