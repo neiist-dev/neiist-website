@@ -22,7 +22,6 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/040ac5c1-a9c6-4024-9e2b-866363e5e459/deploy-status)](https://app.netlify.com/sites/gce-website/deploys)
 -->
 
-<!-- PROJECT LOGO -->
 <br />
 <p align="center">
   <a href="https://gce-website.netlify.app/">
@@ -43,7 +42,6 @@
   </p>
 </p>
 
-<!-- ABOUT THE PROJECT -->
 ## About The Project
 
 A showcase website and a blog all in one where you can learn all about GCE and what we are up to and read about LMeic related stuff.
@@ -55,8 +53,7 @@ A showcase website and a blog all in one where you can learn all about GCE and w
 * [React Bootstrap](https://react-bootstrap.github.io/)
 * [Contenful](https://www.contentful.com/)
 
-<!-- GETTING STARTED -->
-## Getting Started
+## Fixing bugs and Developing new features
 
 ### Pre-Requisites
 
@@ -74,28 +71,22 @@ You can verify that the installation has been successful by running
     git clone https://github.com/gce-neiist/gce-website.git
     ```
 
+2. Navigate to the resulting folder
+    ```sh
+    cd gce-website
+    ```
+
 2. Install the required NPM packages
     ```sh
     npm install
     ```
 
-3. Log into [Contentful](https://be.contentful.com/login)
+3. Get the API keys from [Contentful](https://www.contentful.com/) (Settings > API keys > React Website)
 
-4. Open GCE Website's space (the top left corner lists all spaces)
-
-5. Navigate to the Settings > API keys > React Website
-
-6. Get the *Space ID* and the *Content Delivery API - Access Token*
-
-7. Duplicate *.env.example* and name it *.env*
+4. Create a *.env* file and fill in with the API keys
     ```sh
-    cp .env.example .env
-    ```
-
-8. Fill in the *.env* with the API keys you just got from Contentful so that it looks like
-    ```javascript
-    REACT_APP_CONTENTFUL_SPACE=the_space_id_goes_here
-    REACT_APP_CONTENTFUL_ACCESSTOKEN=the_access_token_goes_here
+    echo REACT_APP_CONTENTFUL_SPACE=the_space_id_goes_here >> .env
+    echo REACT_APP_CONTENTFUL_ACCESSTOKEN=the_access_token_goes_here >> .env
     ```
 
 ### Running
@@ -107,13 +98,18 @@ You can verify that the installation has been successful by running
 
 2. Open http://localhost:3000 to view it in the browser
 
-### Deploying
+## Deployment
 
-1. Click this button
+The website is deployed on [Netlify](https://www.netlify.com/).
 
-    [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gce-neiist/gce-website)
+It is relevant to note that:
+* The build command (Site Settings > Build & Deploy > Continuous Deployment > Build settings) is set to
+    ```sh
+    CI=false npm run build
+    ```
+    to still build despite React warnings
 
-2. Fill in the with the *Space ID* and the *Content Delivery API - Access Token* from Contentful
+* Contenful's API keys have to be filled in (Site Settings > Build & Deploy > Environment > Environment variables) for the website to work properly
 
 <!-- USAGE EXAMPLES -->
 <!--
