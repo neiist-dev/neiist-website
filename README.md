@@ -24,43 +24,55 @@
 
 <br />
 <p align="center">
-  <a href="https://gce-website.netlify.app/">
-    <img src="readme/logo.png" alt="Logo" width="80" height="80">
+  <a href="FIXME">
+    <img src="FIXME" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">GCE Website</h3>
+  <h3 align="center">NEIIST Website</h3>
 
   <p align="center">
-    A showcase website and a blog all in one!
+    FIXME
     <br />
-    <a href="https://gce-website.netlify.app/"><strong>Go to Website »</strong></a>
+    <a href="FIXME"><strong>Go to Website »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/gce-neiist/gce-website/issues">Report Bug</a>
+    <a href="FIXME">Report Bug</a>
     ·
-    <a href="https://github.com/gce-neiist/gce-website/issues">Request Feature</a>
+    <a href="FIXME">Request Feature</a>
   </p>
 </p>
 
 ## About The Project
 
-A showcase website and a blog all in one where you can learn all about GCE and what we are up to and read about LMeic related stuff.
+FIXME
 
-![Screenshot](./readme/screenshot.png)
+![Screenshot](FIXME)
 
 ### Built With
 * [React](https://reactjs.org/)
 * [React Bootstrap](https://react-bootstrap.github.io/)
-* [Contenful](https://www.contentful.com/)
 
 ## Fixing bugs and Developing new features
 
 ### Pre-Requisites
 
-1. Install [Node.js and NPM](https://nodejs.org/en/download/)
-You can verify that the installation has been successful by running
+1. Install Node.js
+    ```sh
+    sudo apt install nodejs
+    ```
+
+    You can verify that the installation has been successful by running
     ```sh
     node -v
+    ```
+
+2. Install NPM
+    ```sh
+    sudo apt install npm
+    ```
+
+    You can verify that the installation has been successful by running
+    ```sh
     npm -v
     ```
 
@@ -68,25 +80,17 @@ You can verify that the installation has been successful by running
 
 1. Clone the Github repository
     ```sh
-    git clone https://github.com/gce-neiist/gce-website.git
+    git clone https://github.com/gce-neiist/neiist-website.git
     ```
 
 2. Navigate to the resulting folder
     ```sh
-    cd gce-website
+    cd neiist-website
     ```
 
-2. Install the required NPM packages
+3. Install the required NPM packages
     ```sh
     npm install
-    ```
-
-3. Get the API keys from [Contentful](https://www.contentful.com/) (Settings > API keys > React Website)
-
-4. Create a *.env* file and fill in with the API keys
-    ```sh
-    echo REACT_APP_CONTENTFUL_SPACE=the_space_id_goes_here >> .env
-    echo REACT_APP_CONTENTFUL_ACCESSTOKEN=the_access_token_goes_here >> .env
     ```
 
 ### Running
@@ -97,19 +101,6 @@ You can verify that the installation has been successful by running
     ```
 
 2. Open http://localhost:3000 to view it in the browser
-
-## Deployment
-
-The website is deployed on [Netlify](https://www.netlify.com/).
-
-It is relevant to note that:
-* The build command (Site Settings > Build & Deploy > Continuous Deployment > Build settings) is set to
-    ```sh
-    CI=false npm run build
-    ```
-    to still build despite React warnings
-
-* Contenful's API keys have to be filled in (Site Settings > Build & Deploy > Environment > Environment variables) for the website to work properly
 
 <!-- USAGE EXAMPLES -->
 <!--
