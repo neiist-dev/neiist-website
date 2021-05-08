@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
-import logo from '../images/thesis/logo-color.png'
+import logo from '../images/neiist_logo.png'
 import { Redirect, Link } from "react-router-dom"
 
-const NavBar = ({ userData, setUserData }) =>
-  <Navbar bg="dark" variant="dark" expand="lg">
+const NavBar = ({ userData, setUserData}) =>
+  <Navbar expand="lg" >
     <Navbar.Brand as={Link} to="/">
-      <img src={logo} width="40" height="40" alt="" />
+      <img src={logo} height="40" alt="" />
     </Navbar.Brand>
     <Navbar.Toggle />
     <Navbar.Collapse>
       <Nav style={{ marginRight: "auto" }}>
-        <Nav.Link href="/atividades">Atividades</Nav.Link>
+        <Nav.Link as={Link} to="/atividades">Atividades</Nav.Link>
         <Nav.Link href="/quemsomos">Quem Somos</Nav.Link>
         <Nav.Link href="/curso">Curso</Nav.Link>
-        <Nav.Link href="/seccoes">Seccoes</Nav.Link>
-        <Nav.Link href="/socios">Socios</Nav.Link>
+        <Nav.Link href="/seccoes">Secções</Nav.Link>
+        <Nav.Link href="/socios">Sócios</Nav.Link>
         <Nav.Link href="/estatutos">Estatutos</Nav.Link>
         <Nav.Link href="/contactos">Contactos</Nav.Link>
         <Nav.Link href="/thesismaster">Thesis Master</Nav.Link>

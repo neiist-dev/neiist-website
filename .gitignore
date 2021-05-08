@@ -25,3 +25,5 @@ yarn-error.log*
 .env
 
 .code-workspace
+.html
+.json
