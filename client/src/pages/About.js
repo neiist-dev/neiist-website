@@ -3,20 +3,12 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import Card from 'react-bootstrap/Card'
 
-const About = ({ client }) => {
+const About = ({ userData, setUserData }) => {
     const [members, setMembers] = useState([])
-
-    useEffect(() => {
-        client.getEntries({ 'content_type': 'member' })
-            .then((entries) => {
-                console.log(entries.items)
-                setMembers(entries.items)
-            })
-    }, [])
 
     return (
         <>
-            <NavBar />
+            <NavBar userData={userData} setUserData={setUserData}/>
             <h1 style={{ textAlign: "center", margin: "10px" }}>A Equipa</h1>
             <div style={{ display: "flex", justifyContent: "center", alignContent: "space-around", flexWrap: "wrap", padding: "10px" }}>
                 {

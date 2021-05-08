@@ -3,16 +3,8 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import Carousel from 'react-bootstrap/Carousel'
 
-const HashCode = ({ client }) => {
+const HashCode = () => {
     const [carouselImages, setCarouselImages] = useState([])
-
-    useEffect(() => {
-        client.getEntries({ 'content_type': 'carouselImage' })
-            .then((entries) => {
-                console.log(entries.items)
-                setCarouselImages(entries.items)
-            })
-    }, [])
 
     return (
         <>

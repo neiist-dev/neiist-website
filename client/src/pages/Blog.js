@@ -4,20 +4,12 @@ import Card from 'react-bootstrap/Card'
 import Footer from '../components/Footer'
 import Button from 'react-bootstrap/Button'
 
-const Blog = ({ client }) => {
+const Blog = ({ userData, setUserData }) => {
     const [posts, setPosts] = useState([])
-
-    useEffect(() => {
-        client.getEntries({ 'content_type': 'post' })
-            .then((entries) => {
-                console.log(entries.items)
-                setPosts(entries.items)
-            })
-    }, [])
 
     return (
         <>
-            <NavBar />
+            <NavBar userData={userData} setUserData={setUserData}/>
             <div style={{ display: "flex", justifyContent: "center", alignContent: "space-around", flexWrap: "wrap", padding: "10px" }}>
                 {
                     posts.map(post => {

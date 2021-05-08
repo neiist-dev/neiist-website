@@ -4,9 +4,9 @@ import Footer from '../components/Footer'
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
 
-const Home = () =>
+const Home = ({ userData, setUserData }) =>
   <>
-    <NavBar />
+    <NavBar userData={userData} setUserData={setUserData}/>
     <div style={{ backgroundColor: "#1c2d39", display: "flex", justifyContent: "center" }}>
       <svg
         style={{
