@@ -7,6 +7,18 @@ require('dotenv').config()
 const theses = require('./data/meic_theses.json')
 const areas = require('./data/meic_areas.json')
 
+const { Client } = require('pg');
+
+const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'neiist',
+    password: '123',
+    port: 5432,
+});
+
+client.connect();
+
 const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'client/build'))) //https://github.com/hemakshis/Basic-MERN-Stack-App/blob/master/app.js
@@ -54,9 +66,16 @@ app.get('/thesis/:id', (req, res) =>
     res.json(theses.find(thesis => thesis.id === req.params.id))
 )
 
-app.get('/areas', (req, res) =>
+app.get('/areas', (req, res) => {
+    /*const query = 'SELECT * FROM areas;';
+    try {
+        const areas = await client.query(query).rows;
+    } catch (err) {
+        console.log(err.stack);
+    }*/
+
     res.json(areas)
-)
+})
 
 app.listen(5000, () =>
     console.log('App is running on port 5000.')
