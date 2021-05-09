@@ -7,6 +7,7 @@ require('dotenv').config()
 const theses = require('./data/meic_theses.json')
 const areas = require('./data/meic_areas.json')
 
+/*
 const { Client } = require('pg');
 
 const client = new Client({
@@ -18,6 +19,7 @@ const client = new Client({
 });
 
 client.connect();
+*/
 
 const app = express();
 app.use(cors());

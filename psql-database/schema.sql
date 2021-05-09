@@ -1,5 +1,5 @@
 -- this database needs to have the western europe encoding
--- CREATE DATABASE thesis_master WITH ENCODING 'WIN1252' TEMPLATE=template0;
+-- CREATE DATABASE thesis_master WITH ENCODING 'WIN1252' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE=template0;
 -- pt_PT.UTF-8 UTF-8
 -- pt_PT ISO-8859-1
 -- pt_PT@euro ISO-8859-15
