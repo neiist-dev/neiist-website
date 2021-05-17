@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../components/NavBar'
+import NavBar from '../src/components/NavBar'
 import Card from 'react-bootstrap/Card'
-import Footer from '../components/Footer'
+import Footer from '../src/components/Footer'
 import Button from 'react-bootstrap/Button'
 
 const Blog = ({ userData, setUserData }) => {
@@ -36,24 +36,3 @@ const Blog = ({ userData, setUserData }) => {
 }
 
 export default Blog
-
-/*
-{
-    posts.map(post => {
-        return (
-            <Card key={post.sys.id}>
-                <Card.Img variant="top" src={post.fields.cover.fields.file.url} />
-                <Card.Body>
-                    <Card.Title>{post.fields.title}</Card.Title>
-                    <Card.Subtitle className="mb-2 text-muted">{post.fields.date}</Card.Subtitle>
-                    <Card.Text>
-                        <ReactMarkdown>
-                            {post.fields.content}
-                        </ReactMarkdown>
-                    </Card.Text>
-                </Card.Body>
-            </Card>
-        )
-    })
-}
-*/

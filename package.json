@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
-    "theses:process": "node ./processTheses.js"
+    "loadThesesToDb": "node ./loadThesesToDb.js"
   },
   "repository": {
     "type": "git",

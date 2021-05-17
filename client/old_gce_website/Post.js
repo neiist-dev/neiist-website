@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
+import NavBar from '../src/components/NavBar'
+import Footer from '../src/components/Footer'
 import { useParams } from "react-router-dom"
 import Card from 'react-bootstrap/Card'
 import Markdown from "react-markdown"

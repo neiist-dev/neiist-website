@@ -3,6 +3,16 @@ let htmlparser = require("htmlparser2")
 const util = require('util')
 const fs = require('fs')
 const natural = require("natural")
+const { Client } = require('pg')
+
+const client = new Client({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'thesis_master',
+    password: '123',
+})
+client.connect()
+console.log("Client connected.")
 
 const loadTheses = async () => {
     const readFile = util.promisify(fs.readFile)
@@ -367,13 +377,23 @@ const classifyTheses = async (parsedTheses, trainedClassifier) => {
     return classifiedTheses
 }
 
-const saveClassifiedTheses = async classifiedTheses => {
+const saveClassifiedThesesToDb = async classifiedTheses => {
+    // TODO: load theses to db
+    /*
+    client.query('SELECT NOW()', (err, res) => {
+        console.log(err, res)
+        client.end()
+    })
+    */
+
     const filePath = path.join(__dirname, "/data/meic_theses.json")
     const toWrite = JSON.stringify(classifiedTheses)
     fs.writeFileSync(filePath, toWrite, err => { if (err) return (err) })
+
+    //client.end()
 }
 
-const processTheses = async () => {
+const loadThesesToDb = async () => {
     const theses = await loadTheses()
     console.log("Theses loaded.")
 
@@ -386,8 +406,8 @@ const processTheses = async () => {
     const classifiedTheses = await classifyTheses(parsedTheses, trainedClassifier)
     console.log("Theses classified.")
 
-    saveClassifiedTheses(classifiedTheses)
-    console.log("Theses saved.")
+    saveClassifiedThesesToDb(classifiedTheses)
+    console.log("Theses saved to Database.")
 }
 
-processTheses()
+loadThesesToDb()

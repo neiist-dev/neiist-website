@@ -1,6 +1,6 @@
 import React from 'react'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
+import NavBar from '../src/components/NavBar'
+import Footer from '../src/components/Footer'
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
 

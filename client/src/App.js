@@ -7,12 +7,6 @@ import {
     Redirect
 } from 'react-router-dom'
 
-import HomeOld from './pages/Home'
-import HashCode from './pages/HashCode'
-import About from './pages/About'
-import Blog from './pages/Blog'
-//import Post from './pages/Post'
-
 import Casa from './pages/Casa'
 import Atividades from './pages/Atividades'
 import QuemSomos from './pages/QuemSomos'
@@ -62,30 +56,15 @@ const App = () => {
                     <ThesisMaster userData={userData} setUserData={setUserData} />
                 </Route>
                 {userData &&
-                    <Route path="/theses">
-                        <Theses userData={userData} setUserData={setUserData} />
-                    </Route>
+                    <>
+                        <Route path="/theses">
+                            <Theses userData={userData} setUserData={setUserData} />
+                        </Route>
+                        <Route path="/thesis/:id">
+                            <Thesis userData={userData} setUserData={setUserData} />
+                        </Route>
+                    </>
                 }
-                {userData &&
-                    <Route path="/thesis/:id">
-                        <Thesis userData={userData} setUserData={setUserData} />
-                    </Route>
-                }
-
-                <Route path='/sobre'>
-                    <About userData={userData} setUserData={setUserData}/>
-                </Route>
-                <Route path='/blog'>
-                    <Blog userData={userData} setUserData={setUserData}/>
-                </Route>
-                <Route path='/hash-code'>
-                    <HashCode userData={userData} setUserData={setUserData}/>
-                </Route>
-                <Route path='/homeold'>
-                    <HomeOld userData={userData} setUserData={setUserData}/>
-                </Route>
-
-
                 <Route path='/*'>
                     <Redirect to='/'/>
                 </Route>
