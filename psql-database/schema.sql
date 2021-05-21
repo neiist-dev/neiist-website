@@ -3,6 +3,7 @@
 -- pt_PT.UTF-8 UTF-8
 -- pt_PT ISO-8859-1
 -- pt_PT@euro ISO-8859-15
+-- NOTE: make sure that the server and client encoding are the same, verify with: SHOW server_encoding; SHOW client_encoding;
 
 DROP TABLE IF EXISTS areas CASCADE;
 CREATE TABLE areas (

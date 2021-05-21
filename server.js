@@ -7,19 +7,18 @@ require('dotenv').config()
 const theses = require('./data/meic_theses.json')
 const areas = require('./data/meic_areas.json')
 
-/*
-const { Client } = require('pg');
+//TODO: encapsulate Pool in a module
+const { Pool } = require('pg');
+const { prototype } = require('events')
 
-const client = new Client({
+const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'neiist',
-    password: '123',
+    password: '0000',
     port: 5432,
+    database: 'neiistdb',
 });
 
-client.connect();
-*/
 
 const app = express();
 app.use(cors());
@@ -52,32 +51,64 @@ app.get('/auth', async (req, res) => {
 
     res.send(personInformationResponse.data)
 })
+//This was left here for debugging purposes
+// app.get('/theses/:area1?/:area2?', (req, res) => {
+//     const area1 = req.params.area1
+//     const area2 = req.params.area2
 
-app.get('/theses/:area1?/:area2?', (req, res) => {
+//     const checkedAreas = []
+//     if (area1 !== undefined) checkedAreas.push(area1)
+//     if (area2 !== undefined) checkedAreas.push(area2)
+
+//     res.json(theses.filter(thesis => checkedAreas.every(area => thesis.areas.includes(area))))
+// })
+
+// app.get('/thesis/:id', (req, res) =>
+//     res.json(theses.find(thesis => thesis.id === req.params.id))
+// )
+
+// app.get('/areas', (req, res) => {
+//     res.json(areas)
+// })
+
+app.get("/areas", async(req, res) => {
+    try {
+        const allAreas = await pool.query("select * from areas");
+        res.json(allAreas.rows);
+    }
+    catch(err) {
+        console.error(err.message);
+    }
+})
+
+app.get('/thesis/:id', async(req, res) => {
+    const {id} = req.params
+    try {
+        const thesis = await pool.query("select * from theses where id = $1", [id]);
+        res.json(thesis.rows);
+    }
+    catch(err) {
+        console.error(err.message);
+    }
+})
+
+app.get('/theses/:area1?/:area2?', async(req, res) => {
     const area1 = req.params.area1
     const area2 = req.params.area2
 
-    const checkedAreas = []
-    if (area1 !== undefined) checkedAreas.push(area1)
-    if (area2 !== undefined) checkedAreas.push(area2)
-
-    res.json(theses.filter(thesis => checkedAreas.every(area => thesis.areas.includes(area))))
-})
-
-app.get('/thesis/:id', (req, res) =>
-    res.json(theses.find(thesis => thesis.id === req.params.id))
-)
-
-app.get('/areas', (req, res) => {
-    /*const query = 'SELECT * FROM areas;';
     try {
-        const areas = await client.query(query).rows;
-    } catch (err) {
-        console.log(err.stack);
-    }*/
-
-    res.json(areas)
+        let theses
+        if(area1 !== undefined && area2 !== undefined)
+            theses = await pool.query("select * from theses where area1 = $1 or area2 = $1 or area1 = $2 or area2 = $2", [area1, area2]);
+        else if(area1 !== undefined) theses = await pool.query("select * from theses where area1 = $1 or area2 = $1", [area1]);
+        else if(area2 !== undefined) theses = await pool.query("select * from theses where area1 = $1 or area2 = $1", [area2]);
+        res.json(theses.rows);
+    }
+    catch (err) {
+        console.error(err.message);
+    }
 })
+
 
 app.listen(5000, () =>
     console.log('App is running on port 5000.')

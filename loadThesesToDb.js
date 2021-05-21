@@ -3,16 +3,17 @@ let htmlparser = require("htmlparser2")
 const util = require('util')
 const fs = require('fs')
 const natural = require("natural")
-const { Client } = require('pg')
+//TODO
+// const { Client } = require('pg')
 
-const client = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'thesis_master',
-    password: '123',
-})
-client.connect()
-console.log("Client connected.")
+// const client = new Client({
+//     user: 'postgres',
+//     host: 'localhost',
+//     database: 'thesis_master',
+//     password: '123',
+// })
+// client.connect()
+// console.log("Client connected.")
 
 const loadTheses = async () => {
     const readFile = util.promisify(fs.readFile)
