@@ -68,8 +68,8 @@ const Thesis = ({ id }) => {
                     <Card.Text as="h5" >Status</Card.Text>
                     <Card.Text>{thesis.status}</Card.Text> */}
                     <Card.Text as="h5" >Areas</Card.Text>
-                    <Card.Text>{areas.find(area => area.code == thesis.area1).long}</Card.Text>
-                    <Card.Text>{areas.find(area => area.code == thesis.area2).long}</Card.Text>
+                    <Card.Text>{areas.find(area => area.code === thesis.area1).long}</Card.Text>
+                    <Card.Text>{areas.find(area => area.code === thesis.area2).long}</Card.Text>
                 </Card.Body>
             </Card >
         </div>
