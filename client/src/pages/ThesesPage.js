@@ -96,8 +96,8 @@ const Theses = ({ checkedAreas }) => {
                             key={thesis.id}
                             id={thesis.id}
                             title={thesis.title}
-                            area1={thesis.areas[0]}
-                            area2={thesis.areas[1]}
+                            area1={thesis.area1}
+                            area2={thesis.area2}
                         />
                     )
                 }

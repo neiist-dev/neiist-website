@@ -85,7 +85,7 @@ app.get('/thesis/:id', async(req, res) => {
     const {id} = req.params
     try {
         const thesis = await pool.query("select * from theses where id = $1", [id]);
-        res.json(thesis.rows);
+        res.json(thesis.rows[0]);
     }
     catch(err) {
         console.error(err.message);
@@ -102,6 +102,8 @@ app.get('/theses/:area1?/:area2?', async(req, res) => {
             theses = await pool.query("select * from theses where area1 = $1 or area2 = $1 or area1 = $2 or area2 = $2", [area1, area2]);
         else if(area1 !== undefined) theses = await pool.query("select * from theses where area1 = $1 or area2 = $1", [area1]);
         else if(area2 !== undefined) theses = await pool.query("select * from theses where area1 = $1 or area2 = $1", [area2]);
+        else theses = await pool.query("select * from theses");
+
         res.json(theses.rows);
     }
     catch (err) {
