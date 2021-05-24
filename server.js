@@ -7,18 +7,9 @@ require('dotenv').config()
 const theses = require('./data/meic_theses.json')
 const areas = require('./data/meic_areas.json')
 
-//TODO: encapsulate Pool in a module
-const { Pool } = require('pg');
+const pool = require('./db')
+
 const { prototype } = require('events')
-
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    password: '0000',
-    port: 5432,
-    database: 'neiistdb',
-});
-
 
 const app = express();
 app.use(cors());
@@ -72,42 +63,56 @@ app.get('/auth', async (req, res) => {
 // })
 
 app.get("/areas", async(req, res) => {
+    const client = await pool.connect();
     try {
-        const allAreas = await pool.query("select * from areas");
+        const allAreas = await client.query("select * from areas");
         res.json(allAreas.rows);
     }
     catch(err) {
         console.error(err.message);
     }
+    finally {
+        client.release();
+    }
 })
 
 app.get('/thesis/:id', async(req, res) => {
+    const client = await pool.connect();
+
     const {id} = req.params
     try {
-        const thesis = await pool.query("select * from theses where id = $1", [id]);
+        const thesis = await client.query("select * from theses where id = $1", [id]);
         res.json(thesis.rows[0]);
     }
     catch(err) {
         console.error(err.message);
     }
+    finally {
+        client.release();
+    }
 })
 
 app.get('/theses/:area1?/:area2?', async(req, res) => {
+    const client = await pool.connect();
+
     const area1 = req.params.area1
     const area2 = req.params.area2
 
     try {
         let theses
         if(area1 !== undefined && area2 !== undefined)
-            theses = await pool.query("select * from theses where area1 = $1 or area2 = $1 or area1 = $2 or area2 = $2", [area1, area2]);
-        else if(area1 !== undefined) theses = await pool.query("select * from theses where area1 = $1 or area2 = $1", [area1]);
-        else if(area2 !== undefined) theses = await pool.query("select * from theses where area1 = $1 or area2 = $1", [area2]);
-        else theses = await pool.query("select * from theses");
+            theses = await client.query("select * from theses where area1 = $1 or area2 = $1 or area1 = $2 or area2 = $2", [area1, area2]);
+        else if(area1 !== undefined) theses = await client.query("select * from theses where area1 = $1 or area2 = $1", [area1]);
+        else if(area2 !== undefined) theses = await client.query("select * from theses where area1 = $1 or area2 = $1", [area2]);
+        else theses = await client.query("select * from theses");
 
         res.json(theses.rows);
     }
     catch (err) {
         console.error(err.message);
+    }
+    finally {
+        client.release();
     }
 })
 
