@@ -2,6 +2,7 @@
   "name": "gce-website",
   "version": "0.1.0",
   "dependencies": {
+    "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "react": "^16.14.0",
     "react-bootstrap": "^1.5.1",

@@ -4,7 +4,7 @@ import Nav from 'react-bootstrap/Nav'
 import logo from '../images/neiist_logo.png'
 import { Redirect, Link } from "react-router-dom"
 
-const NavBar = ({ userData, setUserData}) =>
+const NavBar = ({ userData, setUserData }) =>
   <Navbar expand="lg" >
     <Navbar.Brand as={Link} to="/">
       <img src={logo} height="40" alt="" />
@@ -16,16 +16,19 @@ const NavBar = ({ userData, setUserData}) =>
         <Nav.Link href="/quemsomos">Quem Somos</Nav.Link>
         <Nav.Link href="/curso">Curso</Nav.Link>
         <Nav.Link href="/seccoes">Secções</Nav.Link>
-        <Nav.Link href="/socios">Sócios</Nav.Link>
         <Nav.Link href="/estatutos">Estatutos</Nav.Link>
         <Nav.Link href="/contactos">Contactos</Nav.Link>
-        <Nav.Link href="/thesismaster">Thesis Master</Nav.Link>
+        <Nav.Link as={Link} to="/thesismaster">Thesis Master</Nav.Link>
         {userData &&
-          <Nav.Link as={Link} to="/theses">THESIS MASTER</Nav.Link>
+          <>
+            <Nav.Link as={Link} to="/socios">Sócios</Nav.Link>
+            <Nav.Link as={Link} to="/theses/upload">Upload Theses</Nav.Link>
+            <Nav.Link as={Link} to="/areas/upload">Upload Areas</Nav.Link>
+          </>
         }
       </Nav>
       <Nav style={{ marginLeft: "auto" }}>
-        <LoginLogout userData={userData} setUserData={setUserData}/>
+        <LoginLogout userData={userData} setUserData={setUserData} />
       </Nav>
     </Navbar.Collapse>
   </Navbar>
@@ -51,8 +54,8 @@ const LoginLogout = ({ userData, setUserData }) => {
 const Login = () =>
   <Nav.Link
     href={'https://fenix.tecnico.ulisboa.pt/oauth/userdialog' +
-        `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
-        `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`}
+      `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
+      `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`}
   >
     LOGIN
   </Nav.Link>
@@ -100,32 +103,3 @@ const Error = ({ error, errorDescription }) =>
   </>
 
 export default NavBar
-
-/*
-import React from 'react'
-import Navbar from 'react-bootstrap/Navbar'
-import Nav from 'react-bootstrap/Nav'
-import logo from '../images/neiist_logo.png';
-
-
-const NavBar = () =>
-    <Navbar bg="dark" variant="dark" expand="sm">
-        <Navbar.Brand href="/" >
-            <img src={logo} height="40" className="d-inline-block align-top" alt="GCE logo" />
-        </Navbar.Brand >
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse>
-            <Nav>
-                <Nav.Link href="/atividades">Atividades</Nav.Link>
-                <Nav.Link href="/quemsomos">Quem Somos</Nav.Link>
-                <Nav.Link href="/curso">Curso</Nav.Link>
-                <Nav.Link href="/seccoes">Seccoes</Nav.Link>
-                <Nav.Link href="/socios">Socios</Nav.Link>
-                <Nav.Link href="/estatutos">Estatutos</Nav.Link>
-                <Nav.Link href="/contactos">Contactos</Nav.Link>
-            </Nav>
-        </Navbar.Collapse>
-    </Navbar>
-
-export default NavBar
-*/
