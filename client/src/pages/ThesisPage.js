@@ -63,15 +63,13 @@ const Thesis = ({ id }) => {
                     <Card.Text>{thesis.vacancies}</Card.Text>
                     <Card.Text as="h5" >Location</Card.Text>
                     <Card.Text>{thesis.location}</Card.Text>
-                    <Card.Text as="h5" >Courses</Card.Text>
+                    {/* <Card.Text as="h5" >Courses</Card.Text>
                     <Card.Text>{thesis.courses}</Card.Text>
                     <Card.Text as="h5" >Status</Card.Text>
-                    <Card.Text>{thesis.status}</Card.Text>
+                    <Card.Text>{thesis.status}</Card.Text> */}
                     <Card.Text as="h5" >Areas</Card.Text>
-                    {thesis.areas.map(thesisArea => {
-                        const areaInfo = areas.find(area => area.code === thesisArea)
-                        return <Card.Text>{areaInfo.long}</Card.Text>
-                    })}
+                    <Card.Text>{areas.find(area => area.code === thesis.area1).long}</Card.Text>
+                    <Card.Text>{areas.find(area => area.code === thesis.area2).long}</Card.Text>
                 </Card.Body>
             </Card >
         </div>
