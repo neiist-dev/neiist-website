@@ -8,7 +8,7 @@ const ThesisPage = ({ userData, setUserData }) => {
 
     return (
         <>
-            <NavBar userData={userData} setUserData={setUserData}  />
+            <NavBar userData={userData} setUserData={setUserData} />
             <Thesis id={id} />
         </>
     )
@@ -21,7 +21,7 @@ const Thesis = ({ id }) => {
     const [isLoaded, setIsLoaded] = useState(false)
 
     useEffect(() => {
-        fetch(`http://localhost:5000/thesis/${id}`)
+        fetch(`http://localhost:5000/theses/${id}`)
             .then(res => res.json())
             .then(res => setThesis(res),
                 (err) => {

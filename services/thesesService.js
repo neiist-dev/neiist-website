@@ -1,26 +1,6 @@
-const path = require('path')
 let htmlparser = require("htmlparser2")
-const util = require('util')
-const fs = require('fs')
 const natural = require("natural")
-//TODO
-// const { Client } = require('pg')
-
-// const client = new Client({
-//     user: 'postgres',
-//     host: 'localhost',
-//     database: 'thesis_master',
-//     password: '123',
-// })
-// client.connect()
-// console.log("Client connected.")
-
-const loadTheses = async () => {
-    const readFile = util.promisify(fs.readFile)
-    const filePath = path.join(__dirname, "/data_raw/meic_theses.html")
-    let theses = await readFile(filePath, { encoding: 'utf-8' })
-    return theses
-}
+const db = require('../db/db')
 
 const parseTheses = async theses => {
     let parsedTheses = []
@@ -167,7 +147,7 @@ const trainClassifier = async () => {
         "Hugo_Nicolau",
         "Sandra_Pereira_Gama"
     ]
-    interactionVisualization.forEach(string => classifier.addDocument(string, "vi"))
+    interactionVisualization.forEach(string => classifier.addDocument(string, "iv"))
 
     const cyberSecurity = [
         "Password Quality",
@@ -378,37 +358,25 @@ const classifyTheses = async (parsedTheses, trainedClassifier) => {
     return classifiedTheses
 }
 
-const saveClassifiedThesesToDb = async classifiedTheses => {
-    // TODO: load theses to db
-    /*
-    client.query('SELECT NOW()', (err, res) => {
-        console.log(err, res)
-        client.end()
-    })
-    */
-
-    const filePath = path.join(__dirname, "/data/meic_theses.json")
-    const toWrite = JSON.stringify(classifiedTheses)
-    fs.writeFileSync(filePath, toWrite, err => { if (err) return (err) })
-
-    //client.end()
-}
-
-const loadThesesToDb = async () => {
-    const theses = await loadTheses()
-    console.log("Theses loaded.")
-
-    const parsedTheses = await parseTheses(theses)
-    console.log("Theses parsed.")
-
+const uploadTheses = async theses => {
+    const parsedTheses = await parseTheses(newTheses)
     const trainedClassifier = await trainClassifier()
-    console.log("Classifier trained.")
-
     const classifiedTheses = await classifyTheses(parsedTheses, trainedClassifier)
-    console.log("Theses classified.")
-
-    saveClassifiedThesesToDb(classifiedTheses)
-    console.log("Theses saved to Database.")
+    db.setTheses(classifiedTheses)
 }
 
-loadThesesToDb()
+const getThesisById = async id => {
+    const thesis = db.getThesesById(id)
+    return thesis
+}
+
+const getThesesByAreas = async (area1, area2) => {
+    const theses = db.getThesesByAreas(area1, area2)
+    return theses
+}
+
+module.exports = {
+    uploadTheses: uploadTheses,
+    getThesisById: getThesisById,
+    getThesesByAreas: getThesesByAreas
+}

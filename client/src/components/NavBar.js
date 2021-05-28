@@ -13,11 +13,11 @@ const NavBar = ({ userData, setUserData }) =>
     <Navbar.Collapse>
       <Nav style={{ marginRight: "auto" }}>
         <Nav.Link as={Link} to="/atividades">Atividades</Nav.Link>
-        <Nav.Link href="/quemsomos">Quem Somos</Nav.Link>
-        <Nav.Link href="/curso">Curso</Nav.Link>
-        <Nav.Link href="/seccoes">Secções</Nav.Link>
-        <Nav.Link href="/estatutos">Estatutos</Nav.Link>
-        <Nav.Link href="/contactos">Contactos</Nav.Link>
+        <Nav.Link as={Link} to="/quemsomos">Quem Somos</Nav.Link>
+        <Nav.Link as={Link} to="/curso">Curso</Nav.Link>
+        <Nav.Link as={Link} to="/seccoes">Secções</Nav.Link>
+        <Nav.Link as={Link} to="/estatutos">Estatutos</Nav.Link>
+        <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
         <Nav.Link as={Link} to="/thesismaster">Thesis Master</Nav.Link>
         {userData &&
           <>
