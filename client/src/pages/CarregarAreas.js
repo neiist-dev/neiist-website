@@ -18,8 +18,11 @@ const CarregarAreas = ({ userData, setUserData }) => {
                             type="button"
                             className="btn btn-success btn-block"
                             onClick={() => {
-                                console.log(areas)
-                                axios.post("http://localhost:5000/areas/upload", areas)
+                                axios.post("http://localhost:5000/areas/upload", areas, {
+                                    headers: {
+                                        // Overwrite Axios's automatically set Content-Type
+                                        'Content-Type': 'application/json'
+                                    }})
                             }}
                         >
                             Upload

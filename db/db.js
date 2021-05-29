@@ -53,7 +53,7 @@ const getThesesByAreas = async (area1, area2) => {
 
         return theses.rows
     }
-    catch (err) {
+    catch (error) {
         console.error(err.message);
     }
     finally {
@@ -70,7 +70,7 @@ const setAreas = async areas => {
             await client.query("insert into areas values($1, $2, $3)", [area.code, area.short, area.long]);
         await client.query("commit");
     }
-    catch (err) {
+    catch (error) {
         await client.query("rollback");
         console.log(error);
     }
@@ -85,7 +85,7 @@ const getAreas = async areas => {
         const allAreas = await client.query("select * from areas");
         return allAreas.rows;
     }
-    catch (err) {
+    catch (error) {
         console.error(err.message);
     }
     finally {

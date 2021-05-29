@@ -359,7 +359,7 @@ const classifyTheses = async (parsedTheses, trainedClassifier) => {
 }
 
 const uploadTheses = async theses => {
-    const parsedTheses = await parseTheses(newTheses)
+    const parsedTheses = await parseTheses(theses)
     const trainedClassifier = await trainClassifier()
     const classifiedTheses = await classifyTheses(parsedTheses, trainedClassifier)
     db.setTheses(classifiedTheses)

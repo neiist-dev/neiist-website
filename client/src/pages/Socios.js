@@ -10,7 +10,6 @@ const Seccoes = ({ userData, setUserData }) => {
     const [isLoaded, setIsLoaded] = useState(false)
 
     useEffect(() => {
-        console.log(userData)
         fetch(`http://localhost:5000/votar/registar/${userData.username}`)
             .then(res => res.json())
             .then(state => setUserState(state.userState))

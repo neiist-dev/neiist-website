@@ -8,13 +8,12 @@ router.use(express.json())
 
 router.get("/", async (req, res) => {
     const areas = await areasService.getAreas()
-    console.log(areas)
     res.json(areas)
 })
 
 router.post('/upload', async (req, res) => {
-    const newAreas = req.body
-    await areasService.uploadAreas(newAreas)
+    const areas = req.body
+    await areasService.uploadAreas(areas)
 })
 
 module.exports = router
