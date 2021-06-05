@@ -15,7 +15,6 @@ import Seccoes from './pages/Seccoes'
 import Socios from './pages/Socios'
 import Estatutos from './pages/Estatutos'
 import Contactos from './pages/Contactos'
-import ThesisMaster from './pages/ThesisMaster'
 import Theses from './pages/ThesesPage'
 import Thesis from './pages/ThesisPage'
 import CarregarTeses from './pages/CarregarTeses'
@@ -50,9 +49,6 @@ const App = () => {
                 </Route>
                 <Route path='/contactos'>
                     <Contactos userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path="/thesismaster">
-                    <ThesisMaster userData={userData} setUserData={setUserData} />
                 </Route>
                 {userData &&
                     <>

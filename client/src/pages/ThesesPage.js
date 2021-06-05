@@ -71,7 +71,12 @@ const Theses = ({ checkedAreas }) => {
     const [isLoaded, setIsLoaded] = useState(false)
 
     useEffect(() => {
-        fetch('http://localhost:5000/theses/' + checkedAreas.join("/"))
+        let queryParameters = ''
+        if(checkedAreas)
+            for (let i = 0; i < checkedAreas.length; i++)
+                queryParameters += (i === 0 ? '?' : '&') + 'areas[]=' + checkedAreas[i]
+
+        fetch('http://localhost:5000/theses/' + queryParameters)
             .then(res => res.json())
             .then(res => {
                 setClassifiedTheses(res)

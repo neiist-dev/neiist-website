@@ -18,9 +18,9 @@ const NavBar = ({ userData, setUserData }) =>
         <Nav.Link as={Link} to="/seccoes">Secções</Nav.Link>
         <Nav.Link as={Link} to="/estatutos">Estatutos</Nav.Link>
         <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
-        <Nav.Link as={Link} to="/thesismaster">Thesis Master</Nav.Link>
         {userData &&
           <>
+            <Nav.Link as={Link} to="/theses">Thesis Master</Nav.Link>
             <Nav.Link as={Link} to="/socios">Sócios</Nav.Link>
             <Nav.Link as={Link} to="/theses/upload">Upload Theses</Nav.Link>
             <Nav.Link as={Link} to="/areas/upload">Upload Areas</Nav.Link>

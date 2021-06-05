@@ -1,9 +1,4 @@
--- this database needs to have the western europe encoding
--- CREATE DATABASE neiistdb WITH ENCODING 'WIN1252' LC_COLLATE 'C' LC_CTYPE 'C' TEMPLATE=template0;
--- pt_PT.UTF-8 UTF-8
--- pt_PT ISO-8859-1
--- pt_PT@euro ISO-8859-15
--- NOTE: make sure that the server and client encoding are the same, verify with: SHOW server_encoding; SHOW client_encoding;
+-- CREATE DATABASE neiistdb;        // UTF-8
 
 DROP TABLE IF EXISTS areas CASCADE;
 CREATE TABLE areas (

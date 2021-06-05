@@ -1,4 +1,4 @@
-const db = require('../db/db')
+const db = require('../db/areasQueries')
 
 const uploadAreas = async areas => {
     db.setAreas(areas)

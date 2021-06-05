@@ -4,7 +4,6 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 
 const CarregarTeses = ({ userData, setUserData }) => {
-    //const [htmlContent, setHtmlContent] = useState(null)
     const [selectedFile, setSelectedFile] = useState();
     const [isFilePicked, setIsFilePicked] = useState(false);
 
@@ -33,8 +32,7 @@ const CarregarTeses = ({ userData, setUserData }) => {
                         * Get a file with thesis on ESTUDANTE &gt; Candidatura a Dissertação &gt; Available Proposals<br />
                         * Delete everything above the theses' beggining on &lt;tbody&gt;. Delete everything after &lt;/tbody&gt;
                     </label>
-                    <input type="file" name="file" onChange={handleChange}
-                    />
+                    <input type="file" onChange={handleChange} />
                     {isFilePicked ?
                     <div>
                         <p>Filename: {selectedFile.name}</p>
