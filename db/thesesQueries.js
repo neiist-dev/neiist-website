@@ -53,7 +53,7 @@ const getThesesByAreas = async areas => {
         else if (areas.length === 2) {
             const area1 = areas[0]
             const area2 = areas[1]
-            theses = await client.query("select * from theses where area1 = $1 or area2 = $1 or area1 = $2 or area2 = $2", [area1, area2])
+            theses = await client.query("select * from theses where (area1 = $1 or area2 = $1) and (area1 = $2 or area2 = $2)", [area1, area2])
             return theses.rows
         }
 
