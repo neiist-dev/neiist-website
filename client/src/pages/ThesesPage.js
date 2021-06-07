@@ -4,12 +4,12 @@ import ToggleButton from 'react-bootstrap/ToggleButton'
 import Card from 'react-bootstrap/Card'
 import { Link } from "react-router-dom"
 
-const ThesesPage = ({ userData, setUserData }) => {
+const ThesesPage = () => {
     const [checkedAreas, setCheckedAreas] = useState([])
 
     return (
         <>
-            <NavBar userData={userData} setUserData={setUserData} />
+            <NavBar />
             <Areas checkedAreas={checkedAreas} setCheckedAreas={setCheckedAreas} />
             <Theses checkedAreas={checkedAreas} />
         </>

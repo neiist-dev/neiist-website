@@ -4,9 +4,9 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import sinfo from '../images/sinfo.png'
 
-const Seccoes = ({ userData, setUserData }) =>
+const Seccoes = () =>
     <>
-        <NavBar userData={userData} setUserData={setUserData} />
+        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h2 style={{ textAlign: "center" }}>
                 Semana Informática (SINFO)

@@ -6,9 +6,9 @@ import neiist_banner from '../images/neiist_banner.jpg'
 import alameda from '../images/alameda.jpg'
 import taguspark from '../images/taguspark.jpg'
 
-const Casa = ({ userData, setUserData }) =>
+const Casa = () =>
     <>
-        <NavBar userData={userData} setUserData={setUserData}/>
+        <NavBar />
         <Carousel >
             <Carousel.Item>
                 <img

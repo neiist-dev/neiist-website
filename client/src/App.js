@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 
 import {
     BrowserRouter as Router,
@@ -23,57 +23,88 @@ import CarregarAreas from './pages/CarregarAreas'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 
+export const UserDataContext = React.createContext();
+
 const App = () => {
     const [userData, setUserData] = useState(null)
 
     return (
-        <Router Router >
-            <Switch>
-                <Route exact path='/'>
-                    <Casa userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path='/atividades'>
-                    <Atividades userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path='/quemsomos'>
-                    <QuemSomos userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path='/curso'>
-                    <Curso userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path='/seccoes'>
-                    <Seccoes userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path='/estatutos'>
-                    <Estatutos userData={userData} setUserData={setUserData} />
-                </Route>
-                <Route path='/contactos'>
-                    <Contactos userData={userData} setUserData={setUserData} />
-                </Route>
-                {userData &&
-                    <>
-                        <Route path='/socios'>
-                            <Socios userData={userData} setUserData={setUserData} />
-                        </Route>
-                        <Route exact path="/theses">
-                            <Theses userData={userData} setUserData={setUserData} />
-                        </Route>
-                        <Route path="/thesis/:id">
-                            <Thesis userData={userData} setUserData={setUserData} />
-                        </Route>
-                        <Route path="/theses/upload">
-                            <CarregarTeses userData={userData} setUserData={setUserData} />
-                        </Route>
-                        <Route path="/areas/upload">
-                            <CarregarAreas userData={userData} setUserData={setUserData} />
-                        </Route>
-                    </>
-                }
-                <Route path='/*'>
-                    <Redirect to='/' />
-                </Route>
-            </Switch>
-        </Router >
+        <UserDataContext.Provider value={{userData, setUserData}}>
+            <Router Router >
+                <Switch>
+
+                    <Route exact path='/'>
+                        <Casa />
+                    </Route>
+                    <Route path='/atividades'>
+                        <Atividades />
+                    </Route>
+                    <Route path='/quemsomos'>
+                        <QuemSomos />
+                    </Route>
+                    <Route path='/curso'>
+                        <Curso />
+                    </Route>
+                    <Route path='/seccoes'>
+                        <Seccoes />
+                    </Route>
+                    <Route path='/estatutos'>
+                        <Estatutos />
+                    </Route>
+                    <Route path='/contactos'>
+                        <Contactos />
+                    </Route>
+
+                    <NonAdminRoute path='/socios'>
+                        <Socios />
+                    </NonAdminRoute>
+                    <NonAdminRoute exact path="/theses">
+                        <Theses />
+                    </NonAdminRoute>
+                    <NonAdminRoute path="/thesis/:id">
+                        <Thesis />
+                    </NonAdminRoute>
+
+                    <AdminRoute path="/theses/upload">
+                        <CarregarTeses />
+                    </AdminRoute>
+                    <AdminRoute path="/areas/upload">
+                        <CarregarAreas />
+                    </AdminRoute>
+
+                    <Route path='/*'>
+                        <Redirect to='/' />
+                    </Route>
+                    
+                </Switch>
+            </Router >
+        </UserDataContext.Provider>
+    )
+}
+
+const NonAdminRoute = ({ children, ...props }) => {
+    const { userData } = useContext(UserDataContext)
+
+    return (
+        <Route {...props}>
+            {(userData && userData.isNonAdmin)
+                ? children
+                : <Redirect to='/' />
+            }
+        </Route >
+    )
+}
+
+const AdminRoute = ({ children, ...props }) => {
+    const { userData } = useContext(UserDataContext)
+
+    return (
+        <Route {...props}>
+            {(userData && userData.isAdmin)
+                ? children
+                : <Redirect to='/' />
+            }
+        </Route >
     )
 }
 

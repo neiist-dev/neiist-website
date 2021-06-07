@@ -2,9 +2,9 @@ import React from 'react'
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 
-const Contactos = ({ userData, setUserData }) =>
+const Contactos = () =>
     <>
-        <NavBar userData={userData} setUserData={setUserData} />
+        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
                 CONTACTOS

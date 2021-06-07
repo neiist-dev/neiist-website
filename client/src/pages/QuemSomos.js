@@ -18,9 +18,9 @@ import RodrigoCosta from '../images/colaboradores/RodrigoCosta.jpg'
 import RodrigoMajor from '../images/colaboradores/RodrigoMajor.jpg'
 import VascoPereira from '../images/colaboradores/VascoPereira.jpg'
 
-const QuemSomos = ({ userData, setUserData }) =>
+const QuemSomos = () =>
     <>
-        <NavBar userData={userData} setUserData={setUserData} />
+        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
                 QUEM SOMOS

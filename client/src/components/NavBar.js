@@ -1,37 +1,47 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import logo from '../images/neiist_logo.png'
 import { Redirect, Link } from "react-router-dom"
+import { UserDataContext } from '../App'
 
-const NavBar = ({ userData, setUserData }) =>
-  <Navbar expand="lg" >
-    <Navbar.Brand as={Link} to="/">
-      <img src={logo} height="40" alt="" />
-    </Navbar.Brand>
-    <Navbar.Toggle />
-    <Navbar.Collapse>
-      <Nav style={{ marginRight: "auto" }}>
-        <Nav.Link as={Link} to="/atividades">Atividades</Nav.Link>
-        <Nav.Link as={Link} to="/quemsomos">Quem Somos</Nav.Link>
-        <Nav.Link as={Link} to="/curso">Curso</Nav.Link>
-        <Nav.Link as={Link} to="/seccoes">Secções</Nav.Link>
-        <Nav.Link as={Link} to="/estatutos">Estatutos</Nav.Link>
-        <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
-        {userData &&
-          <>
-            <Nav.Link as={Link} to="/theses">Thesis Master</Nav.Link>
-            <Nav.Link as={Link} to="/socios">Sócios</Nav.Link>
-            <Nav.Link as={Link} to="/theses/upload">Upload Theses</Nav.Link>
-            <Nav.Link as={Link} to="/areas/upload">Upload Areas</Nav.Link>
-          </>
-        }
-      </Nav>
-      <Nav style={{ marginLeft: "auto" }}>
-        <LoginLogout userData={userData} setUserData={setUserData} />
-      </Nav>
-    </Navbar.Collapse>
-  </Navbar>
+const NavBar = () => {
+  const { userData, setUserData } = useContext(UserDataContext)
+
+  return (
+    <Navbar expand="lg" >
+      <Navbar.Brand as={Link} to="/">
+        <img src={logo} height="40" alt="" />
+      </Navbar.Brand>
+      <Navbar.Toggle />
+      <Navbar.Collapse>
+        <Nav style={{ marginRight: "auto" }}>
+          <Nav.Link as={Link} to="/atividades">Atividades</Nav.Link>
+          <Nav.Link as={Link} to="/quemsomos">Quem Somos</Nav.Link>
+          <Nav.Link as={Link} to="/curso">Curso</Nav.Link>
+          <Nav.Link as={Link} to="/seccoes">Secções</Nav.Link>
+          <Nav.Link as={Link} to="/estatutos">Estatutos</Nav.Link>
+          <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
+          {userData && userData.isNonAdmin &&
+            <>
+              <Nav.Link as={Link} to="/theses">Thesis Master</Nav.Link>
+              <Nav.Link as={Link} to="/socios">Sócios</Nav.Link>
+            </>
+          }
+          {userData && userData.isAdmin &&
+            <>
+              <Nav.Link as={Link} to="/theses/upload">Upload Theses</Nav.Link>
+              <Nav.Link as={Link} to="/areas/upload">Upload Areas</Nav.Link>
+            </>
+          }
+        </Nav>
+        <Nav style={{ marginLeft: "auto" }}>
+          <LoginLogout userData={userData} setUserData={setUserData} />
+        </Nav>
+      </Navbar.Collapse>
+    </Navbar>
+  )
+}
 
 const LoginLogout = ({ userData, setUserData }) => {
   const urlParams = new URLSearchParams(window.location.search)

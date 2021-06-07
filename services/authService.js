@@ -3,10 +3,13 @@ const axios = require('axios')
 const getUserData = async code => {
     const accessToken = await getAccessToken(code)
     const personInformation = await getPersonInformation(accessToken)
+
     const userData = {
         displayName: personInformation.displayName,
-        isAuthorized: isAuthorized()
+        isNonAdmin: isNonAdmin(personInformation.roles),
+        isAdmin: isAdmin(personInformation.username)
     }
+    
     return userData
 }
 
@@ -48,8 +51,30 @@ const getPersonInformation = async accessToken => {
     }
 }
 
-const isAuthorized = () => {
-    return true // FIXME
+const isNonAdmin = roles => {
+    return roles.some(role => isAcceptedRole(role))
+}
+
+const isAcceptedRole = role => {
+
+    const acceptedTypes = [
+        'STUDENT',
+        'TEACHER'
+    ]
+
+    const acceptedAcronyms = [
+        'LEIC-A',
+        'LEIC-T',
+        'MEIC-A',
+        'MEIC-T'
+    ]
+
+    return acceptedTypes.includes(role.type) && role.registrations.some(registration => acceptedAcronyms.includes(registration.acronym))
+}
+
+const isAdmin = username => {
+    const adminUsernames = ['ist192440']
+    return adminUsernames.includes(username)
 }
 
 module.exports = {

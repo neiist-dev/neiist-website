@@ -3,7 +3,7 @@ import axios from 'axios'
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 
-const CarregarTeses = ({ userData, setUserData }) => {
+const CarregarTeses = () => {
     const [selectedFile, setSelectedFile] = useState();
     const [isFilePicked, setIsFilePicked] = useState(false);
 
@@ -24,7 +24,7 @@ const CarregarTeses = ({ userData, setUserData }) => {
 
     return (
         <>
-            <NavBar userData={userData} setUserData={setUserData} />
+            <NavBar />
             <div style={{ margin: "10px 30vw" }}>
                 <div>
                     <label>

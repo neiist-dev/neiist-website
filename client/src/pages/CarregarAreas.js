@@ -3,12 +3,12 @@ import axios from 'axios'
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 
-const CarregarAreas = ({ userData, setUserData }) => {
+const CarregarAreas = () => {
     const [areas, setAreas] = useState(null)
 
     return (
         <>
-            <NavBar userData={userData} setUserData={setUserData} />
+            <NavBar />
             <div style={{ margin: "10px 30vw" }}>
                 <form method="post" action="#" id="#">
                     <div>

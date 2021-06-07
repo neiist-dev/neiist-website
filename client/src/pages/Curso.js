@@ -4,9 +4,9 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import esports from '../images/eventos/esports.jpg'
 
-const Curso = ({ userData, setUserData }) =>
+const Curso = () =>
     <>
-        <NavBar userData={userData} setUserData={setUserData} />
+        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
                 O CURSO
