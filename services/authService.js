@@ -73,7 +73,7 @@ const isAcceptedRole = role => {
 }
 
 const isAdmin = username => {
-    const adminUsernames = ['ist192440']
+    const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
     return adminUsernames.includes(username)
 }
 
