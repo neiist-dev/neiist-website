@@ -12,7 +12,7 @@ const setAreas = async areas => {
     }
     catch (error) {
         await client.query("rollback");
-        console.log(error);
+        console.error(error);
     }
     finally {
         client.release();

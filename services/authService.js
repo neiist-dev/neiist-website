@@ -25,12 +25,12 @@ const getAccessToken = async code => {
         )
 
         if (accessTokenResponse === undefined || accessTokenResponse.status != 200)
-            return console.log('accessTokenResponse is undefined or the status is not 200')
+            return console.error('accessTokenResponse is undefined or the status is not 200')
 
         return accessTokenResponse.data.access_token
         
     } catch (error) {
-        return console.log(error)
+        return console.error(error)
     }
 }
 
@@ -42,12 +42,12 @@ const getPersonInformation = async accessToken => {
         )
 
         if (personInformationResponse === undefined || personInformationResponse.status != 200)
-            return console.log('personInformationResponse is undefined or the status is not 200')
+            return console.error('personInformationResponse is undefined or the status is not 200')
 
         return personInformationResponse.data
 
     } catch (error) {
-        return console.log(error)
+        return console.error(error)
     }
 }
 
