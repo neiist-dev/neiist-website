@@ -4,40 +4,52 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
 import { UserDataContext } from '../App'
 
-const Seccoes = () => {
-    const { userData } = useContext(UserDataContext)
+const Socios = () =>
+    <>
+        <NavBar />
+        <MemberPage />
+        <Footer />
+    </>
 
-    const [userState, setUserState] = useState(null)
+const MemberPage = () => {
+    const { userData } = useContext(UserDataContext)
+    const [member, setMember] = useState(null)
 
     const [error, setError] = useState(null)
     const [isLoaded, setIsLoaded] = useState(false)
 
     useEffect(() => {
-        fetch(`http://localhost:5000/votar/registar/${userData.username}`)
+        fetch(`http://localhost:5000/members/${userData.username}`)
             .then(res => res.json())
-            .then(state => setUserState(state.userState))
+            .then(member => {
+                setMember(member)
+                setIsLoaded(true)
+            },
+                (err) => {
+                    setIsLoaded(true)
+                    setError(err)
+                }
+            )
     }, [])
 
-    return (
-        <>
-            <NavBar />
-            <div style={{ margin: "10px 20vw" }}>
-                {(userState === "inexistente") &&
-                    <Button href="/socios/registar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>REGISTAR</Button>
-                }
-                {(userState === "regular") &&
-                    <p style={{ textAlign: "center" }}>AINDA NAO PODES VOTAR</p>
-                }
-                {(userState === "eleitor") &&
-                    <Button href="/socios/votar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>VOTAR</Button>
-                }
-                {(userState === "adormecido") &&
-                    <Button href="/socios/renovar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>RENOVAR</Button>
-                }
-            </div>
-            <Footer />
-        </>
-    )
+    if (!isLoaded) return <div>Loading...</div>
+    if (error) return <div>Error: {error.message}</div>
+    if (!member) return <Register />
+    if (member.isExpired) return <Renew />
+    if (member.canVote) return <Vote />
+    return <CantVote />
 }
 
-export default Seccoes
+const Register = () =>
+    <Button href="/socios/registar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>REGISTAR</Button>
+
+const CantVote = () =>
+    <p style={{ textAlign: "center" }}>AINDA NAO PODES VOTAR</p>
+
+const Vote = () =>
+    <Button href="/socios/votar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>VOTAR</Button>
+
+const Renew = () =>
+    <Button href="/socios/renovar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>RENOVAR</Button>
+
+export default Socios
