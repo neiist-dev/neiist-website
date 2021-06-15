@@ -5,6 +5,7 @@ const getUserData = async code => {
     const personInformation = await getPersonInformation(accessToken)
 
     const userData = {
+        username: personInformation.username,
         displayName: personInformation.displayName,
         isNonAdmin: isNonAdmin(personInformation.roles),
         isAdmin: isAdmin(personInformation.username)

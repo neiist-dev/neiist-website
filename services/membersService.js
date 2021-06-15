@@ -8,18 +8,22 @@ const getMember = async username => {
     const memberInformation = await db.getMember(username)
     if(!memberInformation) return null
 
+    const isExpired = await isMemberExpired(memberInformation.username)
+    const canVote = await canMemberVote(memberInformation.username)
+    
     const member = {
         username: memberInformation.username,
-        isExpiredMember: isExpired(memberInformation.username),
-        canVote: canVote(memberInformation.username)
+        isExpired: isExpired,
+        canVote: canVote
     }
+
     return member
 }
 
 const registerMember = async username => {
     const currDate = new Date()
     const canVoteDate = addMonthsToDate(waitingPeriod, currDate)
-    
+
     const member = {
         username: username,
         registerDate: currDate,
@@ -28,13 +32,13 @@ const registerMember = async username => {
     db.createMember(member)
 }
 
-const canVote = async username => {
+const canMemberVote = async username => {
     const member = await db.getMember(username)
     const currDate = new Date()
     return currDate >= member.canvote_date
 }
 
-const isExpired = async username => {
+const isMemberExpired = async username => {
     const member = await db.getMember(username)
     const currDate = new Date()
     const expirationDate = addMonthsToDate(validPeriod, currDate)
@@ -56,14 +60,14 @@ const renovateMember = async username => {
 const addMonthsToDate = (numMonths, date) => {
     const newMonth = date.getMonth() + numMonths
     let newDate = new Date(date)
-    newDate = newDate.setMonth(newMonth)
+    newDate.setMonth(newMonth)
     return newDate
 }
 
 module.exports = {
     getMember: getMember,
     registerMember: registerMember,
-    canVote: canVote,
-    isExpired: isExpired,
+    canMemberVote: canMemberVote,
+    isMemberExpired: isMemberExpired,
     renovateMember: renovateMember
 }

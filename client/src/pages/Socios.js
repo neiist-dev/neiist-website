@@ -2,7 +2,9 @@ import React, { useState, useEffect, useContext } from 'react'
 import Button from 'react-bootstrap/Button'
 import NavBar from '../components/NavBar'
 import Footer from '../components/Footer'
+import { Redirect, Link } from "react-router-dom"
 import { UserDataContext } from '../App'
+import axios from 'axios'
 
 const Socios = () =>
     <>
@@ -40,8 +42,19 @@ const MemberPage = () => {
     return <CantVote />
 }
 
-const Register = () =>
-    <Button href="/socios/registar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>REGISTAR</Button>
+const Register = () => {
+    const { userData } = useContext(UserDataContext)
+
+    return (
+        <Button
+            onClick={() => {
+                axios.post(`http://localhost:5000/members/${userData.username}`)
+            }}
+        >
+            REGISTAR
+        </Button>
+    )
+}
 
 const CantVote = () =>
     <p style={{ textAlign: "center" }}>AINDA NAO PODES VOTAR</p>
