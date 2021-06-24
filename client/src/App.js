@@ -19,6 +19,7 @@ import Theses from './pages/ThesesPage'
 import Thesis from './pages/ThesisPage'
 import CarregarTeses from './pages/CarregarTeses'
 import CarregarAreas from './pages/CarregarAreas'
+import NewElection from './pages/NewElection'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
@@ -70,6 +71,9 @@ const App = () => {
                     </AdminRoute>
                     <AdminRoute path="/areas/upload">
                         <CarregarAreas />
+                    </AdminRoute>
+                    <AdminRoute path="/elections/new">
+                        <NewElection />
                     </AdminRoute>
 
                     <Route path='/*'>

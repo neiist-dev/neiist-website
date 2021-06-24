@@ -39,7 +39,7 @@ const MemberPage = () => {
     if (!member) return <Register />
     if (member.isExpired) return <Renew />
     if (member.canVote) return <Vote />
-    return <CantVote />
+    else return <CantVote />
 }
 
 const Register = () => {
@@ -57,12 +57,36 @@ const Register = () => {
 }
 
 const CantVote = () =>
-    <p style={{ textAlign: "center" }}>AINDA NAO PODES VOTAR</p>
+    <p style={{ textAlign: "center" }}>
+        AINDA NAO PODES VOTAR
+    </p>
 
-const Vote = () =>
-    <Button href="/socios/votar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>VOTAR</Button>
+const Vote = () => {
+    const { userData } = useContext(UserDataContext)
 
-const Renew = () =>
-    <Button href="/socios/renovar" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>RENOVAR</Button>
+    return (
+        <Button
+            onClick={() => {
+                // axios.post(`http://localhost:5000/members/${userData.username}`)
+            }}
+        >
+            VOTAR
+        </Button>
+    )
+}
+
+const Renew = () => {
+    const { userData } = useContext(UserDataContext)
+
+    return (
+        <Button
+            onClick={() => {
+                // axios.post(`http://localhost:5000/members/${userData.username}`)
+            }}
+        >
+            RENOVAR
+        </Button>
+    )
+}
 
 export default Socios

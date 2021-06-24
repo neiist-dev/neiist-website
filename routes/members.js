@@ -12,7 +12,7 @@ router.get('/:username', async (req, res) => {
 router.post('/:username', async (req, res) => {
     const username = req.params.username
     console.log("username", username)
-    const member = await membersService.registerMember(username)
+    await membersService.registerMember(username)
 })
 
 module.exports = router

@@ -5,6 +5,7 @@ const createTables = () => {
     createTableAreas()
     createTableTheses()
     createTableMembers()
+    createTableElections()
 }
 
 const createTableAreas = async () => {
@@ -63,6 +64,25 @@ const createTableMembers = async () => {
                 username varchar(9) PRIMARY KEY,
                 register_date date,
                 canvote_date date
+            )`
+        )
+    }
+    catch (err) {
+        console.error(err.stack)
+    }
+    finally {
+        client.release()
+    }
+}
+
+const createTableElections = async () => {
+    const client = await pool.connect()
+    try {
+        await client.query("DROP TABLE IF EXISTS elections CASCADE")
+        await client.query(
+            `CREATE TABLE elections(
+                id serial PRIMARY KEY,
+                name varchar(100)
             )`
         )
     }

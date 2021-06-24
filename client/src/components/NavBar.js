@@ -32,6 +32,7 @@ const NavBar = () => {
             <>
               <Nav.Link as={Link} to="/theses/upload">Upload Theses</Nav.Link>
               <Nav.Link as={Link} to="/areas/upload">Upload Areas</Nav.Link>
+              <Nav.Link as={Link} to="/elections/new">New Election</Nav.Link>
             </>
           }
         </Nav>
