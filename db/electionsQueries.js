@@ -17,6 +17,21 @@ const createElection = async name => {
     }
 }
 
+const latestElection = async () => {
+    const client = await pool.connect()
+    try {
+        const id = await client.query("SELECT id FROM elections ORDER BY id DESC LIMIT 1")
+        return id.rows[0]
+    }
+    catch (err) {
+        await client.query("rollback")
+        console.error(err)
+    }
+    finally {
+        client.release()
+    }
+}
+
 // const getAreas = async areas => {
 //     const client = await pool.connect()
 //     try {
@@ -33,5 +48,6 @@ const createElection = async name => {
 
 module.exports = {
     createElection: createElection,
+    latestElection: latestElection
     // getAreas: getAreas,
 }

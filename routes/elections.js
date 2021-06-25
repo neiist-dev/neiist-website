@@ -12,6 +12,8 @@ var router = express.Router()
 router.post('/:name', async (req, res) => {
     const name = req.params.name
     await electionsService.newElection(name)
+    const newElectionId = await electionsService.latestElection()
+    res.json(newElectionId)
 })
 
 module.exports = router

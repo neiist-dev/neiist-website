@@ -19,7 +19,7 @@ import Theses from './pages/ThesesPage'
 import Thesis from './pages/ThesisPage'
 import CarregarTeses from './pages/CarregarTeses'
 import CarregarAreas from './pages/CarregarAreas'
-import NewElection from './pages/NewElection'
+import NewElectionPage from './pages/NewElectionPage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
@@ -73,7 +73,7 @@ const App = () => {
                         <CarregarAreas />
                     </AdminRoute>
                     <AdminRoute path="/elections/new">
-                        <NewElection />
+                        <NewElectionPage />
                     </AdminRoute>
 
                     <Route path='/*'>
