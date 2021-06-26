@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react'
+import Layout from './components/Layout'
 
 import {
     BrowserRouter as Router,
@@ -7,18 +8,17 @@ import {
     Redirect
 } from 'react-router-dom'
 
-import Casa from './pages/Casa'
-import Atividades from './pages/Atividades'
-import QuemSomos from './pages/QuemSomos'
-import Curso from './pages/Curso'
-import Seccoes from './pages/Seccoes'
-import Socios from './pages/Socios'
-import Estatutos from './pages/Estatutos'
-import Contactos from './pages/Contactos'
-import Theses from './pages/ThesesPage'
-import Thesis from './pages/ThesisPage'
-import CarregarTeses from './pages/CarregarTeses'
-import CarregarAreas from './pages/CarregarAreas'
+import CasaPage from './pages/CasaPage'
+import AtividadesPage from './pages/AtividadesPage'
+import QuemSomosPage from './pages/QuemSomosPage'
+import CursoPage from './pages/CursoPage'
+import SeccoesPage from './pages/SeccoesPage'
+import MembersPage from './pages/MembersPage'
+import EstatutosPage from './pages/EstatutosPage'
+import ContactosPage from './pages/ContactosPage'
+import ThesesPage from './pages/ThesesPage'
+import CarregarTesesPage from './pages/CarregarTesesPage'
+import CarregarAreasPage from './pages/CarregarAreasPage'
 import NewElectionPage from './pages/NewElectionPage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -32,55 +32,54 @@ const App = () => {
     return (
         <UserDataContext.Provider value={{userData, setUserData}}>
             <Router Router >
-                <Switch>
+                <Layout>
+                    <Switch>
 
-                    <Route exact path='/'>
-                        <Casa />
-                    </Route>
-                    <Route path='/atividades'>
-                        <Atividades />
-                    </Route>
-                    <Route path='/quemsomos'>
-                        <QuemSomos />
-                    </Route>
-                    <Route path='/curso'>
-                        <Curso />
-                    </Route>
-                    <Route path='/seccoes'>
-                        <Seccoes />
-                    </Route>
-                    <Route path='/estatutos'>
-                        <Estatutos />
-                    </Route>
-                    <Route path='/contactos'>
-                        <Contactos />
-                    </Route>
+                        <Route exact path='/'>
+                            <CasaPage />
+                        </Route>
+                        <Route path='/atividades'>
+                            <AtividadesPage />
+                        </Route>
+                        <Route path='/quemsomos'>
+                            <QuemSomosPage />
+                        </Route>
+                        <Route path='/curso'>
+                            <CursoPage />
+                        </Route>
+                        <Route path='/seccoes'>
+                            <SeccoesPage />
+                        </Route>
+                        <Route path='/estatutos'>
+                            <EstatutosPage />
+                        </Route>
+                        <Route path='/contactos'>
+                            <ContactosPage />
+                        </Route>
 
-                    <NonAdminRoute path='/socios'>
-                        <Socios />
-                    </NonAdminRoute>
-                    <NonAdminRoute exact path="/theses">
-                        <Theses />
-                    </NonAdminRoute>
-                    <NonAdminRoute path="/thesis/:id">
-                        <Thesis />
-                    </NonAdminRoute>
+                        <NonAdminRoute path='/socios'>
+                            <MembersPage />
+                        </NonAdminRoute>
+                        <NonAdminRoute exact path="/theses">
+                            <ThesesPage />
+                        </NonAdminRoute>
 
-                    <AdminRoute path="/theses/upload">
-                        <CarregarTeses />
-                    </AdminRoute>
-                    <AdminRoute path="/areas/upload">
-                        <CarregarAreas />
-                    </AdminRoute>
-                    <AdminRoute path="/elections/new">
-                        <NewElectionPage />
-                    </AdminRoute>
+                        <AdminRoute path="/theses/upload">
+                            <CarregarTesesPage />
+                        </AdminRoute>
+                        <AdminRoute path="/areas/upload">
+                            <CarregarAreasPage />
+                        </AdminRoute>
+                        <AdminRoute path="/elections/new">
+                            <NewElectionPage />
+                        </AdminRoute>
 
-                    <Route path='/*'>
-                        <Redirect to='/' />
-                    </Route>
-                    
-                </Switch>
+                        <Route path='/*'>
+                            <Redirect to='/' />
+                        </Route>
+                        
+                    </Switch>
+                </Layout>
             </Router >
         </UserDataContext.Provider>
     )

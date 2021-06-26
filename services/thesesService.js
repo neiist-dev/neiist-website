@@ -21,11 +21,6 @@ const classifyTheses = async (parsedTheses, trainedClassifier) => {
     return classifiedTheses
 }
 
-const getThesisById = async id => {
-    const thesis = db.getThesisById(id)
-    return thesis
-}
-
 const getThesesByAreas = async areas => {
     const theses = db.getThesesByAreas(areas)
     return theses
@@ -33,6 +28,5 @@ const getThesesByAreas = async areas => {
 
 module.exports = {
     uploadTheses: uploadTheses,
-    getThesisById: getThesisById,
     getThesesByAreas: getThesesByAreas
 }

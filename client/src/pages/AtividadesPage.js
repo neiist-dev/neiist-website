@@ -1,7 +1,5 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
 import esports from '../images/eventos/esports.jpg'
 import sweats from '../images/eventos/sweats.png'
 import churras from '../images/eventos/churras.jpg'
@@ -15,7 +13,6 @@ import hashcode from '../images/eventos/hashcode.jpg'
 
 const Atividades = () =>
     <>
-        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
                 ATIVIDADES PASSADAS
@@ -163,7 +160,6 @@ const Atividades = () =>
             </p>
             <Button href="https://www.facebook.com/NEIIST/events/" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>VISITAR</Button>
         </div>
-        <Footer />
     </>
 
 export default Atividades

@@ -98,7 +98,7 @@ const CheckPermissions = ({ code, setUserData }) => {
 
 const Logout = ({ userData, setUserData }) =>
   <>
-    <Nav.Link>{userData.displayName}</Nav.Link>
+    <Navbar.Text>{userData.displayName}</Navbar.Text>
     <Nav.Link as={Link}
       to="/"
       onClick={() => setUserData(null)}

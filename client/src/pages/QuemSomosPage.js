@@ -1,7 +1,5 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
 import AndrePatricio2 from '../images/colaboradores/AndrePatricio2.jpg'
 import AndreSilva from '../images/colaboradores/AndreSilva.jpg'
 import BernardoNunes from '../images/colaboradores/BernardoNunes.jpg'
@@ -20,7 +18,6 @@ import VascoPereira from '../images/colaboradores/VascoPereira.jpg'
 
 const QuemSomos = () =>
     <>
-        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
                 QUEM SOMOS
@@ -125,7 +122,6 @@ const QuemSomos = () =>
             <p>Rodrigo Major</p>
             <p>Membro</p>
         </div>
-        <Footer />
     </>
 
 export default QuemSomos

@@ -1,6 +1,4 @@
 import React from 'react'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
 import Carousel from 'react-bootstrap/Carousel'
 import neiist_banner from '../images/neiist_banner.jpg'
 import alameda from '../images/alameda.jpg'
@@ -8,7 +6,6 @@ import taguspark from '../images/taguspark.jpg'
 
 const Casa = () =>
     <>
-        <NavBar />
         <Carousel >
             <Carousel.Item>
                 <img
@@ -59,7 +56,6 @@ const Casa = () =>
         <div style={{width:"33%", backgroundColor:"white", position: "relative", margin: "auto", textAlign:"center", overflow: "hidden", paddingTop: "33.33%"}}>
             <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FNEIIST%2F&tabs=timeline&width=600&height=900&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=false&appId" height="900" style={{position: "absolute", top: "0", left: "0", width: "100%", height: "100%",  border: "0", overflow:"hidden"}} scrolling="yes" frameborder="0" allowTransparency="true" allow="encrypted-media"></iframe>
         </div>
-        <Footer />
     </>
 
 export default Casa

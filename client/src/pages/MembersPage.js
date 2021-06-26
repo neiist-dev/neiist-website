@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react'
 import Button from 'react-bootstrap/Button'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
 import { Redirect, Link } from "react-router-dom"
 import { UserDataContext } from '../App'
 import axios from 'axios'
 
-const Socios = () =>
-    <>
-        <NavBar />
-        <MemberPage />
-        <Footer />
-    </>
-
-const MemberPage = () => {
+const MembersPage = () => {
     const { userData } = useContext(UserDataContext)
     const [member, setMember] = useState(null)
 
@@ -89,4 +80,4 @@ const Renew = () => {
     )
 }
 
-export default Socios
+export default MembersPage

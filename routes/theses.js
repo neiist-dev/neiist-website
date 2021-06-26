@@ -14,12 +14,6 @@ router.get('/', async (req, res) => {
     res.json(theses)
 })
 
-router.get('/:id', async (req, res) => {
-    const id = req.params.id
-    const thesis = await thesesService.getThesisById(id)
-    res.json(thesis)
-})
-
 router.post('/upload', async (req, res) => {
     const file = req.files.File; // FIXME: use input name instead
     theses = file.data.toString()

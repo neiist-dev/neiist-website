@@ -1,12 +1,9 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
 import sinfo from '../images/sinfo.png'
 
 const Seccoes = () =>
     <>
-        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h2 style={{ textAlign: "center" }}>
                 Semana Informática (SINFO)
@@ -28,7 +25,6 @@ const Seccoes = () =>
         <div style={{ margin: "10px 20vw" }}>
             <Button href="https://www.facebook.com/NEIIST/events/" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>VISITAR SITE</Button>
         </div>
-        <Footer />
     </>
 
 export default Seccoes

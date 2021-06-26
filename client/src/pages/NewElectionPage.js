@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import Button from 'react-bootstrap/Button'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
 import axios from 'axios'
-
-const NewElectionPage = () =>
-    <>
-        <NavBar />
-        <NewElection />
-        <Footer />
-    </>
 
 const NewElection = () => {
     const [electionId, setElectionId] = useState(null)
@@ -57,4 +48,4 @@ const AddOptions = ({ electionId}) =>
     //     </form>
     // </div>
 
-export default NewElectionPage
+export default NewElection

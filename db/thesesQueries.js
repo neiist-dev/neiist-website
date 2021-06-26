@@ -21,20 +21,6 @@ const setTheses = async theses => {
     }
 }
 
-const getThesisById = async id => {
-    const client = await pool.connect()
-    try {
-        const thesis = await client.query("select * from theses where id = $1", [id])
-        return thesis.rows[0]
-    }
-    catch (err) {
-        console.error(err.message)
-    }
-    finally {
-        client.release()
-    }
-}
-
 const getThesesByAreas = async areas => {
     const client = await pool.connect()
     
@@ -70,6 +56,5 @@ const getThesesByAreas = async areas => {
 
 module.exports = {
     setTheses: setTheses,
-    getThesisById: getThesisById,
     getThesesByAreas: getThesesByAreas,
 }

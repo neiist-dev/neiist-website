@@ -1,12 +1,8 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button'
-import NavBar from '../components/NavBar'
-import Footer from '../components/Footer'
-import esports from '../images/eventos/esports.jpg'
 
 const Curso = () =>
     <>
-        <NavBar />
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
                 O CURSO
@@ -37,7 +33,6 @@ const Curso = () =>
         <div style={{ margin: "10px 20vw" }}>
             <Button href="https://fenix.tecnico.ulisboa.pt/cursos/leic-t" target="_blank" rel="noreferrer" style={{ textAlign: "center" }}>VISITAR</Button>
         </div>
-        <Footer />
     </>
 
 export default Curso
