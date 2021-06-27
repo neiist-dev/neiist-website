@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Contactos = () =>
+const ContactsPage = () =>
     <div style={{ margin: "10px 20vw" }}>
         <h1 style={{ textAlign: "center" }}>
             CONTACTOS
@@ -44,4 +44,4 @@ const Contactos = () =>
         </p>
     </div>
 
-export default Contactos
+export default ContactsPage

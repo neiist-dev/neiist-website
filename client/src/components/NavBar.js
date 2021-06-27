@@ -24,16 +24,12 @@ const NavBar = () => {
           <Nav.Link as={Link} to="/contactos">Contactos</Nav.Link>
           {userData && userData.isNonAdmin &&
             <>
-              <Nav.Link as={Link} to="/theses">Thesis Master</Nav.Link>
+              <Nav.Link as={Link} to="/thesismaster">Thesis Master</Nav.Link>
               <Nav.Link as={Link} to="/socios">Sócios</Nav.Link>
             </>
           }
           {userData && userData.isAdmin &&
-            <>
-              <Nav.Link as={Link} to="/theses/upload">Upload Theses</Nav.Link>
-              <Nav.Link as={Link} to="/areas/upload">Upload Areas</Nav.Link>
-              <Nav.Link as={Link} to="/elections/new">New Election</Nav.Link>
-            </>
+            <Nav.Link as={Link} to="/admin">Admin</Nav.Link>
           }
         </Nav>
         <Nav style={{ marginLeft: "auto" }}>

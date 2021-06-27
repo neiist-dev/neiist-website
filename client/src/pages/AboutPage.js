@@ -16,7 +16,7 @@ import RodrigoCosta from '../images/colaboradores/RodrigoCosta.jpg'
 import RodrigoMajor from '../images/colaboradores/RodrigoMajor.jpg'
 import VascoPereira from '../images/colaboradores/VascoPereira.jpg'
 
-const QuemSomos = () =>
+const AboutPage = () =>
     <>
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
@@ -124,4 +124,4 @@ const QuemSomos = () =>
         </div>
     </>
 
-export default QuemSomos
+export default AboutPage

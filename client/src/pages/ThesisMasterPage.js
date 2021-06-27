@@ -5,7 +5,7 @@ import Modal from 'react-bootstrap/Modal'
 import Card from 'react-bootstrap/Card'
 import { Link } from "react-router-dom"
 
-const ThesesPage = () => {
+const ThesisMasterPage = () => {
     const [areas, setAreas] = useState(null)
     const [checkedAreas, setCheckedAreas] = useState([])
 
@@ -175,5 +175,5 @@ const ThesisCard = ({ id, title, theses, areas }) => {
     )
 }
 
-export default ThesesPage
+export default ThesisMasterPage
 

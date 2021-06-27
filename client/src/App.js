@@ -8,18 +8,21 @@ import {
     Redirect
 } from 'react-router-dom'
 
-import CasaPage from './pages/CasaPage'
-import AtividadesPage from './pages/AtividadesPage'
-import QuemSomosPage from './pages/QuemSomosPage'
-import CursoPage from './pages/CursoPage'
-import SeccoesPage from './pages/SeccoesPage'
-import MembersPage from './pages/MembersPage'
-import EstatutosPage from './pages/EstatutosPage'
-import ContactosPage from './pages/ContactosPage'
-import ThesesPage from './pages/ThesesPage'
-import CarregarTesesPage from './pages/CarregarTesesPage'
-import CarregarAreasPage from './pages/CarregarAreasPage'
-import NewElectionPage from './pages/NewElectionPage'
+import HomePage from './pages/HomePage'
+import ActivitiesPage from './pages/ActivitiesPage'
+import AboutPage from './pages/AboutPage'
+import MajorPage from './pages/MajorPage'
+import SubgroupsPage from './pages/SubgroupsPage'
+import RulesPage from './pages/RulesPage'
+import ContactsPage from './pages/ContactsPage'
+
+import ThesisMasterPage from './pages/ThesisMasterPage'
+import MemberPage from './pages/MemberPage'
+
+import AdminMenuPage from './pages/AdminMenuPage'
+import AdminAreasPage from './pages/AdminAreasPage'
+import AdminThesesPage from './pages/AdminThesesPage'
+import AdminElectionsPage from './pages/AdminElectionsPage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
@@ -36,42 +39,45 @@ const App = () => {
                     <Switch>
 
                         <Route exact path='/'>
-                            <CasaPage />
+                            <HomePage />
                         </Route>
                         <Route path='/atividades'>
-                            <AtividadesPage />
+                            <ActivitiesPage />
                         </Route>
                         <Route path='/quemsomos'>
-                            <QuemSomosPage />
+                            <AboutPage />
                         </Route>
                         <Route path='/curso'>
-                            <CursoPage />
+                            <MajorPage />
                         </Route>
                         <Route path='/seccoes'>
-                            <SeccoesPage />
+                            <SubgroupsPage />
                         </Route>
                         <Route path='/estatutos'>
-                            <EstatutosPage />
+                            <RulesPage />
                         </Route>
                         <Route path='/contactos'>
-                            <ContactosPage />
+                            <ContactsPage />
                         </Route>
 
-                        <NonAdminRoute path='/socios'>
-                            <MembersPage />
+                        <NonAdminRoute path="/thesismaster">
+                            <ThesisMasterPage />
                         </NonAdminRoute>
-                        <NonAdminRoute exact path="/theses">
-                            <ThesesPage />
+                        <NonAdminRoute path='/socios'>
+                            <MemberPage />
                         </NonAdminRoute>
 
-                        <AdminRoute path="/theses/upload">
-                            <CarregarTesesPage />
+                        <AdminRoute exact path="/admin">
+                            <AdminMenuPage />
                         </AdminRoute>
-                        <AdminRoute path="/areas/upload">
-                            <CarregarAreasPage />
+                        <AdminRoute path="/admin/areas">
+                            <AdminAreasPage />
                         </AdminRoute>
-                        <AdminRoute path="/elections/new">
-                            <NewElectionPage />
+                        <AdminRoute path="/admin/theses">
+                            <AdminThesesPage />
+                        </AdminRoute>
+                        <AdminRoute path="/admin/elections">
+                            <AdminElectionsPage />
                         </AdminRoute>
 
                         <Route path='/*'>

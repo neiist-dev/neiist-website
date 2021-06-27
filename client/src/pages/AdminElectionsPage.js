@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import Button from 'react-bootstrap/Button'
 import axios from 'axios'
 
-const NewElection = () => {
+const AdminElectionsPage = () => {
     const [electionId, setElectionId] = useState(null)
 
     if (!electionId) return <CreateElection setElectionId={setElectionId}/>
@@ -48,4 +48,4 @@ const AddOptions = ({ electionId}) =>
     //     </form>
     // </div>
 
-export default NewElection
+export default AdminElectionsPage

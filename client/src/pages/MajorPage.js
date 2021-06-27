@@ -1,7 +1,7 @@
 import React from 'react'
 import Button from 'react-bootstrap/Button'
 
-const Curso = () =>
+const MajorPage = () =>
     <>
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
@@ -35,4 +35,4 @@ const Curso = () =>
         </div>
     </>
 
-export default Curso
+export default MajorPage

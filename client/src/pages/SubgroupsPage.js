@@ -2,7 +2,7 @@ import React from 'react'
 import Button from 'react-bootstrap/Button'
 import sinfo from '../images/sinfo.png'
 
-const Seccoes = () =>
+const SubgroupsPage = () =>
     <>
         <div style={{ margin: "10px 20vw" }}>
             <h2 style={{ textAlign: "center" }}>
@@ -27,4 +27,4 @@ const Seccoes = () =>
         </div>
     </>
 
-export default Seccoes
+export default SubgroupsPage

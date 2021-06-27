@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Estatutos = () =>
+const RulesPage = () =>
     <div style={{ margin: "10px 20vw" }}>
         <h2 style={{ textAlign: "center" }}>
             ESTATUTOS
@@ -8,4 +8,4 @@ const Estatutos = () =>
         <p>FIXME</p>
     </div>
 
-export default Estatutos
+export default RulesPage

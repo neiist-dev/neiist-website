@@ -11,7 +11,7 @@ import assembly from '../images/eventos/assembly.jpg'
 import C from '../images/eventos/C.jpg'
 import hashcode from '../images/eventos/hashcode.jpg'
 
-const Atividades = () =>
+const ActivitiesPage = () =>
     <>
         <div style={{ margin: "10px 20vw" }}>
             <h1 style={{ textAlign: "center" }}>
@@ -162,4 +162,4 @@ const Atividades = () =>
         </div>
     </>
 
-export default Atividades
+export default ActivitiesPage

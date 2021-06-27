@@ -4,7 +4,7 @@ import neiist_banner from '../images/neiist_banner.jpg'
 import alameda from '../images/alameda.jpg'
 import taguspark from '../images/taguspark.jpg'
 
-const Casa = () =>
+const HomePage = () =>
     <>
         <Carousel >
             <Carousel.Item>
@@ -58,4 +58,4 @@ const Casa = () =>
         </div>
     </>
 
-export default Casa
+export default HomePage
