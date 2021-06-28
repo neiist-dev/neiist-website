@@ -35,7 +35,7 @@ const registerMember = async username => {
 const canMemberVote = async username => {
     const member = await db.getMember(username)
     const currDate = new Date()
-    return currDate >= member.canvote_date
+    return currDate >= member.canvoteDate
 }
 
 const isMemberExpired = async username => {
@@ -48,12 +48,12 @@ const isMemberExpired = async username => {
 const renovateMember = async username => {
     const member = await db.getMember(username)
     const currDate = new Date()
-    member.register_date = currDate
+    member.registerDate = currDate
     
     const gracePeriodExpired = currDate >= addMonthsToDate(validPeriod + gracePeriod, currDate)
     
     const canVoteDate = (gracePeriodExpired ? addMonthsToDate(waitingPeriod, currDate) : currDate)
-    member.canvote_date += canVoteDate
+    member.canvoteDate += canVoteDate
     db.updateMember(member)
 }
 

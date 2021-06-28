@@ -1,11 +1,12 @@
 const Pool = require('pg').Pool
 const pool = new Pool()
 
-const createTables = () => {
-    createTableAreas()
-    createTableTheses()
-    createTableMembers()
-    createTableElections()
+const createTables = async () => {
+    await createTableAreas()
+    await createTableTheses()
+    await createTableMembers()
+    await createTableElections()
+    await createTableOptions()
 }
 
 const createTableAreas = async () => {
@@ -62,8 +63,8 @@ const createTableMembers = async () => {
         await client.query(
             `CREATE TABLE members(
                 username varchar(9) PRIMARY KEY,
-                register_date date,
-                canvote_date date
+                registerDate date,
+                canvoteDate date
             )`
         )
     }
@@ -82,7 +83,30 @@ const createTableElections = async () => {
         await client.query(
             `CREATE TABLE elections(
                 id serial PRIMARY KEY,
-                name varchar(100)
+                name varchar(100),
+                startDate date,
+                endDate date
+
+            )`
+        )
+    }
+    catch (err) {
+        console.error(err.stack)
+    }
+    finally {
+        client.release()
+    }
+}
+
+const createTableOptions = async () => {
+    const client = await pool.connect()
+    try {
+        await client.query("DROP TABLE IF EXISTS options CASCADE")
+        await client.query(
+            `CREATE TABLE options(
+                id serial PRIMARY KEY,
+                name varchar(100),
+                electionId INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE
             )`
         )
     }

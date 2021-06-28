@@ -28,7 +28,7 @@ const updateMember = async member => {
     const client = await pool.connect()
     try {
         await client.query("begin")
-        await client.query("UPDATE members SET register_date = $1, canvote_date = $2 WHERE username = $3", [member.registerDate, member.canVoteDate, member.username])
+        await client.query("UPDATE members SET registerDate = $1, canvoteDate = $2 WHERE username = $3", [member.registerDate, member.canVoteDate, member.username])
         await client.query("commit")
     }
     catch (err) {

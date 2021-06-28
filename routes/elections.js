@@ -3,17 +3,11 @@ const electionsService = require('../services/electionsService')
 
 var router = express.Router()
 
-// router.get('/:username', async (req, res) => {
-//     const username = req.params.username
-//     const member = await electionsService.getMember(username)
-//     res.json(member)
-// })
+router.use(express.json())
 
-router.post('/:name', async (req, res) => {
-    const name = req.params.name
-    await electionsService.newElection(name)
-    const newElectionId = await electionsService.latestElection()
-    res.json(newElectionId)
+router.post('/', async (req, res) => {
+    const election = req.body
+    await electionsService.newElection(election)
 })
 
 module.exports = router
