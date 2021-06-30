@@ -63,8 +63,8 @@ const createTableMembers = async () => {
         await client.query(
             `CREATE TABLE members(
                 username varchar(9) PRIMARY KEY,
-                registerDate date,
-                canvoteDate date
+                "registerDate" date,
+                "canvoteDate" date
             )`
         )
     }
@@ -84,8 +84,8 @@ const createTableElections = async () => {
             `CREATE TABLE elections(
                 id serial PRIMARY KEY,
                 name varchar(100),
-                startDate date,
-                endDate date
+                "startDate" date,
+                "endDate" date
 
             )`
         )
@@ -106,7 +106,7 @@ const createTableOptions = async () => {
             `CREATE TABLE options(
                 id serial PRIMARY KEY,
                 name varchar(100),
-                electionId INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE
+                "electionId" INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE
             )`
         )
     }

@@ -115,8 +115,6 @@ const Theses = ({ areas, checkedAreas }) => {
                             theses={theses}
                             areas={areas}
                         />
-
-
                     )
                 }
             </div>
