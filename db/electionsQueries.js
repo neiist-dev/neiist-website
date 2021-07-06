@@ -42,8 +42,23 @@ const addOption = async (optionName, electionId) => {
     }
 }
 
+const getOptions = async electionId => {
+    const client = await pool.connect()
+    try {
+        const options = await client.query('SELECT * FROM options WHERE "electionId"=$1', [electionId])
+        return options.rows
+    }
+    catch (err) {
+        console.error(err)
+    }
+    finally {
+        client.release()
+    }
+}
+
 module.exports = {
     getElections: getElections,
     createElection: createElection,
-    addOption: addOption
+    addOption: addOption,
+    getOptions: getOptions
 }

@@ -8,6 +8,7 @@ const theses = require('./routes/theses')
 const areas = require('./routes/areas')
 const members = require('./routes/members')
 const elections = require('./routes/elections')
+const votes = require('./routes/votes')
 
 const app = express()
 app.use(cors())
@@ -18,6 +19,7 @@ app.use('/theses', theses)
 app.use('/areas', areas)
 app.use('/members', members)
 app.use('/elections', elections)
+app.use('/votes', votes)
 
 const port = process.env.PORT || 5000;
 app.listen(port, () =>

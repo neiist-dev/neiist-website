@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react'
 import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
 import Card from 'react-bootstrap/Card'
+import ButtonGroup from 'react-bootstrap/ButtonGroup'
+import ToggleButton from 'react-bootstrap/ToggleButton'
 import { Redirect, Link } from "react-router-dom"
 import { UserDataContext } from '../App'
 import axios from 'axios'
@@ -40,9 +42,7 @@ const Register = () => {
 
     return (
         <Button
-            onClick={() => {
-                axios.post(`http://localhost:5000/members/${userData.username}`)
-            }}
+            onClick={() => axios.post(`http://localhost:5000/members/${userData.username}`)}
         >
             REGISTAR
         </Button>
@@ -55,8 +55,6 @@ const CantVote = () =>
     </p>
 
 const Vote = () => {
-    // const { userData } = useContext(UserDataContext)
-
     const [elections, setElections] = useState(null)
     const [error, setError] = useState(null)
     const [isLoaded, setIsLoaded] = useState(false)
@@ -95,13 +93,28 @@ const Vote = () => {
 }
 
 const ElectionCard = ({election}) => {
+    const [options, setOptions] = useState(null)
+    const [error, setError] = useState(null)
+    const [isLoaded, setIsLoaded] = useState(false)
+
+    useEffect(() => {
+        fetch(`http://localhost:5000/elections/${election.id}`)
+            .then(res => res.json())
+            .then(res => {
+                setOptions(res)
+                setIsLoaded(true)
+            },
+                (err) => {
+                    setIsLoaded(true)
+                    setError(err)
+                }
+            )
+    }, [])
 
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
-    const {name, startDate, endDate} = election
 
     return (
         <>
@@ -110,39 +123,48 @@ const ElectionCard = ({election}) => {
                 onClick={handleShow}
             >
                 <Card.Body>
-                    <Card.Title>{name}</Card.Title>
+                    <Card.Title>{election.name}</Card.Title>
                 </Card.Body>
             </Card >
 
             <Modal size="lg" show={show} onHide={handleClose} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>{name}</Modal.Title>
+                    <Modal.Title>{election.name}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {/* <h2>ID</h2>
-                    <p>{thesis.id}</p>
-                    <h2>Objectives</h2>
-                    <p>{thesis.objectives}</p>
-                    <h2>Requirements</h2>
-                    <p>{thesis.requirements}</p>
-                    <h2>Observations</h2>
-                    <p>{thesis.observations}</p>
-                    <h2>Supervisors</h2>
-                    {thesis.supervisors.map(supervisor => <p>{supervisor}</p>)}
-                    <h2>Vacancies</h2>
-                    <p>{thesis.vacancies}</p>
-                    <h2>Location</h2>
-                    <p>{thesis.location}</p>
-                    {/* <p>Courses</p>
-                    <p>{thesis.courses}</p>
-                    <p>Status</p>
-                    <p>{thesis.status}</p> */}
-                    {/* <h2>Areas</h2>
-                    <p>{areas.find(area => area.code === thesis.area1).long}</p>
-                    <p>{areas.find(area => area.code === thesis.area2).long}</p> */}
+                    {options && options.map(option =>
+                        <OptionCard
+                            key={option.id}
+                            option={option}
+                            election={election}
+                        />
+                        )
+                    }
                 </Modal.Body>
             </Modal>
         </>
+    )
+}
+
+const OptionCard = ({option, election}) => {
+    const { userData } = useContext(UserDataContext)
+
+    return (
+        <Card
+            style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+            onClick={() => {
+                const vote = {
+                    username: userData.username,
+                    electionId: election.id,
+                    optionId: option.id
+                }
+                axios.post('http://localhost:5000/votes', vote)
+            }}
+        >
+            <Card.Body>
+                <Card.Title>{option.name}</Card.Title>
+            </Card.Body>
+        </Card >
     )
 }
 
