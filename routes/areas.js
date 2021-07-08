@@ -9,15 +9,15 @@ router.use(express.urlencoded({ extended: true }))
 router.use(express.json())
 
 router.get("/", async (req, res) => {
-    const areas = await areasService.getAreas()
-    res.json(areas)
+  const areas = await areasService.getAreas()
+  res.json(areas)
 })
 
 router.post('/', async (req, res) => {
-    const file = req.files.File; // FIXME: use input name instead
-    const areasString = file.data.toString()
-    const areas = JSON.parse(areasString)
-    await areasService.uploadAreas(areas)
+  const file = req.files.File; // FIXME: use input name instead
+  const areasString = file.data.toString()
+  const areas = JSON.parse(areasString)
+  await areasService.uploadAreas(areas)
 })
 
 module.exports = router

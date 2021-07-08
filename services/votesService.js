@@ -8,16 +8,16 @@ const db = require('../db/votesQueries')
 // }
 
 const newVote = async vote => {
-    await db.createVote(vote)
+  await db.createVote(vote)
 }
 
 const getResults = async electionId => {
-    const results = await db.getResults(electionId)
-    return results
+  const results = await db.getResults(electionId)
+  return results
 }
 
 module.exports = {
-    // getActiveElections: getActiveElections,
-    newVote: newVote,
-    getResults: getResults
+  // getActiveElections: getActiveElections,
+  newVote: newVote,
+  getResults: getResults
 }
