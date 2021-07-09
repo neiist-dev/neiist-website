@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
 import AndrePatricio2 from "../images/colaboradores/AndrePatricio2.jpg";
 import AndreSilva from "../images/colaboradores/AndreSilva.jpg";
 import BernardoNunes from "../images/colaboradores/BernardoNunes.jpg";
@@ -18,66 +19,72 @@ import VascoPereira from "../images/colaboradores/VascoPereira.jpg";
 
 const AboutPage = () => (
   <>
-    <div style={{ margin: "10px 20vw" }}>
+    <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
       <h1 style={{ textAlign: "center" }}>QUEM SOMOS</h1>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
-      <h2 style={{ textAlign: "center" }}>DIREÇÃO 2020/2021</h2>
-      <img style={{ display: "block", width: "100%" }} src={AndrePatricio2} />
-      <p>André Patrício</p>
-      <p>Presidente</p>
-      <img style={{ display: "block", width: "100%" }} src={ManuelFigueiroa} />
-      <p>Manuel Figueiroa</p>
-      <p>Vice-Presidente</p>
-      <img style={{ display: "block", width: "100%" }} src={HenriqueFerreira} />
-      <p>Henrique Ferreira</p>
-      <p>Diretor de Atividades (Alameda)</p>
-      <img style={{ display: "block", width: "100%" }} src={MiguelGoncalves} />
-      <p>Miguel Gonçalves</p>
-      <p>Diretor de Atividades (Taguspark)</p>
-      <img style={{ display: "block", width: "100%" }} src={AndreSilva} />
-      <p>André Silva</p>
-      <p>Vogal</p>
-      <img style={{ display: "block", width: "100%" }} src={JoaoSanches} />
-      <p>João Sanches</p>
-      <p>Tesoureiro</p>
-      <img style={{ display: "block", width: "100%" }} src={MiguelRegouga} />
-      <p>Miguel Regouga</p>
-      <p>Diretor SINFO</p>
+
+    <h2 style={{ textAlign: "center" }}>DIREÇÃO 2020/2021</h2>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignContent: "space-around",
+        flexWrap: "wrap",
+        padding: "0 10px 10px 10px",
+        margin: "1rem 10vw"
+      }}
+    >
+      <PersonCard name="André Patrício" role="Presidente" src={AndrePatricio2} />
+      <PersonCard name="Manuel Figueiroa" role="Vice-Presidente" src={ManuelFigueiroa} />
+      <PersonCard name="Henrique Ferreira" role="Diretor de Atividades (Alameda)" src={HenriqueFerreira} />
+      <PersonCard name="Miguel Gonçalves" role="Diretor de Atividades (Taguspark)" src={MiguelGoncalves} />
+      <PersonCard name="André Silva" role="Vogal" src={AndreSilva} />
+      <PersonCard name="João Sanches" role="Tesoureiro" src={JoaoSanches} />
+      <PersonCard name="Miguel Regouga" role="Diretor SINFO" src={MiguelRegouga} />
     </div>
-    <div style={{ margin: "10px 20vw" }}>
-      <h2 style={{ textAlign: "center" }}>
-        MESA DA ASSEMBLEIA GERAL 2020/2021
-      </h2>
-      <img
-        style={{ display: "block", width: "100%" }}
-        src={CatarinaGoncalves}
-      />
-      <p>Catarina Gonçalves</p>
-      <p>Presidente</p>
-      <img style={{ display: "block", width: "100%" }} src={MarianaFerreira} />
-      <p>Mariana Ferreira</p>
-      <p>Vice-Presidente</p>
-      <img style={{ display: "block", width: "100%" }} src={VascoPereira} />
-      <p>Vasco Pereira</p>
-      <p>Secretário</p>
-      <img style={{ display: "block", width: "100%" }} src={BernardoNunes} />
-      <p>Bernardo Nunes</p>
-      <p>Secretário</p>
+
+    <h2 style={{ textAlign: "center" }}>MESA DA ASSEMBLEIA GERAL 2020/2021</h2>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignContent: "space-around",
+        flexWrap: "wrap",
+        padding: "0 10px 10px 10px",
+        margin: "1rem 10vw"
+      }}
+    >
+      <PersonCard name="Catarina Gonçalves" role="Presidente" src={CatarinaGoncalves} />
+      <PersonCard name="Mariana Ferreira" role="Vice-Presidente" src={MarianaFerreira} />
+      <PersonCard name="Vasco Pereira" role="Secretário" src={VascoPereira} />
+      <PersonCard name="Bernardo Nunes" role="Secretário" src={BernardoNunes} />
     </div>
-    <div style={{ margin: "10px 20vw" }}>
-      <h2 style={{ textAlign: "center" }}>CONCELHO FISCAL 2020/2021</h2>
-      <img style={{ display: "block", width: "100%" }} src={RafaelGalhoz} />
-      <p>Rafael Galhoz</p>
-      <p>Presidente</p>
-      <img style={{ display: "block", width: "100%" }} src={RodrigoCosta} />
-      <p>Rodrigo Costa</p>
-      <p>Membro</p>
-      <img style={{ display: "block", width: "100%" }} src={RodrigoMajor} />
-      <p>Rodrigo Major</p>
-      <p>Membro</p>
+
+    <h2 style={{ textAlign: "center" }}>CONCELHO FISCAL 2020/2021</h2>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignContent: "space-around",
+        flexWrap: "wrap",
+        padding: "0 10px 10px 10px",
+        margin: "1rem 20vw 2rem 20vw"
+      }}
+    >
+      <PersonCard name="Rafael Galhoz" role="Presidente" src={RafaelGalhoz} />
+      <PersonCard name="Rodrigo Costa" role="Membro" src={RodrigoCosta} />
+      <PersonCard name="Rodrigo Major" role="Membro" src={RodrigoMajor} />
     </div>
   </>
 );
+
+const PersonCard = ({ name, role, src }) =>
+  <Card style={{ margin: "10px", width: "15rem", textAlign: "center" }} >
+    <Card.Img variant="top" src={src} />
+    <Card.Body>
+      <Card.Title>{name}</Card.Title>
+      <Card.Text>{role}</Card.Text>
+    </Card.Body>
+  </Card>
 
 export default AboutPage;

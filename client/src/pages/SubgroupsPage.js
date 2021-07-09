@@ -4,7 +4,7 @@ import sinfo from "../images/sinfo.png";
 
 const SubgroupsPage = () => (
   <>
-    <div style={{ margin: "10px 20vw" }}>
+    <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
       <h2 style={{ textAlign: "center" }}>Semana Informática (SINFO)</h2>
       <p>
         A SINFO é um evento anual organizado exclusivamente por estudantes que
@@ -29,18 +29,21 @@ const SubgroupsPage = () => (
         ou empresas influentes e interessantes no ramo das Tecnologias de
         Informação e Engenharia Informática.
       </p>
-      <img style={{ display: "block", width: "100%" }} src={sinfo} />
+      <div style={{ textAlign: "center" }}>
+        <img style={{ width: "50%" }} src={sinfo} />
+      </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
       <Button
         href="https://www.facebook.com/NEIIST/events/"
         target="_blank"
         rel="noreferrer"
-        style={{ textAlign: "center" }}
       >
         VISITAR SITE
       </Button>
     </div>
+
   </>
 );
 

@@ -13,10 +13,11 @@ import hashcode from "../images/eventos/hashcode.jpg";
 
 const ActivitiesPage = () => (
   <>
-    <div style={{ margin: "10px 20vw" }}>
+    <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
       <h1 style={{ textAlign: "center" }}>ATIVIDADES PASSADAS</h1>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <h2 style={{ textAlign: "center" }}>ESPORTS</h2>
       <p>
         Gostas de jogar? Que coincidência, este evento foi mesmo feito a pensar
@@ -25,12 +26,14 @@ const ActivitiesPage = () => (
       </p>
       <img style={{ display: "block", width: "100%" }} src={esports} />
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <h2 style={{ textAlign: "center" }}>VENDA DE SWEATS</h2>
       <p>Compra uma sweat com o nome do teu curso!</p>
       <img style={{ display: "block", width: "100%" }} src={sweats} />
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>CHURRASCO DE EIC</h2>
         <p>
@@ -40,7 +43,8 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={churras} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>JANTAR DE CURSO</h2>
         <p>
@@ -50,7 +54,8 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={jantar_curso} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>LET'S TALK ABOUT LEIC</h2>
         <p>
@@ -60,7 +65,8 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={ltal} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>QUASE TUDO SOBRE MEIC</h2>
         <p>
@@ -70,7 +76,8 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={qtsm} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>WORKSHOP DE PYTHON</h2>
         <p>
@@ -80,7 +87,8 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={python} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>WORKSHOP DE ASSEMBLY</h2>
         <p>
@@ -91,7 +99,8 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={assembly} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>WORKSHOP DE C</h2>
         <p>
@@ -102,22 +111,23 @@ const ActivitiesPage = () => (
         <img style={{ display: "block", width: "100%" }} src={C} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>HASH CODE</h2>
         <p>FIXME</p>
         <img style={{ display: "block", width: "100%" }} src={hashcode} />
       </div>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
-      <p style={{ textAlign: "center" }}>
+
+    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
+      <p>
         Queres saber mais sobre as nossas atividades? Visita o nosso facebook!
       </p>
       <Button
         href="https://www.facebook.com/NEIIST/events/"
         target="_blank"
         rel="noreferrer"
-        style={{ textAlign: "center" }}
       >
         VISITAR
       </Button>

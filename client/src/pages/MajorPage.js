@@ -3,10 +3,11 @@ import Button from "react-bootstrap/Button";
 
 const MajorPage = () => (
   <>
-    <div style={{ margin: "10px 20vw" }}>
+    <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
       <h1 style={{ textAlign: "center" }}>O CURSO</h1>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <h2 style={{ textAlign: "center" }}>INTRODUÇÃO</h2>
       <p>
         A licenciatura em Engenharia Informática e de Computadores (LEIC) é uma
@@ -17,7 +18,8 @@ const MajorPage = () => (
         adaptabilidade à evolução constante das tecnologias de informação.
       </p>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw" }}>
       <h2 style={{ textAlign: "center" }}>OBJETIVOS</h2>
       <p>
         Os computadores estão por toda a parte! Na secretária, sob a forma de
@@ -48,16 +50,17 @@ const MajorPage = () => (
         trabalho.
       </p>
     </div>
-    <div style={{ margin: "10px 20vw" }}>
+
+    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
       <Button
         href="https://fenix.tecnico.ulisboa.pt/cursos/leic-t"
         target="_blank"
         rel="noreferrer"
-        style={{ textAlign: "center" }}
       >
         VISITAR
       </Button>
     </div>
+
   </>
 );
 

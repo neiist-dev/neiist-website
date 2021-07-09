@@ -9,7 +9,7 @@ const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
 
   return (
-    <Navbar expand="lg">
+    <Navbar bg="dark" variant="dark" expand="lg">
       <Navbar.Brand as={Link} to="/">
         <img src={logo} height="40" alt="" />
       </Navbar.Brand>
