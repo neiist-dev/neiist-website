@@ -27,7 +27,7 @@ const Areas = ({ areas, setAreas, checkedAreas, setCheckedAreas }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/areas")
+    fetch(`${process.env.REACT_APP_ROOT_API}/areas`)
       .then((res) => res.json())
       .then(
         (areasRes) => {
@@ -97,7 +97,7 @@ const Theses = ({ areas, checkedAreas }) => {
       for (let i = 0; i < checkedAreas.length; i++)
         queryParameters += (i === 0 ? "?" : "&") + "areas[]=" + checkedAreas[i];
 
-    fetch("http://localhost:5000/theses/" + queryParameters)
+    fetch(`${process.env.REACT_APP_ROOT_API}/theses/` + queryParameters)
       .then((res) => res.json())
       .then(
         (res) => {

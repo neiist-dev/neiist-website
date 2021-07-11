@@ -6,7 +6,7 @@ const AdminAreasPage = () => (
     <UploadFile
       title="Areas"
       instructions="areas em formato json"
-      postUrl="http://localhost:5000/areas"
+      postUrl={`${process.env.REACT_APP_ROOT_API}/areas`}
     />
   </div>
 );
