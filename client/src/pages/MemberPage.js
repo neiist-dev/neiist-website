@@ -16,7 +16,7 @@ const MembersPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/members/${userData.username}`)
+    fetch(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
       .then((res) => res.json())
       .then(
         (member) => {
@@ -44,7 +44,7 @@ const Register = () => {
   return (
     <Button
       onClick={() =>
-        axios.post(`http://localhost:5000/members/${userData.username}`)
+        axios.post(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
       }
     >
       REGISTAR
@@ -62,7 +62,7 @@ const Vote = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/elections")
+    fetch(`${process.env.REACT_APP_ROOT_API}/elections`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -107,7 +107,7 @@ const ElectionCard = ({ election }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/elections/${election.id}`)
+    fetch(`${process.env.REACT_APP_ROOT_API}/elections/${election.id}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -164,7 +164,7 @@ const OptionCard = ({ option, election }) => {
           electionId: election.id,
           optionId: option.id,
         };
-        axios.post("http://localhost:5000/votes", vote);
+        axios.post(`${process.env.REACT_APP_ROOT_API}/votes`, vote);
       }}
     >
       <Card.Body>
@@ -180,7 +180,7 @@ const Renew = () => {
   return (
     <Button
       onClick={() => {
-        // axios.post(`http://localhost:5000/members/${userData.username}`)
+        // axios.post(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
       }}
     >
       RENOVAR

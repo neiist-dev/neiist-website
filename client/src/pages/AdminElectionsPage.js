@@ -18,7 +18,7 @@ const ViewElections = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/elections")
+    fetch(`${process.env.REACT_APP_ROOT_API}/elections`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -63,7 +63,7 @@ const ElectionCard = ({ election }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/elections/${election.id}`)
+    fetch(`${process.env.REACT_APP_ROOT_API}/elections/${election.id}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -106,7 +106,7 @@ const ElectionModal = ({ election, show, handleClose }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/votes/${election.id}`)
+    fetch(`${process.env.REACT_APP_ROOT_API}/votes/${election.id}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -175,7 +175,7 @@ const CreateElectionModal = ({ show, handleClose }) => {
       endDate: endDate,
       options: options.split(","),
     };
-    await axios.post(`http://localhost:5000/elections`, newElection);
+    await axios.post(`${process.env.REACT_APP_ROOT_API}/elections`, newElection);
   };
 
   return (
