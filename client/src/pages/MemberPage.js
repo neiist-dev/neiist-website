@@ -2,9 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
-import ButtonGroup from "react-bootstrap/ButtonGroup";
-import ToggleButton from "react-bootstrap/ToggleButton";
-import { Redirect, Link } from "react-router-dom";
 import { UserDataContext } from "../App";
 import axios from "axios";
 
@@ -42,18 +39,22 @@ const Register = () => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <Button
-      onClick={() =>
-        axios.post(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
-      }
-    >
-      REGISTAR
-    </Button>
+    <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
+      <Button
+        onClick={() =>
+          axios.post(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
+        }
+      >
+        REGISTAR
+      </Button>
+    </div>
   );
 };
 
 const CantVote = () => (
-  <p style={{ textAlign: "center" }}>AINDA NAO PODES VOTAR</p>
+  <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
+    <p>AINDA NÃO PODES VOTAR</p>
+  </div>
 );
 
 const Vote = () => {
@@ -142,22 +143,30 @@ const ElectionCard = ({ election }) => {
           <Modal.Title>{election.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {options &&
-            options.map((option) => (
-              <OptionCard key={option.id} option={option} election={election} />
-            ))}
+          <div style={{
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "space-around",
+            flexWrap: "wrap"
+          }}>
+            {options &&
+              options.map((option) => (
+                <OptionButton key={option.id} option={option} election={election} />
+              ))}
+          </div>
         </Modal.Body>
       </Modal>
     </>
   );
 };
 
-const OptionCard = ({ option, election }) => {
+const OptionButton = ({ option, election }) => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <Card
-      style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+    <Button
+      style={{ margin: "0 10px" }}
       onClick={() => {
         const vote = {
           username: userData.username,
@@ -167,10 +176,8 @@ const OptionCard = ({ option, election }) => {
         axios.post(`${process.env.REACT_APP_ROOT_API}/votes`, vote);
       }}
     >
-      <Card.Body>
-        <Card.Title>{option.name}</Card.Title>
-      </Card.Body>
-    </Card>
+      {option.name}
+    </Button>
   );
 };
 
@@ -178,13 +185,15 @@ const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <Button
-      onClick={() => {
-        // axios.post(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
-      }}
-    >
-      RENOVAR
-    </Button>
+    <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
+      < Button
+        onClick={() => {
+          axios.put(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
+        }}
+      >
+        RENOVAR
+      </Button >
+    </div >
   );
 };
 

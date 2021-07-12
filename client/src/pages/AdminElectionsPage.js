@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Card from "react-bootstrap/Card";
@@ -36,9 +36,9 @@ const ViewElections = () => {
   if (error) return <div>Error: {error.message}</div>;
   if (elections)
     return (
-      <>
+      <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
         <h1 style={{ textAlign: "center", margin: 0 }}>
-          {elections.length} Active Elections
+          {elections.length} Eleições Ativas
         </h1>
         <div
           style={{
@@ -53,30 +53,11 @@ const ViewElections = () => {
             <ElectionCard key={election.id} election={election} />
           ))}
         </div>
-      </>
+      </div>
     );
 };
 
 const ElectionCard = ({ election }) => {
-  const [options, setOptions] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/elections/${election.id}`)
-      .then((res) => res.json())
-      .then(
-        (res) => {
-          setOptions(res);
-          setIsLoaded(true);
-        },
-        (err) => {
-          setIsLoaded(true);
-          setError(err);
-        }
-      );
-  }, []);
-
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -126,17 +107,17 @@ const ElectionModal = ({ election, show, handleClose }) => {
         <Modal.Title>{election.name}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <h2>ID</h2>
+        <h4>ID</h4>
         <p>{election.id}</p>
-        <h2>Nome</h2>
+        <h4>Nome</h4>
         <p>{election.name}</p>
-        <h2>Data de Início</h2>
+        <h4>Data de Início</h4>
         <p>{election.startDate}</p>
-        <h2>Data de Fim</h2>
+        <h4>Data de Fim</h4>
         <p>{election.endDate}</p>
         {results && (
           <>
-            <h2>Resultados</h2>
+            <h4>Resultados</h4>
             {results.map((result) => (
               <p>
                 {result.name}: {result.count}
@@ -155,10 +136,10 @@ const CreateElectionButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <>
+    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
       <Button onClick={handleShow}>Criar Eleição</Button>
       <CreateElectionModal show={show} handleClose={handleClose} />
-    </>
+    </div>
   );
 };
 
@@ -224,7 +205,7 @@ const CreateElectionModal = ({ show, handleClose }) => {
               handleClose();
             }}
           >
-            Submit
+            Criar Eleição
           </Button>
         </Form>
       </Modal.Body>

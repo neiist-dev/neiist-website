@@ -46,7 +46,7 @@ const Areas = ({ areas, setAreas, checkedAreas, setCheckedAreas }) => {
   if (areas)
     return (
       <>
-        <h1 style={{ textAlign: "center", margin: 0 }}>{areas.length} Areas</h1>
+        <h1 style={{ textAlign: "center", margin: 0 }}>{areas.length} Áreas</h1>
         <div
           style={{
             display: "flex",
@@ -117,7 +117,7 @@ const Theses = ({ areas, checkedAreas }) => {
     return (
       <>
         <h1 style={{ textAlign: "center", margin: 0 }}>
-          {theses.length} Thesis Proposals
+          {theses.length} Propostas de Tese
         </h1>
         <div
           style={{
@@ -182,10 +182,6 @@ const ThesisCard = ({ id, title, theses, areas }) => {
           <p>{thesis.vacancies}</p>
           <h2>Location</h2>
           <p>{thesis.location}</p>
-          {/* <p>Courses</p>
-                    <p>{thesis.courses}</p>
-                    <p>Status</p>
-                    <p>{thesis.status}</p> */}
           <h2>Areas</h2>
           <p>{areas.find((area) => area.code === thesis.area1).long}</p>
           <p>{areas.find((area) => area.code === thesis.area2).long}</p>

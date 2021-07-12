@@ -35,25 +35,25 @@ const registerMember = async username => {
 const canMemberVote = async username => {
   const member = await db.getMember(username)
   const currDate = new Date()
-  return currDate >= member.canvoteDate
+  return currDate >= member.canVoteDate
 }
 
 const isMemberExpired = async username => {
   const member = await db.getMember(username)
+  const expirationDate = addMonthsToDate(validPeriod, member.registerDate)
   const currDate = new Date()
-  const expirationDate = addMonthsToDate(validPeriod, currDate)
   return currDate >= expirationDate
 }
 
 const renovateMember = async username => {
   const member = await db.getMember(username)
   const currDate = new Date()
-  member.registerDate = currDate
 
-  const gracePeriodExpired = currDate >= addMonthsToDate(validPeriod + gracePeriod, currDate)
-
+  const gracePeriodExpired = (currDate >= addMonthsToDate(validPeriod + gracePeriod, member.registerDate))
   const canVoteDate = (gracePeriodExpired ? addMonthsToDate(waitingPeriod, currDate) : currDate)
-  member.canvoteDate += canVoteDate
+
+  member.registerDate = currDate
+  member.canVoteDate = canVoteDate
   db.updateMember(member)
 }
 

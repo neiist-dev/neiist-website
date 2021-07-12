@@ -14,4 +14,9 @@ router.post('/:username', async (req, res) => {
   await membersService.registerMember(username)
 })
 
+router.put('/:username', async (req, res) => {
+  const username = req.params.username
+  await membersService.renovateMember(username)
+})
+
 module.exports = router

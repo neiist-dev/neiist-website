@@ -65,7 +65,7 @@ const createTableMembers = async () => {
       `CREATE TABLE members(
                 username varchar(9) PRIMARY KEY,
                 "registerDate" date,
-                "canvoteDate" date
+                "canVoteDate" date
             )`
     )
   }
