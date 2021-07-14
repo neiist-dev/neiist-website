@@ -115,7 +115,7 @@ const ActivitiesPage = () => (
     <div style={{ margin: "1rem 20vw" }}>
       <div>
         <h2 style={{ textAlign: "center" }}>HASH CODE</h2>
-        <p>FIXME</p>
+        {/* <p>FIXME</p> */}
         <img style={{ display: "block", width: "100%" }} src={hashcode} />
       </div>
     </div>
