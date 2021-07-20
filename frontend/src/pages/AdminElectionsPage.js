@@ -18,7 +18,7 @@ const ViewElections = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/elections`)
+    fetch('/api/elections')
       .then((res) => res.json())
       .then(
         (res) => {
@@ -87,7 +87,7 @@ const ElectionModal = ({ election, show, handleClose }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/votes/${election.id}`)
+    fetch(`/api/votes/${election.id}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -156,7 +156,7 @@ const CreateElectionModal = ({ show, handleClose }) => {
       endDate: endDate,
       options: options.split(","),
     };
-    await axios.post(`${process.env.REACT_APP_ROOT_API}/elections`, newElection);
+    await axios.post('/api/elections', newElection);
   };
 
   return (

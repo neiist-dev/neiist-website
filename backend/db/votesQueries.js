@@ -1,20 +1,6 @@
 const Pool = require('pg').Pool
 const pool = new Pool()
 
-// const getElections = async () => {
-//     const client = await pool.connect()
-//     try {
-//         const elections = await client.query("SELECT * FROM elections")
-//         return elections.rows
-//     }
-//     catch (err) {
-//         console.error(err)
-//     }
-//     finally {
-//         client.release()
-//     }
-// }
-
 const createVote = async vote => {
   const client = await pool.connect()
   try {
@@ -27,19 +13,6 @@ const createVote = async vote => {
     client.release()
   }
 }
-
-// const addOption = async (optionName, electionId) => {
-//     const client = await pool.connect()
-//     try {
-//         client.query('insert into options(name, "electionId") values($1, $2)', [optionName, electionId])
-//     }
-//     catch (err) {
-//         console.error(err)
-//     }
-//     finally {
-//         client.release()
-//     }
-// }
 
 const getResults = async electionId => {
   const client = await pool.connect()
@@ -63,8 +36,6 @@ const getResults = async electionId => {
 }
 
 module.exports = {
-  // getElections: getElections,
   createVote: createVote,
-  // addOption: addOption,
   getResults: getResults
 }

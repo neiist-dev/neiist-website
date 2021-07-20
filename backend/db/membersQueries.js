@@ -1,13 +1,6 @@
 const Pool = require('pg').Pool
 const pool = new Pool()
 
-// const setMember = async member => {
-//     const existingMember = await getMemberByUsername(member.username)
-
-//     if (!existingMember) createMember(member)
-//     else updateMember(member)
-// }
-
 const createMember = async member => {
   const client = await pool.connect()
   try {

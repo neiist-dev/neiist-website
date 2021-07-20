@@ -101,7 +101,7 @@ const CheckPermissions = ({ code, setUserData }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/auth?code=${code}`)
+    fetch(`/api/auth?code=${code}`)
       .then((res) => res.json())
       .then(
         (userData) => {

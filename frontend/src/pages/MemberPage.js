@@ -13,7 +13,7 @@ const MembersPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
+    fetch(`/api/members/${userData.username}`)
       .then((res) => res.json())
       .then(
         (member) => {
@@ -42,7 +42,7 @@ const Register = () => {
     <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
       <Button
         onClick={() =>
-          axios.post(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
+          axios.post(`/api/members/${userData.username}`)
         }
       >
         REGISTAR
@@ -63,7 +63,7 @@ const Vote = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/elections`)
+    fetch('/api/elections')
       .then((res) => res.json())
       .then(
         (res) => {
@@ -108,7 +108,7 @@ const ElectionCard = ({ election }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_ROOT_API}/elections/${election.id}`)
+    fetch(`/api/elections/${election.id}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -173,7 +173,7 @@ const OptionButton = ({ option, election }) => {
           electionId: election.id,
           optionId: option.id,
         };
-        axios.post(`${process.env.REACT_APP_ROOT_API}/votes`, vote);
+        axios.post('/api/votes', vote);
       }}
     >
       {option.name}
@@ -188,7 +188,7 @@ const Renew = () => {
     <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
       < Button
         onClick={() => {
-          axios.put(`${process.env.REACT_APP_ROOT_API}/members/${userData.username}`)
+          axios.put(`/api/members/${userData.username}`)
         }}
       >
         RENOVAR

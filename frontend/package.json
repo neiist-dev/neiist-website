@@ -1,5 +1,6 @@
 {
   "name": "neiist-website-frontend",
+  "proxy": "http://localhost:3001",
   "version": "1.0.0",
   "dependencies": {
     "axios": "^0.21.1",

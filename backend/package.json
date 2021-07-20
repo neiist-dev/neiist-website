@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "db": "node ./db/schema.js"
+    "start": "npm run dev",
+    "dev": "NODE_ENV=development nodemon server.js",
+    "db:dev": "NODE_ENV=development node ./db/schema.js",
+    "prod": "NODE_ENV=production node server.js",
+    "db:prod": "NODE_ENV=production node ./db/schema.js"
   },
   "repository": {
     "type": "git",

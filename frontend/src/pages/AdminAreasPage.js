@@ -5,31 +5,39 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
 
-const AdminThesesPage = () =>
+const AdminAreasPage = () =>
   <>
-    <ViewTheses />
-    <UploadThesesButton />
+    <ViewAreas />
+    <UploadAreasButton />
   </>
 
-const ViewTheses = () => {
-  const [theses, setTheses] = useState(null);
+const ViewAreas = () => {
   const [areas, setAreas] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${process.env.REACT_APP_ROOT_API}/theses`).then(res => res.json()),
-      fetch(`${process.env.REACT_APP_ROOT_API}/areas`).then(res => res.json())
-    ]).then(([theses, areas]) => {
-      setTheses(theses)
-      setAreas(areas)
-    })
-  }, [])
+    fetch('/api/areas')
+      .then((res) => res.json())
+      .then(
+        (res) => {
+          setAreas(res);
+          setIsLoaded(true);
+        },
+        (err) => {
+          setIsLoaded(true);
+          setError(err);
+        }
+      );
+  }, []);
 
-  if (theses && areas)
+  if (!isLoaded) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (areas)
     return (
       <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
         <h1 style={{ textAlign: "center", margin: 0 }}>
-          {theses.length} Teses Disponíveis
+          {areas.length} Áreas Disponíveis
         </h1>
         <div
           style={{
@@ -40,16 +48,15 @@ const ViewTheses = () => {
             padding: "0 10px 10px 10px",
           }}
         >
-          {theses.map((thesis) => (
-            <ThesisCard key={thesis.id} thesis={thesis} areas={areas} />
+          {areas.map((area) => (
+            <AreaCard key={area.id} area={area} />
           ))}
         </div>
       </div>
     );
-  else return <div>Loading...</div>;
-}
+};
 
-const ThesisCard = ({ thesis, areas }) => {
+const AreaCard = ({ area }) => {
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -61,61 +68,47 @@ const ThesisCard = ({ thesis, areas }) => {
         onClick={handleShow}
       >
         <Card.Body>
-          <Card.Title>{thesis.title}</Card.Title>
+          <Card.Title>{area.short}</Card.Title>
         </Card.Body>
       </Card>
-      <ThesisModal
-        thesis={thesis}
+      <AreaModal
+        area={area}
         show={show}
         handleClose={handleClose}
-        areas={areas}
       />
     </>
   );
 };
 
-const ThesisModal = ({ thesis, show, handleClose, areas }) =>
+const AreaModal = ({ area, show, handleClose }) =>
   <Modal size="lg" show={show} onHide={handleClose} centered>
     <Modal.Header closeButton>
-      <Modal.Title>{thesis.title}</Modal.Title>
+      <Modal.Title>{area.short}</Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      <h2>ID</h2>
-      <p>{thesis.id}</p>
-      <h2>Objectives</h2>
-      <p>{thesis.objectives}</p>
-      <h2>Requirements</h2>
-      <p>{thesis.requirements}</p>
-      <h2>Observations</h2>
-      <p>{thesis.observations}</p>
-      <h2>Supervisors</h2>
-      {thesis.supervisors.map((supervisor) => (
-        <p>{supervisor}</p>
-      ))}
-      <h2>Vacancies</h2>
-      <p>{thesis.vacancies}</p>
-      <h2>Location</h2>
-      <p>{thesis.location}</p>
-      <h2>Areas</h2>
-      <p>{areas.find((area) => area.code === thesis.area1).long}</p>
-      <p>{areas.find((area) => area.code === thesis.area2).long}</p>
+      <h4>code</h4>
+      <p>{area.code}</p>
+      <h4>short</h4>
+      <p>{area.short}</p>
+      <h4>long</h4>
+      <p>{area.long}</p>
     </Modal.Body>
   </Modal>
 
-const UploadThesesButton = () => {
+const UploadAreasButton = () => {
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   return (
     <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
-      <Button onClick={handleShow}>Carregar Teses</Button>
-      <UploadThesesModal show={show} handleClose={handleClose} />
+      <Button onClick={handleShow}>Carregar Áreas</Button>
+      <UploadAreasModal show={show} handleClose={handleClose} />
     </div>
   );
 };
 
-const UploadThesesModal = ({ show, handleClose }) => {
+const UploadAreasModal = ({ show, handleClose }) => {
   const [selectedFile, setSelectedFile] = useState();
   const [isFilePicked, setIsFilePicked] = useState(false);
 
@@ -125,10 +118,10 @@ const UploadThesesModal = ({ show, handleClose }) => {
     setIsFilePicked(true);
   };
 
-  const handleUploadTheses = () => {
+  const handleUploadAreas = () => {
     const formData = new FormData();
     formData.append("File", selectedFile);
-    axios.post(`${process.env.REACT_APP_ROOT_API}/theses`, formData, {
+    axios.post('/api/areas', formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -138,22 +131,21 @@ const UploadThesesModal = ({ show, handleClose }) => {
   return (
     <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Carregar Teses</Modal.Title>
+        <Modal.Title>Carregar Áreas</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group>
-            <Form.File label="Get a file with thesis on ESTUDANTE &gt; Candidatura a Dissertação &gt; Available Proposals<br />
-                    * Delete everything above the theses' beggining on &lt;tbody&gt;. Delete everything after &lt;/tbody&gt;" onChange={handleChange} />
+            <Form.File label="Áreas em formato json" onChange={handleChange} />
           </Form.Group>
           <Button
             variant="primary"
             onClick={() => {
-              handleUploadTheses();
+              handleUploadAreas();
               handleClose();
             }}
           >
-            Carregar Teses
+            Carregar Áreas
           </Button>
         </Form>
       </Modal.Body>
@@ -161,4 +153,4 @@ const UploadThesesModal = ({ show, handleClose }) => {
   );
 };
 
-export default AdminThesesPage;
+export default AdminAreasPage;
