@@ -27,4 +27,4 @@ debug.log
 .eslintcache
 
 # env vars
-.env
+.env*
