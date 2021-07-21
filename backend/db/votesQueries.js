@@ -1,23 +1,17 @@
-const Pool = require('pg').Pool
-const pool = new Pool()
+const db = require('./db')
 
 const createVote = async vote => {
-  const client = await pool.connect()
   try {
-    await client.query('INSERT INTO votes values($1, $2, $3)', [vote.username, vote.electionId, vote.optionId])
+    await db.query('INSERT INTO votes values($1, $2, $3)', [vote.username, vote.electionId, vote.optionId])
   }
   catch (err) {
     console.error(err)
   }
-  finally {
-    client.release()
-  }
 }
 
 const getResults = async electionId => {
-  const client = await pool.connect()
   try {
-    const results = await client.query(
+    const results = await db.query(
       `SELECT "optionId", name, COUNT(username)
             FROM votes INNER JOIN options ON votes."optionId"=options.id
             WHERE votes."electionId"=$1
@@ -29,9 +23,6 @@ const getResults = async electionId => {
   }
   catch (err) {
     console.error(err)
-  }
-  finally {
-    client.release()
   }
 }
 

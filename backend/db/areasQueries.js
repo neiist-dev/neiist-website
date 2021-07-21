@@ -1,17 +1,16 @@
-const Pool = require('pg').Pool
-const pool = new Pool()
+const db = require('./db')
 
 const setAreas = async areas => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
-    await client.query("begin")
-    await client.query("truncate table areas cascade")
+    await client.query("BEGIN")
+    await client.query("TRUNCATE TABLE areas CASCADE")
     for (let area of areas)
-      await client.query("insert into areas values($1, $2, $3)", [area.code, area.short, area.long])
-    await client.query("commit")
+      await client.query("INSERT INTO areas VALUES($1, $2, $3)", [area.code, area.short, area.long])
+    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("rollback")
+    await client.query("ROLLBACK")
     console.error(err)
   }
   finally {
@@ -19,17 +18,13 @@ const setAreas = async areas => {
   }
 }
 
-const getAreas = async areas => {
-  const client = await pool.connect()
+const getAreas = async () => {
   try {
-    const allAreas = await client.query("select * from areas")
+    const allAreas = await db.query("SELECT * FROM areas")
     return allAreas.rows
   }
   catch (err) {
     console.error(err.message)
-  }
-  finally {
-    client.release()
   }
 }
 

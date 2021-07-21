@@ -1,5 +1,4 @@
-const Pool = require('pg').Pool
-const pool = new Pool()
+const db = require('./db')
 
 const createTables = async () => {
   await createTableAreas()
@@ -11,8 +10,9 @@ const createTables = async () => {
 }
 
 const createTableAreas = async () => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
+    await client.query("BEGIN")
     await client.query("DROP TABLE IF EXISTS areas CASCADE")
     await client.query(
       `CREATE TABLE areas(
@@ -21,9 +21,11 @@ const createTableAreas = async () => {
                 long varchar(100)
             )`
     )
+    await client.query("COMMIT")
   }
   catch (err) {
-    console.error(err.stack)
+    await client.query("ROLLBACK")
+    console.error(err)
   }
   finally {
     client.release()
@@ -31,8 +33,9 @@ const createTableAreas = async () => {
 }
 
 const createTableTheses = async () => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
+    await client.query("BEGIN")
     await client.query("DROP TABLE IF EXISTS theses CASCADE")
     await client.query(
       `CREATE TABLE theses(
@@ -48,9 +51,11 @@ const createTableTheses = async () => {
                 area2 varchar(10) REFERENCES areas(code) ON DELETE CASCADE ON UPDATE CASCADE
             )`
     )
+    await client.query("COMMIT")
   }
   catch (err) {
-    console.error(err.stack)
+    await client.query("ROLLBACK")
+    console.error(err)
   }
   finally {
     client.release()
@@ -58,8 +63,9 @@ const createTableTheses = async () => {
 }
 
 const createTableMembers = async () => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
+    await client.query("BEGIN")
     await client.query("DROP TABLE IF EXISTS members CASCADE")
     await client.query(
       `CREATE TABLE members(
@@ -68,9 +74,11 @@ const createTableMembers = async () => {
                 "canVoteDate" date
             )`
     )
+    await client.query("COMMIT")
   }
   catch (err) {
-    console.error(err.stack)
+    await client.query("ROLLBACK")
+    console.error(err)
   }
   finally {
     client.release()
@@ -78,8 +86,9 @@ const createTableMembers = async () => {
 }
 
 const createTableElections = async () => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
+    await client.query("BEGIN")
     await client.query("DROP TABLE IF EXISTS elections CASCADE")
     await client.query(
       `CREATE TABLE elections(
@@ -90,9 +99,11 @@ const createTableElections = async () => {
 
             )`
     )
+    await client.query("COMMIT")
   }
   catch (err) {
-    console.error(err.stack)
+    await client.query("ROLLBACK")
+    console.error(err)
   }
   finally {
     client.release()
@@ -100,8 +111,9 @@ const createTableElections = async () => {
 }
 
 const createTableOptions = async () => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
+    await client.query("BEGIN")
     await client.query("DROP TABLE IF EXISTS options CASCADE")
     await client.query(
       `CREATE TABLE options(
@@ -110,9 +122,11 @@ const createTableOptions = async () => {
                 "electionId" INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE
             )`
     )
+    await client.query("COMMIT")
   }
   catch (err) {
-    console.error(err.stack)
+    await client.query("ROLLBACK")
+    console.error(err)
   }
   finally {
     client.release()
@@ -120,8 +134,9 @@ const createTableOptions = async () => {
 }
 
 const createTableVotes = async () => {
-  const client = await pool.connect()
+  const client = await db.getClient()
   try {
+    await client.query("BEGIN")
     await client.query("DROP TABLE IF EXISTS votes CASCADE")
     await client.query(
       `CREATE TABLE votes(
@@ -131,9 +146,11 @@ const createTableVotes = async () => {
                 PRIMARY KEY (username, "electionId")
             )`
     )
+    await client.query("COMMIT")
   }
   catch (err) {
-    console.error(err.stack)
+    await client.query("ROLLBACK")
+    console.error(err)
   }
   finally {
     client.release()

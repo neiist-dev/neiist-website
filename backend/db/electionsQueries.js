@@ -1,58 +1,41 @@
-const Pool = require('pg').Pool
-const pool = new Pool()
+const db = require('./db')
 
 const getElections = async () => {
-  const client = await pool.connect()
   try {
-    const elections = await client.query("SELECT * FROM elections")
+    const elections = await db.query("SELECT * FROM elections")
     return elections.rows
   }
   catch (err) {
     console.error(err)
   }
-  finally {
-    client.release()
-  }
 }
 
 const createElection = async election => {
-  const client = await pool.connect()
   try {
-    const createdElection = await client.query('insert into elections(name, "startDate", "endDate") values($1, $2, $3) RETURNING *', [election.name, election.startDate, election.endDate])
+    const createdElection = await db.query('INSERT INTO elections(name, "startDate", "endDate") VALUES($1, $2, $3) RETURNING *', [election.name, election.startDate, election.endDate])
     return createdElection.rows[0]
   }
   catch (err) {
     console.error(err)
   }
-  finally {
-    client.release()
-  }
 }
 
 const addOption = async (optionName, electionId) => {
-  const client = await pool.connect()
   try {
-    client.query('insert into options(name, "electionId") values($1, $2)', [optionName, electionId])
+    db.query('INSERT INTO options(name, "electionId") VALUES($1, $2)', [optionName, electionId])
   }
   catch (err) {
     console.error(err)
-  }
-  finally {
-    client.release()
   }
 }
 
 const getOptions = async electionId => {
-  const client = await pool.connect()
   try {
-    const options = await client.query('SELECT * FROM options WHERE "electionId"=$1', [electionId])
+    const options = await db.query('SELECT * FROM options WHERE "electionId"=$1', [electionId])
     return options.rows
   }
   catch (err) {
     console.error(err)
-  }
-  finally {
-    client.release()
   }
 }
 
