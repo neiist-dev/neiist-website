@@ -1,5 +1,28 @@
 const db = require('./db')
 
+const createTableMembers = async () => {
+  const client = await db.getClient()
+  try {
+    await client.query("BEGIN")
+    await client.query("DROP TABLE IF EXISTS members CASCADE")
+    await client.query(
+      `CREATE TABLE members(
+                username varchar(9) PRIMARY KEY,
+                "registerDate" date,
+                "canVoteDate" date
+            )`
+    )
+    await client.query("COMMIT")
+  }
+  catch (err) {
+    await client.query("ROLLBACK")
+    console.error(err)
+  }
+  finally {
+    client.release()
+  }
+}
+
 const createMember = async member => {
   try {
     await db.query("INSERT INTO members VALUES($1, $2, $3)", [member.username, member.registerDate, member.canVoteDate])
@@ -29,6 +52,7 @@ const getMember = async username => {
 }
 
 module.exports = {
+  createTableMembers: createTableMembers,
   createMember: createMember,
   updateMember: updateMember,
   getMember: getMember

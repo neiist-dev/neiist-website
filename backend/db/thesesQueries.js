@@ -1,5 +1,35 @@
 const db = require('./db')
 
+const createTableTheses = async () => {
+  const client = await db.getClient()
+  try {
+    await client.query("BEGIN")
+    await client.query("DROP TABLE IF EXISTS theses CASCADE")
+    await client.query(
+      `CREATE TABLE theses(
+                id integer PRIMARY KEY,
+                title text,
+                supervisors text[],
+                vacancies integer,
+                location text,
+                observations text,
+                objectives text,
+                requirements text,
+                area1 varchar(10) REFERENCES areas(code) ON DELETE CASCADE ON UPDATE CASCADE,
+                area2 varchar(10) REFERENCES areas(code) ON DELETE CASCADE ON UPDATE CASCADE
+            )`
+    )
+    await client.query("COMMIT")
+  }
+  catch (err) {
+    await client.query("ROLLBACK")
+    console.error(err)
+  }
+  finally {
+    client.release()
+  }
+}
+
 const setTheses = async theses => {
   const client = await db.getClient()
   try {
@@ -49,6 +79,7 @@ const getThesesByAreas = async areas => {
 }
 
 module.exports = {
+  createTableTheses: createTableTheses,
   setTheses: setTheses,
   getThesesByAreas: getThesesByAreas,
 }
