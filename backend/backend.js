@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const path = require('path')
 require('dotenv').config({
-  path: path.resolve(__dirname, `.env.${process.env.NODE_ENV}`)
+  path: path.resolve(__dirname, `config/.env.${process.env.NODE_ENV}`)
 });
 
 const auth = require('./routes/authRoute')
@@ -14,6 +14,8 @@ const votes = require('./routes/votesRoute')
 
 const app = express()
 app.use(cors())
+
+// serve frontend
 app.use(express.static(path.join(__dirname, '../frontend/build')))
 
 app.use('/api/auth', auth)

@@ -2,12 +2,12 @@
   "name": "neiist-website-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "backend.js",
   "scripts": {
     "start": "npm run dev",
-    "dev": "NODE_ENV=development nodemon server.js",
+    "dev": "NODE_ENV=development nodemon backend.js",
     "db:dev": "NODE_ENV=development node ./db/schema.js",
-    "prod": "NODE_ENV=production node server.js",
+    "prod": "NODE_ENV=production node backend.js",
     "db:prod": "NODE_ENV=production node ./db/schema.js"
   },
   "repository": {
