@@ -24,7 +24,6 @@ import AdminAreasPage from "./pages/AdminAreasPage";
 import AdminThesesPage from "./pages/AdminThesesPage";
 import AdminElectionsPage from "./pages/AdminElectionsPage";
 
-import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
 export const UserDataContext = React.createContext();
