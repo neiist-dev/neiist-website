@@ -1,25 +1,20 @@
 const db = require('./db')
 
-const createTableMembers = async () => {
-  const client = await db.getClient()
+const createMembers = async () => {
   try {
-    await client.query("BEGIN")
-    await client.query("DROP TABLE IF EXISTS members CASCADE")
-    await client.query(
+    await db.query(
       `CREATE TABLE members(
                 username varchar(9) PRIMARY KEY,
                 "registerDate" date,
                 "canVoteDate" date
             )`
     )
-    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("ROLLBACK")
-    console.error(err)
-  }
-  finally {
-    client.release()
+    if (err.code === '42P07')
+      ; // table already exists
+    else
+      console.error(err)
   }
 }
 
@@ -52,7 +47,7 @@ const getMember = async username => {
 }
 
 module.exports = {
-  createTableMembers: createTableMembers,
+  createMembers: createMembers,
   createMember: createMember,
   updateMember: updateMember,
   getMember: getMember

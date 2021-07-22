@@ -1,11 +1,8 @@
 const db = require('./db')
 
-const createTableElections = async () => {
-  const client = await db.getClient()
+const createElections = async () => {
   try {
-    await client.query("BEGIN")
-    await client.query("DROP TABLE IF EXISTS elections CASCADE")
-    await client.query(
+    await db.query(
       `CREATE TABLE elections(
                 id serial PRIMARY KEY,
                 name varchar(100),
@@ -14,37 +11,30 @@ const createTableElections = async () => {
 
             )`
     )
-    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("ROLLBACK")
-    console.error(err)
-  }
-  finally {
-    client.release()
+    if (err.code === '42P07')
+      ; // table already exists
+    else
+      console.error(err)
   }
 }
 
-const createTableOptions = async () => {
-  const client = await db.getClient()
+const createOptions = async () => {
   try {
-    await client.query("BEGIN")
-    await client.query("DROP TABLE IF EXISTS options CASCADE")
-    await client.query(
+    await db.query(
       `CREATE TABLE options(
                 id serial PRIMARY KEY,
                 name varchar(100),
                 "electionId" INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE
             )`
     )
-    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("ROLLBACK")
-    console.error(err)
-  }
-  finally {
-    client.release()
+    if (err.code === '42P07')
+      ; // table already exists
+    else
+      console.error(err)
   }
 }
 
@@ -88,8 +78,8 @@ const getOptions = async electionId => {
 }
 
 module.exports = {
-  createTableElections: createTableElections,
-  createTableOptions: createTableOptions,
+  createElections: createElections,
+  createOptions: createOptions,
   getElections: getElections,
   createElection: createElection,
   addOption: addOption,

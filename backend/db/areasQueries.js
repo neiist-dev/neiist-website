@@ -1,25 +1,29 @@
 const db = require('./db')
 
-const createTableAreas = async () => {
-  const client = await db.getClient()
+const createAreas = async () => {
   try {
-    await client.query("BEGIN")
-    await client.query("DROP TABLE IF EXISTS areas CASCADE")
-    await client.query(
-      `CREATE TABLE areas(
+    await db.query(
+      `CREATE TABLE areas (
                 code varchar(10) PRIMARY KEY,
                 short varchar(10),
                 long varchar(100)
             )`
     )
-    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("ROLLBACK")
-    console.error(err)
+    if (err.code === '42P07')
+      ; // table already exists
+    else
+      console.error(err)
   }
-  finally {
-    client.release()
+}
+
+const cleanAreas = async () => {
+  try {
+    await db.query("TRUNCATE TABLE areas CASCADE")
+  }
+  catch (err) {
+    console.error(err)
   }
 }
 
@@ -28,9 +32,13 @@ const setAreas = async areas => {
   try {
     await client.query("BEGIN")
     await client.query("TRUNCATE TABLE areas CASCADE")
-    for (let area of areas)
-      await client.query("INSERT INTO areas VALUES($1, $2, $3)", [area.code, area.short, area.long])
+    const areasInserted = []
+    for (let area of areas) {
+      const areaInserted = await client.query("INSERT INTO areas VALUES($1, $2, $3) RETURNING *", [area.code, area.short, area.long])
+      areasInserted.push(areaInserted.rows[0])
+    }
     await client.query("COMMIT")
+    return areasInserted
   }
   catch (err) {
     await client.query("ROLLBACK")
@@ -52,7 +60,8 @@ const getAreas = async () => {
 }
 
 module.exports = {
-  createTableAreas: createTableAreas,
+  createAreas: createAreas,
+  cleanAreas: cleanAreas,
   setAreas: setAreas,
   getAreas: getAreas,
 }

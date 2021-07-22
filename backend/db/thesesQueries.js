@@ -1,11 +1,8 @@
 const db = require('./db')
 
-const createTableTheses = async () => {
-  const client = await db.getClient()
+const createTheses = async () => {
   try {
-    await client.query("BEGIN")
-    await client.query("DROP TABLE IF EXISTS theses CASCADE")
-    await client.query(
+    await db.query(
       `CREATE TABLE theses(
                 id integer PRIMARY KEY,
                 title text,
@@ -19,14 +16,12 @@ const createTableTheses = async () => {
                 area2 varchar(10) REFERENCES areas(code) ON DELETE CASCADE ON UPDATE CASCADE
             )`
     )
-    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("ROLLBACK")
-    console.error(err)
-  }
-  finally {
-    client.release()
+    if (err.code === '42P07')
+      ; // table already exists
+    else
+      console.error(err)
   }
 }
 
@@ -79,7 +74,7 @@ const getThesesByAreas = async areas => {
 }
 
 module.exports = {
-  createTableTheses: createTableTheses,
+  createTheses: createTheses,
   setTheses: setTheses,
   getThesesByAreas: getThesesByAreas,
 }

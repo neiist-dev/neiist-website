@@ -6,9 +6,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "NODE_ENV=development nodemon backend.js",
-    "db:dev": "NODE_ENV=development node ./db/schema.js",
-    "prod": "NODE_ENV=production node backend.js",
-    "db:prod": "NODE_ENV=production node ./db/schema.js"
+    "prod": "NODE_ENV=production node backend.js"
   },
   "repository": {
     "type": "git",
@@ -33,5 +31,9 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
+  },
+  "jest": {
+    "globalSetup": "./config/globalSetup.js",
+    "globalTeardown": "./config/globalTeardown.js"
   }
 }

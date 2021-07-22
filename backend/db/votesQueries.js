@@ -1,11 +1,8 @@
 const db = require('./db')
 
-const createTableVotes = async () => {
-  const client = await db.getClient()
+const createVotes = async () => {
   try {
-    await client.query("BEGIN")
-    await client.query("DROP TABLE IF EXISTS votes CASCADE")
-    await client.query(
+    await db.query(
       `CREATE TABLE votes(
                 username varchar(9),
                 "electionId" INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -13,14 +10,12 @@ const createTableVotes = async () => {
                 PRIMARY KEY (username, "electionId")
             )`
     )
-    await client.query("COMMIT")
   }
   catch (err) {
-    await client.query("ROLLBACK")
-    console.error(err)
-  }
-  finally {
-    client.release()
+    if (err.code === '42P07')
+      ; // table already exists
+    else
+      console.error(err)
   }
 }
 
@@ -51,7 +46,7 @@ const getResults = async electionId => {
 }
 
 module.exports = {
-  createTableVotes: createTableVotes,
+  createVotes: createVotes,
   createVote: createVote,
   getResults: getResults
 }

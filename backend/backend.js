@@ -4,6 +4,8 @@ const path = require('path')
 require('dotenv').config({
   path: path.resolve(__dirname, `config/.env.${process.env.NODE_ENV}`)
 });
+const db = require('./db/schema')
+
 
 const auth = require('./routes/authRoute')
 const theses = require('./routes/thesesRoute')
@@ -14,6 +16,9 @@ const votes = require('./routes/votesRoute')
 
 const app = express()
 app.use(cors())
+
+// create db tables if needed
+db.initializeSchema()
 
 // serve frontend
 app.use(express.static(path.join(__dirname, '../frontend/build')))

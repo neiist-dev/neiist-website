@@ -1,21 +1,20 @@
-const path = require('path')
-require('dotenv').config({
-    path: path.resolve(__dirname, `../config/.env.${process.env.NODE_ENV}`)
-});
+const db = require('./db')
 
-const { createTableAreas } = require('./areasQueries')
-const { createTableTheses } = require('./thesesQueries')
-const { createTableMembers } = require('./membersQueries')
-const { createTableElections, createTableOptions } = require('./electionsQueries')
-const { createTableVotes } = require('./votesQueries')
+const { createAreas } = require('./areasQueries')
+const { createTheses } = require('./thesesQueries')
+const { createMembers } = require('./membersQueries')
+const { createElections, createOptions } = require('./electionsQueries')
+const { createVotes } = require('./votesQueries')
 
-const createTables = async () => {
-    await createTableAreas()
-    await createTableTheses()
-    await createTableMembers()
-    await createTableElections()
-    await createTableOptions()
-    await createTableVotes()
+const initializeSchema = async () => {
+    await createAreas()
+    await createTheses()
+    await createMembers()
+    await createElections()
+    await createOptions()
+    await createVotes()
 }
 
-createTables();
+module.exports = {
+    initializeSchema
+}
