@@ -1,5 +1,3 @@
-const db = require('./db')
-
 const { createAreas } = require('./areasQueries')
 const { createTheses } = require('./thesesQueries')
 const { createMembers } = require('./membersQueries')

@@ -18,15 +18,6 @@ const createAreas = async () => {
   }
 }
 
-const cleanAreas = async () => {
-  try {
-    await db.query("TRUNCATE TABLE areas CASCADE")
-  }
-  catch (err) {
-    console.error(err)
-  }
-}
-
 const setAreas = async areas => {
   const client = await db.getClient()
   try {
@@ -61,7 +52,6 @@ const getAreas = async () => {
 
 module.exports = {
   createAreas: createAreas,
-  cleanAreas: cleanAreas,
   setAreas: setAreas,
   getAreas: getAreas,
 }
