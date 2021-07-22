@@ -20,8 +20,10 @@ app.use(cors())
 // create db tables if needed
 db.initializeSchema()
 
-// serve frontend
-app.use(express.static(path.join(__dirname, '../frontend/build')))
+if (process.env.NODE_ENV !== 'development') {
+  // serve frontend
+  app.use(express.static(path.join(__dirname, '../frontend/build')))
+}
 
 app.use('/api/auth', auth)
 app.use('/api/theses', theses)
