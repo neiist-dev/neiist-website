@@ -1,10 +1,11 @@
 const db = require('../db/electionsQueries')
 
-const getActiveElections = async () => {
-  const elections = await db.getElections()
-  const currDate = new Date()
-  const activeElections = elections.filter(election => election.startDate <= currDate <= election.endDate)
-  return activeElections
+const getActiveElections = async (username) => {
+  const activeUnvotedElections = await db.getActiveUnvotedElections(username)
+  // const elections = await db.getElections()
+  // const currDate = new Date()
+  // const activeElections = elections.filter(election => election.startDate <= currDate <= election.endDate)
+  return activeUnvotedElections
 }
 
 const newElection = async election => {

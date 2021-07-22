@@ -48,6 +48,28 @@ const getElections = async () => {
   }
 }
 
+const getActiveUnvotedElections = async (username) => {
+  try {
+    const today = new Date()
+    const elections = await db.query(
+      `SELECT *
+            FROM elections
+            WHERE "startDate" <= $1
+              and $1 <= "endDate"
+              and id NOT IN (
+                  SELECT "electionId"
+                  FROM votes
+                  WHERE username=$2
+              ) `
+      , [today, username]
+    )
+    return elections.rows
+  }
+  catch (err) {
+    console.error(err)
+  }
+}
+
 const createElection = async election => {
   try {
     const createdElection = await db.query('INSERT INTO elections(name, "startDate", "endDate") VALUES($1, $2, $3) RETURNING *', [election.name, election.startDate, election.endDate])
@@ -81,6 +103,7 @@ module.exports = {
   createElections: createElections,
   createOptions: createOptions,
   getElections: getElections,
+  getActiveUnvotedElections: getActiveUnvotedElections,
   createElection: createElection,
   addOption: addOption,
   getOptions: getOptions

@@ -5,12 +5,13 @@ var router = express.Router()
 
 router.use(express.json())
 
-router.get('/', async (req, res) => {
-  const activeElections = await electionsService.getActiveElections()
+router.get('/:username', async (req, res) => {
+  const username = req.params.username
+  const activeElections = await electionsService.getActiveElections(username)
   res.json(activeElections)
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id/options', async (req, res) => {
   const id = req.params.id
   const options = await electionsService.getOptions(id)
   res.json(options)

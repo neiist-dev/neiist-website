@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import { UserDataContext } from "../App";
 import axios from "axios";
@@ -58,12 +59,14 @@ const CantVote = () => (
 );
 
 const Vote = () => {
+  const { userData } = useContext(UserDataContext);
+
   const [elections, setElections] = useState(null);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/elections')
+    fetch(`/api/elections/${userData.username}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -83,7 +86,7 @@ const Vote = () => {
     return (
       <>
         <h1 style={{ textAlign: "center", margin: 0 }}>
-          {elections.length} Active Elections
+          {elections.length} Eleições Ativas
         </h1>
         <div
           style={{
@@ -103,12 +106,14 @@ const Vote = () => {
 };
 
 const ElectionCard = ({ election }) => {
+  const { userData } = useContext(UserDataContext);
+
   const [options, setOptions] = useState(null);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/elections/${election.id}`)
+    fetch(`/api/elections/${election.id}/options`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -123,9 +128,20 @@ const ElectionCard = ({ election }) => {
   }, []);
 
   const [show, setShow] = useState(false);
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const [selectedOption, setSelectedOption] = useState('');
+  const handleSelectedOptionChange = (option) => setSelectedOption(option);
+
+  const handleNewVote = async () => {
+    const vote = {
+      username: userData.username,
+      electionId: election.id,
+      optionId: selectedOption,
+    };
+    await axios.post('/api/votes', vote);
+  };
 
   return (
     <>
@@ -143,41 +159,32 @@ const ElectionCard = ({ election }) => {
           <Modal.Title>{election.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div style={{
-            alignItems: "center",
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            flexWrap: "wrap"
-          }}>
-            {options &&
-              options.map((option) => (
-                <OptionButton key={option.id} option={option} election={election} />
-              ))}
-          </div>
+          <Form>
+            <Form.Group>
+              <Form.Label>Em quem queres votar?</Form.Label>
+              <Form.Control as="select" value={selectedOption} onChange={e => handleSelectedOptionChange(e.currentTarget.value)}>
+                {options &&
+                  options.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+              </Form.Control>
+            </Form.Group>
+            <br />
+            <Button
+              variant="primary"
+              onClick={() => {
+                handleNewVote();
+                handleClose();
+              }}
+            >
+              Submeter Voto
+            </Button>
+          </Form>
         </Modal.Body>
       </Modal>
     </>
-  );
-};
-
-const OptionButton = ({ option, election }) => {
-  const { userData } = useContext(UserDataContext);
-
-  return (
-    <Button
-      style={{ margin: "0 10px" }}
-      onClick={() => {
-        const vote = {
-          username: userData.username,
-          electionId: election.id,
-          optionId: option.id,
-        };
-        axios.post('/api/votes', vote);
-      }}
-    >
-      {option.name}
-    </Button>
   );
 };
 
