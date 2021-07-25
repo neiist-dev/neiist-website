@@ -1,9 +1,6 @@
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-require('dotenv').config({
-  path: path.resolve(__dirname, `config/.env.${process.env.NODE_ENV}`)
-});
 const db = require('./db/schema')
 
 
@@ -20,10 +17,8 @@ app.use(cors())
 // create db tables if needed
 db.initializeSchema()
 
-if (process.env.NODE_ENV !== 'development') {
-  // serve frontend
-  app.use(express.static(path.join(__dirname, '../frontend/build')))
-}
+// serve frontend
+app.use(express.static(path.join(__dirname, '../client/build')))
 
 app.use('/api/auth', auth)
 app.use('/api/theses', theses)
@@ -34,5 +29,5 @@ app.use('/api/votes', votes)
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
-  console.log(`App is listening on port ${port} in ${process.env.NODE_ENV} mode.`)
+  console.log(`App is listening on port ${port}.`)
 })

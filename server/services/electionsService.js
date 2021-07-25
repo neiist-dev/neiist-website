@@ -1,10 +1,12 @@
 const db = require('../db/electionsQueries')
 
-const getActiveElections = async (username) => {
+const getElections = async () => {
+  const elections = await db.getElections()
+  return elections
+}
+
+const getActiveUnvotedElections = async (username) => {
   const activeUnvotedElections = await db.getActiveUnvotedElections(username)
-  // const elections = await db.getElections()
-  // const currDate = new Date()
-  // const activeElections = elections.filter(election => election.startDate <= currDate <= election.endDate)
   return activeUnvotedElections
 }
 
@@ -19,7 +21,8 @@ const getOptions = async id => {
 }
 
 module.exports = {
-  getActiveElections: getActiveElections,
+  getElections: getElections,
+  getActiveUnvotedElections: getActiveUnvotedElections,
   newElection: newElection,
   getOptions: getOptions
 }

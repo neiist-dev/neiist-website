@@ -5,9 +5,14 @@ var router = express.Router()
 
 router.use(express.json())
 
+router.get('/', async (req, res) => {
+  const elections = await electionsService.getElections()
+  res.json(elections)
+})
+
 router.get('/:username', async (req, res) => {
   const username = req.params.username
-  const activeElections = await electionsService.getActiveElections(username)
+  const activeElections = await electionsService.getActiveUnvotedElections(username)
   res.json(activeElections)
 })
 
