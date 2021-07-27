@@ -1,4 +1,4 @@
-const db = require('./db')
+const db = require('./db');
 
 const createVotes = async () => {
   try {
@@ -8,45 +8,41 @@ const createVotes = async () => {
                 "electionId" INTEGER REFERENCES elections(id) ON DELETE CASCADE ON UPDATE CASCADE,
                 "optionId" INTEGER REFERENCES options(id) ON DELETE CASCADE ON UPDATE CASCADE,
                 PRIMARY KEY (username, "electionId")
-            )`
-    )
+            )`,
+    );
+  } catch (err) {
+    if (err.code === '42P07') ; // table already exists
+    else { console.error(err); }
   }
-  catch (err) {
-    if (err.code === '42P07')
-      ; // table already exists
-    else
-      console.error(err)
-  }
-}
+};
 
-const createVote = async vote => {
+const createVote = async (vote) => {
   try {
-    await db.query('INSERT INTO votes values($1, $2, $3)', [vote.username, vote.electionId, vote.optionId])
+    await db.query('INSERT INTO votes values($1, $2, $3)', [vote.username, vote.electionId, vote.optionId]);
+  } catch (err) {
+    console.error(err);
   }
-  catch (err) {
-    console.error(err)
-  }
-}
+};
 
-const getResults = async electionId => {
+const getResults = async (electionId) => {
+  let results;
   try {
-    const results = await db.query(
+    results = await db.query(
       `SELECT "optionId", name, COUNT(username)
             FROM votes INNER JOIN options ON votes."optionId"=options.id
             WHERE votes."electionId"=$1
             GROUP BY "optionId",name
-            ORDER BY count DESC`
-      , [electionId]
-    )
-    return results.rows
+            ORDER BY count DESC`,
+      [electionId],
+    );
+  } catch (err) {
+    console.error(err);
   }
-  catch (err) {
-    console.error(err)
-  }
-}
+  return results.rows;
+};
 
 module.exports = {
-  createVotes: createVotes,
-  createVote: createVote,
-  getResults: getResults
-}
+  createVotes,
+  createVote,
+  getResults,
+};
