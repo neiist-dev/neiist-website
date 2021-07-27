@@ -63,14 +63,7 @@ const isAcceptedRole = role => {
     'TEACHER'
   ]
 
-  const acceptedAcronyms = [
-    'LEIC-A',
-    'LEIC-T',
-    'MEIC-A',
-    'MEIC-T'
-  ]
-
-  return acceptedTypes.includes(role.type) && role.registrations.some(registration => acceptedAcronyms.includes(registration.acronym))
+  return acceptedTypes.includes(role.type)
 }
 
 const isAdmin = username => {
