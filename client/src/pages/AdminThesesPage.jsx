@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import axios from 'axios';
 
-const AdminThesesPage = () =>
+const AdminThesesPage = () => (
   <>
     <ViewTheses />
     <UploadThesesButton />
   </>
+);
 
 const ViewTheses = () => {
   const [theses, setTheses] = useState(null);
@@ -17,27 +18,29 @@ const ViewTheses = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/theses').then(res => res.json()),
-      fetch('/api/areas').then(res => res.json())
-    ]).then(([theses, areas]) => {
-      setTheses(theses)
-      setAreas(areas)
-    })
-  }, [])
+      fetch('/api/theses').then((res) => res.json()),
+      fetch('/api/areas').then((res) => res.json()),
+    ]).then(([fetchTheses, fetchAreas]) => {
+      setTheses(fetchTheses);
+      setAreas(fetchAreas);
+    });
+  }, []);
 
-  if (theses && areas)
+  if (theses && areas) {
     return (
-      <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
-        <h1 style={{ textAlign: "center", margin: 0 }}>
-          {theses.length} Teses Disponíveis
+      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+        <h1 style={{ textAlign: 'center', margin: 0 }}>
+          {theses.length}
+          {' '}
+          Teses Disponíveis
         </h1>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            flexWrap: "wrap",
-            padding: "0 10px 10px 10px",
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'space-around',
+            flexWrap: 'wrap',
+            padding: '0 10px 10px 10px',
           }}
         >
           {theses.map((thesis) => (
@@ -46,8 +49,9 @@ const ViewTheses = () => {
         </div>
       </div>
     );
-  else return <div>Loading...</div>;
-}
+  }
+  return <div>...</div>;
+};
 
 const ThesisCard = ({ thesis, areas }) => {
   const [show, setShow] = useState(false);
@@ -57,7 +61,7 @@ const ThesisCard = ({ thesis, areas }) => {
   return (
     <>
       <Card
-        style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+        style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
         onClick={handleShow}
       >
         <Card.Body>
@@ -74,7 +78,9 @@ const ThesisCard = ({ thesis, areas }) => {
   );
 };
 
-const ThesisModal = ({ thesis, show, handleClose, areas }) =>
+const ThesisModal = ({
+  thesis, show, handleClose, areas,
+}) => (
   <Modal size="lg" show={show} onHide={handleClose} centered>
     <Modal.Header closeButton>
       <Modal.Title>{thesis.title}</Modal.Title>
@@ -101,6 +107,7 @@ const ThesisModal = ({ thesis, show, handleClose, areas }) =>
       <p>{areas.find((area) => area.code === thesis.area2).long}</p>
     </Modal.Body>
   </Modal>
+);
 
 const UploadThesesButton = () => {
   const [show, setShow] = useState(false);
@@ -108,7 +115,7 @@ const UploadThesesButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
+    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
       <Button onClick={handleShow}>Carregar Teses</Button>
       <UploadThesesModal show={show} handleClose={handleClose} />
     </div>
@@ -119,7 +126,6 @@ const UploadThesesModal = ({ show, handleClose }) => {
   const [selectedFile, setSelectedFile] = useState();
   const [isFilePicked, setIsFilePicked] = useState(false);
 
-
   const handleChange = (event) => {
     setSelectedFile(event.target.files[0]);
     setIsFilePicked(true);
@@ -127,10 +133,10 @@ const UploadThesesModal = ({ show, handleClose }) => {
 
   const handleUploadTheses = () => {
     const formData = new FormData();
-    formData.append("File", selectedFile);
+    formData.append('File', selectedFile);
     axios.post('/api/theses', formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     });
   };
@@ -143,21 +149,26 @@ const UploadThesesModal = ({ show, handleClose }) => {
       <Modal.Body>
         <Form>
           <Form.Group>
-            <Form.File label="Get a file with thesis on ESTUDANTE &gt; Candidatura a Dissertação &gt; Available Proposals<br />
-                    * Delete everything above the theses' beggining on &lt;tbody&gt;. Delete everything after &lt;/tbody&gt;" onChange={handleChange} />
+            <Form.File
+              label="Get a file with thesis on ESTUDANTE &gt; Candidatura a Dissertação &gt; Available Proposals<br />
+                    * Delete everything above the theses' beggining on &lt;tbody&gt;. Delete everything after &lt;/tbody&gt;"
+              onChange={handleChange}
+            />
           </Form.Group>
           <Button
             variant="primary"
             onClick={() => {
-              handleUploadTheses();
-              handleClose();
+              if (isFilePicked) {
+                handleUploadTheses();
+                handleClose();
+              }
             }}
           >
             Carregar Teses
           </Button>
         </Form>
       </Modal.Body>
-    </Modal >
+    </Modal>
   );
 };
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from "react";
-import Navbar from "react-bootstrap/Navbar";
-import Nav from "react-bootstrap/Nav";
-import logo from "../images/neiist_logo.png";
-import { Redirect, Link } from "react-router-dom";
-import { UserDataContext } from "../App";
+import React, { useState, useEffect, useContext } from 'react';
+import Navbar from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
+import { Redirect, Link } from 'react-router-dom';
+import logo from '../images/neiist_logo.png';
+import UserDataContext from '../UserDataContext';
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
@@ -15,7 +15,7 @@ const NavBar = () => {
       </Navbar.Brand>
       <Navbar.Toggle />
       <Navbar.Collapse>
-        <Nav style={{ marginRight: "auto" }}>
+        <Nav style={{ marginRight: 'auto' }}>
           <Nav.Link as={Link} to="/atividades">
             Atividades
           </Nav.Link>
@@ -50,7 +50,7 @@ const NavBar = () => {
             </Nav.Link>
           )}
         </Nav>
-        <Nav style={{ marginLeft: "auto" }}>
+        <Nav style={{ marginLeft: 'auto' }}>
           <LoginLogout userData={userData} setUserData={setUserData} />
         </Nav>
       </Navbar.Collapse>
@@ -61,23 +61,25 @@ const NavBar = () => {
 const LoginLogout = ({ userData, setUserData }) => {
   const urlParams = new URLSearchParams(window.location.search);
 
-  if (urlParams.has("code") && userData) return <Redirect to="/theses" />;
+  if (urlParams.has('code') && userData) return <Redirect to="/theses" />;
 
-  if (urlParams.has("code"))
+  if (urlParams.has('code')) {
     return (
       <CheckPermissions
-        code={urlParams.get("code")}
+        code={urlParams.get('code')}
         setUserData={setUserData}
       />
     );
+  }
 
-  if (urlParams.has("error"))
+  if (urlParams.has('error')) {
     return (
       <Error
-        error={urlParams.get("error")}
-        errorDescription={urlParams.get("error_description")}
+        error={urlParams.get('error')}
+        errorDescription={urlParams.get('error_description')}
       />
     );
+  }
 
   if (userData) return <Logout userData={userData} setUserData={setUserData} />;
 
@@ -87,9 +89,9 @@ const LoginLogout = ({ userData, setUserData }) => {
 const Login = () => (
   <Nav.Link
     href={
-      "https://fenix.tecnico.ulisboa.pt/oauth/userdialog" +
-      `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
-      `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`
+      'https://fenix.tecnico.ulisboa.pt/oauth/userdialog'
+      + `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}`
+      + `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`
     }
   >
     LOGIN
@@ -110,13 +112,22 @@ const CheckPermissions = ({ code, setUserData }) => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  if (!isLoaded) return <div>Loading...</div>;
-
-  if (error) return <div>Error: {error.message}</div>;
+  if (!isLoaded) {
+    return <div>...</div>;
+  }
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  return <div>Não foi possível verificar as permissões.</div>;
 };
 
 const Logout = ({ userData, setUserData }) => (

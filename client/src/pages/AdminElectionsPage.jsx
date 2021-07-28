@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import axios from 'axios';
 
 const AdminElectionsPage = () => (
   <>
@@ -28,25 +28,34 @@ const ViewElections = () => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (elections)
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
     return (
-      <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
-        <h1 style={{ textAlign: "center", margin: 0 }}>
-          {elections.length} Eleições Ativas
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (elections) {
+    return (
+      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+        <h1 style={{ textAlign: 'center', margin: 0 }}>
+          {elections.length}
+          {' '}
+          Eleições Ativas
         </h1>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            flexWrap: "wrap",
-            padding: "0 10px 10px 10px",
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'space-around',
+            flexWrap: 'wrap',
+            padding: '0 10px 10px 10px',
           }}
         >
           {elections.map((election) => (
@@ -55,6 +64,8 @@ const ViewElections = () => {
         </div>
       </div>
     );
+  }
+  return <div>Não foi possível carregar as eleições.</div>;
 };
 
 const ElectionCard = ({ election }) => {
@@ -65,7 +76,7 @@ const ElectionCard = ({ election }) => {
   return (
     <>
       <Card
-        style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+        style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
         onClick={handleShow}
       >
         <Card.Body>
@@ -97,37 +108,51 @@ const ElectionModal = ({ election, show, handleClose }) => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  return (
-    <Modal size="lg" show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>{election.name}</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <h4>ID</h4>
-        <p>{election.id}</p>
-        <h4>Nome</h4>
-        <p>{election.name}</p>
-        <h4>Data de Início</h4>
-        <p>{election.startDate}</p>
-        <h4>Data de Fim</h4>
-        <p>{election.endDate}</p>
-        {results && (
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (results) {
+    return (
+      <Modal size="lg" show={show} onHide={handleClose} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{election.name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <h4>ID</h4>
+          <p>{election.id}</p>
+          <h4>Nome</h4>
+          <p>{election.name}</p>
+          <h4>Data de Início</h4>
+          <p>{election.startDate}</p>
+          <h4>Data de Fim</h4>
+          <p>{election.endDate}</p>
+          {results && (
           <>
             <h4>Resultados</h4>
             {results.map((result) => (
               <p>
-                {result.name}: {result.count}
+                {result.name}
+                :
+                {result.count}
               </p>
             ))}
           </>
-        )}
-      </Modal.Body>
-    </Modal>
-  );
+          )}
+        </Modal.Body>
+      </Modal>
+    );
+  }
+  return <div>Não foi possível carregar os resultados.</div>;
 };
 
 const CreateElectionButton = () => {
@@ -136,7 +161,7 @@ const CreateElectionButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
+    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
       <Button onClick={handleShow}>Criar Eleição</Button>
       <CreateElectionModal show={show} handleClose={handleClose} />
     </div>
@@ -151,10 +176,10 @@ const CreateElectionModal = ({ show, handleClose }) => {
 
   const handleNewElection = async () => {
     const newElection = {
-      name: name,
-      startDate: startDate,
-      endDate: endDate,
-      options: options.split(","),
+      name,
+      startDate,
+      endDate,
+      options: options.split(','),
     };
     await axios.post('/api/elections', newElection);
   };

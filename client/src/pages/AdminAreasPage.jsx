@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import axios from 'axios';
 
-const AdminAreasPage = () =>
+const AdminAreasPage = () => (
   <>
     <ViewAreas />
     <UploadAreasButton />
   </>
+);
 
 const ViewAreas = () => {
   const [areas, setAreas] = useState(null);
@@ -27,25 +28,36 @@ const ViewAreas = () => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (areas)
+  if (!isLoaded) {
+    return <div>...</div>;
+  }
+  if (error) {
     return (
-      <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
-        <h1 style={{ textAlign: "center", margin: 0 }}>
-          {areas.length} Áreas Disponíveis
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (areas) {
+    return (
+      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+        <h1 style={{ textAlign: 'center', margin: 0 }}>
+          {areas.length}
+          {' '}
+          Áreas Disponíveis
         </h1>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            flexWrap: "wrap",
-            padding: "0 10px 10px 10px",
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'space-around',
+            flexWrap: 'wrap',
+            padding: '0 10px 10px 10px',
           }}
         >
           {areas.map((area) => (
@@ -54,6 +66,8 @@ const ViewAreas = () => {
         </div>
       </div>
     );
+  }
+  return <div>Não foi possível carregar as áreas.</div>;
 };
 
 const AreaCard = ({ area }) => {
@@ -64,7 +78,7 @@ const AreaCard = ({ area }) => {
   return (
     <>
       <Card
-        style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+        style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
         onClick={handleShow}
       >
         <Card.Body>
@@ -80,7 +94,7 @@ const AreaCard = ({ area }) => {
   );
 };
 
-const AreaModal = ({ area, show, handleClose }) =>
+const AreaModal = ({ area, show, handleClose }) => (
   <Modal size="lg" show={show} onHide={handleClose} centered>
     <Modal.Header closeButton>
       <Modal.Title>{area.short}</Modal.Title>
@@ -94,6 +108,7 @@ const AreaModal = ({ area, show, handleClose }) =>
       <p>{area.long}</p>
     </Modal.Body>
   </Modal>
+);
 
 const UploadAreasButton = () => {
   const [show, setShow] = useState(false);
@@ -101,7 +116,7 @@ const UploadAreasButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
+    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
       <Button onClick={handleShow}>Carregar Áreas</Button>
       <UploadAreasModal show={show} handleClose={handleClose} />
     </div>
@@ -112,7 +127,6 @@ const UploadAreasModal = ({ show, handleClose }) => {
   const [selectedFile, setSelectedFile] = useState();
   const [isFilePicked, setIsFilePicked] = useState(false);
 
-
   const handleChange = (event) => {
     setSelectedFile(event.target.files[0]);
     setIsFilePicked(true);
@@ -120,10 +134,10 @@ const UploadAreasModal = ({ show, handleClose }) => {
 
   const handleUploadAreas = () => {
     const formData = new FormData();
-    formData.append("File", selectedFile);
+    formData.append('File', selectedFile);
     axios.post('/api/areas', formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     });
   };
@@ -141,15 +155,17 @@ const UploadAreasModal = ({ show, handleClose }) => {
           <Button
             variant="primary"
             onClick={() => {
-              handleUploadAreas();
-              handleClose();
+              if (isFilePicked) {
+                handleUploadAreas();
+                handleClose();
+              }
             }}
           >
             Carregar Áreas
           </Button>
         </Form>
       </Modal.Body>
-    </Modal >
+    </Modal>
   );
 };
 

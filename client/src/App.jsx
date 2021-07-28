@@ -1,32 +1,31 @@
-import React, { useState, useContext } from "react";
-import Layout from "./components/Layout";
-
+import React, { useState, useContext } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   Redirect,
-} from "react-router-dom";
+} from 'react-router-dom';
+import Layout from './components/Layout';
 
-import HomePage from "./pages/HomePage";
-import ActivitiesPage from "./pages/ActivitiesPage";
-import AboutPage from "./pages/AboutPage";
-import MajorPage from "./pages/MajorPage";
-import SubgroupsPage from "./pages/SubgroupsPage";
-import RulesPage from "./pages/RulesPage";
-import ContactsPage from "./pages/ContactsPage";
+import HomePage from './pages/HomePage';
+import ActivitiesPage from './pages/ActivitiesPage';
+import AboutPage from './pages/AboutPage';
+import MajorPage from './pages/MajorPage';
+import SubgroupsPage from './pages/SubgroupsPage';
+import RulesPage from './pages/RulesPage';
+import ContactsPage from './pages/ContactsPage';
 
-import ThesisMasterPage from "./pages/ThesisMasterPage";
-import MemberPage from "./pages/MemberPage";
+import ThesisMasterPage from './pages/ThesisMasterPage';
+import MemberPage from './pages/MemberPage';
 
-import AdminMenuPage from "./pages/AdminMenuPage";
-import AdminAreasPage from "./pages/AdminAreasPage";
-import AdminThesesPage from "./pages/AdminThesesPage";
-import AdminElectionsPage from "./pages/AdminElectionsPage";
+import AdminMenuPage from './pages/AdminMenuPage';
+import AdminAreasPage from './pages/AdminAreasPage';
+import AdminThesesPage from './pages/AdminThesesPage';
+import AdminElectionsPage from './pages/AdminElectionsPage';
 
-import "./App.css";
+import UserDataContext from './UserDataContext';
 
-export const UserDataContext = React.createContext();
+import './App.css';
 
 const App = () => {
   const [userData, setUserData] = useState(null);
@@ -88,21 +87,21 @@ const App = () => {
   );
 };
 
-const NonAdminRoute = ({ children, ...props }) => {
+const NonAdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <Route {...props}>
+    <Route exact={exact} path={path}>
       {userData && userData.isNonAdmin ? children : <Redirect to="/" />}
     </Route>
   );
 };
 
-const AdminRoute = ({ children, ...props }) => {
+const AdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <Route {...props}>
+    <Route exact={exact} path={path}>
       {userData && userData.isAdmin ? children : <Redirect to="/" />}
     </Route>
   );

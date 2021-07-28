@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
-import Card from "react-bootstrap/Card";
-import { UserDataContext } from "../App";
-import axios from "axios";
+import React, { useState, useEffect, useContext } from 'react';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
+import Card from 'react-bootstrap/Card';
+import axios from 'axios';
+import UserDataContext from '../UserDataContext';
 
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);
@@ -17,34 +17,39 @@ const MembersPage = () => {
     fetch(`/api/members/${userData.username}`)
       .then((res) => res.json())
       .then(
-        (member) => {
-          setMember(member);
+        (fetchMember) => {
+          setMember(fetchMember);
           setIsLoaded(true);
         },
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
   if (!member) return <Register />;
   if (member.isExpired) return <Renew />;
   if (member.canVote) return <Vote />;
-  else return <CantVote />;
+  return <CantVote />;
 };
 
 const Register = () => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
+    <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
       <Button
-        onClick={() =>
-          axios.post(`/api/members/${userData.username}`)
-        }
+        onClick={() => axios.post(`/api/members/${userData.username}`)}
       >
         REGISTAR
       </Button>
@@ -53,7 +58,7 @@ const Register = () => {
 };
 
 const CantVote = () => (
-  <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
+  <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
     <p>AINDA NÃO PODES VOTAR</p>
   </div>
 );
@@ -76,25 +81,34 @@ const Vote = () => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (elections)
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (elections) {
     return (
       <>
-        <h1 style={{ textAlign: "center", margin: 0 }}>
-          {elections.length} Eleições Ativas
+        <h1 style={{ textAlign: 'center', margin: 0 }}>
+          {elections.length}
+          {' '}
+          Eleições Ativas
         </h1>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            flexWrap: "wrap",
-            padding: "0 10px 10px 10px",
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'space-around',
+            flexWrap: 'wrap',
+            padding: '0 10px 10px 10px',
           }}
         >
           {elections.map((election) => (
@@ -103,6 +117,8 @@ const Vote = () => {
         </div>
       </>
     );
+  }
+  return <div>Não foi possível carregar as eleições.</div>;
 };
 
 const ElectionCard = ({ election }) => {
@@ -121,13 +137,13 @@ const ElectionCard = ({ election }) => {
       .then(
         (res) => {
           setOptions(res);
-          setSelectedOption(res[0].id)
+          setSelectedOption(res[0].id);
           setIsLoaded(true);
         },
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
@@ -144,13 +160,20 @@ const ElectionCard = ({ election }) => {
     await axios.post('/api/votes', vote);
   };
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (options)
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (options) {
     return (
       <>
         <Card
-          style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+          style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
           onClick={handleShow}
         >
           <Card.Body>
@@ -166,9 +189,9 @@ const ElectionCard = ({ election }) => {
             <Form>
               <Form.Group>
                 <Form.Label>Em quem queres votar?</Form.Label>
-                <Form.Control as="select" value={selectedOption} onChange={e => handleSelectedOptionChange(e.currentTarget.value)}>
-                  {options &&
-                    options.map((option) => (
+                <Form.Control as="select" value={selectedOption} onChange={(e) => handleSelectedOptionChange(e.currentTarget.value)}>
+                  {options
+                    && options.map((option) => (
                       <option key={option.id} value={option.id}>
                         {option.name}
                       </option>
@@ -190,21 +213,23 @@ const ElectionCard = ({ election }) => {
         </Modal>
       </>
     );
+  }
+  return <div>Não foi possível carregar as opções.</div>;
 };
 
 const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
   return (
-    <div style={{ margin: "2rem 20vw", textAlign: "center" }}>
-      < Button
+    <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
+      <Button
         onClick={() => {
-          axios.put(`/api/members/${userData.username}`)
+          axios.put(`/api/members/${userData.username}`);
         }}
       >
         RENOVAR
-      </Button >
-    </div >
+      </Button>
+    </div>
   );
 };
 

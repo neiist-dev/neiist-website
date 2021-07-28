@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
-import ToggleButton from "react-bootstrap/ToggleButton";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Card from "react-bootstrap/Card";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import ToggleButton from 'react-bootstrap/ToggleButton';
+import Modal from 'react-bootstrap/Modal';
+import Card from 'react-bootstrap/Card';
 
 const ThesisMasterPage = () => {
   const [areas, setAreas] = useState(null);
@@ -22,7 +20,9 @@ const ThesisMasterPage = () => {
   );
 };
 
-const Areas = ({ areas, setAreas, checkedAreas, setCheckedAreas }) => {
+const Areas = ({
+  areas, setAreas, checkedAreas, setCheckedAreas,
+}) => {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -37,22 +37,33 @@ const Areas = ({ areas, setAreas, checkedAreas, setCheckedAreas }) => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, []);
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (areas)
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (areas) {
     return (
       <>
-        <h1 style={{ textAlign: "center", margin: 0 }}>{areas.length} Áreas</h1>
+        <h1 style={{ textAlign: 'center', margin: 0 }}>
+          {areas.length}
+          {' '}
+          Áreas
+        </h1>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            padding: "10px 10px 0 10px",
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'space-around',
+            padding: '10px 10px 0 10px',
           }}
         >
           {areas.map((area) => (
@@ -62,20 +73,23 @@ const Areas = ({ areas, setAreas, checkedAreas, setCheckedAreas }) => {
               checked={checkedAreas.includes(area.code)}
               onChange={() => {
                 if (!checkedAreas.includes(area.code)) {
-                  if (checkedAreas.length === 0 || checkedAreas.length === 1)
+                  if (checkedAreas.length === 0 || checkedAreas.length === 1) {
                     setCheckedAreas([...checkedAreas, area.code]);
-                  if (checkedAreas.length === 2)
+                  }
+                  if (checkedAreas.length === 2) {
                     setCheckedAreas([checkedAreas[1], area.code]);
+                  }
                 }
-                if (checkedAreas.includes(area.code))
+                if (checkedAreas.includes(area.code)) {
                   setCheckedAreas(checkedAreas.filter((a) => a !== area.code));
+                }
               }}
               style={{
-                margin: "10px",
-                width: "15rem",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
+                margin: '10px',
+                width: '15rem',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
               {area.long}
@@ -84,6 +98,8 @@ const Areas = ({ areas, setAreas, checkedAreas, setCheckedAreas }) => {
         </div>
       </>
     );
+  }
+  return <div>Não foi possível carregar as áreas.</div>;
 };
 
 const Theses = ({ areas, checkedAreas }) => {
@@ -92,12 +108,10 @@ const Theses = ({ areas, checkedAreas }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    let queryParameters = "";
-    if (checkedAreas)
-      for (let i = 0; i < checkedAreas.length; i++)
-        queryParameters += (i === 0 ? "?" : "&") + "areas[]=" + checkedAreas[i];
+    let queryParameters = '';
+    if (checkedAreas) for (let i = 0; i < checkedAreas.length; i += 1) queryParameters += `${i === 0 ? '?' : '&'}areas[]=${checkedAreas[i]}`;
 
-    fetch('/api/theses/' + queryParameters)
+    fetch(`/api/theses/${queryParameters}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -107,25 +121,34 @@ const Theses = ({ areas, checkedAreas }) => {
         (err) => {
           setIsLoaded(true);
           setError(err);
-        }
+        },
       );
   }, [checkedAreas]);
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (theses)
+  if (!isLoaded) return <div>...</div>;
+  if (error) {
+    return (
+      <div>
+        Erro:
+        {error.message}
+      </div>
+    );
+  }
+  if (theses) {
     return (
       <>
-        <h1 style={{ textAlign: "center", margin: 0 }}>
-          {theses.length} Propostas de Tese
+        <h1 style={{ textAlign: 'center', margin: 0 }}>
+          {theses.length}
+          {' '}
+          Propostas de Tese
         </h1>
         <div
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignContent: "space-around",
-            flexWrap: "wrap",
-            padding: "0 10px 10px 10px",
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'space-around',
+            flexWrap: 'wrap',
+            padding: '0 10px 10px 10px',
           }}
         >
           {theses.map((thesis) => (
@@ -140,20 +163,24 @@ const Theses = ({ areas, checkedAreas }) => {
         </div>
       </>
     );
+  }
+  return <div>Não foi possível carregar as teses.</div>;
 };
 
-const ThesisCard = ({ id, title, theses, areas }) => {
+const ThesisCard = ({
+  id, title, theses, areas,
+}) => {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const thesis = theses.find((thesis) => thesis.id === id);
+  const thisThesis = theses.find((thesis) => thesis.id === id);
 
   return (
     <>
       <Card
-        style={{ margin: "10px", width: "15rem", textAlign: "center" }}
+        style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
         onClick={handleShow}
       >
         <Card.Body>
@@ -163,28 +190,28 @@ const ThesisCard = ({ id, title, theses, areas }) => {
 
       <Modal size="lg" show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{thesis.title}</Modal.Title>
+          <Modal.Title>{thisThesis.title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <h2>ID</h2>
-          <p>{thesis.id}</p>
+          <p>{thisThesis.id}</p>
           <h2>Objectives</h2>
-          <p>{thesis.objectives}</p>
+          <p>{thisThesis.objectives}</p>
           <h2>Requirements</h2>
-          <p>{thesis.requirements}</p>
+          <p>{thisThesis.requirements}</p>
           <h2>Observations</h2>
-          <p>{thesis.observations}</p>
+          <p>{thisThesis.observations}</p>
           <h2>Supervisors</h2>
-          {thesis.supervisors.map((supervisor) => (
+          {thisThesis.supervisors.map((supervisor) => (
             <p>{supervisor}</p>
           ))}
           <h2>Vacancies</h2>
-          <p>{thesis.vacancies}</p>
+          <p>{thisThesis.vacancies}</p>
           <h2>Location</h2>
-          <p>{thesis.location}</p>
+          <p>{thisThesis.location}</p>
           <h2>Areas</h2>
-          <p>{areas.find((area) => area.code === thesis.area1).long}</p>
-          <p>{areas.find((area) => area.code === thesis.area2).long}</p>
+          <p>{areas.find((area) => area.code === thisThesis.area1).long}</p>
+          <p>{areas.find((area) => area.code === thisThesis.area2).long}</p>
         </Modal.Body>
       </Modal>
     </>

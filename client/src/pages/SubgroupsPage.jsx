@@ -1,11 +1,11 @@
-import React from "react";
-import Button from "react-bootstrap/Button";
-import sinfo from "../images/sinfo.png";
+import React from 'react';
+import Button from 'react-bootstrap/Button';
+import sinfo from '../images/sinfo.png';
 
 const SubgroupsPage = () => (
   <>
-    <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
-      <h2 style={{ textAlign: "center" }}>Semana Informática (SINFO)</h2>
+    <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+      <h2 style={{ textAlign: 'center' }}>Semana Informática (SINFO)</h2>
       <p>
         A SINFO é um evento anual organizado exclusivamente por estudantes que
         se esforçam para tornar o evento mais interessante e inovador a cada
@@ -29,12 +29,12 @@ const SubgroupsPage = () => (
         ou empresas influentes e interessantes no ramo das Tecnologias de
         Informação e Engenharia Informática.
       </p>
-      <div style={{ textAlign: "center" }}>
-        <img style={{ width: "50%" }} src={sinfo} />
+      <div style={{ textAlign: 'center' }}>
+        <img style={{ width: '50%' }} src={sinfo} alt="" />
       </div>
     </div>
 
-    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
+    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
       <Button
         href="https://www.facebook.com/NEIIST/events/"
         target="_blank"

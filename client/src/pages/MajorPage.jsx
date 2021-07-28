@@ -1,14 +1,14 @@
-import React from "react";
-import Button from "react-bootstrap/Button";
+import React from 'react';
+import Button from 'react-bootstrap/Button';
 
 const MajorPage = () => (
   <>
-    <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
-      <h1 style={{ textAlign: "center" }}>O CURSO</h1>
+    <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+      <h1 style={{ textAlign: 'center' }}>O CURSO</h1>
     </div>
 
-    <div style={{ margin: "1rem 20vw" }}>
-      <h2 style={{ textAlign: "center" }}>INTRODUÇÃO</h2>
+    <div style={{ margin: '1rem 20vw' }}>
+      <h2 style={{ textAlign: 'center' }}>INTRODUÇÃO</h2>
       <p>
         A licenciatura em Engenharia Informática e de Computadores (LEIC) é uma
         das maiores licenciaturas do Técnico e tem já provas dadas de sucesso no
@@ -19,8 +19,8 @@ const MajorPage = () => (
       </p>
     </div>
 
-    <div style={{ margin: "1rem 20vw" }}>
-      <h2 style={{ textAlign: "center" }}>OBJETIVOS</h2>
+    <div style={{ margin: '1rem 20vw' }}>
+      <h2 style={{ textAlign: 'center' }}>OBJETIVOS</h2>
       <p>
         Os computadores estão por toda a parte! Na secretária, sob a forma de
         tablets ou telemóveis, embebidos em pacemakers ou bombas de insulina, a
@@ -51,7 +51,7 @@ const MajorPage = () => (
       </p>
     </div>
 
-    <div style={{ margin: "1rem 20vw 2rem 20vw", textAlign: "center" }}>
+    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
       <Button
         href="https://fenix.tecnico.ulisboa.pt/cursos/leic-t"
         target="_blank"
