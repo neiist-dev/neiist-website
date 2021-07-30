@@ -92,68 +92,31 @@ const ElectionCard = ({ election }) => {
   );
 };
 
-const ElectionModal = ({ election, show, handleClose }) => {
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    fetch(`/api/votes/${election.id}`)
-      .then((res) => res.json())
-      .then(
-        (res) => {
-          setResults(res);
-          setIsLoaded(true);
-        },
-        (err) => {
-          setIsLoaded(true);
-          setError(err);
-        },
-      );
-  }, []);
-
-  if (!isLoaded) return <div>...</div>;
-  if (error) {
-    return (
-      <div>
-        Erro:
-        {error.message}
-      </div>
-    );
-  }
-  if (results) {
-    return (
-      <Modal size="lg" show={show} onHide={handleClose} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{election.name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <h4>ID</h4>
-          <p>{election.id}</p>
-          <h4>Nome</h4>
-          <p>{election.name}</p>
-          <h4>Data de Início</h4>
-          <p>{election.startDate}</p>
-          <h4>Data de Fim</h4>
-          <p>{election.endDate}</p>
-          {results && (
-          <>
-            <h4>Resultados</h4>
-            {results.map((result) => (
-              <p>
-                {result.name}
-                :
-                {result.count}
-              </p>
-            ))}
-          </>
-          )}
-        </Modal.Body>
-      </Modal>
-    );
-  }
-  return <div>Não foi possível carregar os resultados.</div>;
-};
+const ElectionModal = ({ election, show, handleClose }) => (
+  <Modal size="lg" show={show} onHide={handleClose} centered>
+    <Modal.Header closeButton>
+      <Modal.Title>{election.name}</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <h4>ID</h4>
+      <p>{election.id}</p>
+      <h4>Nome</h4>
+      <p>{election.name}</p>
+      <h4>Data de Início</h4>
+      <p>{election.startDate}</p>
+      <h4>Data de Fim</h4>
+      <p>{election.endDate}</p>
+      <h4>Resultados</h4>
+      {election.options.map((option) => (
+        <p key={option.id}>
+          {option.name}
+          :
+          {option.votes}
+        </p>
+      ))}
+    </Modal.Body>
+  </Modal>
+);
 
 const CreateElectionButton = () => {
   const [show, setShow] = useState(false);
@@ -169,10 +132,10 @@ const CreateElectionButton = () => {
 };
 
 const CreateElectionModal = ({ show, handleClose }) => {
-  const [name, setName] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [options, setOptions] = useState(null);
+  const [name, setName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [options, setOptions] = useState('');
 
   const handleNewElection = async () => {
     const newElection = {

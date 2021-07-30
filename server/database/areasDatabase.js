@@ -1,4 +1,4 @@
-const db = require('./db');
+const db = require('./database');
 
 const createAreas = async () => {
   try {
@@ -17,15 +17,13 @@ const createAreas = async () => {
 
 const setAreas = async (areas) => {
   const client = await db.getClient();
-  let areasInserted;
   try {
     await client.query('BEGIN');
     await client.query('TRUNCATE TABLE areas CASCADE');
 
-    areasInserted = await Promise.all(areas.map(async (area) => {
-      const areaInserted = await client.query('INSERT INTO areas VALUES($1, $2, $3) RETURNING *', [area.code, area.short, area.long]);
-      return areaInserted.rows[0];
-    }));
+    areas.forEach(async (area) => {
+      await client.query('INSERT INTO areas VALUES($1, $2, $3)', [area.code, area.short, area.long]);
+    });
 
     await client.query('COMMIT');
   } catch (err) {
@@ -34,17 +32,17 @@ const setAreas = async (areas) => {
   } finally {
     client.release();
   }
-  return areasInserted;
 };
 
 const getAreas = async () => {
-  let allAreas;
+  let areas;
   try {
-    allAreas = await db.query('SELECT * FROM areas');
+    const areasResult = await db.query('SELECT * FROM areas');
+    areas = areasResult.rows;
   } catch (err) {
     console.error(err.message);
   }
-  return allAreas.rows;
+  return areas;
 };
 
 module.exports = {

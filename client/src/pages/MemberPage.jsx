@@ -46,11 +46,16 @@ const MembersPage = () => {
 const Register = () => {
   const { userData } = useContext(UserDataContext);
 
+  const handleNewMember = async () => {
+    const member = {
+      username: userData.username,
+    };
+    await axios.post('/api/members', member);
+  };
+
   return (
     <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
-      <Button
-        onClick={() => axios.post(`/api/members/${userData.username}`)}
-      >
+      <Button onClick={handleNewMember}>
         REGISTAR
       </Button>
     </div>
@@ -64,14 +69,12 @@ const CantVote = () => (
 );
 
 const Vote = () => {
-  const { userData } = useContext(UserDataContext);
-
   const [elections, setElections] = useState(null);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/elections/${userData.username}`)
+    fetch('/api/elections')
       .then((res) => res.json())
       .then(
         (res) => {
@@ -100,7 +103,7 @@ const Vote = () => {
         <h1 style={{ textAlign: 'center', margin: 0 }}>
           {elections.length}
           {' '}
-          Eleições Ativas
+          Eleições
         </h1>
         <div
           style={{
@@ -124,28 +127,8 @@ const Vote = () => {
 const ElectionCard = ({ election }) => {
   const { userData } = useContext(UserDataContext);
 
-  const [options, setOptions] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedOption, setSelectedOption] = useState(election.options[0].id);
   const handleSelectedOptionChange = (option) => setSelectedOption(option);
-
-  useEffect(() => {
-    fetch(`/api/elections/${election.id}/options`)
-      .then((res) => res.json())
-      .then(
-        (res) => {
-          setOptions(res);
-          setSelectedOption(res[0].id);
-          setIsLoaded(true);
-        },
-        (err) => {
-          setIsLoaded(true);
-          setError(err);
-        },
-      );
-  }, []);
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
@@ -157,64 +140,51 @@ const ElectionCard = ({ election }) => {
       electionId: election.id,
       optionId: selectedOption,
     };
-    await axios.post('/api/votes', vote);
+    await axios.post(`/api/elections/${election.id}/votes`, vote);
   };
 
-  if (!isLoaded) return <div>...</div>;
-  if (error) {
-    return (
-      <div>
-        Erro:
-        {error.message}
-      </div>
-    );
-  }
-  if (options) {
-    return (
-      <>
-        <Card
-          style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
-          onClick={handleShow}
-        >
-          <Card.Body>
-            <Card.Title>{election.name}</Card.Title>
-          </Card.Body>
-        </Card>
+  return (
+    <>
+      <Card
+        style={{ margin: '10px', width: '15rem', textAlign: 'center' }}
+        onClick={handleShow}
+      >
+        <Card.Body>
+          <Card.Title>{election.name}</Card.Title>
+        </Card.Body>
+      </Card>
 
-        <Modal size="lg" show={show} onHide={handleClose} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>{election.name}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group>
-                <Form.Label>Em quem queres votar?</Form.Label>
-                <Form.Control as="select" value={selectedOption} onChange={(e) => handleSelectedOptionChange(e.currentTarget.value)}>
-                  {options
-                    && options.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.name}
-                      </option>
-                    ))}
-                </Form.Control>
-              </Form.Group>
-              <br />
-              <Button
-                variant="primary"
-                onClick={() => {
-                  handleNewVote();
-                  handleClose();
-                }}
-              >
-                Submeter Voto
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
-      </>
-    );
-  }
-  return <div>Não foi possível carregar as opções.</div>;
+      <Modal size="lg" show={show} onHide={handleClose} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{election.name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Em quem queres votar?</Form.Label>
+              <Form.Control as="select" value={selectedOption} onChange={(e) => handleSelectedOptionChange(e.currentTarget.value)}>
+                {election.options.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <br />
+            <Button
+              variant="primary"
+              onClick={() => {
+                handleNewVote();
+                handleClose();
+              }}
+            >
+              Submeter Voto
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    </>
+  );
 };
 
 const Renew = () => {

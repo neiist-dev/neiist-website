@@ -1,10 +1,10 @@
 const express = require('express');
-const authService = require('../services/authService');
+const { authService } = require('../services');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  const { code } = req.query;
+router.get('/:code', async (req, res) => {
+  const { code } = req.params;
   const userData = await authService.getUserData(code);
   res.json(userData);
 });

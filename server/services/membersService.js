@@ -1,4 +1,4 @@
-const db = require('../db/membersQueries');
+const { membersDatabase } = require('../database');
 
 const waitingPeriod = 4;
 const validPeriod = 12;
@@ -12,20 +12,20 @@ const addMonthsToDate = (numMonths, date) => {
 };
 
 const isMemberExpired = async (username) => {
-  const member = await db.getMember(username);
+  const member = await membersDatabase.getMember(username);
   const expirationDate = addMonthsToDate(validPeriod, member.registerDate);
   const currDate = new Date();
   return currDate >= expirationDate;
 };
 
 const canMemberVote = async (username) => {
-  const member = await db.getMember(username);
+  const member = await membersDatabase.getMember(username);
   const currDate = new Date();
   return currDate >= member.canVoteDate;
 };
 
 const getMember = async (username) => {
-  const memberInformation = await db.getMember(username);
+  const memberInformation = await membersDatabase.getMember(username);
   if (!memberInformation) return null;
 
   const isExpired = await isMemberExpired(memberInformation.username);
@@ -40,20 +40,19 @@ const getMember = async (username) => {
   return member;
 };
 
-const registerMember = async (username) => {
+const registerMember = async (member) => {
   const currDate = new Date();
   const canVoteDate = addMonthsToDate(waitingPeriod, currDate);
 
-  const member = {
-    username,
-    registerDate: currDate,
-    canVoteDate,
-  };
-  db.createMember(member);
+  const newMember = member;
+  newMember.registerDate = currDate;
+  newMember.canVoteDate = canVoteDate;
+
+  membersDatabase.createMember(newMember);
 };
 
 const renovateMember = async (username) => {
-  const member = await db.getMember(username);
+  const member = await membersDatabase.getMember(username);
   const currDate = new Date();
 
   const gracePeriodExpirationDate = addMonthsToDate(validPeriod + gracePeriod, member.registerDate);
@@ -62,13 +61,11 @@ const renovateMember = async (username) => {
 
   member.registerDate = currDate;
   member.canVoteDate = canVoteDate;
-  db.updateMember(member);
+  membersDatabase.updateMember(member);
 };
 
 module.exports = {
   getMember,
   registerMember,
-  canMemberVote,
-  isMemberExpired,
   renovateMember,
 };

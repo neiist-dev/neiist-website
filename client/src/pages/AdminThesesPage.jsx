@@ -96,7 +96,7 @@ const ThesisModal = ({
       <p>{thesis.observations}</p>
       <h2>Supervisors</h2>
       {thesis.supervisors.map((supervisor) => (
-        <p>{supervisor}</p>
+        <p key={supervisor}>{supervisor}</p>
       ))}
       <h2>Vacancies</h2>
       <p>{thesis.vacancies}</p>
@@ -133,7 +133,7 @@ const UploadThesesModal = ({ show, handleClose }) => {
 
   const handleUploadTheses = () => {
     const formData = new FormData();
-    formData.append('File', selectedFile);
+    formData.append('theses', selectedFile);
     axios.post('/api/theses', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

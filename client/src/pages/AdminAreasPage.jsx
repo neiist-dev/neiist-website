@@ -61,7 +61,7 @@ const ViewAreas = () => {
           }}
         >
           {areas.map((area) => (
-            <AreaCard key={area.id} area={area} />
+            <AreaCard key={area.code} area={area} />
           ))}
         </div>
       </div>
@@ -134,7 +134,7 @@ const UploadAreasModal = ({ show, handleClose }) => {
 
   const handleUploadAreas = () => {
     const formData = new FormData();
-    formData.append('File', selectedFile);
+    formData.append('areas', selectedFile);
     axios.post('/api/areas', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

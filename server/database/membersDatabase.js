@@ -1,4 +1,4 @@
-const db = require('./db');
+const db = require('./database');
 
 const createMembers = async () => {
   try {
@@ -34,11 +34,12 @@ const updateMember = async (member) => {
 const getMember = async (username) => {
   let member;
   try {
-    member = await db.query('SELECT * FROM members WHERE username = $1', [username]);
+    const memberResult = await db.query('SELECT * FROM members WHERE username = $1', [username]);
+    [member] = memberResult.rows;
   } catch (err) {
     console.error(err);
   }
-  return member.rows[0];
+  return member;
 };
 
 module.exports = {

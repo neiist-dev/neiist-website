@@ -1,11 +1,11 @@
-const db = require('../db/areasQueries');
+const { areasDatabase } = require('../database');
 
 const uploadAreas = async (areas) => {
-  db.setAreas(areas);
+  areasDatabase.setAreas(areas);
 };
 
 const getAreas = async () => {
-  const areas = db.getAreas();
+  const areas = areasDatabase.getAreas();
   return areas;
 };
 

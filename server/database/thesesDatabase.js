@@ -1,4 +1,4 @@
-const db = require('./db');
+const db = require('./database');
 
 const createTheses = async () => {
   try {
@@ -28,7 +28,7 @@ const setTheses = async (theses) => {
     await client.query('BEGIN');
     await client.query('TRUNCATE TABLE theses CASCADE');
 
-    await Promise.all(theses.map(async (thesis) => {
+    theses.forEach(async (thesis) => {
       await client.query('INSERT INTO theses VALUES($1, $2, $3::text[], $4, $5, $6, $7, $8, $9, $10)',
         [thesis.id,
           thesis.title,
@@ -41,7 +41,7 @@ const setTheses = async (theses) => {
           thesis.areas[0],
           thesis.areas[1],
         ]);
-    }));
+    });
 
     await client.query('COMMIT');
   } catch (err) {
@@ -54,24 +54,25 @@ const setTheses = async (theses) => {
 
 const getThesesByAreas = async (areas) => {
   let theses;
-
   try {
-    if (!areas) {
-      theses = await db.query('select * from theses');
+    let thesesResult;
+    if (areas.length === 0) {
+      thesesResult = await db.query('select * from theses');
     } else if (areas.length === 1) {
       const area = areas[0];
-      theses = await db.query('select * from theses where area1 = $1 or area2 = $1', [area]);
+      thesesResult = await db.query('select * from theses where area1 = $1 or area2 = $1', [area]);
     } else if (areas.length === 2) {
       const area1 = areas[0];
       const area2 = areas[1];
-      theses = await db.query('select * from theses where (area1 = $1 or area2 = $1) and (area1 = $2 or area2 = $2)', [area1, area2]);
+      thesesResult = await db.query('select * from theses where (area1 = $1 or area2 = $1) and (area1 = $2 or area2 = $2)', [area1, area2]);
     } else {
       console.error('can only handle 0, 1 or 2 areas');
     }
+    theses = thesesResult.rows;
   } catch (err) {
     console.error(err.message);
   }
-  return theses.rows;
+  return theses;
 };
 
 module.exports = {

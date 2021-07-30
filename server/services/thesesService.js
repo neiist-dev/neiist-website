@@ -1,6 +1,6 @@
 const htmlParser = require('./htmlParser');
 const thesesClassifier = require('./thesesClassifier');
-const db = require('../db/thesesQueries');
+const { thesesDatabase } = require('../database');
 
 const classifyTheses = async (parsedTheses, trainedClassifier) => {
   const classifiedTheses = parsedTheses.map((thesis) => {
@@ -19,11 +19,11 @@ const uploadTheses = async (theses) => {
   const parsedTheses = await htmlParser.getParsedTheses(theses);
   const trainedClassifier = await thesesClassifier.getTrainedClassifier();
   const classifiedTheses = await classifyTheses(parsedTheses, trainedClassifier);
-  db.setTheses(classifiedTheses);
+  thesesDatabase.setTheses(classifiedTheses);
 };
 
 const getThesesByAreas = async (areas) => {
-  const theses = db.getThesesByAreas(areas);
+  const theses = thesesDatabase.getThesesByAreas(areas);
   return theses;
 };
 

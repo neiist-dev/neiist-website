@@ -108,10 +108,8 @@ const Theses = ({ areas, checkedAreas }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    let queryParameters = '';
-    if (checkedAreas) for (let i = 0; i < checkedAreas.length; i += 1) queryParameters += `${i === 0 ? '?' : '&'}areas[]=${checkedAreas[i]}`;
-
-    fetch(`/api/theses/${queryParameters}`)
+    const checkedAreasString = checkedAreas.join(',');
+    fetch(`/api/theses/${checkedAreasString}`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -203,7 +201,7 @@ const ThesisCard = ({
           <p>{thisThesis.observations}</p>
           <h2>Supervisors</h2>
           {thisThesis.supervisors.map((supervisor) => (
-            <p>{supervisor}</p>
+            <p key={supervisor}>{supervisor}</p>
           ))}
           <h2>Vacancies</h2>
           <p>{thisThesis.vacancies}</p>
