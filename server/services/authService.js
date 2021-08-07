@@ -50,8 +50,7 @@ const isAdmin = (username) => {
   return adminUsernames.includes(username);
 };
 
-const getUserData = async (code) => {
-  const accessToken = await getAccessToken(code);
+const getUserData = async (accessToken) => {
   const personInformation = await getPersonInformation(accessToken);
 
   const userData = {
@@ -65,5 +64,6 @@ const getUserData = async (code) => {
 };
 
 module.exports = {
+  getAccessToken,
   getUserData,
 };

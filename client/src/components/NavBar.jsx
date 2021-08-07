@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import { Redirect, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import logo from '../images/neiist_logo.png';
 import UserDataContext from '../UserDataContext';
 
@@ -34,21 +34,18 @@ const NavBar = () => {
           <Nav.Link as={Link} to="/contactos">
             Contactos
           </Nav.Link>
-          {userData && userData.isNonAdmin && (
-            <>
-              <Nav.Link as={Link} to="/thesismaster">
-                Thesis Master
-              </Nav.Link>
-              <Nav.Link as={Link} to="/socios">
-                Sócios
-              </Nav.Link>
-            </>
-          )}
-          {userData && userData.isAdmin && (
-            <Nav.Link as={Link} to="/admin">
-              Admin
-            </Nav.Link>
-          )}
+
+          <NonAdminNavLink as={Link} to="/thesismaster">
+            Thesis Master
+          </NonAdminNavLink>
+          <NonAdminNavLink as={Link} to="/socios">
+            Sócios
+          </NonAdminNavLink>
+
+          <AdminNavLink as={Link} to="/admin">
+            Admin
+          </AdminNavLink>
+
         </Nav>
         <Nav style={{ marginLeft: 'auto' }}>
           <LoginLogout userData={userData} setUserData={setUserData} />
@@ -58,31 +55,28 @@ const NavBar = () => {
   );
 };
 
+const NonAdminNavLink = ({ as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  return (
+    <Nav.Link as={as} to={to}>
+      {userData && userData.isNonAdmin ? children : null}
+    </Nav.Link>
+  );
+};
+
+const AdminNavLink = ({ as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  return (
+    <Nav.Link as={as} to={to}>
+      {userData && userData.isAdmin ? children : null}
+    </Nav.Link>
+  );
+};
+
 const LoginLogout = ({ userData, setUserData }) => {
-  const urlParams = new URLSearchParams(window.location.search);
-
-  if (urlParams.has('code') && userData) return <Redirect to="/theses" />;
-
-  if (urlParams.has('code')) {
-    return (
-      <CheckPermissions
-        code={urlParams.get('code')}
-        setUserData={setUserData}
-      />
-    );
-  }
-
-  if (urlParams.has('error')) {
-    return (
-      <Error
-        error={urlParams.get('error')}
-        errorDescription={urlParams.get('error_description')}
-      />
-    );
-  }
-
   if (userData) return <Logout userData={userData} setUserData={setUserData} />;
-
   return <Login />;
 };
 
@@ -98,51 +92,19 @@ const Login = () => (
   </Nav.Link>
 );
 
-const CheckPermissions = ({ code, setUserData }) => {
-  const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    fetch(`/api/auth/${code}`)
-      .then((res) => res.json())
-      .then(
-        (userData) => {
-          setUserData(userData);
-        },
-        (err) => {
-          setIsLoaded(true);
-          setError(err);
-        },
-      );
-  }, []);
-
-  if (!isLoaded) {
-    return <div>...</div>;
-  }
-  if (error) {
-    return (
-      <div>
-        Erro:
-        {error.message}
-      </div>
-    );
-  }
-  return <div>Não foi possível verificar as permissões.</div>;
-};
-
 const Logout = ({ userData, setUserData }) => (
   <>
     <Navbar.Text>{userData.displayName}</Navbar.Text>
-    <Nav.Link as={Link} to="/" onClick={() => setUserData(null)}>
+    <Nav.Link
+      as={Link}
+      to="/"
+      onClick={() => {
+        window.sessionStorage.removeItem('accessToken');
+        setUserData(null);
+      }}
+    >
       LOGOUT
     </Nav.Link>
-  </>
-);
-
-const Error = ({ error, errorDescription }) => (
-  <>
-    <h1>{error}</h1>
-    <p>{errorDescription}</p>
   </>
 );
 

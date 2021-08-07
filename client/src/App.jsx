@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -26,18 +26,70 @@ import AdminElectionsPage from './pages/AdminElectionsPage';
 import UserDataContext from './UserDataContext';
 
 import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
-import './App.css';
+
+const Error = ({ error, errorDescription }) => (
+  <>
+    <h1>{error}</h1>
+    <p>{errorDescription}</p>
+  </>
+);
 
 const App = () => {
+  const urlParams = new URLSearchParams(window.location.search);
   const [userData, setUserData] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(async () => {
+    if (urlParams.has('code')) {
+      const code = urlParams.get('code');
+      const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
+      const accessToken = await accessTokenResponse.text();
+
+      window.sessionStorage.setItem('accessToken', accessToken);
+
+      const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
+      const userDataJson = await userDataResponse.json();
+
+      setUserData(userDataJson);
+    } else {
+      const accessToken = window.sessionStorage.getItem('accessToken');
+
+      if (accessToken) {
+        const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
+        const userDataJson = await userDataResponse.json();
+
+        if (userDataJson) {
+          setUserData(userDataJson);
+        }
+      }
+    }
+    setIsLoaded(true);
+  }, []);
+
+  if (!isLoaded) {
+    return <div>...</div>;
+  }
+
+  if (urlParams.has('error')) {
+    return (
+      <Error
+        error={urlParams.get('error')}
+        errorDescription={urlParams.get('error_description')}
+      />
+    );
+  }
 
   return (
     <UserDataContext.Provider value={{ userData, setUserData }}>
       <Router Router>
         <Layout>
           <Switch>
+
             <Route exact path="/">
               <HomePage />
+            </Route>
+            <Route path="/auth">
+              <Redirect to="/thesismaster" />
             </Route>
             <Route path="/atividades">
               <ActivitiesPage />
@@ -81,6 +133,7 @@ const App = () => {
             <Route path="/*">
               <Redirect to="/" />
             </Route>
+
           </Switch>
         </Layout>
       </Router>
