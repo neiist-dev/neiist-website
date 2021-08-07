@@ -7,8 +7,8 @@ import axios from 'axios';
 
 const AdminElectionsPage = () => (
   <>
-    <ViewElections />
     <CreateElectionButton />
+    <ViewElections />
   </>
 );
 

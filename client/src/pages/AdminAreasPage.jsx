@@ -7,8 +7,8 @@ import axios from 'axios';
 
 const AdminAreasPage = () => (
   <>
-    <ViewAreas />
     <UploadAreasButton />
+    <ViewAreas />
   </>
 );
 
@@ -150,7 +150,7 @@ const UploadAreasModal = ({ show, handleClose }) => {
       <Modal.Body>
         <Form>
           <Form.Group>
-            <Form.File label="Áreas em formato json" onChange={handleChange} />
+            <Form.Control type="file" label="Áreas em formato json" onChange={handleChange} />
           </Form.Group>
           <Button
             variant="primary"

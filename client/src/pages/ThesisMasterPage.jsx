@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
@@ -41,6 +43,8 @@ const Areas = ({
       );
   }, []);
 
+  const handleChange = (area) => setCheckedAreas(area);
+
   if (!isLoaded) return <div>...</div>;
   if (error) {
     return (
@@ -58,7 +62,10 @@ const Areas = ({
           {' '}
           Áreas
         </h1>
-        <div
+        <ToggleButtonGroup
+          type="checkbox"
+          value={checkedAreas}
+          onChange={handleChange}
           style={{
             display: 'flex',
             justifyContent: 'center',
@@ -68,22 +75,9 @@ const Areas = ({
         >
           {areas.map((area) => (
             <ToggleButton
+              id={`toggle-${area.code}`}
+              value={area.code}
               key={area.code}
-              type="checkbox"
-              checked={checkedAreas.includes(area.code)}
-              onChange={() => {
-                if (!checkedAreas.includes(area.code)) {
-                  if (checkedAreas.length === 0 || checkedAreas.length === 1) {
-                    setCheckedAreas([...checkedAreas, area.code]);
-                  }
-                  if (checkedAreas.length === 2) {
-                    setCheckedAreas([checkedAreas[1], area.code]);
-                  }
-                }
-                if (checkedAreas.includes(area.code)) {
-                  setCheckedAreas(checkedAreas.filter((a) => a !== area.code));
-                }
-              }}
               style={{
                 margin: '10px',
                 width: '15rem',
@@ -95,7 +89,7 @@ const Areas = ({
               {area.long}
             </ToggleButton>
           ))}
-        </div>
+        </ToggleButtonGroup>
       </>
     );
   }

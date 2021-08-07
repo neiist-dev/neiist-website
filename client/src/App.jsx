@@ -25,6 +25,7 @@ import AdminElectionsPage from './pages/AdminElectionsPage';
 
 import UserDataContext from './UserDataContext';
 
+import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
 import './App.css';
 
 const App = () => {

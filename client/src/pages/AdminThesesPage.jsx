@@ -7,8 +7,8 @@ import axios from 'axios';
 
 const AdminThesesPage = () => (
   <>
-    <ViewTheses />
     <UploadThesesButton />
+    <ViewTheses />
   </>
 );
 
@@ -149,7 +149,8 @@ const UploadThesesModal = ({ show, handleClose }) => {
       <Modal.Body>
         <Form>
           <Form.Group>
-            <Form.File
+            <Form.Control
+              type="file"
               label="Get a file with thesis on ESTUDANTE &gt; Candidatura a Dissertação &gt; Available Proposals<br />
                     * Delete everything above the theses' beggining on &lt;tbody&gt;. Delete everything after &lt;/tbody&gt;"
               onChange={handleChange}
