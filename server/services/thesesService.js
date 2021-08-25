@@ -22,12 +22,12 @@ const uploadTheses = async (theses) => {
   thesesDatabase.setTheses(classifiedTheses);
 };
 
-const getThesesByAreas = async (areas) => {
-  const theses = thesesDatabase.getThesesByAreas(areas);
+const getTheses = async () => {
+  const theses = thesesDatabase.getTheses();
   return theses;
 };
 
 module.exports = {
   uploadTheses,
-  getThesesByAreas,
+  getTheses,
 };

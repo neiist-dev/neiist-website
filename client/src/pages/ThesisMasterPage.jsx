@@ -102,8 +102,7 @@ const Theses = ({ areas, checkedAreas }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const checkedAreasString = checkedAreas.join(',');
-    fetch(`/api/theses/${checkedAreasString}`)
+    fetch('/api/theses')
       .then((res) => res.json())
       .then(
         (res) => {
@@ -115,7 +114,7 @@ const Theses = ({ areas, checkedAreas }) => {
           setError(err);
         },
       );
-  }, [checkedAreas]);
+  }, []);
 
   if (!isLoaded) return <div>...</div>;
   if (error) {
@@ -127,10 +126,19 @@ const Theses = ({ areas, checkedAreas }) => {
     );
   }
   if (theses) {
+    let filteredTheses;
+    if (checkedAreas.length === 0) {
+      filteredTheses = theses;
+    } else if (checkedAreas.length === 1) {
+      filteredTheses = theses.filter((thesis) => checkedAreas.includes(thesis.area1) || checkedAreas.includes(thesis.area2));
+    } else {
+      filteredTheses = theses.filter((thesis) => checkedAreas.includes(thesis.area1) && checkedAreas.includes(thesis.area2));
+    }
+
     return (
       <>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
-          {theses.length}
+          {filteredTheses.length}
           {' '}
           Propostas de Tese
         </h1>
@@ -143,12 +151,11 @@ const Theses = ({ areas, checkedAreas }) => {
             padding: '0 10px 10px 10px',
           }}
         >
-          {theses.map((thesis) => (
+          {filteredTheses.map((thesis) => (
             <ThesisCard
               key={thesis.id}
               id={thesis.id}
-              title={thesis.title}
-              theses={theses}
+              thesis={thesis}
               areas={areas}
             />
           ))}
@@ -160,14 +167,12 @@ const Theses = ({ areas, checkedAreas }) => {
 };
 
 const ThesisCard = ({
-  id, title, theses, areas,
+  thesis, areas,
 }) => {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
-  const thisThesis = theses.find((thesis) => thesis.id === id);
 
   return (
     <>
@@ -176,34 +181,34 @@ const ThesisCard = ({
         onClick={handleShow}
       >
         <Card.Body>
-          <Card.Title>{title}</Card.Title>
+          <Card.Title>{thesis.title}</Card.Title>
         </Card.Body>
       </Card>
 
       <Modal size="lg" show={show} onHide={handleClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{thisThesis.title}</Modal.Title>
+          <Modal.Title>{thesis.title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <h2>ID</h2>
-          <p>{thisThesis.id}</p>
+          <p>{thesis.id}</p>
           <h2>Objectives</h2>
-          <p>{thisThesis.objectives}</p>
+          <p>{thesis.objectives}</p>
           <h2>Requirements</h2>
-          <p>{thisThesis.requirements}</p>
+          <p>{thesis.requirements}</p>
           <h2>Observations</h2>
-          <p>{thisThesis.observations}</p>
+          <p>{thesis.observations}</p>
           <h2>Supervisors</h2>
-          {thisThesis.supervisors.map((supervisor) => (
+          {thesis.supervisors.map((supervisor) => (
             <p key={supervisor}>{supervisor}</p>
           ))}
           <h2>Vacancies</h2>
-          <p>{thisThesis.vacancies}</p>
+          <p>{thesis.vacancies}</p>
           <h2>Location</h2>
-          <p>{thisThesis.location}</p>
+          <p>{thesis.location}</p>
           <h2>Areas</h2>
-          <p>{areas.find((area) => area.code === thisThesis.area1).long}</p>
-          <p>{areas.find((area) => area.code === thisThesis.area2).long}</p>
+          <p>{areas.find((area) => area.code === thesis.area1).long}</p>
+          <p>{areas.find((area) => area.code === thesis.area2).long}</p>
         </Modal.Body>
       </Modal>
     </>

@@ -15,10 +15,8 @@ router.post('/', async (req) => {
   await thesesService.uploadTheses(thesesHtml);
 });
 
-router.get('/:areas?', async (req, res) => {
-  const areasString = req.params.areas || '';
-  const areas = areasString.split(',').filter((area) => area !== '');
-  const theses = await thesesService.getThesesByAreas(areas);
+router.get('/', async (req, res) => {
+  const theses = await thesesService.getTheses();
   res.json(theses);
 });
 

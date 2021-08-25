@@ -52,22 +52,10 @@ const setTheses = async (theses) => {
   }
 };
 
-const getThesesByAreas = async (areas) => {
+const getTheses = async () => {
   let theses;
   try {
-    let thesesResult;
-    if (areas.length === 0) {
-      thesesResult = await db.query('select * from theses');
-    } else if (areas.length === 1) {
-      const area = areas[0];
-      thesesResult = await db.query('select * from theses where area1 = $1 or area2 = $1', [area]);
-    } else if (areas.length === 2) {
-      const area1 = areas[0];
-      const area2 = areas[1];
-      thesesResult = await db.query('select * from theses where (area1 = $1 or area2 = $1) and (area1 = $2 or area2 = $2)', [area1, area2]);
-    } else {
-      console.error('can only handle 0, 1 or 2 areas');
-    }
+    const thesesResult = await db.query('select * from theses');
     theses = thesesResult.rows;
   } catch (err) {
     console.error(err.message);
@@ -78,5 +66,5 @@ const getThesesByAreas = async (areas) => {
 module.exports = {
   createTheses,
   setTheses,
-  getThesesByAreas,
+  getTheses,
 };
