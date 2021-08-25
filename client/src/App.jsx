@@ -39,30 +39,35 @@ const App = () => {
   const [userData, setUserData] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(async () => {
-    if (urlParams.has('code')) {
-      const code = urlParams.get('code');
-      const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
-      const accessToken = await accessTokenResponse.text();
+  const authFromCode = async () => {
+    const code = urlParams.get('code');
+    const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
+    const accessToken = await accessTokenResponse.text();
 
-      window.sessionStorage.setItem('accessToken', accessToken);
+    window.sessionStorage.setItem('accessToken', accessToken);
 
+    const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
+    const userDataJson = await userDataResponse.json();
+
+    setUserData(userDataJson);
+  };
+
+  const tryAuthFromSessionStorage = async () => {
+    const accessToken = window.sessionStorage.getItem('accessToken');
+
+    if (accessToken) {
       const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
       const userDataJson = await userDataResponse.json();
 
-      setUserData(userDataJson);
-    } else {
-      const accessToken = window.sessionStorage.getItem('accessToken');
-
-      if (accessToken) {
-        const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
-        const userDataJson = await userDataResponse.json();
-
-        if (userDataJson) {
-          setUserData(userDataJson);
-        }
+      if (userDataJson) {
+        setUserData(userDataJson);
       }
     }
+  };
+
+  useEffect(async () => {
+    if (urlParams.has('code')) await authFromCode();
+    else await tryAuthFromSessionStorage();
     setIsLoaded(true);
   }, []);
 
@@ -88,9 +93,6 @@ const App = () => {
             <Route exact path="/">
               <HomePage />
             </Route>
-            <Route path="/auth">
-              <Redirect to="/thesismaster" />
-            </Route>
             <Route path="/atividades">
               <ActivitiesPage />
             </Route>
@@ -110,12 +112,13 @@ const App = () => {
               <ContactsPage />
             </Route>
 
-            <NonAdminRoute path="/thesismaster">
-              <ThesisMasterPage />
-            </NonAdminRoute>
-            <NonAdminRoute path="/socios">
+            <ActiveTecnicoStudentRoute path="/socios">
               <MemberPage />
-            </NonAdminRoute>
+            </ActiveTecnicoStudentRoute>
+
+            <ActiveLMeicStudentRoute path="/thesismaster">
+              <ThesisMasterPage />
+            </ActiveLMeicStudentRoute>
 
             <AdminRoute exact path="/admin">
               <AdminMenuPage />
@@ -141,24 +144,43 @@ const App = () => {
   );
 };
 
-const NonAdminRoute = ({ exact, path, children }) => {
+const ActiveTecnicoStudentRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  return (
-    <Route exact={exact} path={path}>
-      {userData && userData.isNonAdmin ? children : <Redirect to="/" />}
-    </Route>
-  );
+  if (userData && userData.isActiveTecnicoStudent) {
+    return (
+      <Route exact={exact} path={path}>
+        {children}
+      </Route>
+    );
+  }
+  return null;
+};
+
+const ActiveLMeicStudentRoute = ({ exact, path, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isActiveLMeicStudent) {
+    return (
+      <Route exact={exact} path={path}>
+        {children}
+      </Route>
+    );
+  }
+  return null;
 };
 
 const AdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  return (
-    <Route exact={exact} path={path}>
-      {userData && userData.isAdmin ? children : <Redirect to="/" />}
-    </Route>
-  );
+  if (userData && userData.isAdmin) {
+    return (
+      <Route exact={exact} path={path}>
+        {children}
+      </Route>
+    );
+  }
+  return null;
 };
 
 export default App;

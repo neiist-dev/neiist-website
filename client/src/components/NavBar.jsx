@@ -16,6 +16,7 @@ const NavBar = () => {
       <Navbar.Toggle />
       <Navbar.Collapse>
         <Nav style={{ marginRight: 'auto' }}>
+
           <Nav.Link as={Link} to="/atividades">
             Atividades
           </Nav.Link>
@@ -35,12 +36,13 @@ const NavBar = () => {
             Contactos
           </Nav.Link>
 
-          <NonAdminNavLink as={Link} to="/thesismaster">
-            Thesis Master
-          </NonAdminNavLink>
-          <NonAdminNavLink as={Link} to="/socios">
+          <ActiveTecnicoStudentNavLink as={Link} to="/socios">
             Sócios
-          </NonAdminNavLink>
+          </ActiveTecnicoStudentNavLink>
+
+          <ActiveLMeicStudentNavLink as={Link} to="/thesismaster">
+            Thesis Master
+          </ActiveLMeicStudentNavLink>
 
           <AdminNavLink as={Link} to="/admin">
             Admin
@@ -55,24 +57,43 @@ const NavBar = () => {
   );
 };
 
-const NonAdminNavLink = ({ as, to, children }) => {
+const ActiveTecnicoStudentNavLink = ({ as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  return (
-    <Nav.Link as={as} to={to}>
-      {userData && userData.isNonAdmin ? children : null}
-    </Nav.Link>
-  );
+  if (userData && userData.isActiveTecnicoStudent) {
+    return (
+      <Nav.Link as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
+};
+
+const ActiveLMeicStudentNavLink = ({ as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isActiveLMeicStudent) {
+    return (
+      <Nav.Link as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
 };
 
 const AdminNavLink = ({ as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  return (
-    <Nav.Link as={as} to={to}>
-      {userData && userData.isAdmin ? children : null}
-    </Nav.Link>
-  );
+  if (userData && userData.isAdmin) {
+    return (
+      <Nav.Link as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
 };
 
 const LoginLogout = ({ userData, setUserData }) => {

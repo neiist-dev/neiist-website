@@ -34,16 +34,18 @@ const getPersonInformation = async (accessToken) => {
   }
 };
 
-const isAcceptedRole = (role) => {
-  const acceptedTypes = [
-    'STUDENT',
-    'TEACHER',
+const isActiveTecnicoStudent = (roles) => roles.some((role) => role.type === 'STUDENT');
+
+const isActiveLMeicStudent = (roles) => {
+  const LMeicAcronyms = [
+    'LEIC-A',
+    'LEIC-T',
+    'MEIC-A',
+    'MEIC-T',
   ];
 
-  return acceptedTypes.includes(role.type);
+  return roles.some((role) => role.type === 'STUDENT' && role.registrations.some((registration) => LMeicAcronyms.includes(registration.acronym)));
 };
-
-const isNonAdmin = (roles) => roles.some((role) => isAcceptedRole(role));
 
 const isAdmin = (username) => {
   const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
@@ -56,7 +58,8 @@ const getUserData = async (accessToken) => {
   const userData = {
     username: personInformation.username,
     displayName: personInformation.displayName,
-    isNonAdmin: isNonAdmin(personInformation.roles),
+    isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
+    isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
     isAdmin: isAdmin(personInformation.username),
   };
 
