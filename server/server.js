@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const morgan = require('morgan');
 const { databaseSchema } = require('./database');
 
 const {
@@ -9,6 +10,7 @@ const {
 
 const app = express();
 app.use(cors());
+app.use(morgan('tiny'));
 
 // create db tables if needed
 databaseSchema.initializeSchema();
