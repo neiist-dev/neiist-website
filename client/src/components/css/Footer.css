@@ -1,0 +1,12 @@
+footer {
+    padding: 2rem;
+    background-color: #182c39;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.footer-icon {
+    padding-right: 5%;
+    padding-left: 5%;
+}
