@@ -1,16 +1,17 @@
 import React from 'react';
 
-import './css/Footer.css'
+import './css/Footer.css';
 
 const Footer = () => (
   <footer>
     <a
-      className="footer-icon"
+      className="footer-icon-container"
       href="https://www.facebook.com/NEIIST/events/"
       target="_blank"
       rel="noreferrer"
     >
       <svg
+        className="footer-icon"
         style={{ fontSize: '3vw', height: '40px' }}
         fill="white"
         viewBox="0 0 320 512"
@@ -19,12 +20,13 @@ const Footer = () => (
       </svg>
     </a>
     <a
-      className="footer-icon"
+      className="footer-icon-container"
       href="https://www.instagram.com/neiist/"
       target="_blank"
       rel="noreferrer"
     >
       <svg
+        className="footer-icon"
         style={{ fontSize: '3vw', height: '40px' }}
         fill="white"
         viewBox="0 0 448 512"
@@ -33,12 +35,13 @@ const Footer = () => (
       </svg>
     </a>
     <a
-      className="footer-icon"
+      className="footer-icon-container"
       href="https://www.linkedin.com/company/neiist---n-cleo-estudantil-de-inform-tica-do-instituto-superior-t-cnico/"
       target="_blank"
       rel="noreferrer"
     >
       <svg
+        className="footer-icon"
         style={{ fontSize: '3vw', height: '40px' }}
         fill="white"
         viewBox="0 0 448 512"
@@ -47,11 +50,13 @@ const Footer = () => (
       </svg>
     </a>
     <a
-      className="footer-icon" 
+      className="footer-icon-container"
       href="https://github.com/neiist-dev"
       target="_blank"
-      rel="noreferrer">
+      rel="noreferrer"
+    >
       <svg
+        className="footer-icon"
         style={{ fontSize: '3vw', height: '40px' }}
         fill="white"
         viewBox="0 0 496 512"

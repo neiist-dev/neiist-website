@@ -4,9 +4,18 @@ footer {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    margin-top: auto;
 }
 
-.footer-icon {
+.footer-icon-container {
     padding-right: 5%;
     padding-left: 5%;
+}
+
+.footer-icon{
+    transition: 0.3s;
+}
+
+.footer-icon:hover {
+    fill: #d1e3f0;
 }

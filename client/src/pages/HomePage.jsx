@@ -10,7 +10,7 @@ import useWindowSize from '../hooks/useWindowSize';
 const HomePage = () => {
   const windowSize = useWindowSize();
 
-  return(
+  return (
     <>
       <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
         <Carousel>
@@ -104,12 +104,11 @@ const HomePage = () => {
         <iframe
           title="Facebook do NEIIST"
           src={
-             windowSize.innerWidth < 600 ? 
-             "https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FNEIIST&tabs=timeline&width=300&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" 
-             : 
-             "https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FNEIIST&tabs=timeline&width=500&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" 
+            windowSize.innerWidth < 600
+              ? 'https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FNEIIST&tabs=timeline&width=300&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId'
+              : 'https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FNEIIST&tabs=timeline&width=500&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId'
           }
-          width={ windowSize.innerWidth < 600 ? 300 : 500 }
+          width={windowSize.innerWidth < 600 ? 300 : 500}
           height="500"
           style={{ border: 'none' }}
         />
