@@ -24,6 +24,14 @@ app.use('/api/theses', thesesRoute);
 app.use('/api/members', membersRoute);
 app.use('/api/elections', electionsRoute);
 
+app.get('/*', function(req, res) {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'), function(err) {
+    if (err) {
+      res.status(500).send(err)
+    }
+  })
+})
+
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`App is listening on port ${port}.`);
