@@ -130,9 +130,11 @@ const Theses = ({ areas, checkedAreas }) => {
     if (checkedAreas.length === 0) {
       filteredTheses = theses;
     } else if (checkedAreas.length === 1) {
-      filteredTheses = theses.filter((thesis) => checkedAreas.includes(thesis.area1) || checkedAreas.includes(thesis.area2));
+      filteredTheses = theses.filter((thesis) => checkedAreas.includes(thesis.area1)
+        || checkedAreas.includes(thesis.area2));
     } else {
-      filteredTheses = theses.filter((thesis) => checkedAreas.includes(thesis.area1) && checkedAreas.includes(thesis.area2));
+      filteredTheses = theses.filter((thesis) => checkedAreas.includes(thesis.area1)
+        && checkedAreas.includes(thesis.area2));
     }
 
     return (
