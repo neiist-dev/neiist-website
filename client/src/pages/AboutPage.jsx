@@ -59,7 +59,7 @@ const AboutPage = () => (
       <PersonCard name="Bernardo Nunes" job="Secretário" src={BernardoNunes} />
     </div>
 
-    <h2 style={{ textAlign: 'center' }}>CONCELHO FISCAL 2021/2022</h2>
+    <h2 style={{ textAlign: 'center' }}>CONSELHO FISCAL 2021/2022</h2>
     <div
       style={{
         display: 'flex',
