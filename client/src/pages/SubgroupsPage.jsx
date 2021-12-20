@@ -36,7 +36,7 @@ const SubgroupsPage = () => (
 
     <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
       <Button
-        href="https://www.sinfo.org"
+        href="https://sinfo.org"
         target="_blank"
         rel="noreferrer"
       >
