@@ -14,6 +14,7 @@ import MajorPage from './pages/MajorPage';
 import SubgroupsPage from './pages/SubgroupsPage';
 import RulesPage from './pages/RulesPage';
 import ContactsPage from './pages/ContactsPage';
+import ShopPage from './pages/ShopPage';
 
 import ThesisMasterPage from './pages/ThesisMasterPage';
 import MemberPage from './pages/MemberPage';
@@ -22,6 +23,7 @@ import AdminMenuPage from './pages/AdminMenuPage';
 import AdminAreasPage from './pages/AdminAreasPage';
 import AdminThesesPage from './pages/AdminThesesPage';
 import AdminElectionsPage from './pages/AdminElectionsPage';
+import AdminShopPage from './pages/AdminShopPage';
 
 import UserDataContext from './UserDataContext';
 
@@ -111,6 +113,9 @@ const App = () => {
             <Route path="/contactos">
               <ContactsPage />
             </Route>
+            <Route path="/loja">
+              <ShopPage />
+            </Route>
 
             <ActiveTecnicoStudentRoute path="/socios">
               <MemberPage />
@@ -131,6 +136,9 @@ const App = () => {
             </AdminRoute>
             <AdminRoute path="/admin/elections">
               <AdminElectionsPage />
+            </AdminRoute>
+            <AdminRoute path="/admin/shop">
+              <AdminShopPage />
             </AdminRoute>
 
             <Route path="/*">
