@@ -3,6 +3,7 @@ const areasDatabase = require('./areasDatabase');
 const thesesDatabase = require('./thesesDatabase');
 const membersDatabase = require('./membersDatabase');
 const electionsDatabase = require('./electionsDatabase');
+const productsDatabase = require('./productsDatabase');
 
 module.exports = {
   databaseSchema,
@@ -10,4 +11,5 @@ module.exports = {
   thesesDatabase,
   membersDatabase,
   electionsDatabase,
+  productsDatabase,
 };

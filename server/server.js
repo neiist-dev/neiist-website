@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const { databaseSchema } = require('./database');
 
 const {
-  authRoute, areasRoute, thesesRoute, membersRoute, electionsRoute,
+  authRoute, areasRoute, thesesRoute, membersRoute, electionsRoute, productsRoute,
 } = require('./routes');
 
 const app = express();
@@ -23,6 +23,7 @@ app.use('/api/areas', areasRoute);
 app.use('/api/theses', thesesRoute);
 app.use('/api/members', membersRoute);
 app.use('/api/elections', electionsRoute);
+app.use('/api/products', productsRoute)
 
 app.get('/*', function(req, res) {
   res.sendFile(path.join(__dirname, '../client/build/index.html'), function(err) {

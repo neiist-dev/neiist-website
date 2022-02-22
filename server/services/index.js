@@ -3,6 +3,7 @@ const areasService = require('./areasService');
 const thesesService = require('./thesesService');
 const membersService = require('./membersService');
 const electionsService = require('./electionsService');
+const productsService = require('./productsService');
 
 module.exports = {
   authService,
@@ -10,4 +11,5 @@ module.exports = {
   thesesService,
   membersService,
   electionsService,
+  productsService,
 };

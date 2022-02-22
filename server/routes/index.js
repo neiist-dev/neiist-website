@@ -3,6 +3,7 @@ const areasRoute = require('./areasRoute');
 const thesesRoute = require('./thesesRoute');
 const membersRoute = require('./membersRoute');
 const electionsRoute = require('./electionsRoute');
+const productsRoute = require('./productsRoute');
 
 module.exports = {
   authRoute,
@@ -10,4 +11,5 @@ module.exports = {
   thesesRoute,
   membersRoute,
   electionsRoute,
+  productsRoute,
 };
