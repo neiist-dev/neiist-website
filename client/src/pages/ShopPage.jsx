@@ -22,7 +22,13 @@ Stock
     l
     xl
     xxl
-
+---------------
+Product
+    id serial PRIMARY_KEY
+    type varchar(100)
+    size varchar(20)
+    price float
+    stock integer
 */
 
 // Idea: show cards and onclick show modal to view more photos and buy
@@ -30,7 +36,7 @@ const ShopCard = (product) => (
     <Card key={keyValue} style={{ width: '20rem', margin: "1em" }}>
         <Card.Img variant="top" />
         <Card.Body>
-            <Card.Title>{name}</Card.Title>
+            <Card.Title>{product.name}</Card.Title>
         </Card.Body>
     </Card>
 )
@@ -55,7 +61,7 @@ const ShopPage = () => {
                 },
             );
     }, []);
-
+    
     if (!isLoaded) return <div>...</div>;
     if (error) {
         return (

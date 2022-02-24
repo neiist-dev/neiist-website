@@ -1,14 +1,14 @@
 const db = require('./database');
 
-// Still working on it ...
-
 const createProducts = async () => {
   try {
     await db.query(
       `CREATE TABLE products(
                 id serial PRIMARY KEY,
                 name varchar(100),
-                price float
+                size varchar(20),
+                price float,
+                stock integer
             )`,
     );
   } catch (err) {
@@ -19,7 +19,10 @@ const createProducts = async () => {
 
 const createProduct = async (product) => {
   try {
-    await db.query('INSERT INTO products(name, price) VALUES($1, $2)', [product.name, product.price]);
+    await db.query(
+      'INSERT INTO products(name, size, price, stock) VALUES($1, $2, $3, $4)',
+      [product.name, product.size, product.price, product.stock]
+    );
   } catch (err) {
     console.error(err);
   }
@@ -27,7 +30,10 @@ const createProduct = async (product) => {
 
 const updateProduct = async (product) => {
   try {
-    await db.query('UPDATE products SET name = $1, price = $2', [product.name, product.price]);
+    await db.query(
+      'UPDATE products SET name = $1, size = $2, price = $3, stock = $4',
+      [product.name, product.size, product.price, product.stock]
+    );
   } catch (err) {
     console.error(err);
   }
