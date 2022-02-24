@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 import Card from 'react-bootstrap/Card';
@@ -9,40 +10,39 @@ DB Table ideas
 Product
     id
     name
-    pathLink
-    pathImage
     price
-    stock : [[name, stockName], [], [], [], ] Isto é mau?
+    pathImage
+    idStock
 
-SimpleStock
+Stock
     id
-    stock
+    xs
+    s
+    m
+    l
+    xl
+    xxl
 
-SweatStock
-    id
-    sizeAndName 
-    size [1,2,3,4]
-    name [xs,s,m,l]
 */
 
-const ShopCard = ({name, image, link}) => (
-    <Card style={{ width: '20rem'}}>
-        <Card.Img variant="top" src={image} />
+// Idea: show cards and onclick show modal to view more photos and buy
+const ShopCard = (product) => (
+    <Card key={keyValue} style={{ width: '20rem', margin: "1em" }}>
+        <Card.Img variant="top" />
         <Card.Body>
             <Card.Title>{name}</Card.Title>
-            <Card.Link href="{{path}}"></Card.Link>
         </Card.Body>
     </Card>
 )
 
 const ShopPage = () => {
-    
+
     const [products, setProducts] = useState(null);
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        fetch('/api/products') //TODO
+        fetch('/api/products')
             .then((res) => res.json())
             .then(
                 (productsRes) => {
@@ -55,7 +55,7 @@ const ShopPage = () => {
                 },
             );
     }, []);
-    
+
     if (!isLoaded) return <div>...</div>;
     if (error) {
         return (
@@ -66,22 +66,16 @@ const ShopPage = () => {
         );
     }
     if (products) {
-        /* TODO - products.map giving error
         return (
             <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
                 <h2 style={{ textAlign: 'center' }}>Sweats EIC</h2>
                 {products.map((product) => (
-                    <ShopCard name={product.name} image={product.image} path={product.path} />
+                    <ShopCard item={product} />
                 ))}
             </div>
         );
-        */
-        return (
-            <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
-                <h2 style={{ textAlign: 'center' }}>Sweats EIC</h2>
-            </div>
-        );
     }
+    return <div>Não foi possível carregar os produtos.</div>;
 }
 
-export default ShopPage
+export default ShopPage;
