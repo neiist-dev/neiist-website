@@ -1,23 +1,15 @@
 const { productsDatabase } = require('../database');
 
+const createProduct = async (product) => {
+    productsDatabase.createProduct(product);
+}
+
 const getProducts = async () => {
-    // Fake data, should query db
-    // const products = productsDatabase.getProducts();
-    const products = [
-        {
-            name:"Sweat Azul",
-            image:"/sweatAzul.png",
-            path:"/shop/sweatAzul"
-        },
-        {
-            name:"Sweat Vermelha",
-            image:"/sweatVermelha.png",
-            path:"/shop/sweatVermelha"
-        }
-    ];
+    const products = productsDatabase.getProducts();
     return products;
 }
 
 module.exports = {
+    createProduct,
     getProducts
 };

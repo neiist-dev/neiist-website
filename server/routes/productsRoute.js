@@ -5,7 +5,11 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.get('/',async (req, res) => {
+router.post('/', async (req) => {
+    await productsService.createProduct(req.body);
+});
+
+router.get('/', async (req, res) => {
     const products = await productsService.getProducts();
     res.json(products);
 });
