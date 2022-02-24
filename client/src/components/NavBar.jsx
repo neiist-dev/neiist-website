@@ -35,6 +35,9 @@ const NavBar = () => {
           <Nav.Link as={Link} to="/contactos">
             Contactos
           </Nav.Link>
+          <Nav.Link as={Link} to="/loja">
+            Loja
+          </Nav.Link>
 
           <ActiveTecnicoStudentNavLink as={Link} to="/socios">
             Sócios
