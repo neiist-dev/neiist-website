@@ -4,7 +4,7 @@ const createMembers = async () => {
   try {
     await db.query(
       `CREATE TABLE members(
-                username varchar(9) PRIMARY KEY,
+                username varchar(10) PRIMARY KEY,
                 "registerDate" date,
                 "canVoteDate" date
             )`,
