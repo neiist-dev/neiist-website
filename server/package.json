@@ -20,7 +20,7 @@
   "devDependencies": {
     "eslint": "^7.31.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-import": "2.26.0",
     "nodemon": "^2.0.7"
   }
 }
