@@ -1,0 +1,25 @@
+name: main
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: '16'
+
+      - name: Install client dependencies
+        run: cd client && npm install && cd ..
+
+      - name: Install server dependencies
+        run: cd server && npm install && cd ..
+
+      - name: Build client
+        run: cd client && npm run build && cd ..
