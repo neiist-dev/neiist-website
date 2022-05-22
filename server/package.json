@@ -3,8 +3,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "nodemon -r dotenv/config server.js",
-    "prod": "node -r dotenv/config server.js",
-    "lint": "eslint . --fix"
+    "prod": "node -r dotenv/config server.js"
   },
   "dependencies": {
     "axios": "0.27.2",
@@ -18,9 +17,6 @@
     "pg": "8.7.3"
   },
   "devDependencies": {
-    "eslint": "8.16.0",
-    "eslint-config-airbnb-base": "15.0.0",
-    "eslint-plugin-import": "2.26.0",
     "nodemon": "2.0.16"
   }
 }
