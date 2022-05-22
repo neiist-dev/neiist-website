@@ -2,13 +2,13 @@
   "name": "neiist-website-client",
   "proxy": "http://localhost:3001",
   "dependencies": {
-    "axios": "^0.21.2",
-    "bootstrap": "^5.0.2",
-    "react": "^17.0.2",
-    "react-bootstrap": "^2.0.0-beta.4",
-    "react-dom": "^17.0.2",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "^4.0.3"
+    "axios": "0.27.2",
+    "bootstrap": "5.1.3",
+    "react": "17.0.2",
+    "react-bootstrap": "2.4.0",
+    "react-dom": "17.0.2",
+    "react-router-dom": "5.3.3",
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -30,12 +30,12 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^7.31.0",
-    "eslint-config-airbnb": "^18.2.1",
-    "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-only-warn": "^1.0.3",
-    "eslint-plugin-react": "^7.24.0",
-    "eslint-plugin-react-hooks": "^4.2.0"
+    "eslint": "8.16.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-jsx-a11y": "6.5.1",
+    "eslint-plugin-only-warn": "1.0.3",
+    "eslint-plugin-react": "7.30.0",
+    "eslint-plugin-react-hooks": "4.5.0"
   }
 }
