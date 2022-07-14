@@ -12,7 +12,7 @@
 <br />
 <p align="center">
   <a href="https://neiist.tecnico.ulisboa.pt/">
-    <img src="./readme/logo.png" alt="Logo" width="80" height="80">
+    <img src="./readme/logo.png" alt="Logo" width="150">
   </a>
 
   <h3 align="center">NEIIST Website</h3>
