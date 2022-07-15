@@ -65,10 +65,13 @@ const App = () => {
     }
   };
 
-  useEffect(async () => {
-    if (urlParams.has('code')) await authFromCode();
-    else await tryAuthFromSessionStorage();
-    setIsLoaded(true);
+  useEffect(() => {
+    async function auth() {
+      if (urlParams.has('code')) await authFromCode();
+      else await tryAuthFromSessionStorage();
+      setIsLoaded(true);
+    }
+    auth();
   }, []);
 
   if (!isLoaded) {
