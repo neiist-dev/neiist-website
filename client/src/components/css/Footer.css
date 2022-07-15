@@ -4,6 +4,10 @@ footer {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    height: 6rem;
 }
 
 .footer-icon {
