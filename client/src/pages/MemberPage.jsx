@@ -52,7 +52,8 @@ const Register = () => {
       name: userData.name,
       email: userData.email,
     };
-    await axios.post('/api/members', member);
+    await axios.post('/api/members', member)
+      .then((res) => { if (res) window.location.reload(); });
   };
 
   return (
@@ -201,7 +202,8 @@ const Renew = () => {
     <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
         <Button
           onClick={() => {
-            axios.put(`/api/members/${userData.username}`, nameAndEmail);
+            axios.put(`/api/members/${userData.username}`, nameAndEmail)
+              .then((res) => { if (res) window.location.reload(); });
           }}
       >
         RENOVAR
