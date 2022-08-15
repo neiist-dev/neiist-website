@@ -57,6 +57,8 @@ const getUserData = async (accessToken) => {
 
   const userData = {
     username: personInformation.username,
+    name: personInformation.name,
+    email: personInformation.institutionalEmail,
     displayName: personInformation.displayName,
     isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),

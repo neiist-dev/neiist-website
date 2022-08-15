@@ -11,28 +11,26 @@ const addMonthsToDate = (numMonths, date) => {
   return newDate;
 };
 
-const isMemberExpired = async (username) => {
-  const member = await membersDatabase.getMember(username);
-  const expirationDate = addMonthsToDate(validPeriod, member.registerDate);
-  const currDate = new Date();
-  return currDate >= expirationDate;
+const canMemberVote = async (currDate, member) => {
+  return currDate >= member.canVoteDate;
 };
 
-const canMemberVote = async (username) => {
-  const member = await membersDatabase.getMember(username);
-  const currDate = new Date();
-  return currDate >= member.canVoteDate;
+const isMemberExpired = async (currDate, member) => {
+  return currDate >= member.renewStartDate;
 };
 
 const getMember = async (username) => {
   const memberInformation = await membersDatabase.getMember(username);
   if (!memberInformation) return null;
+  const currDate = new Date();
 
-  const isExpired = await isMemberExpired(memberInformation.username);
-  const canVote = await canMemberVote(memberInformation.username);
+  const isExpired = await isMemberExpired(currDate, memberInformation);
+  const canVote = await canMemberVote(currDate, memberInformation);
 
   const member = {
     username: memberInformation.username,
+    name: memberInformation.name,
+    email: memberInformation.email,
     isExpired,
     canVote,
   };
@@ -43,24 +41,42 @@ const getMember = async (username) => {
 const registerMember = async (member) => {
   const currDate = new Date();
   const canVoteDate = addMonthsToDate(waitingPeriod, currDate);
+  const renewStartDate = addMonthsToDate(validPeriod, currDate);
+  const renewEndDate = addMonthsToDate(validPeriod + gracePeriod, currDate);
 
   const newMember = member;
   newMember.registerDate = currDate;
   newMember.canVoteDate = canVoteDate;
+  newMember.renewStartDate = renewStartDate;
+  newMember.renewEndDate = renewEndDate;
 
   membersDatabase.createMember(newMember);
 };
 
-const renovateMember = async (username) => {
+const renovateMember = async (username, nameAndEmail) => {
   const member = await membersDatabase.getMember(username);
   const currDate = new Date();
+  const gracePeriodExpired = currDate >= member.renewEndDate;
 
-  const gracePeriodExpirationDate = addMonthsToDate(validPeriod + gracePeriod, member.registerDate);
-  const gracePeriodExpired = (currDate >= gracePeriodExpirationDate);
-  const canVoteDate = (gracePeriodExpired ? addMonthsToDate(waitingPeriod, currDate) : currDate);
+  // name/email changed in fenix OR if we don't have record of name/email
+  const name =
+    nameAndEmail.name != member.name ? nameAndEmail.name : member.name;
+  const email =
+    nameAndEmail.email != member.email ? nameAndEmail.email : member.email;
 
+  const canVoteDate = gracePeriodExpired
+    ? addMonthsToDate(waitingPeriod, currDate)
+    : currDate;
+  const renewStartDate = addMonthsToDate(validPeriod, currDate);
+  const renewEndDate = addMonthsToDate(validPeriod + gracePeriod, currDate);
+
+  member.name = name;
+  member.email = email;
   member.registerDate = currDate;
   member.canVoteDate = canVoteDate;
+  member.renewStartDate = renewStartDate;
+  member.renewEndDate = renewEndDate;
+
   membersDatabase.updateMember(member);
 };
 

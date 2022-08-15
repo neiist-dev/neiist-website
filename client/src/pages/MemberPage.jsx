@@ -49,6 +49,8 @@ const Register = () => {
   const handleNewMember = async () => {
     const member = {
       username: userData.username,
+      name: userData.name,
+      email: userData.email,
     };
     await axios.post('/api/members', member);
   };
@@ -190,12 +192,17 @@ const ElectionCard = ({ election }) => {
 const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
+  const nameAndEmail = {
+    name: userData.name,
+    email: userData.email,
+  };
+
   return (
     <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
-      <Button
-        onClick={() => {
-          axios.put(`/api/members/${userData.username}`);
-        }}
+        <Button
+          onClick={() => {
+            axios.put(`/api/members/${userData.username}`, nameAndEmail);
+          }}
       >
         RENOVAR
       </Button>

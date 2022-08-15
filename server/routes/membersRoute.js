@@ -18,7 +18,8 @@ router.get('/:username', async (req, res) => {
 
 router.put('/:username', async (req) => {
   const { username } = req.params;
-  await membersService.renovateMember(username);
+  const nameAndEmail = req.body;
+  await membersService.renovateMember(username, nameAndEmail);
 });
 
 module.exports = router;
