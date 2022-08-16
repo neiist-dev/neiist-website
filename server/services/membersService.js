@@ -31,6 +31,7 @@ const getMember = async (username) => {
     username: memberInformation.username,
     name: memberInformation.name,
     email: memberInformation.email,
+    courses: memberInformation.courses,
     isExpired,
     canVote,
   };
@@ -53,16 +54,18 @@ const registerMember = async (member) => {
   membersDatabase.createMember(newMember);
 };
 
-const renovateMember = async (username, nameAndEmail) => {
+const renovateMember = async (username, nameEmailCourses) => {
   const member = await membersDatabase.getMember(username);
   const currDate = new Date();
   const gracePeriodExpired = currDate >= member.renewEndDate;
 
-  // name/email changed in fenix OR if we don't have record of name/email
+  // changed in fenix OR if column in database = null
   const name =
-    nameAndEmail.name != member.name ? nameAndEmail.name : member.name;
+    nameEmailCourses.name != member.name ? nameEmailCourses.name : member.name;
   const email =
-    nameAndEmail.email != member.email ? nameAndEmail.email : member.email;
+    nameEmailCourses.email != member.email ? nameEmailCourses.email : member.email;
+  const courses =
+    nameEmailCourses.courses != member.courses ? nameEmailCourses.courses : member.courses;
 
   const canVoteDate = gracePeriodExpired
     ? addMonthsToDate(waitingPeriod, currDate)
@@ -72,6 +75,7 @@ const renovateMember = async (username, nameAndEmail) => {
 
   member.name = name;
   member.email = email;
+  member.courses = courses;
   member.registerDate = currDate;
   member.canVoteDate = canVoteDate;
   member.renewStartDate = renewStartDate;

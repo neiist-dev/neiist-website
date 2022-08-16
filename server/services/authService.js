@@ -52,14 +52,27 @@ const isAdmin = (username) => {
   return adminUsernames.includes(username);
 };
 
+const getAcronyms = (data) => {
+  var acronyms = [];
+  data.roles.forEach((role) => {
+    if (role.type === "STUDENT")
+      role.registrations.forEach((registration) =>
+        acronyms.push(registration.acronym)
+      );
+  });
+  return acronyms.join();
+}; 
+
 const getUserData = async (accessToken) => {
   const personInformation = await getPersonInformation(accessToken);
+  const acronyms = getAcronyms(personInformation);
 
   const userData = {
     username: personInformation.username,
+    displayName: personInformation.displayName,
     name: personInformation.name,
     email: personInformation.institutionalEmail,
-    displayName: personInformation.displayName,
+    courses: acronyms,
     isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
     isAdmin: isAdmin(personInformation.username),

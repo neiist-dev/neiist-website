@@ -19,8 +19,8 @@ router.get('/:username', async (req, res) => {
 
 router.put('/:username', async (req,res) => {
   const { username } = req.params;
-  const nameAndEmail = req.body;
-  await membersService.renovateMember(username, nameAndEmail);
+  const nameEmailCourses = req.body;
+  await membersService.renovateMember(username, nameEmailCourses);
   res.json(username);
 });
 

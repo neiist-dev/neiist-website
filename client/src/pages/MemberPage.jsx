@@ -51,6 +51,7 @@ const Register = () => {
       username: userData.username,
       name: userData.name,
       email: userData.email,
+      courses: userData.courses,
     };
     await axios.post('/api/members', member)
       .then((res) => { if (res) window.location.reload(); });
@@ -193,16 +194,17 @@ const ElectionCard = ({ election }) => {
 const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
-  const nameAndEmail = {
+  const nameEmailCourses = {
     name: userData.name,
     email: userData.email,
+    courses: userData.courses,
   };
 
   return (
     <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
         <Button
           onClick={() => {
-            axios.put(`/api/members/${userData.username}`, nameAndEmail)
+            axios.put(`/api/members/${userData.username}`, nameEmailCourses)
               .then((res) => { if (res) window.location.reload(); });
           }}
       >

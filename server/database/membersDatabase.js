@@ -7,6 +7,7 @@ const createMembers = async () => {
                 "username" varchar(10) PRIMARY KEY,
                 "name" varchar(255),
                 "email" varchar(255),
+                "courses" varchar(33),
                 "registerDate" date,
                 "canVoteDate" date,
                 "renewStartDate" date,
@@ -21,10 +22,11 @@ const createMembers = async () => {
 
 const createMember = async (member) => {
   try {
-    await db.query("INSERT INTO members VALUES($1, $2, $3, $4, $5, $6, $7)", [
+    await db.query("INSERT INTO members VALUES($1, $2, $3, $4, $5, $6, $7, $8)", [
       member.username,
       member.name,
       member.email,
+      member.courses,
       member.registerDate,
       member.canVoteDate,
       member.renewStartDate,
@@ -38,10 +40,11 @@ const createMember = async (member) => {
 const updateMember = async (member) => {
   try {
     await db.query(
-      'UPDATE members SET "name" = $1, "email" = $2, "registerDate" = $3::date, "canVoteDate" = $4::date, "renewStartDate" = $5::date, "renewEndDate" = $6::date WHERE "username" = $7',
+      'UPDATE members SET "name" = $1, "email" = $2, "courses" = $3, "registerDate" = $4::date, "canVoteDate" = $5::date, "renewStartDate" = $6::date, "renewEndDate" = $7::date WHERE "username" = $8',
       [
         member.name,
         member.email,
+        member.courses,
         member.registerDate,
         member.canVoteDate,
         member.renewStartDate,
