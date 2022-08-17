@@ -43,12 +43,13 @@ const App = () => {
     const code = urlParams.get('code');
     const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
     const accessToken = await accessTokenResponse.text();
-
+    
     window.sessionStorage.setItem('accessToken', accessToken);
-
+    
     const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
     const userDataJson = await userDataResponse.json();
-
+    
+    window.location.replace('/'); // Is this needed? If so, is there a better way?
     setUserData(userDataJson);
   };
 
