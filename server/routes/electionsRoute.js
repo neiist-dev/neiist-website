@@ -11,7 +11,7 @@ router.post('/', async (req) => {
 });
 
 router.get('/', async (req, res) => {
-  const elections = await electionsService.getElections();
+  const elections = await electionsService.getActiveElections();
   res.json(elections);
 });
 
