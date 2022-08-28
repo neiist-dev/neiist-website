@@ -1,0 +1,66 @@
+.principalBody {
+  margin: 2rem 20vw;
+}
+
+.noRegisterDiv {
+  background-color: rgba(255, 0, 0, 0.4);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  text-indent: 10px;
+}
+
+.memberInfoDiv {
+  display: flex;
+  justify-content: center;
+}
+
+.memberImageContainer{
+  float: left;
+  height: 150px;
+  width: auto;
+}
+
+.memberImage {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  background-image: none;
+  background-size: cover;
+  background-position: center center;
+  border-radius: 25px;
+}
+
+.memberCourse {
+  display: block;
+  width: auto;
+  height: 25px;
+  margin: 10px auto;
+}
+
+.memberInfo {
+  margin-left: 25px;
+  width: auto;
+  height: 150px;
+  position: relative;
+}
+
+.memberInfoStatus{
+  width: auto;
+  height: 25px;
+  margin-left: 10px;
+}
+
+.divButton,
+.information {
+  margin: 2rem 20vw;
+  text-align: center;
+}
+
+.electionCardDiv {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 10px 10px 10px;
+  align-content: space-around;
+}
