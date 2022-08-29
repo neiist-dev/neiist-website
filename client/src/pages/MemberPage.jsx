@@ -167,7 +167,7 @@ const Vote = () => {
   }
   if (elections.length > 0) {
     return (
-      <>
+      <div>
         <hr/>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
           {elections.length}
@@ -183,7 +183,7 @@ const Vote = () => {
             <ElectionCard key={election.id} election={election} />
           ))}
         </div>
-      </>
+      </div>
     );
   }
   return (
