@@ -17,4 +17,10 @@ router.get('/:choice', async (req, res) => {
   res.json(members);
 });
 
+router.put('/delete/:username', async (req, res) => {
+  const { username } = req.params;
+  await membersService.removeMember(username);
+  res.json(username);
+});
+
 module.exports = router;

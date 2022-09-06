@@ -71,13 +71,14 @@ const getMember = async (username) => {
   return member;
 };
 
-const getActiveMembers = async (limitDate) => {
+const getActiveMembers = async (currDate, limitDate) => {
   let activeMembers;
   try {
     const activeMembersResult = await db.query(
-      'SELECT * FROM members WHERE "registerDate" > $1::date \
+      'SELECT * FROM members \
+        WHERE "registerDate" > $1::date AND "renewEndDate" > $2::date \
         ORDER BY length(username), username',
-      [limitDate]
+      [limitDate, currDate]
     );
     activeMembers = activeMembersResult.rows;
   } catch (err) {

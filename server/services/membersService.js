@@ -59,7 +59,7 @@ const getActiveMembers = async () => {
   const currDate = new Date();
   const limitDate = subMonthsToDate(validPeriod + gracePeriod, currDate);
 
-  var activeMembers = await membersDatabase.getActiveMembers(limitDate);
+  var activeMembers = await membersDatabase.getActiveMembers(currDate, limitDate);
   if (!activeMembers) return null;
   
   activeMembers
@@ -130,10 +130,22 @@ const renovateMember = async (username, nameEmailCourses) => {
   membersDatabase.updateMember(member);
 };
 
+const removeMember = async (username) => {
+  //Removing a member is the same as renewDate being equal to today
+  const memberInfo = await membersDatabase.getMember(username);
+  const currDate = new Date();
+
+  memberInfo.renewStartDate = currDate;
+  memberInfo.renewEndDate = currDate;
+
+  membersDatabase.updateMember(memberInfo);
+};
+
 module.exports = {
   getMember,
   getActiveMembers,
   getAllMembers,
   registerMember,
   renovateMember,
+  removeMember,
 };
