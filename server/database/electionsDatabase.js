@@ -100,7 +100,23 @@ const getOptions = async (electionId) => {
   return optionsVotes;
 };
 
-const getElections = async () => {
+const getActiveElections = async (currDate) => {
+  let electionsOptions;
+  try {
+    const electionsResult = await db.query('SELECT * FROM elections WHERE $1 BETWEEN "startDate" AND "endDate" ', [currDate]);
+    const elections = electionsResult.rows;
+    electionsOptions = await Promise.all(elections.map(async (election) => {
+      const electionOptions = election;
+      electionOptions.options = await getOptions(election.id);
+      return electionOptions;
+    }));
+  } catch (err) {
+    console.error(err);
+  }
+  return electionsOptions;
+};
+
+const getAllElections = async () => {
   let electionsOptions;
   try {
     const electionsResult = await db.query('SELECT * FROM elections');
@@ -129,6 +145,7 @@ module.exports = {
   createOptions,
   createVotes,
   createElection,
-  getElections,
+  getActiveElections,
+  getAllElections,
   createVote,
 };

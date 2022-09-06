@@ -23,8 +23,11 @@ import AdminAreasPage from './pages/AdminAreasPage';
 import AdminThesesPage from './pages/AdminThesesPage';
 import AdminElectionsPage from './pages/AdminElectionsPage';
 
+import GacPage from './pages/GacPage';
+
 import UserDataContext from './UserDataContext';
 
+import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
 
 const Error = ({ error, errorDescription }) => (
@@ -137,6 +140,10 @@ const App = () => {
               <AdminElectionsPage />
             </AdminRoute>
 
+            <GacRoute path="/mag">
+              <GacPage />
+            </GacRoute>
+
             <Route path="/*">
               <Redirect to="/" />
             </Route>
@@ -173,6 +180,19 @@ const ActiveLMeicStudentRoute = ({ exact, path, children }) => {
   }
   return null;
 };
+
+const GacRoute = ({ exact, path, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isGacMember) {
+    return (
+      <Route exact={exact} path={path}>
+        {children}
+      </Route>
+    );
+  }
+  return null;
+}
 
 const AdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);

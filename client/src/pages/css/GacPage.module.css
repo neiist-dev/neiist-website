@@ -1,0 +1,285 @@
+/* Mobile CSS */
+@media only screen and (max-width: 750px) {
+  .principalBody {
+    display: block !important;
+  }
+
+  h1 {
+    display: grid;
+    font-size: 25PX !important;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .buttonsDiv {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+  }
+
+  .messageDiv {
+    max-width: 600px;
+    height: auto;
+    overflow: hidden;
+  }
+
+  .fsTable {
+    font-size: 12px !important;
+  }
+
+  .principalTable {
+    margin: 1rem 5vw !important;
+  }
+
+
+  .infoCard_img {
+    width: 100px !important;
+    height: 60% !important;
+  }
+
+  .infoCard_info {
+    font-size: 12px !important;
+    padding-left: 120px !important;
+  }
+
+  #tableDiv th {
+    font-size: 10px !important;
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  #period {
+    display: block !important;
+    padding: 0 !important;
+  }
+}
+
+.tabs {
+  margin: 1rem 10vw;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.principalTable {
+  place-self: center;
+  margin: 1rem 10vw;
+  display: grid;
+  place-self: center;
+  justify-items: stretch;
+  align-items: center;
+  align-content: center;
+}
+
+.principalTable table {
+  text-align: center;
+}
+
+.principalTable Button {
+  background: transparent;
+  border: transparent;
+  padding: 0;
+}
+
+.fsTable {
+  font-size: 14px;
+}
+
+.principalBody {
+  margin: 1rem 10vw;
+  display: grid;
+  text-align: center;
+  justify-content: center;
+}
+
+.principalBody h1 {
+  font-size: 30px;
+}
+
+.principalBody Button {
+  margin: 0 10px;
+  background: #248be3;
+  border-color: #248be3;
+  color: white;
+}
+
+.btnCopyEmailsHeader {
+  position: absolute;
+  font-size: 15px !important;
+  right: 50px;
+  background: #248be3 !important;
+  border-color: #248be3 !important;
+}
+
+.infoCard {
+  position: relative;
+  float: left;
+  height: 250px !important;
+  max-height: 250px;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: black !important;
+  margin: 0 !important;
+  width: 95%;
+}
+
+.infoCard,
+.nonActiveCard,
+.AllMembersCard {
+  color: black;
+  display: flex;
+  background: rgb(36, 139, 227, 0.25);
+  border-color: rgb(36, 139, 227, 0.25);
+  overflow: auto;
+  padding: 10px 10px 10px 15px;
+  margin-top: 5px;
+  position: relative;
+  align-items: center;
+  justify-items: center;
+  height: 100px;
+  border-radius: 10px;
+  box-sizing: unset;
+}
+
+.modalTitle {
+  font-size: 20px !important;
+}
+
+.modal50 {
+  max-width: none !important;
+  width: 50% !important;
+}
+
+.infoCard_info {
+  position: absolute;
+  font-size: 14px;
+  padding-left: 200px;
+  width: 95%;
+}
+
+#tableDiv {
+  display: grid;
+  width: 100%;
+  table-layout: fixed;
+  overflow-wrap: break-word;
+  align-content: center;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  flex-shrink: 1;
+}
+
+#tableDiv table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  overflow-wrap: break-word;
+  border-collapse: collapse;
+}
+
+#tableDiv thead {
+  background-color: darkblue;
+  color: white;
+}
+
+#tableDiv th {
+  width: 32.5%;
+  text-align: center;
+}
+
+#tableDiv tbody th {
+  font-size: 12px;
+}
+
+.memberImg {
+  width: 40px;
+  height: 40px;
+  display: block;
+  border-radius: 5px;
+  background-image: none;
+  background-size: cover;
+  background-position: center center;
+}
+
+.infoCard_img {
+  position: absolute;
+  width: 175px;
+  height: 85%;
+  display: block;
+  border-radius: 5px;
+  background-image: none;
+  background-size: cover;
+  background-position: center center;
+}
+
+.nonActiveCard_img {
+  width: 100px;
+  height: 85%;
+  display: block;
+  border-radius: 5px;
+  background-image: none;
+  background-size: cover;
+  background-position: center center;
+}
+
+.infoCard p {
+  font-size: 20px;
+  width: 100%;
+  display: inline;
+  margin: auto;
+}
+
+.nonActiveCard p {
+  padding-left: 10px;
+  font-size: 20px;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: 115px;
+  width: 100%;
+}
+
+
+#period {
+  display: inline;
+  font-size: 16px;
+}
+
+.nonActiveCard Button {
+  background-color: #248be3;
+  border-color: #248be3;
+  color: white;
+  position: absolute;
+  top: 15%;
+  right: 20px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.AllMembersCard_emails {
+  overflow: auto;
+  height: 45px;
+  align-items: center;
+  display: flex;
+  margin-right: 5px;
+  font-size: 20px;
+}
+
+.AllMembersCard Button {
+  display: flex;
+  right: 20px;
+  position: absolute;
+  background: #2863fd;
+  border-color: #2863fd;
+  color: white;
+  height: 35px;
+  flex-wrap: wrap;
+  align-content: center;
+  border-radius: 10px
+}

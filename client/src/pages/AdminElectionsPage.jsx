@@ -18,7 +18,7 @@ const ViewElections = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/elections')
+    fetch(`/api/admin/elections`)
       .then((res) => res.json())
       .then(
         (res) => {
@@ -45,9 +45,7 @@ const ViewElections = () => {
     return (
       <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
-          {elections.length}
-          {' '}
-          Eleições Ativas
+          Todas as eleições ({elections.length})
         </h1>
         <div
           style={{
@@ -68,6 +66,10 @@ const ViewElections = () => {
   return <div>Não foi possível carregar as eleições.</div>;
 };
 
+const currDate = new Date();
+const active = (election) => 
+  currDate>=new Date(election.startDate) && currDate<=new Date(election.endDate);
+
 const ElectionCard = ({ election }) => {
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
@@ -81,6 +83,9 @@ const ElectionCard = ({ election }) => {
       >
         <Card.Body>
           <Card.Title>{election.name}</Card.Title>
+          <h4 style={{color:'darkblue'}}>
+            {active(election) && "ATIVA"}
+          </h4>
         </Card.Body>
       </Card>
       <ElectionModal
@@ -96,6 +101,9 @@ const ElectionModal = ({ election, show, handleClose }) => (
   <Modal size="lg" show={show} onHide={handleClose} centered>
     <Modal.Header closeButton>
       <Modal.Title>{election.name}</Modal.Title>
+      <h4 style={{color:'darkblue', right: '45px', position: 'absolute'}}>
+        {active(election) && "ATIVA"}
+      </h4>
     </Modal.Header>
     <Modal.Body>
       <h4>ID</h4>

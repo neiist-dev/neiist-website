@@ -6,6 +6,8 @@ import Card from 'react-bootstrap/Card';
 import axios from 'axios';
 import UserDataContext from '../UserDataContext';
 
+import style from './css/MemberPage.module.css'
+
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);
   const [member, setMember] = useState(null);
@@ -28,19 +30,81 @@ const MembersPage = () => {
       );
   }, []);
 
-  if (!isLoaded) return <div>...</div>;
-  if (error) {
-    return (
-      <div>
-        Erro:
-        {error.message}
+  return (
+    <div className={style.principalBody}>
+      {(!isLoaded) && "..."}
+      {(error) && 
+        <div>
+          Erro:
+          {error.message}
+        </div>
+      }
+      {(isLoaded && (!member ? 
+        <MemberInformation member={userData} memberNotRegisted={true} />
+          :
+        <MemberInformation member={member} />
+      ))}
+
+      {(isLoaded && !member ) && <Register />}
+      {(isLoaded && member && 
+        (member.status==="Renovar" || member.status==="NaoSocio")) && <Renew />}
+      {(isLoaded && member && member.status==="SocioEleitor") && <Vote />}
+      {(isLoaded && member && member.status==="SocioRegular") && <CantVote />}
+    </div> );
+};
+
+const NoRegisterDiv = ({noRegisterFlag=false}) => {
+  return (
+    <div>
+      { (noRegisterFlag) &&
+        <div 
+          className={style.noRegisterDiv}
+        >
+          <p>⚠ Dados retirados do Fênix e não presentes na nossa base de dados.</p>
+        </div>
+      }
+    </div>
+  );
+};
+
+const MemberInformation = ({member, memberNotRegisted=false}) => {
+
+  member.status = (memberNotRegisted) ? "NaoSocio": member.status;
+
+  // Image of Student only shows if their profile picture is public in Fenix
+  return (
+    <div>
+      <NoRegisterDiv noRegisterFlag={memberNotRegisted}/>
+      <div
+        className={style.memberInfoDiv}
+      >
+        <div
+          className={style.memberImageContainer}
+        >
+          <div
+            className={style.memberImage}
+            style={{
+              backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username})`}}
+          />
+          <img
+            className={style.memberCourse} 
+            src={`https://shields.io/badge/-${member.courses.replace("-","--")}-darkblue?&style=for-the-badge`}
+          />
+        </div>
+        <div className={style.memberInfo}>
+          <p><b>Username:</b> {member.username}</p>
+          <p><b>Nome:</b> {member.name}</p>
+          <p><b>Email:</b> {member.email}</p>
+          <p><b>Estado Atual de Sócio:</b>
+          <img
+            className={style.memberInfoStatus} 
+            src={`${process.env.PUBLIC_URL}/${member.status}.svg`}
+          />
+          </p>
+        </div>
       </div>
-    );
-  }
-  if (!member) return <Register />;
-  if (member.isExpired) return <Renew />;
-  if (member.canVote) return <Vote />;
-  return <CantVote />;
+    </div>
+  );
 };
 
 const Register = () => {
@@ -49,12 +113,16 @@ const Register = () => {
   const handleNewMember = async () => {
     const member = {
       username: userData.username,
+      name: userData.name,
+      email: userData.email,
+      courses: userData.courses,
     };
-    await axios.post('/api/members', member);
+    await axios.post('/api/members', member)
+      .then((res) => { if (res) window.location.reload(); });
   };
 
   return (
-    <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
+    <div className={style.divButton}>
       <Button onClick={handleNewMember}>
         REGISTAR
       </Button>
@@ -63,7 +131,7 @@ const Register = () => {
 };
 
 const CantVote = () => (
-  <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
+  <div className={style.information}>
     <p>AINDA NÃO PODES VOTAR</p>
   </div>
 );
@@ -97,31 +165,40 @@ const Vote = () => {
       </div>
     );
   }
-  if (elections) {
+  if (elections.length > 0) {
     return (
-      <>
+      <div>
+        <hr/>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
           {elections.length}
           {' '}
-          Eleições
+          {elections.length===1 ? 
+            "Eleição"
+            : 
+            "Eleições"
+          }
         </h1>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignContent: 'space-around',
-            flexWrap: 'wrap',
-            padding: '0 10px 10px 10px',
-          }}
-        >
+        <div className={style.electionCardDiv}>
           {elections.map((election) => (
             <ElectionCard key={election.id} election={election} />
           ))}
         </div>
-      </>
+      </div>
     );
   }
-  return <div>Não foi possível carregar as eleições.</div>;
+  return (
+    <div
+      className={style.information}
+    >
+      <p>{
+        isLoaded && error===null && elections.length === 0 ?
+        "Não existe atualmente eleições a decorrer."
+        :
+        "Não foi possível carregar as eleições."
+      }
+      </p>
+    </div>
+  );
 };
 
 const ElectionCard = ({ election }) => {
@@ -190,12 +267,19 @@ const ElectionCard = ({ election }) => {
 const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
+  const nameEmailCourses = {
+    name: userData.name,
+    email: userData.email,
+    courses: userData.courses,
+  };
+
   return (
-    <div style={{ margin: '2rem 20vw', textAlign: 'center' }}>
-      <Button
-        onClick={() => {
-          axios.put(`/api/members/${userData.username}`);
-        }}
+    <div className={style.divButton}>
+        <Button
+          onClick={() => {
+            axios.put(`/api/members/${userData.username}`, nameEmailCourses)
+              .then((res) => { if (res) window.location.reload(); });
+          }}
       >
         RENOVAR
       </Button>
