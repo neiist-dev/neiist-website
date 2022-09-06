@@ -79,6 +79,8 @@ const ProductModal = ({ product, sizes, image, show, handleClose }) => {
     );
 };
 
+//product = {name: XXXX, price: XXXX}
+//sweat = {name: XXXX, size: XXXX, stock: XXXX}
 const createProduct = () => {
     let product1 = {
         name: "Sweat Azul",
@@ -163,14 +165,15 @@ const ShopPage = () => {
             products.map(item => [item["name"], item])
         ).values()];
 
+        console.log(uniqueProducts);
+
         return (
             <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
                 <h2 style={{ textAlign: 'center' }}>Sweats EIC</h2>
                 <Row>
                     {uniqueProducts.map((uniqueProduct) => (
-                        <Col>
+                        <Col key={uniqueProduct.id}>
                             <ProductCard
-                                key={uniqueProduct.id}
                                 product={uniqueProduct}
                                 sizes={products.filter(
                                     (product) => { if (product.name == uniqueProduct.name) return product }

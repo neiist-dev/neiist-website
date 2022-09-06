@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const { databaseSchema } = require('./database');
 
 const {
-  authRoute, areasRoute, thesesRoute, membersRoute, electionsRoute, adminElectionsRoute, gacRoute
+  authRoute, areasRoute, thesesRoute, membersRoute, electionsRoute, productsRoute, adminElectionsRoute, gacRoute
 } = require('./routes');
 
 const app = express();
