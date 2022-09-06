@@ -9,7 +9,7 @@ const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
 
   return (
-    <Navbar expand="lg">
+    <Navbar expand="lg" style={{padding: '10px' }}>
       <Navbar.Brand as={Link} to="/">
         <img src={logo} height="40" alt="" />
       </Navbar.Brand>
@@ -51,6 +51,10 @@ const NavBar = () => {
             Admin
           </AdminNavLink>
 
+          <GacNavLink as={Link} to="/mag">
+            MAG
+          </GacNavLink>
+
         </Nav>
         <Nav style={{ marginLeft: 'auto' }}>
           <LoginLogout userData={userData} setUserData={setUserData} />
@@ -77,6 +81,19 @@ const ActiveLMeicStudentNavLink = ({ as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isActiveLMeicStudent) {
+    return (
+      <Nav.Link as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
+};
+
+const GacNavLink = ({ as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isGacMember) {
     return (
       <Nav.Link as={as} to={to}>
         {children}

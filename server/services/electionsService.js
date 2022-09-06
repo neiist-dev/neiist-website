@@ -4,8 +4,14 @@ const newElection = async (election) => {
   await electionsDatabase.createElection(election);
 };
 
-const getElections = async () => {
-  const elections = await electionsDatabase.getElections();
+const getActiveElections = async () => {
+  const currDate = new Date();
+  const elections = await electionsDatabase.getActiveElections(currDate);
+  return elections;
+};
+
+const getAllElections = async () => {
+  const elections = await electionsDatabase.getAllElections();
   return elections;
 };
 
@@ -15,6 +21,7 @@ const newVote = async (id, vote) => {
 
 module.exports = {
   newElection,
-  getElections,
+  getActiveElections,
+  getAllElections,
   newVote,
 };

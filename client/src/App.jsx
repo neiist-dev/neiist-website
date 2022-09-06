@@ -25,8 +25,11 @@ import AdminThesesPage from './pages/AdminThesesPage';
 import AdminElectionsPage from './pages/AdminElectionsPage';
 import AdminShopPage from './pages/AdminShopPage';
 
+import GacPage from './pages/GacPage';
+
 import UserDataContext from './UserDataContext';
 
+import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
 
 const Error = ({ error, errorDescription }) => (
@@ -45,13 +48,16 @@ const App = () => {
     const code = urlParams.get('code');
     const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
     const accessToken = await accessTokenResponse.text();
-
+    
     window.sessionStorage.setItem('accessToken', accessToken);
-
-    const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
-    const userDataJson = await userDataResponse.json();
-
-    setUserData(userDataJson);
+    
+    await fetch(`/api/auth/userData/${accessToken}`)
+      .then((userDataResponse) => {
+        window.location.replace('/').then(() => {
+          const userDataJson = userDataResponse.json();
+          if (userDataJson) setUserData(userDataJson)
+        });
+      });
   };
 
   const tryAuthFromSessionStorage = async () => {
@@ -67,10 +73,13 @@ const App = () => {
     }
   };
 
-  useEffect(async () => {
-    if (urlParams.has('code')) await authFromCode();
-    else await tryAuthFromSessionStorage();
-    setIsLoaded(true);
+  useEffect(() => {
+    async function auth() {
+      if (urlParams.has('code')) await authFromCode();
+      else await tryAuthFromSessionStorage();
+      setIsLoaded(true);
+    }
+    auth();
   }, []);
 
   if (!isLoaded) {
@@ -141,6 +150,10 @@ const App = () => {
               <AdminShopPage />
             </AdminRoute>
 
+            <GacRoute path="/mag">
+              <GacPage />
+            </GacRoute>
+
             <Route path="/*">
               <Redirect to="/" />
             </Route>
@@ -177,6 +190,19 @@ const ActiveLMeicStudentRoute = ({ exact, path, children }) => {
   }
   return null;
 };
+
+const GacRoute = ({ exact, path, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isGacMember) {
+    return (
+      <Route exact={exact} path={path}>
+        {children}
+      </Route>
+    );
+  }
+  return null;
+}
 
 const AdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
