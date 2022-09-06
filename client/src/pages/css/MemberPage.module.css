@@ -1,5 +1,5 @@
 /* Mobile CSS */
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 750px) {
   .noRegisterDiv {
     background-color: rgba(255, 0, 0, 0.4);
     text-align: center;
@@ -17,6 +17,10 @@
     height: fit-content;
   }
   
+  .memberImageContainer {
+    width: 100% !important;
+  }
+
   .memberInfo {
     margin-left: 0 !important;
     height: auto !important;
