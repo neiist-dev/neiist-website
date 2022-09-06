@@ -47,6 +47,12 @@ const isActiveLMeicStudent = (roles) => {
   return roles.some((role) => role.type === 'STUDENT' && role.registrations.some((registration) => LMeicAcronyms.includes(registration.acronym)));
 };
 
+const isGacMember = (username) => {
+  // GAC = general assembly committee (MAG in PT)
+  const gacUsernames = process.env.GAC_USERNAMES.split(',');
+  return gacUsernames.includes(username);
+};
+
 const isAdmin = (username) => {
   const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
   return adminUsernames.includes(username);
@@ -75,6 +81,7 @@ const getUserData = async (accessToken) => {
     courses: acronyms,
     isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
+    isGacMember: isGacMember(personInformation.username),
     isAdmin: isAdmin(personInformation.username),
   };
 

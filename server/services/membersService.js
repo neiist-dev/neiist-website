@@ -3,9 +3,21 @@ const { membersDatabase } = require('../database');
 const waitingPeriod = 4;
 const validPeriod = 12;
 const gracePeriod = 6;
+const dateColumns = ['registerDate', 'canVoteDate', 'renewStartDate', 'renewEndDate'];
+
+/* Dates */
+const formatDate = (date) => 
+  new Date(date).toLocaleDateString('pt-pt').split(',')[0];
 
 const addMonthsToDate = (numMonths, date) => {
   const newMonth = date.getMonth() + numMonths;
+  const newDate = new Date(date);
+  newDate.setMonth(newMonth);
+  return newDate;
+};
+
+const subMonthsToDate = (numMonths, date) => {
+  const newMonth = date.getMonth() - numMonths;
   const newDate = new Date(date);
   newDate.setMonth(newMonth);
   return newDate;
@@ -21,7 +33,7 @@ const hastoRenew = (currDate, member) =>
 const isMemberExpired = (currDate, member) =>
   currDate > member.renewEndDate;
 
-const getStatus = (currDate, member) => {
+const getStatus = (member, currDate = new Date()) => {
   const canVote = canMemberVote(currDate, member);
   const renew = hastoRenew(currDate, member);
   const expired = isMemberExpired(currDate, member);
@@ -37,10 +49,39 @@ const getMember = async (username) => {
   const memberInfo = await membersDatabase.getMember(username);
   if (!memberInfo) return null;
 
-  const currDate = new Date();
-  memberInfo.status = getStatus(currDate, memberInfo);
+  memberInfo.status = getStatus(memberInfo);
+  dateColumns.forEach( (date) => memberInfo[date] = formatDate(memberInfo[date]) );
 
   return memberInfo;
+};
+
+const getActiveMembers = async () => {
+  const currDate = new Date();
+  const limitDate = subMonthsToDate(validPeriod + gracePeriod, currDate);
+
+  var activeMembers = await membersDatabase.getActiveMembers(currDate, limitDate);
+  if (!activeMembers) return null;
+  
+  activeMembers
+    .forEach( member => {
+      member.status = getStatus(member);
+      dateColumns.forEach((date) => member[date] = formatDate(member[date]));
+    });
+
+  return activeMembers;
+};
+
+const getAllMembers = async () => {
+  var allMembers = await membersDatabase.getAllMembers();
+  if (!allMembers) return null;
+  
+  allMembers
+    .forEach( member => {
+      member.status = getStatus(member);
+      dateColumns.forEach((date) => member[date] = formatDate(member[date]));
+    });
+
+  return allMembers;
 };
 
 const registerMember = async (member) => {
@@ -89,8 +130,22 @@ const renovateMember = async (username, nameEmailCourses) => {
   membersDatabase.updateMember(member);
 };
 
+const removeMember = async (username) => {
+  //Removing a member is the same as renewDate being equal to today
+  const memberInfo = await membersDatabase.getMember(username);
+  const currDate = new Date();
+
+  memberInfo.renewStartDate = currDate;
+  memberInfo.renewEndDate = currDate;
+
+  membersDatabase.updateMember(memberInfo);
+};
+
 module.exports = {
   getMember,
+  getActiveMembers,
+  getAllMembers,
   registerMember,
   renovateMember,
+  removeMember,
 };

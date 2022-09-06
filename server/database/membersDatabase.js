@@ -71,9 +71,40 @@ const getMember = async (username) => {
   return member;
 };
 
+const getActiveMembers = async (currDate, limitDate) => {
+  let activeMembers;
+  try {
+    const activeMembersResult = await db.query(
+      'SELECT * FROM members \
+        WHERE "registerDate" > $1::date AND "renewEndDate" > $2::date \
+        ORDER BY length(username), username',
+      [limitDate, currDate]
+    );
+    activeMembers = activeMembersResult.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return activeMembers;
+};
+
+const getAllMembers = async () => {
+  let allMembers;
+  try {
+    const allMembersResult = await db.query(
+      'SELECT * FROM members ORDER BY length(username), username'
+    );
+    allMembers = allMembersResult.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return allMembers;
+};
+
 module.exports = {
   createMembers,
   createMember,
   updateMember,
   getMember,
+  getActiveMembers,
+  getAllMembers,
 };
