@@ -49,11 +49,13 @@ const App = () => {
     
     window.sessionStorage.setItem('accessToken', accessToken);
     
-    const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
-    const userDataJson = await userDataResponse.json();
-    
-    window.location.replace('/'); // Is this needed? If so, is there a better way?
-    setUserData(userDataJson);
+    await fetch(`/api/auth/userData/${accessToken}`)
+      .then((userDataResponse) => {
+        window.location.replace('/').then(() => {
+          const userDataJson = userDataResponse.json();
+          if (userDataJson) setUserData(userDataJson)
+        });
+      });
   };
 
   const tryAuthFromSessionStorage = async () => {
