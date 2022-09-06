@@ -9,7 +9,13 @@ const getProducts = async () => {
     return products;
 }
 
+const getProduct = async (name) => {
+    const product = productsDatabase.getProduct(name);
+    return product;
+}
+
 module.exports = {
     createProduct,
-    getProducts
+    getProducts,
+    getProduct
 };

@@ -12,26 +12,27 @@ function importAll(r) {
 }
 const images = importAll(require.context('../images/products', false, /\.(png)$/));
 
-const ProductCard = ({ product, sizes }) => {
+const ProductCard = ({ name, price }) => {
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const imagePath = product.name.replace(/\s+/g, '').concat(".png");
+    const imagePath = name.replace(/\s+/g, '').concat(".png");
 
+    //TODO: Fix image size!
     return (
         <>
             <Card style={{ width: '20rem', margin: "1em" }} onClick={handleShow}>
-                <Card.Img variant="top" src={images[imagePath].default} width={"300em"} height={"300em"}/>
+                <Card.Img variant="top" src={images[imagePath]} height="300em"/> 
                 <Card.Body>
-                    <Card.Title>{product.name}</Card.Title>
+                    <Card.Title>{name}</Card.Title>
                 </Card.Body>
             </Card>
             <ProductModal
-                product={product}
-                sizes={sizes}
+                name={name}
                 image={imagePath}
+                price={price}
                 show={show}
                 handleClose={handleClose}
             />
@@ -39,22 +40,33 @@ const ProductCard = ({ product, sizes }) => {
     );
 }
 
-const ProductModal = ({ product, sizes, image, show, handleClose }) => {
+const ProductModal = ({ name, image, price, show, handleClose }) => {
 
-    let dropdown = null;
-    const [price, setPrice] = useState(product.price);
+    const [sizes, setSizes] = useState([]);
+    const [error, setError] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    if (sizes.length > 0) {
-        dropdown =
-            <FormSelect aria-label="Tamanho" onChange={(value) => setPrice(value)}>
-                {sizes.map((size) => <option key={size.id} value={size.size}>{size.size}</option>)}
-            </FormSelect>
-    }
+    useEffect(() => {
+        fetch(`/api/products/${name}`)
+            .then((res) => res.json())
+            .then(
+                (sizesRes) => {
+                    setSizes(sizesRes);
+                    setIsLoaded(true);
+                },
+                (err) => {
+                    setIsLoaded(true);
+                    setError(err);
+                },
+            );
+    }, []);
+
+    // const [price, setPrice] = useState(product.price); PUT ON ADMIN!!!
 
     return (
         <Modal size="lg" show={show} centered>
             <Modal.Header closeButton onClick={handleClose}>
-                <Modal.Title>{product.name}</Modal.Title>
+                <Modal.Title>{name}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Row>
@@ -62,18 +74,20 @@ const ProductModal = ({ product, sizes, image, show, handleClose }) => {
                         <img src={images[image].default} className="img-fluid" />
                     </Col>
                     <Col>
-                        {dropdown}
+                        <FormSelect aria-label="Tamanho">
+                            {sizes.map((size) => <option key={size.id} value={size.size}>{size.size}</option>)}
+                        </FormSelect>
                     </Col>
                     <Col>
                         <h4>Preço</h4>
-                        <p>{product.price}</p>
+                        <p>{price} €</p>
                         <h4>Quantidade</h4>
                         <input></input>
                     </Col>
                 </Row>
             </Modal.Body>
             <Modal.Footer>
-                <Button>Order</Button>
+                <Button>Adicionar ao cesto</Button>
             </Modal.Footer>
         </Modal>
     );
@@ -85,38 +99,32 @@ const createProduct = () => {
     let product1 = {
         name: "Sweat Azul",
         size: "L",
-        price: 15.70,
-        stock: 16
+        price: 15.70
     }
     let product2 = {
         name: "Sweat Azul",
         size: "M",
-        price: 15.70,
-        stock: 10
+        price: 15.70
     }
     let product3 = {
         name: "Sweat Vermelha",
         size: "M",
-        price: 15.70,
-        stock: 5
+        price: 15.70
     }
     let product4 = {
         name: "Sweat Beje",
         size: "XS",
-        price: 15.70,
-        stock: 2
+        price: 15.70
     }
     let product5 = {
         name: "Sweat Vermelha",
         size: "XL",
-        price: 15.70,
-        stock: 3
+        price: 15.70
     }
     let product6 = {
         name: "Sweat Cor-de-Rosa",
         size: "XS",
-        price: 15.70,
-        stock: 2
+        price: 15.70
     }
 
     axios.post('/api/products', product1);
@@ -134,11 +142,11 @@ const ShopPage = () => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        fetch('/api/products')
+        fetch(`/api/products`)
             .then((res) => res.json())
             .then(
                 (productsRes) => {
-                    //createProduct();
+                    createProduct();
                     setProducts(productsRes);
                     setIsLoaded(true);
                 },
@@ -160,24 +168,17 @@ const ShopPage = () => {
     }
     if (products) {
 
-        // Remove 'duplicate' products with same name but different size
-        const uniqueProducts = [...new Map(
-            products.map(item => [item["name"], item])
-        ).values()];
-
-        console.log(uniqueProducts);
+        console.log(products);
 
         return (
             <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
                 <h2 style={{ textAlign: 'center' }}>Sweats EIC</h2>
                 <Row>
-                    {uniqueProducts.map((uniqueProduct) => (
-                        <Col key={uniqueProduct.id}>
+                    {products.map((product) => (
+                        <Col key={product.id}>
                             <ProductCard
-                                product={uniqueProduct}
-                                sizes={products.filter(
-                                    (product) => { if (product.name == uniqueProduct.name) return product }
-                                )}
+                                name={product.name}
+                                price={product.price}
                             />
                         </Col>
                     ))}    

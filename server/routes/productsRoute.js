@@ -14,4 +14,10 @@ router.get('/', async (req, res) => {
     res.json(products);
 });
 
+router.get('/:name', async (req, res) => {
+    const { name } = req.params;
+    const product = await productsService.getProduct(name);
+    res.json(product);
+});
+
 module.exports = router;
