@@ -1,0 +1,27 @@
+{
+  "anoLetivo": "2021/2022",
+  "orgaosSociais": {
+    "Direção": {
+      "Presidente": "André Silva",
+      "Vice-Presidente" : "Miguel Gonçalves",
+      "Vogal" : "Catarina Sousa",
+      "Diretor de Atividades (Alameda)" : "Catarina Gonçalves",
+      "Diretor de Atividades (Taguspark)" : "Nelson Trindade",
+      "Diretor SINFO" : "Mariana Cintrão",
+      "Tesoureiro" : "João Pina"
+    },
+    "Mesa da Assembleia Geral": {
+      "Presidente": "Maria Ribeiro",
+      "Vice-Presidente" : "Rodrigo Major",
+      "Secretário1": "Beatriz Alves",
+      "Secretário2": "Bernardo Nunes"
+    },
+    "Conselho Fiscal": {
+      "Presidente": "Pedro Fernandes",
+      "Membro1": "Leonor Veloso",
+      "Membro2": "Nuno Serras"
+    }
+  },
+  "Membros": [
+  ]
+}
