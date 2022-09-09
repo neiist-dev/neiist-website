@@ -15,38 +15,11 @@ const images = importAll(require.context('../images/products', false, /\.(png)$/
 const ProductCard = ({ name, price }) => {
 
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-
-    const imagePath = name.replace(/\s+/g, '').concat(".png");
-
-    //TODO: Fix image size!
-    return (
-        <>
-            <Card style={{ width: '20rem', margin: "1em" }} onClick={handleShow}>
-                <Card.Img variant="top" src={images[imagePath]} height="300em"/> 
-                <Card.Body>
-                    <Card.Title>{name}</Card.Title>
-                </Card.Body>
-            </Card>
-            <ProductModal
-                name={name}
-                image={imagePath}
-                price={price}
-                show={show}
-                handleClose={handleClose}
-            />
-        </>
-    );
-}
-
-const ProductModal = ({ name, image, price, show, handleClose }) => {
-
     const [sizes, setSizes] = useState([]);
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
-
-    useEffect(() => {
+    const handleClose = () => setShow(false);
+    const handleShow = () => {
         fetch(`/api/products/${name}`)
             .then((res) => res.json())
             .then(
@@ -59,7 +32,55 @@ const ProductModal = ({ name, image, price, show, handleClose }) => {
                     setError(err);
                 },
             );
-    }, []);
+        setShow(true);
+    };
+
+    const imagePath = name.replace(/\s+/g, '').concat(".png");
+    let card;
+    
+    if (!isLoaded)
+        card = (
+            <Card style={{ width: '20rem', margin: "1em" }}>
+                <Card.Body>
+                    <Card.Title>...</Card.Title>
+                </Card.Body>
+            </Card>
+        );
+    if (error)
+        card = (
+            <Card style={{ width: '20rem', margin: "1em" }}>
+                <Card.Body>
+                    <Card.Title>Erro: {error.message}</Card.Title>
+                </Card.Body>
+            </Card>
+        );
+    if (sizes)
+        card = (
+            <Card style={{ width: '20rem', margin: "1em" }} onClick={handleShow}>
+                <Card.Img variant="top" src={images[imagePath]} height="300em"/> 
+                <Card.Body>
+                    <Card.Title>{name}</Card.Title>
+                </Card.Body>
+            </Card>
+        );
+
+    //TODO: Fix image size!
+    return (
+        <>
+            {card}
+            <ProductModal
+                name={name}
+                image={imagePath}
+                sizes={sizes}
+                price={price}
+                show={show}
+                handleClose={handleClose}
+            />
+        </>
+    );
+}
+
+const ProductModal = ({ name, image, sizes, price, show, handleClose }) => {
 
     // const [price, setPrice] = useState(product.price); PUT ON ADMIN!!!
 
@@ -71,11 +92,11 @@ const ProductModal = ({ name, image, price, show, handleClose }) => {
             <Modal.Body>
                 <Row>
                     <Col>
-                        <img src={images[image].default} className="img-fluid" />
+                        <img src={images[image]} className="img-fluid" />
                     </Col>
                     <Col>
                         <FormSelect aria-label="Tamanho">
-                            {sizes.map((size) => <option key={size.id} value={size.size}>{size.size}</option>)}
+                            {sizes.map((size) => <option key={size.size} value={size.size}>{size.size}</option>)}
                         </FormSelect>
                     </Col>
                     <Col>
@@ -167,15 +188,12 @@ const ShopPage = () => {
         );
     }
     if (products) {
-
-        console.log(products);
-
         return (
             <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
                 <h2 style={{ textAlign: 'center' }}>Sweats EIC</h2>
                 <Row>
                     {products.map((product) => (
-                        <Col key={product.id}>
+                        <Col key={product.name}>
                             <ProductCard
                                 name={product.name}
                                 price={product.price}
