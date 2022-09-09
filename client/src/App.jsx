@@ -31,6 +31,7 @@ import UserDataContext from './UserDataContext';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
+import "bootstrap-icons/font/bootstrap-icons.css"; // importing required bootstrap icon styles
 
 const Error = ({ error, errorDescription }) => (
   <>
