@@ -1,0 +1,32 @@
+.header {
+  margin: 2rem 20vw 1rem 20vw;
+}
+
+.socialOrgansDiv {
+  display: flex;
+  justify-content: center;
+  align-content: space-around;
+  flex-wrap: wrap;
+  padding: 0 10px 10px 10px;
+  margin: 1rem 10vw;
+}
+
+.cardContainer {
+  display: contents;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  margin: 10px;
+  width: 15rem;
+  text-align: center;
+}
+
+.cardImg{
+  min-height: 238px;
+}
+
+h1, h2 {
+  text-align: center;
+}
