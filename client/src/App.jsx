@@ -6,6 +6,7 @@ import {
   Redirect,
 } from 'react-router-dom';
 import Layout from './components/Layout';
+import LoadSpinner from "./hooks/loadSpinner";
 
 import HomePage from './pages/HomePage';
 import ActivitiesPage from './pages/ActivitiesPage';
@@ -81,7 +82,7 @@ const App = () => {
   }, []);
 
   if (!isLoaded) {
-    return <div>...</div>;
+    return <LoadSpinner />;
   }
 
   if (urlParams.has('error')) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useWindowSize from "../hooks/useWindowSize";
+import LoadSpinner from "../hooks/loadSpinner";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from 'react-bootstrap/Form';
@@ -66,7 +67,7 @@ const ActiveMembersPage = ({ keySelected }) => {
 
   return (
     <>
-      {!isLoaded && <div>...</div>}
+      {!isLoaded && <LoadSpinner />}
       {error && (
         <div>
           Erro:
@@ -129,7 +130,7 @@ const AllMembersPage = ({ keySelected }) => {
 
   return (
     <>
-      {!isLoaded && <div>...</div>}
+      {!isLoaded && <LoadSpinner />}
       {error && (
         <div>
           Erro:
@@ -212,7 +213,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {!isLoaded && <div>Loading...</div>}
+          {!isLoaded && <LoadSpinner />}
           {error && <div>Error: {error}</div>}
           {member !== null && isLoaded && (
             <div className={style.infoCard}>
