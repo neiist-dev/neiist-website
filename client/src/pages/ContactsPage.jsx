@@ -22,9 +22,9 @@ const ContactsPage = () => (
 
       <div style={{ display: 'inline-block', marginRight: '1rem' }}>
         <p>
-          Laboratório 1
+          Biblioteca, Sala 0.04
           <br />
-          Pavilhão de Informática 1
+          Pavilhão de Informática 2
           <br />
           Campus Alameda
           <br />
