@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import LoadSpinner from "../hooks/loadSpinner";
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import Modal from 'react-bootstrap/Modal';
@@ -45,7 +45,7 @@ const Areas = ({
 
   const handleChange = (area) => setCheckedAreas(area);
 
-  if (!isLoaded) return <div>...</div>;
+  if (!isLoaded) return <LoadSpinner />;
   if (error) {
     return (
       <div>
@@ -116,7 +116,7 @@ const Theses = ({ areas, checkedAreas }) => {
       );
   }, []);
 
-  if (!isLoaded) return <div>...</div>;
+  if (!isLoaded) return <LoadSpinner />;
   if (error) {
     return (
       <div>

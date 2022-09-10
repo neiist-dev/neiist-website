@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import LoadSpinner from "../hooks/loadSpinner";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
@@ -32,7 +33,7 @@ const MembersPage = () => {
 
   return (
     <div className={style.principalBody}>
-      {(!isLoaded) && "..."}
+      {(!isLoaded) && <LoadSpinner />}
       {(error) && 
         <div>
           Erro:
@@ -156,7 +157,7 @@ const Vote = () => {
       );
   }, []);
 
-  if (!isLoaded) return <div>...</div>;
+  if (!isLoaded) return <LoadSpinner />;
   if (error) {
     return (
       <div>
