@@ -13,15 +13,18 @@ function importAll(r) {
 const images = importAll(require.context('../images/products', false, /\.(png)$/));
 
 // Available products
+// Sweats:
 const sweatColors = ["Sweat Azul", "Sweat Vermelha", "Sweat Beje", "Sweat Cor-de-Rosa"];
 const sweatSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 const sweatPrice = 15.70;
+
+// Convert number to euro format
 let euroFormat = Intl.NumberFormat("pt-PT", {
     style: "currency",
     currency: "EUR",
 });
 
-const ProductCard = ({ name, price }) => {
+const ProductCard = ({ name, price, onAdd }) => {
 
     const [show, setShow] = useState(false);
 
@@ -31,9 +34,6 @@ const ProductCard = ({ name, price }) => {
     const handleClose = () => setShow(false);
 
     const imagePath = name.replace(/\s+/g, '').concat(".png");
-
-    // meter no input
-    // <input className="form-control" type="text" onChange={null} value={quantity} />
 
     //TODO: Fix image size!
     return (
@@ -58,7 +58,7 @@ const ProductCard = ({ name, price }) => {
                 <Card.Title>
                     <Row>
                         <Col md={8} style={{ textAlign: "left" }}>{name}</Col>
-                        <Col md={4} style={{ textAlign: "right" }}>{price}</Col>
+                        <Col md={4} style={{ textAlign: "right" }}>{euroFormat.format(price)}</Col>
                     </Row>
                 </Card.Title>
                 <Row style={{ padding: "0.5em" }}>
@@ -69,21 +69,32 @@ const ProductCard = ({ name, price }) => {
                     </Col>
                     <Col>
                         <Row>
-                            <Col xs={4} style={{ padding: "0" }}>
+                            <Col xs={3} style={{ padding: "0" }}>
                                 <Button
-                                    style={{ align: "center" }}
+                                    style={{ align: "center", borderRadius: "0" }}
                                     onClick={() => {
                                         if (quantity > 1)
                                             setQuantity(quantity - 1);
                                     }}
                                 > <i className="bi bi-dash"></i> </Button>
                             </Col>
-                            <Col xs={4}>
-                                meter input aqui
+                            <Col style={{ padding: "0" }}>
+                                <input 
+                                    style={{ textAlign: "center", borderRadius: "0" }}
+                                    className="form-control" 
+                                    type="text" 
+                                    onChange={
+                                        (event) => {
+                                            if (Number(event.target.value) >= 0)
+                                                setQuantity(Number(event.target.value));
+                                        }
+                                    } 
+                                    value={quantity}
+                                />
                             </Col>
-                            <Col xs={4} style={{ padding: "0" }}>
+                            <Col xs={3} style={{ padding: "0" }}>
                                 <Button
-                                    style={{ align: "center" }}
+                                    style={{ align: "center", borderRadius: "0" }}
                                     onClick={() => setQuantity(quantity + 1)}
                                 > <i className="bi bi-plus"></i> </Button>
                             </Col>
@@ -92,7 +103,12 @@ const ProductCard = ({ name, price }) => {
                 </Row>
                 <Card.Footer>
                     <div className="d-grid">
-                        <Button variant="success" >Adicionar ao cesto</Button>
+                        <Button 
+                            variant="success"
+                            onClick={() => onAdd(name, price, quantity)}
+                        >
+                            <i class="bi bi-cart-plus"></i>
+                        </Button>
                     </div>
                 </Card.Footer>
             </Card.Body>
@@ -100,20 +116,53 @@ const ProductCard = ({ name, price }) => {
     );
 }
 
+
+// Probably should separate in multiple components
+// Also, add functionallity to remove items from cart
 const ShopPage = () => {
+
+    const [productsCart, setProductsCart] = useState([]);
+
+    const totalPrice = (cart) => {
+        let total = 0;
+        cart.forEach((product) => {
+            total += product.price * product.quantity;
+        });
+        return total;
+    }
 
     return (
         <div style={{ margin: '2rem 10vw 1rem 10vw' }}>
             <h2 style={{ textAlign: 'center' }}>Sweats EIC</h2>
             <Row>
-                {sweatColors.map((sweatColor) => (
-                    <Col key={sweatColor}>
-                        <ProductCard
-                            name={sweatColor}
-                            price={euroFormat.format(sweatPrice)}
-                        />
-                    </Col>
-                ))}    
+                <Col md={10}>
+                    <Row>
+                    {sweatColors.map((sweatColor) => (
+                        <Col key={sweatColor}>
+                            <ProductCard
+                                name={sweatColor}
+                                price={sweatPrice}
+                                onAdd={(name, price, quantity) => {
+                                    setProductsCart([...productsCart, {name: name, price: price, quantity: quantity,}]);
+                                }}
+                            />
+                        </Col>
+                    ))} 
+                    </Row>  
+                </Col>
+                <Col md={2}>
+                    <div>
+                        <h1><i class="bi bi-cart"></i> Cart</h1>
+                        {productsCart.map((product, idx) => (
+                            <div key={idx}>
+                                <p>{product.name}</p>
+                                <p>{product.quantity}</p>
+                                <p>{product.price}</p>
+                            </div>
+                        ))}
+                        <p>Total: {euroFormat.format(totalPrice(productsCart))}</p>
+                    </div>
+                </Col> 
             </Row>
         </div>
     );
