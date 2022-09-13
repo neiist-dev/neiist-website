@@ -165,15 +165,8 @@
 }
 
 #tableDiv {
-  display: grid;
   width: 100%;
-  table-layout: fixed;
   overflow-wrap: break-word;
-  align-content: center;
-  justify-content: center;
-  justify-items: center;
-  align-items: center;
-  flex-shrink: 1;
 }
 
 #tableDiv table {
