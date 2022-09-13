@@ -111,6 +111,7 @@
 }
 
 .btnCopyEmailsHeader {
+  color: white;
   position: absolute;
   font-size: 15px !important;
   right: 50px;
