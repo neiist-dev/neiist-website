@@ -4,6 +4,8 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
+import Alert from 'react-bootstrap/Alert';
+
 import axios from 'axios';
 import UserDataContext from '../UserDataContext';
 
@@ -61,7 +63,9 @@ const NoRegisterDiv = ({noRegisterFlag=false}) => {
         <div 
           className={style.noRegisterDiv}
         >
-          <p>⚠ Dados retirados do Fênix e não presentes na nossa base de dados.</p>
+        <Alert key="warning" variant="warning">
+          ⚠ Dados retirados do Fênix e não presentes na nossa base de dados.
+        </Alert>
         </div>
       }
     </div>
