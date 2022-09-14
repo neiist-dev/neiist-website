@@ -110,6 +110,21 @@
   color: white;
 }
 
+.ControlDisable {
+  padding: 0 !important;
+  border: none !important;
+  font-weight: bold !important;
+  background-color: transparent !important;
+}
+
+.ControlActive {
+  padding: 0 !important;
+  border: dashed !important;
+  font-weight: bold !important;
+  background-color: transparent !important;
+  text-indent: 10px !important;
+}
+
 .btnEditEmail,
 .btnCopyEmailsHeader {
   color: white;
@@ -123,8 +138,8 @@
 .infoCard {
   position: relative;
   float: left;
-  height: 250px !important;
-  max-height: 250px;
+  height: 275px !important;
+  max-height: 275px;
   background: transparent !important;
   border-color: transparent !important;
   color: black !important;

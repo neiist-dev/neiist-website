@@ -250,19 +250,17 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                     ({member.courses})
                   </p>
                   <br />
-                  {remove ? member.email :
-                    <Form onSubmit={(e) => {handleUpdate(e, member.username)}}>
+                  <Form onSubmit={(e) => {handleUpdate(e, member.username)}}>
                     <fieldset disabled={remove}>
                       <Form.Control
-                        id="disabledTextInput"
-                        type="Text"
+                        id="disabledEmailInput"
+                        type="email"
+                        className={remove ? style.ControlDisable : style.ControlActive}
                         value={changedEmail}
                         onChange={(event) => setChangedEmail(event.target.value)}
                       />
                       </fieldset>
                   </Form>
-                  }
-                  <br />
                   <br />
                 </b>
                 <div id={style.tableDiv}>
