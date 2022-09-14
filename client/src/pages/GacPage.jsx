@@ -182,6 +182,8 @@ const EmailButtons = ({ members }) => {
 const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);
   const [member, setMember] = useState(null);
+  const [changedEmail, setChangedEmail] = useState(null);
+  const [remove, setRemove] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -194,6 +196,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
           (fetchMember) => {
             setMember(fetchMember);
             setIsLoaded(true);
+            setChangedEmail(fetchMember.email);
           })
         .catch(
           (err) => {
@@ -204,12 +207,27 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
     }
   }, [username]);
 
+  const handleUpdate = async (e, username) => {
+    e.preventDefault();
+    const resp = await axios.post(`/api/mag/update/email/${username}`, {changedEmail});
+    if (resp) {
+      setRemove(!remove);
+      window.location.reload(false);
+    }
+  }
+
   if (member)
     return (
       <Modal size="lg" show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title className={style.modalTitle}>
             INFORMAÇÂO DE {String(member.username).toUpperCase()}
+            <Button
+              className={style.btnEditEmail}
+              onClick={() => {setRemove(!remove)}}
+            >
+              Editar Email
+            </Button>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -232,7 +250,18 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                     ({member.courses})
                   </p>
                   <br />
-                  {member.email}
+                  {remove ? member.email :
+                    <Form onSubmit={(e) => {handleUpdate(e, member.username)}}>
+                    <fieldset disabled={remove}>
+                      <Form.Control
+                        id="disabledTextInput"
+                        type="Text"
+                        value={changedEmail}
+                        onChange={(event) => setChangedEmail(event.target.value)}
+                      />
+                      </fieldset>
+                  </Form>
+                  }
                   <br />
                   <br />
                 </b>
