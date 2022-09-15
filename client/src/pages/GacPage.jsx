@@ -183,7 +183,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);
   const [member, setMember] = useState(null);
   const [changedEmail, setChangedEmail] = useState(null);
-  const [remove, setRemove] = useState(true);
+  const [disableEmail, setDisableEmail] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -211,7 +211,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
     e.preventDefault();
     const resp = await axios.post(`/api/mag/update/email/${username}`, {changedEmail});
     if (resp) {
-      setRemove(!remove);
+      setDisableEmail(!disableEmail);
       window.location.reload(false);
     }
   }
@@ -224,7 +224,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
             INFORMAÇÂO DE {String(member.username).toUpperCase()}
             <Button
               className={style.btnEditEmail}
-              onClick={() => {setRemove(!remove)}}
+              onClick={() => {setDisableEmail(!disableEmail)}}
             >
               Editar Email
             </Button>
@@ -251,11 +251,11 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                   </p>
                   <br />
                   <Form onSubmit={(e) => {handleUpdate(e, member.username)}}>
-                    <fieldset disabled={remove}>
+                    <fieldset disabled={disableEmail}>
                       <Form.Control
                         id="disabledEmailInput"
                         type="email"
-                        className={remove ? style.ControlDisable : style.ControlActive}
+                        className={disableEmail ? style.ControlDisable : style.ControlActive}
                         value={changedEmail}
                         onChange={(event) => setChangedEmail(event.target.value)}
                       />
