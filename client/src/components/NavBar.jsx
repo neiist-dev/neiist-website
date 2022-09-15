@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import { Link } from 'react-router-dom';
@@ -7,15 +7,20 @@ import UserDataContext from '../UserDataContext';
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <Navbar expand="lg" style={{padding: '10px' }}>
+    <Navbar expand="lg" expanded={expanded} style={{ padding: '10px' }}>
       <Navbar.Brand as={Link} to="/">
         <img src={logo} height="40" alt="" />
       </Navbar.Brand>
-      <Navbar.Toggle />
+      <Navbar.Toggle
+        onClick={() => setExpanded(expanded ? false : "expanded")}
+      />
       <Navbar.Collapse>
-        <Nav style={{ marginRight: 'auto' }}>
+        <Nav style={{ marginRight: 'auto' }}
+          onClick={() => setExpanded(false)}
+        >
 
           <Nav.Link as={Link} to="/atividades">
             Atividades
