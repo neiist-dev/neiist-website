@@ -171,9 +171,9 @@ const ConfirmEmailModal = ({ show, handleClose, email, returnFunction }) => {
           <Alert variant="warning">
             <Alert.Heading>Meio Principal de Contacto</Alert.Heading>
             <p style={{ textAlign: "justify", textJustify: "inter-word" }}>
-              Todos os assuntos nos quais os sócios são necessários, estes serão
-              contactados através de email, pelo que o preenchimento/confirmação
-              do email abaixo é de cariz obrigatório. O <b>NEIIST</b> não se
+              Todas as comunicações que o NEIIST estabelece com os sócios são
+              exclusivamente feitos através do email. Deste modo, o preenchimento do
+              email neste momento é de cariz obrigatório. O <b>NEIIST</b> não se
               responsabiliza pela incorreta introdução do email (sendo esse um
               dever de cada sócio), entrando sempre em contacto pelo email
               confirmado.
