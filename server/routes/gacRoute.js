@@ -23,4 +23,11 @@ router.put('/delete/:username', async (req, res) => {
   res.json(username);
 });
 
+router.post('/update/email/:username', async (req, res) => {
+  const { username } = req.params;
+  const changedEmail = req.body["changedEmail"];
+  await membersService.updateEmailMember(username, changedEmail);
+  res.json(username);
+});
+
 module.exports = router;

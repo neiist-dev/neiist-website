@@ -130,6 +130,12 @@ const renovateMember = async (username, nameEmailCourses) => {
   membersDatabase.updateMember(member);
 };
 
+const updateEmailMember = async (username, newEmail) => {
+  const memberInfo = await membersDatabase.getMember(username);
+  memberInfo.email = newEmail;
+  membersDatabase.updateMember(memberInfo);
+};
+
 const removeMember = async (username) => {
   //Removing a member is the same as renewDate being equal to today
   const memberInfo = await membersDatabase.getMember(username);
@@ -148,4 +154,5 @@ module.exports = {
   registerMember,
   renovateMember,
   removeMember,
+  updateEmailMember,
 };
