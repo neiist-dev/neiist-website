@@ -1,7 +1,6 @@
 /* Mobile CSS */
 @media only screen and (max-width: 750px) {
   .noRegisterDiv {
-    background-color: rgba(255, 0, 0, 0.4);
     text-align: center;
     text-indent: 10px;
     font-size: 12px;
@@ -37,7 +36,6 @@
 }
 
 .noRegisterDiv {
-  background-color: rgba(255, 0, 0, 0.4);
   margin-left: auto;
   margin-right: auto;
   text-align: center;

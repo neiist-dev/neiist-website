@@ -4,6 +4,8 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
+import Alert from 'react-bootstrap/Alert';
+
 import axios from 'axios';
 import UserDataContext from '../UserDataContext';
 
@@ -61,7 +63,9 @@ const NoRegisterDiv = ({noRegisterFlag=false}) => {
         <div 
           className={style.noRegisterDiv}
         >
-          <p>⚠ Dados retirados do Fênix e não presentes na nossa base de dados.</p>
+        <Alert key="warning" variant="warning">
+          ⚠ Dados retirados do Fênix e não presentes na nossa base de dados.
+        </Alert>
         </div>
       }
     </div>
@@ -110,24 +114,97 @@ const MemberInformation = ({member, memberNotRegisted=false}) => {
 
 const Register = () => {
   const { userData } = useContext(UserDataContext);
+  
+  const [show, setShow] = useState(false);
+  const confirmEmailModal = () => setShow(true);
+  const handleClose = () => setShow(false);
 
-  const handleNewMember = async () => {
+  const handleNewMember = async (confirmedEmail = userData.email) => {
     const member = {
       username: userData.username,
       name: userData.name,
-      email: userData.email,
+      email: confirmedEmail,
       courses: userData.courses,
     };
+
     await axios.post('/api/members', member)
       .then((res) => { if (res) window.location.reload(); });
   };
 
   return (
     <div className={style.divButton}>
-      <Button onClick={handleNewMember}>
+      <ConfirmEmailModal
+        show={show}
+        handleClose={handleClose}
+        email={userData.email}
+        returnFunction={handleNewMember}
+      />
+      <Button onClick={confirmEmailModal}>
         REGISTAR
       </Button>
     </div>
+  );
+};
+
+const ConfirmEmailModal = ({ show, handleClose, email, returnFunction }) => {
+  const [confirmedEmail, setConfirmedEmail] = useState(email);
+
+  const validateEmail = () => {
+    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(confirmedEmail);
+  }
+
+  const confirmEmailSubmit = (e) => {
+    e.preventDefault();
+    if (validateEmail()) returnFunction(confirmedEmail);
+  }
+
+  return (
+    <Modal size="lg" show={show} onHide={handleClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title className={style.modalTitle}>
+          Confirma o teu email
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div>
+          <Alert variant="warning">
+            <Alert.Heading>Meio Principal de Contacto</Alert.Heading>
+            <p style={{ textAlign: "justify", textJustify: "inter-word" }}>
+              Todas as comunicações que o NEIIST estabelece com os sócios são
+              exclusivamente feitos através do email. Deste modo, o preenchimento do
+              email neste momento é de cariz obrigatório. O <b>NEIIST</b> não se
+              responsabiliza pela incorreta introdução do email (sendo esse um
+              dever de cada sócio), entrando sempre em contacto pelo email
+              confirmado.
+              <br />
+              Caso o email seja alterado durante o periodo de sócio, deverás
+              informar @ Presidente da MAG de forma a alterar o email.
+            </p>
+          </Alert>
+        </div>
+        <Form
+          onSubmit={confirmEmailSubmit}
+          style={{ display: "flex", textAlign: "center" }}
+        >
+          <Form.Control
+            type="email"
+            style={{ float: "center", width: "100%" }}
+            value={confirmedEmail}
+            onChange={(e) => {
+              setConfirmedEmail(e.target.value);
+            }}
+          />
+        </Form>
+        <br />
+        <Button
+          onClick={confirmEmailSubmit}
+          style={{ display: "flex", textAlign: "center" }}
+        >
+          Confirmo o email
+        </Button>
+      </Modal.Body>
+    </Modal>
   );
 };
 
@@ -268,20 +345,30 @@ const ElectionCard = ({ election }) => {
 const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
-  const nameEmailCourses = {
-    name: userData.name,
-    email: userData.email,
-    courses: userData.courses,
+  const [show, setShow] = useState(false);
+  const confirmEmailModal = () => setShow(true);
+  const handleClose = () => setShow(false);
+
+  const handleMemberRenew = (changedEmail = userData.email) => {
+    const nameEmailCourses = {
+      name: userData.name,
+      email: changedEmail,
+      courses: userData.courses,
+    };
+
+    axios.put(`/api/members/${userData.username}`, nameEmailCourses)
+      .then((res) => { if (res) window.location.reload(); });
   };
 
   return (
     <div className={style.divButton}>
-        <Button
-          onClick={() => {
-            axios.put(`/api/members/${userData.username}`, nameEmailCourses)
-              .then((res) => { if (res) window.location.reload(); });
-          }}
-      >
+      <ConfirmEmailModal
+        show={show}
+        handleClose={handleClose}
+        email={userData.email}
+        returnFunction={handleMemberRenew}
+      />
+      <Button onClick={confirmEmailModal}>
         RENOVAR
       </Button>
     </div>
