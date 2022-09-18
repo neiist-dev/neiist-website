@@ -158,56 +158,42 @@ const App = () => {
   );
 };
 
+const PrivateRoute = ({ exact, path, children }) => (
+  <Route exact={exact} path={path}>
+    {children}
+  </Route>
+);
+
 const ActiveTecnicoStudentRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isActiveTecnicoStudent) {
-    return (
-      <Route exact={exact} path={path}>
-        {children}
-      </Route>
-    );
-  }
-  return null;
+  if (userData && userData.isActiveTecnicoStudent)
+    return <PrivateRoute exact={exact} path={path} children={children}/>
+  return <Redirect to="/"/>
 };
 
 const ActiveLMeicStudentRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isActiveLMeicStudent) {
-    return (
-      <Route exact={exact} path={path}>
-        {children}
-      </Route>
-    );
-  }
-  return null;
+  if (userData && userData.isActiveLMeicStudent)
+    return <PrivateRoute exact={exact} path={path} children={children}/>
+  return <Redirect to="/"/>
 };
 
 const GacRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isGacMember) {
-    return (
-      <Route exact={exact} path={path}>
-        {children}
-      </Route>
-    );
-  }
-  return null;
+  if (userData &&  userData.isGacMember) 
+    return <PrivateRoute exact={exact} path={path} children={children}/>
+  return <Redirect to="/"/>
 }
 
 const AdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isAdmin) {
-    return (
-      <Route exact={exact} path={path}>
-        {children}
-      </Route>
-    );
-  }
-  return null;
+  if (userData && userData.isAdmin) 
+    return <PrivateRoute exact={exact} path={path} children={children}/>
+  return <Redirect to="/"/>
 };
 
 export default App;
