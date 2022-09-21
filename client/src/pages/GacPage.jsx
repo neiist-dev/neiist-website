@@ -10,6 +10,9 @@ import Tab from 'react-bootstrap/Tab';
 import style from "./css/GacPage.module.css";
 import axios from "axios";
 
+const fenixPhoto = (username) => 
+  `https://fenix.tecnico.ulisboa.pt/user/photo/${username}?s=10000`;
+
 const GacPage = () => {
   const [key, setKey] = useState('active');
 
@@ -238,7 +241,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
               <div
                 className={style.infoCard_img}
                 style={{
-                  backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username})`,
+                  backgroundImage: `url(${fenixPhoto(member.username)})`,
                 }}
               />
               <div className={style.infoCard_info}>
@@ -475,7 +478,7 @@ const CreateNonActiveEmailsModal = ({
             <div
               className={style.nonActiveCard_img}
               style={{
-                backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username})`,
+                backgroundImage: `url(${fenixPhoto(member.username)})`,
               }}
             />
             <p>
@@ -573,7 +576,7 @@ const CreateMemberRow = ({
         <div
           className={style.memberImg}
           style={{
-            backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username}`,
+            backgroundImage: `url(${fenixPhoto(member.username)})`,
           }}
         />
       </th>

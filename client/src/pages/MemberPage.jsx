@@ -89,7 +89,7 @@ const MemberInformation = ({member, memberNotRegisted=false}) => {
           <div
             className={style.memberImage}
             style={{
-              backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username})`}}
+              backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username}?s=10000)`}}
           />
           <img
             className={style.memberCourse} 
