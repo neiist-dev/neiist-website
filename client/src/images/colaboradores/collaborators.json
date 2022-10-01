@@ -1,27 +1,56 @@
 {
-  "anoLetivo": "2021/2022",
+  "anoLetivo": "2022/2023",
   "orgaosSociais": {
     "Direção": {
-      "Presidente": "André Silva",
-      "Vice-Presidente" : "Miguel Gonçalves",
-      "Vogal" : "Catarina Sousa",
-      "Diretor de Atividades (Alameda)" : "Catarina Gonçalves",
-      "Diretor de Atividades (Taguspark)" : "Nelson Trindade",
-      "Diretor SINFO" : "Mariana Cintrão",
-      "Tesoureiro" : "João Pina"
+      "Presidente": "Nelson Trindade",
+      "Vice-Presidente" : "Catarina Sousa",
+      "Vogal" : "Mafalda Ribeiro",
+      "Diretor de Atividades (Alameda)" : "João Silva",
+      "Diretora de Atividades (Taguspark)" : "Maria Ribeiro",
+      "Diretor SINFO" : "Diogo Pacheco",
+      "Tesoureira" : "Andreia Pereira"
     },
     "Mesa da Assembleia Geral": {
-      "Presidente": "Maria Ribeiro",
-      "Vice-Presidente" : "Rodrigo Major",
-      "Secretário1": "Beatriz Alves",
-      "Secretário2": "Bernardo Nunes"
+      "Presidente": "Beatriz Alves",
+      "Vice-Presidente" : "David Belchior",
+      "Secretário1": "Diogo Santos",
+      "Secretário2": "Vadym Volkovinskyy"
     },
     "Conselho Fiscal": {
-      "Presidente": "Pedro Fernandes",
-      "Membro1": "Leonor Veloso",
-      "Membro2": "Nuno Serras"
+      "Presidente": "Carlos Amaro",
+      "Membro1": "João Gonçalves",
+      "Membro2": "Mara Alves"
     }
   },
   "Membros": [
+    "Ana Albuquerque",
+    "Ana Almeida",
+    "André Santos",
+    "António Penha",
+    "Beatriz Alves",
+    "Bernardo Quinteiro",
+    "Carlos Amaro",
+    "Catarina Sousa",
+    "David Belchior",
+    "Diogo Santos",
+    "Francisco Saiote",
+    "Gonçalo Mateus",
+    "Guilherme Batalheiro",
+    "Gustavo Rodrigues",
+    "Henrique Pimentel",
+    "João Gonçalves",
+    "João Maurício",
+    "João Silva",
+    "José Afonso Garcia",
+    "Mafalda Ribeiro",
+    "Mara Alves",
+    "Maria Ribeiro",
+    "Matheus Kasai",
+    "Nathaniel Prazeres",
+    "Nelson Trindade",
+    "Nuno Braz",
+    "Rodrigo Major",
+    "Tiago Amado",
+    "Vadym Volkovinskyy"
   ]
 }
