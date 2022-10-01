@@ -76,7 +76,9 @@ const ProductCard = ({ name, price, onAdd }) => {
                                         if (quantity > 1)
                                             setQuantity(quantity - 1);
                                     }}
-                                > <i className="bi bi-dash"></i> </Button>
+                                > 
+                                    <i className="bi bi-dash"></i> 
+                                </Button>
                             </Col>
                             <Col style={{ padding: "0" }}>
                                 <input 
@@ -96,7 +98,9 @@ const ProductCard = ({ name, price, onAdd }) => {
                                 <Button
                                     style={{ align: "center", borderRadius: "0" }}
                                     onClick={() => setQuantity(quantity + 1)}
-                                > <i className="bi bi-plus"></i> </Button>
+                                > 
+                                    <i className="bi bi-plus"></i> 
+                                </Button>
                             </Col>
                         </Row>
                     </Col>
@@ -107,7 +111,7 @@ const ProductCard = ({ name, price, onAdd }) => {
                             variant="success"
                             onClick={() => onAdd(name, price, quantity)}
                         >
-                            <i class="bi bi-cart-plus"></i>
+                            <i className="bi bi-cart-plus"></i>
                         </Button>
                     </div>
                 </Card.Footer>
@@ -122,6 +126,15 @@ const ProductCard = ({ name, price, onAdd }) => {
 const ShopPage = () => {
 
     const [productsCart, setProductsCart] = useState([]);
+
+    // Save cart to session storage and prevent refresh from deleting cart
+    useEffect(() => {
+        setProductsCart(JSON.parse(window.sessionStorage.getItem("productsCart")) || []);
+    }, []);
+
+    useEffect(() => {
+        window.sessionStorage.setItem("productsCart", JSON.stringify(productsCart));
+    }, [productsCart]);
 
     const totalPrice = (cart) => {
         let total = 0;
@@ -152,7 +165,7 @@ const ShopPage = () => {
                 </Col>
                 <Col md={2}>
                     <div>
-                        <h1><i class="bi bi-cart"></i> Cart</h1>
+                        <h1><i className="bi bi-cart"></i> Cart</h1>
                         {productsCart.map((product, idx) => (
                             <div key={idx}>
                                 <p>{product.name}</p>
