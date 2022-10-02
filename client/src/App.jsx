@@ -96,7 +96,7 @@ const App = () => {
 
   return (
     <UserDataContext.Provider value={{ userData, setUserData }}>
-      <Router Router>
+      <Router Router forceRefresh>
         <Layout>
           <Switch>
 
