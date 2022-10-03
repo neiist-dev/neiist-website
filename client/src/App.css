@@ -7,3 +7,8 @@
     position: relative;
     background: linear-gradient(270deg, rgba(40, 99, 253, 0.075) 0%, rgba(36, 139, 227, 0.05) 100%), #FFFFFF;
 }
+
+#content-wrap{
+    margin: 1.5em 6em;
+    padding-bottom: 10rem;
+}
