@@ -54,21 +54,21 @@
     height: 100%;
 }
 
-h6 {
+.h6 {
     font-family: 'Secular One';
     font-size: 18px !important;
-    margin-left: 1em;
+    margin-left: .5em;
     margin-bottom: .25em !important;
 }
 
 @media only screen and (max-width: 955px) {
-    h6 {
+    .h6 {
         font-family: 'Secular One';
         font-size: 14px !important;
     }
 }
 
-hr {
+.hr {
     margin: 0 3em 1em 0.5em !important;
     border: solid black !important;
     border-top: 2px !important;
@@ -78,16 +78,19 @@ hr {
 
 .hrImage {
     margin: 0 3em 0em 0.5em !important;
+    border: solid black !important;
+    border-top: 2px !important;
+    opacity: 1 !important;
 }
 
-p {
+.p1 {
     color: black;
     font-family: Montserrat;
     font-size: 14px;
     margin: .5em 0 .5em .5em !important;
 }
 
-p1 {
+.p {
     display: inline;
     color: black;
     font-family: Montserrat;
