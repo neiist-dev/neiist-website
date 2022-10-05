@@ -112,6 +112,7 @@
   background: #D9D9D9;
   border-radius: 25px;
   position: relative;
+  z-index: 1;
 }
 
 .loggedSpaceClickableArea {
@@ -122,10 +123,11 @@
   border-top: 50px solid transparent;
   border-left: 60px solid transparent;
   border-right: 0px solid transparent;
+  cursor: pointer;
 }
 
 .loggedImage {
-  z-index: 5;
+  z-index: 6;
   position: relative;
   background-size: cover;
   background-position: center center;
@@ -136,6 +138,7 @@
 }
 
 .loggedInfo {
+  z-index: 5;
   width: 100%;
   position: absolute;
 }
@@ -171,4 +174,21 @@
   line-height: 22px;
   margin-left: 10px;
   z-index: 1;
+}
+
+.moreInfo {
+  flex-direction: column;
+  padding: 55px 1em 5px 1em;
+  width: 200px;
+  height: auto;
+  background: #248be3;
+  border-radius: 25px;
+  position: absolute;
+  right: 20px;
+  row-gap: 2px;
+}
+
+.moreInfo > * {
+  padding: 0 !important;
+  color: white !important;
 }
