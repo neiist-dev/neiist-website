@@ -15,11 +15,11 @@ const NavBar = () => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div>
+    <>
       <div className={style.navBarContainer}>
         <Navbar expand="md" expanded={expanded} className={style.navBar}>
           <Navbar.Brand as={Link} to="/">
-            <img src={logo} className={style.logo} alt="NEIIST LOGO" />
+            <img src={logo} alt="NEIIST LOGO" />
           </Navbar.Brand>
           <Navbar.Toggle onClick={() => setExpanded(expanded ? false : "expanded")}/>
           <Navbar.Collapse>
@@ -49,13 +49,13 @@ const NavBar = () => {
               <GacNavLink as={Link} to="/mag">
                 MAG
               </GacNavLink>
-              <LoginLogout className={`${style.navLink}`} userData={userData} setUserData={setUserData} />
+              <LoginLogout userData={userData} setUserData={setUserData} />
             </Nav>
           </Navbar.Collapse>
         </Navbar>
       </div>
       <div className={style.navSpace}/>
-    </div>
+    </>
   );
 };
 

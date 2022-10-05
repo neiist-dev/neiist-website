@@ -1,22 +1,40 @@
 :root{
+    --link-height: 110px;
     --link-bottom: 100px;
     --footer-heigth:  160px;
-    --compensasion : 75px;
+    --link-bottom-mob: 400px;
     --links-heigth-mob: 160px;
     --footer-heigth-mob:  460px;
 }
 
-html {
+html,
+body {
     height: 100%;
 }
 
-body {
-    height: 100%;
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Secular One';
+}
+
+p {
+    font-family: Montserrat;
 }
 
 footer{
     margin-top: auto;
     position: relative;
+}
+
+@media only screen and (max-width: 885px) {
+    #content-wrap{
+        margin-bottom: calc(var(--footer-heigth-mob) + 75px) !important;
+    }
+}
+
+@media only screen and (max-width: 450px) {
+    #content-wrap{
+        margin-bottom: calc(var(--footer-heigth-mob) + 75px + var(--links-heigth-mob)/4) !important;
+    }
 }
 
 #root {
@@ -31,17 +49,5 @@ footer{
     width: auto;
     margin: 1.5em 6em;
     position: relative;
-    margin-bottom: calc(var(--footer-heigth) + var(--compensasion));
-}
-
-@media only screen and (max-width: 885px) {
-    #content-wrap{
-        margin-bottom: calc(var(--footer-heigth-mob) + var(--compensasion)) !important;
-    }
-}
-
-@media only screen and (max-width: 650px) {
-    #content-wrap{
-        margin-bottom: calc(var(--footer-heigth-mob) + var(--compensasion) + var(--links-heigth-mob)/4) !important;
-    }
+    margin-bottom: calc(var(--footer-heigth) + 75px);
 }
