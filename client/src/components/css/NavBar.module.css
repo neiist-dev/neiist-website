@@ -1,0 +1,174 @@
+.onlyWeb{
+  display: block !important;
+}
+
+.onWeb{
+  display: flex !important;
+}
+
+.onMobile{
+  display: none !important;
+}
+
+.logo {
+  height: 40px;
+}
+
+.navBarContainer {
+  width: 100%;
+  position: fixed;
+  z-index: 5;
+}
+
+.navBar {
+  margin: 1.5em 6em 0.25em 6em;
+  padding: 10px 20px !important;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
+  border-radius: 25px;
+}
+
+.navLink {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  font-family: Secular One;
+  font-style: normal;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #000000 !important;
+}
+
+@media only screen and (max-width: 900px) {
+  .navLink {
+    font-size: 13px !important;
+  }
+  .logo {
+    height: 30px !important;
+  }
+}
+
+@media only screen and (max-width: 885px) {
+  .navBar {
+    margin: 0em 6em 0.25em 6em;
+    border-radius: 0px 0px 25px 25px;
+  }
+  .logo {
+    height: 20px !important;
+  }
+  .navSpace {
+    padding: 37.5px 20px !important;
+  }
+}
+
+@media only screen and (max-width: 790px) {
+  .navLink {
+    font-size: 11.75px !important;
+  }
+}
+
+@media only screen and (max-width: 767.5px) {
+  .onlyWeb{
+    display: none !important;
+  }
+  .onMobile{
+    display: flex !important;
+  }
+  .navBar {
+    margin: 0em 1em 0.25em 1em;
+  }
+  .navLink {
+    font-size: 15px !important;
+  }
+  .logo {
+    height: 30px !important;
+  }
+  .navSpace {
+    padding: 37.5px 20px !important;
+  }
+}
+
+
+.navLinkLogout {
+  z-index: 15;
+  padding: 0 !important;
+  color: #000 !important;
+  width: 25%;
+  height: 22px;
+}
+
+.navSpace {
+  padding: 50px 20px;
+  height: 70px;
+}
+
+.loggedSpace {
+  width: 200px;
+  height: 50px;
+  color: black;
+  background: #D9D9D9;
+  border-radius: 25px;
+  position: relative;
+}
+
+.loggedSpaceClickableArea {
+  z-index: 10;
+  width: 200px;
+  height: 50px;
+  position: absolute;
+  border-top: 50px solid transparent;
+  border-left: 60px solid transparent;
+  border-right: 0px solid transparent;
+}
+
+.loggedImage {
+  z-index: 5;
+  position: relative;
+  background-size: cover;
+  background-position: center center;
+  float: right;
+  width:50px;
+  height:50px;
+  border-radius: 25px;
+}
+
+.loggedInfo {
+  width: 100%;
+  position: absolute;
+}
+
+.loggedName {
+  margin-left: 15px;
+  margin-top: 2px;
+  font-family: Montserrat !important;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  display: flex;
+  align-items: center;
+  height: 20px;
+}
+
+.logoutButton_MemberState {
+  margin-left: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.memberStatus {
+  position: absolute;
+  left: 70px;
+  font-family: Montserrat;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 10px;
+  color: white;
+  line-height: 22px;
+  margin-left: 10px;
+  z-index: 1;
+}
