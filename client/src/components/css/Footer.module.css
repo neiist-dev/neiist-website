@@ -1,7 +1,7 @@
 .links {
     position: absolute;
-    height: 110px;
-    bottom: 100px;
+    height: var(--link-height);
+    bottom: var(--link-bottom);
     background: rgba(36, 139, 227, 0.5);
     box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
     border-radius: 25px 25px 0px 0px;
@@ -10,25 +10,23 @@
     filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.25));
 }
 
-.linkIcon {
+.linkIconSpace {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 20px;
+}
+
+.linkIconSpace div {
     position: relative;
     height: 50px;
     width: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-right: 10px;
-    margin-left: 10px;
-}
-
-.linkIcon:first-child {
-    margin-right: 10px;
-    margin-left: 0px;
-}
-
-.linkIcon:last-child {
-    margin-right: 0px;
-    margin-left: 10px;
 }
 
 .footer {
@@ -51,36 +49,79 @@
     flex-wrap: wrap;
 }
 
-.footerChildSpace {
+.footerChildSpace,
+.footerChildSpaceImg {
     width: 25%;
     height: 100%;
 }
 
-.h6 {
+.footerChildSpace div {
+    color: black;
+    font-family: Montserrat;
+    font-size: 14px;
+    margin: .5em 0 .5em .5em !important;
+}
+
+.footerChildSpace div a {
+    text-decoration: none !important;
+}
+
+.footerChildSpace div p {
+    display: inline;
+    color: black;
+    font-family: Montserrat;
+    font-size: 14px;
+}
+
+.footerChildSpace h6,
+.footerChildSpaceImg h6 {
     font-family: 'Secular One';
     font-size: 18px !important;
     margin-left: .5em;
     margin-bottom: .25em !important;
 }
 
+.footerChildSpace hr,
+.footerChildSpaceImg hr {
+    margin: 0 3em 1em 0.5em !important;
+    border: solid black !important;
+    border-top: 2px !important;
+    opacity: 1 !important;
+}
+
+.footerChildSpaceImg hr {
+    margin: 0 3em 0em 0.5em !important;
+}
+
+.footerChildSpaceImg div {
+    width: 200px;
+    height: 75px;
+    margin-left: .5em !important;
+    margin-top: 0em !important;
+    background-size: cover;
+    background-position: center center;
+}
+
 @media only screen and (max-width: 955px) {
-    .h6 {
+    .footerChildSpace h6,
+    .footerChildSpaceImg h6  {
         font-family: 'Secular One';
         font-size: 14px !important;
     }
 
-    .deiImage {
+    .footerChildSpaceImg div {
         width: 125px !important;
         height: 50px !important;
     }
 }
 
 @media only screen and (max-width: 885px) {
-    .footerChildSpace {
+    .footerChildSpace,
+    .footerChildSpaceImg {
         width: 100% !important;
     }
 
-    .deiImage {
+    .footerChildSpaceImg div {
         width: 200px !important;
         height: 75px !important;
     }
@@ -94,61 +135,24 @@
     }
 
     .links {
-        bottom: 400px !important;
+        bottom: var(--link-bottom-mob) !important;
     }
 }
 
-@media only screen and (max-width: 650px) {
+@media only screen and (max-width: 767.5px) {
+    .footer {
+        margin: 1.5em 1em 0em 1em !important;
+        width: calc(100% - 2em) !important;
+    }
+
     .links {
-        height: 160px !important;
-    }
-    .linkIcon:first-child {
-        margin-left: 10px !important;
-    }
-    
-    .linkIcon:last-child {
-        margin-right: 10px !important;
+        margin: 1.5em 1em 0em 1em !important;
+        width: calc(100% - 2em) !important;
     }
 }
 
-
-.hr {
-    margin: 0 3em 1em 0.5em !important;
-    border: solid black !important;
-    border-top: 2px !important;
-    opacity: 1 !important;
-}
-
-
-.hrImage {
-    margin: 0 3em 0em 0.5em !important;
-    border: solid black !important;
-    border-top: 2px !important;
-    opacity: 1 !important;
-}
-
-.p1 {
-    color: black;
-    font-family: Montserrat;
-    font-size: 14px;
-    margin: .5em 0 .5em .5em !important;
-}
-
-.p {
-    display: inline;
-    color: black;
-    font-family: Montserrat;
-    font-size: 14px;
-}
-
-.deiImage {
-    width: 200px;
-    height: 75px;
-    margin-left: .5em;
-    background-size: cover;
-    background-position: center center;
-}
-
-a {
-    text-decoration: none !important;
+@media only screen and (max-width: 450px) {
+    .links {
+        height: var(--links-heigth-mob) !important;
+    }
 }
