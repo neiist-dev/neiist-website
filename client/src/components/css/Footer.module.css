@@ -1,7 +1,7 @@
 .links {
     position: absolute;
     height: var(--link-height);
-    bottom: var(--link-bottom);
+    bottom: 0;
     background: rgba(36, 139, 227, 0.5);
     box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
     border-radius: 25px 25px 0px 0px;
@@ -135,7 +135,7 @@
     }
 
     .links {
-        bottom: var(--link-bottom-mob) !important;
+        height: var(--links-heigth-mob1) !important;
     }
 }
 
@@ -153,6 +153,6 @@
 
 @media only screen and (max-width: 450px) {
     .links {
-        height: var(--links-heigth-mob) !important;
+        height: var(--links-heigth-mob2) !important;
     }
 }

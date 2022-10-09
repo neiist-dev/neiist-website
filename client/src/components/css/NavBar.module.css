@@ -96,7 +96,7 @@
   z-index: 15;
   padding: 0 !important;
   color: #000 !important;
-  width: 25%;
+  width: 15%;
   height: 22px;
 }
 
@@ -140,7 +140,14 @@
 .loggedInfo {
   z-index: 5;
   width: 100%;
+  height: 50px;
   position: absolute;
+}
+
+.loggedSpace a,
+.loggedSpace a:hover {
+  color: #000;
+  text-decoration: none !important;
 }
 
 .loggedName {
@@ -164,6 +171,15 @@
 }
 
 .memberStatus {
+  border-radius: 25px;
+  margin-right: 7px;
+  margin-left: 25px;
+  width: 125px;
+  height: 22px; 
+  float: right;
+}
+
+.memberStatus div {
   position: absolute;
   left: 70px;
   font-family: Montserrat;
@@ -181,11 +197,12 @@
   padding: 55px 1em 5px 1em;
   width: 200px;
   height: auto;
-  background: #248be3;
+  background: linear-gradient(0deg, rgba(36, 139, 227, 0.5) 0%, rgba(36, 139, 227, 0.5) 100%), #FFFFFF;
   border-radius: 25px;
   position: absolute;
   right: 20px;
   row-gap: 2px;
+  box-shadow: 0px 4px 5px rgb(0 0 0 / 25%);
 }
 
 .moreInfo > * {

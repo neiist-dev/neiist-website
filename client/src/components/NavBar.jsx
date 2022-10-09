@@ -154,42 +154,59 @@ const Logout = ({ setUserData }) => (
   </Nav.Link>
 );
 
+const DefaultLink = ({children}) => (
+  <>
+  {isMobile ? 
+    children
+    :
+    <a href="/socio">
+      {children}
+    </a>
+  }
+  </>
+);
+
 const LoggedIn = ({ userData, setUserData }) => {
   const [click, setClick] = useState(false);
-  const [show, setShow] = useState (false)
+  const [show, setShow] = useState (false);
+
+  const onMouseEnterFunction = () => {setShow(true);}
+  const onMouseLeaveFunction = () => {setShow(click);}
+  const onClickFunction = () => {isMobile && setClick(!click); setShow(!click);}
 
   return (
     <>
       <div className={`${style.loggedSpace} ${style.onlyWeb}`}>
-        {!isMobile ?
-          <Nav.Link style={{padding: '0'}} as={Link} to="/socio">
-            <div className={style.loggedSpaceClickableArea} 
-            onClick={()=>{if (isMobile)  {setClick(!click); setShow(!click);}}}
-            onMouseEnter={()=>{setShow(true);}}
-            onMouseLeave={()=>{setShow(click);}} />
-          </Nav.Link>
-          :
-          <div className={style.loggedSpaceClickableArea} 
-            onClick={()=>{{setClick(!click); setShow(!click);}}}/>
-        }
-        <div className={style.loggedImage}
-          style={userData && {backgroundImage: `url(${fenixPhoto(userData.username)})`}}/>
+        <DefaultLink children={
+          <div className={style.loggedImage}
+            onClick={onClickFunction}
+            onMouseEnter={onMouseEnterFunction}
+            onMouseLeave={onMouseLeaveFunction}
+            style={userData && {backgroundImage: `url(${fenixPhoto(userData.username)})`}}/>
+        } />
         
-        <div className={style.loggedInfo}>
-          <div className={style.loggedName}> {summarizeName(userData.displayName)} </div>
-    
-          <div className={style.logoutButton_MemberState}>
-            <Logout setUserData={setUserData}/>
-            <div style={{borderRadius: '25px', marginRight: '7px', background: getStatusColor(userData.status) ,width: '125px', height: '22px', float: 'right'}}>
-              <div className={style.memberStatus}> {getMemberStatus(userData.status)} </div>
-            </div>
-          </div>
+        <div className={style.loggedInfo}
+          onClick={onClickFunction}
+          onMouseEnter={onMouseEnterFunction}
+          onMouseLeave={onMouseLeaveFunction}>
+          <DefaultLink children={
+            <div className={style.loggedName}> {summarizeName(userData.displayName)} </div>
+          }/>
+
+        <div className={style.logoutButton_MemberState}>
+          <Logout setUserData={setUserData}/>
+          <DefaultLink children={
+            <div className={style.memberStatus} style={{background: getStatusColor(userData.status)}}>
+              <div> {getMemberStatus(userData.status)} </div>
+            </div>  
+        }/>
         </div>
-    
+      </div>
+        
       </div>
       <div className={style.moreInfo} 
-        onMouseEnter={()=>{setShow(true);}}
-        onMouseLeave={()=>{setShow(click);}}
+        onMouseEnter={onMouseEnterFunction}
+        onMouseLeave={onMouseLeaveFunction}
         style={show ? {display: 'flex'} : {display: 'none'}}>
         <ActiveTecnicoStudentNavLink hide={style.onWeb} as={Link} to="/socio">
           Sócio

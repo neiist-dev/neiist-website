@@ -52,14 +52,14 @@ const Links = () => (
   <div className={style.footer}>
     <div className={style.footerSpace}>
       <div className={style.footerChildSpace}>
-        <h6>Sobre o núcleo</h6>
+        <h6>Sobre o Núcleo</h6>
         <hr />
         <div><Link as={Link} to="/sobre_nos"><p>Quem Somos?</p></Link></div>
         <div><Link as={Link} to="/contactos"><p>Contactos</p></Link></div>
         <div><Link as={Link} to="/estatutos"><p>Estatutos</p></Link></div>
       </div>
       <div className={style.footerChildSpace}>
-        <h6>Curso de EIC</h6>
+        <h6>Cursos de EIC</h6>
         <hr />
         <div>
           <Link as={Link} to={{ pathname: "https://fenix.tecnico.ulisboa.pt/cursos/leic-a" }} target="_blank">
