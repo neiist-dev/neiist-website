@@ -5,7 +5,7 @@ import Footer from './Footer';
 const Layout = ({ children }) => (
   <>
     <NavBar />
-    <div id="#content-wrap" style={{ paddingBottom: "6rem" }}>
+    <div id="content-wrap">
       {children}
     </div>
     <Footer />

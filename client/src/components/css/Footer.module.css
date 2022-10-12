@@ -1,0 +1,158 @@
+.links {
+    position: absolute;
+    height: var(--link-height);
+    bottom: 0;
+    background: rgba(36, 139, 227, 0.5);
+    box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
+    border-radius: 25px 25px 0px 0px;
+    margin: 1.5em 6em 0em 6em;
+    width: calc(100% - 12em);
+    filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.25));
+}
+
+.linkIconSpace {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 20px;
+}
+
+.linkIconSpace div {
+    position: relative;
+    height: 50px;
+    width: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer {
+    margin: 1.5em 6em 0em 6em;
+    bottom: 0;
+    width: calc(100% - 12em);
+    height: var(--footer-heigth);
+    position: absolute;
+    background: #FFF;
+    box-shadow: 0px -4px 5px rgba(0, 0, 0, 0.25);
+    border-radius: 25px 25px 0px 0px;
+}
+
+.footerSpace {
+    margin: 1em 2em;
+    width: calc(100% - 4em);
+    height: calc(100% - 2em);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.footerChildSpace,
+.footerChildSpaceImg {
+    width: 25%;
+    height: 100%;
+}
+
+.footerChildSpace div {
+    color: black;
+    font-family: Montserrat;
+    font-size: 14px;
+    margin: .5em 0 .5em .5em !important;
+}
+
+.footerChildSpace div a {
+    text-decoration: none !important;
+}
+
+.footerChildSpace div p {
+    display: inline;
+    color: black;
+    font-family: Montserrat;
+    font-size: 14px;
+}
+
+.footerChildSpace h6,
+.footerChildSpaceImg h6 {
+    font-family: 'Secular One';
+    font-size: 18px !important;
+    margin-left: .5em;
+    margin-bottom: .25em !important;
+}
+
+.footerChildSpace hr,
+.footerChildSpaceImg hr {
+    margin: 0 3em 1em 0.5em !important;
+    border: solid black !important;
+    border-top: 2px !important;
+    opacity: 1 !important;
+}
+
+.footerChildSpaceImg hr {
+    margin: 0 3em 0em 0.5em !important;
+}
+
+.footerChildSpaceImg div {
+    width: 200px;
+    height: 75px;
+    margin-left: .5em !important;
+    margin-top: 0em !important;
+    background-size: cover;
+    background-position: center center;
+}
+
+@media only screen and (max-width: 955px) {
+    .footerChildSpace h6,
+    .footerChildSpaceImg h6  {
+        font-family: 'Secular One';
+        font-size: 14px !important;
+    }
+
+    .footerChildSpaceImg div {
+        width: 125px !important;
+        height: 50px !important;
+    }
+}
+
+@media only screen and (max-width: 885px) {
+    .footerChildSpace,
+    .footerChildSpaceImg {
+        width: 100% !important;
+    }
+
+    .footerChildSpaceImg div {
+        width: 200px !important;
+        height: 75px !important;
+    }
+
+    .footer {
+        height: var(--footer-heigth-mob) !important;
+    }
+
+    .footerSpace {
+        height: auto !important;
+    }
+
+    .links {
+        height: var(--links-heigth-mob1) !important;
+    }
+}
+
+@media only screen and (max-width: 767.5px) {
+    .footer {
+        margin: 1.5em 1em 0em 1em !important;
+        width: calc(100% - 2em) !important;
+    }
+
+    .links {
+        margin: 1.5em 1em 0em 1em !important;
+        width: calc(100% - 2em) !important;
+    }
+}
+
+@media only screen and (max-width: 450px) {
+    .links {
+        height: var(--links-heigth-mob2) !important;
+    }
+}

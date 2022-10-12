@@ -4,74 +4,68 @@ import Nav from 'react-bootstrap/Nav';
 import { Link } from 'react-router-dom';
 import logo from '../images/neiist_logo.png';
 import UserDataContext from '../UserDataContext';
+import { GoSignOut } from "react-icons/go";
+import { summarizeName, getMemberStatus, fenixPhoto, getStatusColor } from '../hooks/dataTreatment.jsx'
+import { isMobile } from "react-device-detect";
+
+import style from './css/NavBar.module.css'
+import { useEffect } from 'react';
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Navbar expand="lg" expanded={expanded} style={{ padding: '10px' }}>
-      <Navbar.Brand as={Link} to="/">
-        <img src={logo} height="40" alt="" />
-      </Navbar.Brand>
-      <Navbar.Toggle
-        onClick={() => setExpanded(expanded ? false : "expanded")}
-      />
-      <Navbar.Collapse>
-        <Nav style={{ marginRight: 'auto' }}
-          onClick={() => setExpanded(false)}
-        >
+    <>
+      <div className={style.navBarContainer}>
+        <Navbar expand="md" expanded={expanded} className={style.navBar}>
+          <Navbar.Brand as={Link} to="/">
+            <img src={logo} alt="NEIIST LOGO" />
+          </Navbar.Brand>
+          <Navbar.Toggle onClick={() => setExpanded(expanded ? false : "expanded")}/>
+          <Navbar.Collapse>
+            <Nav style={{ marginLeft: 'auto' }} onClick={() => setExpanded(false)}>
+              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/sobre_nos">
+                Sobre nós
+              </Nav.Link>
+              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/contactos">
+                Contactos
+              </Nav.Link>
+              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/estudante">
+                Estudante
+              </Nav.Link>
 
-          <Nav.Link as={Link} to="/atividades">
-            Atividades
-          </Nav.Link>
-          <Nav.Link as={Link} to="/quemsomos">
-            Quem Somos
-          </Nav.Link>
-          <Nav.Link as={Link} to="/curso">
-            Curso
-          </Nav.Link>
-          <Nav.Link as={Link} to="/seccoes">
-            Secções
-          </Nav.Link>
-          <Nav.Link as={Link} to="/estatutos">
-            Estatutos
-          </Nav.Link>
-          <Nav.Link as={Link} to="/contactos">
-            Contactos
-          </Nav.Link>
+              <ActiveTecnicoStudentNavLink hide={style.onMobile} as={Link} to="/socio">
+                Sócios
+              </ActiveTecnicoStudentNavLink>
 
-          <ActiveTecnicoStudentNavLink as={Link} to="/socios">
-            Sócios
-          </ActiveTecnicoStudentNavLink>
+              <ActiveLMeicStudentNavLink hide={style.onMobile} as={Link} to="/thesismaster">
+                Thesis Master
+              </ActiveLMeicStudentNavLink>
 
-          <ActiveLMeicStudentNavLink as={Link} to="/thesismaster">
-            Thesis Master
-          </ActiveLMeicStudentNavLink>
+              <AdminNavLink hide={style.onMobile} as={Link} to="/admin">
+                Admin
+              </AdminNavLink>
 
-          <AdminNavLink as={Link} to="/admin">
-            Admin
-          </AdminNavLink>
-
-          <GacNavLink as={Link} to="/mag">
-            MAG
-          </GacNavLink>
-
-        </Nav>
-        <Nav style={{ marginLeft: 'auto' }}>
-          <LoginLogout userData={userData} setUserData={setUserData} />
-        </Nav>
-      </Navbar.Collapse>
-    </Navbar>
+              <GacNavLink hide={style.onMobile} as={Link} to="/mag">
+                MAG
+              </GacNavLink>
+              <LoginLogout userData={userData} setUserData={setUserData} />
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
+      </div>
+      <div className={style.navSpace}/>
+    </>
   );
 };
 
-const ActiveTecnicoStudentNavLink = ({ as, to, children }) => {
+const ActiveTecnicoStudentNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isActiveTecnicoStudent) {
     return (
-      <Nav.Link as={as} to={to}>
+      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
       </Nav.Link>
     );
@@ -79,12 +73,12 @@ const ActiveTecnicoStudentNavLink = ({ as, to, children }) => {
   return null;
 };
 
-const ActiveLMeicStudentNavLink = ({ as, to, children }) => {
+const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isActiveLMeicStudent) {
     return (
-      <Nav.Link as={as} to={to}>
+      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
       </Nav.Link>
     );
@@ -92,12 +86,12 @@ const ActiveLMeicStudentNavLink = ({ as, to, children }) => {
   return null;
 };
 
-const GacNavLink = ({ as, to, children }) => {
+const GacNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isGacMember) {
     return (
-      <Nav.Link as={as} to={to}>
+      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
       </Nav.Link>
     );
@@ -105,12 +99,12 @@ const GacNavLink = ({ as, to, children }) => {
   return null;
 };
 
-const AdminNavLink = ({ as, to, children }) => {
+const AdminNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isAdmin) {
     return (
-      <Nav.Link as={as} to={to}>
+      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
       </Nav.Link>
     );
@@ -119,7 +113,23 @@ const AdminNavLink = ({ as, to, children }) => {
 };
 
 const LoginLogout = ({ userData, setUserData }) => {
-  if (userData) return <Logout userData={userData} setUserData={setUserData} />;
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    if (userData){
+      fetch(`/api/members/status/${userData.username}`)
+      .then((res) => res.json())
+      .then(
+        (fetchStatus) => {
+          let newData = userData;
+          newData.status = (fetchStatus) ? fetchStatus : "NaoSocio";
+          setData(userData);
+        }
+      );
+    }
+  }, [userData]);
+
+  if (data) return <LoggedIn userData={data} setUserData={setUserData} />;
   return <Login />;
 };
 
@@ -131,24 +141,91 @@ const Login = () => (
       + `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`
     }
   >
-    LOGIN
+    <div style={{width: '80px', height: '30px', justifyContent:'center', background: '#D9D9D9', borderRadius: '10px', fontFamily: 'Secular One', fontStyle: 'normal', fontWeight: 400, fontSize: '16px', lineHeight: '30px', display: 'flex', alignItems: 'center', textAlign: 'center', color: '#000000',}}>Login</div>
   </Nav.Link>
 );
 
-const Logout = ({ userData, setUserData }) => (
+const Logout = ({ setUserData }) => (
+  <Nav.Link className={style.navLinkLogout} as={Link} to="/" onClick={() => {
+    const removeAcessToken = new Promise(()=> {window.sessionStorage.removeItem('accessToken')});
+    removeAcessToken.then(()=>{setUserData(null)});
+  }}>
+    <GoSignOut style={{width:'25px', alignItems: 'center', color: 'black'}}/>
+  </Nav.Link>
+);
+
+const DefaultLink = ({children}) => (
   <>
-    <Navbar.Text>{userData.displayName}</Navbar.Text>
-    <Nav.Link
-      as={Link}
-      to="/"
-      onClick={() => {
-        window.sessionStorage.removeItem('accessToken');
-        setUserData(null);
-      }}
-    >
-      LOGOUT
-    </Nav.Link>
+  {isMobile ? 
+    children
+    :
+    <a href="/socio">
+      {children}
+    </a>
+  }
   </>
 );
+
+const LoggedIn = ({ userData, setUserData }) => {
+  const [click, setClick] = useState(false);
+  const [show, setShow] = useState (false);
+
+  const onMouseEnterFunction = () => {setShow(true);}
+  const onMouseLeaveFunction = () => {setShow(click);}
+  const onClickFunction = () => {isMobile && setClick(!click); setShow(!click);}
+
+  return (
+    <>
+      <div className={`${style.loggedSpace} ${style.onlyWeb}`}>
+        <DefaultLink children={
+          <div className={style.loggedImage}
+            onClick={onClickFunction}
+            onMouseEnter={onMouseEnterFunction}
+            onMouseLeave={onMouseLeaveFunction}
+            style={userData && {backgroundImage: `url(${fenixPhoto(userData.username)})`}}/>
+        } />
+        
+        <div className={style.loggedInfo}
+          onClick={onClickFunction}
+          onMouseEnter={onMouseEnterFunction}
+          onMouseLeave={onMouseLeaveFunction}>
+          <DefaultLink children={
+            <div className={style.loggedName}> {summarizeName(userData.displayName)} </div>
+          }/>
+
+        <div className={style.logoutButton_MemberState}>
+          <Logout setUserData={setUserData}/>
+          <DefaultLink children={
+            <div className={style.memberStatus} style={{background: getStatusColor(userData.status)}}>
+              <div> {getMemberStatus(userData.status)} </div>
+            </div>  
+        }/>
+        </div>
+      </div>
+        
+      </div>
+      <div className={style.moreInfo} 
+        onMouseEnter={onMouseEnterFunction}
+        onMouseLeave={onMouseLeaveFunction}
+        style={show ? {display: 'flex'} : {display: 'none'}}>
+        <ActiveTecnicoStudentNavLink hide={style.onWeb} as={Link} to="/socio">
+          Sócio
+        </ActiveTecnicoStudentNavLink>
+    
+        <ActiveLMeicStudentNavLink hide={style.onWeb} as={Link} to="/thesismaster">
+          Thesis Master
+        </ActiveLMeicStudentNavLink>
+    
+        <AdminNavLink hide={style.onWeb} as={Link} to="/admin">
+          Admin
+        </AdminNavLink>
+    
+        <GacNavLink hide={style.onWeb} as={Link} to="/mag">
+          MAG
+        </GacNavLink>
+      </div>
+    </>
+  );
+};
 
 export default NavBar;

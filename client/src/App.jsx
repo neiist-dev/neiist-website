@@ -5,14 +5,13 @@ import {
   Route,
   Redirect,
 } from 'react-router-dom';
+
 import Layout from './components/Layout';
 import LoadSpinner from "./hooks/loadSpinner";
 
 import HomePage from './pages/HomePage';
 import ActivitiesPage from './pages/ActivitiesPage';
 import AboutPage from './pages/AboutPage';
-import MajorPage from './pages/MajorPage';
-import SubgroupsPage from './pages/SubgroupsPage';
 import RulesPage from './pages/RulesPage';
 import ContactsPage from './pages/ContactsPage';
 
@@ -99,21 +98,14 @@ const App = () => {
       <Router Router forceRefresh>
         <Layout>
           <Switch>
-
             <Route exact path="/">
               <HomePage />
             </Route>
             <Route path="/atividades">
               <ActivitiesPage />
             </Route>
-            <Route path="/quemsomos">
+            <Route path="/sobre_nos">
               <AboutPage />
-            </Route>
-            <Route path="/curso">
-              <MajorPage />
-            </Route>
-            <Route path="/seccoes">
-              <SubgroupsPage />
             </Route>
             <Route path="/estatutos">
               <RulesPage />
@@ -122,7 +114,7 @@ const App = () => {
               <ContactsPage />
             </Route>
 
-            <ActiveTecnicoStudentRoute path="/socios">
+            <ActiveTecnicoStudentRoute path="/socio">
               <MemberPage />
             </ActiveTecnicoStudentRoute>
 
