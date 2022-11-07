@@ -1,6 +1,7 @@
 :root{
     --bg-color: linear-gradient(270deg, rgba(40, 99, 253, 0.075) 0%, rgba(36, 139, 227, 0.05) 100%), #FFFFFF;
-    
+    --first-color: #2863FD;
+
     --link-height: 200px;
     --footer-heigth:  150px;
     --footer-heigth-mob: 475px;
@@ -47,8 +48,10 @@ footer{
 }
 
 #content-wrap{
+    overflow-x: clip;
+    overflow-y: visible;
+    height: auto;
     width: auto;
-    margin: 1.5em 6em;
     position: relative;
     margin-bottom: calc(var(--link-height) + 25px);
 }
