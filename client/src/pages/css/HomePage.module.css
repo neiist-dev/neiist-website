@@ -10,9 +10,23 @@ h2{
   font-size: 2.5rem !important;
 }
 
-p{
-  width: 50%;
-  place-items: center;
-  text-align: center;
-  align-items: center;
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}
+
+.blueBox {
+  background-color: #248be380;
+  padding: 1em 0em 0em 0em;
+  border-radius: 1em 1em 0em 0em;
+}
+
+.whiteBox {
+  text-align: center; 
+  background-color: white; 
+  padding: 1em; 
+  border-radius: 1em 1em 0em 0em;
 }
