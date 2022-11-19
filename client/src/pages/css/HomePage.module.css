@@ -30,3 +30,30 @@ h2{
   padding: 1em; 
   border-radius: 1em 1em 0em 0em;
 }
+
+.activityImage {
+  width: 15em;
+  height: 10em;
+  object-fit: cover;
+  border-radius: 1em;
+}
+
+.activityText {
+  background-color: #248BE3;
+  font-weight: 600;
+  font-size: 1.1em;
+  color: white;
+  border-radius: 1em;
+  padding: 0em 1.5em 0em 1.5em;
+}
+
+.sinfoButton {
+  background-color: #248BE3;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5em;
+  border-radius: 0.5em;
+  padding: 0em 2em 0em 2em;
+  border-color: transparent;
+  margin: 1em;
+}
