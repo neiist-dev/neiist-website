@@ -1,5 +1,6 @@
 import alameda from '../../images/alameda.jpg';
 import taguspark from '../../images/taguspark.jpg';
+import style from "../css/Hero.module.css";
 
 const Hero = () => {
     return (
@@ -16,11 +17,12 @@ const Hero = () => {
             </div>
             <div style={{position: 'absolute', width: '150%', top: '-50%', left: '-25%', height: 'calc( 375px + 40% )', background: 'var(--bg-color)', borderRadius: '50% / 50% ', filter: 'blur(25px)'}}/>
             <div style={{position: 'relative', height:'75vh', display: 'flex', flexWrap: 'nowrap', flexFlow: 'column nowrap', alignItems: 'center', justifyContent: 'flex-start', alignContent: 'center', flexDirection: 'column'}}>
-            <h1>Núcleo Estudantil de Informática</h1>
-            <h1>do Instituto Superior Técnico</h1>
-            <p style={{fontSize: "1.5em", textAlign: "center", margin: "0em 5em"}}>
-                Um grupo de estudantes motivados para ajudar todo e qualquer aluno de Engenharia Informática e Computadores (e não só), realizando atividades no ambito da informática e apoio social.
-            </p>
+                <p className={style.title}>
+                    Núcleo Estudantil de Informática do Instituto Superior Técnico
+                </p>
+                <p className={style.subtitle}>
+                    Um grupo de estudantes motivados para ajudar todo e qualquer aluno de Engenharia Informática e Computadores (e não só), realizando atividades no ambito da informática e apoio social.
+                </p>
             </div>
         </div>
     );

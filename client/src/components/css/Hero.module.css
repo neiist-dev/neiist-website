@@ -1,0 +1,13 @@
+.title{
+    font-size: max(1.5rem, 3vw);
+    font-family: "Secular One";
+    text-align: center;
+    margin: 0% 20%;
+    color: var(--first-color);
+}
+
+.subtitle{
+    font-size: max(1rem, 1.5vw);
+    text-align: center;
+    margin: 0em 5em;
+}
