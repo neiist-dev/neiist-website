@@ -1,6 +1,7 @@
 import React from 'react';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Row, Col} from 'react-bootstrap';
 import style from '../../pages/css/HomePage.module.css'
+import activityItemStyle from '../css/ActivityItem.module.css'
 
 
 
@@ -12,28 +13,30 @@ const ActivityItem = ({image, title, description}) => {
     const handleClose = () => setShow(false);
 
     const modal = (
-        <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-            <Modal.Title>{title}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{description}</Modal.Body>
-        <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-            Close
-            </Button>
-        </Modal.Footer>
+        <Modal contentClassName={activityItemStyle.main} show={show} onHide={handleClose}>
+            <Modal.Header className={activityItemStyle.header}>
+                <Modal.Title className={activityItemStyle.title}>{title}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className={activityItemStyle.body}>
+                {description}
+            </Modal.Body>
         </Modal>
     );
 
+    // TODO: make all images same size and border reach from star to end of the image
     return (
         <>
-            <div className={style.column} style={{margin: "1em"}}>
-                <div onClick={handleShow}>
-                    <img src={image} className={style.activityImage}/>
-                    <div className={style.activityText}> {title} </div>
-                </div>
-                {modal}
+            <div onClick={handleShow} style={{}}>
+                <Col>
+                    <Row>
+                        <img src={image} className={style.activityImage}/>
+                    </Row>
+                    <Row>
+                        <div className={style.activityText}> {title} </div>
+                    </Row>
+                </Col>
             </div>
+            {modal}
         </>
     );
 }
