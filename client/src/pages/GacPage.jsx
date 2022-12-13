@@ -588,7 +588,7 @@ const CreateMemberRow = ({
       {windowSize.innerWidth > 850 &&
         <th>{member.courses}</th>
       }
-      <th>
+      <th className={style.buttonsColumn}>
         <Button onClick={() => handleMoreInfo(member.username)}>
           <img
             style={windowSize.innerWidth < 850 ? { width: "100px" } : { width: "auto" }}
