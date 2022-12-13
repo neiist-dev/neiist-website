@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Carousel from 'react-bootstrap/Carousel';
 
 import neiistBanner from '../images/neiist_banner.jpg';
@@ -9,11 +9,16 @@ import useWindowSize from '../hooks/useWindowSize';
 
 const HomePage = () => {
   const windowSize = useWindowSize();
+  const [index, setIndex] = useState(0);
+
+  const handleSelect = (selectedIndex, e) => {
+    setIndex(selectedIndex);
+  };
 
   return (
     <>
-      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
-        <Carousel>
+      <div style={{ margin: "2rem 20vw 1rem 20vw" }}>
+        <Carousel fade activeIndex={index} onSelect={handleSelect}>
           <Carousel.Item>
             <img
               style={{
@@ -25,6 +30,14 @@ const HomePage = () => {
               src={neiistBanner}
               alt="neiistBanner"
             />
+          </Carousel.Item>
+          <Carousel.Item>
+            <iframe
+              style={{ width: "100%", height: "70vh" }}
+              src="https://www.youtube.com/embed/FzIzQ9YwBqw"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            ></iframe>
           </Carousel.Item>
           <Carousel.Item>
             <img
