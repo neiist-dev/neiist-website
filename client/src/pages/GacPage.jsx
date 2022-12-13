@@ -287,12 +287,26 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                   </table>
                 </div>
                 <br />
-                {member.status !== 'NaoSocio' &&
-                  <DeleteButton
-                    member={member}
-                    handleClose={handleClose}
-                  />
-                }
+                <div style={{display: 'flex', gap: '10px'}}>
+                  {member.status === 'Renovar' &&
+                    <Button
+                    style={{backgroundColor:'orange', borderColor:'orange'}}
+                    onClick={() => {
+                      axios.put(`/api/members/${member.username}`, {
+                        name: member.name,
+                        email: member.email,
+                        courses: member.courses
+                      })
+                      .then((res) => { if (res) window.location.reload(); });
+                    }}>Renovar</Button>
+                  }
+                  {member.status !== 'NaoSocio' &&
+                    <DeleteButton
+                      member={member}
+                      handleClose={handleClose}
+                    />
+                  }
+                </div>
               </div>
             </div>
           )}
