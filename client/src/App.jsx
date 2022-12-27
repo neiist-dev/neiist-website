@@ -61,11 +61,17 @@ const App = () => {
     return userDataJson;
   };
 
+  const Redirect = (user) => window.location.replace(
+    user?.isMember ? '/socios':
+    '/'
+  );
+
   useEffect(() => {
     async function auth() {
       if (urlParams.has('code')) {
         await authFromCode();
         const user = await tryAuthFromSessionStorage();
+        await Redirect(user);
       }
       else {
         await tryAuthFromSessionStorage();
