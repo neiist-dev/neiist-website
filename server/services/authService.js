@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { getMember } = require('./membersService.js');
 
 const getAccessToken = async (code) => {
   try {
@@ -72,6 +73,7 @@ const getAcronyms = (data) => {
 const getUserData = async (accessToken) => {
   const personInformation = await getPersonInformation(accessToken);
   const acronyms = getAcronyms(personInformation);
+  const isMember = await getMember(personInformation.username);
 
   const userData = {
     username: personInformation.username,
@@ -83,6 +85,7 @@ const getUserData = async (accessToken) => {
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
     isGacMember: isGacMember(personInformation.username),
     isAdmin: isAdmin(personInformation.username),
+    isMember: (isMember ? true : false),
   };
 
   return userData;

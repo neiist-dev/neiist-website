@@ -47,36 +47,36 @@ const App = () => {
     const code = urlParams.get('code');
     const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
     const accessToken = await accessTokenResponse.text();
-    
     window.sessionStorage.setItem('accessToken', accessToken);
-    
-    await fetch(`/api/auth/userData/${accessToken}`)
-      .then((userDataResponse) => {
-        window.location.replace('/').then(() => {
-          const userDataJson = userDataResponse.json();
-          if (userDataJson) setUserData(userDataJson)
-        });
-      });
   };
 
   const tryAuthFromSessionStorage = async () => {
     const accessToken = window.sessionStorage.getItem('accessToken');
+    if (!accessToken) return null;
 
-    if (accessToken) {
-      const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
-      const userDataJson = await userDataResponse.json();
-
-      if (userDataJson) {
-        setUserData(userDataJson);
-      }
-    }
+    const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
+    const userDataJson = await userDataResponse.json();
+    setUserData(userDataJson);
+    
+    return userDataJson;
   };
+
+  const Redirect = (user) => window.location.replace(
+    user?.isMember ? '/socios':
+    '/'
+  );
 
   useEffect(() => {
     async function auth() {
-      if (urlParams.has('code')) await authFromCode();
-      else await tryAuthFromSessionStorage();
-      setIsLoaded(true);
+      if (urlParams.has('code')) {
+        await authFromCode();
+        const user = await tryAuthFromSessionStorage();
+        await Redirect(user);
+      }
+      else {
+        await tryAuthFromSessionStorage();
+        setIsLoaded(true);
+      }
     }
     auth();
   }, []);
