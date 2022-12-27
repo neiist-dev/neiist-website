@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, lazy } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -7,29 +7,27 @@ import {
 } from 'react-router-dom';
 import Layout from './components/Layout';
 import LoadSpinner from "./hooks/loadSpinner";
-
-import HomePage from './pages/HomePage';
-import ActivitiesPage from './pages/ActivitiesPage';
-import AboutPage from './pages/AboutPage';
-import MajorPage from './pages/MajorPage';
-import SubgroupsPage from './pages/SubgroupsPage';
-import RulesPage from './pages/RulesPage';
-import ContactsPage from './pages/ContactsPage';
-
-import ThesisMasterPage from './pages/ThesisMasterPage';
-import MemberPage from './pages/MemberPage';
-
-import AdminMenuPage from './pages/AdminMenuPage';
-import AdminAreasPage from './pages/AdminAreasPage';
-import AdminThesesPage from './pages/AdminThesesPage';
-import AdminElectionsPage from './pages/AdminElectionsPage';
-
-import GacPage from './pages/GacPage';
-
 import UserDataContext from './UserDataContext';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ActivitiesPage = lazy(() => import("./pages/ActivitiesPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const MajorPage = lazy(() => import("./pages/MajorPage"));
+const SubgroupsPage = lazy(() => import("./pages/SubgroupsPage"));
+const RulesPage = lazy(() => import("./pages/RulesPage"));
+const ContactsPage = lazy(() => import("./pages/ContactsPage"));
+
+const GacPage = lazy(() => import("./pages/GacPage"));
+const MemberPage = lazy(() => import("./pages/MemberPage"));
+const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage"));
+
+const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage"));
+const AdminAreasPage = lazy(() => import("./pages/AdminAreasPage"));
+const AdminThesesPage = lazy(() => import("./pages/AdminThesesPage"));
+const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage"));
 
 const Error = ({ error, errorDescription }) => (
   <>
