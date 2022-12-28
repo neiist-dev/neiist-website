@@ -293,3 +293,9 @@
   align-content: center;
   border-radius: 10px
 }
+
+.buttonsColumn > button:hover{
+  color: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+}

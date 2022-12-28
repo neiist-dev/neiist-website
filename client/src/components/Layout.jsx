@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import NavBar from './NavBar';
 import Footer from './Footer';
+import LoadSpinner from "../hooks/loadSpinner";
+
 
 const Layout = ({ children }) => (
   <>
     <NavBar />
-    <div id="#content-wrap" style={{ paddingBottom: "6rem" }}>
-      {children}
-    </div>
+    <Suspense fallback={<LoadSpinner />}>
+      <div id="#content-wrap" style={{ paddingBottom: "6rem" }}>
+        {children}
+      </div>
+    </Suspense>
     <Footer />
   </>
 );

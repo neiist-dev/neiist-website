@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, lazy } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -7,29 +7,27 @@ import {
 } from 'react-router-dom';
 import Layout from './components/Layout';
 import LoadSpinner from "./hooks/loadSpinner";
-
-import HomePage from './pages/HomePage';
-import ActivitiesPage from './pages/ActivitiesPage';
-import AboutPage from './pages/AboutPage';
-import MajorPage from './pages/MajorPage';
-import SubgroupsPage from './pages/SubgroupsPage';
-import RulesPage from './pages/RulesPage';
-import ContactsPage from './pages/ContactsPage';
-
-import ThesisMasterPage from './pages/ThesisMasterPage';
-import MemberPage from './pages/MemberPage';
-
-import AdminMenuPage from './pages/AdminMenuPage';
-import AdminAreasPage from './pages/AdminAreasPage';
-import AdminThesesPage from './pages/AdminThesesPage';
-import AdminElectionsPage from './pages/AdminElectionsPage';
-
-import GacPage from './pages/GacPage';
-
 import UserDataContext from './UserDataContext';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // importing required bootstrap styles
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ActivitiesPage = lazy(() => import("./pages/ActivitiesPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const MajorPage = lazy(() => import("./pages/MajorPage"));
+const SubgroupsPage = lazy(() => import("./pages/SubgroupsPage"));
+const RulesPage = lazy(() => import("./pages/RulesPage"));
+const ContactsPage = lazy(() => import("./pages/ContactsPage"));
+
+const GacPage = lazy(() => import("./pages/GacPage"));
+const MemberPage = lazy(() => import("./pages/MemberPage"));
+const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage"));
+
+const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage"));
+const AdminAreasPage = lazy(() => import("./pages/AdminAreasPage"));
+const AdminThesesPage = lazy(() => import("./pages/AdminThesesPage"));
+const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage"));
 
 const Error = ({ error, errorDescription }) => (
   <>
@@ -47,36 +45,36 @@ const App = () => {
     const code = urlParams.get('code');
     const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
     const accessToken = await accessTokenResponse.text();
-    
     window.sessionStorage.setItem('accessToken', accessToken);
-    
-    await fetch(`/api/auth/userData/${accessToken}`)
-      .then((userDataResponse) => {
-        window.location.replace('/').then(() => {
-          const userDataJson = userDataResponse.json();
-          if (userDataJson) setUserData(userDataJson)
-        });
-      });
   };
 
   const tryAuthFromSessionStorage = async () => {
     const accessToken = window.sessionStorage.getItem('accessToken');
+    if (!accessToken) return null;
 
-    if (accessToken) {
-      const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
-      const userDataJson = await userDataResponse.json();
-
-      if (userDataJson) {
-        setUserData(userDataJson);
-      }
-    }
+    const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
+    const userDataJson = await userDataResponse.json();
+    setUserData(userDataJson);
+    
+    return userDataJson;
   };
+
+  const Redirect = (user) => window.location.replace(
+    user?.isMember ? '/socios':
+    '/'
+  );
 
   useEffect(() => {
     async function auth() {
-      if (urlParams.has('code')) await authFromCode();
-      else await tryAuthFromSessionStorage();
-      setIsLoaded(true);
+      if (urlParams.has('code')) {
+        await authFromCode();
+        const user = await tryAuthFromSessionStorage();
+        await Redirect(user);
+      }
+      else {
+        await tryAuthFromSessionStorage();
+        setIsLoaded(true);
+      }
     }
     auth();
   }, []);
