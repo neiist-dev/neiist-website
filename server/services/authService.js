@@ -1,5 +1,6 @@
 const axios = require('axios');
-const { getMember } = require('./membersService.js');
+const { checkCurrentCollab } = require('./collabsService');
+const { getMember } = require('./membersService');
 
 const getAccessToken = async (code) => {
   try {
@@ -59,6 +60,11 @@ const isAdmin = (username) => {
   return adminUsernames.includes(username);
 };
 
+const isCollab = (username) => {
+  const collab = checkCurrentCollab(username);
+  return collab!==null;
+}
+
 const getAcronyms = (data) => {
   var acronyms = [];
   data.roles.forEach((role) => {
@@ -73,7 +79,8 @@ const getAcronyms = (data) => {
 const getUserData = async (accessToken) => {
   const personInformation = await getPersonInformation(accessToken);
   const acronyms = getAcronyms(personInformation);
-  const isMember = await getMember(personInformation.username);
+  const member = await getMember(personInformation.username);
+  const isMember = (member) => member ? true : false;
 
   const userData = {
     username: personInformation.username,
@@ -81,11 +88,13 @@ const getUserData = async (accessToken) => {
     name: personInformation.name,
     email: personInformation.institutionalEmail,
     courses: acronyms,
+    status: member.status,
     isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
-    isGacMember: isGacMember(personInformation.username),
     isAdmin: isAdmin(personInformation.username),
-    isMember: (isMember ? true : false),
+    isGacMember: isGacMember(personInformation.username),
+    isMember: isMember(member),
+    isCollab: isCollab(personInformation.username),
   };
 
   return userData;
