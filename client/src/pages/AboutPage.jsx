@@ -8,12 +8,12 @@ const lectiveYear = collabs.anoLetivo;
 
 const normalizeJob = (job) => (job.replace(/[0-9]{1,}/g, ""));
 
-const normalizeName = (name) => (removeAccent(name).replace(" ", ""));
+export const normalizeName = (name) => (removeAccent(name).replace(" ", ""));
 
 const removeAccent = (name) =>
   (name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
 
-const getImage = (name, fileExt = ['.jpg', '.jpeg']) => {
+export const getImage = (name, fileExt = ['.jpg', '.jpeg']) => {
   if (fileExt.length === 0){
     var image = require('../images/colaboradores/undefinedUser.jpg');
     return image;
@@ -25,7 +25,7 @@ const getImage = (name, fileExt = ['.jpg', '.jpeg']) => {
   } catch {
     return getImage(name, fileExt.slice(1,));
   }
-}
+};
 
 const AboutPage = () => (
   <>
