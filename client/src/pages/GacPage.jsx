@@ -10,9 +10,6 @@ import Tab from 'react-bootstrap/Tab';
 import style from "./css/GacPage.module.css";
 import axios from "axios";
 
-export const fenixPhoto = (username) => 
-  `https://fenix.tecnico.ulisboa.pt/user/photo/${username}?s=10000`;
-
 const GacPage = () => {
   const [key, setKey] = useState('active');
 
@@ -442,11 +439,6 @@ const CreateEmailsModal = ({ show, handleClose, members }) => {
       </Modal.Body>
     </Modal>
   );
-};
-
-export const summarizeName = (name) => {
-  const names = name.split(" ");
-  return names[0] + " " + names[names.length - 1];
 };
 
 const CreateRenewMembersModal = ({
