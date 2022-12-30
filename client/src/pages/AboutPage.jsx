@@ -3,6 +3,7 @@ import Card from 'react-bootstrap/Card';
 
 import style from './css/AboutPage.module.css'
 import collabs from '../images/colaboradores/collaborators.json'
+import { getImage } from '../components/functions/collabsGeneral';
 
 const lectiveYear = collabs.anoLetivo;
 
@@ -12,20 +13,6 @@ export const normalizeName = (name) => (removeAccent(name).replace(" ", ""));
 
 const removeAccent = (name) =>
   (name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-
-export const getImage = (name, fileExt = ['.jpg', '.jpeg']) => {
-  if (fileExt.length === 0){
-    var image = require('../images/colaboradores/undefinedUser.jpg');
-    return image;
-  }
-
-  try {
-    var image = require('../images/colaboradores/' + normalizeName(name) + fileExt[0]);
-    return image;
-  } catch {
-    return getImage(name, fileExt.slice(1,));
-  }
-};
 
 const AboutPage = () => (
   <>
