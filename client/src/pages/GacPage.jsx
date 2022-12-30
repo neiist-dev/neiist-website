@@ -9,6 +9,8 @@ import Tab from 'react-bootstrap/Tab';
 
 import style from "./css/GacPage.module.css";
 import axios from "axios";
+import { fenixPhoto, summarizeName } from "../components/functions/dataTreatment";
+
 
 const GacPage = () => {
   const [key, setKey] = useState('active');

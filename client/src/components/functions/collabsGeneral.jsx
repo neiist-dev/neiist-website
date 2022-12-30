@@ -22,12 +22,12 @@ export const filterTeamMembers = (teamMembers, team) => (
 
 export const getImage = (name, fileExt = ['.jpg', '.jpeg']) => {
   if (fileExt.length === 0){
-    var image = require('../images/colaboradores/undefinedUser.jpg');
+    var image = require('../../images/colaboradores/undefinedUser.jpg');
     return image;
   }
 
   try {
-    var image = require('../images/colaboradores/' + normalizeName(name) + fileExt[0]);
+    var image = require('../../images/colaboradores/' + normalizeName(name) + fileExt[0]);
     return image;
   } catch {
     return getImage(name, fileExt.slice(1,));
