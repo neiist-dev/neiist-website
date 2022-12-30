@@ -49,6 +49,10 @@ const NavBar = () => {
             Thesis Master
           </ActiveLMeicStudentNavLink>
 
+          <CollabNavLink as={Link} to="/collab">
+            Colaborador(a)
+          </CollabNavLink>
+
           <AdminNavLink as={Link} to="/admin">
             Admin
           </AdminNavLink>
@@ -83,6 +87,19 @@ const ActiveLMeicStudentNavLink = ({ as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isActiveLMeicStudent) {
+    return (
+      <Nav.Link as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
+};
+
+const CollabNavLink = ({ as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isCollab) {
     return (
       <Nav.Link as={as} to={to}>
         {children}
