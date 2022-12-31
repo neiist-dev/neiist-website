@@ -21,7 +21,8 @@ const PersonCard = ({
   name, src, social, teams, selectedTeam, showTeams
 }) => (
   <Card className={style.card}>
-    {teams?.includes(`COOR-${selectedTeam}`) && (
+    {selectedTeam && 
+    teams?.includes(`COOR-${selectedTeam}`) && (
       <div className={style.coordenatorBadge}>
         <Badge bg="dark">Coordenador(a)</Badge>
       </div>

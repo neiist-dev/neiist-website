@@ -69,8 +69,8 @@
   flex-direction: row;
 }
 
-.teamsDiv > h3 {
-  padding: var(--bs-accordion-body-padding-y) var(--bs-accordion-body-padding-x);
+.teamsPainel >* h3 {
+  padding: 0 20px;
 }
 
 .teamsDiv {
@@ -136,4 +136,31 @@
   min-height: 100px;
   min-width: 75px;
   height: 175px;
+}
+
+.manageCollabButtons {
+  padding: 0px 20px 10px 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.manageCollabButtons > Button:nth-child(1),
+.manageCollabButtons > Button:nth-child(1):hover {
+  background-color: darkGreen;
+  color: white;
+  border: 0;
+}
+
+.manageCollabButtons > Button:nth-child(2),
+.manageCollabButtons > Button:nth-child(2):hover {
+  background-color: darkRed;
+  color: white;
+  border: 0;
+}
+
+.manageCollabButtons > Button:nth-child(3),
+.manageCollabButtons > Button:nth-child(3):hover {
+  background-color: rgb(211, 211, 211);
+  color: black;
+  border: 0;
 }

@@ -12,18 +12,28 @@ import {
   getCollabImage,
 } from "../components/functions/collabsGeneral";
 
+const ManageCollabs = lazy(() => import("../components/collabs/ManageCollabs.jsx"));
 const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"));
 
 
 const CollabsPage = () => {
   const { userData } = useContext(UserDataContext);
-  const [selectedKey, setSelectedKey] = useState(0);
+  const [selectedKey, setSelectedKey] = useState(userData.isAdmin ? 1 : 2);
 
   return (
     <div className={style.mainPage}>
       <CurrentCollabInfoPanel userData={userData} />
       <div className={style.teamsPainel}>
         <Accordion style={{ width: '100%', padding: '0' }} defaultActiveKey={userData.isAdmin ? '1' : '2'}>
+          {userData.isAdmin &&
+            <Accordion.Item onClick={() => { setSelectedKey(1) }} eventKey="1">
+              <Accordion.Header><b>✨ Gerir Colaboradores</b></Accordion.Header>
+              <Accordion.Body style={{ width: '100%', paddingLeft: '0', paddingRight: '0' }}>
+                <ManageCollabs selectedKey={selectedKey} />
+              </Accordion.Body>
+            </Accordion.Item>
+          }
+
           <Accordion.Item onClick={() => { setSelectedKey(2) }} eventKey="2">
             <Accordion.Header><b>My Team(s)</b></Accordion.Header>
             <Accordion.Body>

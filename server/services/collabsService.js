@@ -23,7 +23,7 @@ const addNewCollab = async (username,newCollabInfo) =>
   await collabsDatabase.addCollaborator(username, newCollabInfo);
 
 const removeCollab = async (username) => 
-  await collabsDatabase.deleteCollaborator(username);
+  await collabsDatabase.removeCollaborator(username);
 
 module.exports = {
   checkCurrentCollab,
