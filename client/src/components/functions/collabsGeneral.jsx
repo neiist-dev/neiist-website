@@ -1,3 +1,5 @@
+import { fenixPhoto, normalizeName } from './dataTreatment';
+
 export const allTeamNames = {
   'CEQ':'Controlo & Qualidade',
   'CON':'Contacto',
@@ -20,16 +22,19 @@ export const filterTeamMembers = (teamMembers, team) => (
     )
 );
 
-export const getImage = (name, fileExt = ['.jpg', '.jpeg']) => {
-  if (fileExt.length === 0){
-    var image = require('../../images/colaboradores/undefinedUser.jpg');
+export const getCollabImage = (
+  name = '', username = '', fileExt = ['.jpg', '.jpeg']
+) => {
+  if (fileExt.length === 0 || name===''){
+    var image = (username) ? fenixPhoto(username) :
+      require('../../images/colaboradores/undefinedUser.jpg'); 
     return image;
   }
 
   try {
-    var image = require('../../images/colaboradores/' + normalizeName(name) + fileExt[0]);
+    var image= require('../../images/colaboradores/' + normalizeName(name) + fileExt[0]);
     return image;
   } catch {
-    return getImage(name, fileExt.slice(1,));
+    return getCollabImage(name, username, fileExt.slice(1,));
   }
 };

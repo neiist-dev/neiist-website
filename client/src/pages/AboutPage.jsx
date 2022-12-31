@@ -3,16 +3,10 @@ import Card from 'react-bootstrap/Card';
 
 import style from './css/AboutPage.module.css'
 import collabs from '../images/colaboradores/collaborators.json'
-import { getImage } from '../components/functions/collabsGeneral';
+import { getCollabImage } from '../components/functions/collabsGeneral';
+import { normalizeJob } from '../components/functions/dataTreatment'
 
 const lectiveYear = collabs.anoLetivo;
-
-const normalizeJob = (job) => (job.replace(/[0-9]{1,}/g, ""));
-
-export const normalizeName = (name) => (removeAccent(name).replace(" ", ""));
-
-const removeAccent = (name) =>
-  (name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
 
 const AboutPage = () => (
   <>
@@ -25,7 +19,7 @@ const AboutPage = () => (
         <div className={style.socialOrgansDiv}>
           {Object.entries(members).map(([job, name], index) => (
             <DivPersonCard key={index} 
-              name={name} job={normalizeJob(job)} image={getImage(name)}/>
+              name={name} job={normalizeJob(job)} image={getCollabImage(name)}/>
           ))}
         </div>
       </div>
@@ -35,7 +29,7 @@ const AboutPage = () => (
         <h2>{'Membros Ativos '+lectiveYear}</h2>
         <div className={style.socialOrgansDiv}>
           {Object.values(collabs["Membros"]).map((name, index)=> (
-            <DivPersonCard key={index} name={name} image={getImage(name)}/>
+            <DivPersonCard key={index} name={name} image={getCollabImage(name)}/>
           ))}
         </div>
       </div>

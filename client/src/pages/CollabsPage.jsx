@@ -9,7 +9,7 @@ import {
   allTeamNames,
   filterTeamMembers,
   normalizeTeams,
-  getImage,
+  getCollabImage,
 } from "../components/functions/collabsGeneral";
 
 const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"));
@@ -130,8 +130,7 @@ const AllTeams = ({ selectedKey }) => {
 const TeamSection = ({ teamName, teamMembers }) => {
   const name = (member) => member.name ?
     summarizeName(member.name) : member.username;
-  const image = (member) => member.name ?
-    getImage(summarizeName(member.name)) : fenixPhoto(member.username);
+  const image = (member) => getCollabImage(summarizeName(member.name),member.username);
 
   return (
     <div>
