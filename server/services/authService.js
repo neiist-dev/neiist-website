@@ -1,5 +1,9 @@
 const axios = require('axios');
-const { checkCurrentCollab } = require('./collabsService');
+const {
+  checkCurrentCollab,
+  checkAdmin,
+  checkGACMember 
+} = require('./collabsService');
 const { getMember } = require('./membersService');
 
 const getAccessToken = async (code) => {
@@ -51,13 +55,15 @@ const isActiveLMeicStudent = (roles) => {
 
 const isGacMember = (username) => {
   // GAC = general assembly committee (MAG in PT)
+  const gacMembers = checkGACMember(username);
   const gacUsernames = process.env.GAC_USERNAMES.split(',');
-  return gacUsernames.includes(username);
+  return gacUsernames.includes(username) || gacMembers;
 };
 
 const isAdmin = (username) => {
+  const adminCollabs = checkAdmin(username);
   const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
-  return adminUsernames.includes(username);
+  return adminUsernames.includes(username) || adminCollabs;
 };
 
 const isCollab = (username) => {
@@ -91,8 +97,8 @@ const getUserData = async (accessToken) => {
     status: member.status,
     isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
-    isAdmin: isAdmin(personInformation.username),
-    isGacMember: isGacMember(personInformation.username),
+    isAdmin: await isAdmin(personInformation.username),
+    isGacMember: await isGacMember(personInformation.username),
     isMember: isMember(member),
     isCollab: isCollab(personInformation.username),
   };

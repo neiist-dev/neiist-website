@@ -5,6 +5,16 @@ const checkCurrentCollab = async (username) => {
   return collabInfo ? collabInfo : null;
 }
 
+const checkAdmin = async (username) => {
+  const collabInfo = await collabsDatabase.checkAdmin(username);
+  return collabInfo;
+}
+
+const checkGACMember = async (username) => {
+  const collabInfo = await collabsDatabase.checkGACMember(username);
+  return collabInfo;
+}
+
 const getCurrentCollabs = async () => {
   const collabInfo = await collabsDatabase.getCurrentCollabs();
   return collabInfo ? collabInfo : null;
@@ -27,6 +37,8 @@ const removeCollab = async (username) =>
 
 module.exports = {
   checkCurrentCollab,
+  checkAdmin,
+  checkGACMember,
   getCurrentCollabs,
   getCollabTeams,
   addNewCollab,
