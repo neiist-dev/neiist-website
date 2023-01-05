@@ -145,9 +145,10 @@ const getCurrentTeamMembers = async (teamsAux) => {
  
   try {
     const collabsResult = await db.query(
-      `SELECT username, name, campus, "teams"
-      FROM curr_collaborators NATURAL JOIN members
-      where "teams" LIKE ANY(string_to_array($1,','))
+      `SELECT curr_collaborators.username, name, campus, teams
+      FROM curr_collaborators FULL JOIN members
+      ON curr_collaborators.username=members.username
+      WHERE teams LIKE ANY(string_to_array($1,','))
       ORDER BY name ASC`,
       [teams]
     );

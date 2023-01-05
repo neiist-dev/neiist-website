@@ -94,7 +94,7 @@ const getUserData = async (accessToken) => {
     name: personInformation.name,
     email: personInformation.institutionalEmail,
     courses: acronyms,
-    status: member.status,
+    status: (member) ? member.status : "NaoSocio",
     isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
     isAdmin: await isAdmin(personInformation.username),
