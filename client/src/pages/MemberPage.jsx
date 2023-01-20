@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import LoadSpinner from "../hooks/loadSpinner";
 import Button from 'react-bootstrap/Button';
+import Badge from 'react-bootstrap/Badge';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
@@ -91,10 +92,7 @@ const MemberInformation = ({member, memberNotRegisted=false}) => {
             style={{
               backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username}?s=10000)`}}
           />
-          <img
-            className={style.memberCourse} 
-            src={`https://shields.io/badge/-${member.courses.replace("-","--")}-darkblue?&style=for-the-badge`}
-          />
+          <Badge className={style.memberCourse}>{member.courses.replaceAll(',' , ', ')}</Badge>
         </div>
         <div className={style.memberInfo}>
           <p><b>Username:</b> {member.username}</p>
