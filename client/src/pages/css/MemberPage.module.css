@@ -64,10 +64,13 @@
 }
 
 .memberCourse {
-  display: block;
-  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 25px;
   margin: 10px auto;
+  color: white;
+  background-color: darkblue !important;
 }
 
 .memberInfo {
