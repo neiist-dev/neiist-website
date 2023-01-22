@@ -2,11 +2,16 @@ const { collabsDatabase } = require('../database');
 
 const checkCurrentCollab = async (username) => {
   const collabInfo = await collabsDatabase.getCurrentCollab(username);
-  return collabInfo ? collabInfo : null;
+  return collabInfo;
 }
 
 const checkAdmin = async (username) => {
   const collabInfo = await collabsDatabase.checkAdmin(username);
+  return collabInfo;
+}
+
+const checkCoordenator = async (username) => {
+  const collabInfo = await collabsDatabase.checkCoordenator(username);
   return collabInfo;
 }
 
@@ -17,7 +22,7 @@ const checkGACMember = async (username) => {
 
 const getCurrentCollabs = async () => {
   const collabInfo = await collabsDatabase.getCurrentCollabs();
-  return collabInfo ? collabInfo : null;
+  return collabInfo;
 };
 
 const getCollabTeams = async (username) => {
@@ -39,6 +44,7 @@ module.exports = {
   checkCurrentCollab,
   checkAdmin,
   checkGACMember,
+  checkCoordenator,
   getCurrentCollabs,
   getCollabTeams,
   addNewCollab,

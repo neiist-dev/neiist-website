@@ -172,7 +172,7 @@ const checkAdmin = async (username) => {
   } catch (err) {
     console.error(err);
   }
-  return admin.username === username;
+  return admin!==undefined && admin.username === username;
 };
 
 const checkGACMember = async (username) => {
@@ -188,7 +188,7 @@ const checkGACMember = async (username) => {
   } catch (err) {
     console.error(err);
   }
-  return gac.username === username;
+  return gac!==undefined && gac.username === username;
 };
 
 const checkCoordenator = async (username) => {
@@ -204,7 +204,7 @@ const checkCoordenator = async (username) => {
   } catch (err) {
     console.error(err);
   }
-  return coor.username === username;
+  return coor!==undefined && coor.username === username;
 };
 
 module.exports = {
@@ -223,4 +223,5 @@ module.exports = {
 
   checkAdmin,
   checkGACMember,
+  checkCoordenator,
 };

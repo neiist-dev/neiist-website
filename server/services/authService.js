@@ -2,7 +2,8 @@ const axios = require('axios');
 const {
   checkCurrentCollab,
   checkAdmin,
-  checkGACMember 
+  checkGACMember,
+  checkCoordenator 
 } = require('./collabsService');
 const { getMember } = require('./membersService');
 
@@ -53,22 +54,27 @@ const isActiveLMeicStudent = (roles) => {
   return roles.some((role) => role.type === 'STUDENT' && role.registrations.some((registration) => LMeicAcronyms.includes(registration.acronym)));
 };
 
-const isGacMember = (username) => {
+const isGacMember = async (username) => {
   // GAC = general assembly committee (MAG in PT)
-  const gacMembers = checkGACMember(username);
+  const gacMembers = await checkGACMember(username);
   const gacUsernames = process.env.GAC_USERNAMES.split(',');
   return gacUsernames.includes(username) || gacMembers;
 };
 
-const isAdmin = (username) => {
-  const adminCollabs = checkAdmin(username);
+const isCoordenator = async (username) => {
+  const isCoordenator = await checkCoordenator(username);
+  return isCoordenator;
+};
+
+const isAdmin = async (username) => {
+  const adminCollabs = await checkAdmin(username);
   const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
   return adminUsernames.includes(username) || adminCollabs;
 };
 
-const isCollab = (username) => {
-  const collab = checkCurrentCollab(username);
-  return collab!==null;
+const isCollab = async (username) => {
+  const collab = await checkCurrentCollab(username);
+  return collab ? collab : false;
 }
 
 const getAcronyms = (data) => {
@@ -99,10 +105,10 @@ const getUserData = async (accessToken) => {
     isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
     isAdmin: await isAdmin(personInformation.username),
     isGacMember: await isGacMember(personInformation.username),
-    isMember: isMember(member),
-    isCollab: isCollab(personInformation.username),
+    isMember: await isMember(member),
+    isCollab: await isCollab(personInformation.username),
+    isCoordenator: await isCoordenator(personInformation.username),
   };
-
   return userData;
 };
 
