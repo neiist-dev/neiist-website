@@ -36,14 +36,14 @@ const CollabsPage = () => {
 
           <Accordion.Item onClick={() => { setSelectedKey(2) }} eventKey="2">
             <Accordion.Header><b>My Team(s)</b></Accordion.Header>
-            <Accordion.Body>
+            <Accordion.Body style={{ width: '100%', paddingLeft: '0', paddingRight: '0' }}>
               <CurrentTeams selectedKey={selectedKey} userData={userData} />
             </Accordion.Body>
           </Accordion.Item>
 
           <Accordion.Item onClick={() => { setSelectedKey(3) }} eventKey="3">
             <Accordion.Header><b>All Teams</b></Accordion.Header>
-            <Accordion.Body>
+            <Accordion.Body style={{ width: '100%', paddingLeft: '0', paddingRight: '0' }}>
               <AllTeams selectedKey={selectedKey} />
             </Accordion.Body>
           </Accordion.Item>
