@@ -7,6 +7,7 @@ const createCollaborators = async () => {
         "id" SERIAL PRIMARY KEY,
         "username" varchar(10) NOT NULL,
         "campus" varchar(1) NOT NULL,
+        "phone" varchar(15),
         "teams" varchar(50) NOT NULL,
         "role" varchar(25) DEFAULT 'COLLAB',
         "subRole" varchar(100),
