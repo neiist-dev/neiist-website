@@ -22,6 +22,7 @@ const ContactsPage = lazy(() => import("./pages/ContactsPage"));
 
 const GacPage = lazy(() => import("./pages/GacPage"));
 const MemberPage = lazy(() => import("./pages/MemberPage"));
+const CollabsPage = lazy(() => import("./pages/CollabsPage"));
 const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage"));
 
 const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage"));
@@ -60,6 +61,7 @@ const App = () => {
   };
 
   const Redirect = (user) => window.location.replace(
+    user?.isCollab ? '/collab':
     user?.isMember ? '/socios':
     '/'
   );
@@ -141,6 +143,10 @@ const App = () => {
               <AdminElectionsPage />
             </AdminRoute>
 
+            <CollabRoute path="/collab">
+              <CollabsPage />
+            </CollabRoute>
+
             <GacRoute path="/mag">
               <GacPage />
             </GacRoute>
@@ -184,7 +190,15 @@ const GacRoute = ({ exact, path, children }) => {
   if (userData &&  userData.isGacMember) 
     return <PrivateRoute exact={exact} path={path} children={children}/>
   return <Redirect to="/"/>
-}
+};
+
+const CollabRoute = ({ exact, path, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isCollab) 
+    return <PrivateRoute exact={exact} path={path} children={children}/>
+  return <Redirect to="/"/>
+};
 
 const AdminRoute = ({ exact, path, children }) => {
   const { userData } = useContext(UserDataContext);

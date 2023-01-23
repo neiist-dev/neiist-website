@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const { databaseSchema } = require('./database');
 
 const {
-  authRoute, areasRoute, thesesRoute, membersRoute, electionsRoute, adminElectionsRoute, gacRoute
+  authRoute, areasRoute, thesesRoute, membersRoute, collabsRoute, electionsRoute, adminElectionsRoute, gacRoute
 } = require('./routes');
 
 const app = express();
@@ -23,6 +23,7 @@ app.use('/api/areas', areasRoute);
 app.use('/api/theses', thesesRoute);
 app.use('/api/admin/elections', adminElectionsRoute);
 app.use('/api/members', membersRoute);
+app.use('/api/collabs', collabsRoute);
 app.use('/api/mag', gacRoute);
 app.use('/api/elections', electionsRoute);
 
