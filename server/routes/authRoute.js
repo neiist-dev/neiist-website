@@ -11,8 +11,12 @@ router.get('/accessToken/:code', async (req, res) => {
 
 router.get('/userData/:accessToken', async (req, res) => {
   const { accessToken } = req.params;
-  const userData = await authService.getUserData(accessToken);
-  res.json(userData);
+  try {
+    const userData = await authService.getUserData(accessToken);
+    res.json(userData);
+  } catch (error) {
+    res.status(401).send(error.message);
+  }
 });
 
 module.exports = router;

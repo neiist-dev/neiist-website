@@ -42,6 +42,12 @@ const App = () => {
   const [userData, setUserData] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const logout = () => {
+    window.sessionStorage.removeItem('accessToken');
+    setUserData(null);
+    return null;
+  };
+
   const authFromCode = async () => {
     const code = urlParams.get('code');
     const accessTokenResponse = await fetch(`/api/auth/accessToken/${code}`);
@@ -54,9 +60,10 @@ const App = () => {
     if (!accessToken) return null;
 
     const userDataResponse = await fetch(`/api/auth/userData/${accessToken}`);
+    if (userDataResponse.status === 401) return logout();
+
     const userDataJson = await userDataResponse.json();
     setUserData(userDataJson);
-    
     return userDataJson;
   };
 
