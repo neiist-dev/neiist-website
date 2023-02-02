@@ -3,8 +3,6 @@ import {Modal, Row, Col} from 'react-bootstrap';
 import style from '../../pages/css/HomePage.module.css'
 import activityItemStyle from '../css/ActivityItem.module.css'
 
-
-
 const ActivityItem = ({image, title, description}) => {
 
     const [show, setShow] = React.useState(false);
@@ -26,7 +24,7 @@ const ActivityItem = ({image, title, description}) => {
     // TODO: make all images same size and border reach from star to end of the image
     return (
         <>
-            <div onClick={handleShow} style={{}}>
+            <div onClick={handleShow} style={{padding: "25px"}}>
                 <Col>
                     <Row>
                         <img src={image} className={style.activityImage}/>

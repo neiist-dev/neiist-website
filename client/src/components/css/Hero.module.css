@@ -1,13 +1,29 @@
-.title{
-    font-size: max(1.5rem, 3vw);
-    font-family: "Secular One";
-    text-align: center;
-    margin: 0% 20%;
-    color: var(--first-color);
+@media only screen and (max-width: 750px) {
+    .title{
+        font-size: 2.5rem;
+        font-family: "Secular One";
+        text-align: center;
+        color: var(--first-color);
+    }
+    
+    .subtitle{
+        font-size: 1.2rem;
+        font-weight: 600 !important; 
+        text-align: center;
+    }
 }
 
-.subtitle{
-    font-size: max(1rem, 1.5vw);
-    text-align: center;
-    margin: 0em 5em;
+@media only screen and (min-width: 750px){
+    .title{
+        font-size: 3.25rem;
+        font-family: "Secular One";
+        text-align: center;
+        color: var(--first-color);
+    }
+    
+    .subtitle{
+        font-size: 1.5rem;
+        font-weight: 600 !important; 
+        text-align: center;
+    }
 }

@@ -2,7 +2,6 @@
     padding: 0.5em !important;
     border-width: 0em !important;
     border-radius: 1em !important;
-    background-image: linear-gradient(#248be380, #ffffff);
 }
 
 .header {
@@ -14,10 +13,12 @@
 .title {
     text-align: center;
     font-size: 2em !important;
-    font-weight: bold !important;
     color: var(--first-color); 
+    font-family: 'Secular One';
 }
 
 .body {
     padding-top: 0 !important;
+    text-align: justify;
+    font-family: Montserrat;
 }
