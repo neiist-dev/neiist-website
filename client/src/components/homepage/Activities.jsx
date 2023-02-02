@@ -14,11 +14,12 @@ import python from '../../images/eventos/python.jpg';
 import assembly from '../../images/eventos/assembly.jpg';
 import c from '../../images/eventos/C.jpg';
 import hashcode from '../../images/eventos/hashcode.jpg';
+import style from '../../pages/css/HomePage.module.css'
 
 const Activities = () => {
 
     return (
-        <div style={{margin: "0em 0em 0em 0em"}}>
+        <div className={style.verticalMargin}>
             <h1 style={{textAlign: "left"}}>Atividades</h1>
             <BlueWhiteBox>
                 <Carousel

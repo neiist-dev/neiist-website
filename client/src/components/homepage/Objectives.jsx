@@ -1,9 +1,10 @@
 import BlueWhiteBox from './BlueWhiteBox';
 import ObjectiveItem from './ObjectiveItem';
+import style from '../../pages/css/HomePage.module.css'
 
 const Objectives = () => {
     return (
-        <>
+        <div className={style.verticalMargin}>
             <h1 style={{textAlign: "left"}}>Objetivos</h1>
             <BlueWhiteBox>
                 <ObjectiveItem 
@@ -23,7 +24,7 @@ const Objectives = () => {
                     text="Estimular o associativismo e o espírito de equipa dentro das licenciaturas da responsabilidade do DEI-IST"
                 />
             </BlueWhiteBox>
-        </>
+        </div>
     );
 }
 

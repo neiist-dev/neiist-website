@@ -1,8 +1,9 @@
 import BlueWhiteBox from './BlueWhiteBox';
+import style from '../../pages/css/HomePage.module.css'
 
 const Mission = () => {
     return (
-        <>
+        <div className={style.verticalMargin}>
             <h1 style={{textAlign: "left"}}>Missão</h1>
             <BlueWhiteBox>
                 <p>
@@ -17,7 +18,7 @@ const Mission = () => {
                     no associativismo e valorização pessoal.
                 </p>
             </BlueWhiteBox>
-        </>
+        </div>
     );
 }
 

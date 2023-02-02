@@ -7,7 +7,7 @@ import style from '../../pages/css/HomePage.module.css'
 
 const Sinfo = () => {
     return (
-        <>
+        <div className={style.verticalMargin}>
             <h1 style={{textAlign: "left"}}>Secção Autónoma</h1>
             <BlueWhiteBox>
                 <Row style={{alignItems: "center"}}>
@@ -33,7 +33,7 @@ const Sinfo = () => {
                     </Col>
                 </Row>
             </BlueWhiteBox>
-        </>  
+        </div>  
     );
 }
 

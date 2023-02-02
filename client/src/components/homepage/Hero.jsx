@@ -1,6 +1,4 @@
-import alameda from "../../images/alameda.jpg";
-import taguspark from "../../images/taguspark.jpg";
-import merged from "../../images/Background.png";
+import background from "../../images/background.png";
 import style from "../css/Hero.module.css";
 
 const Hero = () => {
@@ -14,13 +12,14 @@ const Hero = () => {
 					top: "90px",
 					left: "0px",
 					height: "75vh",
+					width: "100vw"
 				}}
 			>
 				<img
-					src={merged}
+					src={background}
 					style={{
 						height: "100%",
-						width: "100%",
+						width: "100%",			
                         objectFit: "cover"
 					}}
 				/>
