@@ -41,7 +41,6 @@ body {
 }
 
 .activityImage {
-  width: 15em;
   height: 10em;
   object-fit: cover;
   border-radius: 1em;
@@ -52,7 +51,7 @@ body {
 .activityText {
   background-color: #248BE3;
   font-weight: 600;
-  font-size: 0.9em;
+  font-size: 1em;
   color: white;
   border-radius: 0 0 1em 1em;
   white-space: nowrap;

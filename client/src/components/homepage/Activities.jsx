@@ -87,7 +87,7 @@ const Activities = () => {
                     />
                     <ActivityItem
                     image={qtsm}
-                    title="Quase Tudo Sobre MEIC"
+                    title="(Quase) Tudo Sobre MEIC"
                     description="Vais entrar em MEIC e estás indeciso quanto às áreas ou cadeiras a escolher? Vem assistir a estas sessões com professores!"
                     setAutoPlay={setAutoPlay}
                     />
