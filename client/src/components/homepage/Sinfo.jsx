@@ -8,13 +8,15 @@ import style from '../../pages/css/HomePage.module.css'
 const Sinfo = () => {
     return (
         <div className={style.verticalMargin}>
-            <h1 style={{textAlign: "left"}}>Secção Autónoma</h1>
+            <h1>Secção Autónoma</h1>
             <BlueWhiteBox>
                 <Row style={{alignItems: "center"}}>
                     <Col xl={6}>
                         <img src={sinfo} style={{width: "80%"}}/>
                         <br/>
-                        <button className={style.sinfoButton}> Visita a SINFO! </button>
+                        <a href="https://sinfo.org" target="_blank">
+                            <button className={style.sinfoButton}>Visita a SINFO!</button>
+                        </a>
                     </Col>
                     <Col xl={6}>
                         <p>

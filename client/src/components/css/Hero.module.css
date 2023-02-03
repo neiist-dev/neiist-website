@@ -79,7 +79,7 @@
     width: 175%;
     top: calc( 90vh - 2em );
     left: -25%;
-    height: 5vw;
+    height: 7.5vw;
     background: var(--bg-color);
     border-radius: 50% / 30% ;
     filter: blur(15px);

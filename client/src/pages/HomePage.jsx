@@ -12,6 +12,14 @@ const HomePage = () => {
   return (
     <div className={style.global}>
       <Hero />
+      {/*  SPACE  */}
+			<div
+				style={{
+					position: "relative",
+					height: "5vw",
+          zIndex: "-1"
+				}}
+			/>
       <Row style={{justifyContent: "space-between"}}>
         <Col md={6}>
           <Mission />

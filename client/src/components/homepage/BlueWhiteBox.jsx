@@ -4,7 +4,7 @@ const BlueWhiteBox = (props) => {
 
     return (
         <div className={style.blueBox}>
-            <div className={style.whiteBox}>
+            <div className={`${style.whiteBox} ${props.className}`}>
                 {props.children}
             </div>
         </div>

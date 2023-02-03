@@ -10,8 +10,21 @@ h2{
   font-size: 2.5rem !important;
 }
 
+body {
+  overflow: overlay;
+}
+
 .global {
   margin: 1.5em 6em 0.25em 6em;
+}
+
+.missionAndObjectives {
+  height: 15em !important;
+  overflow-y: hidden;
+}
+
+.objectives {
+  overflow-y: scroll;
 }
 
 .blueBox {
@@ -32,14 +45,20 @@ h2{
   height: 10em;
   object-fit: cover;
   border-radius: 1em;
+  padding: 0 !important;
+  border-radius: 1em 1em 0 0;
 }
 
 .activityText {
   background-color: #248BE3;
   font-weight: 600;
-  font-size: 1.1em;
+  font-size: 0.9em;
   color: white;
-  border-radius: 1em;
+  border-radius: 0 0 1em 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  padding: 0 !important;
 }
 
 .sinfoButton {
@@ -57,6 +76,11 @@ h2{
   margin: 0.5em 0em;
 }
 
+.verticalMargin > h1 {
+  text-align: left;
+  margin: 2rem 0 .5rem 0;
+}
+
 @media only screen and (max-width: 885px) {
   .global{
     margin: 0em 6em 0.25em 6em;
@@ -67,4 +91,19 @@ h2{
   .global {
     margin: 0em 1em 0.25em 1em;
   }
+}
+
+::-webkit-scrollbar {
+  width: 20px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #248be380;
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
 }

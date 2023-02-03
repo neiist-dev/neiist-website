@@ -5,8 +5,8 @@ import style from '../../pages/css/HomePage.module.css'
 const Objectives = () => {
     return (
         <div className={style.verticalMargin}>
-            <h1 style={{textAlign: "left"}}>Objetivos</h1>
-            <BlueWhiteBox>
+            <h1>Objetivos</h1>
+            <BlueWhiteBox className={`${style.objectives} ${style.missionAndObjectives}`}>
                 <ObjectiveItem 
                     color="darkblue"
                     text="Organizar diversas atividades no âmbito da informática e valorização pessoal"

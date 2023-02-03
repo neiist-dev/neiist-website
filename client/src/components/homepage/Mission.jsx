@@ -4,8 +4,8 @@ import style from '../../pages/css/HomePage.module.css'
 const Mission = () => {
     return (
         <div className={style.verticalMargin}>
-            <h1 style={{textAlign: "left"}}>Missão</h1>
-            <BlueWhiteBox>
+            <h1>Missão</h1>
+            <BlueWhiteBox className={style.missionAndObjectives}>
                 <p>
                     O NEIIST ambiciona ser o núcleo que integra, apoia e dinamiza todos os grupos,comunidades 
                     e iniciativas com impacto no percurso de estudantes do IST com interesses em Tecnologias 
