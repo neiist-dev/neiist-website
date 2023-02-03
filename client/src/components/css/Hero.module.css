@@ -1,29 +1,86 @@
 @media only screen and (max-width: 750px) {
-    .title{
+    .titles > p:first-child {
         font-size: 2.5rem;
         font-family: "Secular One";
         text-align: center;
         color: var(--first-color);
     }
     
-    .subtitle{
+    .titles > p:last-child {
         font-size: 1.2rem;
         font-weight: 600 !important; 
         text-align: center;
+        width: 75%;
     }
 }
 
 @media only screen and (min-width: 750px){
-    .title{
-        font-size: 3.25rem;
+    .titles > p:first-child {
+        font-size: 3rem;
         font-family: "Secular One";
         text-align: center;
         color: var(--first-color);
     }
     
-    .subtitle{
-        font-size: 1.5rem;
+    .titles > p:last-child {
+        font-size: 1.2rem;
         font-weight: 600 !important; 
         text-align: center;
+        width: 80%;
     }
+}
+
+.backgroundImage {
+    overflow: hidden;
+    opacity: 75%;
+    position: absolute;
+    top: calc( 10vh - 70px );
+    left: 0px;
+    height: calc( 90vh - 1.5em );
+    width: 100vw;
+}
+
+.backgroundImage > img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+@media only screen and (min-width: 1625px) {
+    .initialBlur {
+        height: 132.5vh !important;
+    }
+}
+
+.initialBlur {
+    position: absolute;
+    width: 150%;
+    top: -50%;
+    left: -25%;
+    height: 145vh;
+    background: var(--bg-color);
+    border-radius: 50% / 30% ;
+    filter: blur(25px);
+}
+
+.titles {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    align-content: center;
+    flex-direction: column;
+}
+
+.finalBlur {
+    position: absolute;
+    width: 175%;
+    top: calc( 90vh - 2em );
+    left: -25%;
+    height: 5vw;
+    background: var(--bg-color);
+    border-radius: 50% / 30% ;
+    filter: blur(15px);
 }
