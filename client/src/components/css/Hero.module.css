@@ -46,9 +46,9 @@
     width: 100%;
 }
 
-@media only screen and (min-width: 1625px) {
+@media only screen and (min-width: 1614px) {
     .initialBlur {
-        height: 87.5em !important;
+        height: 80em !important;
     }
 }
 
@@ -56,8 +56,8 @@
 .initialBlur {
     position: absolute;
     width: 150%;
-    height: 95em;
-    top: calc( -95em * 3 / 4);
+    height: 82.5em;
+    top: calc( -82.5em * 3 / 4);
     left: -25%;
     background: var(--bg-color);
     border-radius: 50% / 30% ;

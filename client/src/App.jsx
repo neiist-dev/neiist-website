@@ -93,9 +93,9 @@ const App = () => {
 
 	return (
 		<UserDataContext.Provider value={{ userData, setUserData }}>
-			<Router Router forceRefresh>
-				<Suspense fallback={<LoadSpinner />}>
-					<Layout>
+			<Router Router>
+				<Layout>
+					<Suspense fallback={<LoadSpinner />}>
 						<Switch>
               {/* PUBLIC */}
 							<Route exact path="/">
@@ -145,8 +145,8 @@ const App = () => {
 								<Redirect to="/" />
 							</Route>
 						</Switch>
-					</Layout>
-				</Suspense>
+					</Suspense>
+				</Layout>
 			</Router>
 		</UserDataContext.Provider>
 	);
