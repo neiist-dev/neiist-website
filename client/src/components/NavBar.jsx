@@ -1,15 +1,20 @@
-import React, { useContext, useState } from 'react';
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
-import { Link } from 'react-router-dom';
-import logo from '../images/neiist_logo.png';
-import UserDataContext from '../UserDataContext';
+import React, { useContext, useState } from "react";
+import Navbar from "react-bootstrap/Navbar";
+import Nav from "react-bootstrap/Nav";
+import { Link } from "react-router-dom";
+import logo from "../images/neiist_logo.png";
+import UserDataContext from "../UserDataContext";
 import { GoSignOut } from "react-icons/go";
-import { summarizeName, getMemberStatus, fenixPhoto, getStatusColor } from '../hooks/dataTreatment.jsx'
+import {
+	summarizeName,
+	getMemberStatus,
+	fenixPhoto,
+	getStatusColor,
+} from "../hooks/dataTreatment.jsx";
 import { isMobile } from "react-device-detect";
 
-import style from './css/NavBar.module.css'
-import { useEffect } from 'react';
+import style from "./css/NavBar.module.css";
+import { useEffect } from "react";
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
@@ -65,29 +70,29 @@ const NavBar = () => {
 };
 
 const ActiveTecnicoStudentNavLink = ({ hide, as, to, children }) => {
-  const { userData } = useContext(UserDataContext);
+	const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isActiveTecnicoStudent) {
-    return (
-      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
-        {children}
-      </Nav.Link>
-    );
-  }
-  return null;
+	if (userData && userData.isActiveTecnicoStudent) {
+		return (
+			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
+				{children}
+			</Nav.Link>
+		);
+	}
+	return null;
 };
 
 const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
-  const { userData } = useContext(UserDataContext);
+	const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isActiveLMeicStudent) {
-    return (
-      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
-        {children}
-      </Nav.Link>
-    );
-  }
-  return null;
+	if (userData && userData.isActiveLMeicStudent) {
+		return (
+			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
+				{children}
+			</Nav.Link>
+		);
+	}
+	return null;
 };
 
 const CollabNavLink = ({ hide, as, to, children }) => {
@@ -104,82 +109,113 @@ const CollabNavLink = ({ hide, as, to, children }) => {
 };
 
 const GacNavLink = ({ hide, as, to, children }) => {
-  const { userData } = useContext(UserDataContext);
+	const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isGacMember) {
-    return (
-      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
-        {children}
-      </Nav.Link>
-    );
-  }
-  return null;
+	if (userData && userData.isGacMember) {
+		return (
+			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
+				{children}
+			</Nav.Link>
+		);
+	}
+	return null;
 };
 
 const AdminNavLink = ({ hide, as, to, children }) => {
-  const { userData } = useContext(UserDataContext);
+	const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isAdmin) {
-    return (
-      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
-        {children}
-      </Nav.Link>
-    );
-  }
-  return null;
+	if (userData && userData.isAdmin) {
+		return (
+			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
+				{children}
+			</Nav.Link>
+		);
+	}
+	return null;
 };
 
 const LoginLogout = ({ userData, setUserData }) => {
-  const [data, setData] = useState(null);
+	const [data, setData] = useState(null);
 
-  useEffect(() => {
-    if (userData){
-      fetch(`/api/members/status/${userData.username}`)
-      .then((res) => res.json())
-      .then(
-        (fetchStatus) => {
-          let newData = userData;
-          newData.status = (fetchStatus) ? fetchStatus : "NaoSocio";
-          setData(userData);
-        }
-      );
-    }
-  }, [userData]);
+	useEffect(() => {
+		if (userData) {
+			fetch(`/api/members/status/${userData.username}`)
+				.then((res) => res.json())
+				.then((fetchStatus) => {
+					let newData = userData;
+					newData.status = fetchStatus ? fetchStatus : "NaoSocio";
+					setData(userData);
+				});
+		}
+	}, [userData]);
 
-  if (data) return <LoggedIn userData={data} setUserData={setUserData} />;
-  return <Login />;
+	if (data) return <LoggedIn userData={data} setUserData={setUserData} />;
+	return <Login />;
 };
 
 const Login = () => (
-  <Nav.Link
-    href={
-      'https://fenix.tecnico.ulisboa.pt/oauth/userdialog'
-      + `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}`
-      + `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`
-    }
-  >
-    <div style={{width: '80px', height: '30px', justifyContent:'center', background: '#D9D9D9', borderRadius: '10px', fontFamily: 'Secular One', fontStyle: 'normal', fontWeight: 400, fontSize: '16px', lineHeight: '30px', display: 'flex', alignItems: 'center', textAlign: 'center', color: '#000000',}}>Login</div>
-  </Nav.Link>
+	<Nav.Link
+		href={
+			"https://fenix.tecnico.ulisboa.pt/oauth/userdialog" +
+			`?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
+			`&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`
+		}
+	>
+		<div
+			style={{
+				width: "80px",
+				height: "30px",
+				justifyContent: "center",
+				background: "#D9D9D9",
+				borderRadius: "10px",
+				fontFamily: "Secular One",
+				fontStyle: "normal",
+				fontWeight: 400,
+				fontSize: "16px",
+				lineHeight: "30px",
+				display: "flex",
+				alignItems: "center",
+				textAlign: "center",
+				color: "#000000",
+			}}
+		>
+			Login
+		</div>
+	</Nav.Link>
 );
 
 const Logout = ({ setUserData }) => (
-  <Nav.Link className={style.navLinkLogout} as={Link} to="/" onClick={() => {
-    const removeAcessToken = new Promise(()=> {window.sessionStorage.removeItem('accessToken')});
-    removeAcessToken.then(()=>{setUserData(null)});
-  }}>
-    <GoSignOut style={{width:'25px', alignItems: 'center', color: 'black'}}/>
-  </Nav.Link>
+	<Nav.Link
+		className={style.navLinkLogout}
+		as={Link}
+		to="/"
+		onClick={() => {
+			const removeAccessToken = new Promise(() => {
+				window.sessionStorage.removeItem("accessToken");
+			});
+			removeAccessToken;
+			setUserData(null);
+			window.location.replace("/").reload(true);
+		}}
+	>
+		<GoSignOut
+			style={{ width: "25px", alignItems: "center", color: "black" }}
+		/>
+	</Nav.Link>
 );
 
-const DefaultLink = ({children}) => (
+const DefaultLink = ({ children }) => (
   <>
-  {isMobile ? 
-    children
-    :
-    <a href="/socio">
-      {children}
-    </a>
-  }
+    {isMobile ? (
+      children
+    ) : (
+      <Link
+        as={Link}
+        to="/socio"
+      >
+        {children}
+      </Link>
+    )}
   </>
 );
 

@@ -1,0 +1,108 @@
+h1, h2 {
+  color: var(--first-color);
+}
+
+h1{
+  font-size: 3.25rem !important;
+}
+
+h2{
+  font-size: 2.5rem !important;
+}
+
+body {
+  overflow: overlay;
+}
+
+.global {
+  margin: 1.5em 6em 0.25em 6em;
+}
+
+.missionAndObjectives {
+  height: 15em !important;
+  overflow-y: hidden;
+}
+
+.objectives {
+  overflow-y: scroll;
+}
+
+.blueBox {
+  background-color: #248be380;
+  padding: 1em 0em 0em 0em;
+  border-radius: 1em 1em 0em 0em;
+}
+
+.whiteBox {
+  text-align: center; 
+  background-color: white; 
+  padding: 1em; 
+  border-radius: 1em 1em 0em 0em;
+}
+
+.activityImage {
+  height: 10em;
+  object-fit: cover;
+  border-radius: 1em;
+  padding: 0 !important;
+  border-radius: 1em 1em 0 0;
+}
+
+.activityText {
+  background-color: #248BE3;
+  font-weight: 600;
+  font-size: 1em;
+  color: white;
+  border-radius: 0 0 1em 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  padding: 0 !important;
+}
+
+.sinfoButton {
+  background-color: #248BE3;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5em;
+  border-radius: 0.5em;
+  padding: 0em 2em 0em 2em;
+  border-color: transparent;
+  margin: 1em;
+}
+
+.verticalMargin {
+  margin: 0.5em 0em;
+}
+
+.verticalMargin > h1 {
+  text-align: left;
+  margin: 2rem 0 .5rem 0;
+}
+
+@media only screen and (max-width: 885px) {
+  .global{
+    margin: 0em 6em 0.25em 6em;
+  }
+}
+
+@media only screen and (max-width: 750px) {
+  .global {
+    margin: 0em 1em 0.25em 1em;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 20px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #248be380;
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+}
