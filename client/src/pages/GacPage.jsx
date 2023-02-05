@@ -9,9 +9,8 @@ import Tab from 'react-bootstrap/Tab';
 
 import style from "./css/GacPage.module.css";
 import axios from "axios";
+import { fenixPhoto, summarizeName } from "../components/functions/dataTreatment";
 
-const fenixPhoto = (username) => 
-  `https://fenix.tecnico.ulisboa.pt/user/photo/${username}?s=10000`;
 
 const GacPage = () => {
   const [key, setKey] = useState('active');
@@ -155,28 +154,44 @@ const AllMembersPage = ({ keySelected }) => {
 }
 
 const EmailButtons = ({ members }) => {
-  const [showNonActive, setShowNonActive] = useState(false);
-  const handleCloseNonActive = () => setShowNonActive(false);
-  const handleShowNonActive = () => setShowNonActive(true);
+  const [showRenewMembers, setshowRenewMembers] = useState(false);
+  const handleCloseNonActive = () => setshowRenewMembers(false);
+  const handleshowRenewMembers = () => setshowRenewMembers(true);
 
-  const [showAll, setShowAll] = useState(false);
-  const handleShowAll = () => setShowAll(true);
-  const handleCloseAll = () => setShowAll(false);
+  const [showRenewEmails, setShowRenewEmails] = useState(false);
+  const handleShowRenewEmails = () => setShowRenewEmails(true);
+  const handleCloseRenewEmails = () => setShowRenewEmails(false);
+
+  const [showRegularEmails, setShowRegularEmails] = useState(false);
+  const handleShowRegularEmails = () => setShowRegularEmails(true);
+  const handleCloseRegularEmails = () => setShowRegularEmails(false);
 
   return (
     <div className={style.buttonsDiv}>
-      <Button onClick={handleShowAll}>Todos os Emails</Button>
-      <CreateAllActiveEmailsModal
-        show={showAll}
-        handleClose={handleCloseAll}
-        members={members}
+      <Button onClick={handleShowRegularEmails}>[Emails] Sócios Regulares</Button>
+      <CreateEmailsModal
+        show={showRegularEmails}
+        handleClose={handleCloseRegularEmails}
+        members={members.filter((member) =>
+          member.status === "SocioRegular"
+        )}
       />
-
-      <Button onClick={handleShowNonActive}>Renovações</Button>
-      <CreateNonActiveEmailsModal
-        show={showNonActive}
+      <Button onClick={handleShowRenewEmails}>[Emails] Sócios Eleitores</Button>
+      <CreateEmailsModal
+        show={showRenewEmails}
+        handleClose={handleCloseRenewEmails}
+        members={members.filter((member) =>
+          member.status === "SocioEleitor" ||
+          member.status === "Renovar"
+        )}
+      />
+      <Button onClick={handleshowRenewMembers}>Renovações</Button>
+      <CreateRenewMembersModal
+        show={showRenewMembers}
         handleClose={handleCloseNonActive}
-        members={members?.filter((member) => member.status === "Renovar")}
+        members={members?.filter((member) =>
+          member.status === "Renovar"
+        )}
       />
     </div>
   );
@@ -287,12 +302,26 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                   </table>
                 </div>
                 <br />
-                {member.status !== 'NaoSocio' &&
-                  <DeleteButton
-                    member={member}
-                    handleClose={handleClose}
-                  />
-                }
+                <div style={{display: 'flex', gap: '10px'}}>
+                  {member.status === 'Renovar' &&
+                    <Button
+                    style={{backgroundColor:'orange', borderColor:'orange'}}
+                    onClick={() => {
+                      axios.put(`/api/members/${member.username}`, {
+                        name: member.name,
+                        email: member.email,
+                        courses: member.courses
+                      })
+                      .then((res) => { if (res) window.location.reload(); });
+                    }}>Renovar</Button>
+                  }
+                  {member.status !== 'NaoSocio' &&
+                    <DeleteButton
+                      member={member}
+                      handleClose={handleClose}
+                    />
+                  }
+                </div>
               </div>
             </div>
           )}
@@ -377,7 +406,7 @@ const DeleteButton = ({
   );
 };
 
-const CreateAllActiveEmailsModal = ({ show, handleClose, members }) => {
+const CreateEmailsModal = ({ show, handleClose, members }) => {
   var everyEmail = "";
 
   const exportEveryEmail = () => {
@@ -414,12 +443,7 @@ const CreateAllActiveEmailsModal = ({ show, handleClose, members }) => {
   );
 };
 
-const summarizeName = (name) => {
-  const names = name.split(" ");
-  return names[0] + " " + names[names.length - 1];
-};
-
-const CreateNonActiveEmailsModal = ({
+const CreateRenewMembersModal = ({
   show, handleClose, members
 }) => {
   var nonActiveEmails = "";
@@ -588,7 +612,7 @@ const CreateMemberRow = ({
       {windowSize.innerWidth > 850 &&
         <th>{member.courses}</th>
       }
-      <th>
+      <th className={style.buttonsColumn}>
         <Button onClick={() => handleMoreInfo(member.username)}>
           <img
             style={windowSize.innerWidth < 850 ? { width: "100px" } : { width: "auto" }}

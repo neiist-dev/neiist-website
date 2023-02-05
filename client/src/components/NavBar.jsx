@@ -38,7 +38,11 @@ const NavBar = () => {
               <ActiveTecnicoStudentNavLink hide={style.onMobile} as={Link} to="/socio">
                 Sócios
               </ActiveTecnicoStudentNavLink>
-
+              
+              <CollabNavLink hide={style.onMobile} as={Link} to="/collab">
+                Colaborador(a)
+              </CollabNavLink>
+              
               <ActiveLMeicStudentNavLink hide={style.onMobile} as={Link} to="/thesismaster">
                 Thesis Master
               </ActiveLMeicStudentNavLink>
@@ -77,6 +81,19 @@ const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && userData.isActiveLMeicStudent) {
+    return (
+      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
+};
+
+const CollabNavLink = ({ hide, as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && userData.isCollab) {
     return (
       <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
@@ -211,6 +228,10 @@ const LoggedIn = ({ userData, setUserData }) => {
         <ActiveTecnicoStudentNavLink hide={style.onWeb} as={Link} to="/socio">
           Sócio
         </ActiveTecnicoStudentNavLink>
+
+        <CollabNavLink hide={style.onWeb} as={Link} to="/collab">
+          Colaborador(a)
+        </CollabNavLink>
     
         <ActiveLMeicStudentNavLink hide={style.onWeb} as={Link} to="/thesismaster">
           Thesis Master
