@@ -112,7 +112,7 @@ const Activities = () => {
                     <ActivityItem
                     image={hashcode}
                     title="Hash Code"
-                    description=""
+                    description="Participa em equipa numa competição de programação organizada pelo Google. O NEIIST hospeda um Hub presencial para que as equipas se possam juntar e competir através de um scoreboard privado."
                     setAutoPlay={setAutoPlay}
                     />
                 </Carousel>

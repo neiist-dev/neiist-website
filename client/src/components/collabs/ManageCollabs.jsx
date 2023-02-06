@@ -106,7 +106,6 @@ const CreateCollaboratorRemovalModal = ({ show, handleClose, setIsLoaded, allMem
             handleClose();
             setUsername('');
             setIsLoaded(false);
-            console.log('ok');
           })}}
         bg="success">OK</Button>
       </Offcanvas.Body>
