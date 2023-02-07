@@ -15,7 +15,6 @@ import Layout from "./components/Layout";
 import LoadSpinner from "./hooks/loadSpinner";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
-const ActivitiesPage = lazy(() => import("./pages/ActivitiesPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const RulesPage = lazy(() => import("./pages/RulesPage"));
 const ContactsPage = lazy(() => import("./pages/ContactsPage"));
@@ -109,9 +108,7 @@ const App = () => {
 							<Route exact path="/">
 								<HomePage />
 							</Route>
-							<Route path="/atividades">
-								<ActivitiesPage />
-							</Route>
+
 							<Route path="/sobre_nos">
 								<AboutPage />
 							</Route>
