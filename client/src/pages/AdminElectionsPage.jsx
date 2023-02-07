@@ -44,7 +44,7 @@ const ViewElections = () => {
   }
   if (elections) {
     return (
-      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+      <div style={{ margin: '2rem 6em 1rem 6em' }}>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
           Todas as eleições ({elections.length})
         </h1>
@@ -133,7 +133,7 @@ const CreateElectionButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em 2rem 6em', textAlign: 'center' }}>
       <Button onClick={handleShow}>Criar Eleição</Button>
       <CreateElectionModal show={show} handleClose={handleClose} />
     </div>

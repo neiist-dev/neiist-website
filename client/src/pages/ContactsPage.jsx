@@ -3,21 +3,21 @@ import React from 'react';
 const ContactsPage = () => (
   <>
 
-    <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+    <div style={{ margin: '2rem 6em 1rem 6em' }}>
       <h1 style={{ textAlign: 'center' }}>CONTACTOS</h1>
     </div>
 
-    <div style={{ margin: '1rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em', textAlign: 'center' }}>
       <h2>EMAIL</h2>
       <p>neiist@tecnico.ulisboa.pt</p>
     </div>
 
-    <div style={{ margin: '1rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em', textAlign: 'center' }}>
       <h2>TELEFONE</h2>
       <p>218417000 (extensão: 2572)</p>
     </div>
 
-    <div style={{ margin: '1rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em', textAlign: 'center' }}>
       <h2>SALAS</h2>
 
       <div style={{ display: 'inline-block', marginRight: '1rem' }}>
@@ -58,7 +58,7 @@ const ContactsPage = () => (
 
     </div>
 
-    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em 2rem 6em', textAlign: 'center' }}>
       <h2 style={{ textAlign: 'center' }}>CORREIO</h2>
       <p>
         NEIIST (Núcleo Estudantil de Informática do IST)

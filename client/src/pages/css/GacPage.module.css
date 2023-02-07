@@ -61,7 +61,7 @@
 }
 
 .tabs {
-  margin: 1rem 10vw;
+  margin: 1rem 6em;
   display: flex;
   justify-content: center;
   align-content: center;
@@ -70,7 +70,7 @@
 
 .principalTable {
   place-self: center;
-  margin: 1rem 10vw;
+  margin: 1rem 6em;
   display: grid;
   place-self: center;
   justify-items: stretch;
@@ -93,7 +93,7 @@
 }
 
 .principalBody {
-  margin: 1rem 10vw;
+  margin: 1rem 6em;
   display: grid;
   text-align: center;
   justify-content: center;
