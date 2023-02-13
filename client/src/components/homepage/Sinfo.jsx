@@ -9,7 +9,7 @@ const Sinfo = () => {
     return (
         <div className={style.verticalMargin}>
             <h1>Secção Autónoma</h1>
-            <BlueWhiteBox>
+            <BlueWhiteBox id="SINFO">
                 <Row style={{alignItems: "center"}}>
                     <Col xl={6}>
                         <img src={sinfo} style={{width: "80%"}}/>

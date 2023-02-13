@@ -60,8 +60,12 @@ body {
   padding: 0 !important;
 }
 
+.sinfoBlueBox {
+  background-color: #29275d;
+}
+
 .sinfoButton {
-  background-color: #248BE3;
+  background-color: #29275d;
   color: white;
   font-weight: bold;
   font-size: 1.5em;
@@ -69,6 +73,7 @@ body {
   padding: 0em 2em 0em 2em;
   border-color: transparent;
   margin: 1em;
+  margin-top: 2em;
 }
 
 .verticalMargin {
