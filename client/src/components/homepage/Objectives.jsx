@@ -23,6 +23,14 @@ const Objectives = () => {
                     color="#248BE3"
                     text="Estimular o associativismo e o espírito de equipa dentro das licenciaturas da responsabilidade do DEI-IST"
                 />
+                <ObjectiveItem 
+                    color="darkblue"
+                    text="Promover a imagem das licenciaturas, mestrados e doutoramentos da responsabilidade do DEI"
+                />
+                <ObjectiveItem 
+                    color="#248BE3"
+                    text="Promover o relacionamento entre professores, alunos, profissionais do ramo e empresas"
+                />
             </BlueWhiteBox>
         </div>
     );
