@@ -28,6 +28,11 @@
   border-radius: 25px;
 }
 
+.navLinkDisable {
+  cursor: not-allowed !important;
+}
+
+.navLinkDisable,
 .navLink {
   padding-left: 10px !important;
   padding-right: 10px !important;

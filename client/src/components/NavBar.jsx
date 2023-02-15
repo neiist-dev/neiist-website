@@ -36,7 +36,7 @@ const NavBar = () => {
               <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/contactos">
                 Contactos
               </Nav.Link>
-              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/estudante">
+              <Nav.Link className={`${style.navLinkDisable} ${style.onWeb}`} as={Link}>
                 Estudante
               </Nav.Link>
 
