@@ -7,7 +7,7 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 
 import esports from '../../images/eventos/esports.jpg';
-import sweats from '../../images/eventos/sweats.png';
+import sweats from '../../images/eventos/sweats.jpg';
 import churrasco from '../../images/eventos/churras.jpg';
 import jantar from '../../images/eventos/jantar_curso.jpg'
 import letstalk from '../../images/eventos/ltal.jpg';
@@ -16,6 +16,7 @@ import python from '../../images/eventos/python.jpg';
 import assembly from '../../images/eventos/assembly.jpg';
 import c from '../../images/eventos/C.jpg';
 import hashcode from '../../images/eventos/hashcode.jpg';
+import lip from '../../images/eventos/lip.jpg';
 import style from '../../pages/css/HomePage.module.css'
 
 const Activities = () => {
@@ -64,55 +65,61 @@ const Activities = () => {
                     <ActivityItem 
                     image={sweats} 
                     title="Sweats EIC" 
-                    description="Compra uma sweat com o nome do teu curso!"
+                    description="E o que achas de teres uma sweat com o nome do teu curso? Não te esqueças, o NEIIST dá-te a oportunidade de teres a sweat do melhor curso!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem 
                     image={churrasco} 
                     title="Churrasco EIC" 
-                    description="Os projetos e avaliações estão aí à porta, mas há sempre tempo para uma cerveja com os amigos!"
+                    description="Mesmo que fosse uma semana de projetos ou exames, haveria sempre tempo para um convívio com amigos!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem
                     image={jantar}
                     title="Jantar de Curso"
-                    description="Muito stressado com o Técnico? Nós também, junta-te aos teus colegas no melhor jantar de curso!"
+                    description="Muito stressado com o Técnico? Nós também, junta-te aos teus colegas no melhor jantar de curso!  A cerveja já está a tua espera…"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem 
                     image={letstalk} 
                     title="Let's Talk About LEIC" 
-                    description="Se acabaste de chegar ao curso, vem a este evento aprender todos os truques para sobreviveres!"
+                    description="Acabaste de chegar ao curso e sentes-te perdido? Vem aprender connosco todos os truques para sobreviveres! Com este evento, junto dos alunos mais velhos, vais compreender como funciona LEIC e as suas disciplinas."
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem
                     image={qtsm}
                     title="(Quase) Tudo Sobre MEIC"
-                    description="Vais entrar em MEIC e estás indeciso quanto às áreas ou cadeiras a escolher? Vem assistir a estas sessões com professores!"
+                    description="Vais entrar em MEIC? Se estás indeciso sobre quais áreas ou cadeiras escolher, vem assistir a estas sessões! Irão explicar-te tudo o que precisas saber sobre a estrutura do mestrado, o currículo, as diferentes áreas de especialização, a tese e muito mais."
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem
                     image={python}
                     title="Workshop de Python"
-                    description="Estás preocupado com o projeto de FP ou queres aprender mais sobre Python? Vem a este workshop!"
+                    description="Estás preocupado com o projeto de FP ou queres aprender mais sobre Python? Vem a este workshop onde vamos falar das principais bases da programação e ensinar-te os primeiros passos essenciais para o mundo informático!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem
                     image={assembly}
                     title="Workshop Assembly"
-                    description="Não sabes o que quer dizer MOV, ADD, CMP? Não sabes o que são registos e flags? Então junta-te a nós neste workshop onde te ensinamos as bases de Assembly!"
+                    description="Não sabes o que quer dizer MOV, ADD, CMP? Não sabes o que são registos e flags? Então junta-te a nós neste workshop onde te ensinamos as bases de Assembly que irão ser fundamentais em IAC!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem
                     image={c}
                     title="Workshop C"
-                    description="Queres finalmente perceber o que são ponteiros, como funciona a pilha e muito mais? Junta-te a nós neste workshop e tira todas as tuas dúvidas!"
+                    description="Queres finalmente perceber o que é alocação de memória, o que são ponteiros, como funciona a pilha e muito mais? Junta-te a nós neste workshop e tira todas as tuas dúvidas!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem
                     image={hashcode}
                     title="Hash Code"
-                    description="Participa em equipa numa competição de programação organizada pelo Google. O NEIIST hospeda um Hub presencial para que as equipas se possam juntar e competir através de um scoreboard privado."
+                    description="Junta-te a nós na competição de código desenvolvida pela Google na qual o NEIIST organiza uma Hub onde todos os alunos do técnico são bem-vindos a integrar e participar."
+                    setAutoPlay={setAutoPlay}
+                    />
+                    <ActivityItem
+                    image={lip}
+                    title="Linux Install Party"
+                    description="Vem instalar o Linux no teu PC, junto a alunos com experiência na área e na instalação dos vários flavors que o Linux tem para oferecer!"
                     setAutoPlay={setAutoPlay}
                     />
                 </Carousel>
