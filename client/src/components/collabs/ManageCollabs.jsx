@@ -28,7 +28,7 @@ const ManageCollabs = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 1 && !isLoaded) {
-      fetch(`/api/collabs/`)
+      fetch(`/api/collabs/all`)
         .then((res) => res.json())
         .then((fetchAllMembers) => {
           setAllMembers(fetchAllMembers);
@@ -106,7 +106,6 @@ const CreateCollaboratorRemovalModal = ({ show, handleClose, setIsLoaded, allMem
             handleClose();
             setUsername('');
             setIsLoaded(false);
-            console.log('ok');
           })}}
         bg="success">OK</Button>
       </Offcanvas.Body>

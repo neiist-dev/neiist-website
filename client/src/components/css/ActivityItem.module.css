@@ -1,0 +1,24 @@
+.main {
+    padding: 0.5em !important;
+    border-width: 0em !important;
+    border-radius: 1em !important;
+}
+
+.header {
+    display: block !important; 
+    border-width: 0em !important;
+    flex-grow: initial !important;
+}
+
+.title {
+    text-align: center;
+    font-size: 2em !important;
+    color: var(--first-color); 
+    font-family: 'Secular One';
+}
+
+.body {
+    padding-top: 0 !important;
+    text-align: justify;
+    font-family: Montserrat;
+}

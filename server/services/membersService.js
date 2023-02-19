@@ -55,6 +55,13 @@ const getMember = async (username) => {
   return memberInfo;
 };
 
+const getMemberStatus = async (username) => {
+  const memberInfo = await membersDatabase.getMember(username);
+  if (!memberInfo) return "NaoSocio";
+
+  return getStatus(memberInfo);;
+};
+
 const getActiveMembers = async () => {
   const currDate = new Date();
   const limitDate = subMonthsToDate(validPeriod + gracePeriod, currDate);
@@ -150,6 +157,7 @@ const removeMember = async (username) => {
 module.exports = {
   getMember,
   getActiveMembers,
+  getMemberStatus,
   getAllMembers,
   registerMember,
   renovateMember,

@@ -29,7 +29,7 @@ const ViewTheses = () => {
 
   if (theses && areas) {
     return (
-      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+      <div style={{ margin: '2rem 6em 1rem 6em' }}>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
           {theses.length}
           {' '}
@@ -116,7 +116,7 @@ const UploadThesesButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em 2rem 6em', textAlign: 'center' }}>
       <Button onClick={handleShow}>Carregar Teses</Button>
       <UploadThesesModal show={show} handleClose={handleClose} />
     </div>
