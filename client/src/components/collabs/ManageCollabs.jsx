@@ -28,7 +28,7 @@ const ManageCollabs = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 1 && !isLoaded) {
-      fetch(`/api/collabs/`)
+      fetch(`/api/collabs/all`)
         .then((res) => res.json())
         .then((fetchAllMembers) => {
           setAllMembers(fetchAllMembers);

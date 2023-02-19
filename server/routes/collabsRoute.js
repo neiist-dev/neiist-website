@@ -5,8 +5,14 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.get('/', async (req, res) => {
-  const members = await collabsService.getCurrentCollabs();
+router.get('/:option', async (req, res) => {
+  const choices = {
+    'all': await collabsService.getCurrentCollabs(),
+    'resume': await collabsService.getCurrentCollabsResume(),
+  };
+  
+  const { option } = req.params;
+  const members = choices[option];
   res.json(members);
 });
 

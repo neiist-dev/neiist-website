@@ -139,6 +139,22 @@ const getCurrentCollabs = async () => {
   return collabs;
 };
 
+const getCurrentCollabsResume = async () => {
+  let collabs;
+  try {
+    const collabsResult = await db.query(
+      `SELECT CONCAT(split_part(m.name, ' ', 1), ' ',split_part(m.name, ' ', -1)) AS name
+      FROM curr_collaborators as cc FULL JOIN members as m ON cc.username=m.username
+      WHERE m.name IS NOT NULL AND cc.username IS NOT NULL
+      ORDER BY name ASC;`
+    );
+    collabs = collabsResult.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return collabs;
+};
+
 const getCurrentTeamMembers = async (teamsAux) => {
   //It accepts one team, or multiple ones.
   let collabs;
@@ -220,6 +236,7 @@ module.exports = {
  
   getCurrentCollab,
   getCurrentCollabs,
+  getCurrentCollabsResume,
   getCurrentTeamMembers,
 
   checkAdmin,

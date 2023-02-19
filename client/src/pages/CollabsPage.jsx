@@ -114,7 +114,7 @@ const AllTeams = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 3 && !allCollabs) {
-      fetch(`/api/collabs/`)
+      fetch(`/api/collabs/all`)
         .then((res) => res.json())
         .then((fetchAllCollabs) => {
           setAllCollabs(fetchAllCollabs);
