@@ -42,7 +42,7 @@ const AboutPage = () => {
     !activeMembersError && <LoadSpinner /> :
       <div>
         <h2>{`Membros Ativos ${lectiveYear}`}</h2>
-        <div className={style.socialOrgansDiv}>
+        <div className={style.allMembersDiv}>
           {activeMembers.map( (member, index) => (
             <DivPersonCard key={index} name={member.name} image={getCollabImage(member.name)}/>
           ))}
@@ -59,12 +59,13 @@ const DivPersonCard = ({ name, job, image }) => (
 );
 
 const PersonCard = ({ name, job, src }) => (
-  <Card className={style.card}>
-    <Card.Img className={style.cardImg} variant="top" src={src} />
-    <Card.Body>
-      <Card.Title>{name}</Card.Title>
-      {job && <Card.Text>{job}</Card.Text>}
-    </Card.Body>
+  <Card className={`${style.card}`}>
+    <Card.Img className={`${style.cardImg} hover-zoom hover-shadow`} variant="top" src={src} />
+    <Card.ImgOverlay style={{
+      borderRadius: '2em', width: '100%', position: 'absolute', display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', flexDirection: 'column', flexWrap: 'nowrap', background: 'rgb(255,255,255, 0.50)', background: 'linear-gradient(180deg, transparent 0%, transparent 40%, var(--first-color) 90%, var(--first-color) 100%)'}}>
+      <Card.Title style={{color: 'white', fontSize: '1.25rem',margin: '0', display: 'flex', justifyContent: 'center', textAlign: 'justify'}}>{`${name}`}</Card.Title>
+      {job && <Card.Text style={{lineHeight: 'initial', color: '#F4FAFC', fontSize: '13px', height:'4vh', display: 'flex', alignItems: 'center'}}>{job}</Card.Text>}
+    </Card.ImgOverlay>
   </Card>
 );
 
