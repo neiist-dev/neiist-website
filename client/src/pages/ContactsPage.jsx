@@ -3,26 +3,40 @@ import { Row, Col } from "react-bootstrap";
 
 const ContactsPage = () => (
 	<>
-		<div style={{ margin: "2rem 6em 1rem 6em" }}>
+		<div style={{ margin: "2rem 6rem 1rem 6rem" }}>
 			<h1 style={{ textAlign: "center" }}>CONTACTOS</h1>
 		</div>
 
-		<div style={{ margin: "1rem 6em", textAlign: "center" }}>
-			<h2>EMAIL</h2>
-			<p>neiist@tecnico.ulisboa.pt</p>
-		</div>
+		<Row
+			style={{
+				display: "flex",
+				justifyContent: "center",
+				alignItems: "flex-end",
+			}}
+		>
+			<Col md={5} lg={4} xl={3} style={{ margin: "0.5rem", textAlign: "center" }}>
+				<h2>EMAIL</h2>
+				<p>neiist@tecnico.ulisboa.pt</p>
+			</Col>
 
-		<div style={{ margin: "1rem 6em", textAlign: "center" }}>
-			<h2>TELEFONE</h2>
-			<p>218417000 (extensão: 2572)</p>
-		</div>
+			<Col md={5} lg={4} xl={3} style={{ margin: "0.5rem", textAlign: "center" }}>
+				<h2>TELEFONE</h2>
+				<p>218417000 (extensão: 2572)</p>
+			</Col>
+		</Row>
 
-		<div style={{ margin: "1em", textAlign: "center" }}>
+		<div style={{ margin: "1rem", textAlign: "center" }}>
 			<h2>SALAS</h2>
-			<Row>
-				<Col style={{padding: "0"}}>
+			<Row
+				style={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "flex-end",
+				}}
+			>
+				<Col md={5} lg={4} xl={3} style={{ margin: "0.5rem" }}>
 					<p>
-						Biblioteca, Sala 0.04
+						Sala de Estudo, Sala 0.04
 						<br />
 						Pavilhão de Informática 2
 						<br />
@@ -33,12 +47,11 @@ const ContactsPage = () => (
 					<iframe
 						title="NEIIST Alameda"
 						src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2617.0053052397884!2d-9.138373757283224!3d38.737059977104856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1933a3aaf6fbeb%3A0x3cf91d3b80a0520b!2sAv.+Rovisco+Pais+1%2C+1049-001+Lisboa!5e0!3m2!1spt-PT!2spt!4v1473459139674"
-						max-width="100%"
-            widht=""
+						width="auto"
 						height="300"
 					/>
 				</Col>
-				<Col style={{padding: "0"}}>
+				<Col md={5} lg={4} xl={3} style={{ margin: "0.5rem" }}>
 					<p>
 						Sala 1.18
 						<br />
@@ -56,7 +69,7 @@ const ContactsPage = () => (
 			</Row>
 		</div>
 
-		<div style={{ margin: "1rem 6em 2rem 6em", textAlign: "center" }}>
+		<div style={{ margin: "2rem 6rem 2rem 6rem", textAlign: "center" }}>
 			<h2 style={{ textAlign: "center" }}>CORREIO</h2>
 			<p>
 				NEIIST (Núcleo Estudantil de Informática do IST)
