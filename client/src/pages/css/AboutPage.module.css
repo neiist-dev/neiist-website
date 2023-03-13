@@ -23,12 +23,21 @@
   justify-content: center;
 }
 
+.socialOrgansDiv > .cardContainer > .card:hover{
+  transform: scale(1.15);
+}
+
+.allMembersDiv > .cardContainer > .card:hover{
+  transform: scale(1.075);
+}
+
 .card {
   width: 12.5rem;
   background: linear-gradient(180deg, transparent 0%, transparent 30%, var(--first-color) 100%);
   border: linear-gradient(180deg, transparent 0%, transparent 30%, var(--first-color) 100%);
   border-radius: 2em;
   border-width: 3px;
+  transition: all 0.3s;
 }
 
 .cardImg{
