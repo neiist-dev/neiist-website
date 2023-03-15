@@ -2,10 +2,13 @@ import React,{useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button'
 import LoadSpinner from "../hooks/loadSpinner";
-import { AiFillAliwangwang, AiFillAlipayCircle } from "react-icons/ai";
-import { BsQuestionLg } from "react-icons/bs";
 
+import { BsFillCameraFill, BsQuestionLg } from "react-icons/bs";
+import { FaLaptopCode, FaHandshake } from "react-icons/fa";
 import { RiPenNibFill } from "react-icons/ri";
+import { HiSpeakerphone } from "react-icons/hi";
+import { MdEventNote } from "react-icons/md";
+import { VscFeedback } from "react-icons/vsc"
 
 import {
   allTeamNames,
@@ -65,33 +68,49 @@ const AboutPage = () => {
 const HeaderDiv = () => (
   <div className={style.header}>
     <div>
-      <h1>Quem somos</h1>
-      <div className={style.line}></div>
-      <BsQuestionLg className={style.question} />
-      <p>ALGO ALGO ALGO ALGOALGOALGO ALGOALGOALGOALGO ALGOALGOALGOALGOALGO ALGOALGOALGOALGO ALGO ALGO ALGO</p>
+      <div style={{display: 'flex'}}>
+        <div>
+          <h1>Quem somos</h1>
+          <div className={style.line}>
+            <h1>Quem somos</h1>
+          </div>
+        </div>
+        <BsQuestionLg className={style.question} />
+      </div>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+    <div style={{display: 'flex', justifyContent: 'center', position: 'relative'}}>
+      <svg style={{zIndex: '3', position: 'absolute'}} width="616" height="326" viewBox="0 0 616 326" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M199.5 41.5C2.2189 112.748 -50 140 50.5 238.5C308 477 225.61 97.6013 346.5 225.5C450 335 583 373 610 246C640.189 104 547 -84 199.5 41.5Z" fill="#2863FD"/>
+      </svg>
+      <svg style={{position: 'relative', zIndex: '1'}} className={style.buuble2} width="572" height="398" viewBox="0 0 572 398" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M377.559 381.487C600.785 304.762 579.94 226.446 559.605 151.238C559.204 149.755 558.492 148.239 557.619 146.974C423.841 -46.8398 221.646 375.181 277.621 168.233C338 -54.9998 130.156 -26.7165 26.2052 86.7316C-72.9994 195 129.606 466.711 377.559 381.487Z" fill="#35D1FA"/>
+      </svg>
     </div>
   </div>
 )
 
 const OurTeamsDiv = () => {
   const images = [
+    <VscFeedback style={{scale: '2', fill: 'white'}}/>,
+    <FaHandshake style={{scale: '2'}}/>,
+    <FaLaptopCode style={{scale: '2'}}/>,
+    <HiSpeakerphone style={{scale: '2'}}/>,
+    <BsFillCameraFill style={{scale: '2'}}/>,
+    <MdEventNote style={{scale: '2'}}/>,
     <RiPenNibFill style={{scale: '2', transform: 'rotateZ(136deg)'}}/>,
-    <AiFillAlipayCircle style={{scale: '2'}}/>,
-    <AiFillAlipayCircle style={{scale: '2'}}/>,
-    <AiFillAlipayCircle style={{scale: '2'}}/>,
-    <AiFillAlipayCircle style={{scale: '2'}}/>,
-    <AiFillAlipayCircle style={{scale: '2'}}/>,
-    <AiFillAlipayCircle style={{scale: '2'}}/>
   ]
 
   return (
     <div className={style.teamsDiv}>
       <h2>As nossas equipas</h2>
       <div>
-        {Object.values(allTeamNames).map((x, index) => (
-          <Button key={index} style={{display: 'flex', alignItems: 'center', gap:'.5em', heigth: 'auto'}}>
+        {Object.values(allTeamNames).map((teamName, index) => (
+          <Button key={index}>
             {images[index]}
-            <p style={{margin: 0}}>{x}</p>
+            <p style={{margin: 0, fontWeight: 'bold'}}>
+              {teamName}
+            </p>
           </Button>
         ))}
       </div>
