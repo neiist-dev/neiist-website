@@ -1,10 +1,19 @@
 import React,{useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button'
 import LoadSpinner from "../hooks/loadSpinner";
+import { AiFillAliwangwang, AiFillAlipayCircle } from "react-icons/ai";
+import { BsQuestionLg } from "react-icons/bs";
+
+import { RiPenNibFill } from "react-icons/ri";
+
+import {
+  allTeamNames,
+  getCollabImage,
+} from "../components/functions/collabsGeneral";
 
 import style from './css/AboutPage.module.css'
 import collabs from '../images/colaboradores/collaborators.json'
-import { getCollabImage } from '../components/functions/collabsGeneral';
 import { normalizeJob } from '../components/functions/dataTreatment'
 
 const lectiveYear = collabs.anoLetivo;
@@ -24,8 +33,9 @@ const AboutPage = () => {
 
   return (
   <>
-    <div className={style.header}>
-      <h1>QUEM SOMOS</h1>
+    <div className={style.front}>
+      <HeaderDiv />
+      <OurTeamsDiv />
     </div>
     {Object.entries(collabs.orgaosSociais).map(([socialEntity, members], index)=>(
       <div key={index} className={style.socialOrgansDiv}>
@@ -51,6 +61,43 @@ const AboutPage = () => {
     }
   </>
 )};
+
+const HeaderDiv = () => (
+  <div className={style.header}>
+    <div>
+      <h1>Quem somos</h1>
+      <div className={style.line}></div>
+      <BsQuestionLg className={style.question} />
+      <p>ALGO ALGO ALGO ALGOALGOALGO ALGOALGOALGOALGO ALGOALGOALGOALGOALGO ALGOALGOALGOALGO ALGO ALGO ALGO</p>
+    </div>
+  </div>
+)
+
+const OurTeamsDiv = () => {
+  const images = [
+    <RiPenNibFill style={{scale: '2', transform: 'rotateZ(136deg)'}}/>,
+    <AiFillAlipayCircle style={{scale: '2'}}/>,
+    <AiFillAlipayCircle style={{scale: '2'}}/>,
+    <AiFillAlipayCircle style={{scale: '2'}}/>,
+    <AiFillAlipayCircle style={{scale: '2'}}/>,
+    <AiFillAlipayCircle style={{scale: '2'}}/>,
+    <AiFillAlipayCircle style={{scale: '2'}}/>
+  ]
+
+  return (
+    <div className={style.teamsDiv}>
+      <h2>As nossas equipas</h2>
+      <div>
+        {Object.values(allTeamNames).map((x, index) => (
+          <Button key={index} style={{display: 'flex', alignItems: 'center', gap:'.5em', heigth: 'auto'}}>
+            {images[index]}
+            <p style={{margin: 0}}>{x}</p>
+          </Button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 const DivPersonCard = ({ name, job, image }) => (
   <div className={style.cardContainer}>

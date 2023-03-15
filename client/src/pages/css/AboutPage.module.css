@@ -1,9 +1,51 @@
-.header {
+.front {
   margin: 2rem 6em 1rem 6em;
 }
 
-.socialOrgansDiv,
-.allMembersDiv {
+.header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 55vh;
+  align-items: center;
+  position: relative;
+}
+
+.question {
+  position: relative;
+  margin-left: calc(14rem + 1vw);
+  margin-top: -3em;
+  scale: 5;
+  z-index: 1;
+  color: var(--second-color)
+}
+
+.line {
+  width: calc(12.5rem + 1.5vw);
+  border-top: .75em solid var(--second-color);
+  margin: -19px 0;
+}
+
+.header>div>p {
+  text-align: justify;
+  margin-top: 5em;
+}
+
+.teamsDiv>div>button {
+  height: 4rem;
+}
+
+.teamsDiv>div {
+  display: flex;
+  gap: 1em;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.socialOrgansCard,
+.allMembersCard {
   display: flex;
   justify-content: center;
   align-content: space-around;
