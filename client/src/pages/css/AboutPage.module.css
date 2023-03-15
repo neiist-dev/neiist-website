@@ -142,3 +142,32 @@
 h2 {
   text-align: center;
 }
+
+.allColabImage {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.allColabImage > svg:nth-child(1) {
+  z-index: 3;
+  position: absolute;
+}
+
+.allColabImage > svg:nth-child(2) {
+  z-index: 1;
+  position: relative;
+}
+
+.allColabImage > img {
+  display: flex;
+  z-index: 5;
+  position: absolute;
+  scale: 0.18;
+  top: -50.5em;
+  margin: 0;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
