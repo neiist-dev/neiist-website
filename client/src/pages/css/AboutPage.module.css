@@ -10,11 +10,21 @@
   flex-wrap: wrap;
   padding: 0 10px 10px 10px;
   margin: 1rem 6em;
-  gap: 1rem;
+  gap: 2rem;
 }
 
-.socialOrgansDiv {
-  gap: 2.5rem;
+.socialOrgansCard {
+  gap: 3rem;
+}
+
+.allMembersDiv,
+.socialOrgansDiv,
+.teamsDiv {
+  padding: 25px 0;
+}
+
+.socialOrgansDiv:nth-child(2n+1) {
+  background-color: white;
 }
 
 .cardContainer {
@@ -23,29 +33,59 @@
   justify-content: center;
 }
 
-.socialOrgansDiv > .cardContainer > .card:hover{
-  transform: scale(1.15);
+.card:hover {
+  transform: translate(-.5rem, -.5rem);
+  box-shadow: 10px 10px 0px #000;
 }
 
-.allMembersDiv > .cardContainer > .card:hover{
-  transform: scale(1.075);
+.cardImgOver {
+  border-radius: 2em;
+  width: 100%;
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  background: linear-gradient(180deg, transparent 0%, transparent 45%, var(--first-color) 100%);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--first-color);
+  border-width: .15rem;
+}
+
+.cardTitle {
+  color: white;
+  font-size: 1.25rem;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  text-align: justify;
+}
+
+.cardText {
+  line-height: initial;
+  color: #F4FAFC;
+  font-size: 13px;
+  height: 4vh;
+  display: flex;
+  align-items: center;
+  margin: 0;
 }
 
 .card {
   width: 12.5rem;
-  background: linear-gradient(180deg, transparent 0%, transparent 30%, var(--first-color) 100%);
-  border: linear-gradient(180deg, transparent 0%, transparent 30%, var(--first-color) 100%);
+  border-style: none;
   border-radius: 2em;
-  border-width: 3px;
-  transition: all 0.3s;
+  transition: all 0.5s;
 }
 
-.cardImg{
+.cardImg {
   min-height: 238px;
   object-fit: cover;
   border-radius: 2em;
 }
 
-h1, h2 {
+h2 {
   text-align: center;
 }

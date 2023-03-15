@@ -28,9 +28,9 @@ const AboutPage = () => {
       <h1>QUEM SOMOS</h1>
     </div>
     {Object.entries(collabs.orgaosSociais).map(([socialEntity, members], index)=>(
-      <div key={index}>
+      <div key={index} className={style.socialOrgansDiv}>
         <h2>{socialEntity+' '+lectiveYear}</h2>
-        <div className={style.socialOrgansDiv}>
+        <div className={style.socialOrgansCard}>
           {Object.entries(members).map(([job, name], index) => (
             <DivPersonCard key={index} 
               name={name} job={normalizeJob(job)} image={getCollabImage(name)}/>
@@ -40,9 +40,9 @@ const AboutPage = () => {
     ))}
     {(collabs.Membros.length === 0 || !activeMembers) ?
     !activeMembersError && <LoadSpinner /> :
-      <div>
+      <div className={style.allMembersDiv}>
         <h2>{`Membros Ativos ${lectiveYear}`}</h2>
-        <div className={style.allMembersDiv}>
+        <div className={style.allMembersCard}>
           {activeMembers.map( (member, index) => (
             <DivPersonCard key={index} name={`${member.name.split(" ")[0]}\n${member.name.split(" ")[1]}`} image={getCollabImage(member.name)}/>
           ))}
@@ -61,10 +61,9 @@ const DivPersonCard = ({ name, job, image }) => (
 const PersonCard = ({ name, job, src }) => (
   <Card className={`${style.card}`}>
     <Card.Img className={`${style.cardImg} hover-zoom hover-shadow`} variant="top" src={src} />
-    <Card.ImgOverlay style={{
-      borderRadius: '2em', width: '100%', position: 'absolute', display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', flexDirection: 'column', flexWrap: 'nowrap', background: 'rgb(255,255,255, 0.50)', background: 'linear-gradient(180deg, transparent 0%, transparent 45%, var(--first-color) 100%)'}}>
-      <Card.Title style={{color: 'white', fontSize: '1.25rem',margin: '0', display: 'flex', justifyContent: 'center', textAlign: 'justify'}}>{`${name}`}</Card.Title>
-      {job && <Card.Text style={{lineHeight: 'initial', color: '#F4FAFC', fontSize: '13px', height:'4vh', display: 'flex', alignItems: 'center'}}>{job}</Card.Text>}
+    <Card.ImgOverlay className={style.cardImgOver}>
+      <Card.Title bsPrefix={style.cardTitle}>{name}</Card.Title>
+      {job && <Card.Text bsPrefix={style.cardText}>{job}</Card.Text>}
     </Card.ImgOverlay>
   </Card>
 );
