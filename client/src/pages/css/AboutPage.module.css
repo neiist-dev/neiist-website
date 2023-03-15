@@ -1,6 +1,8 @@
 .front {
   margin: 2rem 6em 2rem 6em;
-  height: calc(100vh - 10rem);
+  display: flex;
+  height: fit-content;
+  flex-direction: column;
 }
 
 .header {
@@ -8,20 +10,20 @@
   grid-template-columns: 1fr 1.5fr;
   align-items: center;
   position: relative;
-  height: 75%;
+  height: 65vh;
 }
 
 .question {
   transform: scaleX(5) scaleY(4);
   color: var(--second-color);
-  margin-top: .75em;
+  margin-top: 1.2em;
   margin-left: .5em;
 }
 
 .line {
   width: fit-content;
   border-top: .75em solid var(--second-color);
-  margin-top: -1em;
+  margin-top: -1.5em;
   user-select: none;
 }
 
@@ -38,12 +40,13 @@
 }
 
 .teamsDiv>div>button {
-  height: 4rem;
+  height: 4.5rem;
   padding: 1em;
+  gap: 1em;
+  aspect-ratio: 8/3;
   display: flex;
   align-items: center;
-  gap: 1em;
-  width: fit-content;
+  justify-content: center;
 }
 
 .teamsDiv>div {
@@ -55,6 +58,10 @@
   align-content: center;
   justify-content: center;
   align-items: center;
+}
+
+.teamsDiv {
+  height: 20vh;
 }
 
 .socialOrgansCard,
@@ -137,6 +144,10 @@
   min-height: 238px;
   object-fit: cover;
   border-radius: 2em;
+}
+
+h1, h2 {
+  color: black;
 }
 
 h2 {

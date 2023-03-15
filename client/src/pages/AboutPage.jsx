@@ -2,6 +2,7 @@ import React,{useState, useEffect} from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button'
 import LoadSpinner from "../hooks/loadSpinner";
+import { Modal } from 'react-bootstrap';
 
 import { BsFillCameraFill, BsQuestionLg } from "react-icons/bs";
 import { FaLaptopCode, FaHandshake } from "react-icons/fa";
@@ -17,9 +18,10 @@ import {
   getCollabImage,
 } from "../components/functions/collabsGeneral";
 
-import style from './css/AboutPage.module.css'
-import collabs from '../images/colaboradores/collaborators.json'
-import { normalizeJob } from '../components/functions/dataTreatment'
+import './../App.css';
+import style from './css/AboutPage.module.css';
+import collabs from '../images/colaboradores/collaborators.json';
+import { normalizeJob } from '../components/functions/dataTreatment';
 
 const lectiveYear = collabs.anoLetivo;
 
@@ -95,31 +97,73 @@ const HeaderDiv = () => (
 
 const OurTeamsDiv = () => {
   const images = [
-    <VscFeedback style={{scale: '2', fill: 'white'}}/>,
-    <FaHandshake style={{scale: '2'}}/>,
-    <FaLaptopCode style={{scale: '2'}}/>,
-    <HiSpeakerphone style={{scale: '2'}}/>,
-    <BsFillCameraFill style={{scale: '2'}}/>,
-    <MdEventNote style={{scale: '2'}}/>,
-    <RiPenNibFill style={{scale: '2', transform: 'rotateZ(136deg)'}}/>,
-  ]
+    <VscFeedback style={{ scale: "2", strokeWidth: "1" }} />,
+    <FaHandshake style={{ scale: "2" }} />,
+    <FaLaptopCode style={{ scale: "2" }} />,
+    <HiSpeakerphone style={{ scale: "2" }} />,
+    <BsFillCameraFill style={{ scale: "2" }} />,
+    <MdEventNote style={{ scale: "2" }} />,
+    <RiPenNibFill style={{ scale: "2", transform: "rotateZ(136deg)" }} />,
+  ];
 
   return (
     <div className={style.teamsDiv}>
       <h2>As nossas equipas</h2>
       <div>
-        {Object.values(allTeamNames).map((teamName, index) => (
-          <Button key={index}>
-            {images[index]}
-            <p style={{margin: 0, fontWeight: 'bold'}}>
-              {teamName}
-            </p>
-          </Button>
+        {Object.entries(allTeamNames).map(([teamId, teamName], index) => (
+          <CreateTeamButton
+            key={index}
+            teamId={teamId}
+            teamName={teamName}
+            icon={images[index]}
+          />
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
+
+const CreateTeamButton = ({ teamId, teamName, icon }) => {
+  const [show, setShow] = React.useState(false);
+
+  const handleShow = () => setShow(true);
+  const handleClose = () => setShow(false);
+
+  return (
+    <>
+      <CreateTeamModal
+        teamId={teamId}
+        teamName={teamName}
+        icon={icon}
+        show={show}
+        handleClose={handleClose}
+      />
+      <Button onClick={handleShow}>
+        {icon}
+        <p style={{ margin: 0, fontWeight: "bold" }}>{teamName}</p>
+      </Button>
+    </>
+  );
+};
+
+const CreateTeamModal = ({ teamId, teamName, icon, show, handleClose }) => (
+  <Modal centered size="lg" show={show} onHide={handleClose}>
+    <Modal.Header style={{ alignItems: "center", justifyContent: "center" }}>
+      <Modal.Title
+        style={{
+          display: "flex",
+          gap: "1em",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {icon}
+        {teamName}
+      </Modal.Title>
+    </Modal.Header>
+    <Modal.Body>{TeamResume[teamId]}</Modal.Body>
+  </Modal>
+);
 
 const DivPersonCard = ({ name, job, image }) => (
   <div className={style.cardContainer}>
@@ -136,5 +180,15 @@ const PersonCard = ({ name, job, src }) => (
     </Card.ImgOverlay>
   </Card>
 );
+
+const TeamResume = {
+  'CON': 'O trabalho na equipa de Contacto consiste em estabelecer e desenvolver relações com empresas, de modo a aproximá-las dos estudantes. Nisto está inserido: reunir com empresas para estabelecer os moldes de uma parceria,  angariação de patrocínios para eventos do NEIIST, planeamento de eventos em parceria com empresas, angariação de empresas para os IST Summer Internships, entre outros...',
+  'CEQ': 'O trabalho no C&Q consiste na criação e partilha de formulários de forma a obter o feedback dos alunos em relação aos eventos organizados pelo NEIIST. No final de cada evento é elaborado um relatório para avaliar os resultados e para que os colaboradores saibam o que melhorar em eventos seguintes.',
+  'DEV': 'A DEV-TEAM é a equipa de colaboradores do NEIIST que está responsável pelo site do núcleo, desde a sua manutenção até à implementação de novas funcionalidades. Os elementos da equipa trabalham tanto no backend como no frontend do site, de modo a melhorar as ferramentas disponíveis no site.',
+  'DIV': 'O trabalho da equipa de Divulgação consiste na coordenação entre a divulgação de todos os eventos organizados pelo NEIIST e de alguns eventos que pedem ao núcleo para divulgar. Os membros desta equipa produzem o texto a seguir para cada evento, divulgando posteriormente pelas redes sociais (ex. Instagram, Facebook e/ou LinkedIn) e pelos grupos (ex. Discord, WhatsApp) de EIC, podendo adaptar-se ao tipo de evento e ao público alvo.',
+  'FOT': 'O trabalho da equipa de Fotografia consiste na cobertura fotográfica e/ou videográfica de eventos organizados pelo NEIIST de modo a expandir a nossa galeria e a mostrar a todos os interessados o trabalho do núcleo. Os membros desta equipa fotografam e/ou filmam os eventos e depois editam o material para ficar pronto para publicação.',
+  'ODE': 'A organização de eventos é algo diferente do trabalho nas restantes equipas, pode variar bastante de evento para evento, mas inclui sempre tratar da logística, falar com possíveis oradores e/ou outros intervenientes na organização do evento (talvez até falar com possíveis patrocinadores, se for esse o caso) e fazer a ponte com as outras equipas do NEIIST envolvidas no evento.',
+  'VIS': 'O trabalho da equipa de Visuais consiste na criação de cartazes, banners, panfletos e outros materiais visuais para ajudar à divulgação de eventos organizados pelo NEIIST, para garantir que estes chegam ao maior número possível de alunos. Os membros da equipa produzem o material pedido e recebem feedback da equipa, antes de o enviar para os organizadores do evento que pedem as alterações necessárias, se for esse o caso.',
+};
 
 export default AboutPage;
