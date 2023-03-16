@@ -3,6 +3,7 @@
   display: flex;
   height: fit-content;
   flex-direction: column;
+  height: calc(100vh - 4rem - 2em - 50px);
 }
 
 .header {
@@ -10,7 +11,9 @@
   grid-template-columns: 1fr 1.5fr;
   align-items: center;
   position: relative;
-  height: 65vh;
+  min-height: 70%;
+  max-height: fit-content;
+  align-content: center;
 }
 
 .question {
@@ -40,7 +43,7 @@
 }
 
 .teamsDiv>div>button {
-  height: 4.5rem;
+  height: 4rem;
   padding: 1em;
   gap: 1em;
   aspect-ratio: 8/3;
@@ -61,7 +64,11 @@
 }
 
 .teamsDiv {
-  height: 20vh;
+  min-height: 30%;
+  max-height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .socialOrgansCard,
@@ -158,27 +165,31 @@ h2 {
   display: flex;
   justify-content: center;
   position: relative;
+  align-items: center;
 }
 
-.allColabImage > svg:nth-child(1) {
+.allColabImage > g > svg:nth-child(1) {
   z-index: 3;
+  margin-top: -2em;
   position: absolute;
 }
 
-.allColabImage > svg:nth-child(2) {
+.allColabImage > g > svg:nth-child(2) {
   z-index: 1;
   position: relative;
 }
 
-.allColabImage > img {
+.allColabImage > g {
+  scale: fit-content;
+  position: relative;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.allColabImage > g > img {
   z-index: 5;
   position: absolute;
-  scale: 0.18;
-  top: -50.5em;
-  margin: 0;
-  flex-direction: row;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
+  scale: .2;
 }
