@@ -93,7 +93,7 @@
 
 .allMembersDiv,
 .socialOrgansDiv {
-  padding: 25px 0;
+  padding: 25px 6rem;
 }
 
 .socialOrgansDiv:nth-child(2n) {
@@ -199,7 +199,7 @@ h2 {
 }
 
 .allColabImage>g {
-  --image-scale: .9;
+  --image-scale: .75;
 
   transform: scale(var(--image-scale));
   position: relative;
@@ -209,15 +209,55 @@ h2 {
   flex-wrap: nowrap;
 }
 
-@media (min-width: 1600px) {
+@media only screen and (min-width: 1225px) {
+  .allColabImage>g {
+    --image-scale: .9;
+  }
+}
+
+@media only screen and (min-width: 1600px) {
   .allColabImage>g {
     --image-scale: 1.15;
   }
 }
 
-@media (min-width: 2000px) {
+@media only screen and (min-width: 2000px) {
   .allColabImage>g {
     --image-scale: 1.30;
+  }
+}
+
+@media only screen and (max-width: 1050px) {
+  .header {
+    display: flex;
+    flex-direction: column;
+    min-height: fit-content;
+    align-items: flex-end;
+  }
+
+  .header>div>p {
+    margin-top: 1em;
+  }
+}
+
+
+@media only screen and (max-width: 750px) {
+  .front {
+    margin: 1em 1em auto 1em;
+  }
+
+  .header{
+    align-items: center;
+  }
+
+  .socialOrgansCard,
+  .allMembersCard {
+    margin: auto 1em;
+  }
+
+  .allMembersDiv,
+  .socialOrgansDiv {
+    padding: auto 1em;
   }
 }
 
