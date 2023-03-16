@@ -1,8 +1,6 @@
 import React,{useState, useEffect} from 'react';
-import Card from 'react-bootstrap/Card';
-import Button from 'react-bootstrap/Button'
+import { Card, Button, Modal } from 'react-bootstrap';
 import LoadSpinner from "../hooks/loadSpinner";
-import { Modal } from 'react-bootstrap';
 import parse from 'html-react-parser';
 
 import { BsFillCameraFill, BsQuestionLg } from "react-icons/bs";
@@ -10,7 +8,7 @@ import { FaLaptopCode, FaHandshake } from "react-icons/fa";
 import { RiPenNibFill } from "react-icons/ri";
 import { HiSpeakerphone } from "react-icons/hi";
 import { MdEventNote } from "react-icons/md";
-import { VscFeedback } from "react-icons/vsc"
+import { VscFeedback } from "react-icons/vsc";
 
 import allMembers from '../images/colaboradores/all.png';
 
@@ -42,7 +40,7 @@ const AboutPage = () => {
   return (
   <>
     <div className={style.front}>
-      <HeaderDiv />
+      <HeaderDiv activeMembersLength={activeMembers?.length} />
       <OurTeamsDiv activeMembers={activeMembers} />
     </div>
     {Object.entries(collabs.orgaosSociais).map(([socialEntity, members], index)=>(
@@ -70,7 +68,7 @@ const AboutPage = () => {
   </>
 )};
 
-const HeaderDiv = () => (
+const HeaderDiv = ({ activeMembersLength }) => (
   <div className={style.header}>
     <div style={{height: '100%'}}>
       <div style={{display: 'flex'}}>
@@ -82,7 +80,7 @@ const HeaderDiv = () => (
         </div>
         <BsQuestionLg className={style.question} />
       </div>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>TOTAL DE <span>{activeMembersLength ? activeMembersLength : '??'}</span> Membros. sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </div>
     <div className={style.allColabImage}>
       <g>
@@ -143,7 +141,7 @@ const CreateTeamButton = ({ teamId, teamName, icon, activeMembers }) => {
         handleClose={handleClose}
         activeMembers={activeMembers}
       />
-      <Button onClick={handleShow}>
+      <Button onClick={handleShow} style={{backgroundColor: 'var(--second-color)'}}>
         {icon}
         <p style={{ margin: 0, fontWeight: "bold" }}>{teamName}</p>
       </Button>
@@ -158,45 +156,49 @@ const CreateTeamModal = ({
   show,
   handleClose,
   activeMembers,
-}) => (
-  <Modal centered size="xl" show={show} onHide={handleClose}>
-    <Modal.Header style={{ alignItems: "center", justifyContent: "center" }}>
-      <Modal.Title
-        style={{
-          display: "flex",
-          gap: "1em",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {icon}
-        {teamName}
-      </Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      <p style={{ textAlign: "justify", fontSize: "1.25em" }}>
-      { parse (
-        TeamResume[teamId].replace(`${teamName}`, `<b>${teamName}</b>`)
-      ) }
-      </p>
-      <hr />
-      <h3>Membros Ativos</h3>
-      <div className={style.allMembersCard}>
-        {activeMembers
-          ?.filter((member) => member.teams.includes(teamId))
-          .map((member, index) => (
-            <DivPersonCard
-              key={index}
-              name={`${member.name.split(" ")[0]}\n${
-                member.name.split(" ")[1]
-              }`}
-              image={getCollabImage(member.name)}
-            />
-          ))}
-      </div>
-    </Modal.Body>
-  </Modal>
-);
+}) => {
+  const activeTeamMembers = 
+    activeMembers?.filter((member) => member.teams.includes(teamId));
+
+  return (
+    <Modal show={show} onHide={handleClose} size='xl'>
+      <Modal.Header closeButton style={{ backgroundColor: 'var(--second-color)', color: 'white' }}>
+        <Modal.Title
+          style={{
+            display: "flex",
+            gap: "1em",
+            alignItems: "center",
+            justifyContent: "center",
+            marginLeft: '.5em'
+          }}
+        >
+          {icon}
+          {teamName}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p style={{ textAlign: "justify", fontSize: "1em" }}>
+        { parse (
+          TeamResume[teamId].replace(`${teamName}`, `<b>${teamName}</b>`)
+        ) }
+        </p>
+        <hr />
+        <h4>Membros Ativos ({activeTeamMembers?.length})</h4>
+        <div className={`${style.allMembersCard} ${style.activeTeamMembers}`}>
+          {activeTeamMembers?.map((member, index) => (
+              <DivPersonCard
+                key={index}
+                name={`${member.name.split(" ")[0]}\n${
+                  member.name.split(" ")[1]
+                }`}
+                image={getCollabImage(member.name)}
+              />
+            ))}
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+};
 
 const DivPersonCard = ({ name, job, image }) => (
   <div className={style.cardContainer}>

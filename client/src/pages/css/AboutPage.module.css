@@ -148,10 +148,22 @@
   transition: all 0.5s;
 }
 
+.activeTeamMembers > * > .card {
+  width: 10rem;
+}
+
 .cardImg {
   min-height: 238px;
   object-fit: cover;
   border-radius: 2em;
+}
+
+.activeTeamMembers > * > .card > .cardImg {
+  min-height: 200px;
+}
+
+.activeTeamMembers {
+  margin: .5em 2em;
 }
 
 h1, h2 {
@@ -193,4 +205,8 @@ h2 {
   z-index: 5;
   position: absolute;
   scale: .2;
+}
+
+.header > div > p > span {
+  color: var(--second-color)
 }
