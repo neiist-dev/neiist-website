@@ -28,6 +28,7 @@
   border-top: .75em solid var(--second-color);
   margin-top: -1.5em;
   user-select: none;
+  height: 0;
 }
 
 .line>h1 {
@@ -38,7 +39,7 @@
 
 .header>div>p {
   text-align: left;
-  margin-top: 2em;
+  margin-top: 5em;
   font-weight: bold;
 }
 
