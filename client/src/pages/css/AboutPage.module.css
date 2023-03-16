@@ -1,9 +1,9 @@
 .front {
-  margin: 2rem 6em 2rem 6em;
   display: flex;
   height: fit-content;
   flex-direction: column;
-  height: calc(100vh - 4rem - 2em - 50px);
+  gap: 1em;
+  margin: 3rem 6em 2rem 6em;
 }
 
 .header {
@@ -11,8 +11,8 @@
   grid-template-columns: 1fr 1.5fr;
   align-items: center;
   position: relative;
-  min-height: 70%;
   max-height: fit-content;
+  min-height: calc(70vh - 4rem - 2em - 50px);
   align-content: center;
 }
 
@@ -51,6 +51,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--first-color);
+}
+
+.teamsDiv>div>button:nth-child(2n) {
+  background-color: var(--second-color);
 }
 
 .teamsDiv>div {
@@ -65,7 +70,7 @@
 }
 
 .teamsDiv {
-  min-height: 30%;
+  min-height: calc(40vh - 4rem - 2em - 50px);
   max-height: fit-content;
   display: flex;
   flex-direction: column;
@@ -148,7 +153,7 @@
   transition: all 0.5s;
 }
 
-.activeTeamMembers > * > .card {
+.activeTeamMembers>*>.card {
   width: 10rem;
 }
 
@@ -158,7 +163,7 @@
   border-radius: 2em;
 }
 
-.activeTeamMembers > * > .card > .cardImg {
+.activeTeamMembers>*>.card>.cardImg {
   min-height: 200px;
 }
 
@@ -166,7 +171,8 @@
   margin: .5em 2em;
 }
 
-h1, h2 {
+h1,
+h2 {
   color: black;
 }
 
@@ -181,19 +187,21 @@ h2 {
   align-items: center;
 }
 
-.allColabImage > g > svg:nth-child(1) {
+.allColabImage>g>svg:nth-child(1) {
   z-index: 3;
   margin-top: -2em;
   position: absolute;
 }
 
-.allColabImage > g > svg:nth-child(2) {
+.allColabImage>g>svg:nth-child(2) {
   z-index: 1;
   position: relative;
 }
 
-.allColabImage > g {
-  scale: fit-content;
+.allColabImage>g {
+  --image-scale: .9;
+
+  transform: scale(var(--image-scale));
   position: relative;
   display: flex;
   align-items: center;
@@ -201,12 +209,30 @@ h2 {
   flex-wrap: nowrap;
 }
 
-.allColabImage > g > img {
+@media (min-width: 1600px) {
+  .allColabImage>g {
+    --image-scale: 1.15;
+  }
+}
+
+@media (min-width: 2000px) {
+  .allColabImage>g {
+    --image-scale: 1.30;
+  }
+}
+
+.allColabImage>g>img {
   z-index: 5;
   position: absolute;
   scale: .2;
 }
 
-.header > div > p > span {
+.header>div>p>span {
   color: var(--second-color)
+}
+
+.headerModal {
+  background-color: var(--second-color);
+  color: white;
+  opacity: 1;
 }

@@ -80,7 +80,7 @@ const HeaderDiv = ({ activeMembersLength }) => (
         </div>
         <BsQuestionLg className={style.question} />
       </div>
-      <p>TOTAL DE <span>{activeMembersLength ? activeMembersLength : '??'}</span> Membros. sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>TOTAL DE <span>{activeMembersLength ?? '??'}</span> Membros. sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </div>
     <div className={style.allColabImage}>
       <g>
@@ -141,7 +141,7 @@ const CreateTeamButton = ({ teamId, teamName, icon, activeMembers }) => {
         handleClose={handleClose}
         activeMembers={activeMembers}
       />
-      <Button onClick={handleShow} style={{backgroundColor: 'var(--second-color)'}}>
+      <Button onClick={handleShow}>
         {icon}
         <p style={{ margin: 0, fontWeight: "bold" }}>{teamName}</p>
       </Button>
@@ -162,7 +162,7 @@ const CreateTeamModal = ({
 
   return (
     <Modal show={show} onHide={handleClose} size='xl'>
-      <Modal.Header closeButton style={{ backgroundColor: 'var(--second-color)', color: 'white' }}>
+      <Modal.Header closeButton className={style.headerModal}>
         <Modal.Title
           style={{
             display: "flex",
@@ -222,7 +222,7 @@ const TeamResume = {
   'DEV': 'A Dev-Team é a equipa de colaboradores do NEIIST que está responsável pelo site do núcleo, desde a sua manutenção até à implementação de novas funcionalidades. Os elementos da equipa trabalham tanto no backend como no frontend do site, de modo a melhorar as ferramentas disponíveis no site.',
   'DIV': 'O trabalho da equipa de Divulgação consiste na coordenação entre a divulgação de todos os eventos organizados pelo NEIIST e de alguns eventos que pedem ao núcleo para divulgar. Os membros desta equipa produzem o texto a seguir para cada evento, divulgando posteriormente pelas redes sociais (ex. Instagram, Facebook e/ou LinkedIn) e pelos grupos (ex. Discord, WhatsApp) de EIC, podendo adaptar-se ao tipo de evento e ao público alvo.',
   'FOT': 'O trabalho da equipa de Fotografia consiste na cobertura fotográfica e/ou videográfica de eventos organizados pelo NEIIST de modo a expandir a nossa galeria e a mostrar a todos os interessados o trabalho do núcleo. Os membros desta equipa fotografam e/ou filmam os eventos e depois editam o material para ficar pronto para publicação.',
-  'ODE': 'A organização de eventos é algo diferente do trabalho nas restantes equipas, pode variar bastante de evento para evento, mas inclui sempre tratar da logística, falar com possíveis oradores e/ou outros intervenientes na organização do evento (talvez até falar com possíveis patrocinadores, se for esse o caso) e fazer a ponte com as outras equipas do NEIIST envolvidas no evento.',
+  'ODE': 'A Organização de Eventos é algo diferente do trabalho nas restantes equipas, pode variar bastante de evento para evento, mas inclui sempre tratar da logística, falar com possíveis oradores e/ou outros intervenientes na organização do evento (talvez até falar com possíveis patrocinadores, se for esse o caso) e fazer a ponte com as outras equipas do NEIIST envolvidas no evento.',
   'VIS': 'O trabalho da equipa de Visuais consiste na criação de cartazes, banners, panfletos e outros materiais visuais para ajudar à divulgação de eventos organizados pelo NEIIST, para garantir que estes chegam ao maior número possível de alunos. Os membros da equipa produzem o material pedido e recebem feedback da equipa, antes de o enviar para os organizadores do evento que pedem as alterações necessárias, se for esse o caso.',
 };
 
