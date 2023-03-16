@@ -83,7 +83,6 @@
   justify-content: center;
   align-content: space-around;
   flex-wrap: wrap;
-  margin: 1rem 6em;
   gap: 2rem;
 }
 
@@ -248,11 +247,6 @@ h2 {
 
   .header{
     align-items: center;
-  }
-
-  .socialOrgansCard,
-  .allMembersCard {
-    margin: auto 1em;
   }
 
   .allMembersDiv,
