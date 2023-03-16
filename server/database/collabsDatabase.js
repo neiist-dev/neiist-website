@@ -145,7 +145,7 @@ const getCurrentCollabsResume = async () => {
     const collabsResult = await db.query(
       `SELECT CONCAT(
         split_part(m.name, ' ', 1), ' ', reverse(split_part(reverse(m.name), ' ', 1))
-        ) AS name
+        ) AS name, cc.teams
       FROM curr_collaborators as cc FULL JOIN members as m ON cc.username=m.username
       WHERE m.name IS NOT NULL AND cc.username IS NOT NULL
       ORDER BY name ASC;`
