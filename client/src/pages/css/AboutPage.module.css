@@ -54,6 +54,15 @@
   background-color: var(--first-color);
 }
 
+.teamsDiv>div>button>svg {
+  scale: 2;
+}
+
+.teamsDiv>div>button>p {
+  margin: 0;
+  font-weight: bold;
+}
+
 .teamsDiv>div>button:nth-child(2n) {
   background-color: var(--second-color);
 }
@@ -245,7 +254,7 @@ h2 {
     margin: 1em 1em auto 1em;
   }
 
-  .header{
+  .header {
     align-items: center;
   }
 
@@ -269,4 +278,12 @@ h2 {
   background-color: var(--second-color);
   color: white;
   opacity: 1;
+}
+
+.headerModalTitle {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  justify-content: center;
+  margin-left: .5em;
 }
