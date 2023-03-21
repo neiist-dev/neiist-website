@@ -99,13 +99,7 @@ const HeaderDiv = ({ activeMembersLength }) => (
         <BsQuestionLg className={style.question} />
       </div>
       <p>
-        TOTAL DE <span>{activeMembersLength ?? "??"}</span> Membros. sit amet,
-        consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-        et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        A equipa do NEIIST é composta por <span>{activeMembersLength ?? "??"}</span> estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Todos os colaboradores contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível.
       </p>
     </div>
     <div className={style.allColabImage}>
