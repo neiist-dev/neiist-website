@@ -287,3 +287,7 @@ h2 {
   justify-content: center;
   margin-left: .5em;
 }
+
+.bodyModal {
+  background: var(--bg-color);
+}

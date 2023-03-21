@@ -19,7 +19,7 @@ const CreateTeamModal = ({
         {icon} {teamName}
       </Modal.Title>
     </Modal.Header>
-    <Modal.Body>
+    <Modal.Body className={style.bodyModal}>
       <p style={{ textAlign: 'justify', fontSize: '1em' }}>
         {parse(
           TeamResume[teamId].replace(`${teamName}`, `<b>${teamName}</b>`)
