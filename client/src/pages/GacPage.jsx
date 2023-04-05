@@ -461,6 +461,46 @@ const CreateRenewMembersModal = ({
     return navigator.clipboard.writeText(emails);
   };
 
+  return (
+    <Modal size="lg" show={show} onHide={handleClose}>
+      <Modal.Header closeButton>
+        <Modal.Title className={style.modalTitle}>
+          SÓCIOS EM PERIODO DE RENOVAÇÃO
+        </Modal.Title>
+        <div className={style.btnsHeader}>
+          <Button
+            className={style.btnCopyEmailsHeader}
+            onClick={copyNonActiveEmails}
+          >
+            Copiar Emails
+          </Button>
+          <Button
+            className={style.btnCopyEmailsHeader}
+          >
+            Todos avisados!
+          </Button>
+        </div>
+      </Modal.Header>
+      <Modal.Body style={{gap: '0.5em', display: 'flex', flexWrap: 'nowrap', flexDirection: 'column', justifyContent: 'center', alignItems: 'stretch'}}>
+        {Object.values(members).map((member, index) => (
+          <div
+            key={index}
+            className={style.nonActiveCard}
+            style={
+              index % 2 === 1
+                ? { backgroundColor: "rgb(53, 209, 250,0.25)" }
+                : { backgroundColor: "rgb(36, 139, 227,0.5)" }
+            }
+          >
+            <RenewMemberRectangular member={member} membersRenew={membersRenew} setmembersRenew={setmembersRenew}/>
+          </div>
+        ))}
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+const RenewMemberRectangular = ({ member, membersRenew, setmembersRenew }) => {
   const sendEmail = (member) => {
     const email = `mailto:${member.email}?subject=Renova%C3%A7%C3%A3o%20do%20Estatuto%20de%20S%C3%B3cio%20Eleitor&body=${member.name}
     +', Periodo de Renovação: +${member.renewStartDate}+' - '+ ${member.renewEndDate}`;
@@ -476,55 +516,26 @@ const CreateRenewMembersModal = ({
   };
 
   return (
-    <Modal size="lg" show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title className={style.modalTitle}>
-          SÓCIOS EM PERIODO DE RENOVAÇÃO
-        </Modal.Title>
-        <Button
-          className={style.btnCopyEmailsHeader}
-          onClick={copyNonActiveEmails}
-        >
-          Copiar Emails
-        </Button>
-      </Modal.Header>
-      <Modal.Body>
-        {Object.values(members).map((member, index) => (
-          <div
-            key={index}
-            className={style.nonActiveCard}
-            style={
-              index % 2 === 1
-                ? { backgroundColor: "rgb(53, 209, 250,0.25)" }
-                : { backgroundColor: "rgb(36, 139, 227,0.5)" }
-            }
-          >
-            <div
-              className={style.nonActiveCard_img}
-              style={{
-                backgroundImage: `url(${fenixPhoto(member.username)})`,
-              }}
-            />
-            <p>
-              <b>
-                {summarizeName(member.name)}
-                <br />
-                Periodo:
-              </b>
-              <p id={style.period}>
-                {member.renewStartDate} - {member.renewEndDate}
-              </p>
-            </p>
-            <Button onClick={() => sendEmail(member)}>Enviar Mail</Button>
-            <Button style={{ top: "55%" }} onClick={() => copyEmail(member)}>
-              Copiar Mail
-            </Button>
-          </div>
-        ))}
-      </Modal.Body>
-    </Modal>
-  );
-};
+  <>
+    <div
+      className={style.nonActiveCard_img}
+      style={{
+        backgroundImage: `url(${fenixPhoto(member.username)})`,
+      }}
+    />
+    <div className={style.nonActiveInfo}>
+      <b>
+        {summarizeName(member.name)}<br />Periodo:{' '}
+      </b>
+      <p id={style.period}>
+        {member.renewStartDate} - {member.renewEndDate}
+      </p>
+    </div>
+    <Button>Avisado? ❌</Button>
+    <Button onClick={() => sendEmail(member)}>Enviar Mail</Button>
+    <Button onClick={() => copyEmail(member)}>Copiar Mail</Button>
+  </>
+)};
 
 const MembersTable = ({ members }) => {
   const windowSize = useWindowSize();
