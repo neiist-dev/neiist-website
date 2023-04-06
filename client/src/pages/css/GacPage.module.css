@@ -131,7 +131,7 @@
 }
 
 .btnEditEmail,
-.btnCopyEmailsHeader {
+.btnCopyEmailsBody {
   color: white;
   font-size: 15px !important;
   background: #248be3 !important;
@@ -139,8 +139,10 @@
 }
 
 .btnCopyEmailsHeader{
-  width: 25%;
-  font-size: x-small;
+  right: 2.5em;
+  width: 15em;
+  position: absolute;
+  font-size: medium;
 }
 
 .btnsHeader {
@@ -153,19 +155,19 @@
 }
 
 
-.btnsHeader>.btnCopyEmailsHeader,
-.btnCopyEmailsHeaderDisabled {
+.btnsHeader>.btnCopyEmailsBody,
+.btnCopyEmailsBodyDisabled {
   width: 100%;
   height: 100%;
 }
 
-.btnsHeader>.btnCopyEmailsHeaderDisabled {
+.btnsHeader>.btnCopyEmailsBodyDisabled {
   width: 50%;
   font-size: x-small;
 }
 
-.btnsHeader>.btnCopyEmailsHeader:last-of-type,
-.btnsHeader>.btnCopyEmailsHeaderDisabled:last-of-type {
+.btnsHeader>.btnCopyEmailsBody:last-of-type,
+.btnsHeader>.btnCopyEmailsBodyDisabled:last-of-type {
   background-color: lightseagreen !important;
   border-color: lightseagreen !important;
 }
@@ -217,8 +219,14 @@
 }
 
 .allNonActiveCard > * {
-  flex: 1 0 47%;
+  flex: 1 0 30%;
 }
+
+@media only screen and (max-width: 1550px){  
+  .allNonActiveCard > * {
+    flex: 1 0 47%;
+  }
+} 
 
 .nonActiveCard {
   color: black;
@@ -238,14 +246,31 @@
   align-items: center;
 }
 
-.nonActiveCard:nth-of-type(4n-1),
-.nonActiveCard:nth-of-type(4n-2) {
-  background-color: rgb(53, 209, 250,0.25);
+@media only screen and (min-width: 1550px){  
+  .nonActiveCard:nth-of-type(4n),
+  .nonActiveCard:nth-of-type(4n-2) {
+    background-color: rgb(53, 209, 250,0.25);
+  }
+}
+
+@media only screen and (max-width: 1550px) and (min-width: 1137.5px){  
+  .nonActiveCard:nth-of-type(4n-1),
+  .nonActiveCard:nth-of-type(4n-2) {
+    background-color: rgb(53, 209, 250,0.25);
+  }
+}
+
+@media only screen and (max-width: 1137.5px){  
+  .nonActiveCard:nth-of-type(even) {
+    background-color: rgb(53, 209, 250,0.25);
+  }
 }
 
 .modalTitle {
   width: -webkit-fill-available;
   font-size: 20px !important;
+  display: flex;
+  justify-content: space-between;
 }
 
 .infoCard_info {

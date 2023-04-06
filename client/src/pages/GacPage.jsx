@@ -188,6 +188,7 @@ const EmailButtons = ({ members }) => {
 const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);
   const [member, setMember] = useState(null);
+  const [remove, setRemove] = useState(true);
   const [changedEmail, setChangedEmail] = useState(null);
   const [disableEmail, setDisableEmail] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -302,7 +303,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                 </div>
                 <br />
                 <div style={{ display: "flex", gap: "10px" }}>
-                  {member.status === "Renovar" && (
+                  {member.status === "Renovar" && remove && (
                     <Button
                       style={{
                         backgroundColor: "orange",
@@ -324,7 +325,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                     </Button>
                   )}
                   {member.status !== "NaoSocio" && (
-                    <DeleteButton member={member} handleClose={handleClose} />
+                    <DeleteButton member={member} handleClose={handleClose} remove={remove} setRemove={setRemove} />
                   )}
                 </div>
               </div>
@@ -335,8 +336,7 @@ const CreateMoreInfoModal = ({ show, handleClose, username }) => {
     );
 };
 
-const DeleteButton = ({ member, handleClose }) => {
-  const [remove, setRemove] = useState(true);
+const DeleteButton = ({ member, handleClose, remove, setRemove }) => {
   const [memberToRemove, setmemberToRemove] = useState("");
 
   const handleSubmit = (event, username, member) => {
@@ -357,7 +357,6 @@ const DeleteButton = ({ member, handleClose }) => {
                 backgroundColor: "darkRed",
                 borderColor: "darkRed",
                 color: "white",
-                position: "absolute",
                 float: "left",
                 width: "100px",
               }
@@ -402,7 +401,7 @@ const DeleteButton = ({ member, handleClose }) => {
               style={
                 remove
                   ? { display: "none", visibility: "hidden" }
-                  : { position: "absolute", float: "right", width: "400px" }
+                  : { float: "right", width: "400px" }
               }
               placeholder={"Para Remover o sócio, digite: " + member.username}
               value={memberToRemove}
@@ -533,8 +532,8 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
               <Button
                 className={
                   members?.length > membersRenew?.length
-                    ? `${style.btnCopyEmailsHeader}`
-                    : `${style.btnCopyEmailsHeaderDisabled} disabled`
+                    ? `${style.btnCopyEmailsBody}`
+                    : `${style.btnCopyEmailsBodyDisabled} disabled`
                 }
                 onClick={copyNonActiveWarnedEmails}
               >
@@ -543,8 +542,8 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
               <Button
                 className={
                   members?.length > membersRenew?.length
-                    ? `${style.btnCopyEmailsHeader}`
-                    : `${style.btnCopyEmailsHeaderDisabled} disabled`
+                    ? `${style.btnCopyEmailsBody}`
+                    : `${style.btnCopyEmailsBodyDisabled} disabled`
                 }
                 onClick={allEmailSent}
               >
