@@ -20,6 +20,20 @@ const createMembers = async () => {
   }
 };
 
+const createRenewalNotifications = async () => {
+  try {
+    await db.query(
+      `CREATE TABLE "renewalNotifications" (
+        "username" varchar(10) PRIMARY KEY,
+        FOREIGN KEY (username) REFERENCES members(username)
+      )`,
+    );
+    await createRenewalNotificationsTrigger();
+  } catch (err) {
+    if (err.code !== '42P07') console.error(err); 
+  }
+};
+
 const createMember = async (member) => {
   try {
     await db.query("INSERT INTO members VALUES($1, $2, $3, $4, $5, $6, $7, $8)", [
@@ -100,6 +114,35 @@ const getAllMembers = async () => {
   return allMembers;
 };
 
+const getRenewalNotifications = async () => {
+  let members;
+  try {
+    const memberResult = await db.query(
+      'SELECT * FROM "renewalNotifications"',
+    );
+    members = memberResult.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return members;
+};
+
+const addRenewalNotification = async (username) => {
+  try {
+    await db.query('INSERT INTO "renewalNotifications" VALUES ($1)', [username]);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const removeRenewalNotification = async (username) => {
+  try {
+    await db.query('DELETE FROM "renewalNotifications" WHERE "username" = $1', [username]);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 module.exports = {
   createMembers,
   createMember,
@@ -107,4 +150,8 @@ module.exports = {
   getMember,
   getActiveMembers,
   getAllMembers,
+  createRenewalNotifications,
+  addRenewalNotification,
+  removeRenewalNotification,
+  getRenewalNotifications,
 };
