@@ -500,7 +500,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
   }
 
   const emailSentAndSet = async (member) => {
-    await emailSent(member);
+    emailSent(member);
     setMembersRenew([...membersRenew, { username: member.username }]);
   }
 
@@ -518,9 +518,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
           (memberRenew) => memberRenew.username === member.username
         ).length === 0
     );
-    for (const member of warnedMembers) {
-      await emailSent(member);
-    }
+    await warnedMembers.forEach((member) => emailSent(member));
     setIsLoaded(false);
     setAllSentString("Todos Avisados!");
   };
