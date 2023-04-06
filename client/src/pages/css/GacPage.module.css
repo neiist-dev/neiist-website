@@ -238,10 +238,7 @@
   align-items: center;
 }
 
-.nonActiveCard:nth-of-type(4n-1) {
-  background-color: rgb(53, 209, 250,0.25);
-}
-
+.nonActiveCard:nth-of-type(4n-1),
 .nonActiveCard:nth-of-type(4n-2) {
   background-color: rgb(53, 209, 250,0.25);
 }
@@ -333,7 +330,6 @@
   grid-row: 1/2;
 }
 
-
 #period {
   display: inline;
   font-size: 16px;
@@ -375,10 +371,7 @@
   font-weight: bold;
 }
 
-.nonActiveCard Button:nth-of-type(2) {
-  grid-row: 2;
-}
-
+.nonActiveCard Button:nth-of-type(2),
 .nonActiveCard Button:last-of-type {
   grid-row: 2;
 }
