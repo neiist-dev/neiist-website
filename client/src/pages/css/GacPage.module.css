@@ -60,6 +60,11 @@
   }
 }
 
+.modal85 {
+  width: 85vw;
+  max-width: 85vw;
+}
+
 .tabs {
   margin: 1rem 6em;
   display: flex;
@@ -133,22 +138,34 @@
   border-color: #248be3 !important;
 }
 
+.btnCopyEmailsHeader{
+  width: 25%;
+  font-size: x-small;
+}
+
 .btnsHeader {
   display: flex;
-  width: 20em;
+  width: 100%;
   gap: .5em;
   justify-content: center;
   align-content: center;
   flex-wrap: nowrap;
-  margin-right: 1em;
 }
 
 
-.btnsHeader>.btnCopyEmailsHeader {
-  width: 9em;
+.btnsHeader>.btnCopyEmailsHeader,
+.btnCopyEmailsHeaderDisabled {
+  width: 100%;
+  height: 100%;
 }
 
-.btnsHeader>.btnCopyEmailsHeader:last-of-type {
+.btnsHeader>.btnCopyEmailsHeaderDisabled {
+  width: 50%;
+  font-size: x-small;
+}
+
+.btnsHeader>.btnCopyEmailsHeader:last-of-type,
+.btnsHeader>.btnCopyEmailsHeaderDisabled:last-of-type {
   background-color: lightseagreen !important;
   border-color: lightseagreen !important;
 }
@@ -182,14 +199,37 @@
   box-sizing: unset;
 }
 
+.modalBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.allNonActiveCard {
+  margin-top: .5em;
+  gap: 0.5em;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.allNonActiveCard > * {
+  width: 47.5%;
+}
+
 .nonActiveCard {
   color: black;
+  background-color: rgb(53, 209, 250,0.25);
+  
   display: grid;
-  grid-template-columns: auto 1.5fr .25fr .5fr;
+  grid-template-columns: auto 1.5fr;
   grid-template-rows: 1fr 1fr;
 
-  height: 100px;
-  padding: 10px 10px 10px 15px;
+  height: fit-content;
+  padding: .75em;
   
   box-sizing: unset;
   border-radius: 10px;
@@ -198,14 +238,13 @@
   align-items: center;
 }
 
+.nonActiveCard:nth-child(odd) {
+  background-color: rgb(36, 139, 227,0.5);
+}
+
 .modalTitle {
   width: -webkit-fill-available;
   font-size: 20px !important;
-}
-
-.modal50 {
-  max-width: none !important;
-  width: 50% !important;
 }
 
 .infoCard_info {
@@ -264,15 +303,14 @@
 }
 
 .nonActiveCard_img {  
-  width: 5rem;
-  height: 85%;
+  min-width: 7.5rem;
+  height: 100%;
   
   border-radius: 5px;
   background-image: none;
   background-size: cover;
   background-position: center center;
 
-  grid-column: 1;
   grid-row: 1 / 3;
 }
 
@@ -288,7 +326,7 @@
   font-size: 20px;
   padding-left: 1rem;
 
-  grid-row: 1/3;
+  grid-row: 1/2;
 }
 
 
@@ -297,15 +335,29 @@
   font-size: 16px;
 }
 
+#username {
+  display: inline;
+  color: gray;
+  font-size: 14px;
+}
+
 @media only screen and (max-width: 990px){
   .nonActiveCard Button {
     font-size: x-small;
   }
 } 
 
+.buttonDiv {
+  display: flex;
+  padding: 0 1rem;
+}
+
+.buttonDiv>* {
+  width: 100%;
+}
+
 .nonActiveCard Button:first-of-type {
-  height: 80px;
-  grid-row: 1/3;
+  grid-row: 2/3;
   font-size: small;
 
   background-color: lightcoral;
@@ -320,7 +372,7 @@
 }
 
 .nonActiveCard Button:nth-of-type(2) {
-  grid-row: 1;
+  grid-row: 2;
 }
 
 .nonActiveCard Button:last-of-type {
