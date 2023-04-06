@@ -40,14 +40,13 @@ const createRenewalNotificationsTrigger = async () => {
       `CREATE OR REPLACE FUNCTION remove_expired_warned_users() RETURNS TRIGGER AS $$
       BEGIN
         DELETE FROM "renewalNotifications"
-        WHERE username = NEW.username
-          AND NEW.username IN (SELECT username FROM members WHERE "renewEndDate" < NOW());
-        RETURN NEW;
+        WHERE username IN (SELECT username FROM members WHERE "renewEndDate" < CURRENT_DATE);
+        RETURN OLD;
       END;
       $$ LANGUAGE plpgsql;
 
       CREATE TRIGGER remove_expired_warned_users_trigger
-      AFTER INSERT ON "renewalNotifications"
+      AFTER INSERT OR UPDATE ON "renewalNotifications"
       FOR EACH ROW
       EXECUTE FUNCTION remove_expired_warned_users();
       `
