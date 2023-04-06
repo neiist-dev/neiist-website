@@ -238,11 +238,11 @@
   align-items: center;
 }
 
-.nonActiveCard:nth-child(4n-1) {
+.nonActiveCard:nth-of-type(4n-1) {
   background-color: rgb(53, 209, 250,0.25);
 }
 
-.nonActiveCard:nth-child(4n-2) {
+.nonActiveCard:nth-of-type(4n-2) {
   background-color: rgb(53, 209, 250,0.25);
 }
 
