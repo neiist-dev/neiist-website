@@ -34,6 +34,29 @@ const createRenewalNotifications = async () => {
   }
 };
 
+const createRenewalNotificationsTrigger = async () => {
+  try{
+    await db.query(
+      `CREATE OR REPLACE FUNCTION remove_expired_warned_users() RETURNS TRIGGER AS $$
+      BEGIN
+        DELETE FROM "renewalNotifications"
+        WHERE username = NEW.username
+          AND NEW.username IN (SELECT username FROM members WHERE "renewEndDate" < NOW());
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+
+      CREATE TRIGGER remove_expired_warned_users_trigger
+      AFTER INSERT ON "renewalNotifications"
+      FOR EACH ROW
+      EXECUTE FUNCTION remove_expired_warned_users();
+      `
+    );
+  } catch (err) {
+    console.error(err); 
+  }
+};
+
 const createMember = async (member) => {
   try {
     await db.query("INSERT INTO members VALUES($1, $2, $3, $4, $5, $6, $7, $8)", [
