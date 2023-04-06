@@ -144,7 +144,7 @@ const renovateMember = async (username, nameEmailCourses) => {
   }
 
   membersDatabase.updateMember(member);
-  membersDatabase.removeRenewalStatusNotification(member.username);
+  membersDatabase.removeRenewalNotification(member.username);
 };
 
 const updateEmailMember = async (username, newEmail) => {
@@ -162,7 +162,7 @@ const removeMember = async (username) => {
   memberInfo.renewEndDate = currDate;
 
   membersDatabase.updateMember(memberInfo);
-  membersDatabase.removeRenewalStatusNotification(newMember.username);
+  membersDatabase.removeRenewalNotification(memberInfo.username);
 };
 
 module.exports = {
