@@ -14,7 +14,7 @@
     "htmlparser2": "6.1.0",
     "morgan": "1.10.0",
     "natural": "5.2.4",
-    "pg": "8.8.0"
+    "pg": "8.10.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
