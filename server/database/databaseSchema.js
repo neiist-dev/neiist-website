@@ -1,6 +1,6 @@
 const { createAreas } = require('./areasDatabase');
 const { createTheses } = require('./thesesDatabase');
-const { createMembers } = require('./membersDatabase');
+const { createMembers, createRenewalNotifications } = require('./membersDatabase');
 const {
   createCollaborators,
   createCurrentCollabView,
@@ -18,6 +18,7 @@ const initializeSchema = async () => {
   await createCurrentCollabView();
   await createCoordenatorsView();
   await createGACMembersView();
+  await createRenewalNotifications();
   await createAdminsView();
   await createElections();
   await createOptions();

@@ -91,6 +91,14 @@ const getAllMembers = async () => {
   return allMembers;
 };
 
+const getRenewMembersWarned = async () => {
+  return await membersDatabase.getRenewalNotifications();
+};
+
+const addRenewMemberWarned = async (username) => {
+  return await membersDatabase.addRenewalNotification(username);
+};
+
 const registerMember = async (member) => {
   const currDate = new Date();
   const canVoteDate = addMonthsToDate(waitingPeriod, currDate);
@@ -104,6 +112,7 @@ const registerMember = async (member) => {
   newMember.renewEndDate = renewEndDate;
 
   membersDatabase.createMember(newMember);
+  membersDatabase.removeRenewalNotification(newMember.username);
 };
 
 const renovateMember = async (username, nameEmailCourses) => {
@@ -135,6 +144,7 @@ const renovateMember = async (username, nameEmailCourses) => {
   }
 
   membersDatabase.updateMember(member);
+  membersDatabase.removeRenewalStatusNotification(member.username);
 };
 
 const updateEmailMember = async (username, newEmail) => {
@@ -152,6 +162,7 @@ const removeMember = async (username) => {
   memberInfo.renewEndDate = currDate;
 
   membersDatabase.updateMember(memberInfo);
+  membersDatabase.removeRenewalStatusNotification(newMember.username);
 };
 
 module.exports = {
@@ -159,6 +170,8 @@ module.exports = {
   getActiveMembers,
   getMemberStatus,
   getAllMembers,
+  getRenewMembersWarned,
+  addRenewMemberWarned,
   registerMember,
   renovateMember,
   removeMember,
