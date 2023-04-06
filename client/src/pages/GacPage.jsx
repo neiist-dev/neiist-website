@@ -460,7 +460,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
 
   useEffect(() => {
     if (!membersRenew || !isLoaded) {
-      fetch(`/api/mag/renew`)
+      fetch(`/api/mag/renewalNotifications`)
         .then((res) => res.json())
         .then((fetchMember) => {
           setMembersRenew(fetchMember);
