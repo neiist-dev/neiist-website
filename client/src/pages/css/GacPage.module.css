@@ -212,17 +212,17 @@
   display: flex;
   flex-wrap: wrap;
   align-content: center;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 
 .allNonActiveCard > * {
-  width: 47.5%;
+  flex: 1 0 47%;
 }
 
 .nonActiveCard {
   color: black;
-  background-color: rgb(53, 209, 250,0.25);
+  background-color: rgb(36, 139, 227,0.5);
   
   display: grid;
   grid-template-columns: auto 1.5fr;
@@ -238,8 +238,12 @@
   align-items: center;
 }
 
-.nonActiveCard:nth-child(odd) {
-  background-color: rgb(36, 139, 227,0.5);
+.nonActiveCard:nth-child(4n-1) {
+  background-color: rgb(53, 209, 250,0.25);
+}
+
+.nonActiveCard:nth-child(4n-2) {
+  background-color: rgb(53, 209, 250,0.25);
 }
 
 .modalTitle {
