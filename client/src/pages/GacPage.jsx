@@ -6,6 +6,7 @@ import Modal from "react-bootstrap/Modal";
 import Form from 'react-bootstrap/Form';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
+import Spinner from 'react-bootstrap/Spinner';
 
 import style from "./css/GacPage.module.css";
 import axios from "axios";
@@ -456,6 +457,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [membersRenew, setMembersRenew] = useState(null);
+  const [AllSentString, setAllSentString] = useState("Todos Avisados!");
 
   useEffect(() => {
     if (!membersRenew || !isLoaded) {
@@ -493,23 +495,34 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
     return navigator.clipboard.writeText(emails);
   };
 
-  const emailSent = (member) => {
-    axios.post(`/api/mag/warnedMember/${member.username}`);
-    setMembersRenew([...membersRenew, { username: member.username }]);
-  };
+  const emailSent = async (member) => {
+    await axios.post(`/api/mag/warnedMember/${member.username}`);
+  }
 
-  const allEmailSent = () => {
+  const emailSentAndSet = async (member) => {
+    await emailSent(member);
+    setMembersRenew([...membersRenew, { username: member.username }]);
+  }
+
+  const allEmailSent = async () => {
+    setAllSentString(
+      <Spinner
+        style={{ scale: ".50", margin: "0", position: "absolute", top: "0" }}
+        animation="border"
+        variant="warning"
+      />
+    );
+    const warnedMembers = members.filter(
+      (member) =>
+        membersRenew.filter(
+          (memberRenew) => memberRenew.username === member.username
+        ).length === 0
+    );
+    for (const member of warnedMembers) {
+      await emailSent(member);
+    }
     setIsLoaded(false);
-    members
-      .filter(
-        (member) =>
-          membersRenew.filter(
-            (memberRenew) => memberRenew.username === member.username
-          ).length === 0
-      )
-      .forEach((member) => {
-        emailSent(member);
-      });
+    setAllSentString("Todos Avisados!");
   };
 
   return (
@@ -547,7 +560,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
                 }
                 onClick={allEmailSent}
               >
-                Todos Avisados!
+                {AllSentString}
               </Button>
             </div>
           )}
@@ -555,7 +568,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
             members={members}
             isLoaded={isLoaded}
             membersRenew={membersRenew}
-            emailSent={emailSent}
+            emailSent={emailSentAndSet}
           />
         </Modal.Body>
       </Modal>
