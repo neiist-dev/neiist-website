@@ -519,7 +519,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
           (memberRenew) => memberRenew.username === member.username
         ).length === 0
     );
-    Promise.all(warnedMembers.map((member) => emailSent(member)));
+    Promise.allSettled(warnedMembers.map((member) => emailSent(member)));
     setIsLoaded(false);
   };
 
