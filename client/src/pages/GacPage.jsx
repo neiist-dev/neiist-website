@@ -466,6 +466,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
         .then((fetchMember) => {
           setMembersRenew(fetchMember);
           setIsLoaded(true);
+          setAllSentString("Todos Avisados!");
         });
     }
   }, [membersRenew, isLoaded]);
@@ -504,7 +505,7 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
     setMembersRenew([...membersRenew, { username: member.username }]);
   }
 
-  const allEmailSent = async () => {
+  const allEmailSent = () => {
     setAllSentString(
       <Spinner
         style={{ scale: ".50", margin: "0", position: "absolute", top: "0" }}
@@ -518,9 +519,8 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
           (memberRenew) => memberRenew.username === member.username
         ).length === 0
     );
-    await warnedMembers.forEach((member) => emailSent(member));
+    Promise.all(warnedMembers.map((member) => emailSent(member)));
     setIsLoaded(false);
-    setAllSentString("Todos Avisados!");
   };
 
   return (
