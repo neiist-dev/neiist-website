@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext, Suspense, lazy } from 'react';
 import {
-	BrowserRouter as Router,
-	Switch,
-	Route,
-	Redirect,
+	BrowserRouter,
+  Routes,
+  Route,
+  Navigate
 } from "react-router-dom";
 
 import "./App.css";
@@ -100,111 +100,92 @@ const App = () => {
 
   return (
     <UserDataContext.Provider value={{ userData, setUserData }}>
-			<Router Router>
+			<BrowserRouter>
 				<Layout>
 					<Suspense fallback={<LoadSpinner />}>
-						<Switch>
-              {/* PUBLIC */}
-							<Route exact path="/">
-								<HomePage />
-							</Route>
-
-							<Route path="/sobre_nos">
-								<AboutPage />
-							</Route>
-							<Route path="/estatutos">
-								<RulesPage />
-							</Route>
-							<Route path="/contactos">
-								<ContactsPage />
-							</Route>
-
-              {/* AUTHENTICATED */}
-							<ActiveTecnicoStudentRoute path="/socio">
-								<MemberPage />
-							</ActiveTecnicoStudentRoute>
-							<ActiveLMeicStudentRoute path="/thesismaster">
-								<ThesisMasterPage />
-							</ActiveLMeicStudentRoute>
-
-              {/* ADMIN */}
-							<AdminRoute exact path="/admin">
-								<AdminMenuPage />
-							</AdminRoute>
-							<AdminRoute path="/admin/areas">
-								<AdminAreasPage />
-							</AdminRoute>
-							<AdminRoute path="/admin/theses">
-								<AdminThesesPage />
-							</AdminRoute>
-							<AdminRoute path="/admin/elections">
-								<AdminElectionsPage />
-							</AdminRoute>
-
-              <CollabRoute path="/collab">
-                <CollabsPage />
-              </CollabRoute>
-
-							<GacRoute path="/mag">
-								<GacPage />
-							</GacRoute>
-
-              {/* FALLBACK */}
-							<Route path="/*">
-								<Redirect to="/" />
-							</Route>
-						</Switch>
+						<DefinedRoutes />
 					</Suspense>
 				</Layout>
-			</Router>
+			</BrowserRouter>
 		</UserDataContext.Provider>
   );
 };
 
-const PrivateRoute = ({ exact, path, children }) => (
-	<Route exact={exact} path={path}>
-		{children}
-	</Route>
+const DefinedRoutes = () => (
+  <Routes>
+    {/* PUBLIC */}
+    <Route exact path="/" element={<HomePage />} />
+
+    <Route path="/sobre_nos" element={<AboutPage />} />
+    <Route path="/estatutos" element={<RulesPage />} />
+    <Route path="/contactos" element={<ContactsPage />} />
+
+    {/* AUTHENTICATED */}
+    <Route
+      path="/socio"
+      element={<ActiveTecnicoStudentRoute children={<MemberPage />} />}
+    />
+    <Route
+      path="/thesismaster"
+      element={<ActiveLMeicStudentRoute children={<ThesisMasterPage />} />}
+    />
+
+    {/* ADMIN */}
+    <Route
+      exact
+      path="/admin"
+      element={<AdminRoute children={<AdminMenuPage />} />}
+    />
+    <Route
+      path="/admin/areas"
+      element={<AdminRoute children={<AdminAreasPage />} />}
+    />
+    <Route
+      path="/admin/theses"
+      element={<AdminRoute children={<AdminThesesPage />} />}
+    />
+    <Route
+      path="/admin/elections"
+      element={<AdminRoute children={<AdminElectionsPage />} />}
+    />
+
+    <Route
+      path="/collab"
+      element={<CollabRoute children={<CollabsPage />} />}
+    />
+
+    <Route path="/mag" element={<GacRoute children={<GacPage />} />} />
+
+    {/* FALLBACK */}
+    <Route path="/*" element={<Navigate to="/" replace />} />
+  </Routes>
 );
 
-const ActiveTecnicoStudentRoute = ({ exact, path, children }) => {
-	const { userData } = useContext(UserDataContext);
-
-	if (userData && userData.isActiveTecnicoStudent)
-		return <PrivateRoute exact={exact} path={path} children={children} />;
-	return <Redirect to="/" />;
-};
-
-const ActiveLMeicStudentRoute = ({ exact, path, children }) => {
-	const { userData } = useContext(UserDataContext);
-
-	if (userData && userData.isActiveLMeicStudent)
-		return <PrivateRoute exact={exact} path={path} children={children} />;
-	return <Redirect to="/" />;
-};
-
-const GacRoute = ({ exact, path, children }) => {
-	const { userData } = useContext(UserDataContext);
-
-  if (userData &&  userData.isGacMember) 
-    return <PrivateRoute exact={exact} path={path} children={children}/>
-  return <Redirect to="/"/>
-};
-
-const CollabRoute = ({ exact, path, children }) => {
+const PrivateRoute = ({ condition, children }) => {
   const { userData } = useContext(UserDataContext);
-
-  if (userData && userData.isCollab) 
-    return <PrivateRoute exact={exact} path={path} children={children}/>
-  return <Redirect to="/"/>
+  
+  return (userData && userData[condition])
+    ? children : <Navigate to="/" replace />;
 };
 
-const AdminRoute = ({ exact, path, children }) => {
-	const { userData } = useContext(UserDataContext);
+const ActiveTecnicoStudentRoute = ({ children }) => (
+	<PrivateRoute children={children} condition={'isActiveTecnicoStudent'} />
+);
 
-	if (userData && userData.isAdmin)
-		return <PrivateRoute exact={exact} path={path} children={children} />;
-	return <Redirect to="/" />;
-};
+const ActiveLMeicStudentRoute = ({ children }) => (
+  <PrivateRoute children={children} condition={'isActiveLMeicStudent'} />
+);
+
+const GacRoute = ({ children }) => (
+  <PrivateRoute children={children} condition={'isGacMember'} />
+);
+
+const CollabRoute = ({ children }) => (
+  <PrivateRoute children={children} condition={'isCollab'} />
+);
+
+const AdminRoute = ({ children }) => (
+  <PrivateRoute children={children} condition={'isAdmin'} />
+);
 
 export default App;
