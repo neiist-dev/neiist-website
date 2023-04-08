@@ -6,7 +6,7 @@
     "prod": "node -r dotenv/config server.js"
   },
   "dependencies": {
-    "axios": "0.27.2",
+    "axios": "1.3.5",
     "cors": "2.8.5",
     "dotenv": "16.0.3",
     "express": "4.18.2",
