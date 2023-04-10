@@ -415,6 +415,7 @@
 
 .AllMembersCard_emails {
   overflow: auto;
+  overflow-y: hidden;
   height: 45px;
   align-items: center;
   display: flex;
