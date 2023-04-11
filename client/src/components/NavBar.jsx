@@ -205,18 +205,7 @@ const Logout = ({ setUserData }) => (
 );
 
 const DefaultLink = ({ children }) => (
-  <>
-    {isMobile ? (
-      children
-    ) : (
-      <Link
-        as={Link}
-        to="/socio"
-      >
-        {children}
-      </Link>
-    )}
-  </>
+  isMobile ? children : <Link to="/socio">{children}</Link>
 );
 
 const LoggedIn = ({ userData, setUserData }) => {
