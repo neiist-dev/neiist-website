@@ -54,53 +54,53 @@ const Links = () => (
       <div className={style.footerChildSpace}>
         <h6>Sobre o Núcleo</h6>
         <hr />
-        <div><Link as={Link} to="/sobre_nos"><p>Quem Somos?</p></Link></div>
-        <div><Link as={Link} to="/contactos"><p>Contactos</p></Link></div>
-        <div><Link as={Link} to="/estatutos"><p>Estatutos</p></Link></div>
+        <div><Link to="/sobre_nos"><p>Quem Somos?</p></Link></div>
+        <div><Link to="/contactos"><p>Contactos</p></Link></div>
+        <div><Link to="/estatutos"><p>Estatutos</p></Link></div>
       </div>
       <div className={style.footerChildSpace}>
         <h6>Cursos de EIC</h6>
         <hr />
         <div>
-          <Link as={Link} to={{ pathname: "https://fenix.tecnico.ulisboa.pt/cursos/leic-a" }} target="_blank">
+          <a href="https://fenix.tecnico.ulisboa.pt/cursos/leic-a" target="_blank">
             <p>LEIC-A</p>
-          </Link>
+          </a>
           {" / "}
-          <Link as={Link} to={{ pathname: "https://fenix.tecnico.ulisboa.pt/cursos/leic-t" }} target="_blank">
+          <a href="https://fenix.tecnico.ulisboa.pt/cursos/leic-t" target="_blank">
             <p>LEIC-T</p>
-          </Link>
+          </a>
         </div>
         <div>
-          <Link as={Link} to={{ pathname: "https://fenix.tecnico.ulisboa.pt/cursos/meic-a" }} target="_blank">
+          <a href="https://fenix.tecnico.ulisboa.pt/cursos/meic-a" target="_blank">
             <p>MEIC-A</p>
-          </Link>
+          </a>
           {" / "}
-          <Link as={Link} to={{ pathname: "https://fenix.tecnico.ulisboa.pt/cursos/meic-t" }} target="_blank">
+          <a href="https://fenix.tecnico.ulisboa.pt/cursos/meic-t" target="_blank">
             <p>MEIC-T</p>
-          </Link>
+          </a>
         </div>
         <div>
-          <Link as={Link} to={{ pathname: "https://fenix.tecnico.ulisboa.pt/cursos/deic" }} target="_blank">
+          <a href="https://fenix.tecnico.ulisboa.pt/cursos/deic" target="_blank">
             <p>DEIC</p>
-          </Link>
+          </a>
         </div>
       </div>
       <div className={style.footerChildSpace}>
         <h6>Mais Informações</h6>
         <hr />
-        <div><Link as={Link} to="/estudantes"><p>Estudantes</p></Link></div>
+        <div><Link to="/estudantes"><p>Estudantes</p></Link></div>
         <div>
-          <Link as={Link} to={{ pathname: "https://sinfo.org" }} target="_blank">
+          <a href="https://sinfo.org" target="_blank">
             <p>SINFO 30</p>
-          </Link>
+          </a>
         </div>
       </div>
       <div className={style.footerChildSpaceImg}>
         <h6>Powered By</h6>
         <hr />
-        <Link as={Link} to={{ pathname: "https://dei.tecnico.ulisboa.pt/" }} target="_blank">
+        <a href="https://dei.tecnico.ulisboa.pt/" target="_blank">
           <div style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/DEI.png)` }} />
-        </Link>
+        </a>
       </div>
     </div>
   </div>

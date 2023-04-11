@@ -179,12 +179,14 @@
   margin: .5em 2em;
 }
 
-h1,
-h2 {
+.header h1,
+.allMembersDiv h2,
+.socialOrgansDiv h2 {
   color: black;
 }
 
-h2 {
+.allMembersDiv h2,
+.socialOrgansDiv h2 {
   text-align: center;
 }
 

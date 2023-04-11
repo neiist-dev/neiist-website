@@ -4,7 +4,7 @@
     display: block !important;
   }
 
-  h1 {
+  .principalBody h1 {
     display: grid;
     font-size: 2.5rem !important;
     justify-content: center;
@@ -97,7 +97,7 @@
   justify-content: center;
 }
 
-.principalBody h1 {
+.principalBody .principalBody  {
   font-size: 30px;
 }
 
