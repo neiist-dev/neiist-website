@@ -21,9 +21,14 @@ jobs:
       - name: Install server dependencies
         run: cd server && npm install && cd ..
 
-      - name: Run frontend tests
-        if: ${{ github.event.pull_request.base_ref == 'master' }}
-        run: cd client && npm run test && cd ..
-
       - name: Build client
         run: cd client && npm run build && cd ..
+
+  frontendTests:
+    needs: build
+    if: ${{ github.event.pull_request.base_ref == 'master' }}
+    runs-on: ubuntu-latest  
+
+    steps:
+      - name: Run frontend tests
+        run: cd client && npm run test && cd ..
