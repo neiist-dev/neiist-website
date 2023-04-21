@@ -69,9 +69,21 @@
   margin: 2rem 0 .5rem 0;
 }
 
+.partners {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+}
+
 @media only screen and (max-width: 885px) {
   .global{
     margin: 0em 6em 0.25em 6em;
+  }
+  .partners {
+    flex-direction: column;
   }
 }
 
