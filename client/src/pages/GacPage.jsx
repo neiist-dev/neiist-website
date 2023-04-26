@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import useWindowSize from "../hooks/useWindowSize";
 import LoadSpinner from "../hooks/loadSpinner";
-import Button from "react-bootstrap/Button";
+import { MdEmail, MdAutorenew } from "react-icons/md";
+import { Button, Badge, Tooltip } from '@mantine/core';
 import Modal from "react-bootstrap/Modal";
-import Form from 'react-bootstrap/Form';
-import Tabs from 'react-bootstrap/Tabs';
-import Tab from 'react-bootstrap/Tab';
-import Spinner from 'react-bootstrap/Spinner';
+import Form from "react-bootstrap/Form";
+import Spinner from "react-bootstrap/Spinner";
+import { Tabs } from "@mantine/core";
+
+import { MembersTable } from "../components/gacPage/MembersTable";
 
 import style from "./css/GacPage.module.css";
 import axios from "axios";
@@ -16,26 +18,24 @@ import {
 } from "../components/functions/dataTreatment";
 
 const GacPage = () => {
-  const [key, setKey] = useState("active");
-
   return (
     <div>
-      <Tabs
-        id="controlled-tab-example"
-        className={style.tabs}
-        activeKey={key}
-        onSelect={(newKey) => setKey(newKey)}
-        justify
-      >
-        <Tab eventKey="active" title="Ativos">
-          <ActiveMembersPage keySelected={key} />
-        </Tab>
-        <Tab eventKey="search" title="Pesquisa">
-          <div className={style.principalBody}>TO BE IMPLEMENTED</div>
-        </Tab>
-        <Tab eventKey="all" title="Todos">
-          <AllMembersPage keySelected={key} />
-        </Tab>
+      <Tabs style={{ margin: "2em 6em", position: "relative" }} variant="pills" color="gray" defaultValue="sociosAtivos">
+        <Tabs.List style={{ display: "flex", zIndex: "2", position: "absolute", right: "0"}}>
+          <Tabs.Tab style={{ fontWeight: "bold" }} value="sociosAtivos">
+            Sócios Ativos
+          </Tabs.Tab>
+          <Tabs.Tab style={{ fontWeight: "bold" }} value="sociosAll">
+            Todos os Sócios
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="sociosAtivos" pt="xs">
+          <ActiveMembersPage keySelected={"active"} />
+        </Tabs.Panel>
+        <Tabs.Panel value="sociosAll" pt="xs">
+          <AllMembersPage keySelected={"all"} />
+        </Tabs.Panel>
       </Tabs>
     </div>
   );
@@ -74,25 +74,56 @@ const ActiveMembersPage = ({ keySelected }) => {
         <div>
           <div className={style.principalBody}>
             <h1>
-              <b>Membros ativos:</b> {activeMembers.length} Membros (
-              {
-                activeMembers.filter(
-                  (member) =>
-                    member.status === "SocioEleitor" ||
-                    member.status === "Renovar"
-                ).length
-              }{" "}
-              Ativos)
+              <b>Sócios Ativos</b>{" "}<span style={{fontSize: "25px"}}>({activeMembers.length})</span>
             </h1>
-            <EmailButtons members={activeMembers} />
-            <br />
-            <div className={style.messageDiv}>
-              <p>
-                'Não Sócios' devem ser comunicados por email, informando que o
-                estatudo de sócio eleitor expirou e que tem até X se pretender
-                renovar.
-              </p>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div className={style.badgeDiv}>
+                <Badge
+                  style={{ width: "10em", marginRight: "10px" }}
+                  variant="filled"
+                  size="xl"
+                >
+                  {
+                    activeMembers.filter(
+                      (member) => member.status === "SocioRegular"
+                    ).length
+                  }{" "}
+                  Regulares
+                </Badge>
+                <Tooltip
+                  position="right"
+                  withArrow
+                  transitionProps={{ duration: 100 }}
+                  label={`${
+                    activeMembers.filter(
+                      (member) => member.status === "SocioEleitor"
+                    ).length
+                  } Socios Eleitores, ${
+                    activeMembers.filter(
+                      (member) => member.status === "Renovar"
+                    ).length
+                  } em Renovação`}
+                >
+                  <Badge
+                    style={{ width: "20em" }}
+                    variant="gradient"
+                    gradient={{ from: "lime", to: "red" }}
+                    size="xl"
+                  >
+                    {
+                      activeMembers.filter(
+                        (member) =>
+                          member.status === "SocioEleitor" ||
+                          member.status === "Renovar"
+                      ).length
+                    }{" "}
+                    Eleitores
+                  </Badge>
+                </Tooltip>
+              </div>
+              <EmailButtons members={activeMembers} />
             </div>
+            <hr />
           </div>
           <MembersTable members={activeMembers} />
         </div>
@@ -134,9 +165,10 @@ const AllMembersPage = ({ keySelected }) => {
         <div>
           <div className={style.principalBody}>
             <h1>
-              <b>Membros Registados:</b> {allMembers.length}
+              <b>Sócios Registados</b>{" "}<span style={{fontSize: "25px"}}>({allMembers.length})</span>
             </h1>
           </div>
+          <hr/>
           <MembersTable members={allMembers} />
         </div>
       )}
@@ -159,15 +191,17 @@ const EmailButtons = ({ members }) => {
 
   return (
     <div className={style.buttonsDiv}>
-      <Button onClick={handleShowRegularEmails}>
-        [Emails] Sócios Regulares
+      <Button leftIcon={<MdEmail size="1.25em"/>} onClick={handleShowRegularEmails}>
+        Sócios Regulares
       </Button>
       <CreateEmailsModal
         show={showRegularEmails}
         handleClose={handleCloseRegularEmails}
         members={members.filter((member) => member.status === "SocioRegular")}
       />
-      <Button onClick={handleShowRenewEmails}>[Emails] Sócios Eleitores</Button>
+      <Button leftIcon={<MdEmail size="1.25em"/>} onClick={handleShowRenewEmails}>
+        Sócios Eleitores
+      </Button>
       <CreateEmailsModal
         show={showRenewEmails}
         handleClose={handleCloseRenewEmails}
@@ -176,241 +210,14 @@ const EmailButtons = ({ members }) => {
             member.status === "SocioEleitor" || member.status === "Renovar"
         )}
       />
-      <Button onClick={handleshowRenewMembers}>Renovações</Button>
+      <Button color="red" leftIcon={<MdAutorenew size="1.25em"/>} onClick={handleshowRenewMembers}>
+        Renovações
+      </Button>
       <CreateRenewMembersModal
         show={showRenewMembers}
         handleClose={handleCloseNonActive}
         members={members?.filter((member) => member.status === "Renovar")}
       />
-    </div>
-  );
-};
-
-const CreateMoreInfoModal = ({ show, handleClose, username }) => {
-  const [error, setError] = useState(null);
-  const [member, setMember] = useState(null);
-  const [remove, setRemove] = useState(true);
-  const [changedEmail, setChangedEmail] = useState(null);
-  const [disableEmail, setDisableEmail] = useState(true);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsLoaded(false);
-    setError(null);
-    if (username !== null) {
-      fetch(`/api/members/${username}`)
-        .then((res) => res.json())
-        .then((fetchMember) => {
-          setMember(fetchMember);
-          setIsLoaded(true);
-          setChangedEmail(fetchMember.email);
-        })
-        .catch((err) => {
-          setIsLoaded(true);
-          setError(err);
-        });
-    }
-  }, [username]);
-
-  const handleUpdate = async (e, username) => {
-    e.preventDefault();
-    const resp = await axios.post(`/api/mag/update/email/${username}`, {
-      changedEmail,
-    });
-    if (resp) {
-      setDisableEmail(!disableEmail);
-      window.location.reload(false);
-    }
-  };
-
-  if (member)
-    return (
-      <Modal size="lg" show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title className={style.modalTitle}>
-            INFORMAÇÂO DE {String(member.username).toUpperCase()}
-            <Button
-              className={style.btnEditEmail}
-              onClick={() => {
-                setDisableEmail(!disableEmail);
-              }}
-            >
-              Editar Email
-            </Button>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {!isLoaded && <LoadSpinner />}
-          {error && <div>Error: {error}</div>}
-          {member !== null && isLoaded && (
-            <div className={style.infoCard}>
-              <div
-                className={style.infoCard_img}
-                style={{
-                  backgroundImage: `url(${fenixPhoto(member.username)})`,
-                }}
-              />
-              <div className={style.infoCard_info}>
-                <b>
-                  {member.username} <br />
-                  <p>{member.name}</p>
-                  <br />
-                  <p style={{ fontSize: "18px", color: "darkblue" }}>
-                    ({member.courses})
-                  </p>
-                  <br />
-                  <Form
-                    onSubmit={(e) => {
-                      handleUpdate(e, member.username);
-                    }}
-                  >
-                    <fieldset disabled={disableEmail}>
-                      <Form.Control
-                        id="disabledEmailInput"
-                        type="email"
-                        className={
-                          disableEmail
-                            ? style.ControlDisable
-                            : style.ControlActive
-                        }
-                        value={changedEmail}
-                        onChange={(event) =>
-                          setChangedEmail(event.target.value)
-                        }
-                      />
-                    </fieldset>
-                  </Form>
-                  <br />
-                </b>
-                <div id={style.tableDiv}>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Registo</th>
-                        <th>Sócio Eleitor</th>
-                        <th style={{ width: "45%" }}>Renovação</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th>{member.registerDate}</th>
-                        <th>{member.canVoteDate}</th>
-                        <th>
-                          {member.renewStartDate} - {member.renewEndDate}
-                        </th>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <br />
-                <div style={{ display: "flex", gap: "10px" }}>
-                  {member.status === "Renovar" && remove && (
-                    <Button
-                      style={{
-                        backgroundColor: "orange",
-                        borderColor: "orange",
-                      }}
-                      onClick={() => {
-                        axios
-                          .put(`/api/members/${member.username}`, {
-                            name: member.name,
-                            email: member.email,
-                            courses: member.courses,
-                          })
-                          .then((res) => {
-                            if (res) window.location.reload();
-                          });
-                      }}
-                    >
-                      Renovar
-                    </Button>
-                  )}
-                  {member.status !== "NaoSocio" && (
-                    <DeleteButton member={member} handleClose={handleClose} remove={remove} setRemove={setRemove} />
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
-    );
-};
-
-const DeleteButton = ({ member, handleClose, remove, setRemove }) => {
-  const [memberToRemove, setmemberToRemove] = useState("");
-
-  const handleSubmit = (event, username, member) => {
-    event.preventDefault();
-    if (username === member.username)
-      axios.put(`/api/mag/delete/${username}`).then(() => {
-        handleClose();
-        window.location.reload(false);
-      });
-  };
-
-  return (
-    <div>
-      <Button
-        style={
-          remove
-            ? {
-                backgroundColor: "darkRed",
-                borderColor: "darkRed",
-                color: "white",
-                float: "left",
-                width: "100px",
-              }
-            : memberToRemove === member.username
-            ? {
-                backgroundColor: "darkGreen",
-                borderColor: "darkGreen",
-                color: "white",
-                position: "absolute",
-                float: "right",
-                right: "0",
-                width: "100px",
-              }
-            : {
-                backgroundColor: "darkRed",
-                borderColor: "darkRed",
-                color: "white",
-                position: "absolute",
-                float: "right",
-                right: "0",
-                width: "100px",
-              }
-        }
-        onClick={(event) => {
-          if (memberToRemove === member.username)
-            handleSubmit(event, memberToRemove, member);
-          else setRemove(!remove);
-        }}
-      >
-        Delete
-      </Button>
-      <div>
-        <Form
-          onSubmit={(event) => {
-            handleSubmit(event, memberToRemove, member);
-          }}
-        >
-          <fieldset disabled={remove}>
-            <Form.Control
-              id="disabledTextInput"
-              type="Text"
-              style={
-                remove
-                  ? { display: "none", visibility: "hidden" }
-                  : { float: "right", width: "400px" }
-              }
-              placeholder={"Para Remover o sócio, digite: " + member.username}
-              value={memberToRemove}
-              onChange={(event) => setmemberToRemove(event.target.value)}
-            />
-          </fieldset>
-        </Form>
-      </div>
     </div>
   );
 };
@@ -485,25 +292,26 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
   };
 
   const copyNonActiveWarnedEmails = () => {
-    const emails = members.filter(
-      (member) =>
-        membersRenew.filter(
-          (memberRenew) => memberRenew.username === member.username
-        ).length === 0
-    )
-    .map((member) => member.email)
-    .join(",");
+    const emails = members
+      .filter(
+        (member) =>
+          membersRenew.filter(
+            (memberRenew) => memberRenew.username === member.username
+          ).length === 0
+      )
+      .map((member) => member.email)
+      .join(",");
     return navigator.clipboard.writeText(emails);
   };
 
   const emailSent = async (member) => {
     await axios.post(`/api/mag/warnedMember/${member.username}`);
-  }
+  };
 
   const emailSentAndSet = async (member) => {
     emailSent(member);
     setMembersRenew([...membersRenew, { username: member.username }]);
-  }
+  };
 
   const allEmailSent = () => {
     setAllSentString(
@@ -562,6 +370,12 @@ const CreateRenewMembersModal = ({ show, handleClose, members }) => {
               </Button>
             </div>
           )}
+          <div className={style.messageDiv}>
+            <p>
+              Sócios com estatuto 'Renovar' devem ser comunicados por email, informando que o
+              estatudo de sócio eleitor irá expirar brevemente.
+            </p>
+          </div>
           <AllNonActiveCardMembers
             members={members}
             isLoaded={isLoaded}
@@ -582,10 +396,7 @@ const AllNonActiveCardMembers = ({
 }) => (
   <div className={style.allNonActiveCard}>
     {Object.values(members).map((member, index) => (
-      <div
-        key={index}
-        className={style.nonActiveCard}
-      >
+      <div key={index} className={style.nonActiveCard}>
         <RenewMemberRectangular
           member={member}
           isLoaded={isLoaded}
@@ -661,100 +472,6 @@ const RenewMemberRectangular = ({
         <Button onClick={() => copyEmail(member)}>Copiar Mail</Button>
       </div>
     </>
-  );
-};
-
-const MembersTable = ({ members }) => {
-  const windowSize = useWindowSize();
-
-  const [username, setUsername] = useState(null);
-  const [showMoreInfo, setShowMoreInfo] = useState(false);
-  const handleShowMoreInfo = () => setShowMoreInfo(true);
-  const handleCloseMoreInfo = () => setShowMoreInfo(false);
-
-  const handleMoreInfo = (username) => {
-    setUsername(username);
-    handleShowMoreInfo();
-  };
-
-  return (
-    <div className={style.principalTable}>
-      <CreateMoreInfoModal
-        show={showMoreInfo}
-        handleClose={handleCloseMoreInfo}
-        username={username}
-      />
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th>Username</th>
-            <th>Nome</th>
-            {windowSize.innerWidth > 1000 && <th>E-mail</th>}
-            {windowSize.innerWidth > 850 && <th>Curso(s)</th>}
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.values(members).map((member, index) => (
-            <CreateMemberRow
-              key={index}
-              index={index}
-              member={member}
-              windowSize={windowSize}
-              handleMoreInfo={handleMoreInfo}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-const CreateMemberRow = ({ index, member, windowSize, handleMoreInfo }) => {
-  const getName = (name) => {
-    return windowSize.innerWidth > 1250 ? name : summarizeName(name);
-  };
-
-  return (
-    <tr
-      key={index + 1}
-      className={style.fsTable}
-      style={
-        index % 2 === 1
-          ? { backgroundColor: "rgb(53, 209, 250,0.10)" }
-          : { backgroundColor: "rgb(36, 139, 227,0.25)" }
-      }
-    >
-      <th>{index + 1}</th>
-      <th>
-        <div
-          className={style.memberImg}
-          style={{
-            backgroundImage: `url(${fenixPhoto(member.username)})`,
-          }}
-        />
-      </th>
-      <th>{member.username}</th>
-      <th style={{ textAlign: "left" }}>{getName(member.name)}</th>
-      {windowSize.innerWidth > 1000 && (
-        <th style={{ textAlign: "left" }}>{member.email}</th>
-      )}
-      {windowSize.innerWidth > 850 && <th>{member.courses}</th>}
-      <th className={style.buttonsColumn}>
-        <Button onClick={() => handleMoreInfo(member.username)}>
-          <img
-            style={
-              windowSize.innerWidth < 850
-                ? { width: "100px" }
-                : { width: "auto" }
-            }
-            src={`${process.env.PUBLIC_URL}/${member.status}.svg`}
-          />
-        </Button>
-      </th>
-    </tr>
   );
 };
 
