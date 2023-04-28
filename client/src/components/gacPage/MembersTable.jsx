@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { memberRow } from "./MembersRow";
 import { Table, ScrollArea } from "@mantine/core";
-import { CreateMoreInfoModal } from "./InformationalModal";
+import { CreateMoreInfoModal } from "./modals/InformationalModal";
 
 export function MembersTable({ members }) {
   const [collabs, setCollabs] = useState(null);

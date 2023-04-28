@@ -78,12 +78,19 @@ export const memberRow = (members, collabs, handleMoreInfo) =>
       </td>
       <td style={{borderRadius: "0 1em 1em 0"}}>
         <Group spacing={0} position="right">
-          <ActionIcon onClick={() => handleMoreInfo(member.username)}>
-            {<AiOutlineEye size="1rem" stroke={1.5} />}
-          </ActionIcon>
+        <Tooltip
+            position="top"
+            withArrow
+            transitionProps={{ duration: 100 }}
+            label="Ver mais informações"
+          >
+            <ActionIcon onClick={() => handleMoreInfo(member.username)}>
+              {<AiOutlineEye size="1rem" stroke={1.5} />}
+            </ActionIcon>
+          </Tooltip>
           <CopyButton value={member.email} timeout={2000}>
             {({ copied, copy }) => (
-              <Tooltip label={copied ? "Copied" : "Copy"} withArrow>
+              <Tooltip label={copied ? "Copiado!" : "Copiar Email"} withArrow>
                 <ActionIcon color={copied ? "teal" : "gray"} onClick={copy}>
                   {copied ? (
                     <BsCheck size="1rem" />
@@ -94,9 +101,16 @@ export const memberRow = (members, collabs, handleMoreInfo) =>
               </Tooltip>
             )}
           </CopyButton>
-          <ActionIcon color="red">
-            <BsTrash3 size="1rem" stroke={1.5} />
-          </ActionIcon>
+          <Tooltip
+            position="top"
+            withArrow
+            transitionProps={{ duration: 100 }}
+            label="Eliminar Sócio"
+          >
+            <ActionIcon color="red" disabled>
+              <BsTrash3 size="1rem" stroke={1.5} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       </td>
     </tr>
