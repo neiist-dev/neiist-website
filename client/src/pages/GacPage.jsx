@@ -3,11 +3,11 @@ import useWindowSize from "../hooks/useWindowSize";
 import LoadSpinner from "../hooks/loadSpinner";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Spinner from "react-bootstrap/Spinner";
-
 import style from "./css/GacPage.module.css";
 import axios from "axios";
 import {
@@ -103,10 +103,16 @@ const ActiveMembersPage = ({ keySelected }) => {
 
 const SearchMembers = ({ keySelected }) => {
 	const [allMembers, setMembers] = useState(null);
-  const [filteredMembers, setFilteredMembers] = useState([]);
+	const [filteredMembers, setFilteredMembers] = useState([]);
+
 	const [searchInput, setSearchInput] = useState("");
+
 	const [error, setError] = useState(null);
 	const [isLoaded, setIsLoaded] = useState(false);
+
+	const [showEmails, setShowEmails] = useState(false);
+	const handleShowEmails = () => setShowEmails(true);
+	const handleCloseEmails = () => setShowEmails(false);
 
 	useEffect(() => {
 		if (keySelected === "search" && allMembers === null) {
@@ -126,15 +132,23 @@ const SearchMembers = ({ keySelected }) => {
 	const handleChange = (e) => {
 		e.preventDefault();
 		setSearchInput(e.target.value);
-    const istIds = e.target.value.split(",").map((id) => id.trim().toLowerCase());
-    const filtered = allMembers.filter((member) =>
-      istIds.includes(member.username.toLowerCase())
-    );
-    setFilteredMembers(filtered);
+		const istIds = e.target.value
+			.split(",")
+			.map((id) => id.trim().toLowerCase());
+		setFilteredMembers(
+			allMembers.filter((member) =>
+				istIds.includes(member.username.toLowerCase())
+			)
+		);
 	};
 
 	return (
 		<>
+			<CreateEmailsModal
+				show={showEmails}
+				handleClose={handleCloseEmails}
+				members={filteredMembers}
+			/>
 			{!isLoaded && <LoadSpinner />}
 			{error && (
 				<div>
@@ -148,18 +162,81 @@ const SearchMembers = ({ keySelected }) => {
 						<h1>
 							<b>Pesquisa</b>
 						</h1>
-						<h4>
-							<input
-								type="text"
-								value={searchInput}
-								onChange={handleChange}
-								placeholder="Pesquisa por IST id..."
-							/>
-						</h4>
-            <MembersTable members={filteredMembers} />
+						<div>
+							<h4>
+								<input
+									type="text"
+									value={searchInput}
+									onChange={handleChange}
+									placeholder="Pesquisa por IST id..."
+								/>
+							</h4>
+							<Button onClick={handleShowEmails}>[Emails]</Button>
+						</div>
+						<SearchMembersTable members={filteredMembers} />
 					</div>
 				</div>
 			)}
+		</>
+	);
+};
+
+const SearchMembersTable = ({ members }) => {
+	return (
+		<>
+			{Object.values(members).map((member, index) => (
+				<div key={index}>
+					<SearchMember member={member} />
+				</div>
+			))}
+		</>
+	);
+};
+
+const SearchMember = ({ member }) => {
+	const windowSize = useWindowSize();
+
+	const [showMoreInfo, setShowMoreInfo] = useState(false);
+	const handleShowMoreInfo = () => setShowMoreInfo(true);
+	const handleCloseMoreInfo = () => setShowMoreInfo(false);
+
+	return (
+		<>
+			<CreateMoreInfoModal
+				show={showMoreInfo}
+				handleClose={handleCloseMoreInfo}
+				username={member.username}
+			/>
+			<div className={style.memberInfoDiv}>
+				<div className={style.memberImageContainer}>
+					<div
+						className={style.memberImage}
+						style={{
+							backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username}?s=10000)`,
+						}}
+					/>
+					<Badge className={style.memberCourse}>
+						{member.courses.replaceAll(",", ", ")}
+					</Badge>
+				</div>
+				<div className={style.memberInfo}>
+					<p>{member.username}</p>
+					<p>{member.name}</p>
+					<div
+						className={style.buttonsSearch}
+						onClick={() => handleShowMoreInfo()}
+					>
+						<img
+							style={
+								windowSize.innerWidth < 850
+									? { width: "100px" }
+									: { width: "auto" }
+							}
+							src={`${process.env.PUBLIC_URL}/${member.status}.svg`}
+						/>
+					</div>
+				</div>
+			</div>
 		</>
 	);
 };
