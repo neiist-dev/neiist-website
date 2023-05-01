@@ -33,7 +33,7 @@ export function MembersTable({ members }) {
         username={username}
       />
       <ScrollArea>
-        <Table miw={800} verticalSpacing="sm">
+        <Table verticalSpacing="sm">
           <thead>
             <tr>
               <th>Nome</th>

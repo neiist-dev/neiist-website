@@ -12,7 +12,7 @@ import { EmailsAndRenewalButtons } from "../components/gacPage/EmailsAndRenewalB
 const GacPage = () => (
   <div>
     <Tabs
-      style={{ margin: "2em 6em", position: "relative" }}
+      className={style.mainPage}
       variant="pills"
       color="gray"
       defaultValue="sociosAtivos"
@@ -87,10 +87,10 @@ const RenderActiveMembersDiv = ({ activeMembers }) => (
         <b>Sócios Ativos</b>{" "}
         <span style={{ fontSize: "25px" }}>({activeMembers.length})</span>
       </h1>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div className={style.badgeAndEmailButtons}>
         <div className={style.badgeDiv}>
           <Badge
-            style={{ width: "10em", marginRight: "10px" }}
+            className={style.initialBadge}
             variant="filled"
             size="xl"
           >
@@ -113,7 +113,7 @@ const RenderActiveMembersDiv = ({ activeMembers }) => (
             } em Renovação`}
           >
             <Badge
-              style={{ width: "20em" }}
+              className={style.initialBadge}
               variant="gradient"
               gradient={{ from: "lime", to: "red" }}
               size="xl"

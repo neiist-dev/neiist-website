@@ -62,6 +62,11 @@
   }
 }
 
+.mainPage {
+  margin: 1em 6em;
+  position: relative;
+}
+
 .messageDiv {
   display: flex;
   align-items: center;
@@ -465,4 +470,28 @@
   border: 0px none;
   border-top: none !important;
   border-bottom: none !important;
+}
+
+@media only screen and (max-width: 1225px){
+  .badgeAndEmailButtons {
+    gap: 1em;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: left;
+  }
+}
+
+.badgeAndEmailButtons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.initialBadge:first-of-type {
+  width: 10em;
+  margin-right: 10px;
+}
+
+
+.initialBadge:last-of-type {
+  width: 20em;
 }
