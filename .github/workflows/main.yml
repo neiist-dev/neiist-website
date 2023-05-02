@@ -23,12 +23,7 @@ jobs:
 
       - name: Build client
         run: cd client && npm run build && cd ..
-
-  frontendTests:
-    needs: build
-    if: ${{ github.event.pull_request.base_ref == 'master' }}
-    runs-on: ubuntu-latest  
-
-    steps:
-      - name: Run frontend tests
+      
+      - name: Frontend Tests
+        if: ${{ github.event.pull_request.base.ref == 'master' }}
         run: cd client && npm run test && cd ..
