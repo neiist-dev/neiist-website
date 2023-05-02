@@ -28,6 +28,7 @@ export const downloadCurrentCollabsFile = () => {
         .split(",")
         .map((teamName) => allTeamNames[teamName])
         .join(", ");
+      collab.campus = {'T': 'Taguspark', 'A': 'Alameda'}[collab.campus];
       return collab;
     });
   })
