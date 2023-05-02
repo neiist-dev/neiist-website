@@ -95,12 +95,13 @@ const MemberInformation = ({member, memberNotRegisted=false}) => {
           <Badge className={style.memberCourse}>{member.courses.replaceAll(',' , ', ')}</Badge>
         </div>
         <div className={style.memberInfo}>
-          <p><b>Username:</b> {member.username}</p>
-          <p><b>Nome:</b> {member.name}</p>
-          <p><b>Email:</b> {member.email}</p>
-          <p><b>Estado Atual de Sócio:</b>
+          <p data-testid="username-container"><b>Username:</b> {member.username}</p>
+          <p data-testid="name-container"><b>Nome:</b> {member.name}</p>
+          <p data-testid="email-container"><b>Email:</b> {member.email}</p>
+          <p data-testid="status-container"><b>Estado Atual de Sócio:</b>
           <img
-            className={style.memberInfoStatus} 
+            className={style.memberInfoStatus}
+            alt={member.status}
             src={`${process.env.PUBLIC_URL}/${member.status}.svg`}
           />
           </p>
