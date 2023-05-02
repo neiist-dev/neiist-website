@@ -23,11 +23,12 @@ export const downloadCurrentCollabsFile = () => {
   fetch('/api/collabs/all')
   .then(response => response.json())
   .then(data => {
-    data.forEach((collab) => {
+    return data.map((collab) => {
       collab.teams = collab.teams
         .split(",")
         .map((teamName) => allTeamNames[teamName])
         .join(", ");
+      return collab;
     });
   })
   .then(data => {

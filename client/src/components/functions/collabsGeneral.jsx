@@ -8,6 +8,13 @@ export const allTeamNames = {
   'FOT':'Fotografia',
   'ODE':'Organização de Eventos',
   'VIS':'Visuais',
+  'COOR-CEQ':'Coordenador(a) Controlo & Qualidade',
+  'COOR-CON':'Coordenador(a) Contacto',
+  'COOR-DEV':'Coordenador(a) Dev-Team',
+  'COOR-DIV':'Coordenador(a) Divulgação',
+  'COOR-FOT':'Coordenador(a) Fotografia',
+  'COOR-ODE':'Coordenador(a) Organização de Eventos',
+  'COOR-VIS':'Coordenador(a) Visuais',
 };
 
 export const normalizeTeams = (teams) => teams.replace("COOR-","").split(",").sort();
