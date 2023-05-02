@@ -15,8 +15,10 @@ import LoadSpinner from "../../hooks/loadSpinner";
 import style from '../../pages/css/CollabsPage.module.css';
 
 import DivPersonCard from "./CollabCard";
+import { FcDownload } from 'react-icons/fc';
 import { summarizeName } from '../functions/dataTreatment';
 import { getCollabImage, allTeamNames } from "../functions/collabsGeneral";
+import { downloadCurrentCollabsFile } from '../functions/exportXLSX';
 
 
 const ManageCollabs = ({ selectedKey }) => {
@@ -69,14 +71,20 @@ const ManageCollabs = ({ selectedKey }) => {
 
 const InitialButtons = ({ setViewAddCollabModal, setViewRemCollabModal }) => (
   <div className={style.manageCollabButtons}>
-    <Button onClick={()=>setViewAddCollabModal(true)}>
+    <Button onClick={() => setViewAddCollabModal(true)}>
       <Badge bg="dark">+</Badge> Add Collab
     </Button>
-    <Button onClick={()=>setViewRemCollabModal(true)}>
+    <Button onClick={() => setViewRemCollabModal(true)}>
       <Badge bg="dark">-</Badge> Remove Collab
     </Button>
     <Button>
-      <Badge bg="dark">{'<->'}</Badge> Modify Team
+      <Badge bg="dark">{"<->"}</Badge> Modify Team
+    </Button>
+    <Button onClick={downloadCurrentCollabsFile}>
+      <Badge bg="light">
+        <FcDownload />
+      </Badge>{" "}
+      Export Collabs
     </Button>
   </div>
 );
