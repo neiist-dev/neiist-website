@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { within } from '@testing-library/dom';
 import MemberPage from "../../../pages/MemberPage";
 import UserDataContext from '../../../UserDataContext';
 import { act } from 'react-dom/test-utils';
@@ -81,8 +82,25 @@ describe('MembersPage', () => {
       cleanup();
     });
 
-    it('display of information', ()=> {
-      //PASS
+    it('display of information', async ()=> {
+      await act(() => { renderComponent(userDataMock); });
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      
+      const usernameElement = await screen.getByTestId('username-container');
+      expect(await within(usernameElement).getByText(/Username:/i)).toBeInTheDocument();
+      expect(await within(usernameElement).getByText(`${userDataMock.username}`)).toBeInTheDocument();
+
+      const nameElement = await screen.getByTestId('name-container');
+      expect(await within(nameElement).getByText(/Nome:/i)).toBeInTheDocument();
+      expect(await within(nameElement).getByText(`${userDataMock.name}`)).toBeInTheDocument();
+      
+      const emailElement = await screen.getByTestId('email-container');
+      expect(await within(emailElement).getByText(/Email:/i)).toBeInTheDocument();
+      expect(await within(emailElement).getByText(`${userDataMock.email}`)).toBeInTheDocument();
+      
+      const statusElement = await screen.getByTestId('status-container');
+      expect(await within(statusElement).getByAltText(userDataMock.status)).toBeInTheDocument();
+      expect(await within(statusElement).getByAltText(userDataMock.status)).toHaveAttribute('src', `/${userDataMock.status}.svg`);
     })
   });
 
@@ -208,7 +226,9 @@ describe('MembersPage', () => {
         expect(cardTitle).toBeInTheDocument();
         expect(cardTitle.textContent).toBe(electionsMock[0].name);
 
-        // ADD EVENT OF USER
+        // Simulate a click event on the card
+        await fireEvent.click(await container.querySelector('.card'));
+        expect(await screen.getByRole('dialog')).toBeInTheDocument();
       });
 
       it('when there is n elections, display h1 and card information for each one', async () => {        
@@ -226,8 +246,6 @@ describe('MembersPage', () => {
           expect(cardTitle).toBeInTheDocument();
           expect(cardTitle.textContent).toBe(electionsMock[index].name);
         });
-
-        // ADD EVENT OF USER
       });
     })
   });
