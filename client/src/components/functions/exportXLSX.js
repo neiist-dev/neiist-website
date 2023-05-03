@@ -1,5 +1,5 @@
 import { utils as XLSXUtils, write as XLSXWrite } from 'xlsx';
-import { allTeamNames } from './collabsGeneral';
+import { extendedTeamAndCoorNames } from './collabsGeneral';
 
 function s2ab(s) {
   const buf = new ArrayBuffer(s.length);
@@ -26,7 +26,7 @@ export const downloadCurrentCollabsFile = () => {
     return data.map((collab) => {
       collab.teams = collab.teams
         .split(",")
-        .map((teamName) => allTeamNames[teamName])
+        .map((teamName) => extendedTeamAndCoorNames[teamName])
         .join(", ");
       collab.campus = {'T': 'Taguspark', 'A': 'Alameda'}[collab.campus];
       return collab;
