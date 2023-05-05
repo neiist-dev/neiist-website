@@ -14,6 +14,9 @@ import {
 	fenixPhoto,
 	summarizeName,
 } from "../components/functions/dataTreatment";
+import BadgeESM from "react-bootstrap/esm/Badge";
+import { FcDownload } from "react-icons/fc";
+import { downloadActiveMembersFile, downloadCurrentCollabsFile } from "../components/functions/exportXLSX";
 
 const GacPage = () => {
 	const [key, setKey] = useState("active");
@@ -285,45 +288,51 @@ const AllMembersPage = ({ keySelected }) => {
 };
 
 const EmailButtons = ({ members }) => {
-	const [showRenewMembers, setshowRenewMembers] = useState(false);
-	const handleCloseNonActive = () => setshowRenewMembers(false);
-	const handleshowRenewMembers = () => setshowRenewMembers(true);
+  const [showRenewMembers, setshowRenewMembers] = useState(false);
+  const handleCloseNonActive = () => setshowRenewMembers(false);
+  const handleshowRenewMembers = () => setshowRenewMembers(true);
 
-	const [showRenewEmails, setShowRenewEmails] = useState(false);
-	const handleShowRenewEmails = () => setShowRenewEmails(true);
-	const handleCloseRenewEmails = () => setShowRenewEmails(false);
+  const [showRenewEmails, setShowRenewEmails] = useState(false);
+  const handleShowRenewEmails = () => setShowRenewEmails(true);
+  const handleCloseRenewEmails = () => setShowRenewEmails(false);
 
-	const [showRegularEmails, setShowRegularEmails] = useState(false);
-	const handleShowRegularEmails = () => setShowRegularEmails(true);
-	const handleCloseRegularEmails = () => setShowRegularEmails(false);
+  const [showRegularEmails, setShowRegularEmails] = useState(false);
+  const handleShowRegularEmails = () => setShowRegularEmails(true);
+  const handleCloseRegularEmails = () => setShowRegularEmails(false);
 
-	return (
-		<div className={style.buttonsDiv}>
-			<Button onClick={handleShowRegularEmails}>
-				[Emails] Sócios Regulares
-			</Button>
-			<CreateEmailsModal
-				show={showRegularEmails}
-				handleClose={handleCloseRegularEmails}
-				members={members.filter((member) => member.status === "SocioRegular")}
-			/>
-			<Button onClick={handleShowRenewEmails}>[Emails] Sócios Eleitores</Button>
-			<CreateEmailsModal
-				show={showRenewEmails}
-				handleClose={handleCloseRenewEmails}
-				members={members.filter(
-					(member) =>
-						member.status === "SocioEleitor" || member.status === "Renovar"
-				)}
-			/>
-			<Button onClick={handleshowRenewMembers}>Renovações</Button>
-			<CreateRenewMembersModal
-				show={showRenewMembers}
-				handleClose={handleCloseNonActive}
-				members={members?.filter((member) => member.status === "Renovar")}
-			/>
-		</div>
-	);
+  return (
+    <div className={style.buttonsDiv}>
+      <Button onClick={handleShowRegularEmails}>
+        [Emails] Sócios Regulares
+      </Button>
+      <CreateEmailsModal
+        show={showRegularEmails}
+        handleClose={handleCloseRegularEmails}
+        members={members.filter((member) => member.status === "SocioRegular")}
+      />
+      <Button onClick={handleShowRenewEmails}>[Emails] Sócios Eleitores</Button>
+      <CreateEmailsModal
+        show={showRenewEmails}
+        handleClose={handleCloseRenewEmails}
+        members={members.filter(
+          (member) =>
+            member.status === "SocioEleitor" || member.status === "Renovar"
+        )}
+      />
+      <Button onClick={handleshowRenewMembers}>Renovações</Button>
+      <CreateRenewMembersModal
+        show={showRenewMembers}
+        handleClose={handleCloseNonActive}
+        members={members?.filter((member) => member.status === "Renovar")}
+      />
+      <Button style={{backgroundColor: 'orange', border: 'none'}} onClick={downloadActiveMembersFile}>
+        <BadgeESM bg="light">
+          <FcDownload />
+        </BadgeESM>{" "}
+        Exportar Sócios Ativos
+      </Button>
+    </div>
+  );
 };
 
 const CreateMoreInfoModal = ({ show, handleClose, username }) => {

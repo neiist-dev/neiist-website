@@ -23,3 +23,7 @@ jobs:
 
       - name: Build client
         run: cd client && npm run build && cd ..
+      
+      - name: Frontend Tests
+        if: ${{ github.event.pull_request.base.ref == 'master' }}
+        run: cd client && npm run test && cd ..

@@ -142,6 +142,7 @@
   padding: 0px 20px 10px 20px;
   display: flex;
   gap: 10px;
+  position: relative;
 }
 
 .manageCollabButtons > Button:nth-child(1),
@@ -162,5 +163,12 @@
 .manageCollabButtons > Button:nth-child(3):hover {
   background-color: rgb(211, 211, 211);
   color: black;
+  border: 0;
+}
+
+.manageCollabButtons > Button:last-child,
+.manageCollabButtons > Button:last-child:hover {
+  background-color: orange;
+  color: white;
   border: 0;
 }
