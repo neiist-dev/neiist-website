@@ -1,443 +1,490 @@
 /* Mobile CSS */
 @media only screen and (max-width: 750px) {
-  .principalBody {
-    display: block !important;
-  }
+	.principalBody {
+		display: block !important;
+	}
 
-  .principalBody h1 {
-    display: grid;
-    font-size: 2.5rem !important;
-    justify-content: center;
-    align-items: center;
-    align-content: center;
-    flex-wrap: wrap;
-    flex-direction: row;
-  }
+	.principalBody h1 {
+		display: grid;
+		font-size: 2.5rem !important;
+		justify-content: center;
+		align-items: center;
+		align-content: center;
+		flex-wrap: wrap;
+		flex-direction: row;
+	}
 
-  .buttonsDiv {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-  }
+	.buttonsDiv {
+		display: flex;
+		flex-wrap: wrap;
+		flex-direction: row;
+		justify-content: center;
+		align-content: center;
+		align-items: center;
+	}
 
-  .messageDiv {
-    max-width: 600px;
-    height: auto;
-    overflow: hidden;
-  }
+	.messageDiv {
+		max-width: 600px;
+		height: auto;
+		overflow: hidden;
+	}
 
-  .fsTable {
-    font-size: 12px !important;
-  }
+	.fsTable {
+		font-size: 12px !important;
+	}
 
-  .principalTable {
-    margin: 1rem 5vw !important;
-  }
+	.principalTable {
+		margin: 1rem 5vw !important;
+	}
 
+	.infoCard_img {
+		width: 100px !important;
+		height: 60% !important;
+	}
 
-  .infoCard_img {
-    width: 100px !important;
-    height: 60% !important;
-  }
+	.infoCard_info {
+		font-size: 12px !important;
+		padding-left: 120px !important;
+	}
 
-  .infoCard_info {
-    font-size: 12px !important;
-    padding-left: 120px !important;
-  }
-
-  #tableDiv th {
-    font-size: 10px !important;
-  }
+	#tableDiv th {
+		font-size: 10px !important;
+	}
 }
 
 .modal85 {
-  width: 85vw;
-  max-width: 85vw;
+	width: 85vw;
+	max-width: 85vw;
 }
 
 .tabs {
-  margin: 1rem 6em;
-  display: flex;
-  justify-content: center;
-  align-content: center;
-  flex-wrap: wrap;
+	margin: 1rem 6em;
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	flex-wrap: wrap;
 }
 
 .principalTable {
-  place-self: center;
-  margin: 1rem 6em;
-  display: grid;
-  place-self: center;
-  justify-items: stretch;
-  align-items: center;
-  align-content: center;
+	place-self: center;
+	margin: 1rem 6em;
+	display: grid;
+	place-self: center;
+	justify-items: stretch;
+	align-items: center;
+	align-content: center;
 }
 
 .principalTable table {
-  text-align: center;
+	text-align: center;
 }
 
 .principalTable Button {
-  background: transparent;
-  border: transparent;
-  padding: 0;
+	background: transparent;
+	border: transparent;
+	padding: 0;
 }
 
 .fsTable {
-  font-size: 14px;
+	font-size: 14px;
 }
 
 .principalBody {
-  margin: 1rem 6em;
-  display: grid;
-  text-align: center;
-  justify-content: center;
+	margin: 1rem 6em;
+	display: grid;
+	text-align: center;
+	justify-content: center;
 }
 
-.principalBody .principalBody  {
-  font-size: 30px;
+.principalBody .principalBody {
+	font-size: 30px;
 }
 
 .principalBody Button {
-  margin: 0 10px;
-  background: #248be3;
-  border-color: #248be3;
-  color: white;
+	margin: 0 10px;
+	background: #248be3;
+	border-color: #248be3;
+	color: white;
 }
 
 .ControlDisable {
-  padding: 0 !important;
-  border: none !important;
-  font-weight: bold !important;
-  background-color: transparent !important;
+	padding: 0 !important;
+	border: none !important;
+	font-weight: bold !important;
+	background-color: transparent !important;
 }
 
 .ControlActive {
-  padding: 0 !important;
-  border: dashed !important;
-  font-weight: bold !important;
-  background-color: transparent !important;
-  text-indent: 10px !important;
+	padding: 0 !important;
+	border: dashed !important;
+	font-weight: bold !important;
+	background-color: transparent !important;
+	text-indent: 10px !important;
 }
 
 .btnEditEmail,
 .btnCopyEmailsBody {
-  color: white;
-  font-size: 15px !important;
-  background: #248be3 !important;
-  border-color: #248be3 !important;
+	color: white;
+	font-size: 15px !important;
+	background: #248be3 !important;
+	border-color: #248be3 !important;
 }
 
 .btnCopyEmailsBody {
-  position: relative;
+	position: relative;
 }
 
-.btnCopyEmailsHeader{
-  right: 2.5em;
-  width: 15em;
-  position: absolute;
-  font-size: medium;
+.btnCopyEmailsHeader {
+	right: 2.5em;
+	width: 15em;
+	position: absolute;
+	font-size: medium;
 }
 
 .btnsHeader {
-  display: flex;
-  width: 100%;
-  gap: .5em;
-  justify-content: center;
-  align-content: center;
-  flex-wrap: nowrap;
-  height: 2.15em;
+	display: flex;
+	width: 100%;
+	gap: 0.5em;
+	justify-content: center;
+	align-content: center;
+	flex-wrap: nowrap;
+	height: 2.15em;
 }
 
-
-.btnsHeader>.btnCopyEmailsBody,
+.btnsHeader > .btnCopyEmailsBody,
 .btnCopyEmailsBodyDisabled {
-  width: 100%;
-  height: 100%;
+	width: 100%;
+	height: 100%;
 }
 
-.btnsHeader>.btnCopyEmailsBodyDisabled {
-  width: 50%;
-  font-size: x-small;
+.btnsHeader > .btnCopyEmailsBodyDisabled {
+	width: 50%;
+	font-size: x-small;
 }
 
-.btnsHeader>.btnCopyEmailsBody:last-of-type,
-.btnsHeader>.btnCopyEmailsBodyDisabled:last-of-type {
-  background-color: lightseagreen !important;
-  border-color: lightseagreen !important;
+.btnsHeader > .btnCopyEmailsBody:last-of-type,
+.btnsHeader > .btnCopyEmailsBodyDisabled:last-of-type {
+	background-color: lightseagreen !important;
+	border-color: lightseagreen !important;
 }
 
 .infoCard {
-  position: relative;
-  float: left;
-  height: 275px !important;
-  max-height: 275px;
-  background: transparent !important;
-  border-color: transparent !important;
-  color: black !important;
-  margin: 0 !important;
-  width: 95%;
+	position: relative;
+	float: left;
+	height: 275px !important;
+	max-height: 275px;
+	background: transparent !important;
+	border-color: transparent !important;
+	color: black !important;
+	margin: 0 !important;
+	width: 95%;
 }
 
 .infoCard,
 .AllMembersCard {
-  color: black;
-  display: flex;
-  background: rgb(36, 139, 227, 0.25);
-  border-color: rgb(36, 139, 227, 0.25);
-  overflow: auto;
-  padding: 10px 10px 10px 15px;
-  margin-top: 5px;
-  position: relative;
-  align-items: center;
-  justify-items: center;
-  height: 100px;
-  border-radius: 10px;
-  box-sizing: unset;
+	color: black;
+	display: flex;
+	background: rgb(36, 139, 227, 0.25);
+	border-color: rgb(36, 139, 227, 0.25);
+	overflow: auto;
+	padding: 10px 10px 10px 15px;
+	margin-top: 5px;
+	position: relative;
+	align-items: center;
+	justify-items: center;
+	height: 100px;
+	border-radius: 10px;
+	box-sizing: unset;
 }
 
 .modalBody {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 .allNonActiveCard {
-  margin-top: .5em;
-  gap: 0.5em;
-  width: 100%;
-  height: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
+	margin-top: 0.5em;
+	gap: 0.5em;
+	width: 100%;
+	height: auto;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
 }
 
 .allNonActiveCard > * {
-  flex: 1 0 30%;
+	flex: 1 0 30%;
 }
 
-@media only screen and (max-width: 1550px){  
-  .allNonActiveCard > * {
-    flex: 1 0 47%;
-  }
-} 
+@media only screen and (max-width: 1550px) {
+	.allNonActiveCard > * {
+		flex: 1 0 47%;
+	}
+}
 
 .nonActiveCard {
-  color: black;
-  background-color: rgb(36, 139, 227,0.5);
-  
-  display: grid;
-  grid-template-columns: auto 1.5fr;
-  grid-template-rows: 1fr 1fr;
+	color: black;
+	background-color: rgb(36, 139, 227, 0.5);
 
-  height: fit-content;
-  padding: .75em;
-  
-  box-sizing: unset;
-  border-radius: 10px;
-  
-  overflow: auto;
-  align-items: center;
+	display: grid;
+	grid-template-columns: auto 1.5fr;
+	grid-template-rows: 1fr 1fr;
+
+	height: fit-content;
+	padding: 0.75em;
+
+	box-sizing: unset;
+	border-radius: 10px;
+
+	overflow: auto;
+	align-items: center;
 }
 
-@media only screen and (min-width: 1550px){  
-  .nonActiveCard:nth-of-type(4n),
-  .nonActiveCard:nth-of-type(4n-2) {
-    background-color: rgb(53, 209, 250,0.25);
-  }
+@media only screen and (min-width: 1550px) {
+	.nonActiveCard:nth-of-type(4n),
+	.nonActiveCard:nth-of-type(4n-2) {
+		background-color: rgb(53, 209, 250, 0.25);
+	}
 }
 
-@media only screen and (max-width: 1550px) and (min-width: 1137.5px){  
-  .nonActiveCard:nth-of-type(4n-1),
-  .nonActiveCard:nth-of-type(4n-2) {
-    background-color: rgb(53, 209, 250,0.25);
-  }
+@media only screen and (max-width: 1550px) and (min-width: 1137.5px) {
+	.nonActiveCard:nth-of-type(4n-1),
+	.nonActiveCard:nth-of-type(4n-2) {
+		background-color: rgb(53, 209, 250, 0.25);
+	}
 }
 
-@media only screen and (max-width: 1137.5px){  
-  .nonActiveCard:nth-of-type(even) {
-    background-color: rgb(53, 209, 250,0.25);
-  }
+@media only screen and (max-width: 1137.5px) {
+	.nonActiveCard:nth-of-type(even) {
+		background-color: rgb(53, 209, 250, 0.25);
+	}
 }
 
 .modalTitle {
-  width: -webkit-fill-available;
-  font-size: 20px !important;
-  display: flex;
-  justify-content: space-between;
+	width: -webkit-fill-available;
+	font-size: 20px !important;
+	display: flex;
+	justify-content: space-between;
 }
 
 .infoCard_info {
-  position: absolute;
-  font-size: 14px;
-  padding-left: 200px;
-  width: 95%;
+	position: absolute;
+	font-size: 14px;
+	padding-left: 200px;
+	width: 95%;
 }
 
 #tableDiv {
-  width: 100%;
-  overflow-wrap: break-word;
+	width: 100%;
+	overflow-wrap: break-word;
 }
 
 #tableDiv table {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-  overflow-wrap: break-word;
-  border-collapse: collapse;
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+	overflow-wrap: break-word;
+	border-collapse: collapse;
 }
 
 #tableDiv thead {
-  background-color: darkblue;
-  color: white;
+	background-color: darkblue;
+	color: white;
 }
 
 #tableDiv th {
-  width: 32.5%;
-  text-align: center;
+	width: 32.5%;
+	text-align: center;
 }
 
 #tableDiv tbody th {
-  font-size: 12px;
+	font-size: 12px;
 }
 
 .memberImg {
-  width: 40px;
-  height: 40px;
-  display: block;
-  border-radius: 5px;
-  background-image: none;
-  background-size: cover;
-  background-position: center center;
+	width: 40px;
+	height: 40px;
+	display: block;
+	border-radius: 5px;
+	background-image: none;
+	background-size: cover;
+	background-position: center center;
 }
 
 .infoCard_img {
-  position: absolute;
-  width: 175px;
-  height: 85%;
-  display: block;
-  border-radius: 5px;
-  background-image: none;
-  background-size: cover;
-  background-position: center center;
+	position: absolute;
+	width: 175px;
+	height: 85%;
+	display: block;
+	border-radius: 5px;
+	background-image: none;
+	background-size: cover;
+	background-position: center center;
 }
 
-.nonActiveCard_img {  
-  min-width: 7.5rem;
-  height: 100%;
-  
-  border-radius: 5px;
-  background-image: none;
-  background-size: cover;
-  background-position: center center;
+.nonActiveCard_img {
+	min-width: 7.5rem;
+	height: 100%;
 
-  grid-row: 1 / 3;
+	border-radius: 5px;
+	background-image: none;
+	background-size: cover;
+	background-position: center center;
+
+	grid-row: 1 / 3;
 }
 
 .infoCard p {
-  font-size: 20px;
-  width: 100%;
-  display: inline;
-  margin: auto;
+	font-size: 20px;
+	width: 100%;
+	display: inline;
+	margin: auto;
 }
 
 .nonActiveInfo {
-  width: 100%;
-  font-size: 20px;
-  padding-left: 1rem;
+	width: 100%;
+	font-size: 20px;
+	padding-left: 1rem;
 
-  grid-row: 1/2;
+	grid-row: 1/2;
 }
 
 #period {
-  display: inline;
-  font-size: 16px;
+	display: inline;
+	font-size: 16px;
 }
 
 #username {
-  display: inline;
-  color: gray;
-  font-size: 14px;
+	display: inline;
+	color: gray;
+	font-size: 14px;
 }
 
-@media only screen and (max-width: 990px){
-  .nonActiveCard Button {
-    font-size: x-small;
-  }
-} 
+@media only screen and (max-width: 990px) {
+	.nonActiveCard Button {
+		font-size: x-small;
+	}
+}
 
 .buttonDiv {
-  display: flex;
-  padding: 0 1rem;
+	display: flex;
+	padding: 0 1rem;
 }
 
-.buttonDiv>* {
-  width: 100%;
+.buttonDiv > * {
+	width: 100%;
 }
 
 .nonActiveCard Button:first-of-type {
-  grid-row: 2/3;
-  font-size: small;
+	grid-row: 2/3;
+	font-size: small;
 
-  background-color: lightcoral;
-  border-color: lightcoral;
-  font-weight: bold;
+	background-color: lightcoral;
+	border-color: lightcoral;
+	font-weight: bold;
 }
 
 .nonActiveCard Button:active {
-  background-color: coral !important;
-  border-color: coral !important;
-  font-weight: bold;
+	background-color: coral !important;
+	border-color: coral !important;
+	font-weight: bold;
 }
 
 .nonActiveCard Button:nth-of-type(2),
 .nonActiveCard Button:last-of-type {
-  grid-row: 2;
+	grid-row: 2;
 }
 
 .nonActiveCard Button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  color: white;
-  background-color: #248be3;
-  border-color: #248be3;
-  
-  margin: .25em;
-  padding-top: 2px;
-  padding-bottom: 2px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	color: white;
+	background-color: #248be3;
+	border-color: #248be3;
+
+	margin: 0.25em;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 
 .AllMembersCard_emails {
-  overflow: auto;
-  overflow-y: hidden;
-  height: 45px;
-  align-items: center;
-  display: flex;
-  margin-right: 5px;
-  font-size: 20px;
+	overflow: auto;
+	overflow-y: hidden;
+	height: 45px;
+	align-items: center;
+	display: flex;
+	margin-right: 5px;
+	font-size: 20px;
 }
 
 .AllMembersCard Button {
-  display: flex;
-  right: 20px;
-  position: absolute;
-  background: #2863fd;
-  border-color: #2863fd;
-  color: white;
-  height: 35px;
-  flex-wrap: wrap;
-  align-content: center;
-  border-radius: 10px
+	display: flex;
+	right: 20px;
+	position: absolute;
+	background: #2863fd;
+	border-color: #2863fd;
+	color: white;
+	height: 35px;
+	flex-wrap: wrap;
+	align-content: center;
+	border-radius: 10px;
 }
 
-.buttonsColumn > button:hover{
-  color: transparent !important;
-  background-color: transparent !important;
-  border-color: transparent !important;
+.buttonsColumn > button:hover {
+	color: transparent !important;
+	background-color: transparent !important;
+	border-color: transparent !important;
+}
+
+.buttonsSearch {
+	cursor: pointer;
+	color: transparent !important;
+	background-color: transparent !important;
+	border-color: transparent !important;
+}
+
+.memberInfoDiv {
+	display: flex;
+	justify-content: center;
+  background-color: rgb(36, 139, 227, 0.25);
+  padding: 10px;
+  margin: 5px;
+  border-radius: 20px;
+}
+
+.memberImageContainer {
+	float: left;
+	height: 150px;
+	width: auto;
+}
+
+.memberImage {
+	width: 100px;
+	height: 100px;
+	margin: 0 auto;
+	background-image: none;
+	background-size: cover;
+	background-position: center center;
+	border-radius: 25px;
+}
+
+.memberCourse {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 25px;
+	margin: 10px auto;
+	color: white;
+	background-color: darkblue !important;
+}
+
+.memberInfo {
+	margin-left: 25px;
+	width: auto;
+	height: 150px;
+	position: relative;
 }
