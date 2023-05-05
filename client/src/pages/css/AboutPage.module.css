@@ -1,0 +1,295 @@
+.front {
+  display: flex;
+  height: fit-content;
+  flex-direction: column;
+  gap: 1em;
+  margin: 3rem 6em 2rem 6em;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  align-items: center;
+  position: relative;
+  max-height: fit-content;
+  min-height: calc(70vh - 4rem - 2em - 50px);
+  align-content: center;
+}
+
+.question {
+  transform: scaleX(5) scaleY(4);
+  color: var(--second-color);
+  margin-top: 1.2em;
+  margin-left: .5em;
+}
+
+.line {
+  width: fit-content;
+  border-top: .75em solid var(--second-color);
+  margin-top: -1.5em;
+  user-select: none;
+  height: 0;
+}
+
+.line>h1 {
+  text-indent: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.header>div>p {
+  text-align: left;
+  margin-top: 5em;
+  font-weight: bold;
+}
+
+.teamsDiv>div>button {
+  height: 4rem;
+  padding: 1em;
+  gap: 1em;
+  aspect-ratio: 8/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--first-color);
+}
+
+.teamsDiv>div>button>svg {
+  scale: 2;
+}
+
+.teamsDiv>div>button>p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.teamsDiv>div>button:nth-child(2n) {
+  background-color: var(--second-color);
+}
+
+.teamsDiv>div {
+  display: flex;
+  padding: 25px 0;
+  gap: 1em;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.teamsDiv {
+  min-height: calc(40vh - 4rem - 2em - 50px);
+  max-height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.socialOrgansCard,
+.allMembersCard {
+  display: flex;
+  justify-content: center;
+  align-content: space-around;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.socialOrgansCard {
+  gap: 3rem;
+}
+
+.allMembersDiv,
+.socialOrgansDiv {
+  padding: 25px 6rem;
+}
+
+.socialOrgansDiv:nth-child(2n) {
+  background-color: white;
+}
+
+.cardContainer {
+  display: contents;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card:hover {
+  transform: translate(-.5rem, -.5rem);
+  box-shadow: 10px 10px 0px #000;
+}
+
+.cardImgOver {
+  border-radius: 2em;
+  width: 100%;
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  background: linear-gradient(180deg, transparent 0%, transparent 45%, var(--first-color) 100%);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--first-color);
+  border-width: .15rem;
+}
+
+.cardTitle {
+  color: white;
+  font-size: 1.25rem;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  text-align: justify;
+}
+
+.cardText {
+  line-height: initial;
+  color: #F4FAFC;
+  font-size: 13px;
+  height: 4vh;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.card {
+  width: 12.5rem;
+  border-style: none;
+  border-radius: 2em;
+  transition: all 0.5s;
+}
+
+.activeTeamMembers>*>.card {
+  width: 10rem;
+}
+
+.cardImg {
+  min-height: 238px;
+  object-fit: cover;
+  border-radius: 2em;
+}
+
+.activeTeamMembers>*>.card>.cardImg {
+  min-height: 200px;
+}
+
+.activeTeamMembers {
+  margin: .5em 2em;
+}
+
+.header h1,
+.allMembersDiv h2,
+.socialOrgansDiv h2 {
+  color: black;
+}
+
+.allMembersDiv h2,
+.socialOrgansDiv h2 {
+  text-align: center;
+}
+
+.allColabImage {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  align-items: center;
+}
+
+.allColabImage>.blobs>svg:nth-child(1) {
+  z-index: 3;
+  margin-top: -2em;
+  position: absolute;
+}
+
+.allColabImage>.blobs>svg:nth-child(2) {
+  z-index: 1;
+  position: relative;
+}
+
+.allColabImage>.blobs {
+  --image-scale: .75;
+
+  transform: scale(var(--image-scale));
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+@media only screen and (min-width: 1225px) {
+  .allColabImage>.blobs {
+    --image-scale: .9;
+  }
+}
+
+@media only screen and (min-width: 1600px) {
+  .allColabImage>.blobs {
+    --image-scale: 1.15;
+  }
+}
+
+@media only screen and (min-width: 2000px) {
+  .allColabImage>.blobs {
+    --image-scale: 1.30;
+  }
+}
+
+@media only screen and (max-width: 1050px) {
+  .header {
+    display: flex;
+    flex-direction: column;
+    min-height: fit-content;
+    align-items: flex-end;
+  }
+
+  .header>div>p {
+    margin-top: 1em;
+  }
+}
+
+
+@media only screen and (max-width: 750px) {
+  .front {
+    margin: 1em 1em auto 1em;
+  }
+
+  .header {
+    align-items: center;
+  }
+
+  .allMembersDiv,
+  .socialOrgansDiv {
+    padding: auto 1em;
+  }
+}
+
+.allColabImage>.blobs>img {
+  z-index: 5;
+  position: absolute;
+  scale: .2;
+}
+
+.header>div>p>span {
+  color: var(--second-color)
+}
+
+.headerModal {
+  background-color: var(--second-color);
+  color: white;
+  opacity: 1;
+}
+
+.headerModalTitle {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  justify-content: center;
+  margin-left: .5em;
+}
+
+.bodyModal {
+  background: var(--bg-color);
+}

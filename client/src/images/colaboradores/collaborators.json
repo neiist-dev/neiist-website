@@ -1,0 +1,51 @@
+{
+  "anoLetivo": "2022/2023",
+  "orgaosSociais": {
+    "Direção": {
+      "Presidente": "Nelson Trindade",
+      "Vice-Presidente" : "Catarina Sousa",
+      "Vogal" : "Mafalda Ribeiro",
+      "Diretor de Atividades (Alameda)" : "João Silva",
+      "Diretora de Atividades (Taguspark)" : "Maria Ribeiro",
+      "Diretor SINFO" : "Diogo Pacheco",
+      "Tesoureira" : "Andreia Pereira"
+    },
+    "Mesa da Assembleia Geral": {
+      "Presidente": "Beatriz Alves",
+      "Vice-Presidente" : "David Belchior",
+      "Secretário1": "Diogo Santos",
+      "Secretário2": "Vadym Volkovinskyy"
+    },
+    "Conselho Fiscal": {
+      "Presidente": "Carlos Amaro",
+      "Membro1": "João Gonçalves",
+      "Membro2": "Mara Alves"
+    }
+  },
+  "Membros": [
+    "Ana Albuquerque",
+    "André Santos",
+    "Beatriz Alves",
+    "Bernardo Quinteiro",
+    "Carlos Amaro",
+    "Catarina Sousa",
+    "David Belchior",
+    "Diogo Santos",
+    "Francisco Saiote",
+    "Gonçalo Mateus",
+    "Guilherme Batalheiro",
+    "Gustavo Rodrigues",
+    "Henrique Pimentel",
+    "João Gonçalves",
+    "João Maurício",
+    "João Silva",
+    "Mafalda Ribeiro",
+    "Mara Alves",
+    "Maria Ribeiro",
+    "Matheus Kasai",
+    "Nelson Trindade",
+    "Rodrigo Major",
+    "Tiago Amado",
+    "Vadym Volkovinskyy"
+  ]
+}

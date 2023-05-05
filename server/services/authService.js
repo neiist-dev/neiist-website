@@ -1,4 +1,11 @@
 const axios = require('axios');
+const {
+  checkCurrentCollab,
+  checkAdmin,
+  checkGACMember,
+  checkCoordenator 
+} = require('./collabsService');
+const { getMember } = require('./membersService');
 
 const getAccessToken = async (code) => {
   try {
@@ -30,7 +37,7 @@ const getPersonInformation = async (accessToken) => {
 
     return personInformationResponse.data;
   } catch (error) {
-    return console.error(error);
+    throw new Error(error.response.data.error)
   }
 };
 
@@ -47,16 +54,28 @@ const isActiveLMeicStudent = (roles) => {
   return roles.some((role) => role.type === 'STUDENT' && role.registrations.some((registration) => LMeicAcronyms.includes(registration.acronym)));
 };
 
-const isGacMember = (username) => {
+const isGacMember = async (username) => {
   // GAC = general assembly committee (MAG in PT)
+  const gacMembers = await checkGACMember(username);
   const gacUsernames = process.env.GAC_USERNAMES.split(',');
-  return gacUsernames.includes(username);
+  return gacUsernames.includes(username) || gacMembers;
 };
 
-const isAdmin = (username) => {
-  const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
-  return adminUsernames.includes(username);
+const isCoordenator = async (username) => {
+  const isCoordenator = await checkCoordenator(username);
+  return isCoordenator;
 };
+
+const isAdmin = async (username) => {
+  const adminCollabs = await checkAdmin(username);
+  const adminUsernames = process.env.ADMIN_USERNAMES.split(',');
+  return adminUsernames.includes(username) || adminCollabs;
+};
+
+const isCollab = async (username) => {
+  const collab = await checkCurrentCollab(username);
+  return collab ? collab : false;
+}
 
 const getAcronyms = (data) => {
   var acronyms = [];
@@ -70,22 +89,31 @@ const getAcronyms = (data) => {
 }; 
 
 const getUserData = async (accessToken) => {
-  const personInformation = await getPersonInformation(accessToken);
-  const acronyms = getAcronyms(personInformation);
-
-  const userData = {
-    username: personInformation.username,
-    displayName: personInformation.displayName,
-    name: personInformation.name,
-    email: personInformation.institutionalEmail,
-    courses: acronyms,
-    isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
-    isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
-    isGacMember: isGacMember(personInformation.username),
-    isAdmin: isAdmin(personInformation.username),
-  };
-
-  return userData;
+  try {
+    const personInformation = await getPersonInformation(accessToken);
+    const acronyms = getAcronyms(personInformation);
+    const member = await getMember(personInformation.username);
+    const isMember = (member) => member ? true : false;
+  
+    const userData = {
+      username: personInformation.username,
+      displayName: personInformation.displayName,
+      name: personInformation.name,
+      email: personInformation.institutionalEmail,
+      courses: acronyms,
+      status: (member) ? member.status : "NaoSocio",
+      isActiveTecnicoStudent: isActiveTecnicoStudent(personInformation.roles),
+      isActiveLMeicStudent: isActiveLMeicStudent(personInformation.roles),
+      isAdmin: await isAdmin(personInformation.username),
+      isGacMember: await isGacMember(personInformation.username),
+      isMember: await isMember(member),
+      isCollab: await isCollab(personInformation.username),
+      isCoordenator: await isCoordenator(personInformation.username),
+    };
+    return userData;
+  } catch (error) {
+    throw new Error(error);
+  }
 };
 
 module.exports = {

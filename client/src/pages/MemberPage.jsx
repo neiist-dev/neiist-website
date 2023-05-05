@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
+import LoadSpinner from "../hooks/loadSpinner";
 import Button from 'react-bootstrap/Button';
+import Badge from 'react-bootstrap/Badge';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
+import Alert from 'react-bootstrap/Alert';
+
 import axios from 'axios';
 import UserDataContext from '../UserDataContext';
 
@@ -32,7 +36,7 @@ const MembersPage = () => {
 
   return (
     <div className={style.principalBody}>
-      {(!isLoaded) && "..."}
+      {(!isLoaded) && <LoadSpinner />}
       {(error) && 
         <div>
           Erro:
@@ -60,7 +64,9 @@ const NoRegisterDiv = ({noRegisterFlag=false}) => {
         <div 
           className={style.noRegisterDiv}
         >
-          <p>⚠ Dados retirados do Fênix e não presentes na nossa base de dados.</p>
+        <Alert key="warning" variant="warning">
+          ⚠ Dados retirados do Fênix e não presentes na nossa base de dados.
+        </Alert>
         </div>
       }
     </div>
@@ -84,20 +90,18 @@ const MemberInformation = ({member, memberNotRegisted=false}) => {
           <div
             className={style.memberImage}
             style={{
-              backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username})`}}
+              backgroundImage: `url(https://fenix.tecnico.ulisboa.pt/user/photo/${member.username}?s=10000)`}}
           />
-          <img
-            className={style.memberCourse} 
-            src={`https://shields.io/badge/-${member.courses.replace("-","--")}-darkblue?&style=for-the-badge`}
-          />
+          <Badge className={style.memberCourse}>{member.courses.replaceAll(',' , ', ')}</Badge>
         </div>
         <div className={style.memberInfo}>
-          <p><b>Username:</b> {member.username}</p>
-          <p><b>Nome:</b> {member.name}</p>
-          <p><b>Email:</b> {member.email}</p>
-          <p><b>Estado Atual de Sócio:</b>
+          <p data-testid="username-container"><b>Username:</b> {member.username}</p>
+          <p data-testid="name-container"><b>Nome:</b> {member.name}</p>
+          <p data-testid="email-container"><b>Email:</b> {member.email}</p>
+          <p data-testid="status-container"><b>Estado Atual de Sócio:</b>
           <img
-            className={style.memberInfoStatus} 
+            className={style.memberInfoStatus}
+            alt={member.status}
             src={`${process.env.PUBLIC_URL}/${member.status}.svg`}
           />
           </p>
@@ -109,24 +113,97 @@ const MemberInformation = ({member, memberNotRegisted=false}) => {
 
 const Register = () => {
   const { userData } = useContext(UserDataContext);
+  
+  const [show, setShow] = useState(false);
+  const confirmEmailModal = () => setShow(true);
+  const handleClose = () => setShow(false);
 
-  const handleNewMember = async () => {
+  const handleNewMember = async (confirmedEmail = userData.email) => {
     const member = {
       username: userData.username,
       name: userData.name,
-      email: userData.email,
+      email: confirmedEmail,
       courses: userData.courses,
     };
+
     await axios.post('/api/members', member)
       .then((res) => { if (res) window.location.reload(); });
   };
 
   return (
     <div className={style.divButton}>
-      <Button onClick={handleNewMember}>
+      <ConfirmEmailModal
+        show={show}
+        handleClose={handleClose}
+        email={userData.email}
+        returnFunction={handleNewMember}
+      />
+      <Button onClick={confirmEmailModal}>
         REGISTAR
       </Button>
     </div>
+  );
+};
+
+const ConfirmEmailModal = ({ show, handleClose, email, returnFunction }) => {
+  const [confirmedEmail, setConfirmedEmail] = useState(email);
+
+  const validateEmail = () => {
+    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(confirmedEmail);
+  }
+
+  const confirmEmailSubmit = (e) => {
+    e.preventDefault();
+    if (validateEmail()) returnFunction(confirmedEmail);
+  }
+
+  return (
+    <Modal size="lg" show={show} onHide={handleClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title className={style.modalTitle}>
+          Confirma o teu email
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div>
+          <Alert variant="warning">
+            <Alert.Heading>Meio Principal de Contacto</Alert.Heading>
+            <p style={{ textAlign: "justify", textJustify: "inter-word" }}>
+              Todas as comunicações que o NEIIST estabelece com os sócios são
+              exclusivamente feitos através do email. Deste modo, o preenchimento do
+              email neste momento é de cariz obrigatório. O <b>NEIIST</b> não se
+              responsabiliza pela incorreta introdução do email (sendo esse um
+              dever de cada sócio), entrando sempre em contacto pelo email
+              confirmado.
+              <br />
+              Caso o email seja alterado durante o periodo de sócio, deverás
+              informar @ Presidente da MAG de forma a alterar o email.
+            </p>
+          </Alert>
+        </div>
+        <Form
+          onSubmit={confirmEmailSubmit}
+          style={{ display: "flex", textAlign: "center" }}
+        >
+          <Form.Control
+            type="email"
+            style={{ float: "center", width: "100%" }}
+            value={confirmedEmail}
+            onChange={(e) => {
+              setConfirmedEmail(e.target.value);
+            }}
+          />
+        </Form>
+        <br />
+        <Button
+          onClick={confirmEmailSubmit}
+          style={{ display: "flex", textAlign: "center" }}
+        >
+          Confirmo o email
+        </Button>
+      </Modal.Body>
+    </Modal>
   );
 };
 
@@ -156,7 +233,7 @@ const Vote = () => {
       );
   }, []);
 
-  if (!isLoaded) return <div>...</div>;
+  if (!isLoaded) return <LoadSpinner />;
   if (error) {
     return (
       <div>
@@ -267,20 +344,30 @@ const ElectionCard = ({ election }) => {
 const Renew = () => {
   const { userData } = useContext(UserDataContext);
 
-  const nameEmailCourses = {
-    name: userData.name,
-    email: userData.email,
-    courses: userData.courses,
+  const [show, setShow] = useState(false);
+  const confirmEmailModal = () => setShow(true);
+  const handleClose = () => setShow(false);
+
+  const handleMemberRenew = (changedEmail = userData.email) => {
+    const nameEmailCourses = {
+      name: userData.name,
+      email: changedEmail,
+      courses: userData.courses,
+    };
+
+    axios.put(`/api/members/${userData.username}`, nameEmailCourses)
+      .then((res) => { if (res) window.location.reload(); });
   };
 
   return (
     <div className={style.divButton}>
-        <Button
-          onClick={() => {
-            axios.put(`/api/members/${userData.username}`, nameEmailCourses)
-              .then((res) => { if (res) window.location.reload(); });
-          }}
-      >
+      <ConfirmEmailModal
+        show={show}
+        handleClose={handleClose}
+        email={userData.email}
+        returnFunction={handleMemberRenew}
+      />
+      <Button onClick={confirmEmailModal}>
         RENOVAR
       </Button>
     </div>

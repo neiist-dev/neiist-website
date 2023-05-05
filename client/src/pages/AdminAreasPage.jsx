@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import LoadSpinner from "../hooks/loadSpinner";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
@@ -33,7 +34,7 @@ const ViewAreas = () => {
   }, []);
 
   if (!isLoaded) {
-    return <div>...</div>;
+    return <LoadSpinner />;
   }
   if (error) {
     return (
@@ -45,7 +46,7 @@ const ViewAreas = () => {
   }
   if (areas) {
     return (
-      <div style={{ margin: '2rem 20vw 1rem 20vw' }}>
+      <div style={{ margin: '2rem 6em 1rem 6em' }}>
         <h1 style={{ textAlign: 'center', margin: 0 }}>
           {areas.length}
           {' '}
@@ -116,7 +117,7 @@ const UploadAreasButton = () => {
   const handleShow = () => setShow(true);
 
   return (
-    <div style={{ margin: '1rem 20vw 2rem 20vw', textAlign: 'center' }}>
+    <div style={{ margin: '1rem 6em 2rem 6em', textAlign: 'center' }}>
       <Button onClick={handleShow}>Carregar Áreas</Button>
       <UploadAreasModal show={show} handleClose={handleClose} />
     </div>

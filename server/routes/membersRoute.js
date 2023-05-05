@@ -11,6 +11,12 @@ router.post('/', async (req, res) => {
   res.json(member.username);
 });
 
+router.get('/status/:username', async (req, res) => {
+  const { username } = req.params;
+  const member = await membersService.getMemberStatus(username);
+  res.json(member);
+});
+
 router.get('/:username', async (req, res) => {
   const { username } = req.params;
   const member = await membersService.getMember(username);

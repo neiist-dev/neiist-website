@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const AdminMenuPage = () => (
   <div style={{
     alignItems: 'center',
-    margin: '2rem 20vw',
+    margin: '2rem 6em',
     display: 'flex',
     justifyContent: 'center',
     alignContent: 'space-around',

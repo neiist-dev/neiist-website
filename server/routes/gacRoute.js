@@ -11,6 +11,7 @@ router.get('/:choice', async (req, res) => {
   const options = {
     'active': membersService.getActiveMembers(),
     'all': membersService.getAllMembers(),
+    'renewalNotifications': membersService.getRenewMembersWarned(),
   }
 
   const members = await options[choice];
@@ -20,6 +21,19 @@ router.get('/:choice', async (req, res) => {
 router.put('/delete/:username', async (req, res) => {
   const { username } = req.params;
   await membersService.removeMember(username);
+  res.json(username);
+});
+
+router.post('/update/email/:username', async (req, res) => {
+  const { username } = req.params;
+  const changedEmail = req.body["changedEmail"];
+  await membersService.updateEmailMember(username, changedEmail);
+  res.json(username);
+});
+
+router.post('/warnedMember/:username', async (req, res) => {
+  const { username } = req.params;
+  await membersService.addRenewMemberWarned(username);
   res.json(username);
 });
 

@@ -156,10 +156,30 @@ To get a local copy up and running follow these simple example steps.
    ```
 10. Client: Populate the .env file with your Fénix application credentials
 11. Client: Run
-   ```sh
-   npm start
-   ```
+    ```sh
+    npm start
+    ```
 
+
+### Alternative: Docker for database
+
+1. Pull postgres image
+   ```sh
+   docker pull postgres:alpine
+   ```
+2. Create and run the container
+   ```sh
+   docker run -itd -e POSTGRES_PASSWORD=<PASSWORD> -p 5432:5432 -v <HOST_FOLDER>:/var/lib/postgresql/data --name postgresql postgres:alpine
+   ```
+3. Create database
+   ```sh
+   docker exec -it postgresql bash
+   psql -U postgres
+   CREATE DATABASE neiist;
+   \q
+   exit
+   ```
+Note: the env variable PGHOST should be localhost
 
 
 <!-- USAGE EXAMPLES -->

@@ -3,6 +3,7 @@ const adminElectionsRoute = require('./adminElectionsRoute');
 const areasRoute = require('./areasRoute');
 const thesesRoute = require('./thesesRoute');
 const membersRoute = require('./membersRoute');
+const collabsRoute = require('./collabsRoute');
 const gacRoute = require('./gacRoute');
 const electionsRoute = require('./electionsRoute');
 const productsRoute = require('./productsRoute');
@@ -13,6 +14,7 @@ module.exports = {
   areasRoute,
   thesesRoute,
   membersRoute,
+  collabsRoute,
   gacRoute,
   electionsRoute,
   productsRoute,

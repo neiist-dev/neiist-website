@@ -55,6 +55,13 @@ const getMember = async (username) => {
   return memberInfo;
 };
 
+const getMemberStatus = async (username) => {
+  const memberInfo = await membersDatabase.getMember(username);
+  if (!memberInfo) return "NaoSocio";
+
+  return getStatus(memberInfo);;
+};
+
 const getActiveMembers = async () => {
   const currDate = new Date();
   const limitDate = subMonthsToDate(validPeriod + gracePeriod, currDate);
@@ -84,6 +91,14 @@ const getAllMembers = async () => {
   return allMembers;
 };
 
+const getRenewMembersWarned = async () => {
+  return await membersDatabase.getRenewalNotifications();
+};
+
+const addRenewMemberWarned = async (username) => {
+  return await membersDatabase.addRenewalNotification(username);
+};
+
 const registerMember = async (member) => {
   const currDate = new Date();
   const canVoteDate = addMonthsToDate(waitingPeriod, currDate);
@@ -97,6 +112,7 @@ const registerMember = async (member) => {
   newMember.renewEndDate = renewEndDate;
 
   membersDatabase.createMember(newMember);
+  membersDatabase.removeRenewalNotification(newMember.username);
 };
 
 const renovateMember = async (username, nameEmailCourses) => {
@@ -128,6 +144,13 @@ const renovateMember = async (username, nameEmailCourses) => {
   }
 
   membersDatabase.updateMember(member);
+  membersDatabase.removeRenewalNotification(member.username);
+};
+
+const updateEmailMember = async (username, newEmail) => {
+  const memberInfo = await membersDatabase.getMember(username);
+  memberInfo.email = newEmail;
+  membersDatabase.updateMember(memberInfo);
 };
 
 const removeMember = async (username) => {
@@ -139,13 +162,18 @@ const removeMember = async (username) => {
   memberInfo.renewEndDate = currDate;
 
   membersDatabase.updateMember(memberInfo);
+  membersDatabase.removeRenewalNotification(memberInfo.username);
 };
 
 module.exports = {
   getMember,
   getActiveMembers,
+  getMemberStatus,
   getAllMembers,
+  getRenewMembersWarned,
+  addRenewMemberWarned,
   registerMember,
   renovateMember,
   removeMember,
+  updateEmailMember,
 };

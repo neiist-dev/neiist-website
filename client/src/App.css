@@ -1,6 +1,89 @@
+:root{
+    --bg-color: linear-gradient(270deg, rgba(40, 99, 253, 0.075) 0%, rgba(36, 139, 227, 0.05) 100%), #FFFFFF;
+    --first-color: #2863FD;
+    --second-color: #248be3;
+
+    --link-height: 200px;
+    --footer-heigth:  150px;
+    --footer-heigth-mob: 475px;
+    --links-heigth-mob1: 525px;
+    --links-heigth-mob2: 575px;
+}
+
+html,
 body {
-    min-height: 100vh;
-    display:flex; 
-    flex-direction:column; 
+    height: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Secular One';
+}
+
+h1, h2 {
+    color: var(--first-color);
+}
+
+h1{
+    font-size: 3.25rem !important;
+}
+
+h2{
+    font-size: 2.5rem !important;
+}
+
+body {
+    overflow: overlay;
+}
+
+::-webkit-scrollbar {
+    width: 20px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #248be380;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+}
+
+p {
+    font-family: Montserrat;
+}
+
+footer{
+    margin-top: auto;
     position: relative;
+}
+
+@media only screen and (max-width: 885px) {
+    #content-wrap{
+        margin-bottom: calc(var(--links-heigth-mob1) + 25px) !important;
+    }
+}
+
+@media only screen and (max-width: 450px) {
+    #content-wrap{
+        margin-bottom: calc(var(--links-heigth-mob2) + 25px) !important;
+    }
+}
+
+#root {
+    min-height: 100%;
+    display:flex; 
+    flex-direction:column;     
+    background: var(--bg-color);
+    position: relative;
+}
+
+#content-wrap{
+    overflow-x: clip;
+    overflow-y: visible;
+    height: auto;
+    width: auto;
+    position: relative;
+    margin-bottom: calc(var(--link-height) + 25px);
 }
