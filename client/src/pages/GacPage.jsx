@@ -14,7 +14,6 @@ import {
 	fenixPhoto,
 	summarizeName,
 } from "../components/functions/dataTreatment";
-import BadgeESM from "react-bootstrap/esm/Badge";
 import { FcDownload } from "react-icons/fc";
 import { downloadActiveMembersFile, downloadCurrentCollabsFile } from "../components/functions/exportXLSX";
 
@@ -326,9 +325,9 @@ const EmailButtons = ({ members }) => {
         members={members?.filter((member) => member.status === "Renovar")}
       />
       <Button style={{backgroundColor: 'orange', border: 'none'}} onClick={downloadActiveMembersFile}>
-        <BadgeESM bg="light">
+        <Badge bg="light">
           <FcDownload />
-        </BadgeESM>{" "}
+        </Badge>{" "}
         Exportar Sócios Ativos
       </Button>
     </div>

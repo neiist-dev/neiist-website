@@ -163,7 +163,6 @@ const DefinedRoutes = () => (
 
 const PrivateRoute = ({ condition, children }) => {
   const { userData } = useContext(UserDataContext);
-  return children;
   return (userData && userData[condition])
     ? children : <Navigate to="/" replace />;
 };
