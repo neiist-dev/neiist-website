@@ -9,13 +9,17 @@ import style from "./css/GacPage.module.css";
 import { AllMembersPage } from "../components/gacPage/AllMembersPage";
 import { EmailsAndRenewalButtons } from "../components/gacPage/EmailsAndRenewalButtons";
 
-const GacPage = () => (
+const GacPage = () => {
+  const [activeTab, setActiveTab] = useState('active');
+
+  return (
   <div>
     <Tabs
       className={style.mainPage}
       variant="pills"
       color="gray"
-      defaultValue="sociosAtivos"
+      defaultValue="active"
+      onTabChange={setActiveTab}
     >
       <Tabs.List
         style={{
@@ -25,28 +29,28 @@ const GacPage = () => (
           right: "0",
         }}
       >
-        <Tabs.Tab style={{ fontWeight: "bold" }} value="sociosAtivos">
+        <Tabs.Tab style={{ fontWeight: "bold" }} value="active">
           Sócios Ativos
         </Tabs.Tab>
-        <Tabs.Tab style={{ fontWeight: "bold" }} value="sociosAll">
+        <Tabs.Tab style={{ fontWeight: "bold" }} value="all">
           Todos os Sócios
         </Tabs.Tab>
       </Tabs.List>
 
-      <Tabs.Panel value="sociosAtivos" pt="xs">
-        <ActiveMembersPage keySelected={"active"} />
+      <Tabs.Panel value="active" pt="xs">
+        <ActiveMembersPage keySelected={activeTab} />
       </Tabs.Panel>
-      <Tabs.Panel value="sociosAll" pt="xs">
-        <AllMembersPage keySelected={"all"} />
+      <Tabs.Panel value="all" pt="xs">
+        <AllMembersPage keySelected={activeTab} />
       </Tabs.Panel>
     </Tabs>
   </div>
-);
+  );
+};
 
 const ActiveMembersPage = ({ keySelected }) => {
   const [activeMembers, setMembers] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     if (keySelected === "active" && activeMembers === null) {
@@ -54,10 +58,8 @@ const ActiveMembersPage = ({ keySelected }) => {
         .then((res) => res.json())
         .then((membersRes) => {
           setMembers(membersRes);
-          setIsLoaded(true);
         })
         .catch((err) => {
-          setIsLoaded(true);
           setError(err);
         });
     }
@@ -65,17 +67,15 @@ const ActiveMembersPage = ({ keySelected }) => {
 
   return (
     <>
-      {!isLoaded && <LoadSpinner />}
       {error && (
         <div>
           Erro:
           {error.message}
         </div>
       )}
-      {activeMembers && isLoaded && !error && (
-        <RenderActiveMembersDiv activeMembers={activeMembers} />
+      {!error && (
+        <RenderActiveMembersDiv activeMembers={activeMembers}/>
       )}
-      ;
     </>
   );
 };
@@ -85,7 +85,7 @@ const RenderActiveMembersDiv = ({ activeMembers }) => (
     <div className={style.principalBody}>
       <h1>
         <b>Sócios Ativos</b>{" "}
-        <span style={{ fontSize: "25px" }}>({activeMembers.length})</span>
+        <span style={{ fontSize: "25px" }}>({activeMembers?.length ?? 0})</span>
       </h1>
       <div className={style.badgeAndEmailButtons}>
         <div className={style.badgeDiv}>
@@ -95,8 +95,8 @@ const RenderActiveMembersDiv = ({ activeMembers }) => (
             size="xl"
           >
             {
-              activeMembers.filter((member) => member.status === "SocioRegular")
-                .length
+              activeMembers?.filter((member) => member.status === "SocioRegular")
+                .length ?? 0
             }{" "}
             Regulares
           </Badge>
@@ -105,11 +105,11 @@ const RenderActiveMembersDiv = ({ activeMembers }) => (
             withArrow
             transitionProps={{ duration: 100 }}
             label={`${
-              activeMembers.filter((member) => member.status === "SocioEleitor")
-                .length
+              activeMembers?.filter((member) => member.status === "SocioEleitor")
+                .length ?? 0
             } Socios Eleitores, ${
-              activeMembers.filter((member) => member.status === "Renovar")
-                .length
+              activeMembers?.filter((member) => member.status === "Renovar")
+                .length ?? 0
             } em Renovação`}
           >
             <Badge
@@ -119,21 +119,27 @@ const RenderActiveMembersDiv = ({ activeMembers }) => (
               size="xl"
             >
               {
-                activeMembers.filter(
-                  (member) =>
-                    member.status === "SocioEleitor" ||
-                    member.status === "Renovar"
-                ).length
+              activeMembers?.filter(
+                (member) =>
+                  member.status === "SocioEleitor" ||
+                  member.status === "Renovar"
+              ).length ?? 0
               }{" "}
               Eleitores
             </Badge>
           </Tooltip>
         </div>
-        <EmailsAndRenewalButtons members={activeMembers} />
+        {activeMembers &&
+          <EmailsAndRenewalButtons members={activeMembers} />
+        }
       </div>
       <hr />
     </div>
-    <MembersTable members={activeMembers} />
+      {activeMembers ?
+        <MembersTable members={activeMembers} />
+        :
+        <LoadSpinner/>
+      }
   </div>
 );
 

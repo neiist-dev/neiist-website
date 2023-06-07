@@ -7,7 +7,6 @@ import style from '../../pages/css/GacPage.module.css';
 export const AllMembersPage = ({ keySelected }) => {
   const [allMembers, setMembers] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     if (keySelected === "all" && allMembers === null) {
@@ -15,10 +14,8 @@ export const AllMembersPage = ({ keySelected }) => {
         .then((res) => res.json())
         .then((membersRes) => {
           setMembers(membersRes);
-          setIsLoaded(true);
         })
         .catch((err) => {
-          setIsLoaded(true);
           setError(err);
         });
     }
@@ -26,24 +23,25 @@ export const AllMembersPage = ({ keySelected }) => {
 
   return (
     <>
-      {!isLoaded && <LoadSpinner />}
       {error && (
         <div>
           Erro:
           {error.message}
         </div>
       )}
-      {allMembers && (
         <div>
           <div className={style.principalBody}>
             <h1>
-              <b>Sócios Registados</b>{" "}<span style={{fontSize: "25px"}}>({allMembers.length})</span>
+              <b>Sócios Registados</b>{" "}<span style={{fontSize: "25px"}}>({allMembers?.length ?? 0})</span>
             </h1>
           </div>
           <hr/>
-          <MembersTable members={allMembers} />
+          {allMembers ? 
+            (<MembersTable members={allMembers} />)
+            :
+            <LoadSpinner />
+          }
         </div>
-      )}
     </>
   );
 };
