@@ -8,7 +8,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
 
       - name: Setup Node
         uses: actions/setup-node@v3.6.0
@@ -23,3 +23,7 @@ jobs:
 
       - name: Build client
         run: cd client && npm run build && cd ..
+      
+      - name: Frontend Tests
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: cd client && npm run test && cd ..

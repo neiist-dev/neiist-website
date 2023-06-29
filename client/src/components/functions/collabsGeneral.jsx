@@ -1,13 +1,24 @@
 import { fenixPhoto, normalizeName } from './dataTreatment';
 
 export const allTeamNames = {
-  'CEQ':'Controlo & Qualidade',
-  'CON':'Contacto',
-  'DEV':'Dev-Team',
-  'DIV':'Divulgação',
-  'FOT':'Fotografia',
-  'ODE':'Organização de Eventos',
-  'VIS':'Visuais',
+  CEQ: "Controlo & Qualidade",
+  CON: "Contacto",
+  DEV: "Dev-Team",
+  DIV: "Divulgação",
+  FOT: "Fotografia",
+  ODE: "Organização de Eventos",
+  VIS: "Visuais",
+};
+
+export const extendedTeamAndCoorNames = {
+  "COOR-CEQ": "Coordenador(a) Controlo & Qualidade",
+  "COOR-CON": "Coordenador(a) Contacto",
+  "COOR-DEV": "Coordenador(a) Dev-Team",
+  "COOR-DIV": "Coordenador(a) Divulgação",
+  "COOR-FOT": "Coordenador(a) Fotografia",
+  "COOR-ODE": "Coordenador(a) Organização de Eventos",
+  "COOR-VIS": "Coordenador(a) Visuais",
+  ...allTeamNames,
 };
 
 export const normalizeTeams = (teams) => teams.replace("COOR-","").split(",").sort();
