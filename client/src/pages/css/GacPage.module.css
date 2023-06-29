@@ -510,3 +510,26 @@
 	height: 150px;
 	position: relative;
 }
+
+@media only screen and (max-width: 1225px){
+  .badgeAndEmailButtons {
+    gap: 1em;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: left;
+  }
+}
+
+.badgeAndEmailButtons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.initialBadge:first-of-type {
+  width: 10em;
+  margin-right: 10px;
+}
+
+.initialBadge:last-of-type {
+  width: 20em;
+}
