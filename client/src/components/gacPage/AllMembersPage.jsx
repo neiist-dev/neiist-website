@@ -3,6 +3,9 @@ import LoadSpinner from '../../hooks/loadSpinner';
 import { MembersTable } from "./MembersTable";
 
 import style from '../../pages/css/GacPage.module.css';
+import { Button, Tooltip } from "@mantine/core";
+import { downloadAllMembersFile } from "../functions/exportXLSX";
+import { MdDownload } from "react-icons/md";
 
 export const AllMembersPage = ({ keySelected }) => {
   const [allMembers, setMembers] = useState(null);
@@ -30,10 +33,23 @@ export const AllMembersPage = ({ keySelected }) => {
         </div>
       )}
         <div>
-          <div className={style.principalBody}>
+          <div style={{display: 'flex', textAlign: 'left', justifyItems: 'end', justifyContent: 'space-between',alignItems: 'flex-end',flexDirection: 'row'}}>
             <h1>
               <b>Sócios Registados</b>{" "}<span style={{fontSize: "25px"}}>({allMembers?.length ?? 0})</span>
             </h1>
+            <Tooltip
+              position="left"
+              withArrow
+              transitionProps={{ duration: 500 }}
+              label="Download XLSX com Sócios"
+            >
+              <Button
+                color="orange"
+                onClick={downloadAllMembersFile}
+              >
+                <MdDownload size="1.25em" />
+              </Button>
+            </Tooltip>
           </div>
           <hr/>
           {allMembers ? 

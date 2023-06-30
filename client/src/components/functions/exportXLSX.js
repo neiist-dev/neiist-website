@@ -68,3 +68,23 @@ export const downloadActiveMembersFile = () => {
   })
   .catch(error => console.error(error));
 };
+
+export const downloadAllMembersFile = () => {
+  fetch('/api/mag/all')
+  .then(response => response.json())
+  .then(data => {
+    const workbook = XLSXUtils.book_new();
+    const worksheet = XLSXUtils.json_to_sheet(data);
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().toLocaleString('default', { month: '2-digit' });
+    const currentDay = new Date().toLocaleString('default', { day: '2-digit' });
+
+    const worksheetName = `${currentDay}-${currentMonth}-${currentYear}`;
+    const fileName = `NEIIST_SociosAtivos_${worksheetName}.xlsx`;
+
+    XLSXUtils.book_append_sheet(workbook, worksheet, worksheetName);
+    const file = XLSXWrite(workbook, { bookType: 'xlsx', type: 'binary' });
+    saveAs(new Blob([s2ab(file)], { type: 'application/octet-stream' }), fileName);
+  })
+  .catch(error => console.error(error));
+};
