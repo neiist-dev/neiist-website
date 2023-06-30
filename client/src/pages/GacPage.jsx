@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import LoadSpinner from "../hooks/loadSpinner";
 import { Badge, Tooltip } from "@mantine/core";
 import { Tabs } from "@mantine/core";
+import {BiSearch} from "react-icons/bi";
 
 import { MembersTable } from "../components/gacPage/MembersTable";
 
@@ -22,14 +23,7 @@ const GacPage = () => {
       defaultValue="active"
       onTabChange={setActiveTab}
     >
-      <Tabs.List
-        style={{
-          display: "flex",
-          zIndex: "2",
-          position: "absolute",
-          right: "0",
-        }}
-      >
+      <Tabs.List className={style.tabsList}>
         <Tabs.Tab style={{ fontWeight: "bold" }} value="active">
           Sócios Ativos
         </Tabs.Tab>
@@ -37,7 +31,8 @@ const GacPage = () => {
           Todos os Sócios
         </Tabs.Tab>
 				<Tabs.Tab style={{ fontWeight: "bold" }} value="search">
-          Pesquisa
+          Pesquisa{"  "}
+          <BiSearch size="1.25em"/>
         </Tabs.Tab>
       </Tabs.List>
 

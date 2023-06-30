@@ -14,6 +14,7 @@ import {
 
 import style from "../../pages/css/GacPage.module.css"
 import { fenixPhoto, summarizeName } from "../functions/dataTreatment";
+import useWindowSize from "../../hooks/useWindowSize";
 
 const colorStatus = {
   NaoSocio: "dark",
@@ -22,8 +23,11 @@ const colorStatus = {
   Renovar: "red",
 };
 
-export const memberRow = (members, collabs, handleMoreInfo) =>
-  members?.map((member, index) => (
+
+export const memberRow = (members, collabs, handleMoreInfo) => {
+  const windowSize = useWindowSize();
+
+  const rows = members?.map((member, index) => (
     <tr key={member.username} className={style.tableClass} style={index % 2 === 1
       ? { backgroundColor: "rgb(53, 209, 250,0.025)" }
       : { backgroundColor: "rgb(36, 139, 227,0.075)" }}>
@@ -57,13 +61,15 @@ export const memberRow = (members, collabs, handleMoreInfo) =>
         </Group>
       </td>
 
-      <td>
-        <Anchor href={`mailto:${member.email}`} size="md">
-          <Text fz="sm" fw={500}>
-            {member.email}
-          </Text>
-        </Anchor>
-      </td>
+      { windowSize.innerWidth > 800 &&
+        <td>
+          <Anchor href={`mailto:${member.email}`} size="md">
+            <Text fz="sm" fw={500}>
+              {member.email}
+            </Text>
+          </Anchor>
+        </td>
+      }
       <td>
         <Badge
           fullWidth
@@ -115,3 +121,6 @@ export const memberRow = (members, collabs, handleMoreInfo) =>
       </td>
     </tr>
   ));
+
+  return rows;
+};

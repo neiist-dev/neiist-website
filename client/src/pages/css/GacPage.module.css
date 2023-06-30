@@ -1,11 +1,11 @@
 /* Mobile CSS */
 @media only screen and (max-width: 750px) {
 	.principalBody {
-		display: block !important;
+		justify-content: start;
+    justify-items: start;
 	}
 
 	.principalBody h1 {
-		display: grid;
 		font-size: 2.5rem !important;
 		justify-content: center;
 		align-items: center;
@@ -18,7 +18,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		flex-direction: row;
-		justify-content: center;
 		align-content: center;
 		align-items: center;
 	}
@@ -64,6 +63,13 @@
 .mainPage {
 	margin: 1em 6em;
 	position: relative;
+}
+
+
+@media only screen and (max-width: 750px) {
+	.mainPage {
+		margin: 0em 1em;
+	}
 }
 
 .messageDiv {
@@ -532,4 +538,19 @@
 
 .initialBadge:last-of-type {
   width: 20em;
+}
+
+.tabsList {
+	display: flex;
+	z-index: 2;
+	position: absolute;
+	right: 0;
+}
+
+@media only screen and (max-width: 800px) {
+	.tabsList {
+		flex-direction: row;
+		justify-content: center;
+		position: relative;
+	}
 }

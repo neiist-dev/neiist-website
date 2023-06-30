@@ -6,6 +6,7 @@ import style from "../../pages/css/GacPage.module.css";
 import { CreateEmailsModal } from "./modals/EmailsModal";
 import { CreateRenewMembersModal } from "./modals/RenewMembersModal";
 import { downloadActiveMembersFile } from "../functions/exportXLSX";
+import useWindowSize from "../../hooks/useWindowSize";
 
 export const EmailsAndRenewalButtons = ({ members }) => {
   const [showRenewMembers, setshowRenewMembers] = useState(false);
@@ -20,6 +21,8 @@ export const EmailsAndRenewalButtons = ({ members }) => {
   const handleShowRegularEmails = () => setShowRegularEmails(true);
   const handleCloseRegularEmails = () => setShowRegularEmails(false);
 
+  const windowSize = useWindowSize();
+
   return (
     <div className={style.buttonsDiv}>
       <CreateAllModals 
@@ -32,6 +35,7 @@ export const EmailsAndRenewalButtons = ({ members }) => {
         showRenewEmails={showRenewEmails}
       />
       <Tooltip
+        events={windowSize.innerWidth <= 800 ? { hover: false } : {}}
         position="top"
         withArrow
         transitionProps={{ duration: 500 }}

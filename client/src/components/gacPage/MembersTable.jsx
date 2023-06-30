@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { memberRow } from "./MembersRow";
 import { Table, ScrollArea } from "@mantine/core";
 import { CreateMoreInfoModal } from "./modals/InformationalModal";
+import useWindowSize from "../../hooks/useWindowSize";
 
 export function MembersTable({ members }) {
   const [collabs, setCollabs] = useState(null);
@@ -23,6 +24,8 @@ export function MembersTable({ members }) {
       })
   }, []);
 
+  const windowSize = useWindowSize();
+
   const rows = memberRow(members, collabs, handleMoreInfo);
 
   return (
@@ -37,7 +40,9 @@ export function MembersTable({ members }) {
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Email</th>
+              { windowSize.innerWidth > 800 &&
+                <th>Email</th>
+              }
               <th>Estado</th>
               <th />
             </tr>
