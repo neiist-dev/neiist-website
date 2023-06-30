@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { MdEmail, MdAutorenew } from "react-icons/md";
+import { MdEmail, MdAutorenew, MdDownload } from "react-icons/md";
 import { Button, Tooltip } from "@mantine/core";
 
 import style from "../../pages/css/GacPage.module.css";
 import { CreateEmailsModal } from "./modals/EmailsModal";
 import { CreateRenewMembersModal } from "./modals/RenewMembersModal";
+import { downloadActiveMembersFile } from "../functions/exportXLSX";
 
 export const EmailsAndRenewalButtons = ({ members }) => {
   const [showRenewMembers, setshowRenewMembers] = useState(false);
@@ -30,6 +31,19 @@ export const EmailsAndRenewalButtons = ({ members }) => {
         showRegularEmails={showRegularEmails}
         showRenewEmails={showRenewEmails}
       />
+      <Tooltip
+        position="top"
+        withArrow
+        transitionProps={{ duration: 500 }}
+        label="Download XLSX com Sócios Ativos"
+      >
+        <Button
+          color="orange"
+          onClick={downloadActiveMembersFile}
+        >
+          <MdDownload size="1.25em" />
+        </Button>
+      </Tooltip>
       <Tooltip
         position="top"
         withArrow
