@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useState } from "react";
 import { Group, Avatar, Text, Select, Grid } from "@mantine/core";
 
-import collabs from '../images/collabs.json';
+import collabs from '../images/colaboradores/collaborators.json';
 import { fenixPhoto } from "../components/functions/dataTreatment";
 
 const AdminNewSocialOrgans = () => {

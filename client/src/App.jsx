@@ -13,6 +13,7 @@ import UserDataContext from "./UserDataContext";
 
 import Layout from "./components/Layout";
 import LoadSpinner from "./hooks/loadSpinner";
+import AdminNewSocialOrgans from './pages/AdminNewSocialOrgans';
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -147,6 +148,10 @@ const DefinedRoutes = () => (
     <Route
       path="/admin/elections"
       element={<AdminRoute children={<AdminElectionsPage />} />}
+    />
+    <Route
+      path="/admin/new_organs"
+      element={<AdminRoute children={<AdminNewSocialOrgans />} />}
     />
 
     <Route

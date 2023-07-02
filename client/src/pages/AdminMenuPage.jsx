@@ -21,6 +21,9 @@ const AdminMenuPage = () => (
     <Button as={Link} to="/admin/elections" style={{ margin: '0 10px' }}>
       Eleições
     </Button>
+    <Button as={Link} to="/admin/new_organs" style={{ margin: '0 10px' }}>
+      New Organs
+    </Button>
   </div>
 );
 
