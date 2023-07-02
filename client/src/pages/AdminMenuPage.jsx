@@ -10,18 +10,19 @@ const AdminMenuPage = () => (
     justifyContent: 'center',
     alignContent: 'space-around',
     flexWrap: 'wrap',
+    gap: '20px',
   }}
   >
-    <Button as={Link} to="/admin/areas" style={{ margin: '0 10px' }}>
+    <Button as={Link} to="/admin/areas">
       Áreas
     </Button>
-    <Button as={Link} to="/admin/theses" style={{ margin: '0 10px' }}>
+    <Button as={Link} to="/admin/theses">
       Teses
     </Button>
-    <Button as={Link} to="/admin/elections" style={{ margin: '0 10px' }}>
+    <Button as={Link} to="/admin/elections">
       Eleições
     </Button>
-    <Button as={Link} to="/admin/new_organs" style={{ margin: '0 10px' }}>
+    <Button as={Link} to="/admin/new_organs">
       New Organs
     </Button>
   </div>

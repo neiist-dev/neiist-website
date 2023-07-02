@@ -28,13 +28,13 @@ const AdminNewSocialOrgans = () => {
   }, []);
 
   return (
-    <>
+    <div style={{margin: '2rem 6em 1rem 6em'}}>
       <h2 style={{ textDecoration: "underline" }}>Novos Orgãos Sociais</h2>
       <h3>
         Ano Letivo: <p style={{ display: "inline" }}>{nextYear}</p>
       </h3>
       {activeMembers && <AllOrgansDiv activeMembers={activeMembers} />}
-    </>
+    </div>
   );
 };
 
