@@ -58,27 +58,21 @@ const AdminNewSocialOrgans = () => {
 
   return (
     <div style={{ margin: '2rem 6em 1rem 6em' }}>
-      <h2 style={{ textDecoration: "underline" }}>Novos Orgãos Sociais</h2>
-      <h3>
-        Ano Letivo: <p style={{ display: "inline" }}>{nextYear}</p>
-      </h3>
-      {activeMembers && (
-        <AllOrgansDiv
-          activeMembers={activeMembers}
-          selectedValues={selectedValues}
-          handleSelectChange={handleSelectChange}
-        />
-      )}
-      <br />
-      <hr />
-      <h2>Preview</h2>
-      {Object.entries(selectedValues).map(
+      <div style={{display: 'flex', alignItems: 'center'}}>
+        <h2 style={{ textDecoration: "underline", width: '70%' }}>Novos Orgãos Sociais</h2>
+        <h3 style={{width: '30%'}}>
+          Ano Letivo: <p style={{ display: "inline" }}>{nextYear}</p>
+        </h3>
+      </div>
+      {activeMembers && Object.entries(selectedValues)?.map(
         ([socialEntity, members], index) => (
           <SocialEntityDiv
             key={index}
             socialEntity={socialEntity}
             members={members}
             activeMembers={activeMembers}
+            selectedValues={selectedValues}
+            handleSelectChange={handleSelectChange}
           />
         )
       )}
@@ -129,12 +123,12 @@ const OrganDiv = ({ activeMembers, selectedValues, handleSelectChange, Orgao }) 
 const SelectItem = forwardRef(({ image, label, username, ...others }, ref) => (
   <div ref={ref} {...others}>
     <Group noWrap>
-      <Avatar size="lg" src={image} />
+      <Avatar size="md" src={image} />
       <div>
-        <Text size="md" weight={500}>
+        <Text size="sm" weight={500}>
           {label}
         </Text>
-        <Text size="sm" opacity={0.65}>
+        <Text size="xs" opacity={0.65}>
           {username}
         </Text>
       </div>
@@ -142,7 +136,7 @@ const SelectItem = forwardRef(({ image, label, username, ...others }, ref) => (
   </div>
 ));
 
-const SocialEntityDiv = ({ socialEntity, members, activeMembers }) => {
+const SocialEntityDiv = ({ socialEntity, members, activeMembers, selectedValues, handleSelectChange }) => {
 
   const getName = (username) => activeMembers?.filter(x => x.username == username)[0]?.label; 
 
@@ -152,13 +146,31 @@ const SocialEntityDiv = ({ socialEntity, members, activeMembers }) => {
       <h3>{socialEntity}</h3>
       <div className={style.socialOrgansCard}>
         {Object.entries(members).map(([job, username], index) => (
-          <DivPersonCard
-            key={index}
-            name={summarizeName(getName(username))}
-            job={normalizeJob(job)}
-            image={getCollabImage(summarizeName(getName(username)))}
-            />
-        ))}
+          <div style={{display:'flex', flexDirection:'column', alignItems: 'center'}}>
+            <DivPersonCard
+              key={index}
+              name={summarizeName(getName(username))}
+              job={normalizeJob(job)}
+              image={getCollabImage(summarizeName(getName(username)))}
+              />
+              <Select
+                label={normalizeJob(job)}
+                placeholder="Escolhe um..."
+                itemComponent={SelectItem}
+                data={activeMembers}
+                searchable
+                dropdownPosition="bottom"
+                maxDropdownHeight={250}
+                nothingFound="Não existe nenhum Sócio Eleitor com esse nome."
+                filter={(value, item) =>
+                  item.label.toLowerCase().includes(value.toLowerCase().trim()) ||
+                  item.username.toLowerCase().includes(value.toLowerCase().trim())
+                }
+                onChange={(value) => handleSelectChange(socialEntity, job, value)} // Call the handleSelectChange function on selection change
+                value={selectedValues[socialEntity][job] || null} // Set the selected value based on the stored state
+              />
+          </div>
+))}
       </div>
     </div>
   );
