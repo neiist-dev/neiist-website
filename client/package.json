@@ -2,6 +2,9 @@
   "name": "neiist-website-client",
   "proxy": "http://localhost:3001",
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@mantine/core": "^6.0.15",
+    "@mantine/hooks": "^6.0.15",
     "axios": "0.27.2",
     "bootstrap": "5.2.3",
     "html-react-parser": "^3.0.12",
