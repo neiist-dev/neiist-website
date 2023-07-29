@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import LoadSpinner from "../hooks/loadSpinner";
-import { Badge, Tooltip } from "@mantine/core";
-import { Tabs } from "@mantine/core";
+import { Badge, Tooltip, Tabs } from "@mantine/core";
 import {BiSearch} from "react-icons/bi";
 
 import { MembersTable } from "../components/gacPage/MembersTable";
