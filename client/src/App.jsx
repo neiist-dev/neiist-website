@@ -136,18 +136,6 @@ const DefinedRoutes = () => (
       path="/admin"
       element={<AdminRoute children={<AdminMenuPage />} />}
     />
-    <Route
-      path="/admin/areas"
-      element={<AdminRoute children={<AdminAreasPage />} />}
-    />
-    <Route
-      path="/admin/theses"
-      element={<AdminRoute children={<AdminThesesPage />} />}
-    />
-    <Route
-      path="/admin/elections"
-      element={<AdminRoute children={<AdminElectionsPage />} />}
-    />
 
     <Route
       path="/collab"
