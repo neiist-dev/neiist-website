@@ -22,9 +22,6 @@ const ContactsPage = lazy(() => import("./pages/ContactsPage"));
 const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage"));
 const MemberPage = lazy(() => import("./pages/MemberPage"));
 const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage"));
-const AdminAreasPage = lazy(() => import("./pages/AdminAreasPage"));
-const AdminThesesPage = lazy(() => import("./pages/AdminThesesPage"));
-const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage"));
 const GacPage = lazy(() => import("./pages/GacPage"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage"));
 
@@ -136,22 +133,6 @@ const DefinedRoutes = () => (
       exact
       path="/admin"
       element={<AdminRoute children={<AdminMenuPage />} />}
-    />
-    <Route
-      path="/admin/areas"
-      element={<AdminRoute children={<AdminAreasPage />} />}
-    />
-    <Route
-      path="/admin/theses"
-      element={<AdminRoute children={<AdminThesesPage />} />}
-    />
-    <Route
-      path="/admin/elections"
-      element={<AdminRoute children={<AdminElectionsPage />} />}
-    />
-    <Route
-      path="/admin/new_organs"
-      element={<AdminRoute children={<AdminNewSocialOrgans />} />}
     />
 
     <Route
