@@ -13,7 +13,7 @@ import UserDataContext from "./UserDataContext";
 
 import Layout from "./components/Layout";
 import LoadSpinner from "./hooks/loadSpinner";
-import AdminNewSocialOrgans from './pages/AdminNewSocialOrgans';
+import { MantineProvider } from '@mantine/core';
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -98,14 +98,16 @@ const App = () => {
 
   return (
     <UserDataContext.Provider value={{ userData, setUserData }}>
-			<BrowserRouter>
-				<Layout>
-					<Suspense fallback={<LoadSpinner />}>
-						<DefinedRoutes />
-					</Suspense>
-				</Layout>
-			</BrowserRouter>
-		</UserDataContext.Provider>
+      <MantineProvider withGlobalStyles withNormalizeCSS>
+        <BrowserRouter>
+          <Layout>
+            <Suspense fallback={<LoadSpinner />}>
+              <DefinedRoutes />
+            </Suspense>
+          </Layout>
+        </BrowserRouter>
+      </MantineProvider>
+    </UserDataContext.Provider>
   );
 };
 

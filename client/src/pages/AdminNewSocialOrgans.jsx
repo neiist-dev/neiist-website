@@ -1,5 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useState } from "react";
-import { Group, Avatar, Text, Select } from "@mantine/core";
+import { Group, Avatar, Text, Select, Button } from "@mantine/core";
+import { DatePickerInput } from '@mantine/dates';
 import produce from "immer";
 
 import collabs from "../images/colaboradores/collaborators.json";
@@ -15,6 +16,7 @@ import style from "./css/AboutPage.module.css";
 
 const AdminNewSocialOrgans = () => {
   const [activeMembers, setMembers] = useState(null);
+  const [date, setDate] = useState(null);
   const nextYear = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`;
 
   const [selectedValues, setSelectedValues] = useState(
@@ -47,7 +49,7 @@ const AdminNewSocialOrgans = () => {
       }));
       setMembers(y);
     } catch (error) {
-      console.error(error);
+      alert('Error fetching active members. Please try again later.');
     }
   }, []);
   
@@ -78,6 +80,36 @@ const AdminNewSocialOrgans = () => {
             />
           )
         )}
+      <br />
+      <hr />
+      <div style={{display: 'flex', justifyContent: 'flex-end', paddingRight: '5rem'}}>
+        <DatePickerInput
+          style={{ width: "15rem" }}
+          placeholder={`${new Date().toLocaleString('pt-pt', { timeZone: 'UTC' }).split(',')[0]}`}
+          label="DATA DE TOMADA DE POSSE"
+          radius="md"
+          size="md"
+          value={date}
+          onChange={setDate}
+          withAsterisk
+          clearable
+        />
+        <Button
+          style={{ marginTop: "1.75rem", marginRight: "1rem", marginLeft: "1rem", width: "8rem", fontSize: '1rem' }}
+          variant="gradient"
+          gradient={{ from: 'teal', to: 'blue', deg: 60 }}
+          disabled={!date}
+          onClick={() => {
+            console.log({
+              lectiveYear: nextYear,
+              newOrgans: selectedValues,
+              startingDate: date,
+            });
+          }}
+        >
+          Salvar
+        </Button>
+      </div>
     </div>
   );
 };
@@ -115,6 +147,7 @@ const SocialEntityDiv = ({
       <div className={style.socialOrgansCard}>
         {Object.entries(members).map(([job, username], index) => (
           <div
+            key={index}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -122,7 +155,6 @@ const SocialEntityDiv = ({
             }}
           >
             <DivPersonCard
-              key={index}
               name={summarizeName(getName(username))}
               job={normalizeJob(job)}
               image={getCollabImage(summarizeName(getName(username)))}

@@ -1,12 +1,14 @@
-import React, { lazy, useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { GradientSegmentedControl } from '../components/mantine/GradientSegmentedControl';
+import LoadSpinner from '../hooks/loadSpinner';
 
 const AdminAreasPage = lazy(() => import("./AdminAreasPage"));
 const AdminThesesPage = lazy(() => import("./AdminThesesPage"));
 const AdminElectionsPage = lazy(() => import("./AdminElectionsPage"));
+const AdminNewSocialOrgans = lazy(() => import("./AdminNewSocialOrgans"));
 
 const AdminMenuPage = () => {
-  const sections = ["Áreas", "Teses", "Eleições"]
+  const sections = ["Áreas", "Teses", "Eleições", "Novos Orgãos"]
   const [value, setValue] = useState(sections[0])
 
   return (
@@ -22,9 +24,12 @@ const AdminMenuPage = () => {
       >
         <GradientSegmentedControl data={sections} setValue={setValue}/>
       </div>
-      {value === "Áreas" && <AdminAreasPage />}
-      {value === "Teses" && <AdminThesesPage />}
-      {value === "Eleições" && <AdminElectionsPage />}
+      <Suspense fallback={<LoadSpinner />}>
+        {value === "Áreas" && <AdminAreasPage />}
+        {value === "Teses" && <AdminThesesPage />}
+        {value === "Eleições" && <AdminElectionsPage />}
+        {value === "Novos Orgãos" && <AdminNewSocialOrgans />}
+      </Suspense>
     </div>
   );
 };
