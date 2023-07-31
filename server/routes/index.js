@@ -1,4 +1,5 @@
 const authRoute = require('./authRoute');
+const adminNewOrgans = require('./adminNewOrgans');
 const adminElectionsRoute = require('./adminElectionsRoute');
 const areasRoute = require('./areasRoute');
 const thesesRoute = require('./thesesRoute');
@@ -9,6 +10,7 @@ const electionsRoute = require('./electionsRoute');
 
 module.exports = {
   authRoute,
+  adminNewOrgans,
   adminElectionsRoute,
   areasRoute,
   thesesRoute,
