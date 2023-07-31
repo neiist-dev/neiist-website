@@ -82,21 +82,20 @@ const AdminNewSocialOrgans = () => {
         )}
       <br />
       <hr />
-      <SubmitNewOrgans />
+      <SubmitNewOrgans nextYear={nextYear} selectedValues={selectedValues} />
     </div>
   );
 };
 
-const SubmitNewOrgans = () => {
+const SubmitNewOrgans = ({nextYear, selectedValues}) => {
   const [date, setDate] = useState(new Date());
 
   const handleSubmit = () => {
-    const newOrgans = produce(selectedValues, draft => {
-      draft['MAG'] = draft['Mesa da Assembleia Geral'];
-      draft['CF'] = draft['Conselho Fiscal'];
-      delete draft['Mesa da Assembleia Geral'];
-      delete draft['Conselho Fiscal'];
-    });
+    const newOrgans = { 
+      'Direção': selectedValues['Direção'],
+      'MAG': selectedValues['Mesa da Assembleia Geral'],
+      'CF': selectedValues['Conselho Fiscal']
+    };
 
     axios.post('/api/admin/newOrgans', 
       {
@@ -105,7 +104,7 @@ const SubmitNewOrgans = () => {
         startingDate: date.toLocaleDateString('en-US', 
           { year: 'numeric', month: '2-digit', day: '2-digit' }
         ),
-      })
+      });
   }
 
   return (
