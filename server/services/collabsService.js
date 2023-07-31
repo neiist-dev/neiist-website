@@ -39,11 +39,16 @@ const getCollabTeams = async (username) => {
   return {teams: collabInfo.teams, teamMembers: teamMembers};
 }
 
-const addNewCollab = async (username,newCollabInfo) => 
-  await collabsDatabase.addCollaborator(username, newCollabInfo);
+const addNewCollab = async (username, newCollabInfo, date=null) => 
+  await collabsDatabase.addCollaborator(username, newCollabInfo, 
+    date && new Date(date).toDateString()
+  );
 
-const removeCollab = async (username) => 
-  await collabsDatabase.removeCollaborator(username);
+const removeCollab = async (username, date=null) => 
+  await collabsDatabase.removeCollaborator(
+    username,
+    date && new Date(date).toDateString()
+  );
 
 module.exports = {
   checkCurrentCollab,

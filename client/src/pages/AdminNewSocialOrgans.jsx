@@ -13,10 +13,10 @@ import DivPersonCard from "../components/aboutPage/CollabCard";
 import { getCollabImage } from "../components/functions/collabsGeneral";
 
 import style from "./css/AboutPage.module.css";
+import axios from "axios";
 
 const AdminNewSocialOrgans = () => {
   const [activeMembers, setMembers] = useState(null);
-  const [date, setDate] = useState(null);
   const nextYear = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`;
 
   const [selectedValues, setSelectedValues] = useState(
@@ -53,9 +53,9 @@ const AdminNewSocialOrgans = () => {
     }
   }, []);
   
-    useEffect(() => {
-      fetchActiveMembers();
-    }, [fetchActiveMembers]);
+  useEffect(() => {
+    fetchActiveMembers();
+  }, [fetchActiveMembers]);
   
   return (
     <div style={{ margin: "2rem 6em 1rem 6em" }}>
@@ -82,37 +82,57 @@ const AdminNewSocialOrgans = () => {
         )}
       <br />
       <hr />
-      <div style={{display: 'flex', justifyContent: 'flex-end', paddingRight: '5rem'}}>
-        <DatePickerInput
-          style={{ width: "15rem" }}
-          placeholder={`${new Date().toLocaleString('pt-pt', { timeZone: 'UTC' }).split(',')[0]}`}
-          label="DATA DE TOMADA DE POSSE"
-          radius="md"
-          size="md"
-          value={date}
-          onChange={setDate}
-          withAsterisk
-          clearable
-        />
-        <Button
-          style={{ marginTop: "1.75rem", marginRight: "1rem", marginLeft: "1rem", width: "8rem", fontSize: '1rem' }}
-          variant="gradient"
-          gradient={{ from: 'teal', to: 'blue', deg: 60 }}
-          disabled={!date}
-          onClick={() => {
-            console.log({
-              lectiveYear: nextYear,
-              newOrgans: selectedValues,
-              startingDate: date,
-            });
-          }}
-        >
-          Salvar
-        </Button>
-      </div>
+      <SubmitNewOrgans />
     </div>
   );
 };
+
+const SubmitNewOrgans = () => {
+  const [date, setDate] = useState(new Date());
+
+  const handleSubmit = () => {
+    const newOrgans = produce(selectedValues, draft => {
+      draft['MAG'] = draft['Mesa da Assembleia Geral'];
+      draft['CF'] = draft['Conselho Fiscal'];
+      delete draft['Mesa da Assembleia Geral'];
+      delete draft['Conselho Fiscal'];
+    });
+
+    axios.post('/api/admin/newOrgans', 
+      {
+        lectiveYear: nextYear,
+        newOrgans: newOrgans,
+        startingDate: date.toLocaleDateString('en-US', 
+          { year: 'numeric', month: '2-digit', day: '2-digit' }
+        ),
+      })
+  }
+
+  return (
+    <div className={style.newOrgansDiv}>
+      <DatePickerInput
+        className={style.datePicker}
+        label="DATA DE TOMADA DE POSSE"
+        radius="md"
+        size="md"
+        valueFormat="YYYY/MM/DD"
+        value={date}
+        onChange={setDate}
+        placeholder={date}
+        withAsterisk
+        clearable
+      />
+      <Button
+        variant="gradient"
+        gradient={{ from: 'teal', to: 'blue', deg: 60 }}
+        disabled={!date}
+        onClick={handleSubmit}
+      >
+        SALVAR
+      </Button>
+    </div>
+  )
+}
 
 const SelectItem = forwardRef(({ image, label, username, ...others }, ref) => (
   <div ref={ref} {...others}>
