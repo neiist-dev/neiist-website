@@ -50,6 +50,39 @@ const removeCollab = async (username, date=null) =>
     date && new Date(date).toDateString()
   );
 
+const updateCollab = (username, newCollabInfo, date=null) => {
+  collabsService.removeCollab(
+    username, 
+    date && new Date(date).toDateString()
+  );
+
+  collabsService.addNewCollab(
+    username,
+    newCollabInfo, 
+    date && new Date(date).toDateString()  
+  );
+}
+
+const updateOrgans = async (newLectiveYear, newOrgans, startingDate) => {
+  collabs = await getCurrentCollabs();
+
+  for (const [role, subRoles] of Object.entries(newOrgans)) {
+    for (const [subRole, username] of Object.entries(subRoles)) {
+      var newCollabInfo = collabs.filter((member)=>member.username===username)[0];
+      
+      if (newCollabInfo) {
+        newCollabInfo.role = `${role.replace(/[0-9]{1,}/g, "")} ${newLectiveYear}`;
+        newCollabInfo.subRole = subRole.replace(/[0-9]{1,}/g, "");
+
+        //collabsService.updateCollab(username, newCollabInfo, startingDate);
+        console.log(username, newCollabInfo, startingDate);
+      } else {
+        continue;
+      }
+    }
+  }
+}
+
 module.exports = {
   checkCurrentCollab,
   checkAdmin,
@@ -60,4 +93,6 @@ module.exports = {
   getCollabTeams,
   addNewCollab,
   removeCollab,
+  updateCollab,
+  updateOrgans,
 };

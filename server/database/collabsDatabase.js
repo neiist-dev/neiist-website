@@ -83,24 +83,39 @@ const createCoordenatorsView = async () => {
   }
 };
 
-const addCollaborator = async (username, collab) => {
+const addCollaborator = async (username, collab, date=null) => {
   try {
-    await db.query(
-      `INSERT INTO collaborators(username, campus, "teams", "fromDate", "toDate")
-      VALUES($1, $2, $3,current_date, '9999-12-31')`,
-      [username, collab.campus, collab.teams]
-    );
+    if (collab.role && collab.subRole && date) {
+      await db.query(
+        `INSERT INTO collaborators(username, campus, "teams", "role", "subRole", "fromDate", "toDate")
+        VALUES($1, $2, $3, $4, $5, $6, '9999-12-31')`,
+        [username, collab.campus, collab.teams, collab.role, collab.subRole, date]
+      ); 
+    } else {
+      await db.query(
+        `INSERT INTO collaborators(username, campus, "teams", "fromDate", "toDate")
+        VALUES($1, $2, $3, current_date, '9999-12-31')`,
+        [username, collab.campus, collab.teams]
+      );
+    }
   } catch (err) {
     console.error(err);
   }
 };
 
-const removeCollaborator = async (username) => {
+const removeCollaborator = async (username, date=null) => {
   try {
-    await db.query(
-      `UPDATE curr_collaborators SET "toDate" = current_date WHERE "username" = $1`,
-      [username]
-    );
+    if (date) {
+      await db.query(
+        `UPDATE curr_collaborators SET "toDate" = $2::date WHERE "username" = $1`,
+        [username, date]
+      );
+    } else {
+      await db.query(
+        `UPDATE curr_collaborators SET "toDate" = current_date WHERE "username" = $1`,
+        [username]
+      );
+    }
   } catch (err) {
     console.error(err);
   }
