@@ -18,14 +18,14 @@ const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"))
 
 const CollabsPage = () => {
   const { userData } = useContext(UserDataContext);
-  const [selectedKey, setSelectedKey] = useState(userData.isCoordenator ? 1 : 2);
+  const [selectedKey, setSelectedKey] = useState((userData.isCoordenator || userData.isAdmin ) ? 1 : 2);
 
   return (
     <div className={style.mainPage}>
       <CurrentCollabInfoPanel userData={userData} />
       <div className={style.teamsPainel}>
-        <Accordion style={{ width: '100%', padding: '0' }} defaultActiveKey={userData.isCoordenator ? '1' : '2'}>
-          {userData.isCoordenator &&
+        <Accordion style={{ width: '100%', padding: '0' }} defaultActiveKey={(userData.isCoordenator || userData.isAdmin) ? '1' : '2'}>
+          {userData.isCoordenator || userData.isAdmin &&
             <Accordion.Item onClick={() => { setSelectedKey(1) }} eventKey="1">
               <Accordion.Header><b>✨ Gerir Colaboradores</b></Accordion.Header>
               <Accordion.Body style={{ width: '100%', paddingLeft: '0', paddingRight: '0' }}>
