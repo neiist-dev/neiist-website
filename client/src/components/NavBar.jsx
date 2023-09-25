@@ -72,7 +72,7 @@ const NavBar = () => {
 const ActiveTecnicoStudentNavLink = ({ hide, as, to, children }) => {
 	const { userData } = useContext(UserDataContext);
 
-	if (userData && userData.isActiveTecnicoStudent) {
+	if (userData && (userData.isAdmin || userData.isActiveTecnicoStudent)) {
 		return (
 			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
 				{children}
@@ -85,7 +85,7 @@ const ActiveTecnicoStudentNavLink = ({ hide, as, to, children }) => {
 const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
 	const { userData } = useContext(UserDataContext);
 
-	if (userData && userData.isActiveLMeicStudent) {
+	if (userData && (userData.isAdmin || userData.isActiveLMeicStudent)) {
 		return (
 			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
 				{children}
@@ -98,7 +98,7 @@ const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
 const CollabNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isCollab) {
+  if (userData && (userData.isAdmin || userData.isCollab)) {
     return (
       <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
@@ -111,7 +111,7 @@ const CollabNavLink = ({ hide, as, to, children }) => {
 const GacNavLink = ({ hide, as, to, children }) => {
 	const { userData } = useContext(UserDataContext);
 
-	if (userData && userData.isGacMember) {
+	if (userData && (userData.isAdmin || userData.isGacMember)) {
 		return (
 			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
 				{children}

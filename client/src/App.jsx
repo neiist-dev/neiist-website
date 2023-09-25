@@ -151,7 +151,7 @@ const DefinedRoutes = () => (
 
 const PrivateRoute = ({ condition, children }) => {
   const { userData } = useContext(UserDataContext);
-  return (userData && userData[condition])
+  return (userData && (userData.isAdmin || userData[condition]))
     ? children : <Navigate to="/" replace />;
 };
 
