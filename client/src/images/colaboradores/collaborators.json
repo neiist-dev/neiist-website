@@ -1,51 +1,25 @@
 {
-  "anoLetivo": "2022/2023",
+  "anoLetivo": "2023/2024",
   "orgaosSociais": {
     "Direção": {
-      "Presidente": "Nelson Trindade",
-      "Vice-Presidente" : "Catarina Sousa",
-      "Vogal" : "Mafalda Ribeiro",
-      "Diretor de Atividades (Alameda)" : "João Silva",
-      "Diretora de Atividades (Taguspark)" : "Maria Ribeiro",
-      "Diretor SINFO" : "Diogo Pacheco",
-      "Tesoureira" : "Andreia Pereira"
+      "Presidente": "Mafalda Ribeiro",
+      "Vice-Presidente" : "Vadym Volkovinskyy",
+      "Vogal" : "Miguel Mendo",
+      "Diretor de Atividades (Alameda)" : "Ricardo Almeida",
+      "Diretora de Atividades (Taguspark)" : "Andreia Azevedo",
+      "Diretora SINFO" : "Daniela Carvalho",
+      "Tesoureiro" : "Miguel Vicente"
     },
     "Mesa da Assembleia Geral": {
-      "Presidente": "Beatriz Alves",
-      "Vice-Presidente" : "David Belchior",
-      "Secretário1": "Diogo Santos",
-      "Secretário2": "Vadym Volkovinskyy"
+      "Presidente": "Mariana Laranjo",
+      "Vice-Presidente" : "Tomás Morais",
+      "Secretário1": "Gustavo Rodrigues",
+      "Secretária2": "Beatriz Paulo"
     },
     "Conselho Fiscal": {
-      "Presidente": "Carlos Amaro",
-      "Membro1": "João Gonçalves",
-      "Membro2": "Mara Alves"
+      "Presidente": "Teresa Correia",
+      "Membro1": "Luana Ferraz",
+      "Membro2": "Raquel Rodrigues"
     }
-  },
-  "Membros": [
-    "Ana Albuquerque",
-    "André Santos",
-    "Beatriz Alves",
-    "Bernardo Quinteiro",
-    "Carlos Amaro",
-    "Catarina Sousa",
-    "David Belchior",
-    "Diogo Santos",
-    "Francisco Saiote",
-    "Gonçalo Mateus",
-    "Guilherme Batalheiro",
-    "Gustavo Rodrigues",
-    "Henrique Pimentel",
-    "João Gonçalves",
-    "João Maurício",
-    "João Silva",
-    "Mafalda Ribeiro",
-    "Mara Alves",
-    "Maria Ribeiro",
-    "Matheus Kasai",
-    "Nelson Trindade",
-    "Rodrigo Major",
-    "Tiago Amado",
-    "Vadym Volkovinskyy"
-  ]
+  }
 }

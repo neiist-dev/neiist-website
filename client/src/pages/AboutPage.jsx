@@ -46,7 +46,7 @@ const AboutPage = () => {
         )
       )}
 
-      {collabs.Membros.length === 0 || !activeMembers ? (
+      {!activeMembers ? (
         !activeMembersError && <LoadSpinner />
       ) : (
         <ActiveMembersDiv activeMembers={activeMembers} />
