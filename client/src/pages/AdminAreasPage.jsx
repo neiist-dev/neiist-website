@@ -5,6 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import axios from 'axios';
+import { fetchThesisAreas } from '../Api.service';
 
 const AdminAreasPage = () => (
   <>
@@ -19,8 +20,7 @@ const ViewAreas = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/areas')
-      .then((res) => res.json())
+    fetchThesisAreas()
       .then(
         (res) => {
           setAreas(res);

@@ -7,6 +7,7 @@ import useWindowSize from "../../hooks/useWindowSize";
 import { CreateMoreInfoModal } from "./modals/InformationalModal";
 
 import style from "../../pages/css/GacPage.module.css";
+import { fetchAllMembers } from "../../Api.service";
 
 export const SearchMembers = ({ keySelected }) => {
 	const [allMembers, setMembers] = useState(null);
@@ -23,8 +24,7 @@ export const SearchMembers = ({ keySelected }) => {
 
 	useEffect(() => {
 		if (keySelected === "search" && allMembers === null) {
-			fetch("/api/mag/all")
-				.then((res) => res.json())
+			fetchAllMembers()
 				.then((membersRes) => {
 					setMembers(membersRes);
 					setIsLoaded(true);

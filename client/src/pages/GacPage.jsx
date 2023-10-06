@@ -9,6 +9,7 @@ import style from "./css/GacPage.module.css";
 import { SearchMembers } from "../components/gacPage/SearchMembers";
 import { AllMembersPage } from "../components/gacPage/AllMembersPage";
 import { EmailsAndRenewalButtons } from "../components/gacPage/EmailsAndRenewalButtons";
+import { fetchActiveMembers } from "../Api.service";
 
 const GacPage = () => {
   const [activeTab, setActiveTab] = useState('active');
@@ -55,8 +56,7 @@ const ActiveMembersPage = ({ keySelected }) => {
 
   useEffect(() => {
     if (keySelected === "active" && activeMembers === null) {
-      fetch("/api/mag/active")
-        .then((res) => res.json())
+      fetchActiveMembers()
         .then((membersRes) => {
           setMembers(membersRes);
         })

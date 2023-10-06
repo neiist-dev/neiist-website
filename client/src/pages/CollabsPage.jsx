@@ -11,6 +11,7 @@ import {
   normalizeTeams,
   getCollabImage,
 } from "../components/functions/collabsGeneral";
+import { fetchAllCollabs, fetchCollabInformation } from '../Api.service';
 
 const ManageCollabs = lazy(() => import("../components/collabs/ManageCollabs.jsx"));
 const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"));
@@ -85,8 +86,7 @@ const CurrentTeams = ({ selectedKey, userData }) => {
 
   useEffect(() => {
     if (selectedKey == 2 && !currentTeamMembers) {
-      fetch(`/api/collabs/info/${userData.username}`)
-        .then((res) => res.json())
+      fetchCollabInformation(userData.username)
         .then((res) => {
           userData.teams = (res.teams) ? res.teams : "";
           setCurrentTeamMembers(res.teamMembers);
@@ -114,8 +114,7 @@ const AllTeams = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 3 && !allCollabs) {
-      fetch(`/api/collabs/all`)
-        .then((res) => res.json())
+      fetchAllCollabs()
         .then((fetchAllCollabs) => {
           setAllCollabs(fetchAllCollabs);
         });

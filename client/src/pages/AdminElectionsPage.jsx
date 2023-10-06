@@ -5,6 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import axios from 'axios';
+import { fetchAdminElections } from '../Api.service';
 
 const AdminElectionsPage = () => (
   <>
@@ -19,8 +20,7 @@ const ViewElections = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/admin/elections`)
-      .then((res) => res.json())
+    fetchAdminElections()
       .then(
         (res) => {
           setElections(res);

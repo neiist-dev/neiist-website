@@ -6,6 +6,7 @@ import style from '../../pages/css/GacPage.module.css';
 import { Button, Tooltip } from "@mantine/core";
 import { downloadAllMembersFile } from "../functions/exportXLSX";
 import { MdDownload } from "react-icons/md";
+import { fetchAllMembers } from "../../Api.service";
 
 export const AllMembersPage = ({ keySelected }) => {
   const [allMembers, setMembers] = useState(null);
@@ -13,8 +14,7 @@ export const AllMembersPage = ({ keySelected }) => {
 
   useEffect(() => {
     if (keySelected === "all" && allMembers === null) {
-      fetch("/api/mag/all")
-        .then((res) => res.json())
+      fetchAllMembers()
         .then((membersRes) => {
           setMembers(membersRes);
         })

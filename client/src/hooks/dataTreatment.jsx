@@ -5,7 +5,7 @@ const statusColor = {
   "Renovar": "#e05d44"
 };
 
-export const getStatusColor = (status) => statusColor[status];
+export const statusToColor = (status) => statusColor[status];
 
 export const fenixPhoto = (username) => 
   `https://fenix.tecnico.ulisboa.pt/user/photo/${username}?s=10000`;
@@ -15,7 +15,7 @@ export const summarizeName = (name) => {
   return names[0] + " " + names[names.length - 1];
 };
 
-export const getMemberStatus = (status) => {
+export const statusToString = (status) => {
   let newStatus = status.split(/(?=[A-Z])/);
   if (newStatus.length === 1) return newStatus[0];
   return newStatus[0] + " " + newStatus[newStatus.length - 1];

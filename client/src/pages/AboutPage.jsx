@@ -13,6 +13,7 @@ import "./../App.css";
 import style from "./css/AboutPage.module.css";
 import collabs from "../images/colaboradores/collaborators.json";
 import { normalizeJob } from "../components/functions/dataTreatment";
+import { fetchCollabsResume } from "../Api.service";
 
 const lectiveYear = collabs.anoLetivo;
 
@@ -21,8 +22,7 @@ const AboutPage = () => {
   const [activeMembersError, setActiveMembersError] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/collabs/resume`)
-      .then((res) => res.json())
+    fetchCollabsResume()
       .catch((err) => setActiveMembersError(err))
       .then((res) => {
         setActiveMembers(res);

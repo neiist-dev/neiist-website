@@ -4,6 +4,7 @@ import { Table, ScrollArea } from "@mantine/core";
 import { CreateMoreInfoModal } from "./modals/InformationalModal";
 
 import style from "../../pages/css/GacPage.module.css";
+import { fetchCollabsResume } from "../../Api.service";
 
 export function MembersTable({ members }) {
   const [collabs, setCollabs] = useState(null);
@@ -18,10 +19,9 @@ export function MembersTable({ members }) {
   };
 
   useEffect(() => {
-    fetch(`/api/collabs/resume`)
-      .then((res) => res.json())
-      .then((fetchMember) => {
-        setCollabs(fetchMember);
+    fetchCollabsResume()
+      .then((collabs) => {
+        setCollabs(collabs);
       })
   }, []);
 
