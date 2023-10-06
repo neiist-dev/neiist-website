@@ -7,14 +7,15 @@ import UserDataContext from "../UserDataContext";
 import { GoSignOut } from "react-icons/go";
 import {
 	summarizeName,
-	getMemberStatus,
+	statusToString,
 	fenixPhoto,
-	getStatusColor,
+	statusToColor,
 } from "../hooks/dataTreatment.jsx";
 import { isMobile } from "react-device-detect";
 
 import style from "./css/NavBar.module.css";
 import { useEffect } from "react";
+import { fetchMemberStatus } from "../Api.service";
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
@@ -139,11 +140,10 @@ const LoginLogout = ({ userData, setUserData }) => {
 
 	useEffect(() => {
 		if (userData) {
-			fetch(`/api/members/status/${userData.username}`)
-				.then((res) => res.json())
-				.then((fetchStatus) => {
+			fetchMemberStatus(userData.username)
+				.then((userStatus) => {
 					let newData = userData;
-					newData.status = fetchStatus ? fetchStatus : "NaoSocio";
+					newData.status = userStatus ? userStatus : "NaoSocio";
 					setData(userData);
 				});
 		}
@@ -238,8 +238,8 @@ const LoggedIn = ({ userData, setUserData }) => {
         <div className={style.logoutButton_MemberState}>
           <Logout setUserData={setUserData}/>
           <DefaultLink children={
-            <div className={style.memberStatus} style={{background: getStatusColor(userData.status)}}>
-              <div> {getMemberStatus(userData.status)} </div>
+            <div className={style.memberStatus} style={{background: statusToColor(userData.status)}}>
+              <div> {statusToString(userData.status)} </div>
             </div>  
         }/>
         </div>

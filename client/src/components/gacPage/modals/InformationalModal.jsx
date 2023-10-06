@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import style from '../../../pages/css/GacPage.module.css';
 import { fenixPhoto } from "../../functions/dataTreatment";
 import LoadSpinner from "../../../hooks/loadSpinner";
+import { fetchMember } from "../../../Api.service";
 
 export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);
@@ -19,12 +20,11 @@ export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
     setIsLoaded(false);
     setError(null);
     if (username !== null) {
-      fetch(`/api/members/${username}`)
-        .then((res) => res.json())
-        .then((fetchMember) => {
-          setMember(fetchMember);
+      fetchMember(username)
+        .then((member) => {
+          setMember(member);
           setIsLoaded(true);
-          setChangedEmail(fetchMember.email);
+          setChangedEmail(member.email);
         })
         .catch((err) => {
           setIsLoaded(true);

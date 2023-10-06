@@ -1,5 +1,6 @@
 import { utils as XLSXUtils, write as XLSXWrite } from 'xlsx';
 import { extendedTeamAndCoorNames } from './collabsGeneral';
+import { fetchActiveMembers, fetchAllCollabs, fetchAllMembers } from '../../Api.service';
 
 function s2ab(s) {
   const buf = new ArrayBuffer(s.length);
@@ -20,8 +21,7 @@ function saveAs(blob, fileName) {
 }
 
 export const downloadCurrentCollabsFile = () => {
-  fetch('/api/collabs/all')
-  .then(response => response.json())
+  fetchAllCollabs()
   .then(data => {
     return data.map((collab) => {
       collab.teams = collab.teams
@@ -50,8 +50,7 @@ export const downloadCurrentCollabsFile = () => {
 
 
 export const downloadActiveMembersFile = () => {
-  fetch('/api/mag/active')
-  .then(response => response.json())
+  fetchActiveMembers()
   .then(data => {
     const workbook = XLSXUtils.book_new();
     const worksheet = XLSXUtils.json_to_sheet(data);
@@ -70,8 +69,7 @@ export const downloadActiveMembersFile = () => {
 };
 
 export const downloadAllMembersFile = () => {
-  fetch('/api/mag/all')
-  .then(response => response.json())
+  fetchAllMembers()
   .then(data => {
     const workbook = XLSXUtils.book_new();
     const worksheet = XLSXUtils.json_to_sheet(data);

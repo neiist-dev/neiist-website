@@ -10,6 +10,7 @@ import {
 } from "../../functions/dataTreatment";
 
 import style from '../../../pages/css/GacPage.module.css';
+import { fetchMemberRenewalNotifications } from "../../../Api.service";
 
 export const CreateRenewMembersModal = ({ show, handleClose, members }) => {
   var nonActiveEmails = "";
@@ -20,10 +21,9 @@ export const CreateRenewMembersModal = ({ show, handleClose, members }) => {
 
   useEffect(() => {
     if (!membersRenew || !isLoaded) {
-      fetch(`/api/mag/renewalNotifications`)
-        .then((res) => res.json())
-        .then((fetchMember) => {
-          setMembersRenew(fetchMember);
+      fetchMemberRenewalNotifications()
+        .then((member) => {
+          setMembersRenew(member);
           setIsLoaded(true);
           setAllSentString("Todos Avisados!");
         });
