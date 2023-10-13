@@ -13,6 +13,7 @@ import "./../App.css";
 import style from "./css/AboutPage.module.css";
 import collabs from "../images/colaboradores/collaborators.json";
 import { normalizeJob } from "../components/functions/dataTreatment";
+import { fetchCollabsResume } from "../Api.service";
 
 const lectiveYear = collabs.anoLetivo;
 
@@ -21,8 +22,7 @@ const AboutPage = () => {
   const [activeMembersError, setActiveMembersError] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/collabs/resume`)
-      .then((res) => res.json())
+    fetchCollabsResume()
       .catch((err) => setActiveMembersError(err))
       .then((res) => {
         setActiveMembers(res);
@@ -46,7 +46,7 @@ const AboutPage = () => {
         )
       )}
 
-      {collabs.Membros.length === 0 || !activeMembers ? (
+      {!activeMembers ? (
         !activeMembersError && <LoadSpinner />
       ) : (
         <ActiveMembersDiv activeMembers={activeMembers} />
@@ -99,11 +99,11 @@ const HeaderDiv = ({ activeMembersLength }) => (
         <BsQuestionLg className={style.question} />
       </div>
       <p>
-        A equipa do NEIIST é composta por <span>{activeMembersLength ?? "??"}</span> estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Todos os colaboradores contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível.
+        A equipa do NEIIST é composta por <span>{activeMembersLength ?? "??"}</span> estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Todos os colaboradores contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível.
       </p>
     </div>
     <div className={style.allColabImage}>
-      <g>
+      <div className={style.blobs}>
         <svg
           width="616"
           height="326"
@@ -131,7 +131,7 @@ const HeaderDiv = ({ activeMembersLength }) => (
 
         <img src={allMembers} />
       
-      </g>
+      </div>
     </div>
   </div>
 );

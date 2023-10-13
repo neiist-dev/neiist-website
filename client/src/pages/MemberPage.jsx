@@ -11,6 +11,7 @@ import axios from 'axios';
 import UserDataContext from '../UserDataContext';
 
 import style from './css/MemberPage.module.css'
+import { fetchElections, fetchMember } from '../Api.service';
 
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);
@@ -20,8 +21,7 @@ const MembersPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/members/${userData.username}`)
-      .then((res) => res.json())
+    fetchMember(userData.username)
       .then(
         (fetchMember) => {
           setMember(fetchMember);
@@ -219,8 +219,7 @@ const Vote = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/elections')
-      .then((res) => res.json())
+    fetchElections()
       .then(
         (res) => {
           setElections(res);

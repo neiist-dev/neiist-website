@@ -136,18 +136,6 @@ const DefinedRoutes = () => (
       path="/admin"
       element={<AdminRoute children={<AdminMenuPage />} />}
     />
-    <Route
-      path="/admin/areas"
-      element={<AdminRoute children={<AdminAreasPage />} />}
-    />
-    <Route
-      path="/admin/theses"
-      element={<AdminRoute children={<AdminThesesPage />} />}
-    />
-    <Route
-      path="/admin/elections"
-      element={<AdminRoute children={<AdminElectionsPage />} />}
-    />
 
     <Route
       path="/collab"
@@ -163,8 +151,7 @@ const DefinedRoutes = () => (
 
 const PrivateRoute = ({ condition, children }) => {
   const { userData } = useContext(UserDataContext);
-  
-  return (userData && userData[condition])
+  return (userData && (userData.isAdmin || userData[condition]))
     ? children : <Navigate to="/" replace />;
 };
 

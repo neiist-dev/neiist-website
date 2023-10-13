@@ -1,27 +1,32 @@
-import React from 'react';
-import Button from 'react-bootstrap/Button';
-import { Link } from 'react-router-dom';
+import React, { lazy, useState } from 'react';
+import { GradientSegmentedControl } from '../components/mantine/GradientSegmentedControl';
 
-const AdminMenuPage = () => (
-  <div style={{
-    alignItems: 'center',
-    margin: '2rem 6em',
-    display: 'flex',
-    justifyContent: 'center',
-    alignContent: 'space-around',
-    flexWrap: 'wrap',
-  }}
-  >
-    <Button as={Link} to="/admin/areas" style={{ margin: '0 10px' }}>
-      Áreas
-    </Button>
-    <Button as={Link} to="/admin/theses" style={{ margin: '0 10px' }}>
-      Teses
-    </Button>
-    <Button as={Link} to="/admin/elections" style={{ margin: '0 10px' }}>
-      Eleições
-    </Button>
-  </div>
-);
+const AdminAreasPage = lazy(() => import("./AdminAreasPage"));
+const AdminThesesPage = lazy(() => import("./AdminThesesPage"));
+const AdminElectionsPage = lazy(() => import("./AdminElectionsPage"));
+
+const AdminMenuPage = () => {
+  const sections = ["Áreas", "Teses", "Eleições"]
+  const [value, setValue] = useState(sections[0])
+
+  return (
+    <div>
+      <div style={{
+        alignItems: 'center',
+        margin: '2rem 6em',
+        display: 'flex',
+        justifyContent: 'center',
+        alignContent: 'space-around',
+        flexWrap: 'wrap',
+      }}
+      >
+        <GradientSegmentedControl data={sections} setValue={setValue}/>
+      </div>
+      {value === "Áreas" && <AdminAreasPage />}
+      {value === "Teses" && <AdminThesesPage />}
+      {value === "Eleições" && <AdminElectionsPage />}
+    </div>
+  );
+};
 
 export default AdminMenuPage;

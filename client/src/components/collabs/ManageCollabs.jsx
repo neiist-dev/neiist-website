@@ -19,6 +19,7 @@ import { FcDownload } from 'react-icons/fc';
 import { summarizeName } from '../functions/dataTreatment';
 import { getCollabImage, allTeamNames } from "../functions/collabsGeneral";
 import { downloadCurrentCollabsFile } from '../functions/exportXLSX';
+import { fetchAllCollabs } from '../../Api.service';
 
 
 const ManageCollabs = ({ selectedKey }) => {
@@ -30,10 +31,9 @@ const ManageCollabs = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 1 && !isLoaded) {
-      fetch(`/api/collabs/all`)
-        .then((res) => res.json())
-        .then((fetchAllMembers) => {
-          setAllMembers(fetchAllMembers);
+      fetchAllCollabs()
+        .then((allCollabs) => {
+          setAllMembers(allCollabs);
           setIsLoaded(true);
         });
     }

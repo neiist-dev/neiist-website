@@ -5,6 +5,7 @@ import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import axios from 'axios';
+import { fetchThesis, fetchThesisAreas } from '../Api.service';
 
 const AdminThesesPage = () => (
   <>
@@ -19,8 +20,8 @@ const ViewTheses = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/theses').then((res) => res.json()),
-      fetch('/api/areas').then((res) => res.json()),
+      fetchThesis(),
+      fetchThesisAreas(),
     ]).then(([fetchTheses, fetchAreas]) => {
       setTheses(fetchTheses);
       setAreas(fetchAreas);
