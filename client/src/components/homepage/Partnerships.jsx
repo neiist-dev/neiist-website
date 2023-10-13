@@ -25,7 +25,7 @@ const Partnerships = () => {
                     </Col>
                     <Col>
                         <a href="https://www.managementsolutions.com/" target="_blank">
-                            <img src={managementSolutions} style={{ width: "50%", scale: "1.25" }} />
+                            <img src={managementSolutions} style={{ width: "50%", scale: "1.0" }} />
                         </a>
                     </Col>
                 </Row>
