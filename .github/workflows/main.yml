@@ -50,7 +50,7 @@ jobs:
 
   testing:
     needs:
-      - client-build
+      - client_build
     runs-on: ubuntu-latest
     steps:
       - name: Frontend Tests
