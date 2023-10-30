@@ -69,7 +69,7 @@ jobs:
 
   server_testing:
     needs:
-      - client_build
+      - server_dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Frontend Tests
