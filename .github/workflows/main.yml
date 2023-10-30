@@ -3,7 +3,7 @@ name: main
 on: [push, pull_request]
 
 jobs:
-  build:
+  setup_stage:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,17 +13,49 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3.8.2
         with:
-          node-version: '16'
+          node-version: "16"
 
+  client_dependencies:
+    needs:
+      - setup_stage
+    runs-on: ubuntu-latest
+    steps:
       - name: Install client dependencies
-        run: cd client && npm install && cd ..
+        run: |
+          cd client
+          npm install
+          cd ..
 
-      - name: Install server dependencies
-        run: cd server && npm install && cd ..
-
+  client_build:
+    needs:
+      - client_dependencies
+    runs-on: ubuntu-latest
+    steps:
       - name: Build client
-        run: cd client && npm run build && cd ..
-      
+        run: |
+          cd client
+          npm run build
+          cd ..
+
+  server_dependencies:
+    needs:
+      - setup_stage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm install
+          cd ..
+
+  testing:
+    needs:
+      - client-build
+    runs-on: ubuntu-latest
+    steps:
       - name: Frontend Tests
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        run: cd client && npm run test && cd ..
+        run: |
+          cd client
+          npm run test
+          cd ..
