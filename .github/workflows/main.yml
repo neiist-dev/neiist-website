@@ -35,6 +35,5 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           script: |
-            su - ${{ secrets.SSH_LINUX_USER }}
             touch test.txt
             echo "TEST_v1" >> test.txt
