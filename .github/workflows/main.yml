@@ -27,13 +27,3 @@ jobs:
       - name: Frontend Tests
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: cd client && npm run test && cd ..
-
-      - name: SSH into VM
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          key: ${{ secrets.SSH_KEY }}
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          script: |
-            touch test.txt
-            echo "TEST_v1" >> test.txt
