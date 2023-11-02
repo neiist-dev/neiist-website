@@ -1,0 +1,20 @@
+name: deploy
+
+on: [push]
+
+jobs:
+  build_and_test:
+    uses: neiist-dev/neiist-website/.github/workflows/main.yml@latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into VM
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          script: |
+            touch test.txt
+            echo "TEST_v1" >> test.txt
