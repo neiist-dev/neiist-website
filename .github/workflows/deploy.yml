@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build_and_test:
-    uses: neiist-dev/neiist-website/.github/workflows/main.yml@main
+    uses: ./.github/workflows/main.yml
 
   deploy:
     runs-on: ubuntu-latest
