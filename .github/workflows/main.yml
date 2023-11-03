@@ -36,5 +36,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           script: |
-            touch test.txt
-            echo "TEST_v1" >> test.txt
+            cd neiist-website; git pull;
+            cd server; npm ci; cd ..;
+            cd client; npm run build; exit;
+            sudo systemctl restart neiist_server.service;
