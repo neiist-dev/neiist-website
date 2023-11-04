@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - prod
 
 jobs:
   build_test:
@@ -33,7 +34,7 @@ jobs:
       - name: Build client
         run: cd client && npm run build && cd ..
 
-      - if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      - if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' || github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'prod' || github.event_name == 'push' && github.ref == 'refs/heads/prod' }}
         name: Frontend Tests
         run: cd client && npm run test && cd ..
 
