@@ -2,8 +2,8 @@ name: main
 
 on:
   push:
-    branches:
-      - '!master'
+    branches-ignore:
+      - master
   pull_request:
     branches:
       - master
@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 20.9.0
 
-      - name: NPM
+      - name: Setup Npm
         run: npm install -g npm@10.2.3
           
       - name: Install client dependencies
