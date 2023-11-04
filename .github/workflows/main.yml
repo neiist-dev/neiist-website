@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: debian-10
 
     strategy:
       matrix:
@@ -31,7 +31,14 @@ jobs:
       - name: Frontend Tests
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: cd client && npm run test && cd ..
-      
+
+  deploy:
+    runs-on: debian-10
+
+    strategy:
+      matrix:
+        node-version: [16, 14.17.1]
+    steps:
       - name: Deploy to Production
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/cicd_deploy' }}
         uses: appleboy/ssh-action@v1.0.0
