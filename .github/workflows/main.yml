@@ -3,7 +3,7 @@ name: main
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_test:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,13 +26,16 @@ jobs:
 
       - name: Build client
         run: cd client && npm run build && cd ..
-      
-      - name: Frontend Tests
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+
+      - if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'master' || github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        name: Frontend Tests
         run: cd client && npm run test && cd ..
 
-      - name: Deploy to Production
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/cicd_deploy' }}
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/cicd_deploy' }}
+        name: Deploy to Production
         uses: appleboy/ssh-action@v1.0.0
         with:
           key: ${{ secrets.SSH_KEY }}
@@ -41,5 +44,4 @@ jobs:
           script: |
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
-            npm --help
             bash ./deploy.sh
