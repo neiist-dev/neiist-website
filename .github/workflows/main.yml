@@ -2,8 +2,8 @@ name: main
 
 on:
   push:
-    branches-ignore:
-      - master
+    branches:
+      - '*'
   pull_request:
     branches:
       - master
