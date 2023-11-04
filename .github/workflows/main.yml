@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: debian:10
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -29,7 +29,7 @@ jobs:
         run: cd client && npm run test && cd ..
 
   deploy:
-    runs-on: debian:10
+    runs-on: ubuntu-latest
     needs:
       - build
     steps:
