@@ -4,11 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: debian-10
-
-    strategy:
-      matrix:
-        node-version: [16, 14.17.1]
+    runs-on: debian:10
 
     steps:
       - name: Checkout
@@ -17,7 +13,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.0.0
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16
 
       - name: Install client dependencies
         run: cd client && npm install && cd ..
@@ -33,11 +29,9 @@ jobs:
         run: cd client && npm run test && cd ..
 
   deploy:
-    runs-on: debian-10
-
-    strategy:
-      matrix:
-        node-version: [16, 14.17.1]
+    runs-on: debian:10
+    needs:
+      - build
     steps:
       - name: Deploy to Production
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/cicd_deploy' }}
