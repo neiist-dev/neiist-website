@@ -43,6 +43,5 @@ jobs:
           script: |
             cd neiist-website; git pull;
             cd server; npm ci; cd ..;
-            npm --version; git status;
-            cd client; npm run build; cd ..;
+            cd client; npm ci; npm run build; cd ..;
             sudo systemctl restart neiist_server.service;
