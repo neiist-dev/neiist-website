@@ -22,8 +22,8 @@
     "autoprefixer": "10.4.16"
   },  
   "scripts": {
-    "start": "react-scripts start --openssl-legacy-provider",
-    "build": "react-scripts build --openssl-legacy-provider",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
