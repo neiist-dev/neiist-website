@@ -1,11 +1,17 @@
 name: main
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build_test:
     runs-on: ubuntu-latest
-
+   
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.1
@@ -15,7 +21,7 @@ jobs:
         with:
           node-version: 20.9.0
 
-      - name: NPM
+      - name: Setup Npm
         run: npm install -g npm@10.2.3
           
       - name: Install client dependencies

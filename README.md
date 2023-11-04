@@ -79,15 +79,9 @@ Of course, no one template will serve all projects since your needs may be diffe
 
 A list of commonly used resources that I find helpful are listed in the acknowledgements. -->
 
-### Built With
+### Built With 
 
-<!-- This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples. -->
-* [React](https://reactjs.org/)
-* [React Bootstrap](https://react-bootstrap.github.io/)
-* [Node.js](https://nodejs.org/en/)
-* [Express](http://expressjs.com/)
-* [PostgreSQL](https://www.postgresql.org/)
-
+> [React](https://reactjs.org/), [React Bootstrap](https://react-bootstrap.github.io/), [Node.js](https://nodejs.org/en/), [Express](http://expressjs.com/), [PostgreSQL](https://www.postgresql.org/)
 
 
 <!-- GETTING STARTED -->
