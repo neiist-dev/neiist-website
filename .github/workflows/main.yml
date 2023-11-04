@@ -13,10 +13,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.0.0
         with:
-          node-version: 14.17.1
+          node-version: 20.9.0
 
       - name: NPM
-        run: npm install -g npm@7.20.0
+        run: npm install -g npm@10.2.3
           
       - name: Install client dependencies
         run: cd client && npm install && cd ..
