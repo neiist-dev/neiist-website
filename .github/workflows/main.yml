@@ -39,4 +39,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            npm --help
             bash ./deploy.sh
