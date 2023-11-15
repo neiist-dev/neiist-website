@@ -7,7 +7,6 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Alert from 'react-bootstrap/Alert';
 
-import axios from 'axios';
 import UserDataContext from '../UserDataContext';
 
 import style from './css/MemberPage.module.css'

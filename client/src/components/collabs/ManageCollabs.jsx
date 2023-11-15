@@ -9,7 +9,6 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 
-import axios from 'axios';
 import Select from 'react-select';
 import LoadSpinner from "../../hooks/loadSpinner";
 import style from '../../pages/css/CollabsPage.module.css';
