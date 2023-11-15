@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import LoadSpinner from '../../hooks/loadSpinner';
-import { MembersTable } from "./MembersTable";
+import LoadSpinner from '../../hooks/loadSpinner.jsx';
+import { MembersTable } from "./MembersTable.jsx";
 
 import style from '../../pages/css/GacPage.module.css';
 import { Button, Tooltip } from "@mantine/core";
-import { downloadAllMembersFile } from "../functions/exportXLSX";
+import { downloadAllMembersFile } from "../functions/exportXLSX.js";
 import { MdDownload } from "react-icons/md";
-import { fetchAllMembers } from "../../Api.service";
+import { fetchAllMembers } from "../../Api.service.js";
 
 export const AllMembersPage = ({ keySelected }) => {
   const [allMembers, setMembers] = useState(null);

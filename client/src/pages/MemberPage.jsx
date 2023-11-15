@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import Modal from 'react-bootstrap/Modal';
@@ -7,10 +7,10 @@ import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Alert from 'react-bootstrap/Alert';
 
-import UserDataContext from '../UserDataContext';
+import UserDataContext from '../UserDataContext.js';
 
 import style from './css/MemberPage.module.css'
-import { fetchElections, fetchMember } from '../Api.service';
+import { fetchElections, fetchMember } from '../Api.service.js';
 
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);

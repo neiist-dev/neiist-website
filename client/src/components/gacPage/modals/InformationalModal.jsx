@@ -4,9 +4,9 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
 import style from '../../../pages/css/GacPage.module.css';
-import { fenixPhoto } from "../../functions/dataTreatment";
-import LoadSpinner from "../../../hooks/loadSpinner";
-import { fetchMember } from "../../../Api.service";
+import { fenixPhoto } from "../../functions/dataTreatment.jsx";
+import LoadSpinner from "../../../hooks/loadSpinner.jsx";
+import { fetchMember } from "../../../Api.service.js";
 
 export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);

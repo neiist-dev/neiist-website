@@ -1,6 +1,7 @@
 {
   "name": "neiist-website-client",
   "proxy": "http://localhost:3001",
+  "type": "module",
   "dependencies": {
     "@mantine/core": "^6.0.8",
     "@mantine/hooks": "^6.0.8",

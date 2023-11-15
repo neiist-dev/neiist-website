@@ -6,10 +6,10 @@ import Spinner from "react-bootstrap/Spinner";
 import {
   fenixPhoto,
   summarizeName,
-} from "../../functions/dataTreatment";
+} from "../../functions/dataTreatment.jsx";
 
 import style from '../../../pages/css/GacPage.module.css';
-import { fetchMemberRenewalNotifications } from "../../../Api.service";
+import { fetchMemberRenewalNotifications } from "../../../Api.service.js";
 
 export const CreateRenewMembersModal = ({ show, handleClose, members }) => {
   var nonActiveEmails = "";

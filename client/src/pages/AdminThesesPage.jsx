@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { fetchThesis, fetchThesisAreas } from '../Api.service';
+import { fetchThesis, fetchThesisAreas } from '../Api.service.js';
 
 const AdminThesesPage = () => (
   <>
