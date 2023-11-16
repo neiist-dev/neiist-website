@@ -20,6 +20,7 @@ import { getCollabImage, allTeamNames } from "../functions/collabsGeneral.jsx";
 import { downloadCurrentCollabsFile } from '../functions/exportXLSX.js';
 import { fetchAllCollabs } from '../../Api.service.js';
 
+import axios from 'axios';
 
 const ManageCollabs = ({ selectedKey }) => {
   const [allMembers, setAllMembers] = useState(null);

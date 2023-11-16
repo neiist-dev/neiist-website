@@ -6,6 +6,8 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import { fetchThesisAreas } from '../Api.service.js';
 
+import axios from 'axios';
+
 const AdminAreasPage = () => (
   <>
     <UploadAreasButton />

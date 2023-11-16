@@ -12,6 +12,8 @@ import UserDataContext from '../UserDataContext.js';
 import style from './css/MemberPage.module.css'
 import { fetchElections, fetchMember } from '../Api.service.js';
 
+import axios from 'axios';
+
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);
   const [member, setMember] = useState(null);

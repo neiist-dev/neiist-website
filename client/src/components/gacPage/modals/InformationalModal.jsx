@@ -8,6 +8,8 @@ import { fenixPhoto } from "../../functions/dataTreatment.jsx";
 import LoadSpinner from "../../../hooks/loadSpinner.jsx";
 import { fetchMember } from "../../../Api.service.js";
 
+import axios from 'axios';
+
 export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);
   const [member, setMember] = useState(null);
