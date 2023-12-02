@@ -2,12 +2,5 @@
   "extends": [
     "config:base"
   ],
-  "packageRules": [
-    {
-      "matchConfidence": ["very high", "high"],
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true
-    }
-  ],
   "prHourlyLimit": 0
 }
