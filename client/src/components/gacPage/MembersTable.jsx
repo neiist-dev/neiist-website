@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { memberRow } from "./MembersRow";
 import { Table, ScrollArea } from "@mantine/core";
-import { CreateMoreInfoModal } from "./modals/InformationalModal";
+import { CreateMoreInfoModal } from "./modals/InformationalModal.jsx";
 
 import style from "../../pages/css/GacPage.module.css";
-import { fetchCollabsResume } from "../../Api.service";
+import { fetchCollabsResume } from "../../Api.service.js";
 
 export function MembersTable({ members }) {
   const [collabs, setCollabs] = useState(null);

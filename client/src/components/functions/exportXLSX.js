@@ -1,6 +1,6 @@
 import { utils as XLSXUtils, write as XLSXWrite } from 'xlsx';
-import { extendedTeamAndCoorNames } from './collabsGeneral';
-import { fetchActiveMembers, fetchAllCollabs, fetchAllMembers } from '../../Api.service';
+import { extendedTeamAndCoorNames } from './collabsGeneral.jsx';
+import { fetchActiveMembers, fetchAllCollabs, fetchAllMembers } from '../../Api.service.js';
 
 function s2ab(s) {
   const buf = new ArrayBuffer(s.length);

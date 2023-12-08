@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import { Badge, Tooltip, Tabs } from "@mantine/core";
 import {BiSearch} from "react-icons/bi";
 
-import { MembersTable } from "../components/gacPage/MembersTable";
+import { MembersTable } from "../components/gacPage/MembersTable.jsx";
 
 import style from "./css/GacPage.module.css";
-import { SearchMembers } from "../components/gacPage/SearchMembers";
-import { AllMembersPage } from "../components/gacPage/AllMembersPage";
-import { EmailsAndRenewalButtons } from "../components/gacPage/EmailsAndRenewalButtons";
-import { fetchActiveMembers } from "../Api.service";
+import { SearchMembers } from "../components/gacPage/SearchMembers.jsx";
+import { AllMembersPage } from "../components/gacPage/AllMembersPage.jsx";
+import { EmailsAndRenewalButtons } from "../components/gacPage/EmailsAndRenewalButtons.jsx";
+import { fetchActiveMembers } from "../Api.service.js";
 
 const GacPage = () => {
   const [activeTab, setActiveTab] = useState('active');

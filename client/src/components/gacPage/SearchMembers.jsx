@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { CreateEmailsModal } from "./modals/EmailsModal";
+import { CreateEmailsModal } from "./modals/EmailsModal.jsx";
 import { Badge, Button } from "@mantine/core";
 
-import LoadSpinner from "../../hooks/loadSpinner";
-import useWindowSize from "../../hooks/useWindowSize";
-import { CreateMoreInfoModal } from "./modals/InformationalModal";
+import LoadSpinner from "../../hooks/loadSpinner.jsx";
+import useWindowSize from "../../hooks/useWindowSize.jsx";
+import { CreateMoreInfoModal } from "./modals/InformationalModal.jsx";
 
 import style from "../../pages/css/GacPage.module.css";
-import { fetchAllMembers } from "../../Api.service";
+import { fetchAllMembers } from "../../Api.service.js";
 
 export const SearchMembers = ({ keySelected }) => {
 	const [allMembers, setMembers] = useState(null);

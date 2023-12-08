@@ -1,7 +1,7 @@
 import parse from 'html-react-parser';
 import { Modal } from 'react-bootstrap';
 import DivPersonCard from './CollabCard';
-import { getCollabImage } from '../functions/collabsGeneral';
+import { getCollabImage } from '../functions/collabsGeneral.jsx';
 
 import style from '../../pages/css/AboutPage.module.css'
 

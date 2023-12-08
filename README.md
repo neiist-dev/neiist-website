@@ -94,20 +94,23 @@ To get a local copy up and running follow these simple example steps.
 
 <!-- This is an example of how to list things you need to use the software and how to install them. -->
 
-* NPM
-  ```sh
-  sudo apt install npm
-  ```
-
-* Node.js
+* **Node.js** (Version 21.4.0)
   ```sh
   sudo apt install nodejs
   ```
 
-* PostgreSQL
+* **NPM** (Version 10.2.4)
+  ```sh
+  sudo apt install npm
+  ```
+
+> ❗ You can also use Node Version Manager ([NVM](https://github.com/nvm-sh/nvm)) to install Node.js and NPM
+
+* **PostgreSQL**
   ```sh
   sudo apt install postgresql
   ```
+  ...or use Docker ([see below](?tab=readme-ov-file#alternative-docker-for-database))
 
 ### Installation
 
@@ -122,7 +125,7 @@ To get a local copy up and running follow these simple example steps.
    ```
 3. Clone the repo
    ```sh
-	cd folder-where-i-keep-my-repos/
+   cd folder-where-i-keep-my-repos/
    git clone https://github.com/neiist-dev/neiist-website.git
    ```
 4. Server: Install NPM packages

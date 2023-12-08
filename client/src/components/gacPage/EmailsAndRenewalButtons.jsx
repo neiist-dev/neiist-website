@@ -3,10 +3,10 @@ import { MdEmail, MdAutorenew, MdDownload } from "react-icons/md";
 import { Button, Tooltip } from "@mantine/core";
 
 import style from "../../pages/css/GacPage.module.css";
-import { CreateEmailsModal } from "./modals/EmailsModal";
-import { CreateRenewMembersModal } from "./modals/RenewMembersModal";
-import { downloadActiveMembersFile } from "../functions/exportXLSX";
-import useWindowSize from "../../hooks/useWindowSize";
+import { CreateEmailsModal } from "./modals/EmailsModal.jsx";
+import { CreateRenewMembersModal } from "./modals/RenewMembersModal.jsx";
+import { downloadActiveMembersFile } from "../functions/exportXLSX.js";
+import useWindowSize from "../../hooks/useWindowSize.jsx";
 
 export const EmailsAndRenewalButtons = ({ members }) => {
   const [showRenewMembers, setshowRenewMembers] = useState(false);

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
+import { fetchAdminElections } from '../Api.service.js';
+
 import axios from 'axios';
-import { fetchAdminElections } from '../Api.service';
 
 const AdminElectionsPage = () => (
   <>

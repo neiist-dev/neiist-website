@@ -1,9 +1,9 @@
 import React, { lazy, useState } from 'react';
-import { GradientSegmentedControl } from '../components/mantine/GradientSegmentedControl';
+import { GradientSegmentedControl } from '../components/mantine/GradientSegmentedControl.jsx';
 
-const AdminAreasPage = lazy(() => import("./AdminAreasPage"));
-const AdminThesesPage = lazy(() => import("./AdminThesesPage"));
-const AdminElectionsPage = lazy(() => import("./AdminElectionsPage"));
+const AdminAreasPage = lazy(() => import("./AdminAreasPage.jsx"));
+const AdminThesesPage = lazy(() => import("./AdminThesesPage.jsx"));
+const AdminElectionsPage = lazy(() => import("./AdminElectionsPage.jsx"));
 
 const AdminMenuPage = () => {
   const sections = ["Áreas", "Teses", "Eleições"]
