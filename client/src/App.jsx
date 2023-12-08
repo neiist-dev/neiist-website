@@ -9,23 +9,23 @@ import {
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css"; // importing required bootstrap styles
 
-import UserDataContext from "./UserDataContext";
+import UserDataContext from "./UserDataContext.js";
 
-import Layout from "./components/Layout";
-import LoadSpinner from "./hooks/loadSpinner";
+import Layout from "./components/Layout.jsx";
+import LoadSpinner from "./hooks/loadSpinner.jsx";
 
-const HomePage = lazy(() => import("./pages/HomePage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const RulesPage = lazy(() => import("./pages/RulesPage"));
-const ContactsPage = lazy(() => import("./pages/ContactsPage"));
-const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage"));
-const MemberPage = lazy(() => import("./pages/MemberPage"));
-const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage"));
-const AdminAreasPage = lazy(() => import("./pages/AdminAreasPage"));
-const AdminThesesPage = lazy(() => import("./pages/AdminThesesPage"));
-const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage"));
-const GacPage = lazy(() => import("./pages/GacPage"));
-const CollabsPage = lazy(() => import("./pages/CollabsPage"));
+const HomePage = lazy(() => import("./pages/HomePage.jsx"));
+const AboutPage = lazy(() => import("./pages/AboutPage.jsx"));
+const RulesPage = lazy(() => import("./pages/RulesPage.jsx"));
+const ContactsPage = lazy(() => import("./pages/ContactsPage.jsx"));
+const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage.jsx"));
+const MemberPage = lazy(() => import("./pages/MemberPage.jsx"));
+const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage.jsx"));
+const AdminAreasPage = lazy(() => import("./pages/AdminAreasPage.jsx"));
+const AdminThesesPage = lazy(() => import("./pages/AdminThesesPage.jsx"));
+const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage.jsx"));
+const GacPage = lazy(() => import("./pages/GacPage.jsx"));
+const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
 
 const Error = ({ error, errorDescription }) => (
 	<>

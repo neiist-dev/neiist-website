@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
-import { fetchThesis, fetchThesisAreas } from '../Api.service';
+import { fetchThesis, fetchThesisAreas } from '../Api.service.js';
 
 const ThesisMasterPage = () => {
   const [areas, setAreas] = useState(null);

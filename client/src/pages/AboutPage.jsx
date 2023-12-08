@@ -1,19 +1,19 @@
 import React, { useState, useEffect, lazy } from "react";
 
 import { BsQuestionLg } from "react-icons/bs";
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 
 import allMembers from "../images/colaboradores/all.png";
-import { getCollabImage } from "../components/functions/collabsGeneral";
+import { getCollabImage } from "../components/functions/collabsGeneral.jsx";
 
-const OurTeamsDiv = lazy(() => import("../components/aboutPage/OurTeamsDiv"));
-const DivPersonCard = lazy(() => import("../components/aboutPage/CollabCard"));
+const OurTeamsDiv = lazy(() => import("../components/aboutPage/OurTeamsDiv.jsx"));
+const DivPersonCard = lazy(() => import("../components/aboutPage/CollabCard.jsx"));
 
 import "./../App.css";
 import style from "./css/AboutPage.module.css";
 import collabs from "../images/colaboradores/collaborators.json";
-import { normalizeJob } from "../components/functions/dataTreatment";
-import { fetchCollabsResume } from "../Api.service";
+import { normalizeJob } from "../components/functions/dataTreatment.jsx";
+import { fetchCollabsResume } from "../Api.service.js";
 
 const lectiveYear = collabs.anoLetivo;
 

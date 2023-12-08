@@ -3,7 +3,7 @@ import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import { Link } from "react-router-dom";
 import logo from "../images/neiist_logo.png";
-import UserDataContext from "../UserDataContext";
+import UserDataContext from "../UserDataContext.js";
 import { GoSignOut } from "react-icons/go";
 import {
 	summarizeName,
@@ -15,7 +15,7 @@ import { isMobile } from "react-device-detect";
 
 import style from "./css/NavBar.module.css";
 import { useEffect } from "react";
-import { fetchMemberStatus } from "../Api.service";
+import { fetchMemberStatus } from "../Api.service.js";
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);

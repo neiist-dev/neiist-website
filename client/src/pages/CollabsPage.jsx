@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useContext, lazy } from 'react';
 import Accordion from 'react-bootstrap/Accordion';
 
-import UserDataContext from '../UserDataContext';
+import UserDataContext from '../UserDataContext.js';
 import style from './css/CollabsPage.module.css';
 
-import { fenixPhoto, summarizeName } from "../components/functions/dataTreatment";
+import { fenixPhoto, summarizeName } from "../components/functions/dataTreatment.jsx";
 import {
   allTeamNames,
   filterTeamMembers,
   normalizeTeams,
   getCollabImage,
-} from "../components/functions/collabsGeneral";
-import { fetchAllCollabs, fetchCollabInformation } from '../Api.service';
+} from "../components/functions/collabsGeneral.jsx";
+import { fetchAllCollabs, fetchCollabInformation } from '../Api.service.js';
 
 const ManageCollabs = lazy(() => import("../components/collabs/ManageCollabs.jsx"));
 const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"));

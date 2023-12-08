@@ -1,7 +1,7 @@
 import React from 'react'
 
-import ActivityItem from './ActivityItem';
-import BlueWhiteBox from './BlueWhiteBox';
+import ActivityItem from './ActivityItem.jsx';
+import BlueWhiteBox from './BlueWhiteBox.jsx';
 
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';

@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 
 import style from "../../pages/css/GacPage.module.css"
-import { fenixPhoto, summarizeName } from "../functions/dataTreatment";
+import { fenixPhoto, summarizeName } from "../functions/dataTreatment.jsx";
 
 const colorStatus = {
   NaoSocio: "dark",
