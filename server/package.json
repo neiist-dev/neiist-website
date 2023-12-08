@@ -13,7 +13,7 @@
     "express-fileupload": "^1.4.0",
     "htmlparser2": "9.0.0",
     "morgan": "1.10.0",
-    "natural": "6.8.0",
+    "natural": "6.10.4",
     "pg": "8.11.3"
   },
   "devDependencies": {
