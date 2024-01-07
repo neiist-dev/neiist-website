@@ -44,7 +44,7 @@ jobs:
     needs: build_test
     steps:
       - name: Deploy to Production
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.0.3
         with:
           key: ${{ secrets.SSH_KEY }}
           host: ${{ secrets.SSH_HOST }}
