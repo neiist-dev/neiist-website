@@ -4,7 +4,7 @@
   "type": "module",
   "dependencies": {
     "@mantine/core": "^6.0.8",
-    "@mantine/hooks": "^6.0.8,
+    "@mantine/hooks": "^6.0.8",
     "axios": "1.6.8",
     "bootstrap": "5.3.3",
     "html-react-parser": "^5.0.0",
