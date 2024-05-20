@@ -34,7 +34,8 @@ To get a local copy up and running follow these simple example steps.
    ```sh
    docker-compose build --no-cache
    ```
-7. Up all containers
+7. Modify client package.json proxy value to `http://server:3001`. Make sure to add this change in any commit
+8. Up all containers
    ```sh
    docker-compose up
    ```
@@ -42,7 +43,7 @@ To get a local copy up and running follow these simple example steps.
    ```sh
    docker-compose up -d
    ```
-8. Whenever desired, close all container
+9. Whenever desired, close all container
    ```sh
    docker-compose down
    ```
