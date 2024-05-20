@@ -49,9 +49,9 @@ To get a local copy up and running follow these simple example steps.
 
 > Note:
 >  - Build and Deploy can be achieved with one command
->   ```sh
->   docker-compose up --build --no-cache
->   ```
+>    ```sh
+>    docker-compose up --build --no-cache
+>    ```
 
 ## Linux Base System
 
