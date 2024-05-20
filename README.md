@@ -25,8 +25,6 @@
     <a href="https://neiist.tecnico.ulisboa.pt"><strong>Go to Website »</strong></a>
     <br />
     <br />
-    <a src="https://github.com/neiist-dev/neiist-website/tree/master/doc/installation.md"><big>Getting Started</big></a>
-    <br />
     <a href="https://github.com/neiist-dev/neiist-website/issues">Report Bug</a>
     ·
     <a href="https://github.com/neiist-dev/neiist-website/issues">Request Feature</a>
@@ -78,6 +76,8 @@ Here's why:
 Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have have contributed to expanding this template!
 
 A list of commonly used resources that I find helpful are listed in the acknowledgements. -->
+
+### >> [Getting Started](./doc/installation.md)
 
 ### Built With
 
