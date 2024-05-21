@@ -79,7 +79,7 @@ A list of commonly used resources that I find helpful are listed in the acknowle
 
 ### Getting Started
 
-* [Installation](./doc/installation.md)
+* [Installation](./readme/installation.md)
 
 ### Built With
 

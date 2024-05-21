@@ -9,4 +9,4 @@ RUN npm install
 COPY $FOLDER/ /opt/app
 
 EXPOSE $PORT
-ENTRYPOINT npm "$COMMAND"
+ENTRYPOINT npm $COMMAND
