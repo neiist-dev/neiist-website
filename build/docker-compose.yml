@@ -3,14 +3,11 @@ services:
   client:
     container_name: $CLIENT_NAME
     build:
-      context: ../
-      dockerfile: build/Dockerfile
-      args:
-        FOLDER: $CLIENT_FOLDER
+      context: ../client/
+      dockerfile: ../build/Dockerfile
     environment:
       COMMAND: $NODE_COMMAND
       PORT: $CLIENT_PORT
-      SERVER_HOST: server
     ports:
       - $CLIENT_PORT:$CLIENT_PORT
     volumes:
@@ -22,14 +19,12 @@ services:
   server:
     container_name: $SERVER_NAME
     build:
-      context: ../
-      dockerfile: build/Dockerfile
-      args:
-        FOLDER: $SERVER_FOLDER
+      context: ../server/
+      dockerfile: ../build/Dockerfile
     environment:
       COMMAND: $NODE_COMMAND
-      PGHOST: ${PGHOST:-postgres}
       PORT: $SERVER_PORT
+      PGHOST: ${PGHOST:-postgres}
     ports:
       - $SERVER_PORT:$SERVER_PORT
     volumes:
