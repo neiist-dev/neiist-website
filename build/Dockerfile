@@ -2,11 +2,12 @@ FROM node:21.4.0-bullseye-slim
 
 WORKDIR /opt/app
 
-ARG FOLDER
 COPY ./package*.json /opt/app/
 RUN npm install
 
 COPY ./ /opt/app
 
+ARG PORT
 EXPOSE $PORT
-ENTRYPOINT npm $COMMAND
+
+ENTRYPOINT ["npm"]

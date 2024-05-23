@@ -5,14 +5,14 @@ services:
     build:
       context: ../client/
       dockerfile: ../build/Dockerfile
-    environment:
-      COMMAND: $NODE_COMMAND
-      PORT: $CLIENT_PORT
+      args:
+        PORT: $CLIENT_PORT
     ports:
       - $CLIENT_PORT:$CLIENT_PORT
     volumes:
       - ../client/:/opt/app/
       - /opt/app/node_modules
+    command: $NPM_COMMAND
     depends_on:
       - server
 
@@ -21,15 +21,16 @@ services:
     build:
       context: ../server/
       dockerfile: ../build/Dockerfile
+      args:
+        PORT: $SERVER_PORT
     environment:
-      COMMAND: $NODE_COMMAND
-      PORT: $SERVER_PORT
       PGHOST: ${PGHOST:-postgres}
     ports:
       - $SERVER_PORT:$SERVER_PORT
     volumes:
       - ../server/:/opt/app/
       - /opt/app/node_modules
+    command: $NPM_COMMAND
     depends_on:
       postgres:
         condition: service_healthy
