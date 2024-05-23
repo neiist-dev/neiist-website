@@ -24,7 +24,7 @@ To get a local copy up and running follow these simple example steps.
 
 1. Install Docker Desktop for Windows/MacOS or simply install Docker in Linux
 2. Check if Docker-Compose is installed by checking `docker-compose version`
-3. Go to [build/](build/) folder
+3. Go to [build/](../build/) folder
 4. Build: Create .env file
    ```sh
    cp .env.example .env
@@ -34,7 +34,7 @@ To get a local copy up and running follow these simple example steps.
    ```sh
    docker-compose build --no-cache
    ```
-7. Modify client package.json proxy value to `http://server:3001`. Make sure to add this change in any commit
+7. Modify [client/package.json](../client/package.json) proxy value to `http://server:3001`. Make sure to ***not*** add this change in any commit
 8. Up all containers
    ```sh
    docker-compose up
