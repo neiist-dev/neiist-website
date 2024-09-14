@@ -21,7 +21,7 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"
   },
   "overrides": {
-    "autoprefixer": "10.4.19"
+    "autoprefixer": "10.4.20"
   },
   "scripts": {
     "start": "react-scripts start",
