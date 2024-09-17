@@ -5,6 +5,7 @@ import {
   Avatar,
   Badge,
   Group,
+  Table,
   Text,
   Tooltip,
   Anchor,
@@ -25,10 +26,10 @@ const colorStatus = {
 
 export const memberRow = (members, collabs, handleMoreInfo) => {
   const rows = members?.map((member, index) => (
-    <tr key={member.username} className={style.tableClass} style={index % 2 === 1
+    <Table.Tr key={member.username} className={style.tableClass} style={index % 2 === 1
       ? { backgroundColor: "rgb(53, 209, 250,0.025)" }
       : { backgroundColor: "rgb(36, 139, 227,0.075)" }}>
-      <td style={{borderRadius: "1em 0 0 1em"}}>
+      <Table.Td style={{borderRadius: "1em 0 0 1em"}}>
         <Group spacing="md">
           <Avatar size={60} src={fenixPhoto(member.username)} radius={20} />
           <div>
@@ -56,16 +57,16 @@ export const memberRow = (members, collabs, handleMoreInfo) => {
             </Text>
           </div>
         </Group>
-      </td>
+      </Table.Td>
 
-      <td className={style.EmailTable}>
+      <Table.Td className={style.EmailTable}>
         <Anchor href={`mailto:${member.email}`} size="md">
           <Text fz="sm" fw={500}>
             {member.email}
           </Text>
         </Anchor>
-      </td>
-      <td>
+      </Table.Td>
+      <Table.Td>
         <Badge
           fullWidth
           size="lg"
@@ -76,9 +77,9 @@ export const memberRow = (members, collabs, handleMoreInfo) => {
         >
           {member.status.replace(/([A-Z])/g, " $1").trim()}
         </Badge>
-      </td>
-      <td style={{borderRadius: "0 1em 1em 0"}}>
-        <Group spacing={0} position="right">
+      </Table.Td>
+      <Table.Td style={{borderRadius: "0 1em 1em 0"}}>
+        <Group spacing={0} justify="center">
         <Tooltip
             position="top"
             withArrow
@@ -113,8 +114,8 @@ export const memberRow = (members, collabs, handleMoreInfo) => {
             </ActionIcon>
           </Tooltip>
         </Group>
-      </td>
-    </tr>
+      </Table.Td>
+    </Table.Tr>
   ));
 
   return rows;

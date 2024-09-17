@@ -5,8 +5,10 @@ import {
   Route,
   Navigate
 } from "react-router-dom";
+import { MantineProvider } from '@mantine/core';
 
 import "./App.css";
+import '@mantine/core/styles.css'; // importing required mantine styles
 import "bootstrap/dist/css/bootstrap.min.css"; // importing required bootstrap styles
 
 import UserDataContext from "./UserDataContext.js";
@@ -100,13 +102,15 @@ const App = () => {
 
   return (
     <UserDataContext.Provider value={{ userData, setUserData }}>
-			<BrowserRouter>
-				<Layout>
-					<Suspense fallback={<LoadSpinner />}>
-						<DefinedRoutes />
-					</Suspense>
-				</Layout>
-			</BrowserRouter>
+      <MantineProvider>
+        <BrowserRouter>
+          <Layout>
+            <Suspense fallback={<LoadSpinner />}>
+              <DefinedRoutes />
+            </Suspense>
+          </Layout>
+        </BrowserRouter>
+      </MantineProvider>
 		</UserDataContext.Provider>
   );
 };
