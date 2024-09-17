@@ -21,7 +21,7 @@ const GacPage = () => {
       variant="pills"
       color="gray"
       defaultValue="active"
-      onTabChange={setActiveTab}
+      onChange={setActiveTab}
     >
       <Tabs.List className={style.tabsList}>
         <Tabs.Tab style={{ fontWeight: "bold" }} value="active">

@@ -55,7 +55,7 @@ export const EmailsAndRenewalButtons = ({ members }) => {
         label="Ver Emails de Sócios Regulares"
       >
         <Button
-          leftIcon={<MdEmail size="1.25em" />}
+          leftSection={<MdEmail size="1.25em" />}
           onClick={handleShowRegularEmails}
         >
           Sócios Regulares
@@ -68,7 +68,7 @@ export const EmailsAndRenewalButtons = ({ members }) => {
         label="Ver Emails de Sócios Eleitores"
       >
         <Button
-          leftIcon={<MdEmail size="1.25em" />}
+          leftSection={<MdEmail size="1.25em" />}
           onClick={handleShowRenewEmails}
         >
           Sócios Eleitores
@@ -82,7 +82,7 @@ export const EmailsAndRenewalButtons = ({ members }) => {
       >
         <Button
           color="red"
-          leftIcon={<MdAutorenew size="1.25em" />}
+          leftSection={<MdAutorenew size="1.25em" />}
           onClick={handleshowRenewMembers}
         >
           Renovações

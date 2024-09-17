@@ -36,15 +36,15 @@ export function MembersTable({ members }) {
       />
       <ScrollArea>
         <Table verticalSpacing="sm">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th className={style.EmailTable}>Email</th>
-              <th>Estado</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Nome</Table.Th>
+              <Table.Th className={style.EmailTable}>Email</Table.Th>
+              <Table.Th>Estado</Table.Th>
+              <Table.Th />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
         </Table>
       </ScrollArea>
     </>
