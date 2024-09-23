@@ -1,25 +1,25 @@
 {
-  "anoLetivo": "2023/2024",
+  "anoLetivo": "2024/2025",
   "orgaosSociais": {
     "Direção": {
-      "Presidente": "Mafalda Ribeiro",
-      "Vice-Presidente" : "Vadym Volkovinskyy",
-      "Vogal" : "Miguel Mendo",
-      "Diretor de Atividades (Alameda)" : "Ricardo Almeida",
-      "Diretora de Atividades (Taguspark)" : "Andreia Azevedo",
-      "Diretora SINFO" : "Daniela Carvalho",
-      "Tesoureiro" : "Miguel Vicente"
+      "Presidente": "Ricardo Almeida",
+      "Vice-Presidente" : "Inês Garcia",
+      "Vogal" : "Madalena Cunha",
+      "Diretora de Atividades (Alameda)" : "Luana Ferraz",
+      "Diretor de Atividades (Taguspark)" : "Guilherme Batalheiro",
+      "Diretora SINFO" : "Constança Cunha",
+      "Tesoureiro" : "André Romão"
     },
     "Mesa da Assembleia Geral": {
-      "Presidente": "Mariana Laranjo",
-      "Vice-Presidente" : "Tomás Morais",
-      "Secretário1": "Gustavo Rodrigues",
-      "Secretária2": "Beatriz Paulo"
+      "Presidente": "Matilde Tocha",
+      "Vice-Presidente" : "Juliana Marcelino",
+      "Secretário1": "Margarida Lourenço",
+      "Secretária2": "Diogo Pereira"
     },
     "Conselho Fiscal": {
-      "Presidente": "Teresa Correia",
-      "Membro1": "Luana Ferraz",
-      "Membro2": "Raquel Rodrigues"
+      "Presidente": "Francisca Almeida",
+      "Membro1": "Duarte Ponce",
+      "Membro2": "Lucas Pinto"
     }
   }
 }
