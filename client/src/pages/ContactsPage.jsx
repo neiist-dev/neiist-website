@@ -36,9 +36,9 @@ const ContactsPage = () => (
 			>
 				<Col md={5} lg={4} xl={3} style={{ margin: "0.5rem" }}>
 					<p>
-						Sala de Estudo, Sala 0.04
+						Sala 3.03
 						<br />
-						Pavilhão de Informática 2
+						Pavilhão de Informática I
 						<br />
 						Campus Alameda
 						<br />
