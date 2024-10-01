@@ -91,7 +91,7 @@ const Links = () => (
         <div><Link to="/estudantes"><p>Estudantes</p></Link></div>
         <div>
           <a href="https://sinfo.org" target="_blank">
-            <p>SINFO 30</p>
+            <p>SINFO 32</p>
           </a>
         </div>
       </div>
