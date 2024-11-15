@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, Suspense, lazy } from 'react';
 import {
-	BrowserRouter,
+  BrowserRouter,
   Routes,
   Route,
   Navigate
@@ -18,6 +18,7 @@ import LoadSpinner from "./hooks/loadSpinner.jsx";
 
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const AboutPage = lazy(() => import("./pages/AboutPage.jsx"));
+const ShopPage = lazy(() => import("./pages/ShopPage.jsx"));
 const RulesPage = lazy(() => import("./pages/RulesPage.jsx"));
 const ContactsPage = lazy(() => import("./pages/ContactsPage.jsx"));
 const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage.jsx"));
@@ -30,10 +31,10 @@ const GacPage = lazy(() => import("./pages/GacPage.jsx"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
 
 const Error = ({ error, errorDescription }) => (
-	<>
-		<h1>{error}</h1>
-		<p>{errorDescription}</p>
-	</>
+  <>
+    <h1>{error}</h1>
+    <p>{errorDescription}</p>
+  </>
 );
 
 const App = () => {
@@ -67,9 +68,9 @@ const App = () => {
   };
 
   const Redirect = (user) => window.location.replace(
-    user?.isCollab ? '/collab':
-    user?.isMember ? '/socios':
-    '/'
+    user?.isCollab ? '/collab' :
+      user?.isMember ? '/socios' :
+        '/'
   );
 
   useEffect(() => {
@@ -111,7 +112,7 @@ const App = () => {
           </Layout>
         </BrowserRouter>
       </MantineProvider>
-		</UserDataContext.Provider>
+    </UserDataContext.Provider>
   );
 };
 
@@ -121,6 +122,7 @@ const DefinedRoutes = () => (
     <Route exact path="/" element={<HomePage />} />
 
     <Route path="/sobre_nos" element={<AboutPage />} />
+    <Route path="/shop" element={<ShopPage />} />
     <Route path="/estatutos" element={<RulesPage />} />
     <Route path="/contactos" element={<ContactsPage />} />
 
@@ -160,7 +162,7 @@ const PrivateRoute = ({ condition, children }) => {
 };
 
 const ActiveTecnicoStudentRoute = ({ children }) => (
-	<PrivateRoute children={children} condition={'isActiveTecnicoStudent'} />
+  <PrivateRoute children={children} condition={'isActiveTecnicoStudent'} />
 );
 
 const ActiveLMeicStudentRoute = ({ children }) => (
