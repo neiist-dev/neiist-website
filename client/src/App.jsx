@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, Suspense, lazy } from 'react';
 import {
-	BrowserRouter,
+  BrowserRouter,
   Routes,
   Route,
   Navigate
@@ -29,11 +29,13 @@ const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage.jsx"));
 const GacPage = lazy(() => import("./pages/GacPage.jsx"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
 
+const AoCPage = lazy(() => import("./pages/aoc/AoCPage.jsx"));
+
 const Error = ({ error, errorDescription }) => (
-	<>
-		<h1>{error}</h1>
-		<p>{errorDescription}</p>
-	</>
+  <>
+    <h1>{error}</h1>
+    <p>{errorDescription}</p>
+  </>
 );
 
 const App = () => {
@@ -67,9 +69,9 @@ const App = () => {
   };
 
   const Redirect = (user) => window.location.replace(
-    user?.isCollab ? '/collab':
-    user?.isMember ? '/socios':
-    '/'
+    user?.isCollab ? '/collab' :
+      user?.isMember ? '/socios' :
+        '/'
   );
 
   useEffect(() => {
@@ -104,14 +106,23 @@ const App = () => {
     <UserDataContext.Provider value={{ userData, setUserData }}>
       <MantineProvider>
         <BrowserRouter>
-          <Layout>
-            <Suspense fallback={<LoadSpinner />}>
-              <DefinedRoutes />
-            </Suspense>
-          </Layout>
+          <Routes>
+            <Route path="/AoC" element={
+              <Suspense fallback={<LoadSpinner />}>
+                <AoCPage />
+              </Suspense>
+            } />
+            <Route path="/*" element={
+              <Layout>
+                <Suspense fallback={<LoadSpinner />}>
+                  <DefinedRoutes />
+                </Suspense>
+              </Layout>
+            } />
+          </Routes>
         </BrowserRouter>
       </MantineProvider>
-		</UserDataContext.Provider>
+    </UserDataContext.Provider>
   );
 };
 
@@ -160,7 +171,7 @@ const PrivateRoute = ({ condition, children }) => {
 };
 
 const ActiveTecnicoStudentRoute = ({ children }) => (
-	<PrivateRoute children={children} condition={'isActiveTecnicoStudent'} />
+  <PrivateRoute children={children} condition={'isActiveTecnicoStudent'} />
 );
 
 const ActiveLMeicStudentRoute = ({ children }) => (
