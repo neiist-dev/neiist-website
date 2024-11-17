@@ -19,6 +19,7 @@ import LoadSpinner from "./hooks/loadSpinner.jsx";
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const AboutPage = lazy(() => import("./pages/AboutPage.jsx"));
 const ShopPage = lazy(() => import("./pages/ShopPage.jsx"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage.jsx"));
 const RulesPage = lazy(() => import("./pages/RulesPage.jsx"));
 const ContactsPage = lazy(() => import("./pages/ContactsPage.jsx"));
 const ThesisMasterPage = lazy(() => import("./pages/ThesisMasterPage.jsx"));
@@ -123,6 +124,7 @@ const DefinedRoutes = () => (
 
     <Route path="/sobre_nos" element={<AboutPage />} />
     <Route path="/shop" element={<ShopPage />} />
+    <Route path="/checkout" element={<CheckoutPage />} />
     <Route path="/estatutos" element={<RulesPage />} />
     <Route path="/contactos" element={<ContactsPage />} />
 
