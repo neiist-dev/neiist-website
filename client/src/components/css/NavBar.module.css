@@ -1,12 +1,12 @@
-.onlyWeb{
+.onlyWeb {
   display: block !important;
 }
 
-.onWeb{
+.onWeb {
   display: flex !important;
 }
 
-.onMobile{
+.onMobile {
   display: none !important;
 }
 
@@ -44,13 +44,82 @@
   display: flex;
   align-items: center;
   text-align: center;
+  margin: 0px 10px;
+  cursor: pointer;
+  text-decoration: none !important;
   color: #000000 !important;
+}
+
+.navLink:hover {
+  color: #666 !important;
+}
+
+.navLink svg {
+  color: black;
+}
+
+.cartLink {
+  position: relative;
+  color: black !important;
+  text-decoration: none;
+  margin: 0 10px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.cartBadge {
+  position: absolute;
+  background-color: #0d6efd;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 1;
+}
+
+/* Posicionamento específico para desktop */
+@media (min-width: 768px) {
+  .cartBadge {
+    top: -8px;
+    right: -8px;
+  }
+}
+
+/* Posicionamento específico para mobile */
+@media (max-width: 767px) {
+  .cartBadge {
+    top: -5px;
+    left: 40px;
+  }
+
+  .cartLink {
+    margin: 8px 10px;
+  }
+
+  /* Se necessário, ajuste o tamanho do ícone no mobile */
+  .cartLink svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Se você estiver usando classes do Bootstrap para o menu mobile, 
+ pode precisar destes ajustes adicionais */
+:global(.navbar-nav) .cartLink {
+  padding: 0.5rem 1rem;
 }
 
 @media only screen and (max-width: 900px) {
   .navLink {
     font-size: 13px !important;
   }
+
   .navBarContainer img {
     height: 30px !important;
   }
@@ -61,9 +130,11 @@
     margin: 0em 6em 0.25em 6em;
     border-radius: 0px 0px 25px 25px;
   }
+
   .navBarContainer img {
     height: 20px !important;
   }
+
   .navSpace {
     padding: 37.5px 20px !important;
   }
@@ -76,21 +147,26 @@
 }
 
 @media only screen and (max-width: 750px) {
-  .onlyWeb{
+  .onlyWeb {
     display: none !important;
   }
-  .onMobile{
+
+  .onMobile {
     display: flex !important;
   }
+
   .navBar {
     margin: 0em 1em 0.25em 1em;
   }
+
   .navLink {
     font-size: 15px !important;
   }
+
   .navBarContainer img {
     height: 30px !important;
   }
+
   .navSpace {
     padding: 37.5px 20px !important;
   }
@@ -137,8 +213,8 @@
   background-size: cover;
   background-position: center center;
   float: right;
-  width:50px;
-  height:50px;
+  width: 50px;
+  height: 50px;
   border-radius: 25px;
 }
 
@@ -180,7 +256,7 @@
   margin-right: 7px;
   margin-left: 25px;
   width: 125px;
-  height: 22px; 
+  height: 22px;
   float: right;
 }
 
@@ -210,7 +286,7 @@
   box-shadow: 0px 4px 5px rgb(0 0 0 / 25%);
 }
 
-.moreInfo > * {
+.moreInfo>* {
   padding: 0 !important;
   color: white !important;
 }
