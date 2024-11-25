@@ -15,10 +15,10 @@ jobs:
    
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
           node-version: 21.4.0
 
@@ -44,7 +44,7 @@ jobs:
     needs: build_test
     steps:
       - name: Deploy to Production
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.1.0
         with:
           key: ${{ secrets.SSH_KEY }}
           host: ${{ secrets.SSH_HOST }}
