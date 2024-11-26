@@ -29,8 +29,6 @@ const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage.jsx"));
 const GacPage = lazy(() => import("./pages/GacPage.jsx"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
 
-const AoCPage = lazy(() => import("./pages/aoc/AoCPage.jsx"));
-
 const Error = ({ error, errorDescription }) => (
   <>
     <h1>{error}</h1>
@@ -107,17 +105,17 @@ const App = () => {
       <MantineProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/AoC" element={
-              <Suspense fallback={<LoadSpinner />}>
-                <AoCPage />
-              </Suspense>
-            } />
             <Route path="/*" element={
               <Layout>
                 <Suspense fallback={<LoadSpinner />}>
                   <DefinedRoutes />
                 </Suspense>
               </Layout>
+            } />
+            <Route path="/AoC" element={
+              <Suspense fallback={<LoadSpinner />}>
+                <meta httpEquiv="refresh" content="0;URL='/concurso.html'" />
+              </Suspense>
             } />
           </Routes>
         </BrowserRouter>
