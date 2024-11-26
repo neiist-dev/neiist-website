@@ -107,17 +107,17 @@ const App = () => {
       <MantineProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/AoC" element={
-              <Suspense fallback={<LoadSpinner />}>
-                <AoCPage />
-              </Suspense>
-            } />
             <Route path="/*" element={
               <Layout>
                 <Suspense fallback={<LoadSpinner />}>
                   <DefinedRoutes />
                 </Suspense>
               </Layout>
+            } />
+            <Route path="/AoC" element={
+              <Suspense fallback={<LoadSpinner />}>
+                <meta httpEquiv="refresh" content="0;URL='/concurso.html'" />
+              </Suspense>
             } />
           </Routes>
         </BrowserRouter>
