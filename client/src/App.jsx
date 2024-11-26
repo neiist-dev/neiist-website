@@ -29,6 +29,8 @@ const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage.jsx"));
 const GacPage = lazy(() => import("./pages/GacPage.jsx"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
 
+const AoCPage = lazy(() => import("./pages/aoc/AoCPage.jsx"));
+
 const Error = ({ error, errorDescription }) => (
   <>
     <h1>{error}</h1>
