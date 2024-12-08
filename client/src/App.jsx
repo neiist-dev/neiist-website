@@ -31,6 +31,8 @@ const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage.jsx"));
 const GacPage = lazy(() => import("./pages/GacPage.jsx"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
 
+const AoCPage = lazy(() => import("./pages/aoc/AoCPage.jsx"));
+
 const Error = ({ error, errorDescription }) => (
   <>
     <h1>{error}</h1>
@@ -106,11 +108,20 @@ const App = () => {
     <UserDataContext.Provider value={{ userData, setUserData }}>
       <MantineProvider>
         <BrowserRouter>
-          <Layout>
-            <Suspense fallback={<LoadSpinner />}>
-              <DefinedRoutes />
-            </Suspense>
-          </Layout>
+          <Routes>
+            <Route path="/*" element={
+              <Layout>
+                <Suspense fallback={<LoadSpinner />}>
+                  <DefinedRoutes />
+                </Suspense>
+              </Layout>
+            } />
+            <Route path="/AoC" element={
+              <Suspense fallback={<LoadSpinner />}>
+                <meta httpEquiv="refresh" content="0;URL='/concurso.html'" />
+              </Suspense>
+            } />
+          </Routes>
         </BrowserRouter>
       </MantineProvider>
     </UserDataContext.Provider>
