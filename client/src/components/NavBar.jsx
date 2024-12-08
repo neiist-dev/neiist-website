@@ -46,6 +46,9 @@ const NavBar = () => {
               <Nav.Link className={`${style.navLinkDisable} ${style.onWeb}`} as={Link}>
                 Estudante
               </Nav.Link>
+              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/shop">
+                Loja
+              </Nav.Link>
               <Nav.Link
                 className={`${style.cartLink} ${style.onWeb}`}
                 onClick={() => setIsCartOpen(true)}
