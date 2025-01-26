@@ -25,7 +25,52 @@ const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
   const [expanded, setExpanded] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const itemCount = 2;
+
+  // TODO: Implement cart count badge
+  // const [itemCount, setItemCount] = useState(() => {
+  //   try {
+  //     // Get cart data and handle potential invalid JSON
+  //     const cartData = localStorage.getItem("cart");
+  //     if (!cartData) return 0;
+
+  //     const cart = JSON.parse(cartData);
+  //     // Ensure cart is an array and return its length
+  //     return Array.isArray(cart) ? cart.length : 0;
+  //   } catch (error) {
+  //     // If there's any error parsing, reset cart and return 0
+  //     localStorage.setItem("cart", "[]");
+  //     return 0;
+  //   }
+  // });
+
+  // useEffect(() => {
+  //   const updateCartCount = () => {
+  //     try {
+  //       const cartData = localStorage.getItem("cart");
+  //       if (!cartData) {
+  //         setItemCount(0);
+  //         return;
+  //       }
+
+  //       const cart = JSON.parse(cartData);
+  //       setItemCount(Array.isArray(cart) ? cart.length : 0);
+  //     } catch (error) {
+  //       setItemCount(0);
+  //     }
+  //   };
+
+  //   // Listen for cart updates
+  //   window.addEventListener("storage", updateCartCount);
+  //   window.addEventListener("cartUpdated", updateCartCount);
+
+  //   // Initial check
+  //   updateCartCount();
+
+  //   return () => {
+  //     window.removeEventListener("storage", updateCartCount);
+  //     window.removeEventListener("cartUpdated", updateCartCount);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -34,19 +79,39 @@ const NavBar = () => {
           <Navbar.Brand as={Link} to="/">
             <img src={logo} alt="NEIIST LOGO" />
           </Navbar.Brand>
-          <Navbar.Toggle onClick={() => setExpanded(expanded ? false : "expanded")} />
+          <Navbar.Toggle
+            onClick={() => setExpanded(expanded ? false : "expanded")}
+          />
           <Navbar.Collapse>
-            <Nav style={{ marginLeft: 'auto' }} onClick={() => setExpanded(false)}>
-              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/sobre_nos">
+            <Nav
+              style={{ marginLeft: "auto" }}
+              onClick={() => setExpanded(false)}
+            >
+              <Nav.Link
+                className={`${style.navLink} ${style.onWeb}`}
+                as={Link}
+                to="/sobre_nos"
+              >
                 Sobre nós
               </Nav.Link>
-              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/contactos">
+              <Nav.Link
+                className={`${style.navLink} ${style.onWeb}`}
+                as={Link}
+                to="/contactos"
+              >
                 Contactos
               </Nav.Link>
-              <Nav.Link className={`${style.navLinkDisable} ${style.onWeb}`} as={Link}>
+              <Nav.Link
+                className={`${style.navLinkDisable} ${style.onWeb}`}
+                as={Link}
+              >
                 Estudante
               </Nav.Link>
-              <Nav.Link className={`${style.navLink} ${style.onWeb}`} as={Link} to="/shop">
+              <Nav.Link
+                className={`${style.navLink} ${style.onWeb}`}
+                as={Link}
+                to="/shop"
+              >
                 Loja
               </Nav.Link>
               <Nav.Link
@@ -54,14 +119,16 @@ const NavBar = () => {
                 onClick={() => setIsCartOpen(true)}
               >
                 <FaShoppingCart size={20} />
-                {itemCount > 0 && (
-                  <span className={style.cartBadge}>
-                    {itemCount}
-                  </span>
-                )}
+                {/* {itemCount > 0 && (
+                  <span className={style.cartBadge}>{itemCount}</span>
+                )} */}
               </Nav.Link>
 
-              <ActiveTecnicoStudentNavLink hide={style.onMobile} as={Link} to="/socio">
+              <ActiveTecnicoStudentNavLink
+                hide={style.onMobile}
+                as={Link}
+                to="/socio"
+              >
                 Sócios
               </ActiveTecnicoStudentNavLink>
 
@@ -69,7 +136,11 @@ const NavBar = () => {
                 Colaborador(a)
               </CollabNavLink>
 
-              <ActiveLMeicStudentNavLink hide={style.onMobile} as={Link} to="/thesismaster">
+              <ActiveLMeicStudentNavLink
+                hide={style.onMobile}
+                as={Link}
+                to="/thesismaster"
+              >
                 Thesis Master
               </ActiveLMeicStudentNavLink>
 
@@ -84,7 +155,7 @@ const NavBar = () => {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-      </div >
+      </div>
       <div className={style.navSpace} />
       <ShoppingCart show={isCartOpen} onHide={() => setIsCartOpen(false)} />
     </>
@@ -161,12 +232,11 @@ const LoginLogout = ({ userData, setUserData }) => {
 
   useEffect(() => {
     if (userData) {
-      fetchMemberStatus(userData.username)
-        .then((userStatus) => {
-          let newData = userData;
-          newData.status = userStatus ? userStatus : "NaoSocio";
-          setData(userData);
-        });
+      fetchMemberStatus(userData.username).then((userStatus) => {
+        let newData = userData;
+        newData.status = userStatus ? userStatus : "NaoSocio";
+        setData(userData);
+      });
     }
   }, [userData]);
 
@@ -225,52 +295,79 @@ const Logout = ({ setUserData }) => (
   </Nav.Link>
 );
 
-const DefaultLink = ({ children }) => (
-  isMobile ? children : <Link to="/socio">{children}</Link>
-);
+const DefaultLink = ({ children }) =>
+  isMobile ? children : <Link to="/socio">{children}</Link>;
 
 const LoggedIn = ({ userData, setUserData }) => {
   const [click, setClick] = useState(false);
   const [show, setShow] = useState(false);
 
-  const onMouseEnterFunction = () => { setShow(true); }
-  const onMouseLeaveFunction = () => { setShow(click); }
-  const onClickFunction = () => { isMobile && setClick(!click); setShow(!click); }
+  const onMouseEnterFunction = () => {
+    setShow(true);
+  };
+  const onMouseLeaveFunction = () => {
+    setShow(click);
+  };
+  const onClickFunction = () => {
+    isMobile && setClick(!click);
+    setShow(!click);
+  };
 
   return (
     <>
       <div className={`${style.loggedSpace} ${style.onlyWeb}`}>
-        <DefaultLink children={
-          <div className={style.loggedImage}
-            onClick={onClickFunction}
-            onMouseEnter={onMouseEnterFunction}
-            onMouseLeave={onMouseLeaveFunction}
-            style={userData && { backgroundImage: `url(${fenixPhoto(userData.username)})` }} />
-        } />
+        <DefaultLink
+          children={
+            <div
+              className={style.loggedImage}
+              onClick={onClickFunction}
+              onMouseEnter={onMouseEnterFunction}
+              onMouseLeave={onMouseLeaveFunction}
+              style={
+                userData && {
+                  backgroundImage: `url(${fenixPhoto(userData.username)})`,
+                }
+              }
+            />
+          }
+        />
 
-        <div className={style.loggedInfo}
+        <div
+          className={style.loggedInfo}
           onClick={onClickFunction}
           onMouseEnter={onMouseEnterFunction}
-          onMouseLeave={onMouseLeaveFunction}>
-          <DefaultLink children={
-            <div className={style.loggedName}> {summarizeName(userData.displayName)} </div>
-          } />
+          onMouseLeave={onMouseLeaveFunction}
+        >
+          <DefaultLink
+            children={
+              <div className={style.loggedName}>
+                {" "}
+                {summarizeName(userData.displayName)}{" "}
+              </div>
+            }
+          />
 
           <div className={style.logoutButton_MemberState}>
             <Logout setUserData={setUserData} />
-            <DefaultLink children={
-              <div className={style.memberStatus} style={{ background: statusToColor(userData.status) }}>
-                <div> {statusToString(userData.status)} </div>
-              </div>
-            } />
+            <DefaultLink
+              children={
+                <div
+                  className={style.memberStatus}
+                  style={{ background: statusToColor(userData.status) }}
+                >
+                  <div> {statusToString(userData.status)} </div>
+                </div>
+              }
+            />
           </div>
         </div>
-
       </div>
-      <div className={style.moreInfo}
+      <div
+        className={style.moreInfo}
         onMouseEnter={onMouseEnterFunction}
         onMouseLeave={onMouseLeaveFunction}
-        style={show ? { display: 'flex' } : { display: 'none' }}>
+        style={show ? { display: "flex" } : { display: "none" }}
+      >
         <ActiveTecnicoStudentNavLink hide={style.onWeb} as={Link} to="/socio">
           Sócio
         </ActiveTecnicoStudentNavLink>
@@ -279,7 +376,11 @@ const LoggedIn = ({ userData, setUserData }) => {
           Colaborador(a)
         </CollabNavLink>
 
-        <ActiveLMeicStudentNavLink hide={style.onWeb} as={Link} to="/thesismaster">
+        <ActiveLMeicStudentNavLink
+          hide={style.onWeb}
+          as={Link}
+          to="/thesismaster"
+        >
           Thesis Master
         </ActiveLMeicStudentNavLink>
 
