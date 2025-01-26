@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Tabs } from "@mantine/core";
 import { BiSearch } from "react-icons/bi";
-import { ActiveOrdersPage } from "../components/ordersPage/ActiveOrdersPage";
+import { AllOrdersPage } from "../components/ordersPage/AllOrdersPage";
 import { SearchOrders } from "../components/ordersPage/SearchOrders";
 
 import UserDataContext from "../UserDataContext";
@@ -29,7 +29,16 @@ export const OrdersPage = () => {
       >
         <Tabs.List>
           <Tabs.Tab value="active" style={{ fontWeight: "bold" }}>
-            Active Orders
+            All Orders
+          </Tabs.Tab>
+          <Tabs.Tab value="pending" style={{ fontWeight: "bold" }}>
+            Pending Orders
+          </Tabs.Tab>
+          <Tabs.Tab value="paid" style={{ fontWeight: "bold" }}>
+            Paid Orders
+          </Tabs.Tab>
+          <Tabs.Tab value="delivered" style={{ fontWeight: "bold" }}>
+            Delivered Orders
           </Tabs.Tab>
           <Tabs.Tab value="search" style={{ fontWeight: "bold" }}>
             Search <BiSearch size="1.25em" />
@@ -37,10 +46,19 @@ export const OrdersPage = () => {
         </Tabs.List>
 
         <Tabs.Panel value="active" pt="xs">
-          <ActiveOrdersPage
-            keySelected={activeTab}
-            loggedInUser={loggedInUser}
-          />
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="pending" pt="xs">
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="paid" pt="xs">
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="delivered" pt="xs">
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
         </Tabs.Panel>
 
         <Tabs.Panel value="search" pt="xs">
