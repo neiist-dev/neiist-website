@@ -58,7 +58,6 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
 
   useEffect(() => {
     if (allOrders) {
-      console.log(allOrders);
       setBcc(allOrders.map((order) => order.email).join(","));
     }
   }, [allOrders]);

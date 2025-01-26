@@ -334,8 +334,6 @@ export const generateExcel = async (orders) => {
 
     const blob = await response.blob();
 
-    console.log("Excel file generated successfully", blob);
-
     return blob; // Blob containing the Excel file to download
   } catch (error) {
     console.error("Failed to generate Excel:", error);
