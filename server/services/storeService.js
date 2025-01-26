@@ -183,6 +183,7 @@ const exportExcel = async (orders) => {
     const workbook = new ExcelJS.Workbook();
     const alamedaSheet = workbook.addWorksheet("Encomendas Alameda");
     const tagusSheet = workbook.addWorksheet("Encomendas Tagus");
+    const itemsSheet = workbook.addWorksheet("Items");
 
     const alamedaOrders = orders.filter(
       (order) => order.campus.toLowerCase() === "alameda"
@@ -213,8 +214,30 @@ const exportExcel = async (orders) => {
       },
     ];
 
+    const itemColumns = [
+      { header: "Order ID", key: "order_id", width: 15 },
+      { header: "Product ID", key: "product_id", width: 15 },
+      { header: "Size", key: "size", width: 10 },
+      { header: "Quantity", key: "quantity", width: 10 },
+      {
+        header: "Unit Price",
+        key: "unit_price",
+        width: 15,
+        style: { numFmt: "€#,##0.00" },
+      },
+      {
+        header: "Total",
+        key: "total",
+        width: 15,
+        style: { numFmt: "€#,##0.00" },
+      },
+      { header: "Customer Name", key: "customer_name", width: 30 },
+      { header: "Campus", key: "campus", width: 15 },
+    ];
+
     alamedaSheet.columns = columns;
     tagusSheet.columns = columns;
+    itemsSheet.columns = itemColumns;
 
     alamedaOrders.forEach((order) => {
       alamedaSheet.addRow({
@@ -228,6 +251,19 @@ const exportExcel = async (orders) => {
         delivered: order.delivered ? "Yes" : "No",
         payment_responsible: order.payment_responsible || "",
         delivery_responsible: order.delivery_responsible || "",
+      });
+
+      order.items?.forEach((item) => {
+        itemsSheet.addRow({
+          order_id: order.order_id,
+          product_id: item.product_id,
+          size: item.size,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total: item.quantity * item.unit_price,
+          customer_name: order.name,
+          campus: order.campus,
+        });
       });
     });
 
@@ -244,9 +280,22 @@ const exportExcel = async (orders) => {
         payment_responsible: order.payment_responsible || "",
         delivery_responsible: order.delivery_responsible || "",
       });
+
+      order.items?.forEach((item) => {
+        itemsSheet.addRow({
+          order_id: order.order_id,
+          product_id: item.product_id,
+          size: item.size,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total: item.quantity * item.unit_price,
+          customer_name: order.name,
+          campus: order.campus,
+        });
+      });
     });
 
-    [alamedaSheet, tagusSheet].forEach((worksheet) => {
+    [alamedaSheet, tagusSheet, itemsSheet].forEach((worksheet) => {
       worksheet.getRow(1).font = { bold: true };
       worksheet.getRow(1).fill = {
         type: "pattern",
@@ -267,7 +316,7 @@ const exportExcel = async (orders) => {
 
       worksheet.autoFilter = {
         from: { row: 1, column: 1 },
-        to: { row: 1, column: columns.length },
+        to: { row: 1, column: worksheet.columns.length },
       };
     });
 
