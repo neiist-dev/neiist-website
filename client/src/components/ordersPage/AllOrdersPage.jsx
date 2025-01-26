@@ -3,7 +3,7 @@ import { Badge, Tooltip, Button, Group } from "@mantine/core";
 import { MdDownload, MdEmail } from "react-icons/md";
 import { OrdersTable } from "./OrdersTable.jsx";
 import LoadSpinner from "../../hooks/loadSpinner.jsx";
-import { fetchAllOrdersDetails } from "../../Api.service.js";
+import { fetchAllOrdersDetails, generateExcel } from "../../Api.service.js";
 
 export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
   const [allOrders, setOrders] = useState(null);
@@ -15,7 +15,6 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
       fetchAllOrdersDetails()
         .then((ordersRes) => {
           setOrders(ordersRes);
-          setBcc(ordersRes.map((order) => order.email).join(","));
         })
         .catch((err) => {
           setError(err);
@@ -28,7 +27,6 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
           setOrders(
             ordersRes.filter((order) => !order.delivered && !order.paid)
           );
-          setBcc(ordersRes.map((order) => order.email).join(","));
         })
         .catch((err) => {
           setError(err);
@@ -41,7 +39,6 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
           setOrders(
             ordersRes.filter((order) => !order.delivered && order.paid)
           );
-          setBcc(ordersRes.map((order) => order.email).join(","));
         })
         .catch((err) => {
           setError(err);
@@ -52,15 +49,19 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
       fetchAllOrdersDetails()
         .then((ordersRes) => {
           setOrders(ordersRes.filter((order) => order.delivered));
-          setBcc(ordersRes.map((order) => order.email).join(","));
         })
         .catch((err) => {
           setError(err);
         });
     }
-
-    console.log("orders", allOrders);
   }, [keySelected]);
+
+  useEffect(() => {
+    if (allOrders) {
+      console.log(allOrders);
+      setBcc(allOrders.map((order) => order.email).join(","));
+    }
+  }, [allOrders]);
 
   const handleUpdateStatus = async (updatedOrder) => {
     try {
@@ -71,6 +72,23 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
       );
     } catch (error) {
       console.error("Failed to update order status:", error);
+    }
+  };
+
+  const downloadExcel = async (orders) => {
+    try {
+      const blob = await generateExcel(orders);
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "entrega-merch-neiist.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading excel:", error);
     }
   };
 
@@ -136,7 +154,7 @@ export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
               <Button
                 color="orange"
                 onClick={() => {
-                  /* Export Function */
+                  downloadExcel(allOrders);
                 }}
               >
                 <MdDownload size="1.25em" />

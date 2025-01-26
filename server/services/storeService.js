@@ -1,3 +1,4 @@
+const ExcelJS = require("exceljs");
 const { productsDatabase, ordersDatabase } = require("../database");
 
 // Product functions remain the same
@@ -173,6 +174,109 @@ const getOrderItems = async (orderId) => {
   return items;
 };
 
+const exportExcel = async (orders) => {
+  try {
+    if (!orders?.length) {
+      throw new Error("No orders to export");
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const alamedaSheet = workbook.addWorksheet("Encomendas Alameda");
+    const tagusSheet = workbook.addWorksheet("Encomendas Tagus");
+
+    const alamedaOrders = orders.filter(
+      (order) => order.campus.toLowerCase() === "alameda"
+    );
+    const tagusOrders = orders.filter(
+      (order) => order.campus.toLowerCase() === "taguspark"
+    );
+
+    const columns = [
+      { header: "Order ID", key: "order_id", width: 15 },
+      { header: "Name", key: "name", width: 30 },
+      { header: "Email", key: "email", width: 35 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "IST ID", key: "ist_id", width: 12 },
+      {
+        header: "Total Amount",
+        key: "total_amount",
+        width: 15,
+        style: { numFmt: "€#,##0.00" },
+      },
+      { header: "Paid", key: "paid", width: 10 },
+      { header: "Delivered", key: "delivered", width: 12 },
+      { header: "Payment Responsible", key: "payment_responsible", width: 20 },
+      {
+        header: "Delivery Responsible",
+        key: "delivery_responsible",
+        width: 20,
+      },
+    ];
+
+    alamedaSheet.columns = columns;
+    tagusSheet.columns = columns;
+
+    alamedaOrders.forEach((order) => {
+      alamedaSheet.addRow({
+        order_id: order.order_id,
+        name: order.name,
+        email: order.email,
+        phone: order.phone || "",
+        ist_id: order.ist_id,
+        total_amount: order.total_amount,
+        paid: order.paid ? "Yes" : "No",
+        delivered: order.delivered ? "Yes" : "No",
+        payment_responsible: order.payment_responsible || "",
+        delivery_responsible: order.delivery_responsible || "",
+      });
+    });
+
+    tagusOrders.forEach((order) => {
+      tagusSheet.addRow({
+        order_id: order.order_id,
+        name: order.name,
+        email: order.email,
+        phone: order.phone || "",
+        ist_id: order.ist_id,
+        total_amount: order.total_amount,
+        paid: order.paid ? "Yes" : "No",
+        delivered: order.delivered ? "Yes" : "No",
+        payment_responsible: order.payment_responsible || "",
+        delivery_responsible: order.delivery_responsible || "",
+      });
+    });
+
+    [alamedaSheet, tagusSheet].forEach((worksheet) => {
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.getRow(1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFE0E0E0" },
+      };
+
+      worksheet.eachRow({ includeEmpty: true }, (row) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        });
+      });
+
+      worksheet.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: 1, column: columns.length },
+      };
+    });
+
+    return await workbook.xlsx.writeBuffer();
+  } catch (error) {
+    throw new Error(`Failed to generate Excel file: ${error.message}`);
+  }
+};
+
 module.exports = {
   getAllProducts,
   getAllAvalilableProducts,
@@ -196,4 +300,5 @@ module.exports = {
   markOrderAsDelivered,
   markOrderAsNotDelivered,
   getOrderItems,
+  exportExcel,
 };

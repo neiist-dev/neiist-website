@@ -491,4 +491,57 @@ storeRoute.patch("/orders/:id/status", async (req, res) => {
   }
 });
 
+/**
+ * Delete order
+ * DELETE /store/orders/:id
+ */
+storeRoute.delete("/orders/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    await storeService.deleteOrder(id);
+
+    res.json({
+      message: "Order deleted successfully",
+      orderId: id,
+    });
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    res.status(500).json({ error: error.message || "Failed to delete order" });
+  }
+});
+
+/**
+ * Export orders to Excel
+ * POST /store/orders/export
+ */
+storeRoute.post("/orders/export", async (req, res) => {
+  try {
+    const orders = req.body;
+
+    if (!orders || orders.length === 0) {
+      return res.status(400).json({ error: "No orders to export" });
+    }
+
+    const xls = await storeService.exportExcel(orders);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=entrega-merch-neiist.xlsx"
+    );
+    res.send(Buffer.from(xls));
+  } catch (error) {
+    console.error("Error exporting orders:", error);
+    res.status(500).json({ error: error.message || "Failed to export orders" });
+  }
+});
+
 module.exports = storeRoute;
