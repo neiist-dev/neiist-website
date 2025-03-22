@@ -25,8 +25,6 @@
     <a href="https://neiist.tecnico.ulisboa.pt"><strong>Go to Website »</strong></a>
     <br />
     <br />
-    <!-- <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    · -->
     <a href="https://github.com/neiist-dev/neiist-website/issues">Report Bug</a>
     ·
     <a href="https://github.com/neiist-dev/neiist-website/issues">Request Feature</a>
@@ -79,107 +77,13 @@ Of course, no one template will serve all projects since your needs may be diffe
 
 A list of commonly used resources that I find helpful are listed in the acknowledgements. -->
 
+### Getting Started
+
+* [Installation](./readme/installation.md)
+
 ### Built With
 
-<!-- This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples. -->
-* [React](https://reactjs.org/)
-* [React Bootstrap](https://react-bootstrap.github.io/)
-* [Node.js](https://nodejs.org/en/)
-* [Express](http://expressjs.com/)
-* [PostgreSQL](https://www.postgresql.org/)
-
-
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-<!-- This is an example of how you may give instructions on setting up your project locally. -->
-To get a local copy up and running follow these simple example steps.
-
-### Prerequisites
-
-<!-- This is an example of how to list things you need to use the software and how to install them. -->
-
-* NPM
-  ```sh
-  sudo apt install npm
-  ```
-
-* Node.js
-  ```sh
-  sudo apt install nodejs
-  ```
-
-* PostgreSQL
-  ```sh
-  sudo apt install postgresql
-  ```
-
-### Installation
-
-1. Create a Fénix application with a Redirect Url of `http://localhost:3000/` and a Scope of `Informações` at [https://fenix.tecnico.ulisboa.pt/personal/external-applications/#/applications](https://fenix.tecnico.ulisboa.pt/personal/external-applications/#/applications)
-2. Create a PostgreSQL database
-   ```sh
-   sudo -i -u postgres
-   psql
-   CREATE DATABASE neiist;
-   \q
-   exit
-   ```
-3. Clone the repo
-   ```sh
-	cd folder-where-i-keep-my-repos/
-   git clone https://github.com/neiist-dev/neiist-website.git
-   ```
-4. Server: Install NPM packages
-   ```sh
-   cd server/
-   npm install
-   ```
-5. Server: Create .env file
-   ```sh
-   cp .env.example .env
-   ```
-6. Server: Populate the .env file with your Fénix application and database credentials
-7. Server: Run
-   ```sh
-   npm start
-   ```
-8. Client: Install NPM packages
-   ```sh
-   cd ../client/
-   npm install
-   ```
-9. Client: Create .env file
-   ```sh
-   cp .env.example .env
-   ```
-10. Client: Populate the .env file with your Fénix application credentials
-11. Client: Run
-    ```sh
-    npm start
-    ```
-
-
-### Alternative: Docker for database
-
-1. Pull postgres image
-   ```sh
-   docker pull postgres:alpine
-   ```
-2. Create and run the container
-   ```sh
-   docker run -itd -e POSTGRES_PASSWORD=<PASSWORD> -p 5432:5432 -v <HOST_FOLDER>:/var/lib/postgresql/data --name postgresql postgres:alpine
-   ```
-3. Create database
-   ```sh
-   docker exec -it postgresql bash
-   psql -U postgres
-   CREATE DATABASE neiist;
-   \q
-   exit
-   ```
-Note: the env variable PGHOST should be localhost
+> [React](https://reactjs.org/), [React Bootstrap](https://react-bootstrap.github.io/), [Node.js](https://nodejs.org/en/), [Express](http://expressjs.com/), [PostgreSQL](https://www.postgresql.org/)
 
 
 <!-- USAGE EXAMPLES -->

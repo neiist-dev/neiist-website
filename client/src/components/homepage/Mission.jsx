@@ -1,4 +1,4 @@
-import BlueWhiteBox from './BlueWhiteBox';
+import BlueWhiteBox from './BlueWhiteBox.jsx';
 import style from '../../pages/css/HomePage.module.css'
 
 const Mission = () => {

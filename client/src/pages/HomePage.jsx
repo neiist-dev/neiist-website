@@ -1,12 +1,12 @@
 import React from 'react';
 import {Row, Col} from 'react-bootstrap';
 
-import Hero from '../components/homepage/Hero';
-import Objectives from '../components/homepage/Objectives';
-import Activities from '../components/homepage/Activities';
-import Sinfo from '../components/homepage/Sinfo';
-import Partnerships from '../components/homepage/Partnerships';
-import Mission from '../components/homepage/Mission';
+import Hero from '../components/homepage/Hero.jsx';
+import Objectives from '../components/homepage/Objectives.jsx';
+import Activities from '../components/homepage/Activities.jsx';
+import Sinfo from '../components/homepage/Sinfo.jsx';
+import Partnerships from '../components/homepage/Partnerships.jsx';
+import Mission from '../components/homepage/Mission.jsx';
 import style from './css/HomePage.module.css'
 
 const HomePage = () => {

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
+import { fetchThesis, fetchThesisAreas } from '../Api.service.js';
+
 import axios from 'axios';
 
 const AdminThesesPage = () => (
@@ -19,8 +21,8 @@ const ViewTheses = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/theses').then((res) => res.json()),
-      fetch('/api/areas').then((res) => res.json()),
+      fetchThesis(),
+      fetchThesisAreas(),
     ]).then(([fetchTheses, fetchAreas]) => {
       setTheses(fetchTheses);
       setAreas(fetchAreas);

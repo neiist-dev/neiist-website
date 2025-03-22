@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useContext, lazy } from 'react';
 import Accordion from 'react-bootstrap/Accordion';
 
-import UserDataContext from '../UserDataContext';
+import UserDataContext from '../UserDataContext.js';
 import style from './css/CollabsPage.module.css';
 
-import { fenixPhoto, summarizeName } from "../components/functions/dataTreatment";
+import { fenixPhoto, summarizeName } from "../components/functions/dataTreatment.jsx";
 import {
   allTeamNames,
   filterTeamMembers,
   normalizeTeams,
   getCollabImage,
-} from "../components/functions/collabsGeneral";
+} from "../components/functions/collabsGeneral.jsx";
+import { fetchAllCollabs, fetchCollabInformation } from '../Api.service.js';
 
 const ManageCollabs = lazy(() => import("../components/collabs/ManageCollabs.jsx"));
 const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"));
@@ -18,14 +19,14 @@ const DivPersonCard = lazy(() => import("../components/collabs/CollabCard.jsx"))
 
 const CollabsPage = () => {
   const { userData } = useContext(UserDataContext);
-  const [selectedKey, setSelectedKey] = useState(userData.isCoordenator ? 1 : 2);
+  const [selectedKey, setSelectedKey] = useState((userData.isCoordenator || userData.isAdmin ) ? 1 : 2);
 
   return (
     <div className={style.mainPage}>
       <CurrentCollabInfoPanel userData={userData} />
       <div className={style.teamsPainel}>
-        <Accordion style={{ width: '100%', padding: '0' }} defaultActiveKey={userData.isCoordenator ? '1' : '2'}>
-          {userData.isCoordenator &&
+        <Accordion style={{ width: '100%', padding: '0' }} defaultActiveKey={(userData.isCoordenator || userData.isAdmin) ? '1' : '2'}>
+          {userData.isCoordenator || userData.isAdmin &&
             <Accordion.Item onClick={() => { setSelectedKey(1) }} eventKey="1">
               <Accordion.Header><b>✨ Gerir Colaboradores</b></Accordion.Header>
               <Accordion.Body style={{ width: '100%', paddingLeft: '0', paddingRight: '0' }}>
@@ -85,8 +86,7 @@ const CurrentTeams = ({ selectedKey, userData }) => {
 
   useEffect(() => {
     if (selectedKey == 2 && !currentTeamMembers) {
-      fetch(`/api/collabs/info/${userData.username}`)
-        .then((res) => res.json())
+      fetchCollabInformation(userData.username)
         .then((res) => {
           userData.teams = (res.teams) ? res.teams : "";
           setCurrentTeamMembers(res.teamMembers);
@@ -114,8 +114,7 @@ const AllTeams = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 3 && !allCollabs) {
-      fetch(`/api/collabs/all`)
-        .then((res) => res.json())
+      fetchAllCollabs()
         .then((fetchAllCollabs) => {
           setAllCollabs(fetchAllCollabs);
         });

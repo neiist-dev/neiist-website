@@ -9,17 +9,18 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 
-import axios from 'axios';
 import Select from 'react-select';
-import LoadSpinner from "../../hooks/loadSpinner";
+import LoadSpinner from "../../hooks/loadSpinner.jsx";
 import style from '../../pages/css/CollabsPage.module.css';
 
 import DivPersonCard from "./CollabCard";
 import { FcDownload } from 'react-icons/fc';
-import { summarizeName } from '../functions/dataTreatment';
-import { getCollabImage, allTeamNames } from "../functions/collabsGeneral";
-import { downloadCurrentCollabsFile } from '../functions/exportXLSX';
+import { summarizeName } from '../functions/dataTreatment.jsx';
+import { getCollabImage, allTeamNames } from "../functions/collabsGeneral.jsx";
+import { downloadCurrentCollabsFile } from '../functions/exportXLSX.js';
+import { fetchAllCollabs } from '../../Api.service.js';
 
+import axios from 'axios';
 
 const ManageCollabs = ({ selectedKey }) => {
   const [allMembers, setAllMembers] = useState(null);
@@ -30,10 +31,9 @@ const ManageCollabs = ({ selectedKey }) => {
 
   useEffect(() => {
     if (selectedKey == 1 && !isLoaded) {
-      fetch(`/api/collabs/all`)
-        .then((res) => res.json())
-        .then((fetchAllMembers) => {
-          setAllMembers(fetchAllMembers);
+      fetchAllCollabs()
+        .then((allCollabs) => {
+          setAllMembers(allCollabs);
           setIsLoaded(true);
         });
     }

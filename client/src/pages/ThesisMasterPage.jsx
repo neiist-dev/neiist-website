@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
+import { fetchThesis, fetchThesisAreas } from '../Api.service.js';
 
 const ThesisMasterPage = () => {
   const [areas, setAreas] = useState(null);
@@ -29,8 +30,7 @@ const Areas = ({
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/areas')
-      .then((res) => res.json())
+    fetchThesisAreas()
       .then(
         (areasRes) => {
           setAreas(areasRes);
@@ -102,8 +102,7 @@ const Theses = ({ areas, checkedAreas }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/theses')
-      .then((res) => res.json())
+    fetchThesis()
       .then(
         (res) => {
           setTheses(res);

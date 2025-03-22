@@ -1,10 +1,11 @@
 import "@testing-library/jest-dom";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { act } from "react";
 import { within } from "@testing-library/dom";
-import MemberPage from "../../../pages/MemberPage";
-import UserDataContext from "../../../UserDataContext";
-import { act } from "react-dom/test-utils";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+
 import { electionsMock, userDataMock } from "../mockData/MemberPage";
+import MemberPage from "../../../pages/MemberPage";
+import UserDataContext from "../../../UserDataContext.js";
 
 describe("MembersPage", () => {
 

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import LoadSpinner from "../hooks/loadSpinner";
+import LoadSpinner from "../hooks/loadSpinner.jsx";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
+import { fetchThesisAreas } from '../Api.service.js';
+
 import axios from 'axios';
 
 const AdminAreasPage = () => (
@@ -19,8 +21,7 @@ const ViewAreas = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/api/areas')
-      .then((res) => res.json())
+    fetchThesisAreas()
       .then(
         (res) => {
           setAreas(res);

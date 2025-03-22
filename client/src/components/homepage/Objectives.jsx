@@ -1,5 +1,5 @@
-import BlueWhiteBox from './BlueWhiteBox';
-import ObjectiveItem from './ObjectiveItem';
+import BlueWhiteBox from './BlueWhiteBox.jsx';
+import ObjectiveItem from './ObjectiveItem.jsx';
 import style from '../../pages/css/HomePage.module.css'
 
 const Objectives = () => {

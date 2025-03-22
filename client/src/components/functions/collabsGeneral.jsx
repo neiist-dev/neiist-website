@@ -1,4 +1,4 @@
-import { fenixPhoto, normalizeName } from './dataTreatment';
+import { fenixPhoto, normalizeName } from './dataTreatment.jsx';
 
 export const allTeamNames = {
   CEQ: "Controlo & Qualidade",

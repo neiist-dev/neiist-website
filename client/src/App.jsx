@@ -5,14 +5,16 @@ import {
   Route,
   Navigate
 } from "react-router-dom";
+import { MantineProvider } from '@mantine/core';
 
 import "./App.css";
+import '@mantine/core/styles.css'; // importing required mantine styles
 import "bootstrap/dist/css/bootstrap.min.css"; // importing required bootstrap styles
 
-import UserDataContext from "./UserDataContext";
+import UserDataContext from "./UserDataContext.js";
 
-import Layout from "./components/Layout";
-import LoadSpinner from "./hooks/loadSpinner";
+import Layout from "./components/Layout.jsx";
+import LoadSpinner from "./hooks/loadSpinner.jsx";
 
 const ShopPage = lazy(() => import("./pages/ShopPage"));
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -101,13 +103,15 @@ const App = () => {
 
   return (
     <UserDataContext.Provider value={{ userData, setUserData }}>
-			<BrowserRouter>
-				<Layout>
-					<Suspense fallback={<LoadSpinner />}>
-						<DefinedRoutes />
-					</Suspense>
-				</Layout>
-			</BrowserRouter>
+      <MantineProvider>
+        <BrowserRouter>
+          <Layout>
+            <Suspense fallback={<LoadSpinner />}>
+              <DefinedRoutes />
+            </Suspense>
+          </Layout>
+        </BrowserRouter>
+      </MantineProvider>
 		</UserDataContext.Provider>
   );
 };
@@ -138,18 +142,6 @@ const DefinedRoutes = () => (
       path="/admin"
       element={<AdminRoute children={<AdminMenuPage />} />}
     />
-    <Route
-      path="/admin/areas"
-      element={<AdminRoute children={<AdminAreasPage />} />}
-    />
-    <Route
-      path="/admin/theses"
-      element={<AdminRoute children={<AdminThesesPage />} />}
-    />
-    <Route
-      path="/admin/elections"
-      element={<AdminRoute children={<AdminElectionsPage />} />}
-    />
 
     <Route
       path="/collab"
@@ -165,8 +157,7 @@ const DefinedRoutes = () => (
 
 const PrivateRoute = ({ condition, children }) => {
   const { userData } = useContext(UserDataContext);
-  return children;
-  return (userData && userData[condition])
+  return (userData && (userData.isAdmin || userData[condition]))
     ? children : <Navigate to="/" replace />;
 };
 

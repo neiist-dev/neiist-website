@@ -1,0 +1,56 @@
+name: neiist
+services:
+  client:
+    container_name: $CLIENT_NAME
+    build:
+      context: ../client/
+      dockerfile: ../build/Dockerfile
+      args:
+        PORT: $CLIENT_PORT
+    ports:
+      - $CLIENT_PORT:$CLIENT_PORT
+    volumes:
+      - ../client/:/opt/app/
+      - /opt/app/node_modules
+    command: $NPM_COMMAND
+    depends_on:
+      - server
+
+  server:
+    container_name: $SERVER_NAME
+    build:
+      context: ../server/
+      dockerfile: ../build/Dockerfile
+      args:
+        PORT: $SERVER_PORT
+    environment:
+      PGHOST: ${PGHOST:-postgres}
+    ports:
+      - $SERVER_PORT:$SERVER_PORT
+    volumes:
+      - ../server/:/opt/app/
+      - /opt/app/node_modules
+    command: $NPM_COMMAND
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    container_name: $POSTGRES_NAME
+    image: $POSTGRES_IMAGE
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_PORT: $POSTGRES_PORT
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    ports:
+      - $POSTGRES_PORT:$POSTGRES_PORT
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_data:

@@ -8,7 +8,7 @@ import { VscFeedback } from 'react-icons/vsc';
 import React,{ lazy } from 'react';
 import { Button } from 'react-bootstrap';
 
-import { allTeamNames } from '../functions/collabsGeneral';
+import { allTeamNames } from '../functions/collabsGeneral.jsx';
 import style from '../../pages/css/AboutPage.module.css'
 
 const CreateTeamModal = lazy(() => import('./TeamModal'));

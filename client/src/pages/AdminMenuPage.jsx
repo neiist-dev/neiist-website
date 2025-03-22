@@ -1,6 +1,5 @@
-import React from 'react';
-import Button from 'react-bootstrap/Button';
-import { Link } from 'react-router-dom';
+import React, { lazy, useState } from 'react';
+import { GradientSegmentedControl } from '../components/mantine/GradientSegmentedControl.jsx';
 
 const AdminMenuPage = () => (
   <div style={{

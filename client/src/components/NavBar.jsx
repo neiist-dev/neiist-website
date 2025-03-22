@@ -3,18 +3,19 @@ import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import { Link } from "react-router-dom";
 import logo from "../images/neiist_logo.png";
-import UserDataContext from "../UserDataContext";
+import UserDataContext from "../UserDataContext.js";
 import { GoSignOut } from "react-icons/go";
 import {
 	summarizeName,
-	getMemberStatus,
+	statusToString,
 	fenixPhoto,
-	getStatusColor,
+	statusToColor,
 } from "../hooks/dataTreatment.jsx";
 import { isMobile } from "react-device-detect";
 
 import style from "./css/NavBar.module.css";
 import { useEffect } from "react";
+import { fetchMemberStatus } from "../Api.service.js";
 
 const NavBar = () => {
   const { userData, setUserData } = useContext(UserDataContext);
@@ -75,7 +76,7 @@ const NavBar = () => {
 const ActiveTecnicoStudentNavLink = ({ hide, as, to, children }) => {
 	const { userData } = useContext(UserDataContext);
 
-	if (userData && userData.isActiveTecnicoStudent) {
+	if (userData && (userData.isAdmin || userData.isActiveTecnicoStudent)) {
 		return (
 			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
 				{children}
@@ -88,7 +89,7 @@ const ActiveTecnicoStudentNavLink = ({ hide, as, to, children }) => {
 const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
 	const { userData } = useContext(UserDataContext);
 
-	if (userData && userData.isActiveLMeicStudent) {
+	if (userData && (userData.isAdmin || userData.isActiveLMeicStudent)) {
 		return (
 			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
 				{children}
@@ -101,7 +102,7 @@ const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
 const CollabNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
-  if (userData && userData.isCollab) {
+  if (userData && (userData.isAdmin || userData.isCollab)) {
     return (
       <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
         {children}
@@ -114,7 +115,7 @@ const CollabNavLink = ({ hide, as, to, children }) => {
 const GacNavLink = ({ hide, as, to, children }) => {
 	const { userData } = useContext(UserDataContext);
 
-	if (userData && userData.isGacMember) {
+	if (userData && (userData.isAdmin || userData.isGacMember)) {
 		return (
 			<Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
 				{children}
@@ -142,11 +143,10 @@ const LoginLogout = ({ userData, setUserData }) => {
 
 	useEffect(() => {
 		if (userData) {
-			fetch(`/api/members/status/${userData.username}`)
-				.then((res) => res.json())
-				.then((fetchStatus) => {
+			fetchMemberStatus(userData.username)
+				.then((userStatus) => {
 					let newData = userData;
-					newData.status = fetchStatus ? fetchStatus : "NaoSocio";
+					newData.status = userStatus ? userStatus : "NaoSocio";
 					setData(userData);
 				});
 		}
@@ -241,8 +241,8 @@ const LoggedIn = ({ userData, setUserData }) => {
         <div className={style.logoutButton_MemberState}>
           <Logout setUserData={setUserData}/>
           <DefaultLink children={
-            <div className={style.memberStatus} style={{background: getStatusColor(userData.status)}}>
-              <div> {getMemberStatus(userData.status)} </div>
+            <div className={style.memberStatus} style={{background: statusToColor(userData.status)}}>
+              <div> {statusToString(userData.status)} </div>
             </div>  
         }/>
         </div>
