@@ -76,6 +76,14 @@
   flex-direction: row;
   align-content: center;
   justify-content: center;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.partnershipTitle {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
 }
 
 @media only screen and (max-width: 885px) {
