@@ -8,6 +8,7 @@ import 'react-multi-carousel/lib/styles.css';
 
 import esports from '../../images/eventos/esports.jpg';
 import sweats from '../../images/eventos/sweats.jpg';
+import layout from '../../images/eventos/layout.jpg';
 import churrasco from '../../images/eventos/churras.jpg';
 import jantar from '../../images/eventos/jantar_curso.jpg'
 import letstalk from '../../images/eventos/ltal.jpg';
@@ -66,6 +67,12 @@ const Activities = () => {
                     image={sweats} 
                     title="Sweats EIC" 
                     description="E o que achas de teres uma sweat com o nome do teu curso? Não te esqueças, o NEIIST dá-te a oportunidade de teres a sweat do melhor curso!"
+                    setAutoPlay={setAutoPlay}
+                    />
+                    <ActivityItem
+                    image={layout}
+                    title="Concurso de Layout de Sweats"
+                    description="O Concurso de Layout de Sweats é a tua oportunidade de criar o layout oficial para a edição especial de cada ano. Se és estudante de EIC do IST podes submeter até 3 designs originais. Se ganhares a votação online, ganhas a sweat!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem 
