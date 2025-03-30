@@ -6,6 +6,7 @@ import BlueWhiteBox from './BlueWhiteBox.jsx';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 
+import aoc from '../../images/eventos/aoc.jpg';
 import esports from '../../images/eventos/esports.jpg';
 import sweats from '../../images/eventos/sweats.jpg';
 import churrasco from '../../images/eventos/churras.jpg';
@@ -56,6 +57,12 @@ const Activities = () => {
                         }
                     }}
                 >
+                    <ActivityItem 
+                    image={aoc} 
+                    title="Advent Of Code" 
+                    description="O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!"
+                    setAutoPlay={setAutoPlay}
+                    />
                     <ActivityItem 
                     image={esports} 
                     title="Torneio de E-Sports" 
