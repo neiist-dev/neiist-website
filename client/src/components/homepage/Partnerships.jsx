@@ -25,18 +25,17 @@ const Partnerships = () => {
                   </a>
                </Col>
                <Col>
-                  <a href="https://www.managementsolutions.com/" target="_blank">
-                     <img src={managementSolutions} style={{ width: "40%", scale: "1.4" }} />
-                  </a>
-               </Col>
-               <Col>
                   <a href="https://www.basedinlisbon.xyz/" target="_blank">
                      <img src={basedInLisbon} style={{ width: "40%", scale: "1" }} />
                   </a>
                </Col>
-
-               
+               <Col>
+                  <a href="https://www.managementsolutions.com/" target="_blank">
+                     <img src={managementSolutions} style={{ width: "40%", scale: "1.4" }} />
+                  </a>
+               </Col>
             </Row>
+
             <Row className={style.partners}>
             <p className={style.partnershipTitle}>
                   Parcerias não monetárias:
@@ -47,12 +46,12 @@ const Partnerships = () => {
                   </a>
                </Col>
                <Col>
-                  <a href="https://www.managementsolutions.com/" target="_blank">
+                  <a href="https://aiesec.org/" target="_blank">
                      <img src={aeiesec} style={{ width: "40%", scale: "1.4" }} />
                   </a>
                </Col>
                <Col>
-                  <a href="https://www.basedinlisbon.xyz/" target="_blank">
+                  <a href="https://magmastudio.pt/" target="_blank">
                      <img src={magma} style={{ width: "40%", scale: "1" }} />
                   </a>
                </Col>
