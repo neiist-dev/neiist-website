@@ -1,4 +1,10 @@
-import { Form, Container } from "react-bootstrap";
+import {
+  Form,
+  Container,
+  OverlayTrigger,
+  Button,
+  Tooltip,
+} from "react-bootstrap";
 
 function OrderDetails({ formData, setFormData, errors }) {
   const handleInputChange = (e) => {
@@ -9,9 +15,37 @@ function OrderDetails({ formData, setFormData, errors }) {
     }));
   };
 
+  const campusTooltip = (
+    <Tooltip id="campus-tooltip">
+      O campus que for identificado abaixo será o local de levantamento da
+      encomenda
+    </Tooltip>
+  );
+
+  const fenixLoginUrl =
+    "https://fenix.tecnico.ulisboa.pt/oauth/userdialog" +
+    `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
+    `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`;
+
   return (
     <Container className="p-4 bg-white rounded shadow-sm">
-      <h2 className="mb-4">Detalhes</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="mb-0">Detalhes</h2>
+        {(!formData.name ||
+          !formData.email ||
+          !formData.istId ||
+          !formData.campus) && (
+          <Button
+            href={fenixLoginUrl}
+            variant="outline-primary"
+            size="sm"
+            className="d-flex align-items-center gap-2"
+          >
+            Preencher dados automaticamente
+          </Button>
+        )}
+      </div>
+
       <Form>
         <Form.Group className="mb-3">
           <Form.Label>
@@ -70,6 +104,24 @@ function OrderDetails({ formData, setFormData, errors }) {
         <Form.Group className="mb-3">
           <Form.Label>
             Campus <span className="text-danger">*</span>
+            <OverlayTrigger placement="right" overlay={campusTooltip}>
+              <span className="d-inline-block">
+                <Button variant="link" className="p-0 m-0 text-info">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4" />
+                    <path d="M12 8h.01" />
+                  </svg>
+                </Button>
+              </span>
+            </OverlayTrigger>
           </Form.Label>
           <Form.Select
             name="campus"

@@ -5,11 +5,18 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkProductAvailability, createOrder } from "../Api.service";
 
+import NotificationCard from "../components/shopPage/Notification";
+
 import UserDataContext from "../UserDataContext";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 export default function CheckoutPage() {
   const { userData } = useContext(UserDataContext);
   const navigate = useNavigate();
+  const [showNotification, setShowNotification] = useState(false);
+
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [cartItems, setCartItems] = useState([]);
   const [formData, setFormData] = useState({
@@ -35,9 +42,6 @@ export default function CheckoutPage() {
       });
     }
   }, [userData]); // Only run when userData changes
-
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -92,7 +96,8 @@ export default function CheckoutPage() {
 
       return true;
     } catch (error) {
-      throw new Error("Erro ao verificar disponibilidade dos produtos");
+      console.error("Error checking availability:", error);
+      setShowNotification(true);
     }
   };
 
@@ -130,10 +135,13 @@ export default function CheckoutPage() {
         localStorage.removeItem("cart");
         navigate(`/order/${data.orderId}`);
       } else {
-        throw new Error("Pedido criado mas sem ID retornado");
+        throw new Error(
+          data?.error ? data.error : "Pedido criado mas sem ID retornado"
+        );
       }
     } catch (error) {
       console.error("Error creating order:", error);
+      setShowNotification(true);
       setErrors((prev) => ({
         ...prev,
         submit:
@@ -155,6 +163,13 @@ export default function CheckoutPage() {
               errors={errors}
             />
           </Col>
+          {showNotification && (
+            <NotificationCard
+              icon={<FaExclamationTriangle className="me-2 text-danger" />}
+              message={errors?.submit ? errors.submit : "Erro ao enviar pedido"}
+              onClose={() => setShowNotification(false)}
+            />
+          )}
           <Col lg={5}>
             <OrderSummary onSubmit={handleSubmit} isSubmitting={isSubmitting} />
           </Col>

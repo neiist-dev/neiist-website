@@ -139,7 +139,7 @@ export default function ShoppingCart({ show, onHide }) {
                     </div>
                   </div>
                   <div className={style.itemPrice}>
-                    <strong>{item.price.toFixed(2)} €</strong>
+                    <strong>{(item.price * item.quantity).toFixed(2)} €</strong>
                   </div>
                 </div>
                 <hr />

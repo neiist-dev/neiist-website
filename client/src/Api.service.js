@@ -47,7 +47,9 @@ export const fetchProducts = async () => {
     const transformedData = Array.isArray(response)
       ? response.map((product) => ({
           id: product.id,
-          name: product.displayName?.text || product.name,
+          name: product.name,
+          fullName: product.displayName?.text || product.name,
+          title: product.displayName?.html || product.name,
           type: product.type,
           stockType: product.stockType,
           price: product.price,
@@ -71,6 +73,21 @@ export const fetchProducts = async () => {
   } catch (error) {
     console.error("Error in fetchProducts:", error);
     throw new Error("Erro ao carregar produtos: " + error.message);
+  }
+};
+
+export const fetchAvailableProducts = async () => {
+  try {
+    const products = await fetchProducts();
+
+    return products.filter((product) => {
+      let date = new Date();
+      let deadline = new Date(product.orderInfo.orderDeadline);
+
+      return deadline > date && product.visible;
+    });
+  } catch (error) {
+    console.error("Failed to fetch available products:", error);
   }
 };
 
@@ -113,16 +130,14 @@ export const createOrder = async (orderData) => {
 
     const responseData = await response.json();
 
-    if (!response.ok) {
-      throw new Error(
-        responseData.error || `HTTP error! status: ${response.status}`
-      );
+    if (!response.ok || responseData.error) {
+      return { error: responseData.error || "Erro ao criar encomenda" };
     }
 
     return responseData;
   } catch (error) {
     console.error("Failed to create order:", error);
-    throw error;
+    return { error: error.message };
   }
 };
 

@@ -62,9 +62,9 @@ export const OrderDetailsModal = ({
   const handlePaymentToggle = async (checked) => {
     try {
       if (checked) {
-        await markOrderAsPaid(localOrder.order_id, loggedInUser);
+        await markOrderAsPaid(localOrder?.order_id, loggedInUser);
       } else {
-        await markOrderAsNotPaid(localOrder.order_id, loggedInUser);
+        await markOrderAsNotPaid(localOrder?.order_id, loggedInUser);
       }
       const updatedOrder = { ...localOrder, paid: checked };
       onUpdateOrder(updatedOrder);
@@ -78,9 +78,9 @@ export const OrderDetailsModal = ({
   const handleDeliveryToggle = async (checked) => {
     try {
       if (checked) {
-        await markOrderAsDelivered(localOrder.order_id, loggedInUser);
+        await markOrderAsDelivered(localOrder?.order_id, loggedInUser);
       } else {
-        await markOrderAsNotDelivered(localOrder.order_id, loggedInUser);
+        await markOrderAsNotDelivered(localOrder?.order_id, loggedInUser);
       }
       const updatedOrder = { ...localOrder, delivered: checked };
       onUpdateOrder(updatedOrder);
@@ -98,7 +98,7 @@ export const OrderDetailsModal = ({
       title={
         <Group position="apart" style={{ width: "100%" }}>
           <Text fw={700} size="xl">
-            Order #{localOrder.order_id}
+            Order #{localOrder?.order_id}
           </Text>
           <Badge
             color={statusColors[status]}
@@ -130,20 +130,20 @@ export const OrderDetailsModal = ({
           <Grid>
             <Grid.Col span={6}>
               <Stack spacing="xs">
-                <Text fw={500}>{localOrder.name}</Text>
-                <Text size="sm">IST ID: {localOrder.ist_id}</Text>
+                <Text fw={500}>{localOrder?.name}</Text>
+                <Text size="sm">IST ID: {localOrder?.ist_id}</Text>
                 <Group spacing="xs">
                   <MdEmail size="1.2rem" />
-                  <Text size="sm">{localOrder.email}</Text>
+                  <Text size="sm">{localOrder?.email}</Text>
                 </Group>
                 <Group spacing="xs">
                   <MdPhone size="1.2rem" />
-                  <Text size="sm">{localOrder.phone}</Text>
+                  <Text size="sm">{localOrder?.phone}</Text>
                 </Group>
-                {localOrder.nif && (
+                {localOrder?.nif && (
                   <Group spacing="xs">
                     <MdReceipt size="1.2rem" />
-                    <Text size="sm">NIF: {localOrder.nif}</Text>
+                    <Text size="sm">NIF: {localOrder?.nif}</Text>
                   </Group>
                 )}
               </Stack>
@@ -155,7 +155,7 @@ export const OrderDetailsModal = ({
                   <Text fw={500}>Campus</Text>
                 </Group>
                 <Text size="sm" style={{ textTransform: "capitalize" }}>
-                  {localOrder.campus}
+                  {localOrder?.campus}
                 </Text>
               </Stack>
             </Grid.Col>
@@ -177,7 +177,7 @@ export const OrderDetailsModal = ({
               </tr>
             </thead>
             <tbody>
-              {localOrder.items.map((item, index) => (
+              {localOrder?.items?.map((item, index) => (
                 <tr key={index}>
                   <td>{item.product_id}</td>
                   <td>{item.size}</td>
@@ -203,18 +203,18 @@ export const OrderDetailsModal = ({
             <Group position="apart">
               <Text fw={500}>Total Amount</Text>
               <Text fw={700} size="lg">
-                {formatCurrency(localOrder.total_amount)}
+                {formatCurrency(localOrder?.total_amount)}
               </Text>
             </Group>
 
-            {localOrder.notes && (
+            {localOrder?.notes && (
               <>
                 <Divider />
                 <div>
                   <Text fw={500} mb="xs">
                     Notes
                   </Text>
-                  <Text size="sm">{localOrder.notes}</Text>
+                  <Text size="sm">{localOrder?.notes}</Text>
                 </div>
               </>
             )}
@@ -230,17 +230,17 @@ export const OrderDetailsModal = ({
             <Group position="apart">
               <Text>Payment Status</Text>
               <Switch
-                checked={localOrder.paid}
+                checked={localOrder?.paid}
                 onChange={(event) =>
                   handlePaymentToggle(event.currentTarget.checked)
                 }
-                label={localOrder.paid ? "Paid" : "Pending"}
+                label={localOrder?.paid ? "Paid" : "Pending"}
               />
             </Group>
-            {localOrder.paid && localOrder.payment_responsible && (
+            {localOrder?.paid && localOrder?.payment_responsible && (
               <Text size="sm" c="dimmed">
-                Paid checked by {localOrder.payment_responsible} at{" "}
-                {new Date(localOrder.payment_timestamp).toLocaleString()}
+                Paid checked by {localOrder?.payment_responsible} at{" "}
+                {new Date(localOrder?.payment_timestamp).toLocaleString()}
               </Text>
             )}
 
@@ -249,18 +249,18 @@ export const OrderDetailsModal = ({
             <Group position="apart">
               <Text>Delivery Status</Text>
               <Switch
-                checked={localOrder.delivered}
+                checked={localOrder?.delivered}
                 onChange={(event) =>
                   handleDeliveryToggle(event.currentTarget.checked)
                 }
-                label={localOrder.delivered ? "Delivered" : "Pending"}
-                disabled={!localOrder.paid}
+                label={localOrder?.delivered ? "Delivered" : "Pending"}
+                disabled={!localOrder?.paid}
               />
             </Group>
-            {localOrder.delivered && localOrder.delivery_responsible && (
+            {localOrder?.delivered && localOrder?.delivery_responsible && (
               <Text size="sm" c="dimmed">
-                Delivered by {localOrder.delivery_responsible} at{" "}
-                {new Date(localOrder.delivery_timestamp).toLocaleString()}
+                Delivered by {localOrder?.delivery_responsible} at{" "}
+                {new Date(localOrder?.delivery_timestamp).toLocaleString()}
               </Text>
             )}
           </Stack>
@@ -275,13 +275,13 @@ export const OrderDetailsModal = ({
             <Group position="apart">
               <Text size="sm">Created</Text>
               <Text size="sm" c="dimmed">
-                {new Date(localOrder.created_at).toLocaleString()}
+                {new Date(localOrder?.created_at).toLocaleString()}
               </Text>
             </Group>
             <Group position="apart">
               <Text size="sm">Last Updated</Text>
               <Text size="sm" c="dimmed">
-                {new Date(localOrder.updated_at).toLocaleString()}
+                {new Date(localOrder?.updated_at).toLocaleString()}
               </Text>
             </Group>
           </Stack>
@@ -296,7 +296,7 @@ export const OrderDetailsModal = ({
             <Button
               leftSection={<MdEmail size="1.2rem" />}
               component="a"
-              href={`mailto:${localOrder.email}`}
+              href={`mailto:${localOrder?.email}`}
             >
               Contact Customer
             </Button>

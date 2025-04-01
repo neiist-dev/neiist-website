@@ -174,52 +174,6 @@ storeRoute.get("/products/:id/delivery", (req, res) => {
 });
 
 /**
- * Create new order
- * POST /store/orders
- */
-storeRoute.post("/orders", async (req, res) => {
-  try {
-    const orderData = req.body;
-
-    if (
-      !orderData ||
-      !orderData.items ||
-      !orderData.name ||
-      !orderData.email ||
-      !orderData.ist_id ||
-      !orderData.campus
-    ) {
-      return res.status(400).json({
-        error:
-          "Invalid order data. Required fields: items and customer information",
-      });
-    }
-
-    const plainOrderData = JSON.parse(JSON.stringify(orderData));
-
-    const createdOrder = await storeService.createOrder(plainOrderData);
-
-    const plainResponse = {
-      message: "Order created successfully",
-      orderId: createdOrder ? String(createdOrder) : undefined,
-    };
-
-    res.status(201).json(plainResponse);
-  } catch (error) {
-    console.error("Error creating order:", {
-      message: error.message,
-      name: error.name,
-    });
-
-    const errorResponse = {
-      error: error.message || "Failed to create order",
-    };
-
-    res.status(500).json(errorResponse);
-  }
-});
-
-/**
  * Get all orders
  * GET /store/orders
  */
@@ -333,7 +287,6 @@ storeRoute.get("/orders/:id/details", async (req, res) => {
 storeRoute.post("/orders", async (req, res) => {
   try {
     const orderData = req.body;
-
     if (
       !orderData ||
       !orderData.items ||
@@ -368,7 +321,16 @@ storeRoute.post("/orders", async (req, res) => {
       }
     }
 
-    const orderId = await storeService.createOrder(orderData);
+    const orderReq = await storeService.createOrder(orderData);
+    if (!orderReq) {
+      throw new Error("Failed to create order, empty response");
+    }
+
+    if (orderReq.success === false) {
+      throw new Error(orderReq.error || "Failed to create order");
+    }
+
+    const orderId = orderReq.orderId;
 
     res.status(201).json({
       message: "Order created successfully",

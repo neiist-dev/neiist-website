@@ -5,6 +5,7 @@ import NotificationCard from "./Notification";
 
 const ProductCard = ({
   id,
+  name,
   title,
   color,
   colorHex,
@@ -45,7 +46,7 @@ const ProductCard = ({
 
     const newItem = {
       id,
-      title,
+      title: name + (color ? ` - ${color}` : ""),
       color: color?.name,
       colorHex: color?.hex,
       size: selectedSize,
@@ -70,14 +71,14 @@ const ProductCard = ({
   };
 
   const renderTitle = () => {
-    if (color?.name && color?.hex) {
+    if (name && color && colorHex) {
       return (
         <>
-          {title} – <span style={{ color: color.hex }}>{color.name}</span>
+          {name} – <span style={{ color: colorHex }}>{color}</span>
         </>
       );
-    }
-    return title;
+    } 
+    else return title;
   };
 
   const handleQuantityChange = (newQuantity) => {
@@ -197,7 +198,10 @@ const ProductCard = ({
 
       <Modal show={showDetails} onHide={() => setShowDetails(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>{title}</Modal.Title>
+          <Modal.Title>
+            {name}
+            {color && ` - ${color}`}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {description && (

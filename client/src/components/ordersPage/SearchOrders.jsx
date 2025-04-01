@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextInput, Button, Group, Text } from "@mantine/core";
 import { OrdersTable } from "./OrdersTable";
 import LoadSpinner from "../../hooks/loadSpinner.jsx";
-import { fetchOrders } from "../../Api.service.js";
+import { fetchAllOrdersDetails } from "../../Api.service.js";
 import { BiSearch } from "react-icons/bi";
 
 export const SearchOrders = ({ keySelected, loggedInUser }) => {
@@ -14,7 +14,7 @@ export const SearchOrders = ({ keySelected, loggedInUser }) => {
 
   useEffect(() => {
     if (keySelected === "search" && allOrders === null) {
-      fetchOrders()
+      fetchAllOrdersDetails()
         .then((ordersRes) => {
           setOrders(ordersRes);
           setIsLoading(false);

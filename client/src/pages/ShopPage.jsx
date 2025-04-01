@@ -3,7 +3,7 @@ import { FaRegBell } from "react-icons/fa";
 import { Container, Alert, Row, Col } from "react-bootstrap";
 import ProductCard from "../components/shopPage/ProductCard";
 import LoadSpinner from "../hooks/loadSpinner";
-import { fetchProducts } from "../Api.service";
+import { fetchAvailableProducts } from "../Api.service";
 
 const StorePage = () => {
   const [products, setProducts] = useState([]);
@@ -14,13 +14,9 @@ const StorePage = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const data = await fetchProducts();
+        const data = await fetchAvailableProducts();
 
-        const visibleProducts = data.filter(
-          (product) => product.visible !== false
-        );
-
-        setProducts(visibleProducts);
+        setProducts(data);
       } catch (err) {
         setError(err.message || "Erro ao carregar produtos");
       } finally {
@@ -131,11 +127,12 @@ const StorePage = () => {
 
       <Row className="g-4">
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <Col key={product.id} xs={12}>
+          filteredProducts.map((product) => {
+            return <Col key={product.id} xs={12}>
               <ProductCard
                 id={product.id}
-                title={product.name}
+                name={product.name}
+                title={product.title}
                 color={product.color?.name}
                 colorHex={product.color?.hex}
                 price={product.price}
@@ -148,7 +145,7 @@ const StorePage = () => {
                 details={product.details}
               />
             </Col>
-          ))
+})
         ) : (
           <Col>
             <Alert variant="info">

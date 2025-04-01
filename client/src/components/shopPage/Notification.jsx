@@ -4,6 +4,7 @@ import { FaCheckCircle } from "react-icons/fa";
 
 const NotificationCard = ({
   message = "Produto adicionado ao carrinho!",
+  icon = <FaCheckCircle className="me-2 text-success" />,
   duration = 3000,
   onClose,
 }) => {
@@ -35,7 +36,7 @@ const NotificationCard = ({
     >
       <Toast show={show} onClose={handleClose} animation={true}>
         <Toast.Header>
-          <FaCheckCircle className="me-2 text-success" />
+          {icon}
           <strong className="me-auto">Notificação</strong>
         </Toast.Header>
         <Toast.Body>{message}</Toast.Body>
