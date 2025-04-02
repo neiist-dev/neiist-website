@@ -1,0 +1,266 @@
+.product-card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-content {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .product-content {
+    flex-direction: column;
+  }
+
+  .product-image-container {
+    width: 100% !important;
+  }
+}
+
+.product-image-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  flex-shrink: 0;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+  z-index: 2;
+}
+
+.carousel-button:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.carousel-button.left {
+  left: 10px;
+}
+
+.carousel-button.right {
+  right: 10px;
+}
+
+.product-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.product-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-title {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.product-price {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #0d6efd;
+}
+
+.delivery-info {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.size-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.size-label {
+  margin: 0;
+  font-weight: 500;
+  color: #333;
+}
+
+.size-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.size-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  min-width: 45px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.size-button:hover:not(.disabled) {
+  border-color: #0d6efd;
+}
+
+.size-button.active {
+  background: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+.size-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.purchase-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+
+.quantity-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 1.25rem;
+  color: #666;
+}
+
+.quantity-button:hover {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+}
+
+.quantity-display {
+  padding: 0.5rem 1.5rem;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+.add-button {
+  padding: 0.75rem 2rem;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-button:hover {
+  background: #0b5ed7;
+}
+
+.details-button {
+  margin-top: auto;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: #0d6efd;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.details-button:hover {
+  color: #0b5ed7;
+}
+
+/* Modal customization */
+:global(.modal-content) {
+  border-radius: 8px;
+  border: none;
+}
+
+:global(.modal-header) {
+  border-bottom: 1px solid #eee;
+  padding: 1.5rem;
+}
+
+:global(.modal-body) {
+  padding: 1.5rem;
+}
+
+:global(.modal-title) {
+  font-weight: 600;
+  color: #333;
+}
+
+:global(.modal-body h5) {
+  color: #333;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+:global(.modal-body h5:first-child) {
+  margin-top: 0;
+}
+
+:global(.modal-body p) {
+  margin-bottom: 0.5rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+:global(.modal-header .btn-close) {
+  padding: 1rem;
+  margin: -0.5rem -0.5rem -0.5rem auto;
+}
