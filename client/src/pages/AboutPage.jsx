@@ -13,7 +13,7 @@ import "./../App.css";
 import style from "./css/AboutPage.module.css";
 import collabs from "../images/colaboradores/collaborators.json";
 import { normalizeJob } from "../components/functions/dataTreatment.jsx";
-import { fetchCollabsResume } from "../Api.service.js";
+import { fetchCollabsResume, fetchAllCollabs } from "../Api.service.js";
 
 const lectiveYear = collabs.anoLetivo;
 
@@ -27,6 +27,17 @@ const AboutPage = () => {
       .then((res) => {
         setActiveMembers(res);
       });
+
+    // TODO - Remove this
+    fetchAllCollabs()
+      .then((res) => {
+        console.log("All Collaborators:", res);
+      })
+      .catch((err) => {
+        console.error("Error fetching all collaborators:", err);
+      });
+
+      
   }, []);
 
   return (
@@ -35,7 +46,6 @@ const AboutPage = () => {
         <HeaderDiv activeMembersLength={activeMembers?.length} />
         <OurTeamsDiv activeMembers={activeMembers} />
       </div>
-
       {Object.entries(collabs.orgaosSociais).map(
         ([socialEntity, members], index) => (
           <SocialEntityDiv
@@ -56,6 +66,7 @@ const AboutPage = () => {
 };
 
 const ActiveMembersDiv = ({ activeMembers }) => (
+  console.log("Active Members:", activeMembers),
   <div className={style.allMembersDiv}>
     <h2>{`Membros Ativos ${lectiveYear}`}</h2>
     <div className={style.allMembersCard}>
@@ -64,6 +75,7 @@ const ActiveMembersDiv = ({ activeMembers }) => (
           key={index}
           name={`${member.name.split(" ")[0]}\n${member.name.split(" ")[1]}`}
           image={getCollabImage(member.name)}
+          teams={member.teams}
         />
       ))}
     </div>
