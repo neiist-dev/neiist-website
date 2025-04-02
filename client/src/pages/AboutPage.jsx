@@ -26,18 +26,7 @@ const AboutPage = () => {
       .catch((err) => setActiveMembersError(err))
       .then((res) => {
         setActiveMembers(res);
-      });
-
-    // TODO - Remove this
-    fetchAllCollabs()
-      .then((res) => {
-        console.log("All Collaborators:", res);
-      })
-      .catch((err) => {
-        console.error("Error fetching all collaborators:", err);
-      });
-
-      
+      });  
   }, []);
 
   return (
@@ -75,7 +64,6 @@ const ActiveMembersDiv = ({ activeMembers }) => (
           key={index}
           name={`${member.name.split(" ")[0]}\n${member.name.split(" ")[1]}`}
           image={getCollabImage(member.name)}
-          teams={member.teams}
         />
       ))}
     </div>

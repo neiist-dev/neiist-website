@@ -27,12 +27,13 @@ const PersonCard = ({ name, job, src }) => (
 );
 
 const CoordinatorCard = ({ name, job, src }) => (
-  <Card className={`${style.card} ${style.coordinatorCard}`}>
+  <Card className={`${style.card} ${style.card}`}>
     <Card.Img className={`${style.cardImg} hover-zoom hover-shadow`} variant="top" src={src} />
     <Card.ImgOverlay className={style.cardImgOver}>
       <Card.Title bsPrefix={style.cardTitle}>{name}</Card.Title>
+      <div className={style.coordinatorCard}>Coordenador(a)</div>
       {job && <Card.Text bsPrefix={style.cardText}>{job}</Card.Text>}
-      <div className={style.coordinatorBadge}>Coordenador(a)</div>
+
     </Card.ImgOverlay>
   </Card>
 );
