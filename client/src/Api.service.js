@@ -1,25 +1,7 @@
-const apiCall = async (endpoint) => {
-  try {
-    const response = await fetch(endpoint);
-    if (!response.ok) {
-      // Attempt to get error details from response
-      let errorMessage;
-      try {
-        const errorData = await response.json();
-        errorMessage =
-          errorData.message || `HTTP error! status: ${response.status}`;
-      } catch {
-        errorMessage = `HTTP error! status: ${response.status}`;
-      }
-      throw new Error(errorMessage);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("API call failed:", error);
-    throw error; // Propagate error to caller
-  }
-};
+const apiCall = (request) => 
+  fetch(request)
+    .then((res) => res.json())
+    .catch((err) => console.error(err));
 
 export const fetchCollabInformation = (username) =>
   apiCall(`/api/collabs/info/${username}`);
