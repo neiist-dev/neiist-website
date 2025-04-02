@@ -1,11 +1,12 @@
 const express = require('express');
-const { electionsService } = require('../services');
+const { electionsService, authService } = require('../services');
+const { gacMiddleware, authMiddleware } = require('../middlewares');
 
 const router = express.Router();
 
 router.use(express.json());
 
-router.post('/', async (req) => {
+router.post('/', gacMiddleware, async (req) => {
   const election = req.body;
   await electionsService.newElection(election);
 });
@@ -15,8 +16,8 @@ router.get('/', async (req, res) => {
   res.json(elections);
 });
 
-router.post('/:id/votes', async (req) => {
-  const { id } = req.params;
+router.post('/:id/votes', authMiddleware, async (req) => {
+  const id = req.session.user.username;
   const vote = req.body;
   await electionsService.newVote(id, vote);
 });
