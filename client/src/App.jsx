@@ -164,6 +164,11 @@ const DefinedRoutes = () => (
       element={<CollabRoute children={<CollabsPage />} />}
     />
 
+    <Route
+      path="/orders"
+      element={<CollabRoute children={<AdminOrdersPage />} />}
+    />
+
     <Route path="/mag" element={<GacRoute children={<GacPage />} />} />
 
     {/* FALLBACK */}

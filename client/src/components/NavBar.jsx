@@ -136,6 +136,10 @@ const NavBar = () => {
                 Colaborador(a)
               </CollabNavLink>
 
+              <OrdersNavLink hide={style.onMobile} as={Link} to="/orders">
+                Encomendas
+              </OrdersNavLink>
+
               <ActiveLMeicStudentNavLink
                 hide={style.onMobile}
                 as={Link}
@@ -189,6 +193,19 @@ const ActiveLMeicStudentNavLink = ({ hide, as, to, children }) => {
 };
 
 const CollabNavLink = ({ hide, as, to, children }) => {
+  const { userData } = useContext(UserDataContext);
+
+  if (userData && (userData.isAdmin || userData.isCollab)) {
+    return (
+      <Nav.Link className={`${style.navLink} ${hide}`} as={as} to={to}>
+        {children}
+      </Nav.Link>
+    );
+  }
+  return null;
+};
+
+const OrdersNavLink = ({ hide, as, to, children }) => {
   const { userData } = useContext(UserDataContext);
 
   if (userData && (userData.isAdmin || userData.isCollab)) {
@@ -375,6 +392,10 @@ const LoggedIn = ({ userData, setUserData }) => {
         <CollabNavLink hide={style.onWeb} as={Link} to="/collab">
           Colaborador(a)
         </CollabNavLink>
+
+        <OrdersNavLink as={Link} to="/orders">
+          Encomendas
+        </OrdersNavLink>
 
         <ActiveLMeicStudentNavLink
           hide={style.onWeb}
