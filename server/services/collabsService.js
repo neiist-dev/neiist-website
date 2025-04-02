@@ -33,10 +33,10 @@ const getCurrentCollabsResume = async () => {
 const getCollabTeams = async (username) => {
   const collabInfo = await checkCurrentCollab(username);
 
-  const teams = collabInfo.teams.replace("COOR-","").split(",");
+  const teams = collabInfo?.teams.replace("COOR-","").split(",");
   const teamMembers = await collabsDatabase.getCurrentTeamMembers(teams);
 
-  return {teams: collabInfo.teams, teamMembers: teamMembers};
+  return {teams: collabInfo?.teams, teamMembers: teamMembers};
 }
 
 const addNewCollab = async (username,newCollabInfo) => 
