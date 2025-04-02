@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const morgan = require('morgan');
+var session = require('express-session')
 const { databaseSchema } = require('./database');
 
 const {
@@ -11,6 +12,19 @@ const {
 const app = express();
 app.use(cors());
 app.use(morgan('tiny'));
+
+// Session
+var sess = {
+  secret: process.env.SESSION_SECRET,
+  cookie: {}
+}
+
+if (app.get('env') === 'production') {
+  app.set('trust proxy', 1) // trust first proxy
+  sess.cookie.secure = true // serve secure cookies
+}
+
+app.use(session(sess))
 
 // create db tables if needed
 databaseSchema.initializeSchema();

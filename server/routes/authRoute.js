@@ -13,6 +13,7 @@ router.get('/userData/:accessToken', async (req, res) => {
   const { accessToken } = req.params;
   try {
     const userData = await authService.getUserData(accessToken);
+    req.session.user = userData;
     res.json(userData);
   } catch (error) {
     res.status(401).send(error.message);
