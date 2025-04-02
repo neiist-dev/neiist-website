@@ -1,0 +1,244 @@
+.modalRight {
+  padding-right: 0 !important;
+}
+
+.modalRight :global(body.modal-open) {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
+
+.modalRightDialog {
+  margin: 0 !important;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 100vh;
+  transform: none !important;
+}
+
+@media (max-width: 480px) {
+  .modalRightDialog {
+    max-width: 100%;
+  }
+}
+
+.modalRightDialog :global(.modal-content) {
+  height: 100%;
+  border-radius: 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+.modalBody {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.itemsList {
+  padding: 0 0.5rem;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.modalRightDialog.closing :global(.modal-content) {
+  animation: slideOut 0.3s ease-out;
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.modalRightDialog :global(.modal-backdrop) {
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+.header {
+  border: 0;
+  padding: 1rem;
+}
+
+.headerTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #000;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.itemContainer {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  padding: 1rem 0;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+}
+
+.itemImageContainer {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.itemImage {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.itemInfo {
+  min-width: 0;
+  flex: 1;
+  padding-right: 0.5rem;
+}
+
+.itemName {
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemMeta {
+  color: #6c757d;
+  font-size: 0.875rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.controlsContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+}
+
+.quantityButton,
+.removeButton {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #dee2e6;
+  background: white;
+  border-radius: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.quantityButton:hover,
+.removeButton:hover {
+  background-color: #f8f9fa;
+}
+
+.quantityText {
+  min-width: 36px;
+  text-align: center;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+}
+
+.itemPrice {
+  text-align: right;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.footer {
+  border: 0;
+  padding: 1rem;
+  background-color: white;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.checkoutButton {
+  width: 100%;
+  background-color: #0d6efd;
+  border: none;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  font-weight: 500;
+}
+
+.checkoutButton:hover {
+  background-color: #0b5ed7;
+  color: white;
+  text-decoration: none;
+}
+
+.removeButton {
+  background: transparent;
+  border: 1px solid #dee2e6;
+  /* padding: 0.25rem 0.75rem; */
+  border-radius: 1px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0rem;
+}
+
+.removeButton:hover {
+  background-color: #f8f9fa;
+}
+
+.emptyCart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #6c757d;
+}

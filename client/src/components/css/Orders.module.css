@@ -1,0 +1,58 @@
+.page-container {
+  padding: 20px;
+}
+
+.header-section {
+  margin-bottom: 24px;
+}
+
+.header-section h1 {
+  margin-bottom: 20px;
+}
+
+.count {
+  font-size: 25px;
+  color: #666;
+}
+
+.error-container {
+  padding: 16px;
+  margin: 16px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  color: #c00;
+}
+
+.status-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.badge-container {
+  display: flex;
+  gap: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.title-with-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.search-container {
+  margin: 24px 0;
+}
+
+.no-results {
+  padding: 40px;
+  text-align: center;
+}

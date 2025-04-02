@@ -1,16 +1,25 @@
-const { createAreas } = require('./areasDatabase');
-const { createTheses } = require('./thesesDatabase');
-const { createMembers, createRenewalNotifications } = require('./membersDatabase');
+const { createAreas } = require("./areasDatabase");
+const { createTheses } = require("./thesesDatabase");
+const {
+  createMembers,
+  createRenewalNotifications,
+} = require("./membersDatabase");
 const {
   createCollaborators,
   createCurrentCollabView,
   createAdminsView,
   createGACMembersView,
-  createCoordenatorsView
-} = require('./collabsDatabase');
-const { createElections, createOptions, createVotes } = require('./electionsDatabase');
+  createCoordenatorsView,
+} = require("./collabsDatabase");
+const {
+  createElections,
+  createOptions,
+  createVotes,
+} = require("./electionsDatabase");
+const { createOrders, deleteOrders } = require("./ordersDatabase");
 
 const initializeSchema = async () => {
+  // await deleteOrders();
   await createAreas();
   await createTheses();
   await createMembers();
@@ -23,6 +32,7 @@ const initializeSchema = async () => {
   await createElections();
   await createOptions();
   await createVotes();
+  await createOrders();
 };
 
 module.exports = {

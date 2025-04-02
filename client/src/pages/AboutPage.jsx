@@ -130,7 +130,7 @@ const HeaderDiv = ({ activeMembersLength }) => (
         </svg>
 
         <img src={allMembers} />
-      
+
       </div>
     </div>
   </div>
