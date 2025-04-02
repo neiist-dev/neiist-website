@@ -1,6 +1,13 @@
 const apiCall = (request) => 
   fetch(request)
-    .then((res) => res.json())
+    .then((res) => {
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/';
+        return;
+      }
+
+      return res.json()
+    })
     .catch((err) => console.error(err));
 
 
