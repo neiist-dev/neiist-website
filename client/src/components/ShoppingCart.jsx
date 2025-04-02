@@ -87,7 +87,7 @@ export default function ShoppingCart({ show, onHide }) {
             <p>O seu carrinho está vazio</p>
           </div>
         ) : (
-          <div className={style.itemsList}>
+          <div className={style.scrollableContent}>
             {items.map((item, index) => (
               <React.Fragment key={`${item.id}-${item.size}-${index}`}>
                 <div className={style.itemContainer}>
