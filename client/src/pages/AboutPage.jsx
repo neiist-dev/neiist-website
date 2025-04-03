@@ -13,7 +13,7 @@ import "./../App.css";
 import style from "./css/AboutPage.module.css";
 import collabs from "../images/colaboradores/collaborators.json";
 import { normalizeJob } from "../components/functions/dataTreatment.jsx";
-import { fetchCollabsResume, fetchAllCollabs } from "../Api.service.js";
+import { fetchCollabsResume } from "../Api.service.js";
 
 const lectiveYear = collabs.anoLetivo;
 
@@ -55,7 +55,6 @@ const AboutPage = () => {
 };
 
 const ActiveMembersDiv = ({ activeMembers }) => (
-  console.log("Active Members:", activeMembers),
   <div className={style.allMembersDiv}>
     <h2>{`Membros Ativos ${lectiveYear}`}</h2>
     <div className={style.allMembersCard}>
