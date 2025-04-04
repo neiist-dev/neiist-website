@@ -91,8 +91,11 @@ const StorePage = () => {
           <span className="me-2">
             <FaRegBell size={20} />
           </span>
-          As encomendas estão disponíveis até{" "}
-          {deadline.toLocaleDateString("pt-PT")}
+          {/* As encomendas estão disponíveis até{" "}
+          {deadline.toLocaleDateString("pt-PT")} */}
+          Podes encomendar sweats e fazer o pagamento nas nossas bancas até:
+          - às 13h do dia 04/04/2025 (no Tagus)
+          - às 18h do dia 04/04/2025 (na Alameda)
         </Alert>
       )}
 
