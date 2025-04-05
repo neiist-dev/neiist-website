@@ -42,6 +42,7 @@ const ActiveMembersDiv = ({ activeTeamMembers }) => (
           key={index}
           name={`${member.name.split(' ')[0]}\n${member.name.split(' ')[1]}`}
           image={getCollabImage(member.name)}
+          teams={member.teams}
         />
       ))}
     </div>

@@ -26,7 +26,7 @@ const AboutPage = () => {
       .catch((err) => setActiveMembersError(err))
       .then((res) => {
         setActiveMembers(res);
-      });
+      });  
   }, []);
 
   return (
@@ -35,7 +35,6 @@ const AboutPage = () => {
         <HeaderDiv activeMembersLength={activeMembers?.length} />
         <OurTeamsDiv activeMembers={activeMembers} />
       </div>
-
       {Object.entries(collabs.orgaosSociais).map(
         ([socialEntity, members], index) => (
           <SocialEntityDiv
