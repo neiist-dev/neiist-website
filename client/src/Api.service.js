@@ -132,21 +132,7 @@ export const getDeliveryInfo = (productId) =>
 
 export const createOrder = async (orderData) => {
   try {
-    const response = await fetch("/api/store/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(orderData),
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok || responseData.error) {
-      return { error: responseData.error || "Erro ao criar encomenda" };
-    }
-
-    return responseData;
+    return await apiCall("/api/store/orders", 'POST', orderData);
   } catch (error) {
     console.error("Failed to create order:", error);
     return { error: error.message };
@@ -274,20 +260,7 @@ export const fetchAllOrdersDetails = async () => {
 
 export const updateOrderStatus = async (orderId, updates) => {
   try {
-    const response = await fetch(`/api/store/orders/${orderId}/status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updates),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    return apiCall(`/api/store/orders/${orderId}/status`, 'PATCH', updates);
   } catch (error) {
     console.error("Failed to update order status:", error);
     throw error;
@@ -327,22 +300,7 @@ export const markOrderAsNotDelivered = async (
 
 export const cancelOrder = async (orderId) => {
   try {
-    const response = await fetch(`/api/store/orders/${orderId}/cancel`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        responseData.error || `HTTP error! status: ${response.status}`
-      );
-    }
-
-    return responseData;
+    return await apiCall(`/api/store/orders/${orderId}/cancel`, 'POST');
   } catch (error) {
     console.error("Failed to cancel order:", error);
     throw error;
@@ -351,17 +309,7 @@ export const cancelOrder = async (orderId) => {
 
 export const generateExcel = async (orders) => {
   try {
-    const response = await fetch("/api/store/orders/export", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orders),
-    });
-
-    if (!response.ok) throw new Error("Failed to generate excel");
-
-    const blob = await response.blob();
-
-    return blob; // Blob containing the Excel file to download
+    return await apiCall("/api/store/orders/export", 'POST', orders);
   } catch (error) {
     console.error("Failed to generate Excel:", error);
     throw error;
