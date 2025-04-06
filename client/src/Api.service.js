@@ -23,6 +23,7 @@ export const fetchMemberRenewalNotifications = () =>
 export const fetchMember = (username) => apiCall(`/api/members/${username}`);
 export const fetchMemberStatus = (username) =>
   apiCall(`/api/members/status/${username}`);
+
     
 export const fetchThesis = () => apiCall('/api/theses');
 export const fetchThesisAreas = () => apiCall('/api/areas');

@@ -219,6 +219,18 @@
   flex-wrap: nowrap;
 }
 
+.coordinatorCard {
+  position: flex;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0.85;
+  color: white;
+  font-weight: bold;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
 @media only screen and (min-width: 1225px) {
   .allColabImage>.blobs {
     --image-scale: .9;

@@ -6,8 +6,10 @@ import BlueWhiteBox from './BlueWhiteBox.jsx';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 
+import aoc from '../../images/eventos/aoc.jpg';
 import esports from '../../images/eventos/esports.jpg';
 import sweats from '../../images/eventos/sweats.jpg';
+import layout from '../../images/eventos/layout.jpg';
 import churrasco from '../../images/eventos/churras.jpg';
 import jantar from '../../images/eventos/jantar_curso.jpg'
 import letstalk from '../../images/eventos/ltal.jpg';
@@ -57,6 +59,12 @@ const Activities = () => {
                     }}
                 >
                     <ActivityItem 
+                    image={aoc} 
+                    title="Advent Of Code" 
+                    description="O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!"
+                    setAutoPlay={setAutoPlay}
+                    />
+                    <ActivityItem 
                     image={esports} 
                     title="Torneio de E-Sports" 
                     description="Gostas de jogar? Que coincidência, este evento foi mesmo feito a pensar em ti! Reúne uma equipa e vem passar o dia connosco a jogar, comer e beber... e quem sabe ganhar um prémio ou outro!"
@@ -66,6 +74,12 @@ const Activities = () => {
                     image={sweats} 
                     title="Sweats EIC" 
                     description="E o que achas de teres uma sweat com o nome do teu curso? Não te esqueças, o NEIIST dá-te a oportunidade de teres a sweat do melhor curso!"
+                    setAutoPlay={setAutoPlay}
+                    />
+                    <ActivityItem
+                    image={layout}
+                    title="Concurso de Layout de Sweats"
+                    description="O Concurso de Layout de Sweats é a tua oportunidade de criar o layout oficial para a edição especial de cada ano. Se és estudante de EIC do IST podes submeter até 3 designs originais. Se ganhares a votação online, ganhas a sweat!"
                     setAutoPlay={setAutoPlay}
                     />
                     <ActivityItem 

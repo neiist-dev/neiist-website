@@ -201,7 +201,11 @@
 .footer {
   border: 0;
   padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 20px));
   background-color: white;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .total {
