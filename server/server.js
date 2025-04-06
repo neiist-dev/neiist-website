@@ -22,9 +22,14 @@ app.use(cors());
 app.use(morgan("tiny"));
 
 // Session
-var sess = {
+const sess = {
   secret: process.env.SESSION_SECRET,
-  cookie: {}
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    httpOnly: true
+  }
 }
 
 if (app.get('env') === 'production') {

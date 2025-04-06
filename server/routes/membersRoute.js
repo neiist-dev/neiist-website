@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
 
 router.get('/status/:username', async (req, res) => {
   const { username } = req.params;
-  if (username !== req.session.user.username && !req.session.isGacMember)
+  if (!req.session.user || (username !== req.session.user.username && !req.session.user.isGacMember))
     return res.status(403).json({ error: 'Forbidden' });
 
   const member = await membersService.getMemberStatus(username);
@@ -23,7 +23,7 @@ router.get('/status/:username', async (req, res) => {
 
 router.get('/:username', authMiddleware, async (req, res) => {
   const { username } = req.params;
-  if (username !== req.session.user.username && !req.session.isGacMember)
+  if (username !== req.session.user.username && !req.session.user.isGacMember)
     return res.status(403).json({ error: 'Forbidden' });
 
   const member = await membersService.getMember(username);

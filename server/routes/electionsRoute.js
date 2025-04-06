@@ -6,9 +6,10 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.post('/', gacMiddleware, async (req) => {
+router.post('/', gacMiddleware, async (req, res) => {
   const election = req.body;
   await electionsService.newElection(election);
+  res.status(201).json({ message: 'Election created successfully' });
 });
 
 router.get('/', async (req, res) => {

@@ -5,10 +5,11 @@ const apiCall = (url, method='GET', body=null, headers=null) =>
     .then((res) => res.data)
     .catch((err) => {
       console.error(err)
-      if (err.status === 401 || err.status === 403) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         window.location.href = '/';
         return;
       }
+      throw err; 
     });
 
     
