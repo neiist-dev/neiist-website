@@ -2,7 +2,6 @@ import { Card } from 'react-bootstrap';
 import style from '../../pages/css/AboutPage.module.css';
 
 const DivPersonCard = ({ name, job, image, teams }) => {
-  console.log("teams -> ", teams);
   const isCoordinator = teams?.includes('COOR-');
 
   return (
