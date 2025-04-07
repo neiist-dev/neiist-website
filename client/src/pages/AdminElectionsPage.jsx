@@ -4,7 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { createElection, fetchAdminElections } from '../Api.service.js';
+import { fetchAdminElections } from '../Api.service.js';
+
+import axios from 'axios';
 
 const AdminElectionsPage = () => (
   <>
@@ -152,7 +154,7 @@ const CreateElectionModal = ({ show, handleClose }) => {
       endDate,
       options: options.split(','),
     };
-    await createElection(newElection);
+    await axios.post('/api/elections', newElection);
   };
 
   return (

@@ -18,7 +18,9 @@ import { FcDownload } from 'react-icons/fc';
 import { summarizeName } from '../functions/dataTreatment.jsx';
 import { getCollabImage, allTeamNames } from "../functions/collabsGeneral.jsx";
 import { downloadCurrentCollabsFile } from '../functions/exportXLSX.js';
-import { addCollab, fetchAllCollabs, removeCollab } from '../../Api.service.js';
+import { fetchAllCollabs } from '../../Api.service.js';
+
+import axios from 'axios';
 
 const ManageCollabs = ({ selectedKey }) => {
   const [allMembers, setAllMembers] = useState(null);
@@ -108,7 +110,7 @@ const CreateCollaboratorRemovalModal = ({ show, handleClose, setIsLoaded, allMem
         </Form.Group>
 
         <Button onClick={()=> {
-          removeCollab(username).then(()=>{
+          axios.post(`/api/collabs/remove/${username}`).then(()=>{
             handleClose();
             setUsername('');
             setIsLoaded(false);
@@ -165,7 +167,7 @@ const CreateCollaboratorModal = ({ show, handleClose, setIsLoaded }) => {
             teams: data.teams,
           };
 
-          addCollab(data.username, newCollabInformation).then(() => {
+          axios.post(`/api/collabs/add/${data.username}`, newCollabInformation).then(()=>{
             handleClose();
             setData({
               'username': '',

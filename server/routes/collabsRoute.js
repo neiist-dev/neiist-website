@@ -1,6 +1,5 @@
 const express = require('express');
 const { collabsService } = require('../services');
-const { adminMiddleware, authMiddleware } = require('../middlewares');
 
 const router = express.Router();
 
@@ -17,7 +16,7 @@ router.get('/:option', async (req, res) => {
   res.json(members);
 });
 
-router.post('/add/:username', adminMiddleware, async (req, res) => {
+router.post('/add/:username', async (req, res) => {
   const { username } = req.params;
   const newCollabInfo = req.body;
 
@@ -25,18 +24,14 @@ router.post('/add/:username', adminMiddleware, async (req, res) => {
   res.json('OK');
 });
 
-router.post('/remove/:username', adminMiddleware, async (req, res) => {
+router.post('/remove/:username', async (req, res) => {
   const { username } = req.params;
   await collabsService.removeCollab(username);
   res.json('OK');
 });
 
-router.get('/info/:username', authMiddleware, async (req, res) => {
+router.get('/info/:username', async (req, res) => {
   const { username } = req.params;
-  if (username !== req.session.user.username && !req.session.user.isGacMember) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
   const state = await collabsService.getCollabTeams(username);
   res.json(state);
 });

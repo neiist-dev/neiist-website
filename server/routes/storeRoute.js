@@ -1,6 +1,5 @@
 const express = require("express");
 const { storeService } = require("../services");
-const { collaboratorMiddleware } = require("../middlewares");
 
 const storeRoute = express.Router();
 
@@ -178,7 +177,7 @@ storeRoute.get("/products/:id/delivery", (req, res) => {
  * Get all orders
  * GET /store/orders
  */
-storeRoute.get("/orders", collaboratorMiddleware, async (req, res) => {
+storeRoute.get("/orders", async (req, res) => {
   try {
     const { name, email, phone, ist_id, unpaid, undelivered } = req.query;
 
@@ -214,7 +213,7 @@ storeRoute.get("/orders", collaboratorMiddleware, async (req, res) => {
  * Get specific order
  * GET /store/orders/:id
  */
-storeRoute.get("/orders/:id", collaboratorMiddleware, async (req, res) => {
+storeRoute.get("/orders/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -239,7 +238,7 @@ storeRoute.get("/orders/:id", collaboratorMiddleware, async (req, res) => {
  * Get complete order details including items
  * GET /store/orders/:id/details
  */
-storeRoute.get("/orders/:id/details", collaboratorMiddleware, async (req, res) => {
+storeRoute.get("/orders/:id/details", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -347,7 +346,7 @@ storeRoute.post("/orders", async (req, res) => {
  * Mark order as paid
  * POST /store/orders/:id/pay
  */
-storeRoute.post("/orders/:id/pay", collaboratorMiddleware, async (req, res) => {
+storeRoute.post("/orders/:id/pay", async (req, res) => {
   try {
     const { id } = req.params;
     const { payment_responsible } = req.body;
@@ -378,7 +377,7 @@ storeRoute.post("/orders/:id/pay", collaboratorMiddleware, async (req, res) => {
  * Mark order as delivered
  * POST /store/orders/:id/deliver
  */
-storeRoute.post("/orders/:id/deliver", collaboratorMiddleware, async (req, res) => {
+storeRoute.post("/orders/:id/deliver", async (req, res) => {
   try {
     const { id } = req.params;
     const { delivery_responsible } = req.body;
@@ -411,7 +410,7 @@ storeRoute.post("/orders/:id/deliver", collaboratorMiddleware, async (req, res) 
  * Update order status
  * PATCH /store/orders/:id/status
  */
-storeRoute.patch("/orders/:id/status", collaboratorMiddleware, async (req, res) => {
+storeRoute.patch("/orders/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
     const { paid, delivered, payment_responsible, delivery_responsible } =
@@ -458,7 +457,7 @@ storeRoute.patch("/orders/:id/status", collaboratorMiddleware, async (req, res) 
  * Delete order
  * DELETE /store/orders/:id
  */
-storeRoute.delete("/orders/:id", collaboratorMiddleware, async (req, res) => {
+storeRoute.delete("/orders/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -482,7 +481,7 @@ storeRoute.delete("/orders/:id", collaboratorMiddleware, async (req, res) => {
  * Export orders to Excel
  * POST /store/orders/export
  */
-storeRoute.post("/orders/export", collaboratorMiddleware, async (req, res) => {
+storeRoute.post("/orders/export", async (req, res) => {
   try {
     const orders = req.body;
 

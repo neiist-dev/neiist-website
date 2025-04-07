@@ -6,7 +6,9 @@ import Button from "react-bootstrap/Button";
 import style from '../../../pages/css/GacPage.module.css';
 import { fenixPhoto } from "../../functions/dataTreatment.jsx";
 import LoadSpinner from "../../../hooks/loadSpinner.jsx";
-import { deleteMagMember, fetchMember, updateEmail, updateMember } from "../../../Api.service.js";
+import { fetchMember } from "../../../Api.service.js";
+
+import axios from 'axios';
 
 export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
   const [error, setError] = useState(null);
@@ -35,7 +37,9 @@ export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
 
   const handleUpdate = async (e, username) => {
     e.preventDefault();
-    const resp = await updateEmail(username, changedEmail);
+    const resp = await axios.post(`/api/mag/update/email/${username}`, {
+      changedEmail,
+    });
     if (resp) {
       setDisableEmail(!disableEmail);
       window.location.reload(false);
@@ -130,7 +134,8 @@ export const CreateMoreInfoModal = ({ show, handleClose, username }) => {
                         borderColor: "orange",
                       }}
                       onClick={() => {
-                        updateMember(member.username, {
+                        axios
+                          .put(`/api/members/${member.username}`, {
                             name: member.name,
                             email: member.email,
                             courses: member.courses,
@@ -166,7 +171,7 @@ const DeleteButton = ({ member, handleClose, remove, setRemove }) => {
   const handleSubmit = (event, username, member) => {
     event.preventDefault();
     if (username === member.username)
-      deleteMagMember.then(() => {
+      axios.put(`/api/mag/delete/${username}`).then(() => {
         handleClose();
         window.location.reload(false);
       });

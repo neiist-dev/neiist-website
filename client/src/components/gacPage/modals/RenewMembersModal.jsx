@@ -9,7 +9,9 @@ import {
 } from "../../functions/dataTreatment.jsx";
 
 import style from '../../../pages/css/GacPage.module.css';
-import { fetchMemberRenewalNotifications, warnMember } from "../../../Api.service.js";
+import { fetchMemberRenewalNotifications } from "../../../Api.service.js";
+
+import axios from 'axios';
 
 export const CreateRenewMembersModal = ({ show, handleClose, members }) => {
   var nonActiveEmails = "";
@@ -56,7 +58,7 @@ export const CreateRenewMembersModal = ({ show, handleClose, members }) => {
   };
 
   const emailSent = async (member) => {
-    await warnMember(member.username);
+    await axios.post(`/api/mag/warnedMember/${member.username}`);
   };
 
   const emailSentAndSet = async (member) => {

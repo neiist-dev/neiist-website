@@ -1,15 +1,13 @@
 const express = require('express');
-const { electionsService, authService } = require('../services');
-const { gacMiddleware, authMiddleware } = require('../middlewares');
+const { electionsService } = require('../services');
 
 const router = express.Router();
 
 router.use(express.json());
 
-router.post('/', gacMiddleware, async (req, res) => {
+router.post('/', async (req) => {
   const election = req.body;
   await electionsService.newElection(election);
-  res.status(201).json({ message: 'Election created successfully' });
 });
 
 router.get('/', async (req, res) => {
@@ -17,8 +15,8 @@ router.get('/', async (req, res) => {
   res.json(elections);
 });
 
-router.post('/:id/votes', authMiddleware, async (req) => {
-  const id = req.session.user.username;
+router.post('/:id/votes', async (req) => {
+  const { id } = req.params;
   const vote = req.body;
   await electionsService.newVote(id, vote);
 });

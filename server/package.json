@@ -12,7 +12,6 @@
     "exceljs": "^4.4.0",
     "express": "5.1.0",
     "express-fileupload": "^1.4.0",
-    "express-session": "^1.18.1",
     "htmlparser2": "10.0.0",
     "morgan": "1.10.0",
     "natural": "8.0.1",
