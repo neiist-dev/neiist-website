@@ -10,9 +10,7 @@ import Alert from 'react-bootstrap/Alert';
 import UserDataContext from '../UserDataContext.js';
 
 import style from './css/MemberPage.module.css'
-import { fetchElections, fetchMember } from '../Api.service.js';
-
-import axios from 'axios';
+import { createMember, fetchElections, fetchMember, updateMember, voteElection } from '../Api.service.js';
 
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);
@@ -127,7 +125,7 @@ const Register = () => {
       courses: userData.courses,
     };
 
-    await axios.post('/api/members', member)
+    await createMember(member)
       .then((res) => { if (res) window.location.reload(); });
   };
 
@@ -294,7 +292,7 @@ const ElectionCard = ({ election }) => {
       electionId: election.id,
       optionId: selectedOption,
     };
-    await axios.post(`/api/elections/${election.id}/votes`, vote);
+    await voteElection(vote);
   };
 
   return (
@@ -355,7 +353,7 @@ const Renew = () => {
       courses: userData.courses,
     };
 
-    axios.put(`/api/members/${userData.username}`, nameEmailCourses)
+    updateMember(userData.username, nameEmailCourses)
       .then((res) => { if (res) window.location.reload(); });
   };
 
