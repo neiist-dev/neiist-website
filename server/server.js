@@ -41,7 +41,7 @@ app.use("/api/store", storeRoute);
 app.use("/images", express.static(path.join(__dirname, "../uploads/store")));
 
 // Handle all other routes
-app.get("/*", function (req, res) {
+app.get("/*all", function (req, res) {
   res.sendFile(
     path.join(__dirname, "../client/build/index.html"),
     function (err) {
