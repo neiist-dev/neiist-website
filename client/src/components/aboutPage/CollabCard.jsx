@@ -1,8 +1,8 @@
 import { Card } from 'react-bootstrap';
 import style from '../../pages/css/AboutPage.module.css';
 
-const DivPersonCard = ({ name, job, image, teams }) => {
-  const isCoordinator = teams?.includes('COOR-');
+const DivPersonCard = ({ name, job, image, teams, teamId }) => {
+  const isCoordinator = teams?.includes(`COOR-${teamId}`);
 
   return (
     <div className={style.cardContainer}>
