@@ -4,6 +4,8 @@ const { storeService } = require("../services");
 const storeRoute = express.Router();
 
 storeRoute.use(express.json());
+storeRoute.use(express.urlencoded({ limit: '50mb', extended: true }));
+storeRoute.use(express.json({ limit: '50mb' }));
 
 /**
  * Get all products
