@@ -3,7 +3,6 @@ const { storeService } = require("../services");
 
 const storeRoute = express.Router();
 
-storeRoute.use(express.json());
 storeRoute.use(express.urlencoded({ limit: '50mb', extended: true }));
 storeRoute.use(express.json({ limit: '50mb' }));
 
@@ -493,6 +492,7 @@ storeRoute.post("/orders/export", async (req, res) => {
 
     const xls = await storeService.exportExcel(orders);
 
+
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -502,6 +502,9 @@ storeRoute.post("/orders/export", async (req, res) => {
       "attachment; filename=entrega-merch-neiist.xlsx"
     );
     res.send(Buffer.from(xls));
+
+    console.log(JSON.stringify(req.body).length);
+
   } catch (error) {
     console.error("Error exporting orders:", error);
     res.status(500).json({ error: error.message || "Failed to export orders" });
