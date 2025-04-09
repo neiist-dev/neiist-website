@@ -1,18 +1,8 @@
-import axios from 'axios';
+const apiCall = (request) => 
+  fetch(request)
+    .then((res) => res.json())
+    .catch((err) => console.error(err));
 
-const apiCall = (url, method='GET', body=null, headers=null) =>
-  axios(url, { method, data: body, headers })
-    .then((res) => res.data)
-    .catch((err) => {
-      console.error(err)
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        window.location.href = '/';
-        return;
-      }
-      throw err; 
-    });
-
-    
 export const fetchCollabInformation = (username) =>
   apiCall(`/api/collabs/info/${username}`);
 export const fetchAllCollabs = () => apiCall(`/api/collabs/all`);
@@ -25,30 +15,10 @@ export const fetchMember = (username) => apiCall(`/api/members/${username}`);
 export const fetchMemberStatus = (username) =>
   apiCall(`/api/members/status/${username}`);
 
-    
-export const fetchThesis = () => apiCall('/api/theses');
-export const fetchThesisAreas = () => apiCall('/api/areas');
-export const fetchElections = () => apiCall('/api/elections');
+export const fetchThesis = () => apiCall("/api/theses");
+export const fetchThesisAreas = () => apiCall("/api/areas");
+export const fetchElections = () => apiCall("/api/elections");
 export const fetchAdminElections = () => apiCall(`/api/admin/elections`);
-export const removeCollab = (username) => apiCall(`/api/collabs/remove/${username}`, 'POST');
-export const addCollab = (username, info) => apiCall(`/api/collabs/add/${username}`, 'POST', info);
-export const updateEmail = (username, email) => apiCall(`/api/mag/update/email/${username}`, 'POST', {changedEmail: email});
-export const updateMember = (username, { name, email, courses }) =>
-  apiCall(`/api/members/${username}`, 'PUT', { name, email, courses });
-export const deleteMagMember = (username) =>
-  apiCall(`/api/mag/delete/${username}`, 'PUT');
-export const warnMember = (username) =>
-  apiCall(`/api/mag/warnedMember/${username}`, 'POST');
-export const createArea = (data) =>
-  apiCall(`/api/areas`, 'POST', data, { 'Content-Type': 'multipart/form-data' });
-export const createElection = (election) =>
-  apiCall(`/api/elections`, 'POST', election);
-export const createThesis = (thesis) =>
-  apiCall(`/api/theses`, 'POST', thesis, { 'Content-Type': 'multipart/form-data' });
-export const createMember = (member) =>
-  apiCall(`/api/members`, 'POST', member);
-export const voteElection = (electionId, vote) =>
-  apiCall(`/api/elections/${electionId}/votes`, 'POST', vote);
 
 // Store endpoints
 export const fetchProducts = async () => {
@@ -132,7 +102,21 @@ export const getDeliveryInfo = (productId) =>
 
 export const createOrder = async (orderData) => {
   try {
-    return await apiCall("/api/store/orders", 'POST', orderData);
+    const response = await fetch("/api/store/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok || responseData.error) {
+      return { error: responseData.error || "Erro ao criar encomenda" };
+    }
+
+    return responseData;
   } catch (error) {
     console.error("Failed to create order:", error);
     return { error: error.message };
@@ -260,7 +244,20 @@ export const fetchAllOrdersDetails = async () => {
 
 export const updateOrderStatus = async (orderId, updates) => {
   try {
-    return apiCall(`/api/store/orders/${orderId}/status`, 'PATCH', updates);
+    const response = await fetch(`/api/store/orders/${orderId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Failed to update order status:", error);
     throw error;
@@ -300,7 +297,22 @@ export const markOrderAsNotDelivered = async (
 
 export const cancelOrder = async (orderId) => {
   try {
-    return await apiCall(`/api/store/orders/${orderId}/cancel`, 'POST');
+    const response = await fetch(`/api/store/orders/${orderId}/cancel`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        responseData.error || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    return responseData;
   } catch (error) {
     console.error("Failed to cancel order:", error);
     throw error;
@@ -309,7 +321,17 @@ export const cancelOrder = async (orderId) => {
 
 export const generateExcel = async (orders) => {
   try {
-    return await apiCall("/api/store/orders/export", 'POST', orders);
+    const response = await fetch("/api/store/orders/export", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orders),
+    });
+
+    if (!response.ok) throw new Error("Failed to generate excel");
+
+    const blob = await response.blob();
+
+    return blob; // Blob containing the Excel file to download
   } catch (error) {
     console.error("Failed to generate Excel:", error);
     throw error;

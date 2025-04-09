@@ -4,7 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { createArea, fetchThesisAreas } from '../Api.service.js';
+import { fetchThesisAreas } from '../Api.service.js';
+
+import axios from 'axios';
 
 const AdminAreasPage = () => (
   <>
@@ -135,7 +137,11 @@ const UploadAreasModal = ({ show, handleClose }) => {
   const handleUploadAreas = () => {
     const formData = new FormData();
     formData.append('areas', selectedFile);
-    createArea(formData);
+    axios.post('/api/areas', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   };
 
   return (

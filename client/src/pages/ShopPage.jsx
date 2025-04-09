@@ -91,8 +91,12 @@ const StorePage = () => {
           <span className="me-2">
             <FaRegBell size={20} />
           </span>
-          As encomendas estão disponíveis até{" "}
-          {deadline.toLocaleDateString("pt-PT")}
+          {/* As encomendas estão disponíveis até{" "}
+          {deadline.toLocaleDateString("pt-PT")} */}
+          🚨 Prazo de pagamento das SWEATS DE EIC 24/25 estendido até hoje! 🚨<br/>
+          - Faz a tua encomenda<br/>
+          - Manda DM no instagram do NEIIST após teres feito o teu pedido<br/>
+          - Efetua o pagamento (MB Way)
         </Alert>
       )}
 

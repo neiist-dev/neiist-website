@@ -28,12 +28,12 @@ const CreateTeamModal = ({
       <hr />
       <ActiveMembersDiv
         activeTeamMembers={activeMembers?.filter((member) => member.teams.includes(teamId))}
+        teamId={teamId}
       />
     </Modal.Body>
   </Modal>
 );
-
-const ActiveMembersDiv = ({ activeTeamMembers }) => (
+const ActiveMembersDiv = ({ activeTeamMembers, teamId }) => (
   <>
     <h4>Membros da Equipa ({activeTeamMembers.length ?? '0'})</h4>
     <div className={`${style.allMembersCard} ${style.activeTeamMembers}`}>
@@ -43,6 +43,7 @@ const ActiveMembersDiv = ({ activeTeamMembers }) => (
           name={`${member.name.split(' ')[0]}\n${member.name.split(' ')[1]}`}
           image={getCollabImage(member.name)}
           teams={member.teams}
+          teamId={teamId}
         />
       ))}
     </div>

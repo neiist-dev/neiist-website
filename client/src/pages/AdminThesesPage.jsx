@@ -4,7 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { createThesis, fetchThesis, fetchThesisAreas } from '../Api.service.js';
+import { fetchThesis, fetchThesisAreas } from '../Api.service.js';
+
+import axios from 'axios';
 
 const AdminThesesPage = () => (
   <>
@@ -135,7 +137,11 @@ const UploadThesesModal = ({ show, handleClose }) => {
   const handleUploadTheses = () => {
     const formData = new FormData();
     formData.append('theses', selectedFile);
-    createThesis(formData);
+    axios.post('/api/theses', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   };
 
   return (
