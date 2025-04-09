@@ -52,7 +52,7 @@ const createOrders = async () => {
 		await query("CREATE INDEX idx_order_items_order ON order_items(order_id)");
 	} catch (err) {
 		if (isDatabaseException(err) && err.code === PostgresError.DUPLICATE_TABLE)
-			console.log("Debug: members already exists"); // table already exists
+			console.log("Debug: orders table already exists"); // table already exists
 		else console.error(err);
 	}
 };
