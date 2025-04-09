@@ -33,7 +33,7 @@ const sess: SessionOptions = {
 		maxAge: 24 * 60 * 60 * 1000, // 1 day
 		httpOnly: true,
 		secure: false, // Sets to true if production
-		sameSite: 'lax', // Helps prevent CSRF
+		sameSite: "lax", // Helps prevent CSRF
 	},
 };
 
@@ -45,13 +45,13 @@ app.use(session(sess));
 
 // create db tables if needed
 initializeSchema()
-  .then(() => {
-    console.log("Database schema initialized successfully");
-  })
-  .catch((error) => {
-    console.error("Failed to initialize database schema:", error);
-    process.exit(1);
-  });
+	.then(() => {
+		console.log("Database schema initialized successfully");
+	})
+	.catch((error) => {
+		console.error("Failed to initialize database schema:", error);
+		process.exit(1);
+	});
 
 // serve frontend
 app.use(express.static(path.join(__dirname, "../client/build")));

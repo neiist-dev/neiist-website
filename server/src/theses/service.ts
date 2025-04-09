@@ -38,8 +38,7 @@ const uploadTheses = async (theses: string) => {
 };
 
 const getTheses = async () => {
-	const theses = thesesRepository.getTheses();
-	return theses;
+	return thesesRepository.getTheses();
 };
 
 export const thesesService = {

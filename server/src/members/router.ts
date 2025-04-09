@@ -30,8 +30,10 @@ membersRouter.get("/status/:username", async (req, res) => {
 	try {
 		const member = await membersService.getMemberStatus(username);
 		if (!member) {
-			return res.status(404).json({ error: "Member not found" });
+			res.status(404).json({ error: "Member not found" });
+			return;
 		}
+
 		res.json(member);
 	} catch (error) {
 		console.error("Error getting member status:", error);

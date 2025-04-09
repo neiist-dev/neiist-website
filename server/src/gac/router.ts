@@ -15,7 +15,7 @@ gacRoute.get("/:choice", gacMiddleware, async (req, res) => {
 	};
 
 	const validChoices = ["active", "all", "renewalNotifications"];
-	if (!validChoices.includes(choice)) {
+	if (!choice || !validChoices.includes(choice)) {
 		res.status(400).json({ error: "Invalid choice parameter" });
 		return;
 	}
@@ -51,7 +51,11 @@ gacRoute.post("/update/email/:username", gacMiddleware, async (req, res) => {
 		return;
 	}
 
-	if (!changedEmail || typeof changedEmail !== "string" || !changedEmail.includes("@")) {
+	if (
+		!changedEmail ||
+		typeof changedEmail !== "string" ||
+		!changedEmail.includes("@")
+	) {
 		res.status(400).json({ error: "Valid email is required" });
 		return;
 	}
@@ -59,7 +63,6 @@ gacRoute.post("/update/email/:username", gacMiddleware, async (req, res) => {
 	await membersService.updateEmailMember(username, changedEmail);
 	res.json(username);
 });
-
 
 gacRoute.post("/warnedMember/:username", gacMiddleware, async (req, res) => {
 	const { username } = req.params;

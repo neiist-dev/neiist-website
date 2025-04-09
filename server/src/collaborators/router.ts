@@ -12,12 +12,13 @@ collaboratorsRouter.get("/:option", async (req, res) => {
 	};
 
 	const { option } = req.params;
-	
+
 	// Validate the option parameter
-	if (option !== 'all' && option !== 'resume') {
-		return res.status(400).json({ error: "Invalid option. Use 'all' or 'resume'." });
+	if (option !== "all" && option !== "resume") {
+		res.status(400).json({ error: "Invalid option. Use 'all' or 'resume'." });
+		return;
 	}
-	
+
 	try {
 		const members = choices[option as "all" | "resume"];
 		res.json(members);
@@ -72,6 +73,11 @@ collaboratorsRouter.post(
 
 collaboratorsRouter.get("/info/:username", authMiddleware, async (req, res) => {
 	const { username } = req.params;
+	if (!username) {
+		res.status(400).json({ error: "Username is required" });
+		return;
+	}
+
 	if (
 		username !== req.session.user?.username &&
 		!req.session.user?.isGacMember
@@ -83,8 +89,10 @@ collaboratorsRouter.get("/info/:username", authMiddleware, async (req, res) => {
 	try {
 		const state = await collaboratorsService.getCollabTeams(username);
 		if (!state) {
-			return res.status(404).json({ error: "Collaborator not found" });
+			res.status(404).json({ error: "Collaborator not found" });
+			return;
 		}
+
 		res.json(state);
 	} catch (error) {
 		console.error("Error fetching collaborator teams:", error);
