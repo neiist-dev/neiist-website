@@ -1,45 +1,44 @@
-import express from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import session, { SessionOptions } from 'express-session';
-import path from 'path';
-import { adminElectionsRouter, electionsRouter } from './elections/router';
-import { initializeSchema } from './utils/databaseSchema';
-import { banner } from './utils/banner';
-import { areasRoute as areasRouter } from './areas/router';
-import { authRoute as authRouter } from './auth/router';
-import { collaboratorsRouter } from './collaborators/router';
-import { thesesRouter } from './theses/router';
-import { membersRouter } from './members/router';
-import { storeRouter } from './store/router';
-import { gacRoute as gacRouter } from './gac/router';
+import path from "node:path";
+import cors from "cors";
+import express from "express";
+import session, { type SessionOptions } from "express-session";
+import morgan from "morgan";
+import { areasRoute as areasRouter } from "./areas/router";
+import { authRoute as authRouter } from "./auth/router";
+import { collaboratorsRouter } from "./collaborators/router";
+import { adminElectionsRouter, electionsRouter } from "./elections/router";
+import { gacRoute as gacRouter } from "./gac/router";
+import { membersRouter } from "./members/router";
+import { storeRouter } from "./store/router";
+import { thesesRouter } from "./theses/router";
+import { banner } from "./utils/banner";
+import { initializeSchema } from "./utils/databaseSchema";
 
 const app = express();
+app.use(cors());
+app.use(morgan("tiny"));
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
 if (!SESSION_SECRET) {
-    console.error('SESSION_SECRET is not set in the environment variables');
-    process.exit(1);
+	console.error("SESSION_SECRET is not set in the environment variables");
+	process.exit(1);
 }
-
-app.use(cors());
-app.use(morgan('tiny'));
 
 // Session
 const sess: SessionOptions = {
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-        httpOnly: true,
-        secure: false, // Sets to true if production
-    }
-}
+	secret: SESSION_SECRET,
+	resave: false,
+	saveUninitialized: false,
+	cookie: {
+		maxAge: 24 * 60 * 60 * 1000, // 1 day
+		httpOnly: true,
+		secure: false, // Sets to true if production
+	},
+};
 
-if (app.get('env') === 'production') {
-    app.set('trust proxy', 1) // trust first proxy
-    sess.cookie!.secure = true // serve secure cookies
+if (app.get("env") === "production") {
+	app.set("trust proxy", 1); // trust first proxy
+	if (sess.cookie) sess.cookie.secure = true; // serve secure cookies
 }
 app.use(session(sess));
 
@@ -64,19 +63,16 @@ app.use("/api/store", storeRouter);
 app.use("/images", express.static(path.join(__dirname, "../uploads/store")));
 
 // Handle all other routes
-app.get("/*all", function (req, res) {
-  res.sendFile(
-    path.join(__dirname, "../client/build/index.html"),
-    function (err) {
-      if (err) {
-        res.status(500).send(err);
-      }
-    }
-  );
+app.get("/*all", (req, res) => {
+	res.sendFile(path.join(__dirname, "../client/build/index.html"), (err) => {
+		if (err) {
+			res.status(500).send(err);
+		}
+	});
 });
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
-  console.log(banner);
-  console.log(`App is listening on port ${port}.`);
+	console.log(banner);
+	console.log(`App is listening on port ${port}.`);
 });

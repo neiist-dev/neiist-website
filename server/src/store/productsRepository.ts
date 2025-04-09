@@ -1,4 +1,4 @@
-import { Product } from "./dto";
+import type { Product } from "./dto";
 import { products } from "./products";
 
 /**
@@ -6,7 +6,7 @@ import { products } from "./products";
  * @returns {Array} Array of products
  */
 const getAllProducts = (): Product[] => {
-  return products;
+	return products;
 };
 
 /**
@@ -14,7 +14,7 @@ const getAllProducts = (): Product[] => {
  * @returns {Array} Array of products
  */
 const getAllVisibleProducts = (): Product[] => {
-  return products.filter((product) => product.visible);
+	return products.filter((product) => product.visible);
 };
 
 /**
@@ -23,7 +23,7 @@ const getAllVisibleProducts = (): Product[] => {
  * @returns {Array} Filtered array of products
  */
 const getProductsByType = (type: string): Product[] => {
-  return products.filter((product) => product.visible && product.type === type);
+	return products.filter((product) => product.visible && product.type === type);
 };
 
 /**
@@ -32,7 +32,7 @@ const getProductsByType = (type: string): Product[] => {
  * @returns {Object|null} Product object or null if not found
  */
 const getProductById = (id: string): Product | undefined => {
-  return products.find((product) => product.id === id && product.visible);
+	return products.find((product) => product.id === id && product.visible);
 };
 
 /**
@@ -40,7 +40,7 @@ const getProductById = (id: string): Product | undefined => {
  * @returns {Array} Array of featured products
  */
 const getFeaturedProducts = (): Product[] => {
-  return products.filter((product) => product.visible && product.featured);
+	return products.filter((product) => product.visible && product.featured);
 };
 
 /**
@@ -49,9 +49,9 @@ const getFeaturedProducts = (): Product[] => {
  * @returns {Array} Array of available variants
  */
 const getAvailableVariants = (productId: string) => {
-  const product = getProductById(productId);
-  if (!product) return [];
-  return product.variants.filter((variant) => variant.available);
+	const product = getProductById(productId);
+	if (!product) return [];
+	return product.variants.filter((variant) => variant.available);
 };
 
 /**
@@ -61,13 +61,13 @@ const getAvailableVariants = (productId: string) => {
  * @returns {boolean} Availability status
  */
 const checkVariantAvailability = (productId: string, size: string) => {
-  const product = getProductById(productId);
-  if (!product) return false;
+	const product = getProductById(productId);
+	if (!product) return false;
 
-  const variant = product.variants.find((v) => v.size === size);
-  if (!variant) return false;
+	const variant = product.variants.find((v) => v.size === size);
+	if (!variant) return false;
 
-  return variant.available;
+	return variant.available;
 };
 
 /**
@@ -76,21 +76,21 @@ const checkVariantAvailability = (productId: string, size: string) => {
  * @returns {Object|null} Delivery information
  */
 const getDeliveryInfo = (productId: string) => {
-  const product = getProductById(productId);
-  if (!product) return null;
+	const product = getProductById(productId);
+	if (!product) return null;
 
-  if (product.stockType === "onDemand") {
-    return {
-      type: "onDemand",
-      estimatedDelivery: product.orderInfo.estimatedDelivery,
-      orderDeadline: product.orderInfo.orderDeadline,
-    };
-  }
+	if (product.stockType === "onDemand") {
+		return {
+			type: "onDemand",
+			estimatedDelivery: product.orderInfo.estimatedDelivery,
+			orderDeadline: product.orderInfo.orderDeadline,
+		};
+	}
 
-  return {
-    type: "immediate",
-    estimatedDelivery: "1-5 business days",
-  };
+	return {
+		type: "immediate",
+		estimatedDelivery: "1-5 business days",
+	};
 };
 
 /**
@@ -101,44 +101,48 @@ const getDeliveryInfo = (productId: string) => {
  * @returns {boolean} True if order is possible
  * @throws {Error} If order cannot be fulfilled
  */
-const checkOrderPossibility = (productId: string, size: string, quantity: number) => {
-  const product = getProductById(productId);
+const checkOrderPossibility = (
+	productId: string,
+	size: string,
+	quantity: number,
+) => {
+	const product = getProductById(productId);
 
-  if (!product) {
-    throw new Error("Product not found");
-  }
+	if (!product) {
+		throw new Error("Product not found");
+	}
 
-  const variant = product.variants.find((v) => v.size === size);
-  if (!variant) {
-    throw new Error("Variant not found");
-  }
+	const variant = product.variants.find((v) => v.size === size);
+	if (!variant) {
+		throw new Error("Variant not found");
+	}
 
-  if (!variant.available) {
-    throw new Error("Variant not available");
-  }
+	if (!variant.available) {
+		throw new Error("Variant not available");
+	}
 
-  // Check stock type
-  if (product.stockType === "limited") {
-    // For limited stock, check available quantity
-    if (variant.stockQuantity && variant.stockQuantity < quantity) {
-      throw new Error("Insufficient stock quantity");
-    }
-  } else if (product.stockType === "onDemand") {
-    // For on-demand products, check deadline
-    const orderDeadline = new Date(product.orderInfo.orderDeadline);
-    if (orderDeadline < new Date()) {
-      throw new Error("Order deadline has passed");
-    }
+	// Check stock type
+	if (product.stockType === "limited") {
+		// For limited stock, check available quantity
+		if (variant.stockQuantity && variant.stockQuantity < quantity) {
+			throw new Error("Insufficient stock quantity");
+		}
+	} else if (product.stockType === "onDemand") {
+		// For on-demand products, check deadline
+		const orderDeadline = new Date(product.orderInfo.orderDeadline);
+		if (orderDeadline < new Date()) {
+			throw new Error("Order deadline has passed");
+		}
 
-    // Check minimum quantity
-    if (quantity < product.orderInfo.minOrderQuantity) {
-      throw new Error(
-        `Minimum order quantity is ${product.orderInfo.minOrderQuantity}`
-      );
-    }
-  }
+		// Check minimum quantity
+		if (quantity < product.orderInfo.minOrderQuantity) {
+			throw new Error(
+				`Minimum order quantity is ${product.orderInfo.minOrderQuantity}`,
+			);
+		}
+	}
 
-  return true;
+	return true;
 };
 
 /**
@@ -150,38 +154,39 @@ const checkOrderPossibility = (productId: string, size: string, quantity: number
  * @throws {Error} If update fails
  */
 const updateStock = (productId: string, size: string, quantity: number) => {
-  const product = products.find((p) => p.id === productId) as Product;
-  if (!product || product.stockType !== "limited") {
-    throw new Error("Product not found or does not have limited stock");
-  }
+	const product = products.find((p) => p.id === productId) as Product;
+	if (!product || product.stockType !== "limited") {
+		throw new Error("Product not found or does not have limited stock");
+	}
 
-  const variant = product.variants.find((v) => v.size === size);
-  if (!variant) {
-    throw new Error("Variant not found");
-  }
+	const variant = product.variants.find((v) => v.size === size);
+	if (!variant) {
+		throw new Error("Variant not found");
+	}
 
-  if (variant.stockQuantity && variant.stockQuantity < quantity) {
-    throw new Error("Insufficient stock");
-  }
+	if (variant.stockQuantity && variant.stockQuantity < quantity) {
+		throw new Error("Insufficient stock");
+	}
 
-  if (variant.stockQuantity !== null) variant.stockQuantity -= quantity;
-  variant.available = variant.stockQuantity === null || variant.stockQuantity > 0;
+	if (variant.stockQuantity !== null) variant.stockQuantity -= quantity;
+	variant.available =
+		variant.stockQuantity === null || variant.stockQuantity > 0;
 
-  // Here you would typically update the database
-  // products.save();
+	// Here you would typically update the database
+	// products.save();
 
-  return variant.stockQuantity;
+	return variant.stockQuantity;
 };
 
 export const productsRepository = {
-  getAllProducts,
-  getAllVisibleProducts,
-  getProductsByType,
-  getProductById,
-  getFeaturedProducts,
-  getAvailableVariants,
-  checkVariantAvailability,
-  checkOrderPossibility,
-  updateStock,
-  getDeliveryInfo,
+	getAllProducts,
+	getAllVisibleProducts,
+	getProductsByType,
+	getProductById,
+	getFeaturedProducts,
+	getAvailableVariants,
+	checkVariantAvailability,
+	checkOrderPossibility,
+	updateStock,
+	getDeliveryInfo,
 };

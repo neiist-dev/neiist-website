@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 // TODO: Won't run if deleted, not sure why
 export const banner = `
 /$$   /$$ /$$$$$$$$ /$$$$$$ /$$$$$$  /$$$$$$  /$$$$$$$$
