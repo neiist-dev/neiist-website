@@ -20,9 +20,14 @@ gacRoute.get("/:choice", gacMiddleware, async (req, res) => {
 		return;
 	}
 
-	const members =
-		await options[choice as "active" | "all" | "renewalNotifications"]();
-	res.json(members);
+	try {
+		const members =
+			await options[choice as "active" | "all" | "renewalNotifications"]();
+		res.json(members);
+	} catch (error) {
+		console.error("Error fetching members:", error);
+		res.status(500).json({ error: "Failed to fetch members" });
+	}
 });
 
 gacRoute.put("/delete/:username", gacMiddleware, async (req, res) => {
@@ -55,9 +60,6 @@ gacRoute.post("/update/email/:username", gacMiddleware, async (req, res) => {
 	res.json(username);
 });
 
-	await membersService.updateEmailMember(username, changedEmail);
-	res.json(username);
-});
 
 gacRoute.post("/warnedMember/:username", gacMiddleware, async (req, res) => {
 	const { username } = req.params;
@@ -67,6 +69,11 @@ gacRoute.post("/warnedMember/:username", gacMiddleware, async (req, res) => {
 		return;
 	}
 
-	await membersService.addRenewMemberWarned(username);
-	res.json(username);
+	try {
+		await membersService.addRenewMemberWarned(username);
+		res.json(username);
+	} catch (error) {
+		console.error("Error adding member to warned list:", error);
+		res.status(500).json({ error: "Failed to add member to warned list" });
+	}
 });
