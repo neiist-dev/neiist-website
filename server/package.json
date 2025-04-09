@@ -5,8 +5,8 @@
     "dev": "ts-node-dev --respawn --transpile-only -r dotenv/config src/index.ts",
     "build": "tsc",
     "prod": "node -r dotenv/config dist/index.js",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix"
+    "lint": "biome lint",
+    "format": "biome format"
   },
   "dependencies": {
     "axios": "1.8.4",
@@ -23,7 +23,7 @@
     "pg-error-enum": "^1.0.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.24.0",
+    "@biomejs/biome": "1.9.4",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/express-fileupload": "^1.5.1",
@@ -31,10 +31,8 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.14.0",
     "@types/pg": "^8.11.11",
-    "eslint": "^9.24.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.29.0"
+    "typescript": "^5.8.3"
   }
 }
