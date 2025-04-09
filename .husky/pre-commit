@@ -1,0 +1,4 @@
+# Server
+cd server
+npm run lint
+npm run format
