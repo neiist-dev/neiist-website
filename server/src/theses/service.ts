@@ -34,7 +34,7 @@ const uploadTheses = async (theses: string) => {
 		parsedTheses,
 		trainedClassifier,
 	);
-	thesesRepository.setTheses(classifiedTheses);
+	await thesesRepository.setTheses(classifiedTheses);
 };
 
 const getTheses = async () => {
