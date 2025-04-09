@@ -391,7 +391,7 @@ const getUndeliveredOrders = async () => {
 
 const getOrderItems = async (orderId: string) => {
 	try {
-		const result = await query<Order>(
+		const result = await query<OrderItem>(
 			"SELECT * FROM order_items WHERE order_id = $1",
 			orderId,
 		);
