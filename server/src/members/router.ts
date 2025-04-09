@@ -7,8 +7,14 @@ membersRouter.use(express.json());
 
 membersRouter.post("/", async (req, res) => {
 	const member = req.body;
-	await membersService.registerMember(member);
-	res.json(member.username);
+	try {
+		// Consider validation of member data before passing to service
+		await membersService.registerMember(member);
+		res.status(201).json({ username: member.username });
+	} catch (error) {
+		console.error("Error registering member:", error);
+		res.status(500).json({ error: "Failed to register member" });
+	}
 });
 
 membersRouter.get("/status/:username", async (req, res) => {
@@ -21,8 +27,16 @@ membersRouter.get("/status/:username", async (req, res) => {
 		return;
 	}
 
-	const member = await membersService.getMemberStatus(username);
-	res.json(member);
+	try {
+		const member = await membersService.getMemberStatus(username);
+		if (!member) {
+			return res.status(404).json({ error: "Member not found" });
+		}
+		res.json(member);
+	} catch (error) {
+		console.error("Error getting member status:", error);
+		res.status(500).json({ error: "Failed to get member status" });
+	}
 });
 
 membersRouter.get("/:username", authMiddleware, async (req, res) => {

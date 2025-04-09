@@ -12,8 +12,19 @@ collaboratorsRouter.get("/:option", async (req, res) => {
 	};
 
 	const { option } = req.params;
-	const members = choices[option as "all" | "resume"] || [];
-	res.json(members);
+	
+	// Validate the option parameter
+	if (option !== 'all' && option !== 'resume') {
+		return res.status(400).json({ error: "Invalid option. Use 'all' or 'resume'." });
+	}
+	
+	try {
+		const members = choices[option as "all" | "resume"];
+		res.json(members);
+	} catch (error) {
+		console.error(`Error fetching collaborators (${option}):`, error);
+		res.status(500).json({ error: "Failed to fetch collaborators" });
+	}
 });
 
 collaboratorsRouter.post(
@@ -28,8 +39,13 @@ collaboratorsRouter.post(
 			return;
 		}
 
-		await collaboratorsService.addNewCollab(username, newCollabInfo);
-		res.json("OK");
+		try {
+			await collaboratorsService.addNewCollab(username, newCollabInfo);
+			res.status(201).json({ message: "Collaborator added successfully" });
+		} catch (error) {
+			console.error("Error adding collaborator:", error);
+			res.status(500).json({ error: "Failed to add collaborator" });
+		}
 	},
 );
 
@@ -44,8 +60,13 @@ collaboratorsRouter.post(
 			return;
 		}
 
-		await collaboratorsService.removeCollab(username);
-		res.json("OK");
+		try {
+			await collaboratorsService.removeCollab(username);
+			res.status(200).json({ message: "Collaborator removed successfully" });
+		} catch (error) {
+			console.error("Error removing collaborator:", error);
+			res.status(500).json({ error: "Failed to remove collaborator" });
+		}
 	},
 );
 
@@ -59,11 +80,14 @@ collaboratorsRouter.get("/info/:username", authMiddleware, async (req, res) => {
 		return;
 	}
 
-	if (!username) {
-		res.status(400).json({ error: "Username is required" });
-		return;
+	try {
+		const state = await collaboratorsService.getCollabTeams(username);
+		if (!state) {
+			return res.status(404).json({ error: "Collaborator not found" });
+		}
+		res.json(state);
+	} catch (error) {
+		console.error("Error fetching collaborator teams:", error);
+		res.status(500).json({ error: "Failed to fetch collaborator teams" });
 	}
-
-	const state = await collaboratorsService.getCollabTeams(username);
-	res.json(state);
 });

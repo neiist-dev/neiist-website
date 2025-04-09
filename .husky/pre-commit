@@ -1,4 +1,13 @@
-# Server
-cd server
-npm run lint
-npm run format
+#!/usr/bin/env sh
+# Pre-commit hook to run linting and formatting on server code
+
+set -e
+
+if [ -d "server" ]; then
+  cd server
+  npm run lint
+  npm run format
+else
+  echo "Error: server directory not found"
+  exit 1
+fi

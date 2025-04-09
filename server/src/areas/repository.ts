@@ -24,7 +24,7 @@ const setAreas = async (areas: Area[]) => {
 		await client.query("BEGIN");
 		await client.query("TRUNCATE TABLE areas CASCADE");
 
-		Promise.all(
+		await Promise.all(
 			areas.map(async (area) => {
 				await client.query("INSERT INTO areas VALUES($1, $2, $3)", [
 					area.code,
@@ -49,6 +49,7 @@ const getAreas = async () => {
 		return areasResult.rows;
 	} catch (err) {
 		console.error(err);
+		return [] as Area[];
 	}
 };
 

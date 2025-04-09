@@ -139,7 +139,7 @@ const getCurrentCollabs = async () => {
       WHERE curr_collaborators.username IS NOT NULL
       ORDER BY name ASC`,
 		);
-		return collabsResult.rows[0];
+		return collabsResult.rows;
 	} catch (err) {
 		console.error(err);
 	}
@@ -155,7 +155,7 @@ const getCurrentCollabsResume = async () => {
       WHERE m.name IS NOT NULL AND cc.username IS NOT NULL
       ORDER BY name ASC;`,
 		);
-		return collabsResult.rows[0];
+		return collabsResult.rows;
 	} catch (err) {
 		console.error(err);
 	}
@@ -174,7 +174,7 @@ const getCurrentTeamMembers = async (teamsAux: string[]) => {
       ORDER BY name ASC`,
 			teams,
 		);
-		return collabsResult.rows[0];
+		return collabsResult.rows;
 	} catch (err) {
 		console.error(err);
 	}

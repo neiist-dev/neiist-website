@@ -136,8 +136,8 @@ const registerMember = async (member: Member) => {
 	newMember.renewStartDate = renewStartDate;
 	newMember.renewEndDate = renewEndDate;
 
-	membersRepository.createMember(newMember);
-	membersRepository.removeRenewalNotification(newMember.username);
+	await membersRepository.createMember(newMember);
+	await membersRepository.removeRenewalNotification(newMember.username);
 };
 
 const renovateMember = async (
@@ -179,8 +179,8 @@ const renovateMember = async (
 		renewEndDate: addMonthsToDate(validPeriod + gracePeriod, currDate),
 	};
 
-	membersRepository.updateMember(member);
-	membersRepository.removeRenewalNotification(member.username);
+	await membersRepository.updateMember(member);
+	await membersRepository.removeRenewalNotification(member.username);
 };
 
 const updateEmailMember = async (username: string, newEmail: string) => {
@@ -188,7 +188,7 @@ const updateEmailMember = async (username: string, newEmail: string) => {
 	if (!memberInfo) return null;
 
 	memberInfo.email = newEmail;
-	membersRepository.updateMember(memberInfo);
+	await membersRepository.updateMember(memberInfo);
 };
 
 const removeMember = async (username: string) => {
@@ -201,8 +201,8 @@ const removeMember = async (username: string) => {
 	memberInfo.renewStartDate = currDate;
 	memberInfo.renewEndDate = currDate;
 
-	membersRepository.updateMember(memberInfo);
-	membersRepository.removeRenewalNotification(memberInfo.username);
+	await membersRepository.updateMember(memberInfo);
+	await membersRepository.removeRenewalNotification(memberInfo.username);
 };
 
 export const membersService = {

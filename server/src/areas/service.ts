@@ -2,7 +2,7 @@ import type { Area } from "./dto";
 import { areasRepository } from "./repository";
 
 const uploadAreas = async (areas: Area[]) => {
-	areasRepository.setAreas(areas);
+	await areasRepository.setAreas(areas);
 };
 
 const getAreas = async () => {

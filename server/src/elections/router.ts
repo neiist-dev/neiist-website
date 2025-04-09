@@ -41,4 +41,5 @@ electionsRouter.post("/:id/votes", authMiddleware, async (req, res) => {
 	vote.username = req.session.user?.username;
 
 	await electionsService.newVote(id, vote);
+	res.status(201).json({ message: "Vote recorded successfully" });
 });
