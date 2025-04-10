@@ -1,7 +1,7 @@
 {
 	"name": "neiist-website-server",
 	"scripts": {
-		"start": "ts-node -r dotenv/config src/index.ts",
+		"start": "npm run build && npm run prod",
 		"dev": "ts-node-dev --respawn --transpile-only -r dotenv/config src/index.ts",
 		"build": "tsc",
 		"prod": "node -r dotenv/config dist/index.js",
@@ -31,7 +31,6 @@
 		"@types/morgan": "^1.9.9",
 		"@types/node": "^22.14.0",
 		"@types/pg": "^8.11.11",
-		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "^5.8.3"
 	}
