@@ -107,7 +107,8 @@ const NavBar = () => {
               >
                 Estudante
               </Nav.Link>
-              <Nav.Link
+              {/* TODO: REMOVE COMMENT WHEN SHOP PAGE IS NEEDED */}
+              {/* <Nav.Link
                 className={`${style.navLink} ${style.onWeb}`}
                 as={Link}
                 to="/shop"
@@ -119,10 +120,7 @@ const NavBar = () => {
                 onClick={() => setIsCartOpen(true)}
               >
                 <FaShoppingCart size={20} />
-                {/* {itemCount > 0 && (
-                  <span className={style.cartBadge}>{itemCount}</span>
-                )} */}
-              </Nav.Link>
+              </Nav.Link> */}
 
               <ActiveTecnicoStudentNavLink
                 hide={style.onMobile}
