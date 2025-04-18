@@ -54,7 +54,7 @@ initializeSchema()
 	});
 
 // serve frontend
-app.use(express.static(path.join(__dirname, "../client/build")));
+app.use(express.static(path.join(__dirname, "../../client/build")));
 
 // API routes
 app.use("/api/auth", authRouter);
@@ -68,11 +68,11 @@ app.use("/api/elections", electionsRouter);
 app.use("/api/store", storeRouter);
 
 // Serve static files for product images
-app.use("/images", express.static(path.join(__dirname, "../uploads/store")));
+app.use("/images", express.static(path.join(__dirname, "../../uploads/store")));
 
 // Handle all other routes
-app.get("/*all", (req, res) => {
-	res.sendFile(path.join(__dirname, "../client/build/index.html"), (err) => {
+app.get("/*all", (_, res) => {
+	res.sendFile(path.join(__dirname, "../../client/build/index.html"), (err) => {
 		if (err) {
 			res.status(500).send(err);
 		}
