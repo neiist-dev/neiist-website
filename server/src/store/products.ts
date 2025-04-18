@@ -24,7 +24,7 @@ export const products = [
 		orderInfo: {
 			estimatedDelivery: "Maio 2025",
 			minOrderQuantity: 1,
-			orderDeadline: "2025-06-05T23:59:59Z",
+			orderDeadline: "2025-04-05T23:59:59Z",
 		},
 		visible: true,
 		featured: true,
