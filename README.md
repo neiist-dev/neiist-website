@@ -25,9 +25,9 @@
     <a href="https://neiist.tecnico.ulisboa.pt"><strong>Go to Website »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/neiist-dev/neiist-website/issues">Report Bug</a>
+    <a href="https://github.com/neiist-dev/neiist-website/issues/new?template=bug_report.md">Report Bug</a>
     ·
-    <a href="https://github.com/neiist-dev/neiist-website/issues">Request Feature</a>
+    <a href="https://github.com/neiist-dev/neiist-website/issues/new?template=feature_request.md">Request Feature</a>
   </p>
 </p>
 
@@ -80,6 +80,7 @@ A list of commonly used resources that I find helpful are listed in the acknowle
 ### Getting Started
 
 * [Installation](./readme/installation.md)
+* [Contributing](./.github/CONTRIBUTING.md)
 
 ### Built With
 
