@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import session, { type SessionOptions } from "express-session";
 import morgan from "morgan";
+import fs from "fs/promises";
 import { areasRoute as areasRouter } from "./areas/router";
 import { authRoute as authRouter } from "./auth/router";
 import { collaboratorsRouter } from "./collaborators/router";
@@ -42,6 +43,29 @@ if (app.get("env") === "production") {
 	if (sess.cookie) sess.cookie.secure = true; // serve secure cookies
 }
 app.use(session(sess));
+
+const maintenanceAssets = express.static(path.join(__dirname, "../../client/public/maintenance"));
+
+app.use(async (req, res, next) => {
+  try {
+    await fs.access(path.join(__dirname, "../../client/build/index.html"));
+    next(); // Build exists, serve the normal built page
+  } catch (err) {
+		 // Serve favicon from public
+		 if (req.path === "/favicon.png") {
+      return res.sendFile(path.join(__dirname, "../../client/public/favicon.png"));
+    }
+    // Serve maintenance assets folder
+    if (req.path.startsWith("/maintenance/")) {
+      req.url = req.url.replace(/^\/maintenance/, "");
+      return maintenanceAssets(req, res, next);
+    }
+    // Serve maintenance page for all requests
+    res
+      .status(503)
+      .sendFile(path.join(__dirname, "../../client/public/maintenance/maintenance.html"));
+  }
+});
 
 // create db tables if needed
 initializeSchema()
