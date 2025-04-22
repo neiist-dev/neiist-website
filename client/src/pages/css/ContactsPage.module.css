@@ -1,35 +1,22 @@
-.container {
-  text-align: center;
-  margin: 3rem 0 2rem 0;
-}
-
 .header {
   font-size: 2.5rem;
   font-weight: 600;
-  margin: 0 auto 2rem auto;
-}
-
-.pageGrid, .contactsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-  gap: 2rem;
-  padding: 0 2.5rem 2.5rem;
-}
-
-.cardMap {
-  background: none;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
+  margin: 3rem 0 2rem 0;
   text-align: center;
-  min-height: 100%;
 }
 
-.card {
+.grid {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(385px, 1fr));
+  padding: 0 0 2.5rem 0;
+  gap: 2.5rem;
+  max-width: 95%;
+  margin: 0 auto;
+}
+
+.contactCard {
   background: none;
-  padding: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -38,18 +25,28 @@
   min-height: 100%;
 }
 
-iframe {
+.locationCard {
+  background: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  min-height: 100%;
+}
+
+.mapFrame {
   border-radius: 0.75rem;
+  border: 0;
   width: 100%;
   height: 16rem;
   max-width: 80%;
 }
 
-.cardTitle {
-  margin-bottom: 1rem;
-  font-weight: 500;
-}
-
-.cardContent, .content {
-  margin-bottom: 1rem;
+.contactCard p {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: 0;
 }

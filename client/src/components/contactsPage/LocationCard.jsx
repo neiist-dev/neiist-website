@@ -1,10 +1,10 @@
 import React from "react";
 import styles from '../../pages/css/ContactsPage.module.css';
 
-const MapCard = ({ title, addressLines, mapSrc }) => (
-  <div className={styles.cardMap}>
-    <h2>{title}</h2>
-    <p className={styles.content}>
+const LocationCard = ({ roomNumber, addressLines, mapSrc }) => (
+  <div className={styles.locationCard}>
+    <h2>{roomNumber}</h2>
+    <p>
       {addressLines.map((line, idx) => (
         <React.Fragment key={idx}>
           {line}<br />
@@ -12,7 +12,8 @@ const MapCard = ({ title, addressLines, mapSrc }) => (
       ))}
     </p>
     <iframe
-      title={title}
+      className={styles.mapFrame}
+      title={roomNumber}
       src={mapSrc}
       allowFullScreen
       loading="lazy"
@@ -20,5 +21,4 @@ const MapCard = ({ title, addressLines, mapSrc }) => (
   </div>
 );
 
-export default MapCard;
-
+export default LocationCard;
