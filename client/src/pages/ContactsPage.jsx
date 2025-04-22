@@ -29,8 +29,10 @@ const ContactsPage = () => (
       />
     </div>
 
-    <div className={styles.contactsContainer}>
-      <div className={styles.contactsGrid}>
+/* In client/src/pages/ContactsPage.module.css */
+.contactsContainer {
+  margin: 2rem 0;
+}
         <ContactCard
           title="Email"
           content="neiist@tecnico.ulisboa.pt"

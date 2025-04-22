@@ -44,3 +44,12 @@ iframe {
   height: 16rem;
   max-width: 80%;
 }
+
+.cardTitle {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.cardContent, .content {
+  margin-bottom: 1rem;
+}

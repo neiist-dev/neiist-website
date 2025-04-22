@@ -1,7 +1,7 @@
 import React from "react";
 import styles from '../../pages/css/ContactsPage.module.css';
 
-const LocationCard = ({ title, addressLines, mapSrc }) => (
+const MapCard = ({ title, addressLines, mapSrc }) => (
   <div className={styles.cardMap}>
     <h2>{title}</h2>
     <p className={styles.content}>
@@ -19,5 +19,7 @@ const LocationCard = ({ title, addressLines, mapSrc }) => (
     />
   </div>
 );
+
+export default MapCard;
 
 export default LocationCard;
