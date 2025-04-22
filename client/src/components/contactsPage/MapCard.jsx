@@ -22,4 +22,3 @@ const MapCard = ({ title, addressLines, mapSrc }) => (
 
 export default MapCard;
 
-export default LocationCard;
