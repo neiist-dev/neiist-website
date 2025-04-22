@@ -5,7 +5,7 @@ import style from "../../pages/css/HomePage.module.css";
 
 // Monetary Partners
 import auren from "../../images/partnerships/monetary/auren.png";
-import managementSolutions from "../../images/partnerships/monetary/management_solutions.png";
+import deloitte from "../../images/partnerships/monetary/deloitte.png";
 import basedInLisbon from "../../images/partnerships/monetary/based_in_lisbon.png";
 
 // Non-Monetary Partners
@@ -21,14 +21,14 @@ const Partnerships = () => {
                 <h5 style={{ fontWeight: "bold" }}>Parcerias Monetárias</h5>
                 <Row className={style.partners} style={{ gap: "10px" }}>
                     <PartnerItem alt="Auren" src={auren} href="https://auren.com/pt/" scale="1.25" />
-                    <PartnerItem alt="Management Solutions" src={managementSolutions} href="https://www.managementsolutions.com/" />
+                    <PartnerItem alt="Deloitte" src={deloitte} href="https://www.deloitte.com/" />
                     <PartnerItem alt="Based in Lisbon" src={basedInLisbon} href="https://www.basedinlisbon.xyz/" />
                 </Row>
                 <br />
                 <h5 style={{ fontWeight: "bold" }}>Parcerias Não Monetárias</h5>
                 <Row className={style.partners} style={{ gap: "10px" }}>
                     <PartnerItem alt="LAGE2" src={lage2} href="https://lage2.ist.utl.pt/" scale="0.75" />
-                    <PartnerItem alt="AIESEC" src={aiesec} href="https://aiesec.org/" />
+                    <PartnerItem alt="AIESEC" src={aiesec} href="https://aiesec.org/" scale="1.25" />
                     <PartnerItem alt="Magma Studio" src={magma} href="https://magmastudio.pt/" />
                 </Row>
             </BlueWhiteBox>
