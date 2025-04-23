@@ -8,6 +8,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .container {
   background: #fff;
   border-radius: 18px;
@@ -18,14 +19,17 @@ body {
   text-align: center;
   border: 2px solid #248be3;
 }
+
 .logo {
   width: 10rem;
   margin-bottom: 0.8rem;
 }
+
 .bulldozer {
   width: 120px;
   margin: 1.5rem 0 1rem 0;
 }
+
 h1 {
   color: #248be3;
   font-size: 2rem;
@@ -33,16 +37,24 @@ h1 {
   font-weight: 700;
   letter-spacing: 1px;
 }
+
 .desc {
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
   color: #333;
 }
+
 .contact {
   font-size: 0.95rem;
   color: #555;
   margin-top: 1.5rem;
 }
+
+.email {
+  color: #248be3;
+  text-decoration: underline;
+}
+
 @media (max-width: 500px) {
   .container {
     padding: 1.5rem 0.5rem;

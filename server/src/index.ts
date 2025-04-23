@@ -15,17 +15,23 @@ import { thesesRouter } from "./theses/router";
 import { banner } from "./utils/banner";
 import { initializeSchema } from "./utils/databaseSchema";
 
+// Path constants
+const CLIENT_DIR = path.join(__dirname, "../../client");
+const CLIENT_BUILD_DIR = path.join(CLIENT_DIR, "build");
+const CLIENT_PUBLIC_DIR = path.join(CLIENT_DIR, "public");
+const MAINTENANCE_DIR = path.join(CLIENT_PUBLIC_DIR, "maintenance");
+
 const app = express();
 app.use(cors());
 app.use(morgan("tiny"));
-const SESSION_SECRET = process.env.SESSION_SECRET;
 
+const SESSION_SECRET = process.env.SESSION_SECRET;
 if (!SESSION_SECRET) {
 	console.error("SESSION_SECRET is not set in the environment variables");
 	process.exit(1);
 }
 
-// Session
+// Session setup
 const sess: SessionOptions = {
 	secret: SESSION_SECRET,
 	resave: false,
@@ -44,27 +50,25 @@ if (app.get("env") === "production") {
 }
 app.use(session(sess));
 
-const maintenanceAssets = express.static(path.join(__dirname, "../../client/public/maintenance"));
+// Maintenance assets
+const maintenanceAssets = express.static(MAINTENANCE_DIR);
 
 app.use(async (req, res, next) => {
-  try {
-    await fs.access(path.join(__dirname, "../../client/build/index.html"));
-    next(); // Build exists, serve the normal built page
-  } catch (err) {
-		 // Serve favicon from public
-		 if (req.path === "/favicon.png") {
-      return res.sendFile(path.join(__dirname, "../../client/public/favicon.png"));
-    }
-    // Serve maintenance assets folder
-    if (req.path.startsWith("/maintenance/")) {
-      req.url = req.url.replace(/^\/maintenance/, "");
-      return maintenanceAssets(req, res, next);
-    }
-    // Serve maintenance page for all requests
-    res
-      .status(503)
-      .sendFile(path.join(__dirname, "../../client/public/maintenance/maintenance.html"));
-  }
+	try {
+		await fs.access(path.join(CLIENT_BUILD_DIR, "index.html"));
+		next(); // Build exists, proceed as normal
+	} catch (err) {
+		if (req.path === "/favicon.png") {
+			return res.sendFile(path.join(CLIENT_PUBLIC_DIR, "favicon.png"));
+		}
+		if (req.path.startsWith("/maintenance/")) {
+			req.url = req.url.replace(/^\/maintenance/, "");
+			return maintenanceAssets(req, res, next);
+		}
+		res
+			.status(503)
+			.sendFile(path.join(MAINTENANCE_DIR, "maintenance.html"));
+	}
 });
 
 // create db tables if needed
@@ -78,7 +82,7 @@ initializeSchema()
 	});
 
 // serve frontend
-app.use(express.static(path.join(__dirname, "../../client/build")));
+app.use(express.static(CLIENT_BUILD_DIR));
 
 // API routes
 app.use("/api/auth", authRouter);
@@ -96,7 +100,7 @@ app.use("/images", express.static(path.join(__dirname, "../../uploads/store")));
 
 // Handle all other routes
 app.get("/*all", (_, res) => {
-	res.sendFile(path.join(__dirname, "../../client/build/index.html"), (err) => {
+	res.sendFile(path.join(CLIENT_BUILD_DIR, "index.html"), (err) => {
 		if (err) {
 			res.status(500).send(err);
 		}
