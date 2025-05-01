@@ -5,8 +5,23 @@ import {
   Button,
   Tooltip,
 } from "react-bootstrap";
+import { useContext } from "react";
+import UserDataContext from "../../UserDataContext";
+import { useEffect } from "react";
 
 function OrderDetails({ formData, setFormData, errors }) {
+  const { userData } = useContext(UserDataContext);
+
+  const handleAutofill = () => {
+    localStorage.setItem("orderDetailsAutofill", "true");
+
+    const fenixLoginUrl =
+      "https://fenix.tecnico.ulisboa.pt/oauth/userdialog" +
+      `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
+      `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`;
+    window.location.href = fenixLoginUrl;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -22,10 +37,17 @@ function OrderDetails({ formData, setFormData, errors }) {
     </Tooltip>
   );
 
-  const fenixLoginUrl =
-    "https://fenix.tecnico.ulisboa.pt/oauth/userdialog" +
-    `?client_id=${process.env.REACT_APP_FENIX_CLIENT_ID}` +
-    `&redirect_uri=${process.env.REACT_APP_FENIX_REDIRECT_URI}`;
+  useEffect(() => {
+    if (userData && !formData.name && !formData.email && !formData.istId) {
+      setFormData((prev) => ({
+        ...prev,
+        name: userData.name || prev.name,
+        email: userData.email || prev.email,
+        istId: userData.username || prev.istId,
+        campus: userData.courses.includes("-A") ? "alameda" : "taguspark",
+      }));
+    }
+  }, [userData, formData, setFormData]);
 
   return (
     <Container className="p-4 bg-white rounded shadow-sm">
@@ -36,7 +58,7 @@ function OrderDetails({ formData, setFormData, errors }) {
           !formData.istId ||
           !formData.campus) && (
           <Button
-            href={fenixLoginUrl}
+            onClick={handleAutofill}
             variant="outline-primary"
             size="sm"
             className="d-flex align-items-center gap-2"
