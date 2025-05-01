@@ -67,10 +67,18 @@ const App = () => {
     return userDataJson;
   };
 
-  const Redirect = (user) =>
-    window.location.replace(
-      user?.isCollab ? "/collab" : user?.isMember ? "/socios" : "/"
-    );
+  const Redirect = (user) => {
+    const autofillRedirect = localStorage.getItem("orderDetailsAutofill");
+  
+    if (autofillRedirect === "true") {
+      localStorage.removeItem("orderDetailsAutofill");
+      window.location.replace("/checkout");
+    } else {
+      window.location.replace(
+        user?.isCollab ? "/collab" : user?.isMember ? "/socios" : "/"
+      );
+    }
+  };
 
   useEffect(() => {
     async function auth() {
