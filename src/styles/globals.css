@@ -1,0 +1,20 @@
+:root {
+  --bg-color: linear-gradient(270deg, rgba(40, 99, 253, 0.075) 0%, rgba(36, 139, 227, 0.05) 100%), #FFFFFF;
+  --first-color: #2863FD;
+  --second-color: #258BE3;
+  --third-color: #34D1F9;
+  --forth-color: #5EE8FA;
+  --font: "Secular One", sans-serif;
+}
+
+html, body {
+  height: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Arial';
+}
+
+h1, h2 {
+  color: var(--first-color);
+}
