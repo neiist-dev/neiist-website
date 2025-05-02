@@ -1,0 +1,56 @@
+export async function fetchUserData() {
+  try {
+    const response = await fetch(`/api/auth/userdata`, {
+      cache: "no-store",
+      credentials: "include", // Send cookies with the request
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) { // No accessToken present
+        return null;
+      }
+      console.error("Failed to fetch user data:", response.statusText);
+      return null;
+    }
+
+    const userData = await response.json();
+    return userData;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return null;
+  }
+}
+
+export const login = () => {
+  window.location.href = "/api/auth/login";
+};
+
+export const logout = async () => {
+  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  window.location.href = "/";
+};
+
+export const summarizeName = (name: string): string => {
+  const names = name.split(" ");
+  return `${names[0]} ${names[names.length - 1]}`;
+};
+
+export const statusToString = (status: string): string => {
+  const newStatus = status.split(/(?=[A-Z])/);
+  return newStatus.length === 1 ? newStatus[0] : `${newStatus[0]} ${newStatus[newStatus.length - 1]}`;
+};
+
+export interface UserData {
+  username: string;
+  displayName: string;
+  email?: string;
+  courses?: string[];
+  isActiveTecnicoStudent?: boolean;
+  isAdmin?: boolean;
+  isCollab?: boolean;
+  isActiveLMeicStudent?: boolean;
+  isGacMember?: boolean;
+  photo: string;
+  status: string;
+  //TODO Later can fecth data from DB
+}

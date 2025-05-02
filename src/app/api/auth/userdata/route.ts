@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { UserData } from "@/src/utils/userUtils";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -19,17 +20,30 @@ export async function GET() {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
 
     const userInformation = await fenixResponse.json();
+    const courses = userInformation.roles
+      .filter((role: { type: string }) => role.type === "STUDENT")
+      .flatMap((role: { registration?: { name: string; acronym: string }[] }) =>
+        (role.registration || []).map((registration: { name: string; acronym: string }) => ({
+          name: registration.name,
+          acronym: registration.acronym,
+        }))
+      );
+
     const base64UserPhoto = "data:image/png;base64," + userInformation.photo.data;
     const userPhoto = validatePhoto(base64UserPhoto) ? (base64UserPhoto) : "/default_user.png";
 
-    const userData = {
+    const userData: UserData = {
       username: userInformation.username,
       displayName: userInformation.displayName,
       email: userInformation.email,
-      courses: userInformation.courses,
-      isActiveTecnicoStudent: userInformation.roles.some((role: { type: string}) => role.type === 'STUDENT'),
+      courses: courses,
+      isActiveTecnicoStudent: userInformation.roles.some(
+        (role: { type: string}) => role.type === 'STUDENT'),
       photo: userPhoto,
+      status: "SocioRegular", //TODO Remove only for debug
+      //TODO Later can fecth data from DB
     };
+
     return NextResponse.json(userData);
 
   } catch (error) {
