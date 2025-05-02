@@ -1,84 +1,83 @@
 "use client";
 
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import UserDataContext from "../../context/UserDataContext";
-import LoggedIn from "./Loggedin";
-import MobileMenuButton from "./MobileMenuButton";
-import style from "../css/NavBar.module.css";
+import styles from "../css/NavBar.module.css";
+import { UserData, fetchUserData, login, logout } from "../../utils/userUtils";
+import { ProfileMenu } from "./ProfileMenu";
+import ThemeToggle from "../ThemeToggle";
+import NeiistLogo from "./NeiistLogo";
+import LoginButton from "./LoginButton";
+import { Divide as Hamburger } from 'hamburger-react'
 
 const NavBar: React.FC = () => {
-  const { userData, login, logout } = useContext(UserDataContext) || {};
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [, setIsMobile] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setIsMenuOpen(false);
+    const fetchData = async () => {
+      try {
+        const data = await fetchUserData();
+        setUserData(data);
+      } catch (error) {
+        console.error(error);
       }
     };
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    fetchData();
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    setUserData(null);
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <div className={style.navBarContainer}>
-      <div className={style.navBar}>
-        <div className={style.navBrand}>
-          <Link href="/">
-            <Image src="/neiist_logo.png" alt="NEIIST Logo" width={120} height={40} />
-          </Link>
-        </div>
-
-        <MobileMenuButton isMenuOpen={isMenuOpen} toggleMenu={toggleMenu} />
-
-        <div className={`${style.navMenu} ${isMenuOpen ? style.active : ""}`}>
-          <div className={style.navItems}>
-            <div className={style.navItem}>
-              <Link href="/sobre_nos" className={style.navLink}>
-                Sobre nós
-              </Link>
-            </div>
-            <div className={style.navItem}>
-              <Link href="/contactos" className={style.navLink}>
-                Contactos
-              </Link>
-            </div>
-            <div className={style.navItem}>
-              <Link href="/estudantes" className={style.navLink}>
-                Estudante
-              </Link>
-            </div>
-          </div>
-
-          <div className={style.navAuth}>
-            {userData ? (
-              <LoggedIn userData={userData} logout={logout} />
-            ) : (
-              <div className={style.navItem}>
-                <button onClick={login} className={style.loginButton}>
-                  Login
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+    <nav className={styles.navbar}>
+      <div className={styles.logo}>
+        <Link href="/">
+          <NeiistLogo />
+        </Link>
       </div>
-
-      <div className={style.navSpace}></div>
-    </div>
+      <button className={styles["hamburger-menu"]} onClick={toggleMenu}>
+        <Hamburger size={23} rounded toggled={isMenuOpen} />
+      </button>
+      <ul className={`${styles["nav-menu"]} ${isMenuOpen ? styles.active : ""}`}>
+        <li className={styles["nav-item"]}>
+          <Link href="/sobre_nos" className={styles["nav-link"]}>
+            Sobre nós
+          </Link>
+        </li>
+        <li className={styles["nav-item"]}>
+          <Link href="/contactos" className={styles["nav-link"]}>
+            Contactos
+          </Link>
+        </li>
+        <li className={styles["nav-item"]}>
+          <Link href="/estudantes" className={styles["nav-link"]}>
+            Estudante
+          </Link>
+        </li>
+      </ul>
+      <div className={styles["nav-actions"]}>
+        <ThemeToggle />
+        {userData ? (
+          <div
+            className={styles.profileContainer}
+            ref={profileRef}
+          >
+            <ProfileMenu userData={userData} logout={handleLogout} />
+          </div>
+        ) : (
+          <LoginButton onClick={login} />
+        )}
+      </div>
+    </nav>
   );
 };
 

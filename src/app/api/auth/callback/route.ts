@@ -37,7 +37,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Access token not found in response' }, { status: 500 });
     }
 
-    const response = NextResponse.redirect(new URL('/', request.url));
+    // Send response back to frontend with login props
+    const response = NextResponse.redirect(new URL('/?login=true', request.url));
     response.cookies.set('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

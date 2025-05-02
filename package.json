@@ -12,6 +12,7 @@
     "@popperjs/core": "^2.11.8",
     "@prisma/client": "^6.5.0",
     "bootstrap": "^5.3.4",
+    "hamburger-react": "^2.5.2",
     "next": "15.2.4",
     "prisma": "^6.5.0",
     "react": "^19.0.0",
