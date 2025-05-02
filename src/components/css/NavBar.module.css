@@ -1,0 +1,320 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+:root {
+  --navbar-bg-light: rgba(255, 255, 255, 1);
+  --navbar-shadow-light: 0px 4px 5px rgba(0, 0, 0, 0.15);
+  --text-light: #333333;
+  --profile-bg-light: #f0f0f0;
+  --dropdown-bg-light: white;
+  --dropdown-hover-light: #f5f5f5;
+  --dropdown-shadow-light: 0 5px 15px rgba(0,0,0,0.2);
+  --border-light: #eee;
+  --logout-color-light: #e74c3c;
+  --logout-hover-light: #fee;
+  
+  --navbar-bg-dark: rgba(28, 28, 30, 1);
+  --navbar-shadow-dark: 0px 4px 5px rgba(0, 0, 0, 0.3);
+  --text-dark: #f5f5f5;
+  --profile-bg-dark: #2c2c2e;
+  --dropdown-bg-dark: #1c1c1e;
+  --dropdown-hover-dark: #333333;
+  --dropdown-shadow-dark: 0 5px 15px rgba(0,0,0,0.4);
+  --border-dark: #3a3a3c;
+  --logout-color-dark: #e74c3c;
+  --logout-hover-dark: #3a2a2a;
+  
+  --font: 'Open Sans', sans-serif;
+}
+
+.navBar, .navBar button, .navBar a, .navBar span {
+  font-family: var(--font);
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: var(--text-light) !important;
+}
+
+.navBarContainer {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  pointer-events: none;
+  z-index: 1005;
+  top: 0;
+  left: 0;
+}
+
+.navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.8em 6em 0.25em 6em;
+  padding: 8px 25px;
+  background: var(--navbar-bg-light);
+  box-shadow: var(--navbar-shadow-light);
+  border-radius: 25px;
+  width: calc(100% - 12em);
+  pointer-events: auto;
+}
+
+.navBrand {
+  display: flex;
+  align-items: center;
+}
+
+.navBrand img {
+  height: 30px !important;
+  width: auto;
+}
+
+.menuToggle {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  z-index: 1100;
+  pointer-events: auto;
+}
+
+.navMenu {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-left: 50px;
+}
+
+.navItems {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+}
+
+.navAuth {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+}
+
+/* Navigation links */
+.navLink {
+  text-decoration: none;
+  padding: 5px 10px;
+  transition: color 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: #007bff !important;
+}
+
+/* Login button styling */
+.loginButton {
+  background: #D9D9D9;
+  border: none;
+  cursor: pointer;
+  padding: 6px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.loginButton:hover {
+  background: #2668c3;
+}
+
+.loginButton:active {
+  background: #1e56a0;
+}
+
+/* User profile container (when logged in) */
+.loggedInContainer {
+  position: relative;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--profile-bg-light);
+  border-radius: 10px;
+  box-shadow: var(--dropdown-shadow-light);
+  padding: 10px;
+  margin-top: 10px;
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1010;
+}
+
+.loggedInContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--dropdown-bg-light);
+  border-radius: 20px;
+  padding: 6px 15px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.profileDropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dropdownContent .navItem {
+  width: 100%;
+  margin: 5px 0;
+}
+
+.dropdownContent .navLink {
+  display: block;
+  width: 100%;
+  padding: 8px 15px;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.dropdownContent .navLink:hover {
+  background-color: var(--dropdown-hover-light);
+}
+
+.loggedInInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userPhoto {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 28px;
+  height: 28px;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.userName {
+  font-weight: 600;
+}
+
+.userStatus {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.logoutButton {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Navbar spacing */
+.navSpace {
+  padding: 20px 0;
+  height: 60px;
+}
+
+.logoutMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--logout-color-light) !important;
+  border-top: 1px solid var(--border-light);
+  margin-top: 5px;
+  padding-top: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.logoutMenuItem:hover {
+  background-color: var(--logout-hover-light) !important;
+  color: #c0392b !important;
+}
+
+.logoutIcon {
+  font-size: 16px;
+}
+
+/* Dark mode styles using media query */
+@media (prefers-color-scheme: dark) {
+  .navBar, .navBar button, .navBar a, .navBar span {
+    color: var(--text-dark) !important;
+  }
+  
+  .navBar {
+    background: var(--navbar-bg-dark);
+    box-shadow: var(--navbar-shadow-dark);
+  }
+  
+  .loginButton {
+    background: #555555;
+    color: #ffffff !important;
+  }
+  
+  .loginButton:hover {
+    background: #3584e4;
+  }
+  
+  .loggedInContainer {
+    background: var(--profile-bg-dark);
+  }
+  
+  .profileDropdown {
+    background: var(--dropdown-bg-dark);
+    box-shadow: var(--dropdown-shadow-dark);
+  }
+  
+  .dropdownContent .navLink:hover {
+    background-color: var(--dropdown-hover-dark);
+  }
+  
+  .logoutMenuItem {
+    border-top: 1px solid var(--border-dark);
+  }
+  
+  .logoutMenuItem:hover {
+    background-color: var(--logout-hover-dark) !important;
+  }
+  
+  .navLink:hover {
+    color: #3584e4 !important;
+  }
+}
