@@ -3,8 +3,8 @@
   "proxy": "http://localhost:3001",
   "type": "module",
   "dependencies": {
-    "@mantine/core": "^7.12.2",
-    "@mantine/hooks": "^7.12.2",
+    "@mantine/core": "^8.0.0",
+    "@mantine/hooks": "^8.0.0",
     "axios": "1.9.0",
     "bootstrap": "5.3.5",
     "html-react-parser": "^5.0.0",
