@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import styles from "../css/NavBar.module.css";
+import styles from "@/styles/components/NavBar.module.css"
 import { UserData, fetchUserData, login, logout } from "../../utils/userUtils";
 import { ProfileMenu } from "./ProfileMenu";
 import ThemeToggle from "../ThemeToggle";

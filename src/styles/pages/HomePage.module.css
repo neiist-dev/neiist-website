@@ -1,0 +1,10 @@
+.homepage {
+  margin: 0;
+}
+
+.columnLayout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  box-sizing: border-box;
+}

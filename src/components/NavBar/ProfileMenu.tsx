@@ -3,8 +3,8 @@ import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { GoSignOut } from "react-icons/go"
 import { MenuButton } from "./MenuButton"
-import styles from "../css/NavBar.module.css"
-import { type UserData, login, summarizeName, statusToString } from "@/src/utils/userUtils"
+import styles from "@/styles/components/NavBar.module.css"
+import { type UserData, login, summarizeName, statusToString } from "@/utils/userUtils"
 import LoginButton from "./LoginButton"
 
 interface ProfileMenuProps {
