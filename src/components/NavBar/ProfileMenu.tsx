@@ -1,104 +1,101 @@
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
-import { GoSignOut } from "react-icons/go"
-import { MenuButton } from "./MenuButton"
-import styles from "@/styles/components/NavBar.module.css"
-import { type UserData, login, summarizeName, statusToString } from "@/utils/userUtils"
-import LoginButton from "./LoginButton"
+import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { GoSignOut } from "react-icons/go";
+import { ProfileItem } from "./NavItem";
+import styles from "@/styles/components/navbar/ProfileMenu.module.css";
+import { UserData, summarizeName, statusToString } from "@/utils/userUtils";
 
 interface ProfileMenuProps {
-  userData: UserData | null
-  logout: () => void
+  userData: UserData;
+  logout: () => void;
 }
 
-export const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userData: UserData; }> =
+({ isOpen, toggleMenu, userData }) => (
+  <div
+    className={styles.userContainer}
+    onClick={toggleMenu}
+    aria-expanded={isOpen}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        toggleMenu();
+      }
+    }}
+  >
+    <Image
+      src={userData.photo || "/default-user.png"}
+      alt="User Photo"
+      width={32}
+      height={32}
+      className={styles.userPhoto}
+    />
+    <div className={styles.userDetails}>
+      <span className={styles.userName}>{summarizeName(userData.displayName)}</span>
+      <span className={styles.userStatus}>{statusToString(userData.status)}</span>
+    </div>
+  </div>
+);
 
-  // Close dropdown when clicking outside
+const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-
-  // Close on ESC key
-  useEffect(() => {
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false)
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscKey)
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscKey)
-    }
-  }, [isOpen])
-
-  if (!userData) {
-    return <LoginButton onClick={login} />
-  }
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className={styles.profileContainer} ref={menuRef}>
+      <UserContainer
+        isOpen={isOpen}
+        toggleMenu={() => setIsOpen(!isOpen)}
+        userData={userData}
+      />
       <div
-        className={styles.userContainer}
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            setIsOpen(!isOpen)
-          }
-        }}
+        className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}
       >
-        <Image
-          src={userData.photo || "/default-user.png"}
-          alt="User Photo"
-          width={32}
-          height={32}
-          className={styles.userPhoto}
+        {userData.isAdmin || userData.isActiveTecnicoStudent ? (
+          <ProfileItem href="/user" label="Profile" />
+        ) : null}
+        {userData.isAdmin || userData.isCollab ? (
+          <ProfileItem href="/collab" label="Colaborador(a)" />
+        ) : null}
+        {userData.isAdmin || userData.isActiveLMeicStudent ? (
+          <ProfileItem href="/thesismaster" label="Thesis Master" />
+        ) : null}
+        {userData.isAdmin ? (
+          <ProfileItem href="/admin" label="Admin" />
+        ) : null}
+        {userData.isAdmin || userData.isGacMember ? (
+          <ProfileItem href="/mag" label="MAG" />
+        ) : null}
+        <ProfileItem
+          href="#"
+          label={
+            <>
+              <GoSignOut /> Log out
+            </>
+          }
+          onClick={() => {
+            setIsOpen(false);
+            logout();
+          }}
+          className={styles.logoutButtom}
         />
-        <div className={styles.userDetails}>
-          <span className={styles.userName}>{summarizeName(userData.displayName)}</span>
-          <span className={styles.userStatus}>{statusToString(userData.status)}</span>
-        </div>
       </div>
-      {isOpen && (
-        <div className={styles.profileDropdown}>
-          <MenuButton href="/user" label="Perfil" condition={!!userData.isAdmin || !!userData.isActiveTecnicoStudent} />
-          <MenuButton href="/collab" label="Colaborador(a)" condition={!!userData.isAdmin || !!userData.isCollab} />
-          <MenuButton
-            href="/thesismaster"
-            label="Thesis Master"
-            condition={!!userData.isAdmin || !!userData.isActiveLMeicStudent}
-          />
-          <MenuButton href="/admin" label="Admin" condition={!!userData.isAdmin} />
-          <MenuButton href="/mag" label="MAG" condition={!!userData.isAdmin || !!userData.isGacMember} />
-          <MenuButton
-            href="#"
-            label="Terminar Sessão"
-            onClick={() => {
-              setIsOpen(false)
-              logout()
-            }}
-            icon={<GoSignOut />}
-          />
-        </div>
-      )}
     </div>
-  )
-}
+  );
+};
+
+export default ProfileMenu;

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ThemeContext } from "../provider/ThemeProvider";
 import LightModeIcon from "@/assets/light-mode.svg";
 import DarkModeIcon from "@/assets/dark-mode.svg";
-import styles from "@/styles/components/ThemeToggle.module.css";
+import styles from "@/styles/components/navbar/ThemeToggle.module.css";
 
 export default function ThemeToggle() {
   const themeContext = useContext(ThemeContext);

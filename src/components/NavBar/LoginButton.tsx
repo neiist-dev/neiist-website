@@ -1,5 +1,6 @@
 import React from "react";
-import styles from "@/styles/components/LoginButton.module.css";
+import { FaSignInAlt } from "react-icons/fa";
+import styles from "@/styles/components/navbar/LoginButton.module.css";
 
 interface LoginButtonProps {
   onClick?: () => void;
@@ -7,9 +8,8 @@ interface LoginButtonProps {
 
 const LoginButton: React.FC<LoginButtonProps> = ({ onClick }) => {
   return (
-    <button className={styles.loginButton} onClick={onClick}>
-      <span>Login</span>
-      <span className={styles.loginIcon}>&rarr;</span>
+    <button onClick={onClick} className={styles.loginButton}>
+      <FaSignInAlt /> Login
     </button>
   );
 };

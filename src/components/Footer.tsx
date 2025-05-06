@@ -33,7 +33,7 @@ export default function Footer() {
               <li>
                 <a href="https://fenix.tecnico.ulisboa.pt/cursos/leic-a" target="_blank" rel="noopener noreferrer">
                   LEIC-A
-                </a> / 
+                </a> /
                 <a href="https://fenix.tecnico.ulisboa.pt/cursos/leic-t" target="_blank" rel="noopener noreferrer">
                   LEIC-T
                 </a>
