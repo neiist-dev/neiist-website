@@ -1,0 +1,83 @@
+.profileContainer {
+  position: relative;
+}
+
+.userContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 8px;
+}
+
+.userContainer:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.userPhoto {
+  border-radius: 50%;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-weight: 600;
+}
+
+.userStatus {
+  font-size: 0.75rem;
+  color: gray;
+}
+
+/* Hide user details on mobile */
+@media (max-width: 768px) {
+  .userDetails {
+    display: none;
+  }
+}
+
+.profileDropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 0;
+  display: none;
+  flex-direction: column;
+  width: 240px;
+  z-index: 1000;
+}
+
+.profileDropdown.active {
+  display: flex;
+}
+
+.profileDropdown a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: #000;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.profileDropdown a:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.logoutButtom {
+  color: #d00;
+  font-weight: 600;
+}
+
+.logoutButtom:hover {
+  background-color: rgba(255, 0, 0, 0.08);
+}
