@@ -1,6 +1,6 @@
 import { FaFacebookF, FaInstagram, FaLinkedin, FaEnvelope, FaGithub } from "react-icons/fa";
 import { SiLinktree } from "react-icons/si";
-import styles from "./css/Footer.module.css";
+import styles from "@/styles/components/Footer.module.css";
 import Image from "next/image";
 
 export default function Footer() {

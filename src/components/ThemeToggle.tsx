@@ -1,8 +1,10 @@
 "use client"
-import { FiSun, FiMoon } from "react-icons/fi";
-import styles from "@/src/components/css/ThemeToggle.module.css";
 import React, { useContext } from "react";
+import Image from "next/image";
 import { ThemeContext } from "../provider/ThemeProvider";
+import LightModeIcon from "@/assets/light-mode.svg";
+import DarkModeIcon from "@/assets/dark-mode.svg";
+import styles from "@/styles/components/ThemeToggle.module.css";
 
 export default function ThemeToggle() {
   const themeContext = useContext(ThemeContext);
@@ -20,9 +22,9 @@ export default function ThemeToggle() {
       aria-label="Toggle theme"
     >
       <span className={styles.iconContainer}>
-        <FiSun className={styles.sunIcon} />
-        <FiMoon className={styles.moonIcon} />
+        <Image src={LightModeIcon} className={styles.sunIcon} alt="Light mode icon" />
+        <Image src={DarkModeIcon} className={styles.moonIcon} alt="Dark mode icon" />
       </span>
     </button>
-  )
+  );
 }

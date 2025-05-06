@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "@/src/components/css/LoginButton.module.css";
+import styles from "@/styles/components/LoginButton.module.css";
 
 interface LoginButtonProps {
   onClick?: () => void;

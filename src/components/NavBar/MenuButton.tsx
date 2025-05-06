@@ -1,6 +1,6 @@
 import type React from "react"
 import Link from "next/link"
-import styles from "../css/NavBar.module.css"
+import styles from "@/styles/components/NavBar.module.css"
 
 interface MenuButtonProps {
   href: string

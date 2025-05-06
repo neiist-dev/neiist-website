@@ -1,0 +1,25 @@
+{
+  "anoLetivo": "2024/2025",
+  "orgaosSociais": {
+    "Direção": {
+      "Presidente": "Ricardo Almeida",
+      "Vice-Presidente" : "Inês Garcia",
+      "Vogal" : "Madalena Cunha",
+      "Diretora de Atividades (Alameda)" : "Luana Ferraz",
+      "Diretor de Atividades (Taguspark)" : "Guilherme Batalheiro",
+      "Diretora SINFO" : "Constança Cunha",
+      "Tesoureiro" : "André Romão"
+    },
+    "Mesa da Assembleia Geral": {
+      "Presidente": "Matilde Tocha",
+      "Vice-Presidente" : "Juliana Marcelino",
+      "Secretário1": "Margarida Lourenço",
+      "Secretária2": "Diogo Pereira"
+    },
+    "Conselho Fiscal": {
+      "Presidente": "Francisca Almeida",
+      "Membro1": "Duarte Ponce",
+      "Membro2": "Lucas Pinto"
+    }
+  }
+}

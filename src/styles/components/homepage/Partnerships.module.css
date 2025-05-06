@@ -1,0 +1,35 @@
+.partnerships {
+  text-align: center;
+  padding: 1.5rem 6vw 0.25rem 6vw;
+  box-sizing: border-box;
+}
+
+.logo {
+  width: 17vw;
+  height: auto;
+}
+
+.row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6em;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 786px) {
+  .row {
+    gap: 0em;
+  }
+}
+
+@media (max-width: 480px) {
+  .row {
+    flex-direction: column;
+    gap: 2em;
+  }
+  .logo {
+    width: 40vw;
+  }
+}
