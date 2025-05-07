@@ -6,11 +6,9 @@
 
 .title {
   text-align: left;
-  margin: 0;
 }
 
-.container {
-  /*margin-top: 1rem;*/ /* Uncomment if title becomes center aligned */ 
+.info {
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -36,7 +34,6 @@
   padding: 10px 20px;
   border-radius: 5px;
   border: none;
-  font-size: 1rem;
   color: white;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -50,14 +47,14 @@
   transform: scale(0.90);
 }
 
-.info {
-  margin: 0;
+.text {
   text-align: left;
   flex: 1;
 }
 
 @media (max-width: 1200px) {
-  .container {
+  .info {
+    margin-top: 1.5rem;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
@@ -70,5 +67,12 @@
 @media (max-width: 768px) {
   .logo {
     width: 80vw;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .title {
+    text-align: center;
   }
 }

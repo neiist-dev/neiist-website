@@ -1,6 +1,6 @@
 import React from "react";
 import Image, { StaticImageData } from "next/image";
-import style from "@/styles/components/homepage/Partnerships.module.css";
+import styles from "@/styles/components/homepage/Partnerships.module.css";
 
 // Monetary Partners
 import auren from "@/assets/partnerships/monetary/auren.png";
@@ -32,20 +32,20 @@ const Partnerships: React.FC = () => {
           src={partner.src}
           alt={partner.alt}
           style={{transform: `scale(${partner.scale})`}}
-          className={style.logo}
+          className={styles.logo}
         />
       </a>
     ));
 
   return (
-    <div className={style.partnerships}>
-      <h1>Parcerias</h1>
+    <div className={styles.partnerships}>
+      <h1 className={styles.title}>Parcerias</h1>
         <h2>Parcerias Monetárias</h2>
-        <div className={style.row}>
+        <div className={styles.row}>
           {renderPartners(monetaryPartners)}
         </div>
         <h2>Parcerias Não Monetárias</h2>
-        <div className={style.row}>
+        <div className={styles.row}>
           {renderPartners(nonMonetaryPartners)}
         </div>
     </div>
