@@ -1,9 +1,7 @@
 "use client"
 import React, { useContext } from "react";
-import Image from "next/image";
 import { ThemeContext } from "../provider/ThemeProvider";
-import LightModeIcon from "@/assets/light-mode.svg";
-import DarkModeIcon from "@/assets/dark-mode.svg";
+import { FiSun, FiMoon } from 'react-icons/fi';
 import styles from "@/styles/components/navbar/ThemeToggle.module.css";
 
 export default function ThemeToggle() {
@@ -17,14 +15,15 @@ export default function ThemeToggle() {
 
   return (
     <button
-      className={`${styles.themeToggle} ${theme === "dark" ? styles.dark : styles.light}`}
+    className={`${styles.themeToggle} ${theme === "dark" ? styles.dark : ""}`}
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      <span className={styles.iconContainer}>
-        <Image src={LightModeIcon} className={styles.sunIcon} alt="Light mode icon" />
-        <Image src={DarkModeIcon} className={styles.moonIcon} alt="Dark mode icon" />
-      </span>
+    {theme === "dark" ? (
+      <FiMoon className={`${styles.icon} ${styles.dark}`} />
+    ) : (
+      <FiSun className={styles.icon} />
+    )}
     </button>
   );
 }

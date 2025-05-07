@@ -20,6 +20,7 @@
 .logo {
   width: 8rem;
   height: auto;
+  text-decoration: none;
 }
 
 .navLinks {

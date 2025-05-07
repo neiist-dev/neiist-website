@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { fetchUserData, login, logout } from "@/utils/userUtils";
 import styles from "@/styles/components/navbar/NavBar.module.css"
@@ -69,7 +70,9 @@ const NavBar: React.FC = () => {
   return (
     <header className={styles.header}>
       <div className={styles.navigation}>
-        <NeiistLogo href="/" className={styles.logo} />
+        <Link href="/" className={styles.logo}>
+          <NeiistLogo />
+        </Link>
         <div className={styles.navLinks}>
           {navLinks.map((link) => (
             <NavItem key={link.name} href={link.href} label={link.name} />
@@ -84,26 +87,14 @@ const NavBar: React.FC = () => {
         ) : (
           <LoginButton onClick={login} />
         )}
-        <button
-          className={styles.mobileMenuButton}
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
+        <button className={styles.mobileMenuButton} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} >
           {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
         </button>
       </div>
       {(isMobileMenuOpen || isClosing) && (
-        <div
-          ref={mobileMenuRef}
-          className={`${styles.mobileMenu} ${
-            isClosing ? styles.menuClosing : ""
-          }`}
-        >
+        <div ref={mobileMenuRef} className={`${styles.mobileMenu} ${isClosing ? styles.menuClosing : ""}`} >
           {navLinks.map((link) => (
-            <NavItem
-              key={link.name}
-              href={link.href}
-              label={link.name}
-            />
+            <NavItem key={link.name} href={link.href} label={link.name} />
           ))}
         </div>
       )}
