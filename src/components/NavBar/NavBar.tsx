@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { FaBars, FaTimes } from "react-icons/fa";
-import { fetchUserData, login, logout } from "@/utils/userUtils";
-import styles from "@/styles/components/navbar/NavBar.module.css"
+import { fetchUserData, login, logout, UserData } from "@/utils/userUtils";
+import styles from "@/styles/components/navbar/NavBar.module.css";
 import { NavItem } from "./NavItem";
 import ProfileMenu from "./ProfileMenu";
 import NeiistLogo from "./NeiistLogo";
@@ -19,9 +19,9 @@ const navLinks = [
 ];
 
 const NavBar: React.FC = () => {
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [isSticky, setIsSticky] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,16 +43,27 @@ const NavBar: React.FC = () => {
   };
 
   useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(event.target as Node)
       ) {
-        setIsClosing(true);
-        setTimeout(() => {
-          setIsMobileMenuOpen(false);
-          setIsClosing(false);
-        }, 300);
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -68,7 +79,7 @@ const NavBar: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${isSticky ? styles.sticky : ""}`}>
       <div className={styles.navigation}>
         <Link href="/" className={styles.logo}>
           <NeiistLogo />
@@ -87,12 +98,27 @@ const NavBar: React.FC = () => {
         ) : (
           <LoginButton onClick={login} />
         )}
-        <button className={styles.mobileMenuButton} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} >
+        <button
+          className={styles.mobileMenuButton}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
           {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
         </button>
       </div>
-      {(isMobileMenuOpen || isClosing) && (
-        <div ref={mobileMenuRef} className={`${styles.mobileMenu} ${isClosing ? styles.menuClosing : ""}`} >
+      {isMobileMenuOpen && (
+        <div
+          ref={mobileMenuRef}
+          className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.menuOpen : ""}`}
+        >
+          <button
+            className={styles.closeButton}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <FaTimes />
+          </button>
+          <Link href="/" className={styles.logo}>
+            <NeiistLogo />
+          </Link>
           {navLinks.map((link) => (
             <NavItem key={link.name} href={link.href} label={link.name} />
           ))}
