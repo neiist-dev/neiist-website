@@ -3,6 +3,7 @@
   --fg-color: #333333;
   --fg-color-rgb: 0,0,0;
   --first-color: #2863FD;
+  --first-color-rgb: 40, 99, 253;
   --second-color: #258BE3;
   --third-color: #34D1F9;
   --forth-color: #5EE8FA;
@@ -25,7 +26,7 @@ body {
   padding: 0;
   font-family: var(--font-family);
   background-color: var(--bg-color);
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 h1, h2, h3, h4, h5, h6, p, a, li {

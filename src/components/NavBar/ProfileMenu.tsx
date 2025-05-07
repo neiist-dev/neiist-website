@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { GoSignOut } from "react-icons/go";
+import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
+import { LuFileText } from "react-icons/lu";
+import { TbGavel } from "react-icons/tb";
+import { BiCog } from "react-icons/bi";
 import { ProfileItem } from "./NavItem";
 import styles from "@/styles/components/navbar/ProfileMenu.module.css";
 import { UserData, summarizeName, statusToString } from "@/utils/userUtils";
@@ -10,8 +13,7 @@ interface ProfileMenuProps {
   logout: () => void;
 }
 
-const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userData: UserData; }> =
-({ isOpen, toggleMenu, userData }) => (
+const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userData: UserData }> = ({ isOpen, toggleMenu, userData }) => (
   <div
     className={styles.userContainer}
     onClick={toggleMenu}
@@ -62,37 +64,38 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
         toggleMenu={() => setIsOpen(!isOpen)}
         userData={userData}
       />
-      <div
-        className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}
-      >
+      <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`} >
         {userData.isAdmin || userData.isActiveTecnicoStudent ? (
-          <ProfileItem href="/user" label="Profile" />
-        ) : null}
-        {userData.isAdmin || userData.isCollab ? (
-          <ProfileItem href="/collab" label="Colaborador(a)" />
+          <>
+            <div className={styles.divider} />
+            <ProfileItem href="/user" label="Profile" icon={GoPerson}/>
+          </>
         ) : null}
         {userData.isAdmin || userData.isActiveLMeicStudent ? (
-          <ProfileItem href="/thesismaster" label="Thesis Master" />
-        ) : null}
-        {userData.isAdmin ? (
-          <ProfileItem href="/admin" label="Admin" />
+          <>
+            <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText} />
+          </>
         ) : null}
         {userData.isAdmin || userData.isGacMember ? (
-          <ProfileItem href="/mag" label="MAG" />
+          <>
+            <ProfileItem href="/mag" label="MAG" icon={TbGavel} />
+            <div className={styles.divider}></div>
+          </>
         ) : null}
-        <ProfileItem
-          href="#"
-          label={
-            <>
-              <GoSignOut /> Log out
-            </>
-          }
-          onClick={() => {
-            setIsOpen(false);
-            logout();
-          }}
-          className={styles.logoutButtom}
-        />
+        {userData.isAdmin || userData.isCollab ? (
+          <>
+            <ProfileItem href="/collab" label="Colaborador(a)" icon={GoPeople} />
+          </>
+        ) : null}
+        {userData.isAdmin ? (
+          <>
+            <ProfileItem href="/admin" label="Admin" icon={BiCog} />
+          </>
+        ) : null}
+        <div className={styles.divider} />
+        <div className={styles.logoutButtom} onClick={() => { setIsOpen(false); logout(); }} >
+          <GoSignOut /> Log out
+        </div>
       </div>
     </div>
   );
