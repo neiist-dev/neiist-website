@@ -32,8 +32,13 @@ h1, h2, h3, h4, h5, h6, p, a, li {
   color: var(--fg-color);
 }
 
-a:hover {
-  color: var(--first-color);
+a {
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
 }
 
 .logo-primary {
@@ -42,4 +47,13 @@ a:hover {
 
 .logo-secondary {
   fill: var(--bg-color);
+}
+
+p, ul {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+ul li {
+  margin-bottom: 0.3rem;
 }

@@ -1,21 +1,20 @@
-import React from 'react';
 import Image from 'next/image';
 import logo from '@/assets/sinfo.png';
-import style from '@/styles/components/homepage/Sinfo.module.css';
+import styles from '@/styles/components/homepage/Sinfo.module.css';
 
-const Sinfo: React.FC = () => {
+const Sinfo = () => {
   return (
-    <div className={style.sinfo}>
-      <h1 className={style.title}>Secção Autónoma</h1>
-      <div className={style.container}>
-        <div className={style.cta}>
-          <Image src={logo} alt="SINFO" className={style.logo}/>
+    <div className={styles.sinfo}>
+      <h1 className={styles.title}>Secção Autónoma</h1>
+      <div className={styles.info}>
+        <div className={styles.cta}>
+          <Image src={logo} alt="SINFO" className={styles.logo}/>
           <br/>
           <a href="https://sinfo.org" target="_blank" rel="noopener noreferrer">
-            <button className={style.button}>Visita a SINFO!</button>
+            <button className={styles.button}>Visita a SINFO!</button>
           </a>
         </div>
-        <p className={style.info}>
+        <p className={styles.text}>
           A SINFO é um evento anual organizado exclusivamente por estudantes que se esforçam para tornar o
           evento mais interessante e inovador a cada edição. Todos os participantes têm o direito de
           experimentar alguns dos gadgets e tecnologias mais inovadoras do mercado para além de lhes ser
