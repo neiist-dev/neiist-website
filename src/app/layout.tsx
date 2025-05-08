@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Metadata } from 'next';
 import { Secular_One } from 'next/font/google';
-import { ThemeProvider } from '../provider/ThemeProvider';
+import { ThemeProvider } from '../context/ThemeContext';
 import NavBar from '../components/NavBar/NavBar';
 import Footer from '../components/Footer';
 import '@/styles/globals.css';
@@ -20,9 +20,9 @@ const secularOne = Secular_One({
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider>
+        <ThemeProvider  attribute="class" defaultTheme="system" enableSystem>
           <NavBar />
           <main className={secularOne.className}>{children}</main>
           <Footer />

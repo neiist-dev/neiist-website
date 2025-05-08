@@ -1,29 +1,35 @@
 "use client"
-import React, { useContext } from "react";
-import { ThemeContext } from "../provider/ThemeProvider";
+
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import { FiSun, FiMoon } from 'react-icons/fi';
-import styles from "@/styles/components/navbar/ThemeToggle.module.css";
 
-export default function ThemeToggle() {
-  const themeContext = useContext(ThemeContext);
+import styles from "@/styles/components/navbar/ThemeToggle.module.css"
 
-  if (!themeContext) {
-    return null; // Ensure context is available
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <button className={styles.themeToggle}></button>
   }
-
-  const { theme, toggleTheme } = themeContext;
 
   return (
     <button
-    className={`${styles.themeToggle} ${theme === "dark" ? styles.dark : ""}`}
-      onClick={toggleTheme}
-      aria-label="Toggle theme"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className={`${styles.themeToggle} ${theme === "dark" ? styles.dark : ""}`}
+      aria-label={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
     >
-    {theme === "dark" ? (
-      <FiMoon className={`${styles.icon} ${styles.dark}`} />
-    ) : (
-      <FiSun className={styles.icon} />
-    )}
+      {theme === "dark" ? (
+        <FiMoon className={`${styles.icon} ${styles.dark}`} />
+      ) : (
+        <FiSun className={styles.icon} />
+      )}
     </button>
-  );
+  )
 }

@@ -8,7 +8,7 @@ import styles from "@/styles/components/navbar/NavBar.module.css";
 import { NavItem } from "./NavItem";
 import ProfileMenu from "./ProfileMenu";
 import NeiistLogo from "./NeiistLogo";
-import ThemeToggle from "../ThemeToggle";
+import { ThemeToggle } from "../ThemeToggle";
 import ShoppingCart from "./ShoppingCart";
 import LoginButton from "./LoginButton";
 
