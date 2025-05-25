@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { UserData } from "@/utils/userUtils";
+import { UserData, mapUserToUserData } from "@/types/user";
+import { getUser, checkIsMember, checkIsCollaborator, createOrUpdateUser } from "@/utils/userDB";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -22,31 +23,112 @@ export async function GET() {
     const userInformation = await fenixResponse.json();
     const courses = userInformation.roles
       .filter((role: { type: string }) => role.type === "STUDENT")
-      .flatMap((role: { registration?: { name: string; acronym: string }[] }) =>
-        (role.registration || []).map((registration: { name: string; acronym: string }) => ({
-          name: registration.name,
-          acronym: registration.acronym,
-        }))
+      .flatMap((role: { registrations?: { name: string; acronym: string }[] }) =>
+      (role.registrations || []).map((registration: { name: string; acronym: string }) => ({
+        name: registration.name,
+        acronym: registration.acronym,
+      }))
       );
 
-    const base64UserPhoto = "data:image/png;base64," + userInformation.photo.data;
-    const userPhoto = validatePhoto(base64UserPhoto) ? (base64UserPhoto) : "/default_user.png";
+    interface Course {
+      name: string;
+      acronym: string;
+    }
 
-    const userData: UserData = {
-      username: userInformation.username,
-      displayName: userInformation.displayName,
-      email: userInformation.email,
-      courses: courses,
-      isActiveTecnicoStudent: userInformation.roles.some(
-        (role: { type: string}) => role.type === 'STUDENT'),
-      photo: userPhoto,
-      status: "SocioRegular", //TODO Remove only for debug
-      //TODO Later can fecth data from DB
-    };
+    const courseNames: string[] = courses.map((course: Course) => course.name);
+    const fenixUserPhoto = "data:image/png;base64," + userInformation.photo.data;
+    const validFenixPhoto = validatePhoto(fenixUserPhoto) ? fenixUserPhoto : null;
+    const campus = typeof userInformation.campus === 'string'
+      ? userInformation.campus.trim()
+      : userInformation.campus || null;
+    let dbUser = await getUser(userInformation.username);
+        
+    if (!dbUser) {
+      dbUser = await createOrUpdateUser({
+        istid: userInformation.username,
+        name: userInformation.displayName,
+        email: userInformation.email,
+        courses: courseNames,
+        campus: campus,
+        permission: 'user'
+      });
+    } else {
+      const updates: Partial<UserData> = {};
+      if (!dbUser.courses || dbUser.courses.length === 0) {
+        updates.courses = courseNames;
+      }
+      if (campus && (!dbUser.campus || dbUser.campus.length <= 1)) {
+        updates.campus = campus;
+      }
+      if (Object.keys(updates).length > 0) {
+        await createOrUpdateUser({
+          istid: dbUser.istid,
+          ...updates
+        });
+        dbUser = await getUser(userInformation.username);
+      }
+    }
 
-    return NextResponse.json(userData);
+    const isMember = dbUser ? await checkIsMember(dbUser.istid) : false;
+    const isCollab = dbUser ? await checkIsCollaborator(dbUser.istid) : false;
+    const isAdmin = dbUser?.permission === 'admin';
+    const isGacMember = false;
+
+    const isActiveLMeicStudent = courses.some(
+      (course: { acronym: string }) => 
+        course.acronym === 'MEIC-A' || course.acronym === 'MEIC-T'
+    );
+
+    let status = 'Regular';
+    if (isMember) status = 'Member';
+    if (isCollab) status = 'Collaborator';
+    if (isAdmin) status = 'Admin';
+
+    const userData: UserData = dbUser ?
+      mapUserToUserData(dbUser, {
+        isActiveTecnicoStudent: userInformation.roles.some(
+          (role: { type: string}) => role.type === 'STUDENT'),
+        isActiveLMeicStudent,
+        isCollab,
+        isAdmin,
+        isGacMember,
+        status,
+        fenixPhoto: validFenixPhoto ?? undefined,
+      }) : 
+      {
+        username: userInformation.username,
+        displayName: userInformation.displayName,
+        email: userInformation.email,
+        courses: courseNames,
+        campus: campus,
+        isActiveTecnicoStudent: userInformation.roles.some(
+          (role: { type: string}) => role.type === 'STUDENT'),
+        isAdmin,
+        isCollab,
+        isGacMember,
+        isActiveLMeicStudent,
+        photo: validFenixPhoto || "/default_user.png",
+        status: status,
+      };
+    
+    const response = NextResponse.json(userData);
+    response.cookies.set('userData', JSON.stringify({
+      username: userData.username,
+      isAdmin: userData.isAdmin,
+      isCollab: userData.isCollab,
+      status: userData.status,
+      campus: userData.campus
+    }), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24,
+      path: '/',
+    });
+
+    return response;
 
   } catch (error) {
+    console.error('Error in userdata API:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

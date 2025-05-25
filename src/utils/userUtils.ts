@@ -39,18 +39,3 @@ export const statusToString = (status: string): string => {
   const newStatus = status.split(/(?=[A-Z])/);
   return newStatus.length === 1 ? newStatus[0] : `${newStatus[0]} ${newStatus[newStatus.length - 1]}`;
 };
-
-export interface UserData {
-  username: string;
-  displayName: string;
-  email?: string;
-  courses?: string[];
-  isActiveTecnicoStudent?: boolean;
-  isAdmin?: boolean;
-  isCollab?: boolean;
-  isActiveLMeicStudent?: boolean;
-  isGacMember?: boolean;
-  photo: string;
-  status: string;
-  //TODO Later can fecth data from DB
-}

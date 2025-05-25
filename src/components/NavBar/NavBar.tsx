@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { FaBars, FaTimes } from "react-icons/fa";
-import { fetchUserData, login, logout, UserData } from "@/utils/userUtils";
+import { fetchUserData, login, logout } from "@/utils/userUtils";
+import { UserData } from "@/types/user";
 import styles from "@/styles/components/navbar/NavBar.module.css";
 import { NavItem } from "./NavItem";
 import ProfileMenu from "./ProfileMenu";
