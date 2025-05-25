@@ -6,12 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup": " cd docker docker-compose up -d && echo '🕐 Waiting for Postgres to be ready...' && sleep 5 && echo '✅ Containers up. DB will auto-init using schema.sql' && echo '📦 Installing dependencies...' && yarn install && echo '✅ Done!'"
   },
   "dependencies": {
+    "@types/pg": "^8.15.1",
     "hamburger-react": "^2.5.2",
     "next": "15.2.4",
     "next-themes": "^0.4.6",
+    "pg": "^8.15.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0"

@@ -6,7 +6,8 @@ import { TbGavel } from "react-icons/tb";
 import { BiCog } from "react-icons/bi";
 import { ProfileItem } from "./NavItem";
 import styles from "@/styles/components/navbar/ProfileMenu.module.css";
-import { UserData, summarizeName, statusToString } from "@/utils/userUtils";
+import { summarizeName, statusToString } from "@/utils/userUtils";
+import { UserData } from "@/types/user";
 
 interface ProfileMenuProps {
   userData: UserData;
