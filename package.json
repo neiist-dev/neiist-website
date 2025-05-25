@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup": " cd docker docker-compose up -d && echo '🕐 Waiting for Postgres to be ready...' && sleep 5 && echo '✅ Containers up. DB will auto-init using schema.sql' && echo '📦 Installing dependencies...' && yarn install && echo '✅ Done!'"
+    "setup": "./setup.sh"
   },
   "dependencies": {
     "@types/pg": "^8.15.1",
