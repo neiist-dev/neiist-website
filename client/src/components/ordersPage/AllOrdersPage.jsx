@@ -12,7 +12,7 @@ export const AllOrdersPage = ({ keySelected, loggedInUser, orders }) => {
 
   useEffect(() => {
     setOrders(orders)
-  }, [null]);
+  }, [orders]);
 
   useEffect(() => {
     if (allOrders) {

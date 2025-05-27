@@ -182,17 +182,24 @@ const getAllOrders = async () => {
 };
 
 const getAllOrdersWithItems = async () => {
-	let ordersWItems: OrderWithItems[] = [];
 	const orders = await ordersRepository.getAllOrders();
-	for (const order of orders) {
-		const items = await ordersRepository.getOrderItems(order.order_id);
-		const orderWithItems: OrderWithItems = {
-			...order,
-			items: items,
-		};
-		ordersWItems.push(orderWithItems);
-	}
-	return ordersWItems;
+	const orderPromises = orders.map(async (order) => {  
+		try {  
+			const items = await ordersRepository.getOrderItems(order.order_id);  
+			return {  
+				...order,  
+				items: items,  
+			};  
+		} catch (error) {  
+			console.error(`Failed to fetch items for order ${order.order_id}:`, error);  
+			return {  
+				...order,  
+				items: [],  
+			};  
+		}  
+	});  
+	
+	return await Promise.all(orderPromises);
 };
 
 const getOrderById = async (orderId: string) => {

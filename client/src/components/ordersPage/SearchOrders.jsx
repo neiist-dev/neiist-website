@@ -17,7 +17,7 @@ export const SearchOrders = ({ keySelected, loggedInUser, orders }) => {
       setOrders(orders);
     }
     setIsLoading(false);
-  }, [keySelected]);
+  }, [keySelected, orders, allOrders]);
 
   const handleSearch = (value) => {
     setSearchInput(value);
