@@ -64,13 +64,6 @@ export const OrdersTable = ({ orders, onUpdateStatus, loggedInUser }) => {
     } catch (error) {
       console.error(error);
     }
-    // setLocalOrders((prev) =>
-    //   prev.map((order) =>
-    //     order.order_id === updatedOrder.order_id ? updatedOrder : order
-    //   )
-    // );
-    // setSelectedOrder(updatedOrder);
-    // onUpdateStatus?.(updatedOrder);
   };
 
   const rows = localOrders?.map((order, index) => {
