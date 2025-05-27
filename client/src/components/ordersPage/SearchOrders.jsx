@@ -81,23 +81,21 @@ export const SearchOrders = ({ keySelected, loggedInUser, orders }) => {
         <hr />
       </div>
 
-      <>
-        {searchInput && filteredOrders.length === 0 ? (
-          <div className="no-results">
-            <Text align="center" color="dimmed">
-              No orders found matching your search
-            </Text>
-          </div>
-        ) : (
-          filteredOrders.length > 0 && (
-            <OrdersTable
-              orders={filteredOrders}
-              onUpdateStatus={handleUpdateStatus}
-              loggedInUser={loggedInUser}
-            />
-          )
-        )}
-      </>
+      {searchInput && filteredOrders.length === 0 ? (
+        <div className="no-results">
+          <Text align="center" color="dimmed">
+            No orders found matching your search
+          </Text>
+        </div>
+      ) : (
+        filteredOrders.length > 0 && (
+          <OrdersTable
+            orders={filteredOrders}
+            onUpdateStatus={handleUpdateStatus}
+            loggedInUser={loggedInUser}
+          />
+        )
+      )}
     </div>
   );
 };
