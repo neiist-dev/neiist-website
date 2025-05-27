@@ -1,8 +1,9 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Tabs } from "@mantine/core";
 import { BiSearch } from "react-icons/bi";
 import { AllOrdersPage } from "../components/ordersPage/AllOrdersPage";
 import { SearchOrders } from "../components/ordersPage/SearchOrders";
+import { fetchOrdersWithDetails } from "../Api.service.js";
 
 import UserDataContext from "../UserDataContext";
 
@@ -13,6 +14,26 @@ export const OrdersPage = () => {
   const [activeTab, setActiveTab] = useState("active");
 
   const loggedInUser = userData?.username;
+
+  const [orders_filers, setOrdersFilters] = useState({
+    active: [],
+    pending: [],
+    paid: [],
+    delivered: [],
+  });
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const fetchedOrders = await fetchOrdersWithDetails();
+      setOrdersFilters({
+        active: fetchedOrders,
+        pending: fetchedOrders.filter(order => !order.delivered && !order.paid),
+        paid: fetchedOrders.filter(order => !order.delivered && order.paid),
+        delivered: fetchedOrders.filter(order => order.delivered),
+      });
+    };
+    fetchOrders();
+  }, []);
 
   return (
     <div
@@ -46,23 +67,23 @@ export const OrdersPage = () => {
         </Tabs.List>
 
         <Tabs.Panel value="active" pt="xs">
-          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} orders={orders_filers.active}/>
         </Tabs.Panel>
 
         <Tabs.Panel value="pending" pt="xs">
-          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} orders={orders_filers.pending}/>
         </Tabs.Panel>
 
         <Tabs.Panel value="paid" pt="xs">
-          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} orders={orders_filers.paid}/>
         </Tabs.Panel>
 
         <Tabs.Panel value="delivered" pt="xs">
-          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} />
+          <AllOrdersPage keySelected={activeTab} loggedInUser={loggedInUser} orders={orders_filers.delivered}/>
         </Tabs.Panel>
 
         <Tabs.Panel value="search" pt="xs">
-          <SearchOrders keySelected={activeTab} loggedInUser={loggedInUser} />
+          {/* <SearchOrders keySelected={activeTab} loggedInUser={loggedInUser} /> */}
         </Tabs.Panel>
       </Tabs>
     </div>

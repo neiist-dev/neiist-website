@@ -220,6 +220,63 @@ storeRouter.get("/orders", collaboratorMiddleware, async (req, res) => {
 });
 
 /**
+ * Get all orders
+ * GET /store/orders
+ */
+storeRouter.get("/orders", collaboratorMiddleware, async (req, res) => {
+	try {
+		const { name, email, phone, ist_id, unpaid, undelivered } = req.query;
+
+		let orders: Order[];
+		if (unpaid === "true") {
+			orders = await storeService.getUnpaidOrders();
+		} else if (undelivered === "true") {
+			orders = await storeService.getUndeliveredOrders();
+		} else if (name) {
+			orders = await storeService.getOrdersByCustomerName(name as string);
+		} else if (email) {
+			orders = await storeService.getOrdersByEmail(email as string);
+		} else if (phone) {
+			orders = await storeService.getOrdersByPhone(phone as string);
+		} else if (ist_id) {
+			orders = await storeService.getOrdersByIstId(ist_id as string);
+		} else {
+			orders = await storeService.getAllOrders();
+		}
+
+		if (!orders || orders.length === 0) {
+			res.json([]);
+			return;
+		}
+
+		res.json(orders);
+	} catch (error) {
+		console.error("Error fetching orders:", error);
+		res.status(500).json({ error: "Failed to fetch orders" });
+	}
+});
+
+/**
+ * Get all orders
+ * GET /store/orders/details
+ */
+storeRouter.get("/orders/details", collaboratorMiddleware, async (req, res) => {
+	try {
+		let orders = await storeService.getAllOrdersWithItems();
+
+		if (!orders || orders.length === 0) {
+			res.json([]);
+			return;
+		}
+
+		res.json(orders);
+	} catch (error) {
+		console.error("Error fetching orders:", error);
+		res.status(500).json({ error: "Failed to fetch orders" });
+	}
+});
+
+/**
  * Get specific order
  * GET /store/orders/:id
  */
@@ -273,7 +330,7 @@ storeRouter.get(
 
 			const orderDetails = {
 				...order,
-				items: items,
+				items,
 				payment_info: {
 					paid: order.paid,
 					payment_responsible: order.payment_responsible,

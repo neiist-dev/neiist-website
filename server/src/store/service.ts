@@ -181,6 +181,20 @@ const getAllOrders = async () => {
 	return orders;
 };
 
+const getAllOrdersWithItems = async () => {
+	let ordersWItems: OrderWithItems[] = [];
+	const orders = await ordersRepository.getAllOrders();
+	for (const order of orders) {
+		const items = await ordersRepository.getOrderItems(order.order_id);
+		const orderWithItems: OrderWithItems = {
+			...order,
+			items: items,
+		};
+		ordersWItems.push(orderWithItems);
+	}
+	return ordersWItems;
+};
+
 const getOrderById = async (orderId: string) => {
 	const order = await ordersRepository.getOrder(orderId);
 	return order;
@@ -469,6 +483,7 @@ export const storeService = {
 	getDeliveryInfo,
 	createOrder,
 	getAllOrders,
+	getAllOrdersWithItems,
 	getOrderById,
 	getOrdersByCustomerName,
 	getOrdersByEmail,
