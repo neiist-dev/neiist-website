@@ -105,4 +105,5 @@ const NeiistLogo: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     />
   </svg>
 );
+
 export default NeiistLogo;
