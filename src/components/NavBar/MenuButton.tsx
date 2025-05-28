@@ -1,5 +1,5 @@
-import type React from "react"
 import Link from "next/link"
+import type React from "react"
 import styles from "@/styles/components/NavBar.module.css"
 
 interface MenuButtonProps {

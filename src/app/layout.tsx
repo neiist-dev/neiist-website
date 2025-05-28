@@ -1,15 +1,10 @@
-import { ReactNode } from 'react';
-import { Metadata } from 'next';
+import Head from 'next/head';
 import { Secular_One } from 'next/font/google';
+import { ReactNode } from 'react';
+import NavBar from '../components/navbar/NavBar';
 import { ThemeProvider } from '../context/ThemeContext';
-import NavBar from '../components/NavBar/NavBar';
 import Footer from '../components/Footer';
 import '@/styles/globals.css';
-
-export const metadata: Metadata = {
-  title: 'NEIIST',
-  description: 'Núcleo Estudantil de de Informática do Insituto Superior Técnico',
-};
 
 const secularOne = Secular_One({
   subsets: ['latin'],
@@ -21,6 +16,13 @@ const secularOne = Secular_One({
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Head>
+        <title>NEIIST</title>
+        <meta
+          name="description"
+          content="Núcleo Estudantil de Informática do Instituto Superior Técnico"
+        />
+      </Head>
       <body>
         <ThemeProvider  attribute="class" defaultTheme="system" enableSystem>
           <NavBar />

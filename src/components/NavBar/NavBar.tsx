@@ -1,17 +1,15 @@
 "use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { fetchUserData, login, logout } from "@/utils/userUtils";
 import { UserData } from "@/types/user";
 import styles from "@/styles/components/navbar/NavBar.module.css";
-import { NavItem } from "./NavItem";
-import ProfileMenu from "./ProfileMenu";
-import NeiistLogo from "./NeiistLogo";
-import { ThemeToggle } from "../ThemeToggle";
-import ShoppingCart from "./ShoppingCart";
-import LoginButton from "./LoginButton";
+import { NavItem } from "@/components/navbar/NavItem";
+import ProfileMenu from "@/components/navbar/ProfileMenu";
+import NeiistLogo from "@/components/navbar/NeiistLogo";
+import ShoppingCart from "@/components/navbar/ShoppingCart";
+import LoginButton from "@/components/navbar/LoginButton";
 
 const navLinks = [
   { name: "Sobre Nós", href: "/sobre" },
@@ -92,7 +90,6 @@ const NavBar: React.FC = () => {
         </div>
       </div>
       <div className={styles.actions}>
-        <ThemeToggle />
         <ShoppingCart />
         {userData ? (
           <ProfileMenu userData={userData} logout={handleLogout} />

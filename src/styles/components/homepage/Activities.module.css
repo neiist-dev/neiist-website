@@ -1,0 +1,57 @@
+.slider {
+  gap: 20px;
+  display: flex;
+}
+
+.arrow {
+  position: absolute;
+  color: white;
+  cursor: pointer; 
+  top: 50%;
+  z-index: 1;
+  transform: scale(1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.arrow:hover {
+  transform: scale(1.2);
+}
+
+.arrow.left {
+  left: 1%;
+}
+
+.arrow.right {
+  right: 1%;
+}
+
+.card {
+  border-radius: 10px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--first-color);
+  overflow: hidden;
+  margin-right: 10px
+}
+
+.image {
+  width: 20vw;
+  height: 180px;
+  object-fit: cover;
+}
+
+.description {
+  text-align: center;
+}
+
+.title {
+  text-align: left;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .title {
+    text-align: center;
+  }
+}

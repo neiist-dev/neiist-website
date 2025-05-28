@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import React, { useState, useRef, useEffect } from "react";
 import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
 import { LuFileText } from "react-icons/lu";
 import { TbGavel } from "react-icons/tb";
 import { BiCog } from "react-icons/bi";
-import { ProfileItem } from "./NavItem";
+import { ProfileItem } from "@/components/navbar/NavItem";
 import styles from "@/styles/components/navbar/ProfileMenu.module.css";
 import { summarizeName, statusToString } from "@/utils/userUtils";
 import { UserData } from "@/types/user";
@@ -65,7 +65,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
         toggleMenu={() => setIsOpen(!isOpen)}
         userData={userData}
       />
-      <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`} >
+      <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}>
         {userData.isAdmin || userData.isActiveTecnicoStudent ? (
           <>
             <div className={styles.divider} />
@@ -74,28 +74,28 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
         ) : null}
         {userData.isAdmin || userData.isActiveLMeicStudent ? (
           <>
-            <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText} />
+            <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText}/>
           </>
         ) : null}
         {userData.isAdmin || userData.isGacMember ? (
           <>
-            <ProfileItem href="/mag" label="MAG" icon={TbGavel} />
+            <ProfileItem href="/mag" label="MAG" icon={TbGavel}/>
             <div className={styles.divider}></div>
           </>
         ) : null}
         {userData.isAdmin || userData.isCollab ? (
           <>
-            <ProfileItem href="/collab" label="Colaborador(a)" icon={GoPeople} />
+            <ProfileItem href="/collab" label="Colaborador(a)" icon={GoPeople}/>
           </>
         ) : null}
         {userData.isAdmin ? (
           <>
-            <ProfileItem href="/admin" label="Admin" icon={BiCog} />
+            <ProfileItem href="/admin" label="Admin" icon={BiCog}/>
           </>
         ) : null}
         <div className={styles.divider} />
-        <div className={styles.logoutButtom} onClick={() => { setIsOpen(false); logout(); }} >
-          <GoSignOut /> Log out
+        <div className={styles.logoutButtom} onClick={() => { setIsOpen(false); logout(); }}>
+          <GoSignOut/> Log out
         </div>
       </div>
     </div>

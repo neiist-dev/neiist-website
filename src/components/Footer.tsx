@@ -29,8 +29,8 @@ export default function Footer() {
         <div className={styles.section}>
           <h4>Sobre o Núcleo</h4>
           <ul>
-            <li><Link className={styles.link} href="/equipa">Equipa</Link></li>
-            <li><Link className={styles.link} href="/estudante">Estudante</Link></li>
+            <li><Link className={styles.link} href="/sobre-nos">Equipa</Link></li>
+            <li><Link className={styles.link} href="https://sinfo.org" target="_blank" rel="noopener noreferrer">SINFO</Link></li>
             <li><Link className={styles.link} href="/estatutos.pdf" target="_blank" rel="noopener noreferrer">Estatutos</Link></li>
           </ul>
         </div>
