@@ -5,7 +5,7 @@ import { User } from '@/types/user';
 export const getUser = async (istid: string): Promise<User | null> => {
   try {
     const { rows } = await db_query<User>(
-      'SELECT istid, name, email, phone, courses, campus, permission, photo FROM public.users WHERE istid = $1',
+      'SELECT istid, name, email, phone, courses, campus, photo FROM public.users WHERE istid = $1',
       [istid]
     );
     
@@ -40,16 +40,9 @@ export const createOrUpdateUser = async (user: Partial<User>): Promise<User | nu
       // Build dynamic query based on provided fields
       Object.entries(user).forEach(([key, value]) => {
         if (key !== 'istid' && value !== undefined) {
-          // Special handling for courses array
-          if (key === 'courses' && Array.isArray(value)) {
-            updateFields.push(`${key} = $${paramIndex}`);
-            values.push(value); // PostgreSQL handles array types directly
-            paramIndex++;
-          } else {
-            updateFields.push(`${key} = $${paramIndex}`);
-            values.push(value);
-            paramIndex++;
-          }
+          updateFields.push(`${key} = $${paramIndex}`);
+          values.push(value);
+          paramIndex++;
         }
       });
       
@@ -88,8 +81,8 @@ export const createOrUpdateUser = async (user: Partial<User>): Promise<User | nu
 export const checkIsMember = async (istid: string): Promise<boolean> => {
   try {
     const { rows } = await db_query(
-      'SELECT * FROM members.members WHERE istid = $1',
-      [istid]
+      'SELECT 1 FROM neiist.roles WHERE istid = $1 AND role_type = $2',
+      [istid, 'member']
     );
     return rows.length > 0;
   } catch (error) {
@@ -100,10 +93,10 @@ export const checkIsMember = async (istid: string): Promise<boolean> => {
 
 export const checkIsCollaborator = async (istid: string): Promise<boolean> => {
   try {
-    const currentDate = new Date();
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     const { rows } = await db_query(
-      'SELECT * FROM neilist.collaborators WHERE istid = $1 AND $2 BETWEEN fromDate AND toDate',
-      [istid, currentDate]
+      'SELECT 1 FROM neiist.roles WHERE istid = $1 AND role_type = $2 AND $3 BETWEEN from_date AND to_date',
+      [istid, 'collaborator', currentDate]
     );
     return rows.length > 0;
   } catch (error) {
@@ -112,29 +105,113 @@ export const checkIsCollaborator = async (istid: string): Promise<boolean> => {
   }
 };
 
+export const checkIsAdmin = async (istid: string): Promise<boolean> => {
+  try {
+    const { rows } = await db_query(
+      'SELECT 1 FROM neiist.roles WHERE istid = $1 AND role_type = $2',
+      [istid, 'admin']
+    );
+    return rows.length > 0;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+};
+
+export const getUserRoles = async (istid: string): Promise<string[]> => {
+  try {
+    const currentDate = new Date().toISOString().split('T')[0];
+    const { rows } = await db_query<{ role_type: string }>(
+      `SELECT role_type FROM neiist.roles 
+       WHERE istid = $1 
+       AND (role_type != 'collaborator' OR $2 BETWEEN from_date AND to_date)`,
+      [istid, currentDate]
+    );
+    return rows.map(row => row.role_type);
+  } catch (error) {
+    console.error('Error fetching user roles:', error);
+    return [];
+  }
+};
+
+export const addMember = async (istid: string, registerDate?: Date, electorDate?: Date): Promise<boolean> => {
+  try {
+    await db_query(
+      `INSERT INTO neiist.roles (istid, role_type, register_date, elector_date) 
+       VALUES ($1, 'member', $2, $3)
+       ON CONFLICT (istid, role_type) DO NOTHING`,
+      [istid, registerDate || new Date(), electorDate || new Date()]
+    );
+    return true;
+  } catch (error) {
+    console.error('Error adding member:', error);
+    return false;
+  }
+};
+
+export const addCollaborator = async (istid: string, teams: string[], position: string, fromDate: Date, toDate: Date): Promise<boolean> => {
+  try {
+    await db_query(
+      `INSERT INTO neiist.roles (istid, role_type, teams, position, from_date, to_date) 
+       VALUES ($1, 'collaborator', $2, $3, $4, $5)
+       ON CONFLICT (istid, role_type) DO UPDATE SET 
+       teams = $2, position = $3, from_date = $4, to_date = $5`,
+      [istid, teams, position, fromDate, toDate]
+    );
+    return true;
+  } catch (error) {
+    console.error('Error adding collaborator:', error);
+    return false;
+  }
+};
+
+export const addAdmin = async (istid: string): Promise<boolean> => {
+  try {
+    await db_query(
+      `INSERT INTO neiist.roles (istid, role_type) 
+       VALUES ($1, 'admin')
+       ON CONFLICT (istid, role_type) DO NOTHING`,
+      [istid]
+    );
+    return true;
+  } catch (error) {
+    console.error('Error adding admin:', error);
+    return false;
+  }
+};
+
+export const removeRole = async (istid: string, roleType: string): Promise<boolean> => {
+  try {
+    await db_query(
+      'DELETE FROM neiist.roles WHERE istid = $1 AND role_type = $2',
+      [istid, roleType]
+    );
+    return true;
+  } catch (error) {
+    console.error('Error removing role:', error);
+    return false;
+  }
+};
+
 export const updateUserPhoto = async (istid: string, photoData: string): Promise<boolean> => {
   try {
     // First, check if the user already has a photo
     const user = await getUser(istid);
-    
     if (user && user.photo) {
       // If user already has a photo, delete the old Large Object
       await deletePhotoLo(Number(user.photo));
     }
-    
     // Store the new photo as a Large Object
     const newOid = await storePhotoLo(photoData);
-    
     if (!newOid) {
       return false;
     }
-    
-    // Update the user's photo reference
+
     await db_query(
       'UPDATE public.users SET photo = $1 WHERE istid = $2',
       [newOid, istid]
     );
-    
+
     return true;
   } catch (error) {
     console.error('Error updating user photo:', error);

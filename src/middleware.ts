@@ -16,7 +16,8 @@ const publicRoutes = [
   '/',
   '/home',
   '/about',
-  '/studented'
+  '/studented',
+  '/user'
 ];
 
 const adminRoutes = ['/admin'];
@@ -74,8 +75,8 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    // Regular users can only access their profile and public pages
-    if (!isCollab && !path.startsWith('/profile') && !isPublicRoute) {
+    // Regular users can access their profile and public pages
+    if (!isCollab && !path.startsWith('/user') && !isPublicRoute && !path.startsWith('/profile')) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
   }

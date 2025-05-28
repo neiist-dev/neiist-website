@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { UserData, mapUserToUserData } from "@/types/user";
-import { getUser, checkIsMember, checkIsCollaborator, createOrUpdateUser } from "@/utils/userDB";
+import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser } from "@/utils/userDB";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -42,7 +42,7 @@ export async function GET() {
       ? userInformation.campus.trim()
       : userInformation.campus || null;
     let dbUser = await getUser(userInformation.username);
-        
+
     if (!dbUser) {
       dbUser = await createOrUpdateUser({
         istid: userInformation.username,
@@ -50,7 +50,6 @@ export async function GET() {
         email: userInformation.email,
         courses: courseNames,
         campus: campus,
-        permission: 'user'
       });
     } else {
       const updates: Partial<UserData> = {};
@@ -71,7 +70,7 @@ export async function GET() {
 
     const isMember = dbUser ? await checkIsMember(dbUser.istid) : false;
     const isCollab = dbUser ? await checkIsCollaborator(dbUser.istid) : false;
-    const isAdmin = dbUser?.permission === 'admin';
+    const isAdmin = dbUser ? await checkIsAdmin(dbUser.istid) : false;
     const isGacMember = false;
 
     const isActiveLMeicStudent = courses.some(

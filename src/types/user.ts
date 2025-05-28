@@ -5,7 +5,6 @@ export interface User {
   phone?: string;
   courses?: string[];
   campus?: string;
-  permission?: string;
   photo?: string | number; // OID in DB, string when retrieved
   photoData?: string; // Base64 photo data when retrieved from LO
 }
@@ -22,10 +21,9 @@ export interface Member {
 export interface Collaborator {
   istid: string;
   teams: string[];
-  role: string;
-  subRole?: string;
-  fromDate: Date;
-  toDate: Date;
+  position: string;
+  from_date: Date;
+  to_date: Date;
 }
 
 export interface UserData {
