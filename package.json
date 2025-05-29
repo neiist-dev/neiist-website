@@ -6,7 +6,7 @@
     "setup": "chmod +x ./setup.sh && ./setup.sh",
     "docker-up": "docker compose -f ./docker/docker-compose.yml up -d",
     "docker-down": "docker compose -f ./docker/docker-compose.yml down",
-    "dev": "yarn docker-up && next dev --turbopack",
+    "dev": "yarn docker-up && next dev --turbopack; docker compose -f ./docker/docker-compose.yml stop > /dev/null 2>&1",
     "lint": "next lint",
     "build": "next build",
     "start": "next start"
