@@ -23,6 +23,7 @@
 ### Getting Started
 
 * [Installation](./installation.md)
+* [Contributing](./contributing.md)
 
 ### Built With
 > [Next.js](https://nextjs.org/), [React](https://react.dev/), [PostgreSQL](https://www.postgresql.org/), [TypeScript](https://www.typescriptlang.org/)
