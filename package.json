@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "setup": "chmod +x ./setup.sh && ./setup.sh",
+    "docker-up": "docker compose -f ./docker/docker-compose.yml up -d",
+    "docker-down": "docker compose -f ./docker/docker-compose.yml down",
+    "dev": "yarn docker-up && next dev --turbopack",
     "lint": "next lint",
-    "setup": "./setup.sh"
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@types/pg": "^8.15.1",
@@ -29,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "eslint-plugin-validate-filename": "^1.0.0",
+    "husky": "^9.1.7",
     "typescript": "^5"
   }
 }
