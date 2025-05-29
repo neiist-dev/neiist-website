@@ -1,0 +1,560 @@
+.container {
+  margin: 1.5em 6em 0.25em 6em;
+  min-height: 100vh;
+}
+
+.content {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  background-color: white;
+  border-radius: 1em;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 2em;
+  margin-bottom: 2em;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid rgba(var(--fg-color-rgb), 0.1);
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--fg-color);
+  margin: 0;
+}
+
+.editButton {
+  padding: 0.75em 1.5em;
+  background-color: var(--first-color);
+  color: white;
+  border: none;
+  border-radius: 0.5em;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.editButton:hover {
+  background-color: var(--second-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  padding: 1.5em;
+  background-color: #f9fafb;
+  border-radius: 1em;
+  margin-bottom: 1em;
+}
+
+.photoContainer {
+  position: relative;
+}
+
+.profileImage {
+  width: 8em;
+  height: 8em;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--first-color);
+  transition: transform 0.3s ease;
+}
+
+.profileImage:hover {
+  transform: scale(1.05);
+}
+
+.photoButton {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: var(--first-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 0.75em;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photoButton:hover {
+  background-color: var(--second-color);
+  transform: scale(1.1);
+}
+
+.photoButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.userInfo h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--fg-color);
+  margin: 0 0 0.5rem 0;
+}
+
+.userInfo p {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.username {
+  color: var(--first-color);
+  font-weight: 500;
+}
+
+.status {
+  font-size: 1rem;
+  color: var(--second-color);
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2em;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+  padding: 1.5em;
+  border-radius: 1em;
+  transition: transform 0.2s ease;
+}
+
+.fieldGroup:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fg-color);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5em;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--first-color);
+  box-shadow: 0 0 0 3px rgba(var(--first-color-rgb), 0.1);
+  transform: translateY(-1px);
+}
+
+.readOnlyText {
+  color: var(--fg-color);
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.5rem 0;
+  font-weight: 500;
+}
+
+.helpText {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.notSpecified {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.coursesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.courseItem {
+  color: var(--fg-color);
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.5em 1em;
+  background-color: var(--first-color);
+  color: white;
+  border-radius: 0.5em;
+  font-weight: 500;
+}
+
+.noCourses {
+  color: #9ca3af;
+  font-size: 1rem;
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+  padding: 1em;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 1em;
+  padding-top: 2em;
+  justify-content: center;
+  border-top: 1px solid rgba(var(--fg-color-rgb), 0.1);
+}
+
+.saveButton {
+  padding: 1em 2em;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 0.5em;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.saveButton:hover {
+  background-color: #047857;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.saveButton:disabled:hover {
+  background-color: #059669;
+  transform: none;
+  box-shadow: none;
+}
+
+.cancelButton {
+  padding: 1em 2em;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 0.5em;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.cancelButton:hover {
+  background-color: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5em 6em 0.25em 6em;
+}
+
+.loadingText {
+  font-size: 1.5rem;
+  color: var(--fg-color);
+  font-weight: 500;
+}
+
+.errorContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5em 6em 0.25em 6em;
+}
+
+.errorText {
+  font-size: 1.5rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 1285px) {
+  .container {
+    margin: 1em 3em 0.25em 3em;
+  }
+}
+
+@media (max-width: 930px) {
+  .container {
+    margin: 1em 2em 0.25em 2em;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .fieldsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 750px) {
+  .container {
+    margin: 1em 1em 0.25em 1em;
+  }
+
+  .card {
+    padding: 1.5em;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .profileSection {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5em;
+  }
+
+  .profileImage {
+    width: 6em;
+    height: 6em;
+  }
+
+  .buttonContainer {
+    flex-direction: column;
+  }
+
+  .saveButton,
+  .cancelButton {
+    width: 100%;
+  }
+
+  .fieldsGrid {
+    gap: 1em;
+  }
+
+  .fieldGroup {
+    padding: 1em;
+  }
+}
+
+@media (max-width: 440px) {
+  .container {
+    margin: 0.5em;
+  }
+
+  .card {
+    padding: 1em;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1em;
+    text-align: center;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+}
+
+.neiistSection {
+  margin-top: 2em;
+  padding-top: 2em;
+  border-top: 1px solid rgba(var(--fg-color-rgb), 0.1);
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--first-color);
+  margin: 0 0 1.5em 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.sectionTitle::before {
+  content: '';
+  width: 4px;
+  height: 2em;
+  background-color: var(--first-color);
+  border-radius: 2px;
+}
+
+.rolesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2em;
+}
+
+.rolesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75em;
+}
+
+.roleTag {
+  padding: 0.6em 1.2em;
+  border-radius: 25px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.roleTag:hover {
+  transform: translateY(-1px);
+}
+
+.roleTag.admin {
+  background-color: #fecaca;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+}
+
+.roleTag.collaborator {
+  background-color: #fed7aa;
+  color: #ea580c;
+  border: 2px solid #ea580c;
+}
+
+.roleTag.member {
+  background-color: #bbf7d0;
+  color: #059669;
+  border: 2px solid #059669;
+}
+
+.teamsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75em;
+}
+
+.teamTag {
+  padding: 0.6em 1.2em;
+  border-radius: 25px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.teamTag:hover {
+  transform: translateY(-1px);
+}
+
+.coordinatorTag {
+  background-color: #fecaca;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+}
+
+.memberTag {
+  background-color: var(--first-color);
+  color: white;
+  border: 2px solid var(--first-color);
+}
+
+/* Responsive updates for NEIIST section */
+@media (max-width: 930px) {
+  .rolesGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 750px) {
+  .neiistSection {
+    margin-top: 1.5em;
+    padding-top: 1.5em;
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75em;
+  }
+  
+  .sectionTitle::before {
+    height: 3px;
+    width: 3em;
+  }
+  
+  .rolesContainer,
+  .teamsContainer {
+    justify-content: center;
+  }
+  
+  .roleTag,
+  .teamTag {
+    font-size: 0.75rem;
+    padding: 0.5em 1em;
+  }
+}
+
+@media (max-width: 440px) {
+  .rolesContainer,
+  .teamsContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .roleTag,
+  .teamTag {
+    width: 100%;
+    text-align: center;
+  }
+}

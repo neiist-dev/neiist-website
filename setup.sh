@@ -13,6 +13,21 @@ if [ "$continue_anyway" != "y" ]; then
   exit 1
 fi
 
+# Function to collect Fénix Application details only if not already set
+collect_fenix_env() {
+  if [ -z "${fenix_client_id}" ]; then
+    echo "🔑 Enter your Fénix Application details:"
+    read -p "FENIX_CLIENT_ID: " fenix_client_id
+  fi
+  if [ -z "${fenix_client_secret}" ]; then
+    read -p "FENIX_CLIENT_SECRET: " fenix_client_secret
+  fi
+  if [ -z "${fenix_redirect_uri}" ]; then
+    read -p "FENIX_REDIRECT_URI [http://localhost:3000/api/auth/callback]: " fenix_redirect_uri
+    fenix_redirect_uri=${fenix_redirect_uri:-http://localhost:3000/api/auth/callback}
+  fi
+}
+
 # Create root .env file
 echo "📝 Creating root .env file..."
 if [ -f ".env" ]; then
@@ -20,14 +35,7 @@ if [ -f ".env" ]; then
   if [ "$override" != "y" ]; then
     echo "ℹ️ Keeping existing .env file."
   else
-    # Collect information for root .env
-    echo "🔑 Enter your Fénix Application details:"
-    read -p "FENIX_CLIENT_ID: " fenix_client_id
-    read -p "FENIX_CLIENT_SECRET: " fenix_client_secret
-    read -p "FENIX_REDIRECT_URI [http://localhost:3000/api/auth/callback]: " fenix_redirect_uri
-    fenix_redirect_uri=${fenix_redirect_uri:-http://localhost:3000/api/auth/callback}
-
-    # Create root .env file
+    collect_fenix_env
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -37,14 +45,7 @@ EOF
     echo "✅ Root .env file created successfully."
   fi
 else
-  # Collect information for root .env
-  echo "🔑 Enter your Fénix Application details:"
-  read -p "FENIX_CLIENT_ID: " fenix_client_id
-  read -p "FENIX_CLIENT_SECRET: " fenix_client_secret
-  read -p "FENIX_REDIRECT_URI [http://localhost:3000/api/auth/callback]: " fenix_redirect_uri
-  fenix_redirect_uri=${fenix_redirect_uri:-http://localhost:3000/api/auth/callback}
-
-  # Create root .env file
+  collect_fenix_env
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -61,7 +62,6 @@ if [ -f "docker/.env" ]; then
   if [ "$override_docker" != "y" ]; then
     echo "ℹ️ Keeping existing docker/.env file."
   else
-    # Create docker/.env with default values
     cat > docker/.env << EOF
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
@@ -70,7 +70,6 @@ EOF
     echo "✅ docker/.env file created successfully."
   fi
 else
-  # Create docker/.env with default values
   cat > docker/.env << EOF
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin

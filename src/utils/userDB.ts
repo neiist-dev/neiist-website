@@ -39,7 +39,7 @@ export const createOrUpdateUser = async (user: Partial<User>): Promise<User | nu
       
       // Build dynamic query based on provided fields
       Object.entries(user).forEach(([key, value]) => {
-        if (key !== 'istid' && value !== undefined) {
+        if (key !== 'istid' && key !== 'photoData' && value !== undefined) {
           updateFields.push(`${key} = $${paramIndex}`);
           values.push(value);
           paramIndex++;
@@ -59,18 +59,18 @@ export const createOrUpdateUser = async (user: Partial<User>): Promise<User | nu
       
     } else if (user.istid && user.name && user.email) {
       // Create new user
-      const fields = Object.keys(user);
+      const fields = Object.keys(user).filter(key => key !== 'photoData');
       const placeholders = fields.map((_, i) => `$${i + 1}`).join(', ');
-      const values: unknown[] = Object.values(user);
-      
+      const values: unknown[] = fields.map(field => user[field as keyof User]);
+
       await db_query(
         `INSERT INTO public.users (${fields.join(', ')}) VALUES (${placeholders})`,
         values
       );
-      
+
       return await getUser(user.istid);
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error creating or updating user:', error);
@@ -153,9 +153,9 @@ export const addCollaborator = async (istid: string, teams: string[], position: 
   try {
     await db_query(
       `INSERT INTO neiist.roles (istid, role_type, teams, position, from_date, to_date) 
-       VALUES ($1, 'collaborator', $2, $3, $4, $5)
+       VALUES ($1, 'collaborator', $2::neiist.team_role_enum[], $3, $4, $5)
        ON CONFLICT (istid, role_type) DO UPDATE SET 
-       teams = $2, position = $3, from_date = $4, to_date = $5`,
+       teams = $2::neiist.team_role_enum[], position = $3, from_date = $4, to_date = $5`,
       [istid, teams, position, fromDate, toDate]
     );
     return true;
@@ -189,6 +189,21 @@ export const removeRole = async (istid: string, roleType: string): Promise<boole
     return true;
   } catch (error) {
     console.error('Error removing role:', error);
+    return false;
+  }
+};
+
+export const updateCollaboratorTeams = async (istid: string, teams: string[]): Promise<boolean> => {
+  try {
+    await db_query(
+      `UPDATE neiist.roles 
+       SET teams = $1::neiist.team_role_enum[]
+       WHERE istid = $2 AND role_type = 'collaborator'`,
+      [teams, istid]
+    );
+    return true;
+  } catch (error) {
+    console.error('Error updating collaborator teams:', error);
     return false;
   }
 };
