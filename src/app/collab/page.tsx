@@ -8,21 +8,11 @@ import UserManagementTable from '@/components/admin/UserManagementTable';
 import UserDetailsModal from '@/components/admin/UserDetailModal';
 import styles from '@/styles/pages/CollabPage.module.css';
 
-interface CollaboratorUser extends UserData {
-  roles?: string[];
-  registerDate?: string;
-  electorDate?: string;
-  teams?: string[];
-  position?: string;
-  fromDate?: string;
-  toDate?: string;
-}
-
 export default function CollaboratorsPage() {
   const [currentUser, setCurrentUser] = useState<UserData | null>(null);
-  const [users, setUsers] = useState<CollaboratorUser[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<CollaboratorUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
@@ -71,12 +61,12 @@ export default function CollaboratorsPage() {
     })();
   }, [router]);
 
-  const handleUserSelect = (user: CollaboratorUser) => {
+  const handleUserSelect = (user: UserData) => {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
 
-  const handleUserUpdate = async (updatedUser: CollaboratorUser) => {
+  const handleUserUpdate = async (updatedUser: UserData) => {
     try {
       const response = await fetch('/api/admin/users/update', {
         method: 'PUT',

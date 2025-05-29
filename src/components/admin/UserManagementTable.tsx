@@ -1,21 +1,13 @@
 import { useState } from 'react';
+import { UserData } from '@/types/user';
+import Image from 'next/image';
+
 import styles from '@/styles/components/admin/UserManagementTable.module.css';
 
-interface User {
-  username: string;
-  displayName: string;
-  email?: string;
-  status: string;
-  campus?: string;
-  photo: string;
-  roles?: string[];
-  teams?: string[];
-  position?: string;
-}
 
 interface UserManagementTableProps {
-  users: User[];
-  onUserSelect: (user: User) => void;
+  users: UserData[];
+  onUserSelect: (user: UserData) => void;
   isAdmin: boolean;
   showRoles?: boolean;
 }
@@ -133,10 +125,13 @@ export default function UserManagementTable({
             {filteredUsers.map(user => (
               <tr key={user.username} className={styles.userRow}>
                 <td>
-                  <img
+                  <Image
                     src={user.photo || '/default_user.png'}
                     alt={user.displayName}
+                    width={48}
+                    height={48}
                     className={styles.userPhoto}
+                    unoptimized={user.photo?.startsWith('data:')}
                   />
                 </td>
                 <td className={styles.userName}>{user.displayName}</td>

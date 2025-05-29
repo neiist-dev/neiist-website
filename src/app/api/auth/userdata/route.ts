@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { UserData, mapUserToUserData } from "@/types/user";
-import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser } from "@/utils/userDB";
+import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser, getUserRoles } from "@/utils/userDB";
+import { db_query } from "@/lib/db";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -83,6 +84,63 @@ export async function GET() {
     if (isCollab) status = 'Collaborator';
     if (isAdmin) status = 'Admin';
 
+    // Get role details if user has roles
+    let roleDetails = {
+      roles: [] as string[],
+      teams: [] as string[],
+      position: undefined as string | undefined,
+      registerDate: undefined as string | undefined,
+      electorDate: undefined as string | undefined,
+      fromDate: undefined as string | undefined,
+      toDate: undefined as string | undefined,
+    };
+
+    if (dbUser && (isMember || isCollab || isAdmin)) {
+      // Get user's roles
+      const roles = await getUserRoles(dbUser.istid);
+      
+      if (roles.length > 0) {
+        // Get additional role information
+        const roleDetailsQuery = await db_query(`
+          SELECT 
+            role_type,
+            teams,
+            position,
+            register_date,
+            elector_date,
+            from_date,
+            to_date
+          FROM neiist.roles 
+          WHERE istid = $1
+        `, [dbUser.istid]);
+
+        const memberInfo = roleDetailsQuery.rows.find(r => r.role_type === 'member');
+        const collabInfo = roleDetailsQuery.rows.find(r => r.role_type === 'collaborator');
+
+        // Normalize teams to ensure it's always an array
+        let teams: string[] = [];
+        if (collabInfo?.teams) {
+          if (Array.isArray(collabInfo.teams)) {
+            teams = collabInfo.teams;
+          } else if (typeof collabInfo.teams === 'string') {
+            teams = collabInfo.teams.startsWith('{') && collabInfo.teams.endsWith('}')
+              ? collabInfo.teams.slice(1, -1).split(',').filter(t => t.trim().length > 0)
+              : [collabInfo.teams];
+          }
+        }
+
+        roleDetails = {
+          roles,
+          teams,
+          position: collabInfo?.position,
+          registerDate: memberInfo?.register_date,
+          electorDate: memberInfo?.elector_date,
+          fromDate: collabInfo?.from_date,
+          toDate: collabInfo?.to_date
+        };
+      }
+    }
+
     const userData: UserData = dbUser ?
       mapUserToUserData(dbUser, {
         isActiveTecnicoStudent: userInformation.roles.some(
@@ -93,6 +151,7 @@ export async function GET() {
         isGacMember,
         status,
         fenixPhoto: validFenixPhoto ?? undefined,
+        ...roleDetails
       }) : 
       {
         username: userInformation.username,
@@ -108,8 +167,9 @@ export async function GET() {
         isActiveLMeicStudent,
         photo: validFenixPhoto || "/default_user.png",
         status: status,
+        ...roleDetails
       };
-    
+
     const response = NextResponse.json(userData);
     response.cookies.set('userData', JSON.stringify({
       username: userData.username,

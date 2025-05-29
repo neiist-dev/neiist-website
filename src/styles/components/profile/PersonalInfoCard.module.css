@@ -1,0 +1,105 @@
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2em;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+  padding: 1.5em;
+  border-radius: 1em;
+  transition: transform 0.2s ease;
+}
+
+.fieldGroup:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fg-color);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5em;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--first-color);
+  box-shadow: 0 0 0 3px rgba(var(--first-color-rgb), 0.1);
+  transform: translateY(-1px);
+}
+
+.readOnlyText {
+  color: var(--fg-color);
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.5rem 0;
+  font-weight: 500;
+}
+
+.helpText {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.coursesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.courseItem {
+  color: var(--fg-color);
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.5em 1em;
+  background-color: var(--first-color);
+  color: white;
+  border-radius: 0.5em;
+  font-weight: 500;
+}
+
+.noCourses {
+  color: #9ca3af;
+  font-size: 1rem;
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+  padding: 1em;
+}
+
+/* Responsive design */
+@media (max-width: 930px) {
+  .fieldsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 750px) {
+  .fieldsGrid {
+    gap: 1em;
+  }
+
+  .fieldGroup {
+    padding: 1em;
+  }
+}

@@ -39,6 +39,13 @@ export interface UserData {
   isGacMember?: boolean;
   photo: string;
   status: string;
+  roles?: string[];
+  teams?: string[];
+  position?: string;
+  registerDate?: string;
+  electorDate?: string;
+  fromDate?: string;
+  toDate?: string;
 }
 
 export function mapUserToUserData(
@@ -51,6 +58,14 @@ export function mapUserToUserData(
     isGacMember?: boolean;
     status: string;
     fenixPhoto?: string;
+    // Add role details
+    roles?: string[];
+    teams?: string[];
+    position?: string;
+    registerDate?: string;
+    electorDate?: string;
+    fromDate?: string;
+    toDate?: string;
   }
 ): UserData {
   return {
@@ -65,6 +80,13 @@ export function mapUserToUserData(
     isCollab: dbPermissions.isCollab || false,
     isAdmin: dbPermissions.isAdmin || false,
     isGacMember: dbPermissions.isGacMember || false,
-    status: dbPermissions.status
+    status: dbPermissions.status,
+    roles: dbPermissions.roles || [],
+    teams: dbPermissions.teams || [],
+    position: dbPermissions.position,
+    registerDate: dbPermissions.registerDate,
+    electorDate: dbPermissions.electorDate,
+    fromDate: dbPermissions.fromDate,
+    toDate: dbPermissions.toDate
   };
 }
