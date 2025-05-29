@@ -3,12 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // Routes requiring authentication
 const protectedRoutes = [
   '/dashboard',
-  '/profile',
   '/admin',
-  '/members',
-  '/collaborators',
   '/thesismaster',
-  '/mag'
+  '/mag',
+  '/collab'
 ];
 
 // Public routes - accessible to all users
@@ -21,8 +19,8 @@ const publicRoutes = [
 ];
 
 const adminRoutes = ['/admin'];
-const collabRoutes = ['/collaborators'];
-const memberRoutes = ['/members'];
+const collabRoutes = ['/collab'];
+const memberRoutes = ['/thesismaster'];
 
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -55,29 +53,45 @@ export function middleware(req: NextRequest) {
     const isCollab = userData.isCollab || userData.isAdmin;
     const isMember = ['Member', 'Collaborator', 'Admin'].includes(userData.status);
 
-    // Admin routes: only admins can access
-    if (adminRoutes.some(r => path.startsWith(r)) && !isAdmin) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
-    }
-
-    // Admin can access everything else
+    // Admin can access everything
     if (isAdmin) {
       return NextResponse.next();
     }
 
-    // Check collaborator routes
+    // Admin routes: only admins can access
+    if (adminRoutes.some(r => path.startsWith(r)) && !isAdmin) {
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    // Collab routes: only collabs and admins can access
     if (collabRoutes.some(r => path.startsWith(r)) && !isCollab) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+      return NextResponse.redirect(new URL('/', req.url));
     }
 
-    // Check member routes
-    if (memberRoutes.some(r => path.startsWith(r)) && !isMember) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    // For collaborators: can access /collab + everything members can access
+    if (isCollab && !isAdmin) {
+      const canAccessCollabRoute = collabRoutes.some(r => path.startsWith(r));
+      const canAccessMemberRoute = memberRoutes.some(r => path.startsWith(r));
+      
+      if (!isPublicRoute && !canAccessCollabRoute && !canAccessMemberRoute) {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
     }
 
-    // Regular users can access their profile and public pages
-    if (!isCollab && !path.startsWith('/user') && !isPublicRoute && !path.startsWith('/profile')) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    // For regular members: only allow public routes and /thesismaster
+    if (isMember && !isCollab && !isAdmin) {
+      const canAccessMemberRoute = memberRoutes.some(r => path.startsWith(r));
+
+      if (!isPublicRoute && !canAccessMemberRoute) {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
+    }
+
+    // For non-members who are authenticated but not collab/admin
+    if (!isMember && !isCollab && !isAdmin) {
+      if (!isPublicRoute) {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
     }
   }
 

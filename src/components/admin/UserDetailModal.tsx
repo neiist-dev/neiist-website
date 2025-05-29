@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { UserData } from '@/types/user';
+import Image from 'next/image';
+
 import styles from '@/styles/components/admin/UserDetailsModal.module.css';
 
 interface TeamRole {
@@ -7,28 +10,11 @@ interface TeamRole {
   isCoordinator: boolean;
 }
 
-interface User {
-  username: string;
-  displayName: string;
-  email?: string;
-  status: string;
-  campus?: string;
-  photo: string;
-  courses?: string[];
-  roles?: string[];
-  teams?: string[] | string; // Can be array or string from DB
-  position?: string;
-  registerDate?: string;
-  electorDate?: string;
-  fromDate?: string;
-  toDate?: string;
-}
-
 interface UserDetailsModalProps {
-  user: User;
+  user: UserData;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate?: (user: User) => void;
+  onUpdate?: (user: UserData) => void;
   isAdmin: boolean;
 }
 
@@ -39,7 +25,7 @@ export default function UserDetailsModal({
   onUpdate, 
   isAdmin 
 }: UserDetailsModalProps) {
-  const [editedUser, setEditedUser] = useState<User>(user);
+  const [editedUser, setEditedUser] = useState<UserData>(user);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [availableTeamRoles, setAvailableTeamRoles] = useState<TeamRole[]>([]);
@@ -156,10 +142,13 @@ export default function UserDetailsModal({
 
         <div className={styles.modalContent}>
           <div className={styles.userProfile}>
-            <img
+           <Image
               src={editedUser.photo || '/default_user.png'}
               alt={editedUser.displayName}
+              width={80}
+              height={80}
               className={styles.profileImage}
+              unoptimized={editedUser.photo?.startsWith('data:')}
             />
             <div className={styles.profileInfo}>
               <h3>{editedUser.displayName}</h3>

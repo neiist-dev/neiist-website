@@ -1,6 +1,7 @@
+version: '3.8'
+name: NEIIST
 services:
-  db:
-    container_name: db
+  neiist_db:
     image: postgres:15
     restart: always
     env_file:

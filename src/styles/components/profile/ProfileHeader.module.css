@@ -1,0 +1,96 @@
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  padding: 1.5em;
+  background-color: #f9fafb;
+  border-radius: 1em;
+  margin-bottom: 1em;
+}
+
+.photoContainer {
+  position: relative;
+}
+
+.profileImage {
+  width: 8em;
+  height: 8em;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--first-color);
+  transition: transform 0.3s ease;
+}
+
+.profileImage:hover {
+  transform: scale(1.05);
+}
+
+.photoButton {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: var(--first-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 0.75em;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photoButton:hover {
+  background-color: var(--second-color);
+  transform: scale(1.1);
+}
+
+.photoButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.userInfo h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--fg-color);
+  margin: 0 0 0.5rem 0;
+}
+
+.userInfo p {
+  margin: 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.username {
+  color: var(--first-color);
+  font-weight: 500;
+}
+
+.status {
+  font-size: 1rem;
+  color: var(--second-color);
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 750px) {
+  .profileSection {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5em;
+  }
+
+  .profileImage {
+    width: 6em;
+    height: 6em;
+  }
+}
