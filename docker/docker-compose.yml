@@ -1,5 +1,6 @@
 services:
   db:
+    container_name: db
     image: postgres:15
     restart: always
     env_file:
@@ -7,8 +8,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - neiist_db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
       - ./postgres/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
 volumes:
-  neiist_db:
+  db:
