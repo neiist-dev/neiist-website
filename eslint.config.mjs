@@ -10,9 +10,7 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  // Existing compat config
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  // Custom config for validate-filename
   {
    plugins: {
     "validate-filename": await import("eslint-plugin-validate-filename"),

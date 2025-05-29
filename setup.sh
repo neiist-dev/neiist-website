@@ -1,3 +1,8 @@
+set -e  # Exit immediately if a command exits with a non-zero status
+
+echo "🚀 NEIIST Dev Env Setup Script"
+echo "==============================="
+
 # Function to prompt for y/n and only accept valid input
 prompt_yes_no() {
   local prompt="$1"
@@ -7,11 +12,11 @@ prompt_yes_no() {
     answer_lower=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
     if [[ "$answer_lower" == "y" || "$answer_lower" == "n" || "$answer_lower" == "yes" || "$answer_lower" == "no" ]]; then
       if [[ "$answer_lower" == "yes" ]]; then
-      answer="y"
+        answer="y"
       elif [[ "$answer_lower" == "no" ]]; then
-      answer="n"
+        answer="n"
       else
-      answer="$answer_lower"
+        answer="$answer_lower"
       fi
       break
     else
@@ -21,15 +26,21 @@ prompt_yes_no() {
   echo "$answer"
 }
 
-# Check if we're in the project root directory
-in_root=$(prompt_yes_no "Are you in the root directory of the project? (y/n): ")
-if [ "$in_root" != "y" ]; then
-  echo "Exiting setup. Please navigate to the project root directory and run this script again."
-  exit 1
-fi
+# Function to collect Fénix Application details only if not already set
+collect_fenix_env() {
+  if [ -z "${fenix_client_id}" ] || [ -z "${fenix_client_secret}" ]; then
+    echo "🔑 Enter your Fénix Application details:"
+  fi
+  if [ -z "${fenix_client_id}" ]; then
+    read -p "FENIX_CLIENT_ID: " fenix_client_id
+  fi
+  if [ -z "${fenix_client_secret}" ]; then
+    read -p "FENIX_CLIENT_SECRET: " fenix_client_secret
+  fi
+}
 
-# Create root .env file
-echo "📝 Creating root .env file..."
+# Create .env file in project root
+echo "📝 Creating .env file..."
 if [ -f ".env" ]; then
   override=$(prompt_yes_no "ℹ️ .env file already exists. Override? (y/n): ")
   if [ "$override" != "y" ]; then
@@ -39,43 +50,44 @@ if [ -f ".env" ]; then
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
-FENIX_REDIRECT_URI=${fenix_redirect_uri}
+FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
 DATABASE_URL=postgresql://admin:admin@localhost:5432/neiist
 EOF
-    echo "✅ Root .env file created successfully."
+    echo "✅ .env file created successfully."
   fi
 else
   collect_fenix_env
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
-FENIX_REDIRECT_URI=${fenix_redirect_uri}
+FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
 DATABASE_URL=postgresql://admin:admin@localhost:5432/neiist
 EOF
-  echo "✅ Root .env file created successfully."
+  echo "✅ .env file created successfully."
 fi
 
 # Create docker/.env file
-echo "📝 Creating docker/.env file..."
-if [ -f "docker/.env" ]; then
-  override_docker=$(prompt_yes_no "ℹ️ docker/.env file already exists. Override? (y/n): ")
-  if [ "$override_docker" != "y" ]; then
-    echo "ℹ️ Keeping existing docker/.env file."
+file="docker/.env"
+echo "📝 Creating $file file..."
+if [ -f "$file" ]; then
+  override=$(prompt_yes_no "ℹ️ $file file already exists. Override? (y/n): ")
+  if [ "$override" != "y" ]; then
+    echo "ℹ️ Keeping existing $file file."
   else
-    cat > docker/.env << EOF
+    cat > "$file" << EOF
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_DB=neiist
 EOF
-    echo "✅ docker/.env file created successfully."
+    echo "✅ $file file created successfully."
   fi
 else
-  cat > docker/.env << EOF
+  cat > "$file" << EOF
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_DB=neiist
 EOF
-  echo "✅ docker/.env file created successfully."
+  echo "✅ $file file created successfully."
 fi
 
 # Check if Docker is installed
@@ -86,19 +98,22 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Start Docker containers
-echo "🐳 Starting Docker containers..."
+echo "🐳 Building Docker containers..."
 cd docker
-docker compose -p neiist up -d
+docker compose -p neiist build
+wait
 cd ..
 
-echo "⏳ Waiting for PostgreSQL to be ready..."
-sleep 5
-
 echo "✅ Setup completed successfully!"
-echo ""
+echo 
 echo "🚀 Next steps:"
-echo "1. Run 'yarn install' to install dependencies"
-echo "2. Run 'yarn dev' to start the development server"
-echo ""
-echo "📝 Note: If you need to modify the database credentials, update both .env and docker/.env files accordingly."
-echo
+echo "1. Run 'yarn install' to install dependencies."
+echo "2. Run 'yarn dev' to start the development server."
+echo 
+if [ "$override" = "y" ]; then
+  echo "📝 Note: Your database credentials are:"
+  echo "   - user: admin"
+  echo "   - password: admin"
+  echo "   - database: neiist"
+  echo
+fi

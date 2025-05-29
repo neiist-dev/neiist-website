@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+# Pre-commit hook to run linting, formatting, and tests on the whole src except assets
+
+set -e
+
+if [ -d "src" ]; then
+  yarn lint "src/**" "!src/assets/**"
+  #yarn format "src/**" "!src/assets/**" TODO: Uncomment when format is set up
+  #yarn test "src/**" "!src/assets/**" TODO: Uncomment when test is set up
+else
+  echo "Error: src directory not found"
+  exit 1
+fi
