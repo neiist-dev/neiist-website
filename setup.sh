@@ -77,3 +77,35 @@ POSTGRES_DB=neiist
 EOF
   echo "✅ docker/.env file created successfully."
 fi
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+  echo "⚠️ Docker is not installed. Please install Docker to continue."
+  echo "🔗 https://docs.docker.com/get-docker/"
+  exit 1
+fi
+
+# Check if Docker Compose is installed
+if ! command -v docker-compose &> /dev/null; then
+  echo "⚠️ Docker Compose is not installed. Please install Docker Compose to continue."
+  echo "🔗 https://docs.docker.com/compose/install/"
+  exit 1
+fi
+
+# Start Docker containers
+echo "🐳 Starting Docker containers..."
+cd docker
+docker-compose -p neiist up -d
+cd ..
+
+echo "⏳ Waiting for PostgreSQL to be ready..."
+sleep 5
+
+echo "✅ Setup completed successfully!"
+echo ""
+echo "🚀 Next steps:"
+echo "1. Run 'yarn install' to install dependencies"
+echo "2. Run 'yarn dev' to start the development server"
+echo ""
+echo "📝 Note: If you need to modify the database credentials, update both .env and docker/.env files accordingly."
+echo
