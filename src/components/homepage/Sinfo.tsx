@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import logo from '@/assets/sinfo.png';
+import logo from '@/assets/homepage/sinfo.png';
 import styles from '@/styles/components/homepage/Sinfo.module.css';
 
 const Sinfo = () => {

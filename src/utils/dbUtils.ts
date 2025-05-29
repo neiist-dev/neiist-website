@@ -1,5 +1,4 @@
-import { db_query } from '@/lib/db';
-import { storePhotoLo, getPhotoByOid, deletePhotoLo } from '@/lib/dbLo';
+import { db_query, storePhotoLO, getPhotoByOID, deletePhotoLO  } from '@/lib/db';
 import { User } from '@/types/user';
 
 export const getUser = async (istid: string): Promise<User | null> => {
@@ -13,7 +12,7 @@ export const getUser = async (istid: string): Promise<User | null> => {
     
     // If there's a photo OID, fetch the actual photo data
     if (rows[0].photo) {
-      const photo = await getPhotoByOid(Number(rows[0].photo));
+      const photo = await getPhotoByOID(Number(rows[0].photo));
       if (photo) {
         return { ...rows[0], photoData: photo };
       }
@@ -214,10 +213,10 @@ export const updateUserPhoto = async (istid: string, photoData: string): Promise
     const user = await getUser(istid);
     if (user && user.photo) {
       // If user already has a photo, delete the old Large Object
-      await deletePhotoLo(Number(user.photo));
+      await deletePhotoLO(Number(user.photo));
     }
     // Store the new photo as a Large Object
-    const newOid = await storePhotoLo(photoData);
+    const newOid = await storePhotoLO(photoData);
     if (!newOid) {
       return false;
     }

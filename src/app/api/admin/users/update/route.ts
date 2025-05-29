@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUser, createOrUpdateUser, addMember, addCollaborator, addAdmin, removeRole, getUserRoles, updateCollaboratorTeams } from "@/utils/userDB";
+import { 
+  getUser, 
+  createOrUpdateUser, 
+  addMember, 
+  addCollaborator, 
+  addAdmin, 
+  removeRole,
+  getUserRoles,
+  updateCollaboratorTeams
+} from "@/utils/dbUtils";
 import { db_query } from "@/lib/db";
 
 export async function PUT(request: Request) {
@@ -28,6 +37,8 @@ export async function PUT(request: Request) {
     if (!existingUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // Map frontend field names to database column names
     const mappedUpdates: Record<string, unknown> = {};
     Object.entries(otherUpdates).forEach(([key, value]) => {
       switch (key) {

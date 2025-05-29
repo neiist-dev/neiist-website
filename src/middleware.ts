@@ -53,7 +53,12 @@ export function middleware(req: NextRequest) {
     const isCollab = userData.isCollab || userData.isAdmin;
     const isMember = ['Member', 'Collaborator', 'Admin'].includes(userData.status);
 
-    // Admin can access everything
+    // Admin routes: only admins can access
+    if (adminRoutes.some(r => path.startsWith(r)) && !isAdmin) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    }
+
+    // Admin's can access everything
     if (isAdmin) {
       return NextResponse.next();
     }

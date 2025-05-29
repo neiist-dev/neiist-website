@@ -3,18 +3,13 @@
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { FiSun, FiMoon } from 'react-icons/fi';
-
 import styles from "@/styles/components/navbar/ThemeToggle.module.css"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // Avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
+  useEffect(() => { setMounted(true) }, [])
   if (!mounted) {
     return <button className={styles.themeToggle}></button>
   }

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { UserData, mapUserToUserData } from "@/types/user";
-import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser, getUserRoles } from "@/utils/userDB";
-import { db_query } from "@/lib/db";
+import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser } from "@/utils/dbUtils";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -201,9 +200,7 @@ function validatePhoto(base64: string): boolean {
   }
 
   const base64Data = base64.split(',')[1];
-  
-  const byteLength = (base64Data.length * 3) / 4 - (base64Data.endsWith('==') ? 2 : base64Data.endsWith('=') ? 1 : 0);
-  
+  const byteLength = (base64Data.length * 3) / 4 - (base64Data.endsWith('==') ? 2 : base64Data.endsWith('=') ? 1 : 0);  
   const maxSizeInBytes = 3 * 1024 * 1024; // 3MB
 
   return byteLength <= maxSizeInBytes;

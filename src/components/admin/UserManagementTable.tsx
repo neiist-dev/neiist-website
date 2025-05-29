@@ -145,9 +145,11 @@ export default function UserManagementTable({
                 {showRoles && (
                   <td>
                     <div className={styles.rolesContainer}>
-                      {user.roles?.map(role => (
-                        <span key={role} className={styles.roleTag}>{role}</span>
-                      )) || 'None'}
+                      {user.roles?.length
+                        ? user.roles.map(role => (
+                            <span key={role} className={styles.roleTag}>{role}</span>
+                          ))
+                        : 'None'}
                     </div>
                   </td>
                 )}

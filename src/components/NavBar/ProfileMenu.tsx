@@ -6,7 +6,7 @@ import { TbGavel } from "react-icons/tb";
 import { BiCog } from "react-icons/bi";
 import { ProfileItem } from "@/components/navbar/NavItem";
 import styles from "@/styles/components/navbar/ProfileMenu.module.css";
-import { summarizeName, statusToString } from "@/utils/userUtils";
+import { summarizeName, statusToString } from "@/utils/profileUtils";
 import { UserData } from "@/types/user";
 
 interface ProfileMenuProps {
@@ -67,7 +67,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
       />
       <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}>
         <div className={styles.divider} />
-        <ProfileItem href="/user" label="Profile" icon={GoPerson}/>
+        <ProfileItem href="/profile" label="Profile" icon={GoPerson}/>
         {userData.isAdmin || userData.isActiveLMeicStudent ? (
           <>
             <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText}/>

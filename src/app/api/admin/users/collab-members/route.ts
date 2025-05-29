@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { db_query } from "@/lib/db";
-import { getUser, getUserRoles } from "@/utils/userDB";
+import { getUser, getUserRoles } from "@/utils/dbUtils";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
