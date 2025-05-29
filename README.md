@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://neiist.tecnico.ulisboa.pt/">
-    <img src="./readme/logo.png" alt="Logo" width="150">
+    <img src="./public/neiist_logo.svg" alt="Logo" width="150">
   </a>
 
   <h3 align="center">NEIIST Website</h3>
@@ -22,8 +22,7 @@
 
 ### Getting Started
 
-* [Installation](./readme/installation.md)
+* [Installation](./installation.md)
 
 ### Built With
-
-> [Next.js](https://nextjs.org/)
+> [Next.js](https://nextjs.org/), [React](https://react.dev/), [PostgreSQL](https://www.postgresql.org/), [TypeScript](https://www.typescriptlang.org/)
