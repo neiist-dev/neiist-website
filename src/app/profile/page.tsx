@@ -1,41 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { fetchUserData } from '@/utils/profileUtils';
-import { UserData } from '@/types/user';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import PersonalInfoCard from '@/components/profile/PersonalInfoCard';
 import NeiistRolesCard from '@/components/profile/RolesCard';
+import { useAuthRedirect } from '@/utils/AuthRedirect';
 import styles from '@/styles/pages/UserPage.module.css';
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user,isAuthorized } = useAuthRedirect({
+    requireAuth: true
+  });
+  
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ displayName: '', photo: '' });
   const [saving, setSaving] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const userData = await fetchUserData();
-        if (!userData) return router.push('/api/auth/login');
-        
-        setUser(userData);
-        setFormData({ displayName: userData.displayName || '', photo: userData.photo || '' });
-        setPhotoPreview(userData.photo || null);
-      } catch (err) {
-        console.error('Failed to fetch user data', err);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [router]);
+    if (user) {
+      setFormData({ displayName: user.displayName || '', photo: user.photo || '' });
+      setPhotoPreview(user.photo || null);
+    }
+  }, [user]);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,20 +78,12 @@ export default function ProfilePage() {
     setEditing(false);
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingText}>Loading profile...</div>
-      </div>
-    );
+  if (!isAuthorized) {
+    return <div>Loading...</div>;
   }
 
   if (!user) {
-    return (
-      <div className={styles.errorContainer}>
-        <div className={styles.errorText}>Failed to load profile</div>
-      </div>
-    );
+    return null;
   }
 
   return (

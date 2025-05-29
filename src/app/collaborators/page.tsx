@@ -1,20 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { fetchUserData } from '@/utils/profileUtils';
 import { UserData } from '@/types/user';
 import UserManagementTable from '@/components/admin/UserManagementTable';
 import UserDetailsModal from '@/components/admin/UserDetailModal';
+import { useAuthRedirect } from '@/utils/AuthRedirect';
 import styles from '@/styles/pages/CollabPage.module.css';
 
 export default function CollaboratorsPage() {
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const { user: currentUser, isAuthorized } = useAuthRedirect({
+    requireAuth: true,
+    requiredStatus: ['Member', 'Collaborator', 'Admin']
+  });
+  
   const [users, setUsers] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
+  const [usersLoading, setUsersLoading] = useState(true);
 
   const loadUsers = async (isAdmin: boolean) => {
     try {
@@ -31,35 +33,16 @@ export default function CollaboratorsPage() {
       setUsers(usersData);
     } catch (error) {
       console.error('Error loading users:', error);
+    } finally {
+      setUsersLoading(false);
     }
   };
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const userData = await fetchUserData();
-        if (!userData) {
-          router.push('/api/auth/login');
-          return;
-        }
-        
-        setCurrentUser(userData);
-        
-        // Check permissions - only members, collaborators, and admins can access
-        if (!['Member', 'Collaborator', 'Admin'].includes(userData.status)) {
-          router.push('/unauthorized');
-          return;
-        }
-
-        await loadUsers(userData.isAdmin || false);
-      } catch (error) {
-        console.error('Error loading collaborators page:', error);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [router]);
+    if (isAuthorized && currentUser) {
+      loadUsers(currentUser.isAdmin || false);
+    }
+  }, [isAuthorized, currentUser]);
 
   const handleUserSelect = (user: UserData) => {
     setSelectedUser(user);
@@ -92,10 +75,10 @@ export default function CollaboratorsPage() {
     })();
   };
 
-  if (loading) {
+  if (!isAuthorized) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.loadingText}>Loading collaborators...</div>
+        <div className={styles.loadingText}>Loading...</div>
       </div>
     );
   }
@@ -124,12 +107,18 @@ export default function CollaboratorsPage() {
             </div>
           </div>
 
-          <UserManagementTable
-            users={users}
-            onUserSelect={handleUserSelect}
-            isAdmin={isAdmin}
-            showRoles={true}
-          />
+          {usersLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingText}>Loading users...</div>
+            </div>
+          ) : (
+            <UserManagementTable
+              users={users}
+              onUserSelect={handleUserSelect}
+              isAdmin={isAdmin}
+              showRoles={true}
+            />
+          )}
 
           {isModalOpen && selectedUser && (
             <UserDetailsModal

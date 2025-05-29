@@ -2,14 +2,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { FaBars, FaTimes } from "react-icons/fa";
-import { fetchUserData, login, logout } from "@/utils/profileUtils";
-import { UserData } from "@/types/user";
+import { login, logout } from "@/utils/profileUtils";
 import styles from "@/styles/components/navbar/NavBar.module.css";
 import { NavItem } from "@/components/navbar/NavItem";
 import ProfileMenu from "@/components/navbar/ProfileMenu";
 import NeiistLogo from "@/components/navbar/NeiistLogo";
 import ShoppingCart from "@/components/navbar/ShoppingCart";
 import LoginButton from "@/components/navbar/LoginButton";
+import { useUser } from '@/context/UserContext';
 
 const navLinks = [
   { name: "Sobre Nós", href: "/sobre" },
@@ -18,27 +18,14 @@ const navLinks = [
 ];
 
 const NavBar: React.FC = () => {
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const { user, loading, setUser } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchUserData();
-        setUserData(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const handleLogout = async () => {
     await logout();
-    setUserData(null);
+    setUser(null);
   };
 
   useEffect(() => {
@@ -91,8 +78,10 @@ const NavBar: React.FC = () => {
       </div>
       <div className={styles.actions}>
         <ShoppingCart />
-        {userData ? (
-          <ProfileMenu userData={userData} logout={handleLogout} />
+        {loading ? (
+          <div>Loading...</div>
+        ) : user ? (
+          <ProfileMenu userData={user} logout={handleLogout} />
         ) : (
           <LoginButton onClick={login} />
         )}
