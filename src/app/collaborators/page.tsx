@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchUserData } from '@/utils/userUtils';
+import { fetchUserData } from '@/utils/profileUtils';
 import { UserData } from '@/types/user';
 import UserManagementTable from '@/components/admin/UserManagementTable';
 import UserDetailsModal from '@/components/admin/UserDetailModal';
@@ -66,27 +66,30 @@ export default function CollaboratorsPage() {
     setIsModalOpen(true);
   };
 
-  const handleUserUpdate = async (updatedUser: UserData) => {
-    try {
-      const response = await fetch('/api/admin/users/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedUser),
-        credentials: 'include'
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to update user');
+  const handleUserUpdate = (updatedUser: UserData) => {
+    (async () => {
+      try {
+        const response = await fetch('/api/admin/users/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedUser),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update user');
+        }
+
+        // Refresh user list
+        await loadUsers(currentUser?.isAdmin || false);
+
+        setIsModalOpen(false);
+        setSelectedUser(null);
+      } catch (error) {
+        console.error('Error updating user:', error);
       }
-
-      // Refresh user list
-      await loadUsers(currentUser?.isAdmin || false);
-
-      setIsModalOpen(false);
-      setSelectedUser(null);
-    } catch (error) {
-      console.error('Error updating user:', error);
-    }
+    })();
   };
 
   if (loading) {

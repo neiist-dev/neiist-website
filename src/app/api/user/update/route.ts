@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUser, createOrUpdateUser, updateUserPhoto } from "@/utils/userDB";
+import { getUser, createOrUpdateUser, updateUserPhoto } from "@/utils/dbUtils";
 
 export async function PUT(request: Request) {
   const accessToken = (await cookies()).get('accessToken')?.value;

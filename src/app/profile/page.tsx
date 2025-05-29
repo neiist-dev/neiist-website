@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchUserData } from '@/utils/userUtils';
+import { fetchUserData } from '@/utils/profileUtils';
 import { UserData } from '@/types/user';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import PersonalInfoCard from '@/components/profile/PersonalInfoCard';
