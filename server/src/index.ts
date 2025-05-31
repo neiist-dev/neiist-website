@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import session, { type SessionOptions } from "express-session";
 import morgan from "morgan";
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import { areasRoute as areasRouter } from "./areas/router";
 import { authRoute as authRouter } from "./auth/router";
 import { collaboratorsRouter } from "./collaborators/router";
@@ -65,9 +65,7 @@ app.use(async (req, res, next) => {
 			req.url = req.url.replace(/^\/maintenance/, "");
 			return maintenanceAssets(req, res, next);
 		}
-		res
-			.status(503)
-			.sendFile(path.join(MAINTENANCE_DIR, "maintenance.html"));
+		res.status(503).sendFile(path.join(MAINTENANCE_DIR, "maintenance.html"));
 	}
 });
 
