@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { UserData, mapUserToUserData } from "@/types/user";
-import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser } from "@/utils/dbUtils";
+import { apiError } from "@/utils/permissionsUtils";
+import { getUser, checkIsMember, checkIsCollaborator, checkIsAdmin, createOrUpdateUser, getUserRoles, updateUserPhoto } from "@/utils/dbUtils";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -41,6 +42,7 @@ export async function GET() {
     const campus = typeof userInformation.campus === 'string'
       ? userInformation.campus.trim()
       : userInformation.campus || null;
+
     let dbUser = await getUser(userInformation.username);
 
     if (!dbUser) {
@@ -51,21 +53,54 @@ export async function GET() {
         courses: courseNames,
         campus: campus,
       });
+      if (dbUser && validFenixPhoto) {
+        await updateUserPhoto(dbUser.istid, validFenixPhoto);
+        dbUser = await getUser(userInformation.username);
+      }
     } else {
-      const updates: Partial<UserData> = {};
-      if (!dbUser.courses || dbUser.courses.length === 0) {
+      const updates: Record<string, unknown> = {};
+      if (dbUser.email !== userInformation.email) {
+        updates.email = userInformation.email;
+      }
+      if (dbUser.name !== userInformation.displayName) {
+        if (dbUser.name.includes('Pending User')) {
+          updates.name = userInformation.displayName;
+        }
+      }
+      if (!dbUser.courses || dbUser.courses.length === 0 || 
+          JSON.stringify(dbUser.courses.sort()) !== JSON.stringify(courseNames.sort())) {
         updates.courses = courseNames;
       }
-      if (campus && (!dbUser.campus || dbUser.campus.length <= 1)) {
+      if (campus && (!dbUser.campus || dbUser.campus.length <= 1 || dbUser.campus !== campus)) {
         updates.campus = campus;
       }
       if (Object.keys(updates).length > 0) {
+        console.log('Updating user with Fenix data:', updates);
         await createOrUpdateUser({
           istid: dbUser.istid,
           ...updates
         });
-        dbUser = await getUser(userInformation.username);
       }
+
+      if (validFenixPhoto) {
+        let shouldUpdatePhoto = false;
+
+        if (!dbUser.photo) {
+          // No photo exists, use Fenix photo
+          shouldUpdatePhoto = true;
+        } else if (dbUser.photoData && dbUser.photoData !== validFenixPhoto) {
+          // Photo exists but is different from Fenix
+          // Only update if current photo looks like it came from Fenix (not a custom upload)
+          if (dbUser.photoData.startsWith('data:image/png;base64,')) {
+            shouldUpdatePhoto = true;
+          }
+        }
+
+        if (shouldUpdatePhoto) {
+          await updateUserPhoto(dbUser.istid, validFenixPhoto);
+        }
+      }
+      dbUser = await getUser(userInformation.username);
     }
 
     const isMember = dbUser ? await checkIsMember(dbUser.istid) : false;
@@ -83,62 +118,20 @@ export async function GET() {
     if (isCollab) status = 'Collaborator';
     if (isAdmin) status = 'Admin';
 
-    // Get role details if user has roles
-    let roleDetails = {
-      roles: [] as string[],
-      teams: [] as string[],
-      position: undefined as string | undefined,
-      registerDate: undefined as string | undefined,
-      electorDate: undefined as string | undefined,
-      fromDate: undefined as string | undefined,
-      toDate: undefined as string | undefined,
-    };
-
-    if (dbUser && (isMember || isCollab || isAdmin)) {
-      // Get user's roles
-      const roles = await getUserRoles(dbUser.istid);
-      
-      if (roles.length > 0) {
-        // Get additional role information
-        const roleDetailsQuery = await db_query(`
-          SELECT 
-            role_type,
-            teams,
-            position,
-            register_date,
-            elector_date,
-            from_date,
-            to_date
-          FROM neiist.roles 
-          WHERE istid = $1
-        `, [dbUser.istid]);
-
-        const memberInfo = roleDetailsQuery.rows.find(r => r.role_type === 'member');
-        const collabInfo = roleDetailsQuery.rows.find(r => r.role_type === 'collaborator');
-
-        // Normalize teams to ensure it's always an array
-        let teams: string[] = [];
-        if (collabInfo?.teams) {
-          if (Array.isArray(collabInfo.teams)) {
-            teams = collabInfo.teams;
-          } else if (typeof collabInfo.teams === 'string') {
-            teams = collabInfo.teams.startsWith('{') && collabInfo.teams.endsWith('}')
-              ? collabInfo.teams.slice(1, -1).split(',').filter(t => t.trim().length > 0)
-              : [collabInfo.teams];
-          }
-        }
-
-        roleDetails = {
-          roles,
-          teams,
-          position: collabInfo?.position,
-          registerDate: memberInfo?.register_date,
-          electorDate: memberInfo?.elector_date,
-          fromDate: collabInfo?.from_date,
-          toDate: collabInfo?.to_date
+    const roleDetails = dbUser && (isMember || isCollab || isAdmin) 
+      ? await getUserRoles(dbUser.istid)
+      : {
+          roles: [] as string[],
+          teams: [] as string[],
+          position: undefined as string | undefined,
+          registerDate: undefined as string | undefined,
+          electorDate: undefined as string | undefined,
+          fromDate: undefined as string | undefined,
+          toDate: undefined as string | undefined,
+          startRenewalDate: undefined as string | undefined,
+          endRenewalDate: undefined as string | undefined,
+          renewalNotification: undefined as boolean | undefined,
         };
-      }
-    }
 
     const userData: UserData = dbUser ?
       mapUserToUserData(dbUser, {
@@ -187,7 +180,7 @@ export async function GET() {
 
   } catch (error) {
     console.error('Error in userdata API:', error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json(apiError("Internal server error", 500, error instanceof Error ? error.message : undefined), { status: 500 });
   }
 }
 

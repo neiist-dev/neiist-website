@@ -1,44 +1,55 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { 
-  getUser, 
-  createOrUpdateUser, 
-  addMember, 
-  addCollaborator, 
-  addAdmin, 
-  removeRole,
-  getUserRoles,
-  updateCollaboratorTeams
-} from "@/utils/dbUtils";
-import { db_query } from "@/lib/db";
+import { getUser, createOrUpdateUser, addMember, addCollaborator, addAdmin, removeRole, getUserRoles,
+        updateCollaboratorTeams, updateUserPhoto, updateMemberRoleFields, updateCollaboratorRoleFields 
+       } from "@/utils/dbUtils";
+import { UserData } from "@/types/user";
+import { apiError, isAdmin } from "@/utils/permissionsUtils";
 
 export async function PUT(request: Request) {
   const accessToken = (await cookies()).get('accessToken')?.value;
   const userData = (await cookies()).get('userData')?.value;
 
   if (!accessToken || !userData) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json(apiError("Not authenticated", 401), { status: 401 });
   }
 
-  const parsedUserData = JSON.parse(userData);
-  // Only admins can update user roles
-  if (!parsedUserData.isAdmin) {
-    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  const parsedUserData: UserData = JSON.parse(userData);
+  if (!isAdmin(parsedUserData)) {
+    return NextResponse.json(apiError("Insufficient permissions", 403), { status: 403 });
   }
 
   try {
     const updateData = await request.json();
-    const { username, roles: newRoles, teams, position, ...otherUpdates } = updateData;
+    const {
+      username,
+      roles: newRoles,
+      teams,
+      position,
+      registerDate,
+      electorDate,
+      fromDate,
+      toDate,
+      startRenewalDate,
+      endRenewalDate,
+      renewalNotification,
+      photo,
+      ...otherUpdates
+    } = updateData;
 
     if (!username) {
-      return NextResponse.json({ error: "Username is required" }, { status: 400 });
-    }
-    const existingUser = await getUser(username);
-    if (!existingUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json(apiError("Username is required", 400), { status: 400 });
     }
 
-    // Map frontend field names to database column names
+    const existingUser = await getUser(username);
+    if (!existingUser) {
+      return NextResponse.json(apiError("User not found", 404), { status: 404 });
+    }
+
+    if (photo && photo !== existingUser.photoData) {
+      await updateUserPhoto(username, photo);
+    }
+
     const mappedUpdates: Record<string, unknown> = {};
     Object.entries(otherUpdates).forEach(([key, value]) => {
       switch (key) {
@@ -51,15 +62,12 @@ export async function PUT(request: Request) {
         case 'phone':
           mappedUpdates[key] = value;
           break;
-
         default:
-          console.log(`Ignoring field: ${key}`);
           break;
       }
     });
 
     if (Object.keys(mappedUpdates).length > 0) {
-      console.log('Updating user with:', mappedUpdates);
       await createOrUpdateUser({
         istid: username,
         ...mappedUpdates
@@ -67,25 +75,31 @@ export async function PUT(request: Request) {
     }
 
     if (newRoles && Array.isArray(newRoles)) {
-      const currentRoles = await getUserRoles(username);
+      const currentRoleDetails = await getUserRoles(username);
+      const currentRoles = currentRoleDetails.roles;
       const rolesToAdd = newRoles.filter(role => !currentRoles.includes(role));
       const rolesToRemove = currentRoles.filter(role => !newRoles.includes(role));
 
       for (const role of rolesToRemove) {
         await removeRole(username, role);
       }
+
       for (const role of rolesToAdd) {
         switch (role) {
           case 'member':
-            await addMember(username);
+            await addMember(
+              username,
+              registerDate ? new Date(registerDate) : undefined,
+              electorDate ? new Date(electorDate) : undefined
+            );
             break;
           case 'collaborator':
             await addCollaborator(
-              username, 
-              teams || [], 
+              username,
+              teams || [],
               position || 'Collaborator',
-              updateData.fromDate ? new Date(updateData.fromDate) : new Date(),
-              updateData.toDate ? new Date(updateData.toDate) : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+              fromDate ? new Date(fromDate) : new Date(),
+              toDate ? new Date(toDate) : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
             );
             break;
           case 'admin':
@@ -94,47 +108,37 @@ export async function PUT(request: Request) {
         }
       }
 
-      if (newRoles.includes('collaborator') && (teams || position)) {
-        if (teams && Array.isArray(teams)) {
-          await updateCollaboratorTeams(username, teams);
-        }
-        if (position) {
-          await db_query(
-            `UPDATE neiist.roles 
-             SET position = $1
-             WHERE istid = $2 AND role_type = 'collaborator'`,
-            [position, username]
-          );
-        }
+      if (newRoles.includes('member') && (registerDate || electorDate || startRenewalDate || endRenewalDate || typeof renewalNotification !== 'undefined')) {
+        await updateMemberRoleFields(username, {
+          registerDate: registerDate ? new Date(registerDate) : undefined,
+          electorDate: electorDate ? new Date(electorDate) : undefined,
+          startRenewalDate: startRenewalDate ? new Date(startRenewalDate) : undefined,
+          endRenewalDate: endRenewalDate ? new Date(endRenewalDate) : undefined,
+          renewalNotification
+        });
+      }
+
+      if (newRoles.includes('collaborator') && (teams || position || fromDate || toDate)) {
+        await updateCollaboratorRoleFields(username, {
+          teams,
+          position,
+          fromDate: fromDate ? new Date(fromDate) : undefined,
+          toDate: toDate ? new Date(toDate) : undefined
+        });
       }
     } else {
-      const currentRoles = await getUserRoles(username);
-      if (currentRoles.includes('collaborator') && (teams || position)) {
-
-        if (teams && Array.isArray(teams)) {
-          await updateCollaboratorTeams(username, teams);
-        }
-        if (position) {
-          await db_query(
-            `UPDATE neiist.roles 
-             SET position = $1
-             WHERE istid = $2 AND role_type = 'collaborator'`,
-            [position, username]
-          );
-        }
+      const currentRoleDetails = await getUserRoles(username);
+      if (currentRoleDetails.roles.includes('collaborator') && teams && Array.isArray(teams)) {
+        await updateCollaboratorTeams(username, teams.filter(t => t && t.trim() !== ""));
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "User updated successfully" 
+    return NextResponse.json({
+      success: true
     });
 
   } catch (error) {
     console.error('Error updating user:', error);
-    return NextResponse.json({ 
-      error: "Internal server error", 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 });
+    return NextResponse.json(apiError("Internal server error", 500, error instanceof Error ? error.message : 'Unknown error'), { status: 500 });
   }
 }
