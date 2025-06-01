@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import Image from 'next/image';
+import { FiCamera } from 'react-icons/fi';
 import styles from '@/styles/components/profile/ProfileHeader.module.css';
 
 interface ProfileHeaderProps {
@@ -12,9 +13,18 @@ interface ProfileHeaderProps {
   photoPreview: string | null;
   editing: boolean;
   onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  nameValue?: string;
+  onNameChange?: (val: string) => void;
 }
 
-export default function ProfileHeader({ user, photoPreview, editing, onPhotoChange }: ProfileHeaderProps) {
+export default function ProfileHeader({
+  user,
+  photoPreview,
+  editing,
+  onPhotoChange,
+  nameValue,
+  onNameChange,
+}: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -30,24 +40,36 @@ export default function ProfileHeader({ user, photoPreview, editing, onPhotoChan
         />
         {editing && (
           <>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className={styles.photoButton}
-        >
-          Change
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={onPhotoChange}
-          className={styles.hiddenInput}
-        />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={styles.photoIconBtn}
+              aria-label="Change photo"
+            >
+              <FiCamera size={20} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={onPhotoChange}
+              className={styles.hiddenInput}
+            />
           </>
         )}
       </div>
       <div className={styles.userInfo}>
-        <h2>{user.displayName}</h2>
+        {editing ? (
+          <input
+            type="text"
+            value={nameValue ?? ''}
+            onChange={e => onNameChange?.(e.target.value)}
+            className={styles.input}
+            placeholder="Name"
+          />
+        ) : (
+          <h2>{user.displayName}</h2>
+        )}
         <p className={styles.username}>{user.username}</p>
         <p className={styles.status}>{user.status}</p>
       </div>

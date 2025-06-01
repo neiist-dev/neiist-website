@@ -1,57 +1,43 @@
 import styles from '@/styles/components/profile/PersonalInfoCard.module.css';
 
-interface PersonalInfoCardProps {
-  user: {
-    displayName?: string;
-    email?: string;
-    campus?: string;
-    courses?: string[];
-  };
-  editing: boolean;
-  formData: { displayName: string };
-  onDisplayNameChange: (value: string) => void;
-}
+type User = {
+  email?: string;
+  campus?: string;
+  courses?: string[];
+};
 
-export default function PersonalInfoCard({ user, editing, formData, onDisplayNameChange }: PersonalInfoCardProps) {
+type Props = {
+  user: User;
+  editing: boolean;
+  form?: { name: string };
+  onNameChange?: (val: string) => void;
+};
+
+export default function PersonalInfoCard({ user }: Props) {
   return (
-    <div className={styles.fieldsGrid}>
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Name</label>
-        {editing ? (
-          <input 
-            type="text" 
-            value={formData.displayName} 
-            onChange={(e) => onDisplayNameChange(e.target.value)} 
-            className={styles.input} 
-          />
-        ) : (
-          <p className={styles.readOnlyText}>{user.displayName || 'Not specified'}</p>
-        )}
-      </div>
-      
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Email</label>
-        <p className={styles.readOnlyText}>{user.email || 'Not specified'}</p>
-        <p className={styles.helpText}>Email cannot be changed</p>
-      </div>
-      
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Campus</label>
-        <p className={styles.readOnlyText}>{user.campus || 'Not specified'}</p>
-        <p className={styles.helpText}>Campus cannot be changed</p>
-      </div>
-      
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Courses</label>
-        <div className={styles.coursesContainer}>
-          {user.courses?.length ? 
-            user.courses.map((course, index) => (
-              <p key={index} className={styles.courseItem}>{course}</p>
-            )) : 
-            <p className={styles.noCourses}>No courses registered</p>
-          }
+    <>
+      <div className={styles.title}>Personal Information</div>
+      <div className={styles.grid}>
+        <div className={styles.card}>
+          <div className={styles.label}>Email</div>
+          <div className={styles.value}>{user.email || 'Not specified'}</div>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.label}>Campus</div>
+          <div className={styles.value}>{user.campus || 'Not specified'}</div>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.label}>Courses</div>
+          <div className={styles.tags}>
+            {user.courses?.length
+              ? user.courses.map((c, i) => (
+                  <span className={styles.tag} key={i}>{c}</span>
+                ))
+              : <span className={styles.empty}>No courses registered</span>
+            }
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

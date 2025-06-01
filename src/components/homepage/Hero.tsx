@@ -1,5 +1,5 @@
 import Image from "next/image";
-import background from "@/assets/background.png";
+import background from "@/assets/homepage/hero.png";
 import styles from "@/styles/components/homepage/Hero.module.css";
 
 const Hero = () => {
