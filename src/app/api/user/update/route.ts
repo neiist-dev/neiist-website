@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getUser, createOrUpdateUser, updateUserPhoto } from "@/utils/dbUtils";
+import { apiError } from "@/utils/permissionsUtils";
 
 export async function PUT(request: Request) {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -54,19 +55,9 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "No valid changes to update" }, { status: 400 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Profile updated successfully",
-      updates: {
-        name: nameUpdated,
-        photo: photoUpdated
-      }
-    });
+    return NextResponse.json({ success: true, message: "Profile updated successfully", updates: {name: nameUpdated, photo: photoUpdated}});
 
   } catch (error) {
-    return NextResponse.json({ 
-      error: "Internal server error", 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 });
+    return NextResponse.json(apiError("Internal server error", 500, error instanceof Error ? error.message : undefined), { status: 500 });
   }
 }

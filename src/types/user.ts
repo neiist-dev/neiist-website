@@ -9,21 +9,23 @@ export interface User {
   photoData?: string; // Base64 photo data when retrieved from LO
 }
 
-export interface Member {
-  istid: string;
-  register_date: Date;
-  elector_date: Date;
-  start_renewal_date?: Date;
-  end_renewal_date?: Date;
-  renewal_notification: boolean;
+export interface UserRoleDetails {
+  roles: string[];
+  teams: string[];
+  position?: string;
+  registerDate?: string;
+  electorDate?: string;
+  fromDate?: string;
+  toDate?: string;
+  startRenewalDate?: string;
+  endRenewalDate?: string;
+  renewalNotification?: boolean;
 }
 
-export interface Collaborator {
-  istid: string;
-  teams: string[];
-  position: string;
-  from_date: Date;
-  to_date: Date;
+export interface TeamRole {
+  value: string;
+  label: string;
+  isCoordinator: boolean;
 }
 
 export interface UserData {
@@ -46,6 +48,9 @@ export interface UserData {
   electorDate?: string;
   fromDate?: string;
   toDate?: string;
+  startRenewalDate?: string;
+  endRenewalDate?: string;
+  renewalNotification?: boolean;
 }
 
 export function mapUserToUserData(
@@ -66,6 +71,9 @@ export function mapUserToUserData(
     electorDate?: string;
     fromDate?: string;
     toDate?: string;
+    startRenewalDate?: string;
+    endRenewalDate?: string;
+    renewalNotification?: boolean;
   }
 ): UserData {
   return {
@@ -87,6 +95,9 @@ export function mapUserToUserData(
     registerDate: dbPermissions.registerDate,
     electorDate: dbPermissions.electorDate,
     fromDate: dbPermissions.fromDate,
-    toDate: dbPermissions.toDate
+    toDate: dbPermissions.toDate,
+    startRenewalDate: dbPermissions.startRenewalDate,
+    endRenewalDate: dbPermissions.endRenewalDate,
+    renewalNotification: dbPermissions.renewalNotification
   };
 }

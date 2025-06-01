@@ -71,3 +71,93 @@ EXCEPTION
     RAISE EXCEPTION 'Error adding team role: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Function to check if a user is admin
+CREATE OR REPLACE FUNCTION neiist.is_admin(user_istid VARCHAR(10))
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM neiist.roles 
+        WHERE istid = user_istid AND role_type = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to add an admin user
+CREATE OR REPLACE FUNCTION neiist.add_admin_user(user_istid VARCHAR(10))
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Check if user exists in users table
+    IF NOT EXISTS (SELECT 1 FROM public.users WHERE istid = user_istid) THEN
+        RAISE EXCEPTION 'User % does not exist', user_istid;
+    END IF;
+    
+    -- Insert admin role (ON CONFLICT DO NOTHING to handle duplicates)
+    INSERT INTO neiist.roles (istid, role_type)
+    VALUES (user_istid, 'admin')
+    ON CONFLICT (istid, role_type) DO NOTHING;
+    
+    RETURN TRUE;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to remove an admin user
+CREATE OR REPLACE FUNCTION neiist.remove_admin_user(user_istid VARCHAR(10))
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Remove admin role from roles table
+    DELETE FROM neiist.roles 
+    WHERE istid = user_istid AND role_type = 'admin';
+    
+    RETURN TRUE;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to get all admin users
+CREATE OR REPLACE FUNCTION neiist.get_admin_users()
+RETURNS TABLE (
+    istid VARCHAR(10),
+    name TEXT,
+    email TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.istid,
+        u.name,
+        u.email
+    FROM neiist.roles r
+    JOIN public.users u ON r.istid = u.istid
+    WHERE r.role_type = 'admin'
+    ORDER BY u.name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to get team roles as formatted objects for API
+CREATE OR REPLACE FUNCTION neiist.get_team_roles_formatted()
+RETURNS TABLE (
+    value TEXT,
+    label TEXT,
+    is_coordinator BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        role_enum::TEXT as value,
+        CASE 
+            WHEN role_enum::TEXT LIKE 'COOR-%' THEN 
+                'Coordinator - ' || REPLACE(role_enum::TEXT, 'COOR-', '')
+            ELSE 
+                role_enum::TEXT
+        END as label,
+        role_enum::TEXT LIKE 'COOR-%' as is_coordinator
+    FROM unnest(enum_range(NULL::neiist.team_role_enum)) as role_enum
+    ORDER BY is_coordinator DESC, role_enum::TEXT;
+END;
+$$ LANGUAGE plpgsql;

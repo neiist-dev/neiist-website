@@ -6,7 +6,8 @@ const protectedRoutes = [
   '/admin',
   '/thesismaster',
   '/mag',
-  '/collab'
+  '/collaborators',
+  '/profile'
 ];
 
 // Public routes - accessible to all users
@@ -14,12 +15,10 @@ const publicRoutes = [
   '/',
   '/home',
   '/about',
-  '/studented',
-  '/user'
 ];
 
 const adminRoutes = ['/admin'];
-const collabRoutes = ['/collab'];
+const collabRoutes = ['/collaborators'];
 const memberRoutes = ['/thesismaster'];
 
 export function middleware(req: NextRequest) {
