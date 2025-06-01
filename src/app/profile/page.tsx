@@ -5,7 +5,7 @@ import ProfileHeader from '@/components/profile/ProfileHeader';
 import PersonalInfoCard from '@/components/profile/PersonalInfoCard';
 import NeiistRolesCard from '@/components/profile/RolesCard';
 import { useAuthRedirect } from '@/utils/AuthRedirect';
-import styles from '@/styles/pages/UserPage.module.css';
+import styles from '@/styles/pages/ProfilePage.module.css';
 
 export default function ProfilePage() {
   const { user,isAuthorized } = useAuthRedirect({
@@ -78,61 +78,44 @@ export default function ProfilePage() {
     setEditing(false);
   };
 
-  if (!isAuthorized) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return null;
-  }
+  if (!isAuthorized) return <div>Loading...</div>;
+  if (!user) return null;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.content}>
-        <div className={styles.card}>
-          <div className={styles.header}>
-            <h1 className={styles.title}>Profile</h1>
-            {!editing && (
-              <button onClick={() => setEditing(true)} className={styles.editButton}>
-                Edit Profile
-              </button>
-            )}
+    <main className={styles.profileMain}>
+      <section className={styles.profileCard}>
+        <header className={styles.profileHeader}>
+          <h1>Profile</h1>
+          {!editing && (
+            <button className={styles.editBtn} onClick={() => setEditing(true)}>
+              Edit Profile
+            </button>
+          )}
+        </header>
+        <ProfileHeader
+          user={user}
+          photoPreview={photoPreview}
+          editing={editing}
+          onPhotoChange={handlePhotoChange}
+          nameValue={formData.displayName}
+          onNameChange={handleDisplayNameChange}
+        />
+        <PersonalInfoCard
+          user={user}
+          editing={editing}
+        />
+        <NeiistRolesCard user={user} />
+        {editing && (
+          <div className={styles.actionRow}>
+            <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button className={styles.cancelBtn} onClick={handleCancel}>
+              Cancel
+            </button>
           </div>
-
-          <div className={styles.formContainer}>
-            <ProfileHeader
-              user={user}
-              photoPreview={photoPreview}
-              editing={editing}
-              onPhotoChange={handlePhotoChange}
-            />
-
-            <PersonalInfoCard
-              user={user}
-              editing={editing}
-              formData={formData}
-              onDisplayNameChange={handleDisplayNameChange}
-            />
-
-            <NeiistRolesCard user={user} />
-
-            {editing && (
-              <div className={styles.buttonContainer}>
-                <button 
-                  onClick={handleSave} 
-                  disabled={saving} 
-                  className={styles.saveButton}
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-                <button onClick={handleCancel} className={styles.cancelButton}>
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+        )}
+      </section>
+    </main>
   );
 }

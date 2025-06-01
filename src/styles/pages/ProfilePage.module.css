@@ -1,0 +1,82 @@
+.profileMain {
+  min-height: 85vh;
+  background: var(--bg-color);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2em 0;
+}
+
+.profileCard {
+  background: var(--bg-color);
+  border-radius: 1.25em;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+  padding: 2.5em 2em;
+  width: 100%;
+  margin: 0 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
+}
+
+.profileHeader h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--fg-color);
+  margin: 0;
+  font-family: inherit;
+}
+
+.editBtn {
+  background: var(--first-color);
+  color: var(--bg-color);
+  border: none;
+  border-radius: 0.5em;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.7em 1.5em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.editBtn:hover { background: var(--second-color); }
+
+.actionRow {
+  display: flex;
+  gap: 1em;
+  justify-content: flex-end;
+}
+
+.saveBtn {
+  background: var(--second-color);
+  color: var(--bg-color);
+  border: none;
+  border-radius: 0.5em;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.7em 1.5em;
+  cursor: pointer;
+}
+.saveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cancelBtn {
+  background: var(--third-color);
+  color: var(--fg-color);
+  border: none;
+  border-radius: 0.5em;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.7em 1.5em;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .profileCard { padding: 1em; }
+  .profileHeader h1 { font-size: 1.3rem; }
+}
