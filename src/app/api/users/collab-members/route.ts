@@ -21,7 +21,7 @@ export async function GET() {
 
   try {
     const { rows } = await db_query(`
-      SELECT DISTINCT u.istid
+      SELECT DISTINCT u.istid, u.name
       FROM public.users u
       INNER JOIN neiist.roles r ON u.istid = r.istid
       WHERE r.role_type IN ('member', 'collaborator', 'admin')

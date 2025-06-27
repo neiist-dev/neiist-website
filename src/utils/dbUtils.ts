@@ -17,7 +17,7 @@ export const getUser = async (istid: string): Promise<User | null> => {
         rows[0].photoData = photo;
       }
     }
-    
+
     return rows[0];
   } catch (error) {
     console.error('Error fetching user:', error);
