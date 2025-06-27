@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
 import { LuFileText } from "react-icons/lu";
 import { TbGavel } from "react-icons/tb";
-import { BiCog } from "react-icons/bi";
 import { ProfileItem } from "@/components/navbar/NavItem";
 import styles from "@/styles/components/navbar/ProfileMenu.module.css";
 import { summarizeName, statusToString } from "@/utils/profileUtils";
@@ -66,26 +65,26 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
         userData={userData}
       />
       <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}>
+        <div className={styles.divider}></div>
         <ProfileItem href="/profile" label="Profile" icon={GoPerson}/>
-        {userData.isAdmin || userData.isActiveLMeicStudent ||  userData.isCollab ? (
+        {userData.isAdmin || userData.isActiveTecnicoStudent ||  userData.isCollab ? (
           <>
             <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText}/>
           </>
         ) : null}
         {userData.isAdmin || userData.isGacMember ? (
           <>
-            <ProfileItem href="/mag" label="MAG" icon={TbGavel}/>
             <div className={styles.divider}></div>
+            <ProfileItem href="/mag" label="MAG" icon={TbGavel}/>
           </>
         ) : null}
         {userData.isAdmin || userData.isCollab ? (
           <>
-            <ProfileItem href="/collaborators" label="Colaborador(a)" icon={GoPeople}/>
-          </>
-        ) : null}
-        {userData.isAdmin ? (
-          <>
-            <ProfileItem href="/admin" label="Admin" icon={BiCog}/>
+            <ProfileItem 
+              href="/collaborators" 
+              label={userData.isAdmin ? "Manage Users" : "Collaborators"} 
+              icon={GoPeople}
+            />
           </>
         ) : null}
         <div className={styles.divider} />

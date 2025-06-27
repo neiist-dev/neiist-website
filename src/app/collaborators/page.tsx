@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { UserData } from '@/types/user';
 import UserManagementTable from '@/components/admin/UserManagementTable';
+import AdminUserModal from '@/components/admin/AdminDetailsModal';
 import CollaboratorDetailsModal from '@/components/admin/CollaboratorDetailsModal';
+import AddUserModal from '@/components/admin/AddUserModal';
 import { useAuthRedirect } from '@/utils/AuthRedirect';
 import styles from '@/styles/pages/CollabPage.module.css';
 
@@ -16,30 +18,27 @@ export default function CollaboratorsPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [usersLoading, setUsersLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const loadUsers = async () => {
+  const isAdmin = !!currentUser?.isAdmin;
+
+  const loadUsers = useCallback(async () => {
     try {
-      const response = await fetch('/api/users/collab-members', {
-        credentials: 'include'
-      });
-
+      const endpoint = isAdmin ? '/api/admin/users/all' : '/api/users/collab-members';
+      const response = await fetch(endpoint, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch users');
-
-      const usersData = await response.json();
-      setUsers(usersData);
+      setUsers(await response.json());
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
-      setUsersLoading(false);
+      setLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   useEffect(() => {
-    if (isAuthorized && currentUser) {
-      loadUsers();
-    }
-  }, [isAuthorized, currentUser]);
+    if (isAuthorized && currentUser) loadUsers();
+  }, [isAuthorized, currentUser, loadUsers]);
 
   const handleUserSelect = (user: UserData) => {
     setSelectedUser(user);
@@ -54,9 +53,7 @@ export default function CollaboratorsPage() {
         body: JSON.stringify(updatedUser),
         credentials: 'include'
       });
-
       if (!response.ok) throw new Error('Failed to update user');
-
       await loadUsers();
       setIsModalOpen(false);
       setSelectedUser(null);
@@ -66,29 +63,33 @@ export default function CollaboratorsPage() {
   };
 
   if (!isAuthorized || !currentUser) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingText}>
-          {!isAuthorized ? 'Loading...' : 'Access denied'}
-        </div>
-      </div>
-    );
+    return <div className={styles.loading}>Loading...</div>;
   }
-
-  const isAdmin = !!currentUser.isAdmin;
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Collaborators & Members</h1>
-        <div className={styles.userCount}>
-          {users.length} {users.length === 1 ? 'user' : 'users'}
+        <h1 className={styles.title}>
+          {isAdmin ? 'Manage All Users' : 'Collaborators & Members'}
+        </h1>
+        <div className={styles.headerInfo}>
+          {isAdmin && (
+            <button 
+              onClick={() => setIsAddModalOpen(true)} 
+              className={`${styles.headerButton} ${styles.addButton}`}
+            >
+              Add User
+            </button>
+          )}
+          <span className={`${styles.headerButton} ${styles.userCount}`}>
+            {users.length} {users.length === 1 ? 'user' : 'users'}
+          </span>
         </div>
       </div>
 
       <div className={styles.content}>
-        {usersLoading ? (
-          <div className={styles.loadingText}>Loading users...</div>
+        {loading ? (
+          <div className={styles.loading}>Loading users...</div>
         ) : (
           <UserManagementTable
             users={users}
@@ -100,15 +101,35 @@ export default function CollaboratorsPage() {
       </div>
 
       {isModalOpen && selectedUser && (
-        <CollaboratorDetailsModal
-          user={selectedUser}
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedUser(null);
-          }}
-          onUpdate={isAdmin ? handleUserUpdate : undefined}
-          isAdmin={isAdmin}
+        isAdmin ? (
+          <AdminUserModal
+            user={selectedUser}
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedUser(null);
+            }}
+            onUpdate={handleUserUpdate}
+          />
+        ) : (
+          <CollaboratorDetailsModal
+            user={selectedUser}
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedUser(null);
+            }}
+            onUpdate={undefined}
+            isAdmin={false}
+          />
+        )
+      )}
+
+      {isAdmin && (
+        <AddUserModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onUserAdded={loadUsers}
         />
       )}
     </div>

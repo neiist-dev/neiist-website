@@ -11,13 +11,7 @@ interface CollaboratorDetailsModalProps {
   isAdmin: boolean;
 }
 
-export default function CollaboratorDetailsModal({
-  user,
-  isOpen,
-  onClose,
-  onUpdate,
-  isAdmin,
-}: CollaboratorDetailsModalProps) {
+export default function CollaboratorDetailsModal({ user, isOpen, onClose, onUpdate, isAdmin }: CollaboratorDetailsModalProps) {
   const [editedUser, setEditedUser] = useState<UserData>(user);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -41,16 +35,12 @@ export default function CollaboratorDetailsModal({
   }, [user]);
 
   useEffect(() => {
-    if (isAdmin && isEditing) {
-      loadTeamRoles();
-    }
+    if (isAdmin && isEditing) loadTeamRoles();
   }, [isAdmin, isEditing]);
 
   const loadTeamRoles = async () => {
     try {
-      const response = await fetch('/api/admin/team-roles', {
-        credentials: 'include',
-      });
+      const response = await fetch('/api/admin/team-roles', { credentials: 'include' });
       if (response.ok) {
         const roles = await response.json();
         setAvailableTeamRoles(roles);
@@ -91,64 +81,68 @@ export default function CollaboratorDetailsModal({
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className={styles.close} aria-label="Close">×</button>
-        <h2 className={styles.heading}>
-          {isAdmin && isEditing ? 'Edit Team Roles' : 'Collaborator Details'}
-        </h2>
-        <div className={styles.user}>
+        <button onClick={onClose} className={styles.close}>×</button>
+        
+        <h2>{isAdmin && isEditing ? 'Edit Team Roles' : 'Collaborator Details'}</h2>
+        
+        <div className={styles.profile}>
           <Image
             src={editedUser.photo || '/default_user.png'}
             alt={editedUser.displayName}
             width={64}
             height={64}
+            className={styles.avatar}
           />
           <div>
             <h3>{editedUser.displayName}</h3>
             <p>@{editedUser.username}</p>
-            <span className={styles.badge}>{editedUser.status}</span>
+            <span className={styles.status}>{editedUser.status}</span>
           </div>
         </div>
-        <div className={styles.info}>
-          <label>Email</label>
-          <p>{editedUser.email || 'Not specified'}</p>
-          <label>Campus</label>
-          <p>{editedUser.campus || 'Not specified'}</p>
-          {editedUser.courses && editedUser.courses.length > 0 && (
-            <>
-              <label>Courses</label>
-              <span>
-                {editedUser.courses.map((course, i) => (
-                  <span key={i} className={styles.badge}>{course}</span>
-                ))}
-              </span>
-            </>
-          )}
-          <label>Team Roles</label>
-          {isAdmin && isEditing ? (
-            <span>
-              {availableTeamRoles.map(teamRole => (
-                <label key={teamRole.value} className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={userTeams.includes(teamRole.value)}
-                    onChange={() => handleTeamToggle(teamRole.value)}
-                  />
-                  {teamRole.label}
-                </label>
+
+        <label>Email</label>
+        <p>{editedUser.email || 'Not specified'}</p>
+        
+        <label>Campus</label>
+        <p>{editedUser.campus || 'Not specified'}</p>
+        
+        {editedUser.courses && editedUser.courses.length > 0 && (
+          <>
+            <label>Courses</label>
+            <div>
+              {editedUser.courses.map((course, i) => (
+                <span key={i} className={styles.tag}>{course}</span>
               ))}
-            </span>
-          ) : (
-            <span>
-              {userTeams.length > 0
-                ? userTeams.map((team, i) => (
-                    <span key={i} className={styles.badge}>
-                      {formatTeamName(team)}
-                    </span>
-                  ))
-                : <p>No team roles assigned</p>}
-            </span>
-          )}
-        </div>
+            </div>
+          </>
+        )}
+        
+        <label>Team Roles</label>
+        {isAdmin && isEditing ? (
+          <div>
+            {availableTeamRoles.map(teamRole => (
+              <label key={teamRole.value} className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={userTeams.includes(teamRole.value)}
+                  onChange={() => handleTeamToggle(teamRole.value)}
+                />
+                {teamRole.label}
+              </label>
+            ))}
+          </div>
+        ) : (
+          <div>
+            {userTeams.length > 0
+              ? userTeams.map((team, i) => (
+                  <span key={i} className={styles.tag}>
+                    {formatTeamName(team)}
+                  </span>
+                ))
+              : <p>No team roles assigned</p>}
+          </div>
+        )}
+
         {isAdmin && onUpdate && (
           <div className={styles.actions}>
             {isEditing ? (
@@ -156,12 +150,10 @@ export default function CollaboratorDetailsModal({
                 <button onClick={handleSave} disabled={saving}>
                   {saving ? 'Saving...' : 'Save'}
                 </button>
-                <button
-                  onClick={() => {
-                    setEditedUser({ ...user, teams: normalizeTeams(user.teams) });
-                    setIsEditing(false);
-                  }}
-                >
+                <button onClick={() => {
+                  setEditedUser({ ...user, teams: normalizeTeams(user.teams) });
+                  setIsEditing(false);
+                }}>
                   Cancel
                 </button>
               </>
