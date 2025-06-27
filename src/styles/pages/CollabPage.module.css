@@ -1,127 +1,79 @@
 .container {
-  margin: 1.5em 6em 0.25em 6em;
+ margin: 1.5rem;
   min-height: 100vh;
-}
-
-.content {
-  max-width: none;
-  margin: 0;
-  padding: 0;
-}
-
-.card {
-  background: linear-gradient(270deg, rgba(40, 99, 253, 0.075) 0%, rgba(36, 139, 227, 0.05) 100%), #FFFFFF;
-  border-radius: 25px;
-  box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
-  padding: 2em;
-  margin-bottom: 2em;
-  border: none;
 }
 
 .header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 2em;
-  padding-bottom: 1em;
-  border-bottom: 2px solid var(--first-color);
+  align-items: center;
+  margin-bottom: 0.6rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--second-color);
 }
 
 .title {
-  font-family: 'Secular One', sans-serif;
-  font-size: 3.25rem;
+  font-size: 2.5rem;
   font-weight: 400;
   color: var(--first-color);
   margin: 0;
 }
 
-.headerInfo {
-  display: flex;
-  align-items: center;
-  gap: 1em;
+.userCount {
+  background: var(--first-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-.userCount {
-  background-color: var(--first-color);
-  color: white;
-  padding: 0.5em 1.5em;
-  border-radius: 25px;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+.content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .loadingContainer {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 1.5em 6em 0.25em 6em;
+  min-height: 60vh;
 }
 
 .loadingText {
-  font-family: 'Secular One', sans-serif;
-  font-size: 2rem;
-  color: var(--first-color);
+  font-size: 1.5rem;
+  color: #6b7280;
   font-weight: 400;
 }
 
-.errorContainer {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 1.5em 6em 0.25em 6em;
-}
 
-.errorText {
-  font-family: 'Secular One', sans-serif;
-  font-size: 2rem;
-  color: #dc2626;
-  font-weight: 400;
-}
-
-/* Responsive design */
-@media (max-width: 1285px) {
+@media (max-width: 768px) {
   .container {
-    margin: 1em 3em 0.25em 3em;
-  }
-}
-
-@media (max-width: 930px) {
-  .container {
-    margin: 1em 2em 0.25em 2em;
-  }
-
-  .title {
-    font-size: 2.5rem;
+    padding: 1rem;
   }
 
   .header {
     flex-direction: column;
-    gap: 1em;
+    gap: 1rem;
     align-items: flex-start;
-  }
-}
-
-@media (max-width: 750px) {
-  .container {
-    margin: 1em 1em 0.25em 1em;
-  }
-
-  .card {
-    padding: 1.5em;
-    border-radius: 20px;
+    text-align: center;
   }
 
   .title {
     font-size: 2rem;
-    text-align: center;
   }
 
-  .header {
-    align-items: center;
-    text-align: center;
+  .userCount {
+    align-self: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.75rem;
   }
 }

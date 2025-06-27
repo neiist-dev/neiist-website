@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({ displayName: '', photo: '' });
   const [saving, setSaving] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -26,11 +27,15 @@ export default function ProfilePage() {
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setImageError(''); // Clear any previous error
+    
     if (!file) return;
+    
     if (file.size > 5 * 1024 * 1024 || !file.type.startsWith('image/')) {
-      console.error('Invalid image');
+      setImageError('Invalid image. Please select an image file under 5MB.');
       return;
     }
+    
     const reader = new FileReader();
     reader.onload = () => {
       setPhotoPreview(reader.result as string);
@@ -75,6 +80,7 @@ export default function ProfilePage() {
   const handleCancel = () => {
     setFormData({ displayName: user?.displayName || '', photo: user?.photo || '' });
     setPhotoPreview(user?.photo || null);
+    setImageError('');
     setEditing(false);
   };
 
@@ -100,6 +106,11 @@ export default function ProfilePage() {
           nameValue={formData.displayName}
           onNameChange={handleDisplayNameChange}
         />
+        {imageError && (
+          <p className={styles.imageError}>
+            {imageError}
+          </p>
+        )}
         <PersonalInfoCard
           user={user}
           editing={editing}

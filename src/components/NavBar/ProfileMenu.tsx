@@ -66,9 +66,8 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
         userData={userData}
       />
       <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}>
-        <div className={styles.divider} />
         <ProfileItem href="/profile" label="Profile" icon={GoPerson}/>
-        {userData.isAdmin || userData.isActiveLMeicStudent ? (
+        {userData.isAdmin || userData.isActiveLMeicStudent ||  userData.isCollab ? (
           <>
             <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText}/>
           </>
@@ -81,7 +80,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
         ) : null}
         {userData.isAdmin || userData.isCollab ? (
           <>
-            <ProfileItem href="/collab" label="Colaborador(a)" icon={GoPeople}/>
+            <ProfileItem href="/collaborators" label="Colaborador(a)" icon={GoPeople}/>
           </>
         ) : null}
         {userData.isAdmin ? (

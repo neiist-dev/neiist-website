@@ -63,7 +63,11 @@
   padding: 0.7em 1.5em;
   cursor: pointer;
 }
-.saveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .cancelBtn {
   background: var(--third-color);
@@ -74,6 +78,12 @@
   font-size: 1rem;
   padding: 0.7em 1.5em;
   cursor: pointer;
+}
+
+.imageError {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.01rem;
 }
 
 @media (max-width: 700px) {
