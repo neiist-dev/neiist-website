@@ -1,35 +1,20 @@
-.container {
-  width: 100%;
-}
-
 .searchContainer {
-  display: flex;
-  margin: 1.2rem;
+  padding: 1.2rem;
 }
 
 .searchInput {
   width: 100%;
   padding: 1rem 1.5rem;
-  border: 1px solid var(--bg-color);
-  border-radius: 100px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  font-weight: bold;
+  border: 1px solid #e5e7eb;
+  border-radius: 2em;
   background: white;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: border-color 0.2s;
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--first-color);
-  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
-}
-
-.tableWrapper {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border: 1px solid #f3f4f6;
 }
 
 .table {
@@ -44,26 +29,19 @@
   font-weight: 600;
   color: var(--second-color);
   border-bottom: 2px solid #e2e8f0;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .table td {
   padding: 1rem;
   border-bottom: 1px solid #f3f4f6;
-  vertical-align: middle;
-  font-size: 0.9rem;
 }
 
 .sortable {
   cursor: pointer;
-  user-select: none;
-  transition: background 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 
 .sortable:hover {
-  background: var(--bg-color);
   color: var(--first-color);
 }
 
@@ -77,8 +55,6 @@
 
 .userPhoto {
   border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
   border: 2px solid #e5e7eb;
   width: 40px;
   height: 40px;
@@ -91,7 +67,6 @@
 
 .username {
   color: var(--first-color);
-  font-size: 0.8rem;
   font-weight: 500;
 }
 
@@ -101,13 +76,10 @@
 
 .status {
   padding: 0.4rem 1rem;
-  border-radius: 20px;
+  border-radius: 2em;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  border: 1px solid #e5e7eb;
 }
 
 .status.admin {
@@ -140,10 +112,9 @@
   background: var(--first-color);
   color: white;
   padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  border-radius: 2em;
   font-size: 0.75rem;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(37,99,235,0.15);
 }
 
 .actionButton {
@@ -151,17 +122,14 @@
   color: white;
   border: none;
   padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  border-radius: 2em;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(37,99,235,0.15);
+  transition: background 0.2s;
 }
 
 .actionButton:hover {
   background: var(--second-color);
-  box-shadow: 0 2px 8px rgba(37,99,235,0.20);
 }
 
 .noResults {
@@ -169,32 +137,9 @@
   padding: 3rem;
   color: #6b7280;
   font-style: italic;
-  font-size: 1.1rem;
 }
 
 @media (max-width: 768px) {
-  .searchContainer {
-    margin-bottom: 1.5rem;
-  }
-
-  .searchInput {
-    padding: 0.875rem 1.25rem;
-    font-size: 0.875rem;
-  }
-
-  .table th,
-  .table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.75rem;
-  }
-
-  .userPhoto {
-    width: 32px;
-    height: 32px;
-  }
-
-  .actionButton {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.75rem;
-  }
+  .table th, .table td { padding: 0.75rem 0.5rem; font-size: 0.875rem; }
+  .userPhoto { width: 32px; height: 32px; }
 }

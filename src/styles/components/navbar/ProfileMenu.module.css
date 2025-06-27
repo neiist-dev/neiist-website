@@ -9,13 +9,22 @@
   gap: 0.75rem;
   cursor: pointer;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: background 0.15s;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.15s;
   min-width: 180px;
+  position: relative;
+  z-index: 1001;
 }
 
 .userContainer:hover {
   background: rgba(0, 0, 0, 0.05);
+}
+
+/* When dropdown is active, connect the user container */
+.profileContainer:has(.profileDropdown.active) .userContainer {
+  background: var(--bg-color);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.10);
 }
 
 .userPhoto {
@@ -44,7 +53,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  left: auto;
+  left: 0;
   background: var(--bg-color);
   box-shadow: 0 6px 16px -4px rgba(0,0,0,0.10), 0 1.5px 0 rgba(0,0,0,0.03);
   border-radius: 0 0 12px 12px;
@@ -55,8 +64,9 @@
   width: max-content;
   max-width: 320px;
   overflow-x: hidden;
-  z-index: 1000;
+  z-index: 1001;
   animation: slideIn 0.2s ease;
+  margin-top: -1px;
 }
 
 .profileDropdown.active {
@@ -95,6 +105,12 @@
 }
 
 @media (max-width: 767px) {
+  .profileContainer:has(.profileDropdown.active) .userContainer {
+    background: none;
+    box-shadow: none;
+    border-radius: 8px;
+  }
+
   .profileDropdown {
     position: fixed;
     top: var(--navbar-height, 4rem);
@@ -106,7 +122,9 @@
     border-radius: 0 0 12px 12px;
     padding: 1rem 0.5rem;
     animation: slideInMobile 0.2s ease;
+    margin-top: 0;
   }
+
   .userDetails {
     display: none;
   }
@@ -116,6 +134,7 @@
   from { transform: translateY(-10%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
 @keyframes slideInMobile {
   from { transform: translateY(-10%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
