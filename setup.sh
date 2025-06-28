@@ -51,7 +51,8 @@ if [ -f ".env" ]; then
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
 FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
-DATABASE_URL=postgresql://admin:admin@localhost:5432/neiist
+# This username and password must match the ones created in schema.sql
+DATABASE_URL=postgresql://neiist_app_user:neiist_app_password@localhost:5432/neiist
 EOF
     echo "✅ .env file created successfully."
   fi
@@ -61,7 +62,8 @@ else
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
 FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
-DATABASE_URL=postgresql://admin:admin@localhost:5432/neiist
+# This username and password must match the ones created in schema.sql
+DATABASE_URL=postgresql://neiist_app_user:neiist_app_password@localhost:5432/neiist
 EOF
   echo "✅ .env file created successfully."
 fi
@@ -112,8 +114,8 @@ echo "2. Run 'yarn dev' to start the development server."
 echo 
 if [ "$override" = "y" ]; then
   echo "📝 Note: Your database credentials are:"
-  echo "   - user: admin"
-  echo "   - password: admin"
+  echo "   - user: neiist_app_user"
+  echo "   - password: neiist_app_password"
   echo "   - database: neiist"
   echo
 fi

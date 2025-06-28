@@ -1,163 +1,271 @@
+-- TODO: Add shop and blog tables. And getter functions.
+
+-- SCHEMA
 CREATE SCHEMA IF NOT EXISTS neiist;
 
-CREATE TYPE neiist.team_role_enum AS ENUM (
-  'COOR-DEV',
-  'DEV',
-  'COOR-FOTO',
-  'FOTO',
-  'COOR-MARKETING',
-  'MARKETING',
-  'COOR-EVENTS',
-  'EVENTS',
-  'COOR-SOCIAL',
-  'SOCIAL',
-  'COOR-LOGISTICS',
-  'LOGISTICS'
+-- ROLES
+CREATE ROLE neiist_app_user WITH LOGIN PASSWORD 'neiist_app_user_password';
+REVOKE ALL ON ALL TABLES IN SCHEMA neiist FROM neiist_app_user;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA neiist FROM neiist_app_user;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA neiist TO neiist_app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT EXECUTE ON FUNCTIONS TO neiist_app_user;
+
+-- ENUM TYPES
+CREATE TYPE neiist.user_access_enum AS ENUM (
+    'admin',
+    'coordinator',
+    'member',
 );
 
--- Table: public.users --
-CREATE TABLE public.users (
-  istid VARCHAR(10) PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  phone VARCHAR(15),
-  courses TEXT[],
-  campus CHAR(15),
-  photo OID
+-- USERS TABLE
+CREATE TABLE neiist.users (
+    istid VARCHAR(10) PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    phone VARCHAR(15),
+    courses TEXT[],
+    campus TEXT,
+    photo OID
 );
 
--- Table: neiist.roles --
-CREATE TABLE neiist.roles (
-  istid VARCHAR(10) REFERENCES public.users(istid),
-  role_type TEXT NOT NULL CHECK (role_type IN ('member', 'collaborator', 'admin')),
-  
-  -- Member-specific fields --
-  register_date DATE,
-  elector_date DATE,
-  start_renewal_date DATE,
-  end_renewal_date DATE,
-  renewal_notification BOOLEAN DEFAULT FALSE,
-  
-  -- Collaborator-specific fields --
-  teams neiist.team_role_enum[],
-  position TEXT,
-  from_date DATE,
-  to_date DATE,
-  
-  PRIMARY KEY (istid, role_type)
+-- DEPARTMENTS TABLE
+CREATE TABLE neiist.departments (
+    name VARCHAR(30) PRIMARY KEY,
+    active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE INDEX idx_neiist_roles_type ON neiist.roles (role_type);
-CREATE INDEX idx_neiist_roles_dates ON neiist.roles (from_date, to_date) WHERE role_type = 'collaborator';
+-- TEAMS TABLE
+CREATE TABLE neiist.teams (
+   name VARCHAR(30) PRIMARY KEY REFERENCES neiist.departments(name),
+   description TEXT
+);
 
--- Function to get available team roles --
-CREATE OR REPLACE FUNCTION neiist.get_available_team_roles()
-RETURNS neiist.team_role_enum[] AS $$
+-- ADMINISTRATION BODIES TABLE
+CREATE TABLE neiist.admin_bodies (
+    name VARCHAR(30) PRIMARY KEY REFERENCES neiist.departments(name)
+);
+
+-- VALID (DEPARTMENT | ROLE) COMBINATIONS TABLE
+CREATE TABLE neiist.valid_department_roles (
+    department_name VARCHAR(30) REFERENCES neiist.departments(name),
+    role_name VARCHAR(40) NOT NULL,
+    PRIMARY KEY (department_name, role_name),
+    access neiist.user_access_enum NOT NULL DEFAULT 'member',
+    active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- MEMBERSHIP TABLE
+CREATE TABLE neiist.membership (
+    user_istid VARCHAR(10) REFERENCES neiist.users(istid),
+    department_name VARCHAR(30) NOT NULL,
+    role_name VARCHAR(40) NOT NULL,
+    from_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    to_date DATE DEFAULT NULL,
+    FOREIGN KEY (department_name, role_name)
+        REFERENCES neiist.valid_department_roles(department_name, role_name),
+    CONSTRAINT valid_member_dates CHECK (to_date IS NULL OR to_date > from_date),
+    PRIMARY KEY (user_istid, department_name, role_name)
+);
+
+-- USER ACCESS ROLES TABLE
+CREATE TABLE neiist.user_access_roles (
+    user_istid VARCHAR(10) REFERENCES neiist.users(istid),
+    access neiist.user_access_enum,
+    PRIMARY KEY (user_istid, access)
+);
+
+-- FUNCTIONS
+
+-- Add user
+CREATE OR REPLACE FUNCTION neiist.add_user(
+    u_istid VARCHAR(10),
+    u_name TEXT,
+    u_email TEXT,
+    u_phone VARCHAR(15),
+    u_courses TEXT[],
+    u_campus TEXT,
+    u_photo OID
+) RETURNS VOID AS $$
 BEGIN
-  RETURN ARRAY(SELECT unnest(enum_range(NULL::neiist.team_role_enum)));
+    INSERT INTO neiist.users (istid, name, email, phone, courses, campus, photo)
+    VALUES (u_istid, u_name, u_email, u_phone, u_courses, u_campus, u_photo);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to add new team role enum value --
-CREATE OR REPLACE FUNCTION neiist.add_team_role(new_role TEXT)
-RETURNS BOOLEAN AS $$
+-- Add department
+CREATE OR REPLACE FUNCTION neiist.add_department(
+    u_name VARCHAR(30)
+) RETURNS VOID AS $$
 BEGIN
-  EXECUTE format('ALTER TYPE neiist.team_role_enum ADD VALUE %L', new_role);
-  RETURN TRUE;
-EXCEPTION
-  WHEN duplicate_object THEN
-    RETURN FALSE;
-  WHEN others THEN
-    RAISE EXCEPTION 'Error adding team role: %', SQLERRM;
-END;
-$$ LANGUAGE plpgsql;
-
--- Function to check if a user is admin
-CREATE OR REPLACE FUNCTION neiist.is_admin(user_istid VARCHAR(10))
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN EXISTS (
-        SELECT 1 FROM neiist.roles 
-        WHERE istid = user_istid AND role_type = 'admin'
-    );
-END;
-$$ LANGUAGE plpgsql;
-
--- Function to add an admin user
-CREATE OR REPLACE FUNCTION neiist.add_admin_user(user_istid VARCHAR(10))
-RETURNS BOOLEAN AS $$
-BEGIN
-    -- Check if user exists in users table
-    IF NOT EXISTS (SELECT 1 FROM public.users WHERE istid = user_istid) THEN
-        RAISE EXCEPTION 'User % does not exist', user_istid;
+    IF EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_name) THEN
+        RAISE EXCEPTION 'O departamento "%" já existe.', u_name;
     END IF;
-    
-    -- Insert admin role (ON CONFLICT DO NOTHING to handle duplicates)
-    INSERT INTO neiist.roles (istid, role_type)
-    VALUES (user_istid, 'admin')
-    ON CONFLICT (istid, role_type) DO NOTHING;
-    
-    RETURN TRUE;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN FALSE;
+    INSERT INTO neiist.departments (name) VALUES (u_name);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to remove an admin user
-CREATE OR REPLACE FUNCTION neiist.remove_admin_user(user_istid VARCHAR(10))
-RETURNS BOOLEAN AS $$
+-- Remove department
+CREATE OR REPLACE FUNCTION neiist.remove_department(
+    u_name VARCHAR(30)
+) RETURNS VOID AS $$
 BEGIN
-    -- Remove admin role from roles table
-    DELETE FROM neiist.roles 
-    WHERE istid = user_istid AND role_type = 'admin';
-    
-    RETURN TRUE;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN FALSE;
+    IF NOT EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_name)
+    THEN
+        RAISE EXCEPTION 'O departamento "%" não existe.', u_name;
+    END IF;
+    UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
+    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+    UPDATE neiist.membership SET active = FALSE WHERE department_name = u_name;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to get all admin users
-CREATE OR REPLACE FUNCTION neiist.get_admin_users()
-RETURNS TABLE (
-    istid VARCHAR(10),
-    name TEXT,
-    email TEXT
-) AS $$
+-- Add team
+CREATE OR REPLACE FUNCTION neiist.add_team(
+    u_name VARCHAR(30),
+    u_description TEXT
+) RETURNS VOID AS $$
 BEGIN
-    RETURN QUERY
-    SELECT 
-        u.istid,
-        u.name,
-        u.email
-    FROM neiist.roles r
-    JOIN public.users u ON r.istid = u.istid
-    WHERE r.role_type = 'admin'
-    ORDER BY u.name;
+    IF EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name) THEN
+        RAISE EXCEPTION 'A equipa "%" já existe.', u_name;
+    END IF;
+    INSERT INTO neiist.teams (name, description) VALUES (u_name, u_description);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to get team roles as formatted objects for API
-CREATE OR REPLACE FUNCTION neiist.get_team_roles_formatted()
-RETURNS TABLE (
-    value TEXT,
-    label TEXT,
-    is_coordinator BOOLEAN
-) AS $$
+-- Remove team
+CREATE OR REPLACE FUNCTION neiist.remove_team(
+    u_name VARCHAR(30)
+) RETURNS VOID AS $$
 BEGIN
-    RETURN QUERY
-    SELECT 
-        role_enum::TEXT as value,
-        CASE 
-            WHEN role_enum::TEXT LIKE 'COOR-%' THEN 
-                'Coordinator - ' || REPLACE(role_enum::TEXT, 'COOR-', '')
-            ELSE 
-                role_enum::TEXT
-        END as label,
-        role_enum::TEXT LIKE 'COOR-%' as is_coordinator
-    FROM unnest(enum_range(NULL::neiist.team_role_enum)) as role_enum
-    ORDER BY is_coordinator DESC, role_enum::TEXT;
+    IF NOT EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name)
+    THEN
+        RAISE EXCEPTION 'A equipa "%" não existe.', u_name;
+    END IF;
+    UPDATE neiist.teams SET active = FALSE WHERE name = u_name;
+    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+    UPDATE neiist.membership SET active = FALSE WHERE department_name = u_name;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add administration body
+CREATE OR REPLACE FUNCTION neiist.add_admin_body(
+    u_name VARCHAR(30)
+) RETURNS VOID AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name)
+    THEN
+        RAISE EXCEPTION 'O órgão de administração "%" já existe.', u_name;
+    END IF;
+    INSERT INTO neiist.admin_bodies (name) VALUES (u_name);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Remove administration body
+CREATE OR REPLACE FUNCTION neiist.remove_admin_body(
+    u_name VARCHAR(30)
+) RETURNS VOID AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name
+    ) THEN
+        RAISE EXCEPTION 'O órgão de administração "%" não existe.', u_name;
+    END IF;
+    UPDATE neiist.admin_bodies SET active = FALSE WHERE name = u_name;
+    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+    UPDATE neiist.membership SET active = FALSE WHERE department_name = u_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add valid department role
+CREATE OR REPLACE FUNCTION neiist.add_valid_department_role(
+    u_department_name VARCHAR(30),
+    u_role_name VARCHAR(40),
+    u_access neiist.user_access_enum DEFAULT 'member'
+) RETURNS VOID AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM neiist.valid_department_roles
+               WHERE department_name = u_department_name
+                 AND role_name = u_role_name
+                 AND access = u_access) THEN
+        RAISE EXCEPTION 'A posição "%" para o departamento "%" já existe.', u_role_name, u_department_name;
+    END IF;
+    INSERT INTO neiist.valid_department_roles (department_name, role_name, access)
+    VALUES (u_department_name, u_role_name, u_access);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Remove valid department role
+CREATE OR REPLACE FUNCTION neiist.remove_valid_department_role(
+    u_department_name VARCHAR(30),
+    u_role_name VARCHAR(40)
+) RETURNS VOID AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM neiist.valid_department_roles
+                   WHERE department_name = u_department_name
+                     AND role_name = u_role_name) THEN
+        RAISE EXCEPTION 'A posição "%" para o departamento "%" não existe.', u_role_name, u_department_name;
+    END IF;
+    UPDATE neiist.valid_department_roles SET active = FALSE
+    WHERE department_name = u_department_name AND role_name = u_role_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add team member
+CREATE OR REPLACE FUNCTION neiist.add_team_member(
+    u_user_istid VARCHAR(10),
+    u_department_name VARCHAR(30),
+    u_role_name VARCHAR(40)
+) RETURNS TEXT AS $$
+DECLARE
+    v_role_access neiist.user_access_enum;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = u_user_istid) THEN
+        RAISE EXCEPTION 'O utilizador "%" não existe.', u_user_istid;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM neiist.valid_department_roles
+        WHERE department_name = u_department_name
+        AND role_name = u_role_name) THEN
+        RAISE EXCEPTION 'A posição "%" para o departamento "%" não existe.', u_role_name, u_department_name;
+    END IF;
+    INSERT INTO neiist.membership (user_istid, department_name, role_name)
+    VALUES (u_user_istid, u_department_name, u_role_name);
+    SELECT access INTO v_role_access FROM neiist.valid_department_roles
+    WHERE department_name = u_department_name AND role_name = u_role_name;
+    INSERT INTO neiist.user_access_roles (user_istid, access) VALUES (u_user_istid, v_role_access)
+    ON CONFLICT DO NOTHING;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Remove team member
+CREATE OR REPLACE FUNCTION neiist.remove_team_member(
+    u_user_istid VARCHAR(10),
+    u_department_name VARCHAR(30),
+    u_role_name VARCHAR(40)
+) RETURNS VOID AS $$
+DECLARE current_access neiist.user_access_enum;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM neiist.membership
+        WHERE user_istid = u_user_istid    
+        AND department_name = u_department_name
+        AND role_name = u_role_name) THEN
+        RAISE EXCEPTION 'O membro da equipe "%" não existe.', u_user_istid;
+    END IF;
+    UPDATE neiist.membership SET active = FALSE, to_date = CURRENT_DATE WHERE user_istid = u_user_istid
+      AND department_name = u_department_name
+      AND role_name = u_role_name;
+
+    SELECT access INTO current_access FROM neiist.valid_department_roles
+        WHERE department_name = u_department_name
+        AND role_name = u_role_name;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM neiist.membership m
+        JOIN neiist.valid_department_roles vdr
+            ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
+        WHERE m.user_istid = u_user_istid
+          AND vdr.access = current_access
+          AND NOT (m.department_name = u_department_name AND m.role_name = u_role_name)
+    ) THEN
+        DELETE FROM neiist.user_access_roles WHERE user_istid = u_user_istid AND access = current_access;
+    END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
