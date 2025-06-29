@@ -18,7 +18,7 @@
 		"express-session": "^1.18.1",
 		"htmlparser2": "10.0.0",
 		"morgan": "1.10.0",
-		"natural": "8.0.1",
+		"natural": "8.1.0",
 		"pg": "8.15.6",
 		"pg-error-enum": "^1.0.2"
 	},
