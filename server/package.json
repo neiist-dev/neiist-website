@@ -17,7 +17,7 @@
 		"express-fileupload": "^1.4.0",
 		"express-session": "^1.18.1",
 		"htmlparser2": "10.0.0",
-		"morgan": "1.10.0",
+		"morgan": "1.10.1",
 		"natural": "8.1.0",
 		"pg": "8.16.3",
 		"pg-error-enum": "^1.0.2"
