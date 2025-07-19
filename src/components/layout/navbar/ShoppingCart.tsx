@@ -1,5 +1,5 @@
 import { FaShoppingCart } from "react-icons/fa";
-import styles from "@/styles/components/navbar/ShoppingCart.module.css";
+import styles from "@/styles/components/layout/navbar/ShoppingCart.module.css";
 
 const ShoppingCart = () => {
   return (

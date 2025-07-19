@@ -3,17 +3,17 @@ import React, { useState, useRef, useEffect } from "react";
 import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
 import { LuFileText } from "react-icons/lu";
 import { TbGavel } from "react-icons/tb";
-import { ProfileItem } from "@/components/NavBar/NavItem";
-import styles from "@/styles/components/navbar/ProfileMenu.module.css";
-import { summarizeName, statusToString } from "@/utils/profileUtils";
-import { UserData } from "@/types/user";
+import { UserMenuItem } from "@/components/layout/navbar/NavItem";
+import styles from "@/styles/components/layout/navbar/ProfileMenu.module.css";
+import { User, UserRole } from "@/types/user";
 
-interface ProfileMenuProps {
-  userData: UserData;
+interface UserMenuProps {
+  userData: User;
   logout: () => void;
 }
 
-const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userData: UserData }> = ({ isOpen, toggleMenu, userData }) => (
+const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userData: User }> = ({ isOpen, toggleMenu, userData }) => (
+  console.log(userData.photo),
   <div
     className={styles.userContainer}
     onClick={toggleMenu}
@@ -27,20 +27,20 @@ const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userDat
     }}
   >
     <Image
-      src={userData.photo || "/default-user.png"}
-      alt="User Photo"
-      width={32}
-      height={32}
-      className={styles.userPhoto}
+      src={userData.photo || '/default-avatar.png'}
+      alt="User photo"
+      width={40}
+      height={40}
+      className="rounded-full"
     />
     <div className={styles.userDetails}>
-      <span className={styles.userName}>{summarizeName(userData.displayName)}</span>
-      <span className={styles.userStatus}>{statusToString(userData.status)}</span>
+      <span className={styles.userName}>{userData.name}</span>
+      <span className={styles.userStatus}>{userData.roles}</span>
     </div>
   </div>
 );
 
-const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -57,6 +57,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
     };
   }, []);
 
+  const isAdmin = userData.roles.includes(UserRole.ADMIN);
+  const isCoordinator = userData.roles.includes(UserRole.COORDINATOR);
+  const isMember = userData.roles.includes(UserRole.MEMBER);
+
   return (
     <div className={styles.profileContainer} ref={menuRef}>
       <UserContainer
@@ -66,27 +70,27 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
       />
       <div className={`${styles.profileDropdown} ${isOpen ? styles.active : ""}`}>
         <div className={styles.divider}></div>
-        <ProfileItem href="/profile" label="Profile" icon={GoPerson}/>
-        {userData.isAdmin || userData.isActiveTecnicoStudent ||  userData.isCollab ? (
+        <UserMenuItem href="/profile" label="Profile" icon={GoPerson}/>
+        {(isAdmin || isCoordinator || isMember) && (
           <>
-            <ProfileItem href="/thesismaster" label="Thesis Master" icon={LuFileText}/>
+            <UserMenuItem href="/thesismaster" label="Thesis Master" icon={LuFileText}/>
           </>
-        ) : null}
-        {userData.isAdmin || userData.isGacMember ? (
+        )}
+        {isAdmin && (
           <>
             <div className={styles.divider}></div>
-            <ProfileItem href="/mag" label="MAG" icon={TbGavel}/>
+            <UserMenuItem href="/mag" label="MAG" icon={TbGavel}/>
           </>
-        ) : null}
-        {userData.isAdmin || userData.isCollab ? (
+        )}
+        {(isAdmin || isCoordinator) && (
           <>
-            <ProfileItem 
+            <UserMenuItem 
               href="/collaborators" 
-              label={userData.isAdmin ? "Manage Users" : "Collaborators"} 
+              label={isAdmin ? "Manage Users" : "Collaborators"} 
               icon={GoPeople}
             />
           </>
-        ) : null}
+        )}
         <div className={styles.divider} />
         <div className={styles.logoutButtom} onClick={() => { setIsOpen(false); logout(); }}>
           <GoSignOut/> Log out
@@ -96,4 +100,4 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ userData, logout }) => {
   );
 };
 
-export default ProfileMenu;
+export default UserMenu;

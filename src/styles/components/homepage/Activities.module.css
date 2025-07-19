@@ -30,7 +30,7 @@
   margin: 0 auto;
   align-items: center;
   justify-content: center;
-  background-color: var(--first-color);
+  background-color: var(--primary-colour);
   overflow: hidden;
   margin-right: 10px
 }

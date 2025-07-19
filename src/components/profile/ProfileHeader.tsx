@@ -31,7 +31,7 @@ export default function ProfileHeader({
     <div className={styles.profileSection}>
       <div className={styles.photoContainer}>
         <Image
-          src={photoPreview || user.photo || '/default_user.png'}
+          src={photoPreview || user.photo || '/default-profile.png'}
           alt="Profile"
           className={styles.profileImage}
           width={120}

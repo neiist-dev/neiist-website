@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaYoutube, FaLinkedin, FaEnvelope, FaGithub } from "react-icons/fa";
 import { SiLinktree } from "react-icons/si";
-import styles from "@/styles/components/Footer.module.css";
+import styles from "@/styles/components/layout/Footer.module.css";
 
 export default function Footer() {
   const socialIcons = [

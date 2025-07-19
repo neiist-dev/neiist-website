@@ -1,6 +1,6 @@
 .profileMain {
   min-height: 85vh;
-  background: var(--bg-color);
+  background: var(--background-colour);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -8,7 +8,7 @@
 }
 
 .profileCard {
-  background: var(--bg-color);
+  background: var(--background-colour);
   border-radius: 1.25em;
   box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
   padding: 2.5em 2em;
@@ -29,14 +29,14 @@
 .profileHeader h1 {
   font-size: 2.2rem;
   font-weight: 700;
-  color: var(--fg-color);
+  color: var(--foreground-colour);
   margin: 0;
   font-family: inherit;
 }
 
 .editBtn {
-  background: var(--first-color);
-  color: var(--bg-color);
+  background: var(--primary-colour);
+  color: var(--background-colour);
   border: none;
   border-radius: 0.5em;
   font-weight: 700;
@@ -45,7 +45,7 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.editBtn:hover { background: var(--second-color); }
+.editBtn:hover { background: var(--secondary-colour); }
 
 .actionRow {
   display: flex;
@@ -54,8 +54,8 @@
 }
 
 .saveBtn {
-  background: var(--second-color);
-  color: var(--bg-color);
+  background: var(--secondary-colour);
+  color: var(--background-colour);
   border: none;
   border-radius: 0.5em;
   font-weight: 700;
@@ -70,8 +70,8 @@
 }
 
 .cancelBtn {
-  background: var(--third-color);
-  color: var(--fg-color);
+  background: var(--tertiary-colour);
+  color: var(--foreground-colour);
   border: none;
   border-radius: 0.5em;
   font-weight: 700;

@@ -33,11 +33,12 @@
   .title {
     text-align: center;
   }
-  
+
   .row {
     flex-direction: column;
     gap: 2em;
   }
+
   .logo {
     width: 40vw;
   }

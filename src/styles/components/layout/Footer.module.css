@@ -24,7 +24,7 @@
 }
 
 .link:hover {
-  color: var(--second-color);
+  color: var(--secondary-colour);
   transition: color 0.3s ease;
 }
 
@@ -33,7 +33,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 1rem;
-  border-top: 1px solid rgba(var(--fg-color-rgb), 0.1);
+  border-top: 1px solid rgba(var(--foreground-colour-rgb), 0.1);
 }
 
 .socialIcons {
