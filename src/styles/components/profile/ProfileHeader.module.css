@@ -17,7 +17,7 @@
   height: 8em;
   border-radius: 50%;
   object-fit: cover;
-  border: 2.5px solid var(--first-color);
+  border: 2.5px solid var(--primary-colour);
 }
 
 .photoIconBtn {
@@ -25,7 +25,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--first-color);
+  background: var(--primary-colour);
   color: #fff;
   border: none;
   border-radius: 50%;
@@ -39,7 +39,7 @@
   z-index: 2;
 }
 .photoIconBtn:hover {
-  background: var(--second-color);
+  background: var(--secondary-colour);
   opacity: 1;
 }
 
@@ -50,7 +50,7 @@
 .userInfo h2 {
   font-size: 2rem;
   font-weight: 600;
-  color: var(--fg-color);
+  color: var(--foreground-colour);
   margin: 0 0 0.5rem 0;
 }
 
@@ -60,13 +60,13 @@
 }
 
 .username {
-  color: var(--first-color);
+  color: var(--primary-colour);
   font-weight: 500;
 }
 
 .status {
   font-size: 1rem;
-  color: var(--second-color);
+  color: var(--secondary-colour);
   text-transform: capitalize;
   font-weight: 500;
 }
@@ -74,10 +74,10 @@
 .input {
   font-size: 2rem;
   font-weight: 600;
-  color: var(--fg-color, #222);
+  color: var(--foreground-colour, #222);
   margin: 0 0 0.5rem 0;
   border: none;
-  border-bottom: 2px solid var(--first-color);
+  border-bottom: 2px solid var(--primary-colour);
   background: transparent;
   outline: none;
   width: 100%;
@@ -86,7 +86,7 @@
 }
 
 .input:focus {
-  border-bottom: 2.5px solid var(--second-color);
+  border-bottom: 2.5px solid var(--secondary-colour);
 }
 
 @media (max-width: 750px) {

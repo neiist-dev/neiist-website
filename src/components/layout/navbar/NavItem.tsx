@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { IconType } from "react-icons";
-import styles from "@/styles/components/navbar/NavItem.module.css";
+import styles from "@/styles/components/layout/navbar/NavItem.module.css";
 
 interface NavItemProps {
   href: string;
@@ -16,7 +16,7 @@ const NavItem: React.FC<NavItemProps> = ({ href, label }) => {
   );
 };
 
-interface ProfileItemProps {
+interface UserMenuItemProps {
   href: string;
   label: React.ReactNode;
   icon?: IconType;
@@ -24,7 +24,7 @@ interface ProfileItemProps {
   className?: string;
 }
 
-const ProfileItem: React.FC<ProfileItemProps> = ({ href, label, icon: Icon, onClick, className }) => {
+const UserMenuItem: React.FC<UserMenuItemProps> = ({ href, label, icon: Icon, onClick, className }) => {
   return (
     <div>
       <Link href={href} className={`${styles.menuItem} ${className || ""}`} onClick={onClick}>
@@ -35,4 +35,4 @@ const ProfileItem: React.FC<ProfileItemProps> = ({ href, label, icon: Icon, onCl
   );
 };
 
-export { NavItem, ProfileItem };
+export { NavItem, UserMenuItem };

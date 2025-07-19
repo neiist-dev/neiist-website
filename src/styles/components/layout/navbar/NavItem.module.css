@@ -1,23 +1,26 @@
 .navLink {
-  text-decoration: none;
-  border: none;
-  color: var(--fg-color);
+  color: var(--foreground-colour);
   font-weight: 600;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
   transition: color 0.3s ease;
 }
 
 .navLink:hover {
-  color: var(--first-color);
+  background-color: rgba(0, 0, 0, 0.05);
 }
+
+.dark .navLink:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 
 .menuItem {
   display: flex;
-  text-decoration: none;
-  border: none;
+  color: var(--foreground-colour);
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  color: var(--fg-color);
   transition: background-color 0.3s ease;
 }
 

@@ -1,7 +1,7 @@
 .cartButton {
   background: none;
   border: none;
-  color: var(--fg-color);
+  color: var(--foreground-colour);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -11,5 +11,5 @@
 }
 
 .cartButton:hover {
-  color: var(--first-color);
+  color: var(--primary-colour);
 }

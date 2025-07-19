@@ -1,8 +1,8 @@
 import { Secular_One } from 'next/font/google';
 import { ReactNode } from 'react';
-import NavBar from '../components/navbar/NavBar';
-import Footer from '../components/Footer';
 import { UserProvider } from '@/context/UserContext';
+import NavBar from '@/components/layout/navbar/NavBar';
+import Footer from '@/components/layout/Footer';
 import '@/styles/globals.css';
 
 const secularOne = Secular_One({
@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <body className={secularOne.className}>
         <UserProvider>
           <NavBar />
-            <main>{children}</main>
+          <main>{children}</main>
           <Footer />
         </UserProvider>
       </body>

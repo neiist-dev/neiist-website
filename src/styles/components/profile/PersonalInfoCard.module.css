@@ -1,9 +1,9 @@
 .title {
-  color: var(--first-color);
+  color: var(--primary-colour);
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 1.2em;
-  border-left: 4px solid var(--first-color);
+  border-left: 4px solid var(--primary-colour);
   padding-left: 0.5em;
 }
 
@@ -31,7 +31,7 @@
 .label {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--fg-color);
+  color: var(--foreground-colour);
   margin-bottom: 0.3em;
 }
 
@@ -40,12 +40,12 @@
   padding: 0.5em 0;
   border: none;
   background: none;
-  color: var(--fg-color);
+  color: var(--foreground-colour);
 }
 
 .input {
   width: 100%;
-  border: 1px solid var(--fg-color);
+  border: 1px solid var(--foreground-colour);
   border-radius: 0.5em;
   background: white;
 }
@@ -58,7 +58,7 @@
 
 .tag {
   display: inline-block;
-  background: var(--first-color);
+  background: var(--primary-colour);
   color: white;
   border-radius: 2em;
   padding: 0.35em 1em;
