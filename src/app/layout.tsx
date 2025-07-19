@@ -1,6 +1,6 @@
 import { Secular_One } from 'next/font/google';
 import { ReactNode } from 'react';
-import NavBar from '../components/navbar/NavBar';
+import NavBar from '../components/NavBar/NavBar';
 import Footer from '../components/Footer';
 import { UserProvider } from '@/context/UserContext';
 import '@/styles/globals.css';
