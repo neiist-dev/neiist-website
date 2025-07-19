@@ -1,20 +1,25 @@
--- TODO: Add shop and blog tables. And getter functions.
+-- TODO: Add shop and blog tables. Add getter functions.
 
 -- SCHEMA
 CREATE SCHEMA IF NOT EXISTS neiist;
 
 -- ROLES
 CREATE ROLE neiist_app_user WITH LOGIN PASSWORD 'neiist_app_user_password';
+
+-- PERMISSIONS
+GRANT USAGE ON SCHEMA neiist TO neiist_app_user;
 REVOKE ALL ON ALL TABLES IN SCHEMA neiist FROM neiist_app_user;
-REVOKE ALL ON ALL FUNCTIONS IN SCHEMA neiist FROM neiist_app_user;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA neiist FROM neiist_app_user;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA neiist TO neiist_app_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT EXECUTE ON FUNCTIONS TO neiist_app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON TABLES FROM neiist_app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON SEQUENCES FROM neiist_app_user;
 
 -- ENUM TYPES
 CREATE TYPE neiist.user_access_enum AS ENUM (
     'admin',
     'coordinator',
-    'member',
+    'member'
 );
 
 -- USERS TABLE
@@ -23,9 +28,8 @@ CREATE TABLE neiist.users (
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     phone VARCHAR(15),
-    courses TEXT[],
-    campus TEXT,
-    photo OID
+    photo_path TEXT,
+    courses TEXT[]
 );
 
 -- DEPARTMENTS TABLE
@@ -76,19 +80,71 @@ CREATE TABLE neiist.user_access_roles (
 
 -- FUNCTIONS
 
+-- Get user
+CREATE OR REPLACE FUNCTION neiist.get_user(
+    u_istid VARCHAR(10)
+) RETURNS TABLE (
+    istid VARCHAR(10),
+    name TEXT,
+    email TEXT,
+    phone VARCHAR(15),
+    photo_path TEXT,
+    courses TEXT[],
+    roles TEXT[],
+    teams VARCHAR(30)[]
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.istid,
+        u.name,
+        u.email,
+        u.phone,
+        u.photo_path,
+        u.courses,
+        COALESCE(access_levels.access_array, ARRAY[]::TEXT[]) as roles,
+        COALESCE(user_teams.teams_array, ARRAY[]::VARCHAR(30)[]) as teams
+    FROM neiist.users u
+    LEFT JOIN (
+        SELECT uar.user_istid, array_agg(uar.access::TEXT) as access_array
+        FROM neiist.user_access_roles uar WHERE uar.user_istid = u_istid
+        GROUP BY uar.user_istid
+    ) access_levels ON u.istid = access_levels.user_istid
+    LEFT JOIN (
+        SELECT 
+            m.user_istid,
+            array_agg(DISTINCT m.department_name) as teams_array
+        FROM neiist.membership m
+        WHERE m.user_istid = u_istid 
+          AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+        GROUP BY m.user_istid
+    ) user_teams ON u.istid = user_teams.user_istid
+    WHERE u.istid = u_istid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Add user
 CREATE OR REPLACE FUNCTION neiist.add_user(
     u_istid VARCHAR(10),
     u_name TEXT,
     u_email TEXT,
     u_phone VARCHAR(15),
-    u_courses TEXT[],
-    u_campus TEXT,
-    u_photo OID
-) RETURNS VOID AS $$
+    u_photo_path TEXT,
+    u_courses TEXT[]
+) RETURNS TABLE (
+    istid VARCHAR(10),
+    name TEXT,
+    email TEXT,
+    phone VARCHAR(15),
+    photo_path TEXT,
+    courses TEXT[],
+    roles TEXT[],
+    teams VARCHAR(30)[]
+) AS $$
 BEGIN
-    INSERT INTO neiist.users (istid, name, email, phone, courses, campus, photo)
-    VALUES (u_istid, u_name, u_email, u_phone, u_courses, u_campus, u_photo);
+    INSERT INTO neiist.users (istid, name, email, phone, photo_path, courses)
+    VALUES (u_istid, u_name, u_email, u_phone, u_photo_path, u_courses);
+    RETURN QUERY SELECT * FROM neiist.get_user(u_istid);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -267,5 +323,94 @@ BEGIN
     ) THEN
         DELETE FROM neiist.user_access_roles WHERE user_istid = u_user_istid AND access = current_access;
     END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get available roles for a department
+CREATE OR REPLACE FUNCTION neiist.get_department_roles(u_department_name VARCHAR(30))
+RETURNS TABLE (
+    role_name VARCHAR(40),
+    access neiist.user_access_enum,
+    active BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT vdr.role_name, vdr.access, vdr.active
+    FROM neiist.valid_department_roles vdr
+    WHERE vdr.department_name = u_department_name
+    ORDER BY vdr.access DESC, vdr.role_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION neiist.get_users_by_access(u_access neiist.user_access_enum)
+RETURNS TABLE (
+    istid VARCHAR(10),
+    name TEXT,
+    email TEXT,
+    phone VARCHAR(15),
+    courses TEXT[],
+    photo_path TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT DISTINCT u.istid, u.name, u.email, u.phone, u.courses, u.photo_path
+    FROM neiist.users u
+    JOIN neiist.user_access_roles uar ON u.istid = uar.user_istid
+    WHERE uar.access = u_access
+    ORDER BY u.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION neiist.get_all_users()
+RETURNS TABLE (
+    istid VARCHAR(10),
+    name TEXT,
+    email TEXT,
+    phone VARCHAR(15),
+    courses TEXT[],
+    photo_path TEXT,
+    role TEXT,
+    teams TEXT[]
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.istid,
+        u.name,
+        u.email,
+        u.phone,
+        u.courses,
+        u.photo_path,
+        CASE 
+            WHEN 'admin' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 'admin'
+            WHEN 'coordinator' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 'coordinator'
+            WHEN 'member' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 'member'
+            ELSE 'guest'
+        END as role,
+        COALESCE(user_teams.teams_array, ARRAY[]::TEXT[]) as teams
+    FROM neiist.users u
+    LEFT JOIN (
+        SELECT 
+            uar.user_istid,
+            array_agg(uar.access) as access_array
+        FROM neiist.user_access_roles uar
+        GROUP BY uar.user_istid
+    ) access_levels ON u.istid = access_levels.user_istid
+    LEFT JOIN (
+        SELECT 
+            m.user_istid,
+            array_agg(DISTINCT m.department_name) as teams_array
+        FROM neiist.membership m
+        WHERE m.to_date IS NULL OR m.to_date > CURRENT_DATE
+        GROUP BY m.user_istid
+    ) user_teams ON u.istid = user_teams.user_istid
+    ORDER BY 
+        CASE 
+            WHEN 'admin' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 1
+            WHEN 'coordinator' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 2
+            WHEN 'member' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 3
+            ELSE 4
+        END,
+        u.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
