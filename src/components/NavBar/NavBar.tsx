@@ -4,11 +4,12 @@ import Link from "next/link";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { login, logout } from "@/utils/profileUtils";
 import styles from "@/styles/components/navbar/NavBar.module.css";
-import { NavItem } from "@/components/navbar/NavItem";
-import ProfileMenu from "@/components/navbar/ProfileMenu";
-import NeiistLogo from "@/components/navbar/NeiistLogo";
-import ShoppingCart from "@/components/navbar/ShoppingCart";
-import LoginButton from "@/components/navbar/LoginButton";
+// Update the import path to match the folder name casing if needed
+import { NavItem } from "@/components/NavBar/NavItem";
+import ProfileMenu from "@/components/NavBar/ProfileMenu";
+import NeiistLogo from "@/components/NavBar/NeiistLogo";
+import ShoppingCart from "@/components/NavBar/ShoppingCart";
+import LoginButton from "@/components/NavBar/LoginButton";
 import { useUser } from '@/context/UserContext';
 
 const navLinks = [
