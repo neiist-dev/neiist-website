@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
 import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
 import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
-import { TbGavel } from "react-icons/tb";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
 import { User, UserRole } from "@/types/user";
@@ -64,11 +63,11 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
   const menuPages: MenuPage[] = [
     { href: "/profile", label: "Profile", icon: GoPerson, roles: [UserRole.GUEST, UserRole.MEMBER, UserRole.COORDINATOR, UserRole.ADMIN] },
     { href: "/my-orders", label: "As Minhas Encomendas", icon: LuPackage, roles: [UserRole.GUEST, UserRole.MEMBER, UserRole.COORDINATOR, UserRole.ADMIN] },
-    { href: "/orders", label: "Encomendas", icon: LuFileText, roles: [UserRole.MEMBER] },
-    { href: "/orders", label: "Gerir Encomendas", icon: LuFileText, roles: [], coordinatorOnly: true },
-    { href: "/team", label: "Gerir Equipa", icon: GoPeople, roles: [], coordinatorOnly: true },
-    { href: "/loja", label: "Gerir Loja", icon: LuShoppingBag, roles: [], adminOnly: true },
-    { href: "/collaborators", label: "Gerir Equipas", icon: GoPeople, roles: [], adminOnly: true },
+    { href: "/placeholder", label: "Encomendas", icon: LuFileText, roles: [UserRole.MEMBER] }, //TODO Add the actual page url when existent
+    { href: "/placeholder", label: "Gerir Encomendas", icon: LuFileText, roles: [], coordinatorOnly: true }, //TODO Add the actual page url when existent
+    { href: "/placeholder", label: "Gerir Equipa", icon: GoPeople, roles: [], coordinatorOnly: true }, //TODO Add the actual page url when existent
+    { href: "/placeholder", label: "Gerir Loja", icon: LuShoppingBag, roles: [], adminOnly: true }, //TODO Add the actual page url when existent
+    { href: "/placeholder", label: "Gerir Equipas", icon: GoPeople, roles: [], adminOnly: true }, //TODO Add the actual page url when existent
   ];
 
   const getAvailablePages = () => {
@@ -95,7 +94,7 @@ return (
       {isMenuVisible && (
         <div
           className={`${styles.profileDropdown} ${menuState === "closing" ? styles.slideOut : ''}`}
-          onClick={(e) => e.stopPropagation()} // Prevent clicks inside dropdown from closing it
+          onClick={(e) => e.stopPropagation()}
         >
           {availablePages.map((page) => (
             <UserMenuItem 
@@ -103,14 +102,6 @@ return (
               label={page.label} icon={page.icon} onClick={closeMenu}
             />
           ))}
-          {isAdmin && (
-            <>
-              <div className={styles.divider}></div>
-              <UserMenuItem
-                href="/mag" label="MAG" icon={TbGavel} onClick={closeMenu}
-              />
-            </>
-          )}
           <div className={styles.divider} />
           <UserMenuItem
             href="#"
