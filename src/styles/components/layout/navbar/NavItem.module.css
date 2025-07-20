@@ -4,6 +4,7 @@
   padding: 0.5rem;
   border-radius: 0.5rem;
   transition: color 0.3s ease;
+  user-select: none;
 }
 
 .navLink:hover {
@@ -22,10 +23,11 @@
   gap: 0.5rem;
   padding: 0.5rem;
   transition: background-color 0.3s ease;
+  user-select: none;
 }
 
 .menuItem:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--secondary-colour);
 }
 
 .dark .menuItem:hover {
