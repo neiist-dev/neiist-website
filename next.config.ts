@@ -5,10 +5,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'fenix.tecnico.ulisboa.pt',
-        pathname: '/user/photo/**',
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/api/user/photo/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'https://neiist.tecnico.ulisboa.pt/',
+        pathname: '/api/user/photo/**',
+      }
     ],
   },
 };

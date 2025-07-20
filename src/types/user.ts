@@ -4,8 +4,8 @@ export interface User {
   email: string;
   alternativeEmail?: string;
   phone?: string;
-  preferredContactMethod?: string;
-  photo?: string;
+  preferredContactMethod?: 'email' | 'alternativeEmail' | 'phone';
+  photo: string;
   courses: string[];
   roles: UserRole[];
   teams?: string[];

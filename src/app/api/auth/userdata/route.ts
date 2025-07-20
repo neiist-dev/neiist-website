@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { User } from "@/types/user";
 import { getUser, createUser } from "@/utils/dbUtils";
 
 export async function GET() {
@@ -44,7 +45,8 @@ export async function GET() {
       }
     }
 
-    user.photo ??= `https://fenix.tecnico.ulisboa.pt/user/photo/${user.istid}`;
+    const userWithPhotoPath = user as User & { photo_path?: string };
+    user.photo = userWithPhotoPath.photo_path || `/api/user/photo/${user.istid}`;
 
     const response = NextResponse.json(user);
     response.cookies.set('userData', JSON.stringify(user), {

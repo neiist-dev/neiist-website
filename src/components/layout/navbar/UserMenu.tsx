@@ -13,7 +13,6 @@ interface UserMenuProps {
 }
 
 const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userData: User }> = ({ isOpen, toggleMenu, userData }) => (
-  console.log(userData.photo),
   <div
     className={styles.userContainer}
     onClick={toggleMenu}
@@ -27,7 +26,7 @@ const UserContainer: React.FC<{ isOpen: boolean; toggleMenu: () => void; userDat
     }}
   >
     <Image
-      src={userData.photo || '/default-avatar.png'}
+      src={userData.photo}
       alt="User photo"
       width={40}
       height={40}
