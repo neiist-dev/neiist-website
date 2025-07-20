@@ -22,12 +22,20 @@ CREATE TYPE neiist.user_access_enum AS ENUM (
     'member'
 );
 
+CREATE TYPE neiist.contact_method_enum AS ENUM (
+    'email',
+    'phone',
+    'alternative_email'
+);
+
 -- USERS TABLE
 CREATE TABLE neiist.users (
     istid VARCHAR(10) PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    alternative_email TEXT UNIQUE,
     phone VARCHAR(15),
+    preferred_contact_method neiist.contact_method_enum,
     photo_path TEXT,
     courses TEXT[]
 );
@@ -87,7 +95,9 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
     istid VARCHAR(10),
     name TEXT,
     email TEXT,
+    alternative_email TEXT,
     phone VARCHAR(15),
+    preferred_contact_method TEXT,  -- Changed from neiist.contact_method_enum to TEXT
     photo_path TEXT,
     courses TEXT[],
     roles TEXT[],
@@ -99,54 +109,62 @@ BEGIN
         u.istid,
         u.name,
         u.email,
+        u.alternative_email,
         u.phone,
+        u.preferred_contact_method::TEXT,
         u.photo_path,
         u.courses,
-        COALESCE(access_levels.access_array, ARRAY[]::TEXT[]) as roles,
-        COALESCE(user_teams.teams_array, ARRAY[]::VARCHAR(30)[]) as teams
+        COALESCE(access_levels.access_array, ARRAY[]::TEXT[]) AS roles,
+        COALESCE(team_list.team_array, ARRAY[]::VARCHAR(30)[]) AS teams
     FROM neiist.users u
     LEFT JOIN (
-        SELECT uar.user_istid, array_agg(uar.access::TEXT) as access_array
-        FROM neiist.user_access_roles uar WHERE uar.user_istid = u_istid
+        SELECT 
+            uar.user_istid,
+            array_agg(DISTINCT uar.access::TEXT) AS access_array
+        FROM neiist.user_access_roles uar
+        WHERE uar.user_istid = u_istid
         GROUP BY uar.user_istid
     ) access_levels ON u.istid = access_levels.user_istid
     LEFT JOIN (
         SELECT 
             m.user_istid,
-            array_agg(DISTINCT m.department_name) as teams_array
+            array_agg(DISTINCT m.department_name) AS team_array
         FROM neiist.membership m
-        WHERE m.user_istid = u_istid 
-          AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+        WHERE m.user_istid = u_istid
         GROUP BY m.user_istid
-    ) user_teams ON u.istid = user_teams.user_istid
+    ) team_list ON u.istid = team_list.user_istid
     WHERE u.istid = u_istid;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Add user
 CREATE OR REPLACE FUNCTION neiist.add_user(
-    u_istid VARCHAR(10),
-    u_name TEXT,
-    u_email TEXT,
-    u_phone VARCHAR(15),
-    u_photo_path TEXT,
-    u_courses TEXT[]
-) RETURNS TABLE (
+    p_istid VARCHAR(10),
+    p_name TEXT,
+    p_email TEXT,
+    p_alternative_email TEXT,
+    p_phone VARCHAR(15),
+    p_photo_path TEXT,
+    p_courses TEXT[]
+) RETURNS TABLE(
     istid VARCHAR(10),
     name TEXT,
     email TEXT,
+    alternative_email TEXT,
     phone VARCHAR(15),
+    preferred_contact_method TEXT,
     photo_path TEXT,
     courses TEXT[],
     roles TEXT[],
     teams VARCHAR(30)[]
-) AS $$
+) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-    INSERT INTO neiist.users (istid, name, email, phone, photo_path, courses)
-    VALUES (u_istid, u_name, u_email, u_phone, u_photo_path, u_courses);
-    RETURN QUERY SELECT * FROM neiist.get_user(u_istid);
+    INSERT INTO neiist.users (istid, name, email, alternative_email, phone, photo_path, courses)
+    VALUES (p_istid, p_name, p_email, p_alternative_email, p_phone, p_photo_path, p_courses);
+    
+    RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Add department
 CREATE OR REPLACE FUNCTION neiist.add_department(
@@ -415,15 +433,107 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- BLOG/NEWS TABLE
-CREATE TABLE neiist.news (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    image TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
-    author TEXT NOT NULL,
-    tag TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+CREATE OR REPLACE FUNCTION neiist.update_user(
+    p_istid VARCHAR(10),
+    p_updates JSONB
+) RETURNS TABLE(
+    istid VARCHAR(10),
+    name TEXT,
+    email TEXT,
+    alternative_email TEXT,
+    phone VARCHAR(15),
+    preferred_contact_method TEXT,  -- Changed from enum to TEXT
+    photo_path TEXT,
+    courses TEXT[],
+    roles TEXT[],
+    teams VARCHAR(30)[]
+) LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+    update_query TEXT := 'UPDATE neiist.users SET ';
+    where_clause TEXT := ' WHERE istid = $1';
+    set_clauses TEXT[] := ARRAY[]::TEXT[];
+    param_count INTEGER := 1;
+    param_values TEXT[] := ARRAY[]::TEXT[];
+BEGIN
+    -- Build the SET clauses and collect parameter values
+    IF p_updates ? 'name' THEN
+        param_count := param_count + 1;
+        set_clauses := array_append(set_clauses, 'name = $' || param_count);
+        param_values := array_append(param_values, p_updates->>'name');
+    END IF;
+
+    IF p_updates ? 'email' THEN
+        param_count := param_count + 1;
+        set_clauses := array_append(set_clauses, 'email = $' || param_count);
+        param_values := array_append(param_values, p_updates->>'email');
+    END IF;
+
+    IF p_updates ? 'alternativeEmail' THEN
+        param_count := param_count + 1;
+        set_clauses := array_append(set_clauses, 'alternative_email = $' || param_count);
+        param_values := array_append(param_values, p_updates->>'alternativeEmail');
+    END IF;
+
+    IF p_updates ? 'phone' THEN
+        param_count := param_count + 1;
+        set_clauses := array_append(set_clauses, 'phone = $' || param_count);
+        param_values := array_append(param_values, p_updates->>'phone');
+    END IF;
+
+    IF p_updates ? 'preferredContactMethod' THEN
+        param_count := param_count + 1;
+        set_clauses := array_append(set_clauses, 'preferred_contact_method = $' || param_count || '::neiist.contact_method_enum');
+        param_values := array_append(param_values, p_updates->>'preferredContactMethod');
+    END IF;
+
+    IF p_updates ? 'courses' THEN
+        param_count := param_count + 1;
+        set_clauses := array_append(set_clauses, 'courses = $' || param_count || '::TEXT[]');
+        param_values := array_append(param_values, array_to_string(ARRAY(SELECT jsonb_array_elements_text(p_updates->'courses')), ','));
+    END IF;
+
+    -- If no updates, just return current user
+    IF array_length(set_clauses, 1) IS NULL THEN
+        RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
+        RETURN;
+    END IF;
+
+    -- Build final query
+    update_query := update_query || array_to_string(set_clauses, ', ') || where_clause;
+
+    -- Execute with the exact number of parameters needed
+    CASE array_length(param_values, 1)
+        WHEN 1 THEN
+            EXECUTE update_query USING p_istid, param_values[1];
+        WHEN 2 THEN
+            EXECUTE update_query USING p_istid, param_values[1], param_values[2];
+        WHEN 3 THEN
+            EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3];
+        WHEN 4 THEN
+            EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3], param_values[4];
+        WHEN 5 THEN
+            EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3], param_values[4], param_values[5];
+        WHEN 6 THEN
+            EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3], param_values[4], param_values[5], param_values[6];
+        ELSE
+            RAISE EXCEPTION 'Too many parameters: %', array_length(param_values, 1);
+    END CASE;
+
+    RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION neiist.update_user_photo(
+    p_istid VARCHAR(10),
+    p_photo_data TEXT
+) RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+    UPDATE neiist.users 
+    SET photo_path = p_photo_data
+    WHERE istid = p_istid;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'User with istid % not found', p_istid;
+    END IF;
+END;
+$$;

@@ -18,8 +18,8 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
   if (!user.istid || !user.name || !user.email) return null;
   try {
     const { rows: [newUser] } = await db_query<User>(
-      `SELECT * FROM neiist.add_user($1::VARCHAR(10), $2::TEXT, $3::TEXT, $4::VARCHAR(15), $5::TEXT, $6::TEXT[])`,
-      [user.istid, user.name, user.email, user.phone, user.photo, user.courses]
+      `SELECT * FROM neiist.add_user($1::VARCHAR(10), $2::TEXT, $3::TEXT, $4::TEXT, $5::VARCHAR(15), $6::TEXT, $7::TEXT[])`,
+      [user.istid, user.name, user.email, user.alternativeEmail, user.phone, user.photo, user.courses]
     );
     if (!newUser) return null;
     newUser.roles = newUser.roles?.map(mapRoleToUserRole);
@@ -27,6 +27,34 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
   } catch (error) {
     console.error('Error creating user:', error);
     return null;
+  }
+};
+
+export const updateUser = async (istid: string, updates: Partial<User>): Promise<User | null> => {
+  try {
+    const { rows: [updatedUser] } = await db_query<User>(
+      'SELECT * FROM neiist.update_user($1::VARCHAR(10), $2::JSONB)',
+      [istid, JSON.stringify(updates)]
+    );
+    if (!updatedUser) return null;
+    updatedUser.roles = updatedUser.roles?.map(mapRoleToUserRole);
+    return updatedUser;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return null;
+  }
+};
+
+export const updateUserPhoto = async (istid: string, photoData: string): Promise<boolean> => {
+  try {
+    await db_query(
+      'SELECT neiist.update_user_photo($1::VARCHAR(10), $2::TEXT)',
+      [istid, photoData]
+    );
+    return true;
+  } catch (error) {
+    console.error('Error updating user photo:', error);
+    return false;
   }
 };
 
