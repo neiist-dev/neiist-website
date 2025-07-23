@@ -5,7 +5,6 @@ import { UserRole, mapRoleToUserRole } from '@/types/user';
 
 async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
   const accessToken = (await cookies()).get('accessToken')?.value;
-  
   if (!accessToken) {
     return { isAuthorized: false, error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
   }
@@ -41,7 +40,11 @@ export async function GET() {
   }
   try {
     const adminBodies = await getAllAdminBodies();
-    return NextResponse.json(adminBodies);
+    const transformedAdminBodies = adminBodies.map(adminBody => ({
+      ...adminBody,
+      active: true // Since getAllAdminBodies only returns active admin bodies
+    }));
+    return NextResponse.json(transformedAdminBodies);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch admin bodies' }, { status: 500 });
   }

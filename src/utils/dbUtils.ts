@@ -280,7 +280,6 @@ export const addTeam = async (name: string, description: string): Promise<boolea
       // Department might already exist, that's okay
       console.log('Department might already exist:', name);
     }
-    
     // Then add the team
     await db_query('SELECT neiist.add_team($1, $2)', [name, description]);
     return true;
@@ -300,9 +299,9 @@ export const removeTeam = async (name: string): Promise<boolean> => {
   }
 };
 
-export const getAllTeams = async (): Promise<Array<{name: string, description: string}>> => {
+export const getAllTeams = async (): Promise<Array<{name: string, description: string, active: boolean}>> => {
   try {
-    const { rows } = await db_query<{name: string, description: string}>(
+    const { rows } = await db_query<{name: string, description: string, active: boolean}>(
       'SELECT * FROM neiist.get_all_teams()'
     );
     return rows;
@@ -342,9 +341,9 @@ export const removeAdminBody = async (name: string): Promise<boolean> => {
   }
 };
 
-export const getAllAdminBodies = async (): Promise<Array<{name: string}>> => {
+export const getAllAdminBodies = async (): Promise<Array<{name: string, active: boolean}>> => {
   try {
-    const { rows } = await db_query<{name: string}>(
+    const { rows } = await db_query<{name: string, active: boolean}>(
       'SELECT * FROM neiist.get_all_admin_bodies()'
     );
     return rows;

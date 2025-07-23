@@ -297,7 +297,7 @@ CREATE OR REPLACE FUNCTION neiist.add_team_member(
     u_user_istid VARCHAR(10),
     u_department_name VARCHAR(30),
     u_role_name VARCHAR(40)
-) RETURNS TEXT AS $$
+) RETURNS VOID AS $$
 DECLARE
     v_role_access neiist.user_access_enum;
 BEGIN
@@ -324,31 +324,37 @@ CREATE OR REPLACE FUNCTION neiist.remove_team_member(
     u_department_name VARCHAR(30),
     u_role_name VARCHAR(40)
 ) RETURNS VOID AS $$
-DECLARE current_access neiist.user_access_enum;
+DECLARE 
+    current_access neiist.user_access_enum;
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM neiist.membership
         WHERE user_istid = u_user_istid    
         AND department_name = u_department_name
-        AND role_name = u_role_name) THEN
+        AND role_name = u_role_name
+        AND (to_date IS NULL OR to_date > CURRENT_DATE)) THEN
         RAISE EXCEPTION 'O membro da equipe "%" não existe.', u_user_istid;
     END IF;
-    UPDATE neiist.membership SET active = FALSE, to_date = CURRENT_DATE WHERE user_istid = u_user_istid
+    
+    UPDATE neiist.membership SET to_date = CURRENT_DATE 
+    WHERE user_istid = u_user_istid
       AND department_name = u_department_name
-      AND role_name = u_role_name;
+      AND role_name = u_role_name
+      AND (to_date IS NULL OR to_date > CURRENT_DATE);
 
     SELECT access INTO current_access FROM neiist.valid_department_roles
         WHERE department_name = u_department_name
         AND role_name = u_role_name;
-
     IF NOT EXISTS (
         SELECT 1 FROM neiist.membership m
         JOIN neiist.valid_department_roles vdr
             ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
         WHERE m.user_istid = u_user_istid
           AND vdr.access = current_access
+          AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
           AND NOT (m.department_name = u_department_name AND m.role_name = u_role_name)
     ) THEN
-        DELETE FROM neiist.user_access_roles WHERE user_istid = u_user_istid AND access = current_access;
+        DELETE FROM neiist.user_access_roles 
+        WHERE user_istid = u_user_istid AND access = current_access;
     END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -612,12 +618,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.get_all_teams()
 RETURNS TABLE (
     name VARCHAR(30),
-    description TEXT
+    description TEXT,
+    active BOOLEAN
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT t.name, t.description
+    SELECT t.name, t.description, d.active
     FROM neiist.teams t
+    JOIN neiist.departments d ON t.name = d.name
+    WHERE d.active = TRUE
     ORDER BY t.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -625,12 +634,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Get all admin bodies
 CREATE OR REPLACE FUNCTION neiist.get_all_admin_bodies()
 RETURNS TABLE (
-    name VARCHAR(30)
+    name VARCHAR(30),
+    active BOOLEAN
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT ab.name
+    SELECT ab.name, d.active
     FROM neiist.admin_bodies ab
+    JOIN neiist.departments d ON ab.name = d.name
+    WHERE d.active = TRUE
     ORDER BY ab.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -6,7 +6,7 @@ export interface User {
   alternativeEmailVerified: boolean;
   phone?: string;
   preferredContactMethod?: 'email' | 'alternativeEmail' | 'phone';
-  photo?: string;
+  photo: string;
   courses: string[];
   roles: UserRole[];
   teams?: string[];

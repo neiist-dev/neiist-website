@@ -5,7 +5,6 @@ import { UserRole, mapRoleToUserRole } from '@/types/user';
 
 async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
   const accessToken = (await cookies()).get('accessToken')?.value;
-
   if (!accessToken) {
     return { isAuthorized: false, error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
   }
@@ -41,7 +40,11 @@ export async function GET() {
   }
   try {
     const teams = await getAllTeams();
-    return NextResponse.json(teams);
+    const transformedTeams = teams.map(team => ({
+      ...team,
+      active: true // Since getAllTeams only returns active teams
+    }));
+    return NextResponse.json(transformedTeams);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch teams' }, { status: 500 });
   }
