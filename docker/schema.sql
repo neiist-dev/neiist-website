@@ -1,4 +1,4 @@
--- TODO: Add shop and blog tables. And getter functions.
+-- TODO: Add shop table. And getter functions.
 
 -- SCHEMA
 CREATE SCHEMA IF NOT EXISTS neiist;
@@ -269,3 +269,16 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- BLOG/NEWS TABLE
+CREATE TABLE neiist.news (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    image TEXT,
+    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    author TEXT NOT NULL,
+    tag TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
