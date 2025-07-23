@@ -1,7 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { addTeamMember, removeTeamMember, getUser } from '@/utils/dbUtils';
+import { addTeamMember, removeTeamMember, getUser, getAllMemberships } from '@/utils/dbUtils';
 import { UserRole, mapRoleToUserRole } from '@/types/user';
+
+async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
+  const accessToken = (await cookies()).get('accessToken')?.value;
+
+  if (!accessToken) {
+    return { isAuthorized: false, error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
+  }
+
+  try {
+    const userData = JSON.parse((await cookies()).get('userData')?.value || 'null');
+    if (!userData) {
+      return { isAuthorized: false, error: NextResponse.json({ error: "User data not found" }, { status: 404 }) };
+    }
+
+    const currentUser = await getUser(userData.istid);
+    if (!currentUser) {
+      return { isAuthorized: false, error: NextResponse.json({ error: "Current user not found" }, { status: 404 }) };
+    }
+
+    const currentUserRoles = currentUser.roles?.map(role => mapRoleToUserRole(role)) || [UserRole.GUEST];
+    const isAdmin = currentUserRoles.includes(UserRole.ADMIN);
+
+    if (!isAdmin) {
+      return { isAuthorized: false, error: NextResponse.json({ error: "Admin access required" }, { status: 403 }) };
+    }
+
+    return { isAuthorized: true };
+  } catch (error) {
+    console.error('Error checking permissions:', error);
+    return { isAuthorized: false, error: NextResponse.json({ error: "Internal server error" }, { status: 500 }) };
+  }
+}
 
 async function checkMembershipPermission(departmentName: string): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
   const accessToken = (await cookies()).get('accessToken')?.value;
@@ -39,6 +71,33 @@ async function checkMembershipPermission(departmentName: string): Promise<{ isAu
   } catch (error) {
     console.error('Error checking permissions:', error);
     return { isAuthorized: false, error: NextResponse.json({ error: "Internal server error" }, { status: 500 }) };
+  }
+}
+
+export async function GET() {
+  const permissionCheck = await checkAdminPermission();
+  if (!permissionCheck.isAuthorized) {
+    return permissionCheck.error;
+  }
+
+  try {
+    const memberships = await getAllMemberships();
+    const transformedMemberships = memberships.map((membership, index) => ({
+      id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${index}`,
+      userNumber: membership.user_istid,
+      userName: membership.user_name,
+      userEmail: '',
+      departmentName: membership.department_name,
+      roleName: membership.role_name,
+      startDate: membership.from_date,
+      endDate: membership.to_date,
+      isActive: membership.active
+    }));
+
+    return NextResponse.json(transformedMemberships);
+  } catch (error) {
+    console.error('Error fetching memberships:', error);
+    return NextResponse.json({ error: 'Failed to fetch memberships' }, { status: 500 });
   }
 }
 
