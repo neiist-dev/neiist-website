@@ -12,6 +12,7 @@ import BlogFilterbar from '@/components/blog/BlogFilterbar';
 
 import { NewsGrid } from "@/components/blog/NewsGrid"
 import Pagination from "@/components/blog/Pagination";
+import Newsletter from "@/components/blog/Newsletter";
 
 
 export default function BlogPage() {
@@ -73,6 +74,7 @@ useEffect(() => {
       <div className={styles.content}>
         <NewsGrid news={paginatedNews} />
         <Pagination page={page} pageCount={pageCount} setPage={setPage} />
+        <Newsletter />
       </div>
     </div>
   );
