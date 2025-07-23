@@ -1,5 +1,5 @@
 import { Pool, QueryResult, QueryResultRow } from 'pg';
-import { User, mapRoleToUserRole } from '@/types/user';
+import { User, mapRoleToUserRole, mapDbUserToUser } from '@/types/user';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
@@ -23,7 +23,7 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
     );
     if (!newUser) return null;
     newUser.roles = newUser.roles?.map(mapRoleToUserRole);
-    return newUser;
+    return newUser ? mapDbUserToUser(newUser) : null;
   } catch (error) {
     console.error('Error creating user:', error);
     return null;
@@ -38,7 +38,7 @@ export const updateUser = async (istid: string, updates: Partial<User>): Promise
     );
     if (!updatedUser) return null;
     updatedUser.roles = updatedUser.roles?.map(mapRoleToUserRole);
-    return updatedUser;
+    return updatedUser ? mapDbUserToUser(updatedUser) : null;
   } catch (error) {
     console.error('Error updating user:', error);
     return null;
@@ -63,7 +63,7 @@ export const getUser = async (istid: string): Promise<User | null> => {
     const { rows: [user] } = await db_query<User>(
       'SELECT * FROM neiist.get_user($1::VARCHAR(10))', [istid]
     );
-    return user ?? null;
+    return user ? mapDbUserToUser(user) : null;
   } catch (error) {
     console.error('Error fetching user:', error);
     return null;
@@ -75,7 +75,7 @@ export const getAllUsers = async (): Promise<User[]> => {
     const { rows } = await db_query<User>(
       'SELECT * FROM neiist.get_all_users()'
     );
-    return rows;
+    return rows.map(mapDbUserToUser);
   } catch (error) {
     console.error('Error fetching all users:', error);
     return [];
@@ -161,7 +161,7 @@ export const getUsersByAccess = async (access: string): Promise<User[]> => {
       'SELECT istid, name, email, phone, courses, campus, photo_path as photo FROM neiist.get_users_by_access($1)',
       [access]
     );
-    return rows;
+    return rows.map(mapDbUserToUser);
   } catch (error) {
     console.error('Error fetching users by access:', error);
     return [];
