@@ -180,3 +180,59 @@ export const getDepartmentRoles = async (departmentName: string): Promise<Array<
     return [];
   }
 };
+
+export const addEmailVerification = async (
+  istid: string,
+  email: string,
+  token: string,
+  expiresAt: string
+): Promise<void> => {
+  try {
+    await db_query(
+      'SELECT neiist.add_email_verification($1, $2, $3, $4)',
+      [istid, email, token, expiresAt]
+    );
+  } catch (error) {
+    console.error('Error adding email verification:', error);
+    throw error;
+  }
+};
+
+export const getEmailVerification = async (
+  token: string
+): Promise<{ istid: string; email: string; expires_at: string } | null> => {
+  try {
+    const { rows: [row] } = await db_query<{ istid: string; email: string; expires_at: string }>(
+      'SELECT * FROM neiist.get_email_verification($1)',
+      [token]
+    );
+    return row ?? null;
+  } catch (error) {
+    console.error('Error fetching email verification:', error);
+    return null;
+  }
+};
+
+export const deleteEmailVerification = async (
+  token: string
+): Promise<void> => {
+  try {
+    await db_query('SELECT neiist.delete_email_verification($1)', [token]);
+  } catch (error) {
+    console.error('Error deleting email verification:', error);
+    throw error;
+  }
+};
+
+export const getEmailVerificationByUser = async (istid: string): Promise<{ email: string; expires_at: string } | null> => {
+  try {
+    const { rows: [row] } = await db_query<{ email: string; expires_at: string }>(
+      'SELECT * FROM neiist.get_email_verification_by_user($1)',
+      [istid]
+    );
+    return row ?? null;
+  } catch (error) {
+    console.error('Error fetching pending alternative email:', error);
+    return null;
+  }
+};

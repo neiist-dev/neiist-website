@@ -63,7 +63,14 @@ export default function PersonalInfoCard({
               placeholder="email@exemplo.com"
             />
           ) : (
-            <div className={styles.value}>{user.alternativeEmail || 'Não especificado'}</div>
+            <div className={styles.value}>
+              {user.alternativeEmail || 'Não especificado'}
+              {user.alternativeEmail && !user.alternativeEmailVerified && (
+                <span style={{ color: 'orange', marginLeft: '0.5rem' }}>
+                  (por verificar)
+                </span>
+              )}
+            </div>
           )}
         </div>
 

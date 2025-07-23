@@ -40,6 +40,15 @@ CREATE TABLE neiist.users (
     courses TEXT[]
 );
 
+-- EMAIL TOKEN VERIFICATION
+CREATE TABLE neiist.email_token (
+    id SERIAL PRIMARY KEY,
+    istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid),
+    email TEXT NOT NULL,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL
+);
+
 -- DEPARTMENTS TABLE
 CREATE TABLE neiist.departments (
     name VARCHAR(30) PRIMARY KEY,
@@ -360,6 +369,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Get users with a specific access level
 CREATE OR REPLACE FUNCTION neiist.get_users_by_access(u_access neiist.user_access_enum)
 RETURNS TABLE (
     istid VARCHAR(10),
@@ -379,6 +389,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Gett all users
 CREATE OR REPLACE FUNCTION neiist.get_all_users()
 RETURNS TABLE (
     istid VARCHAR(10),
@@ -433,6 +444,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Update user data
 CREATE OR REPLACE FUNCTION neiist.update_user(
     p_istid VARCHAR(10),
     p_updates JSONB
@@ -523,6 +535,7 @@ BEGIN
 END;
 $$;
 
+-- Update user photo path
 CREATE OR REPLACE FUNCTION neiist.update_user_photo(
     p_istid VARCHAR(10),
     p_photo_data TEXT
@@ -537,3 +550,51 @@ BEGIN
     END IF;
 END;
 $$;
+
+-- Create a new email verification request
+CREATE OR REPLACE FUNCTION neiist.add_email_verification(
+    p_istid VARCHAR(10),
+    p_email TEXT,
+    p_token TEXT,
+    p_expires_at TIMESTAMPTZ
+) RETURNS VOID AS $$
+BEGIN
+    INSERT INTO neiist.email_token (istid, email, token, expires_at)
+    VALUES (p_istid, p_email, p_token, p_expires_at);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get verification request by token
+CREATE OR REPLACE FUNCTION neiist.get_email_verification(
+    p_token TEXT
+) RETURNS TABLE(istid VARCHAR(10), email TEXT, expires_at TIMESTAMPTZ) AS $$
+BEGIN
+    RETURN QUERY SELECT email_token.istid, email_token.email, email_token.expires_at
+    FROM neiist.email_token
+    WHERE email_token.token = p_token;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Remove a verification request
+CREATE OR REPLACE FUNCTION neiist.delete_email_verification(
+    p_token TEXT
+) RETURNS VOID AS $$
+BEGIN
+    DELETE FROM neiist.email_token WHERE token = p_token;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get verification request by user
+CREATE OR REPLACE FUNCTION neiist.get_email_verification_by_user(
+    p_istid VARCHAR(10)
+) RETURNS TABLE(email TEXT, expires_at TIMESTAMPTZ) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT email_token.email, email_token.expires_at
+    FROM neiist.email_token
+    WHERE email_token.istid = p_istid
+      AND email_token.expires_at > NOW()
+    ORDER BY email_token.expires_at DESC
+    LIMIT 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

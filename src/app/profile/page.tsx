@@ -68,13 +68,37 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async () => {
+const handleSave = async () => {
     setSaving(true);
     setError('');
-
     try {
+      if (
+        formData.alternativeEmail &&
+        formData.alternativeEmail !== user?.alternativeEmail
+      ) {
+        const res = await fetch('/api/user/verify-email/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            istid: user?.istid,
+            alternativeEmail: formData.alternativeEmail
+          }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Falha ao enviar email de verificação');
+        }
+        setError('Verifique o seu email alternativo para concluir a alteração.');
+        const userRes = await fetch('/api/auth/userdata');
+        if (userRes.ok) {
+          const updatedUser = await userRes.json();
+          setUser(updatedUser);
+        }
+        setSaving(false);
+        setEditing(false);
+        return;
+      }
       const updateData: Partial<User> = {
-        alternativeEmail: formData.alternativeEmail,
         phone: formData.phone,
         preferredContactMethod: formData.preferredContactMethod
       };
@@ -95,20 +119,16 @@ export default function ProfilePage() {
         throw new Error(errorData.error || 'Failed to update');
       }
 
-      if (user) {
-        setUser({
-          ...user,
-          alternativeEmail: updateData.alternativeEmail,
-          phone: updateData.phone,
-          preferredContactMethod: updateData.preferredContactMethod,
-          photo: photoPreview || user.photo
-        });
+      // Refresh user data after update
+      const userRes = await fetch('/api/auth/userdata');
+      if (userRes.ok) {
+        const updatedUser = await userRes.json();
+        setUser(updatedUser);
       }
 
       setEditing(false);
     } catch (e) {
-      console.error('Failed to update profile', e);
-      setError(e instanceof Error ? e.message : 'Failed to update profile. Try again.');
+      setError(e instanceof Error ? e.message : 'Erro ao atualizar perfil.');
     } finally {
       setSaving(false);
     }
