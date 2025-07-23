@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { User } from "@/types/user";
-import { getUser, createUser } from "@/utils/dbUtils";
+import { getUser, createUser, getEmailVerificationByUser } from "@/utils/dbUtils";
 
 export async function GET() {
   const accessToken = (await cookies()).get('accessToken')?.value;

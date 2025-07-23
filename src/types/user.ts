@@ -3,11 +3,24 @@ export interface User {
   name: string;
   email: string;
   alternativeEmail?: string;
+  alternativeEmailVerified: boolean;
   phone?: string;
   preferredContactMethod?: 'email' | 'alternativeEmail' | 'phone';
-  photo: string;
+  photo?: string;
   courses: string[];
   roles: UserRole[];
+  teams?: string[];
+}
+interface DbUser {
+  istid: string;
+  name: string;
+  email: string;
+  alternative_email?: string;
+  phone?: string;
+  preferred_contact_method?: 'email' | 'alternativeEmail' | 'phone';
+  photo_path?: string;
+  courses?: string[];
+  roles?: string[];
   teams?: string[];
 }
 
@@ -35,4 +48,20 @@ export function mapRoleToUserRole(role: string): UserRole {
     default:
       return UserRole.GUEST;
   }
+}
+
+export function mapDbUserToUser(dbUser: DbUser): User {
+  return {
+    istid: dbUser.istid,
+    name: dbUser.name,
+    email: dbUser.email,
+    alternativeEmail: dbUser.alternative_email ?? undefined,
+    alternativeEmailVerified: true,
+    phone: dbUser.phone ?? undefined,
+    preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
+    photo: dbUser.photo_path ?? `/api/user/photo/${dbUser.istid}`,
+    courses: dbUser.courses ?? [],
+    roles: dbUser.roles?.map(mapRoleToUserRole) ?? [],
+    teams: dbUser.teams ?? [],
+  };
 }
