@@ -12,7 +12,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.3",
+    "@shadcn/ui": "^0.0.4",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/pg": "^8.15.1",
     "class-variance-authority": "^0.7.1",
