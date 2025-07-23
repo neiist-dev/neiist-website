@@ -236,3 +236,186 @@ export const getEmailVerificationByUser = async (istid: string): Promise<{ email
     return null;
   }
 };
+
+// Department management
+export const addDepartment = async (name: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.add_department($1)', [name]);
+    return true;
+  } catch (error) {
+    console.error('Error adding department:', error);
+    return false;
+  }
+};
+
+export const removeDepartment = async (name: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.remove_department($1)', [name]);
+    return true;
+  } catch (error) {
+    console.error('Error removing department:', error);
+    return false;
+  }
+};
+
+export const getAllDepartments = async (): Promise<Array<{name: string, active: boolean}>> => {
+  try {
+    const { rows } = await db_query<{name: string, active: boolean}>(
+      'SELECT * FROM neiist.get_all_departments()'
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    return [];
+  }
+};
+
+// Team management
+export const addTeam = async (name: string, description: string): Promise<boolean> => {
+  try {
+    // First, ensure the department exists
+    try {
+      await db_query('SELECT neiist.add_department($1)', [name]);
+    } catch {
+      // Department might already exist, that's okay
+      console.log('Department might already exist:', name);
+    }
+    
+    // Then add the team
+    await db_query('SELECT neiist.add_team($1, $2)', [name, description]);
+    return true;
+  } catch (error) {
+    console.error('Error adding team:', error);
+    return false;
+  }
+};
+
+export const removeTeam = async (name: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.remove_team($1)', [name]);
+    return true;
+  } catch (error) {
+    console.error('Error removing team:', error);
+    return false;
+  }
+};
+
+export const getAllTeams = async (): Promise<Array<{name: string, description: string}>> => {
+  try {
+    const { rows } = await db_query<{name: string, description: string}>(
+      'SELECT * FROM neiist.get_all_teams()'
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error fetching teams:', error);
+    return [];
+  }
+};
+
+// Admin body management
+export const addAdminBody = async (name: string): Promise<boolean> => {
+  try {
+    // First, ensure the department exists
+    try {
+      await db_query('SELECT neiist.add_department($1)', [name]);
+    } catch {
+      // Department might already exist, that's okay
+      console.log('Department might already exist:', name);
+    }
+
+    // Then add the admin body
+    await db_query('SELECT neiist.add_admin_body($1)', [name]);
+    return true;
+  } catch (error) {
+    console.error('Error adding admin body:', error);
+    return false;
+  }
+};
+
+export const removeAdminBody = async (name: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.remove_admin_body($1)', [name]);
+    return true;
+  } catch (error) {
+    console.error('Error removing admin body:', error);
+    return false;
+  }
+};
+
+export const getAllAdminBodies = async (): Promise<Array<{name: string}>> => {
+  try {
+    const { rows } = await db_query<{name: string}>(
+      'SELECT * FROM neiist.get_all_admin_bodies()'
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error fetching admin bodies:', error);
+    return [];
+  }
+};
+
+// Valid department roles management
+export const addValidDepartmentRole = async (departmentName: string, roleName: string, access: 'admin' | 'coordinator' | 'member' = 'member'): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.add_valid_department_role($1, $2, $3)', [departmentName, roleName, access]);
+    return true;
+  } catch (error) {
+    console.error('Error adding valid department role:', error);
+    return false;
+  }
+};
+
+export const removeValidDepartmentRole = async (departmentName: string, roleName: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.remove_valid_department_role($1, $2)', [departmentName, roleName]);
+    return true;
+  } catch (error) {
+    console.error('Error removing valid department role:', error);
+    return false;
+  }
+};
+
+export const getAllValidDepartmentRoles = async (): Promise<Array<{department_name: string, role_name: string, access: string, active: boolean}>> => {
+  try {
+    const { rows } = await db_query<{department_name: string, role_name: string, access: string, active: boolean}>(
+      'SELECT * FROM neiist.get_all_valid_department_roles()'
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error fetching valid department roles:', error);
+    return [];
+  }
+};
+
+// Team member management
+export const addTeamMember = async (istid: string, departmentName: string, roleName: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.add_team_member($1, $2, $3)', [istid, departmentName, roleName]);
+    return true;
+  } catch (error) {
+    console.error('Error adding team member:', error);
+    return false;
+  }
+};
+
+export const removeTeamMember = async (istid: string, departmentName: string, roleName: string): Promise<boolean> => {
+  try {
+    await db_query('SELECT neiist.remove_team_member($1, $2, $3)', [istid, departmentName, roleName]);
+    return true;
+  } catch (error) {
+    console.error('Error removing team member:', error);
+    return false;
+  }
+};
+
+export const getAllMemberships = async (): Promise<Array<{user_istid: string, user_name: string, department_name: string, role_name: string, from_date: string, to_date: string | null, active: boolean}>> => {
+  try {
+    const { rows } = await db_query<{user_istid: string, user_name: string, department_name: string, role_name: string, from_date: string, to_date: string | null, active: boolean}>(
+      'SELECT * FROM neiist.get_all_memberships()'
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error fetching memberships:', error);
+    return [];
+  }
+};
