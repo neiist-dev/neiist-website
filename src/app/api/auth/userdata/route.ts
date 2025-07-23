@@ -44,8 +44,13 @@ export async function GET() {
       }
     }
 
-    const userWithPhotoPath = user as User & { photo_path?: string };
-    user.photo = userWithPhotoPath.photo_path || `/api/user/photo/${user.istid}`;
+    const notVerifiedEmail = await getEmailVerificationByUser(user.istid);
+    if(notVerifiedEmail) {
+      user.alternativeEmail = notVerifiedEmail.email;
+      user.alternativeEmailVerified = false;
+    } else {
+      user.alternativeEmailVerified = true;
+    }
 
     const response = NextResponse.json(user);
     response.cookies.set('userData', JSON.stringify(user), {
