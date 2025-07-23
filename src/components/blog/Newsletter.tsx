@@ -12,7 +12,7 @@ export default function Newsletter() {
 
   return (
     <div className="w-full max-w-xl mx-auto m-15 p-6 flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-4 text-center">Subscreve a nossa Newsletter</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Subscreve a nossa Newsletter!</h2>
       {submitted ? (
         <p className="text-green-600">Obrigado por subscreveres!</p>
       ) : (
