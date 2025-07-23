@@ -43,19 +43,19 @@ export function NewsCard({
       </div>
 
       <CardHeader className="gap-2">
-        <div className="flex items-center text-sm text-muted-foreground space-x-2">
-          <Avatar className="w-6 h-6">
-            <AvatarImage src="/placeholder-avatar.jpg" alt={author} />
+        <div className="flex items-center text-sm text-muted-foreground space-x-3">
+          <Avatar className="w-8 h-8">
+            <AvatarImage src="TODO" alt={author} />
             <AvatarFallback>{author[0]}</AvatarFallback>
           </Avatar>
           <span className="text-gray-800">{author}</span>
-          <span>/</span>
+          <span>|</span>
           <span>{date}</span>
         </div>
-        <CardTitle className="text-base leading-snug">{title}</CardTitle>
+        <CardTitle className="text-base leading-snug mt-2">{title}</CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-2">
+      <CardContent className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">{description}</p>
         <Badge variant="outline" className="w-fit bg-pink-100 text-pink-800"> {/* TODO - attribute to each tag a diff color */}
           {tag}
