@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRole } from './types/user';
+import { UserRole } from '@/types/user';
 
 const publicRoutes = ['/', '/home', '/about-us'];
 const guestRoutes = ['/profile', '/my-orders'];
@@ -21,14 +21,17 @@ export const config = {
 };
 
 function canAccess(path: string, roles: UserRole[]) {
-  if (roles.includes(UserRole.ADMIN) || publicRoutes.some(r => path.startsWith(r))) {
+  if (path === '/' || publicRoutes.slice(1).some(r => path.startsWith(r))) {
     return true;
-  } else if (guestRoutes.some(r => path.startsWith(r))) {
-    return roles.some(role => [UserRole.GUEST].includes(role));
-  } else if (memberRoutes.some(r => path.startsWith(r))) {
-    return roles.some(role => [UserRole.MEMBER].includes(role));
+  }
+  if (adminRoutes.some(r => path.startsWith(r))) {
+    return roles.includes(UserRole.ADMIN);
   } else if (coordRoutes.some(r => path.startsWith(r))) {
-    return roles.includes(UserRole.COORDINATOR);
+    return roles.some(role => [UserRole.ADMIN, UserRole.COORDINATOR].includes(role));
+  } else if (memberRoutes.some(r => path.startsWith(r))) {
+    return roles.some(role => [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.MEMBER].includes(role));
+  } else if (guestRoutes.some(r => path.startsWith(r))) {
+    return roles.some(role => [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.MEMBER, UserRole.GUEST].includes(role));
   }
   return false;
 }
@@ -50,9 +53,9 @@ export function middleware(req: NextRequest) {
     } catch {
       userData = null;
     }
-    const role = userData?.role || 'guest';
+    const roles = userData?.roles || [UserRole.GUEST];
 
-    if (!canAccess(path, role)) {
+    if (!canAccess(path, roles)) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
   }

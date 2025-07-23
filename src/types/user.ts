@@ -51,6 +51,14 @@ export function mapRoleToUserRole(role: string): UserRole {
 }
 
 export function mapDbUserToUser(dbUser: DbUser): User {
+  // If userRoles empty it is guest
+  let userRoles: UserRole[];
+  if (!dbUser.roles || dbUser.roles.length === 0) {
+    userRoles = [UserRole.GUEST];
+  } else {
+    userRoles = dbUser.roles.map(mapRoleToUserRole);
+  }
+
   return {
     istid: dbUser.istid,
     name: dbUser.name,
@@ -61,7 +69,7 @@ export function mapDbUserToUser(dbUser: DbUser): User {
     preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
     photo: dbUser.photo_path ?? `/api/user/photo/${dbUser.istid}`,
     courses: dbUser.courses ?? [],
-    roles: dbUser.roles?.map(mapRoleToUserRole) ?? [],
+    roles: userRoles,
     teams: dbUser.teams ?? [],
   };
 }

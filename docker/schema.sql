@@ -398,8 +398,8 @@ RETURNS TABLE (
     phone VARCHAR(15),
     courses TEXT[],
     photo_path TEXT,
-    role TEXT,
-    teams TEXT[]
+    roles TEXT[],
+    teams VARCHAR(30)[]
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -410,18 +410,13 @@ BEGIN
         u.phone,
         u.courses,
         u.photo_path,
-        CASE 
-            WHEN 'admin' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 'admin'
-            WHEN 'coordinator' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 'coordinator'
-            WHEN 'member' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 'member'
-            ELSE 'guest'
-        END as role,
-        COALESCE(user_teams.teams_array, ARRAY[]::TEXT[]) as teams
+        COALESCE(access_levels.access_array, ARRAY[]::TEXT[]) AS roles,
+        COALESCE(user_teams.teams_array,ARRAY[]::VARCHAR(30)[]) as teams
     FROM neiist.users u
     LEFT JOIN (
         SELECT 
             uar.user_istid,
-            array_agg(uar.access) as access_array
+            array_agg(uar.access::TEXT) as access_array  -- ADD ::TEXT HERE!
         FROM neiist.user_access_roles uar
         GROUP BY uar.user_istid
     ) access_levels ON u.istid = access_levels.user_istid
@@ -435,9 +430,9 @@ BEGIN
     ) user_teams ON u.istid = user_teams.user_istid
     ORDER BY 
         CASE 
-            WHEN 'admin' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 1
-            WHEN 'coordinator' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 2
-            WHEN 'member' = ANY(COALESCE(access_levels.access_array, ARRAY[]::neiist.user_access_enum[])) THEN 3
+            WHEN 'admin' = ANY(COALESCE(access_levels.access_array, ARRAY[]::TEXT[])) THEN 1
+            WHEN 'coordinator' = ANY(COALESCE(access_levels.access_array, ARRAY[]::TEXT[])) THEN 2
+            WHEN 'member' = ANY(COALESCE(access_levels.access_array, ARRAY[]::TEXT[])) THEN 3
             ELSE 4
         END,
         u.name;
@@ -596,5 +591,92 @@ BEGIN
       AND email_token.expires_at > NOW()
     ORDER BY email_token.expires_at DESC
     LIMIT 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all departments
+CREATE OR REPLACE FUNCTION neiist.get_all_departments()
+RETURNS TABLE (
+    name VARCHAR(30),
+    active BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT d.name, d.active
+    FROM neiist.departments d
+    ORDER BY d.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all teams
+CREATE OR REPLACE FUNCTION neiist.get_all_teams()
+RETURNS TABLE (
+    name VARCHAR(30),
+    description TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT t.name, t.description
+    FROM neiist.teams t
+    ORDER BY t.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all admin bodies
+CREATE OR REPLACE FUNCTION neiist.get_all_admin_bodies()
+RETURNS TABLE (
+    name VARCHAR(30)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT ab.name
+    FROM neiist.admin_bodies ab
+    ORDER BY ab.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all valid department roles (useful for admin interface)
+CREATE OR REPLACE FUNCTION neiist.get_all_valid_department_roles()
+RETURNS TABLE (
+    department_name VARCHAR(30),
+    role_name VARCHAR(40),
+    access neiist.user_access_enum,
+    active BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT vdr.department_name, vdr.role_name, vdr.access, vdr.active
+    FROM neiist.valid_department_roles vdr
+    ORDER BY vdr.department_name, vdr.access DESC, vdr.role_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all memberships (useful for admin interface)
+CREATE OR REPLACE FUNCTION neiist.get_all_memberships()
+RETURNS TABLE (
+    user_istid VARCHAR(10),
+    user_name TEXT,
+    department_name VARCHAR(30),
+    role_name VARCHAR(40),
+    from_date DATE,
+    to_date DATE,
+    active BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        m.user_istid,
+        u.name as user_name,
+        m.department_name,
+        m.role_name,
+        m.from_date,
+        m.to_date,
+        CASE 
+            WHEN m.to_date IS NULL OR m.to_date > CURRENT_DATE THEN TRUE
+            ELSE FALSE
+        END as active
+    FROM neiist.membership m
+    JOIN neiist.users u ON m.user_istid = u.istid
+    ORDER BY u.name, m.department_name, m.role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
