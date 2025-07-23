@@ -8,7 +8,8 @@ import { FaSearch, FaChevronLeft } from 'react-icons/fa';
 import BlogHeader from '@/components/blog/BlogHeader';
 import BlogToolbar from '@/components/blog/BlogToolbar';
 import BlogFilterbar from '@/components/blog/BlogFilterbar';
-import { Button } from "@/components/ui/button"
+
+import { NewsGrid } from "@/components/blog/NewsGrid"
 
 export default function BlogPage() {
   const { user, loading } = useUser();
@@ -30,7 +31,57 @@ export default function BlogPage() {
       <BlogHeader />
       <BlogToolbar onFilterClick={() => setSidebarOpen(true)} />
       <div className={styles.content}>
-        ARTIGOS
+        <NewsGrid
+          news={[
+            {
+              title: "Primeira Notícia",
+              description: "Descrição curta da primeira notícia para testar o card.",
+              image: "",
+              date: "23/07/2025",
+              author: "Autor 1",
+              tag: "Tag 1"
+            },
+            {
+              title: "Segunda Notícia",
+              description: "Outra notícia interessante para mostrar o grid.",
+              image: "",
+              date: "22/07/2025",
+              author: "Autor 2",
+              tag: "Tag 2"
+            },
+            {
+              title: "Terceira Notícia",
+              description: "Mais uma notícia para preencher a grid de cards.",
+              date: "21/07/2025",
+              author: "Autor 3",
+              tag: "Tag 3"
+            },
+            {
+              title: "Primeira Notícia",
+              description: "Descrição curta da primeira notícia para testar o card.",
+              image: "",
+              date: "23/07/2025",
+              author: "Autor 1",
+              tag: "Tag 1"
+            },
+            {
+              title: "Segunda Notícia",
+              description: "Outra notícia interessante para mostrar o grid.",
+              image: "",
+              date: "22/07/2025",
+              author: "Autor 2",
+              tag: "Tag 2"
+            },
+            {
+              title: "Terceira Notícia",
+              description: "Mais uma notícia para preencher a grid de cards.",
+              image: "",
+              date: "21/07/2025",
+              author: "Autor 3",
+              tag: "Tag 3"
+            }
+          ]}
+        />
       </div>
     </div>
   );
