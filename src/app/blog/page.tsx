@@ -8,6 +8,7 @@ import { FaSearch, FaChevronLeft } from 'react-icons/fa';
 import BlogHeader from '@/components/blog/BlogHeader';
 import BlogToolbar from '@/components/blog/BlogToolbar';
 import BlogFilterbar from '@/components/blog/BlogFilterbar';
+import { Button } from "@/components/ui/button"
 
 export default function BlogPage() {
   const { user, loading } = useUser();
