@@ -52,7 +52,7 @@ FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
 FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
 # This username and password must match the ones created in schema.sql
-DATABASE_URL=postgresql://neiist_app_user:neiist_app_password@localhost:5432/neiist
+DATABASE_URL=postgresql://neiist_app_user:neiist_app_user_password@localhost:5432/neiist
 EOF
     echo "✅ .env file created successfully."
   fi
@@ -63,7 +63,7 @@ FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
 FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
 # This username and password must match the ones created in schema.sql
-DATABASE_URL=postgresql://neiist_app_user:neiist_app_password@localhost:5432/neiist
+DATABASE_URL=postgresql://neiist_app_user:neiist_app_user_password@localhost:5432/neiist
 EOF
   echo "✅ .env file created successfully."
 fi
