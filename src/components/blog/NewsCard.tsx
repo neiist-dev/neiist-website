@@ -1,13 +1,13 @@
 import * as React from "react"
+import Image from "next/image"
 import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-  CardDescription,
-} from "../ui/card"
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar"
-import { Badge } from "../ui/badge"
+  CardTitle
+} from "@/components/ui/Card"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar"
+import { Badge } from "@/components/ui/Badge"
 
 interface NewsCardProps {
   title: string
@@ -31,10 +31,12 @@ export function NewsCard({
       <div className="px-4 pt-4">
         <div className="w-full h-36 bg-muted flex items-center justify-center rounded-lg overflow-hidden">
           {image ? (
-            <img
+            <Image
               src={image}
               alt={title}
+              fill
               className="object-cover w-full h-full"
+              sizes="(max-width: 384px) 100vw, 384px"
             />
           ) : (
             <div className="text-sm text-muted-foreground">Sem imagem</div>
@@ -46,7 +48,7 @@ export function NewsCard({
         <div className="flex items-center text-sm text-muted-foreground space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarImage src="TODO" alt={author} />
-            <AvatarFallback>{author[0]}</AvatarFallback>
+            <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
           </Avatar>
           <span className="text-gray-800">{author}</span>
           <span>|</span>
