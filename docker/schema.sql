@@ -245,13 +245,15 @@ CREATE OR REPLACE FUNCTION neiist.remove_team(
   u_name VARCHAR(30)
 ) RETURNS VOID AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name)
-  THEN
-    RAISE EXCEPTION 'A equipa "%" não existe.', u_name;
-  END IF;
-  UPDATE neiist.teams SET active = FALSE WHERE name = u_name;
-  UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-  UPDATE neiist.membership SET active = FALSE WHERE department_name = u_name;
+    IF NOT EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name)
+    THEN
+        RAISE EXCEPTION 'A equipa "%" não existe.', u_name;
+    END IF;
+    UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
+    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+        UPDATE neiist.membership
+        SET to_date = CURRENT_DATE
+        WHERE department_name = u_name AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -273,13 +275,15 @@ CREATE OR REPLACE FUNCTION neiist.remove_admin_body(
   u_name VARCHAR(30)
 ) RETURNS VOID AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name
-  ) THEN
-    RAISE EXCEPTION 'O órgão de administração "%" não existe.', u_name;
-  END IF;
-  UPDATE neiist.admin_bodies SET active = FALSE WHERE name = u_name;
-  UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-  UPDATE neiist.membership SET active = FALSE WHERE department_name = u_name;
+    IF NOT EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name
+    ) THEN
+        RAISE EXCEPTION 'O órgão de administração "%" não existe.', u_name;
+    END IF;
+    UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
+    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+    UPDATE neiist.membership
+        SET to_date = CURRENT_DATE
+        WHERE department_name = u_name AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -647,12 +651,11 @@ RETURNS TABLE (
   active BOOLEAN
 ) AS $$
 BEGIN
-  RETURN QUERY
-  SELECT t.name, t.description, d.active
-  FROM neiist.teams t
-  JOIN neiist.departments d ON t.name = d.name
-  WHERE d.active = TRUE
-  ORDER BY t.name;
+    RETURN QUERY
+    SELECT t.name, t.description, d.active
+    FROM neiist.teams t
+    JOIN neiist.departments d ON t.name = d.name
+    ORDER BY t.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -663,12 +666,11 @@ RETURNS TABLE (
   active BOOLEAN
 ) AS $$
 BEGIN
-  RETURN QUERY
-  SELECT ab.name, d.active
-  FROM neiist.admin_bodies ab
-  JOIN neiist.departments d ON ab.name = d.name
-  WHERE d.active = TRUE
-  ORDER BY ab.name;
+    RETURN QUERY
+    SELECT ab.name, d.active
+    FROM neiist.admin_bodies ab
+    JOIN neiist.departments d ON ab.name = d.name
+    ORDER BY ab.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
