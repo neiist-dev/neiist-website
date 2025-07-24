@@ -9,7 +9,7 @@ interface LoginButtonProps {
 const LoginButton: React.FC<LoginButtonProps> = ({ onClick }) => {
   return (
     <button onClick={onClick} className={styles.loginButton}>
-      Login <LuLogIn className={styles.loginIcon}/>
+      Login <LuLogIn className={styles.loginIcon} />
     </button>
   );
 };

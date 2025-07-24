@@ -50,7 +50,7 @@
   transition: transform 0.3s ease;
 }
 
-@media (max-width:1285px) {
+@media (max-width: 1285px) {
   .mission {
     display: none;
   }

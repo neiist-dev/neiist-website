@@ -1,35 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { addAdminBody, removeAdminBody, getAllAdminBodies, getUser } from '@/utils/dbUtils';
-import { UserRole, mapRoleToUserRole } from '@/types/user';
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { addAdminBody, removeAdminBody, getAllAdminBodies, getUser } from "@/utils/dbUtils";
+import { UserRole, mapRoleToUserRole } from "@/types/user";
 
 async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
-  const accessToken = (await cookies()).get('accessToken')?.value;
+  const accessToken = (await cookies()).get("accessToken")?.value;
   if (!accessToken) {
-    return { isAuthorized: false, error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
+    return {
+      isAuthorized: false,
+      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
+    };
   }
 
   try {
-    const userData = JSON.parse((await cookies()).get('userData')?.value || 'null');
+    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
     if (!userData) {
-      return { isAuthorized: false, error: NextResponse.json({ error: "User data not found" }, { status: 404 }) };
+      return {
+        isAuthorized: false,
+        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
+      };
     }
 
     const currentUser = await getUser(userData.istid);
     if (!currentUser) {
-      return { isAuthorized: false, error: NextResponse.json({ error: "Current user not found" }, { status: 404 }) };
+      return {
+        isAuthorized: false,
+        error: NextResponse.json({ error: "Current user not found" }, { status: 404 }),
+      };
     }
 
-    const currentUserRoles = currentUser.roles?.map(role => mapRoleToUserRole(role)) || [UserRole.GUEST];
-    const isAdmin = currentUserRoles.includes(UserRole.ADMIN);
+    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
+      UserRole._GUEST,
+    ];
+    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
 
     if (!isAdmin) {
-      return { isAuthorized: false, error: NextResponse.json({ error: "Insufficient permissions - Admin required" }, { status: 403 }) };
+      return {
+        isAuthorized: false,
+        error: NextResponse.json(
+          { error: "Insufficient permissions - Admin required" },
+          { status: 403 }
+        ),
+      };
     }
     return { isAuthorized: true };
   } catch (error) {
-    console.error('Error checking permissions:', error);
-    return { isAuthorized: false, error: NextResponse.json({ error: "Internal server error" }, { status: 500 }) };
+    console.error("Error checking permissions:", error);
+    return {
+      isAuthorized: false,
+      error: NextResponse.json({ error: "Internal server error" }, { status: 500 }),
+    };
   }
 }
 
@@ -40,13 +60,13 @@ export async function GET() {
   }
   try {
     const adminBodies = await getAllAdminBodies();
-    const transformedAdminBodies = adminBodies.map(adminBody => ({
+    const transformedAdminBodies = adminBodies.map((adminBody) => ({
       ...adminBody,
-      active: true // Since getAllAdminBodies only returns active admin bodies
+      active: true, // Since getAllAdminBodies only returns active admin bodies
     }));
     return NextResponse.json(transformedAdminBodies);
   } catch {
-    return NextResponse.json({ error: 'Failed to fetch admin bodies' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch admin bodies" }, { status: 500 });
   }
 }
 
@@ -58,17 +78,17 @@ export async function POST(req: NextRequest) {
   try {
     const { name } = await req.json();
     if (!name) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
     const success = await addAdminBody(name);
     if (success) {
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: 'Failed to add admin body' }, { status: 500 });
+      return NextResponse.json({ error: "Failed to add admin body" }, { status: 500 });
     }
   } catch {
-    return NextResponse.json({ error: 'Failed to add admin body' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to add admin body" }, { status: 500 });
   }
 }
 
@@ -80,16 +100,16 @@ export async function DELETE(req: NextRequest) {
   try {
     const { name } = await req.json();
     if (!name) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
     const success = await removeAdminBody(name);
     if (success) {
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: 'Failed to remove admin body' }, { status: 500 });
+      return NextResponse.json({ error: "Failed to remove admin body" }, { status: 500 });
     }
   } catch {
-    return NextResponse.json({ error: 'Failed to remove admin body' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to remove admin body" }, { status: 500 });
   }
 }

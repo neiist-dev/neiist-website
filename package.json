@@ -4,12 +4,17 @@
   "private": true,
   "scripts": {
     "setup": "chmod +x ./setup.sh && ./setup.sh",
-    "docker-up": "docker compose -f ./docker/docker-compose.yml up -d",
-    "docker-down": "docker compose -f ./docker/docker-compose.yml down",
-    "dev": "yarn docker-up && next dev --turbopack; docker compose -f ./docker/docker-compose.yml stop > /dev/null 2>&1",
-    "lint": "next lint",
+    "dev": "docker compose -f ./docker/docker-compose.yml up -d && next dev --turbopack; docker compose -f ./docker/docker-compose.yml stop > /dev/null 2>&1",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type:check": "tsc --noEmit",
+    "clean": "rm -rf .next out dist build",
+    "fresh": "yarn clean && yarn install",
+    "db:reset": "docker compose -f ./docker/docker-compose.yml down && docker volume rm neiist_db && docker compose -f ./docker/docker-compose.yml up -d"
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.17",
@@ -23,7 +28,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "slick-carousel": "^1.8.1",
     "swiper": "^11.2.8"
   },
   "devDependencies": {
@@ -31,10 +35,16 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
     "eslint-plugin-validate-filename": "^1.0.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
     "typescript": "^5"
   }
 }

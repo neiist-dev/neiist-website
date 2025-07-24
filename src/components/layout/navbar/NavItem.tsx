@@ -24,11 +24,21 @@ interface UserMenuItemProps {
   className?: string;
 }
 
-const UserMenuItem: React.FC<UserMenuItemProps> = ({ href, label, icon: Icon, onClick, className }) => {
+const UserMenuItem: React.FC<UserMenuItemProps> = ({
+  href,
+  label,
+  icon: Icon,
+  onClick,
+  className,
+}) => {
   return (
     <div>
       <Link href={href} className={`${styles.menuItem} ${className || ""}`} onClick={onClick}>
-        {Icon && <span className={styles.icon}><Icon/></span>}
+        {Icon && (
+          <span className={styles.icon}>
+            <Icon />
+          </span>
+        )}
         {label}
       </Link>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useUser } from '@/context/UserContext';
+import { useUser } from "@/context/UserContext";
 import { login, logout } from "@/utils/userUtils";
 import { Squash } from "hamburger-react";
 import { NavItem } from "@/components/layout/navbar/NavItem";
@@ -47,8 +47,7 @@ export default function NavBar() {
   const toggleMenu = () => {
     if (menuState === "open" || menuState === "closing") {
       closeMenu();
-    }
-    else {
+    } else {
       setMenuState("open");
     }
   };
@@ -64,32 +63,42 @@ export default function NavBar() {
   };
 
   const renderNavItems = () => {
-    return navLinks.map(link => (
-      <NavItem key={link.name} href={link.href} label={link.name} />
-    ));
+    return navLinks.map((link) => <NavItem key={link.name} href={link.href} label={link.name} />);
   };
 
   return (
     <header className={`${styles.header} ${isSticky ? styles.sticky : ""}`}>
       <nav className={styles.navigation}>
-        <Link href="/" className={styles.logo}><NeiistLogo /></Link>
-        <div className={styles.navItems}>
-          {renderNavItems()}
-        </div>
+        <Link href="/" className={styles.logo}>
+          <NeiistLogo />
+        </Link>
+        <div className={styles.navItems}>{renderNavItems()}</div>
       </nav>
       <div className={styles.actions}>
         <ShoppingCart />
-        {user ? <UserMenu userData={user} logout={handleLogout} /> : <LoginButton onClick={login} />}
+        {user ? (
+          <UserMenu userData={user} logout={handleLogout} />
+        ) : (
+          <LoginButton onClick={login} />
+        )}
         <div className={styles.menuButton}>
-          <Squash toggled={menuState === "open"} toggle={toggleMenu} size={24} color="var(--foreground-colour)" rounded />
+          <Squash
+            toggled={menuState === "open"}
+            toggle={toggleMenu}
+            size={24}
+            color="var(--foreground-colour)"
+            rounded
+          />
         </div>
       </div>
       {(menuState === "open" || menuState === "closing") && (
-        <div ref={menuRef} className={`${styles.menu} ${menuState === "closing" ? styles.slideOut : ''}`} >
-          <Link href="/" className={styles.logo}><NeiistLogo /></Link>
-          <nav className={styles.navItems}>
-            {renderNavItems()}
-          </nav>
+        <div
+          ref={menuRef}
+          className={`${styles.menu} ${menuState === "closing" ? styles.slideOut : ""}`}>
+          <Link href="/" className={styles.logo}>
+            <NeiistLogo />
+          </Link>
+          <nav className={styles.navItems}>{renderNavItems()}</nav>
         </div>
       )}
     </header>

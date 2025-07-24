@@ -8,7 +8,11 @@
   border: 2px solid var(--foreground-colour);
   padding: 6px 15px;
   cursor: pointer;
-  transition: background 0.3s, color 0.3s, border 0.3s, transform 0.1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  transition:
+    background 0.3s,
+    color 0.3s,
+    border 0.3s,
+    transform 0.1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 .loginButton:hover {
   color: var(--background-colour);

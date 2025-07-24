@@ -4,18 +4,15 @@ import { User } from "@/types/user";
 import { getUser, updateUser, updateUserPhoto } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole } from "@/types/user";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { userId: string } }
-) {
-  const accessToken = (await cookies()).get('accessToken')?.value;
-  
+export async function PUT(request: Request, { params }: { params: { userId: string } }) {
+  const accessToken = (await cookies()).get("accessToken")?.value;
+
   if (!accessToken) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   try {
-    const userData = JSON.parse((await cookies()).get('userData')?.value || 'null');
+    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
     if (!userData) {
       return NextResponse.json({ error: "User data not found" }, { status: 404 });
     }
@@ -28,8 +25,10 @@ export async function PUT(
       return NextResponse.json({ error: "Current user not found" }, { status: 404 });
     }
 
-    const currentUserRoles = currentUser.roles?.map(role => mapRoleToUserRole(role)) || [UserRole.GUEST];
-    const isAdmin = currentUserRoles.includes(UserRole.ADMIN);
+    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
+      UserRole._GUEST,
+    ];
+    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
     const isSelfUpdate = userData.istid === targetUserId;
 
     if (!isSelfUpdate && !isAdmin) {
@@ -45,28 +44,28 @@ export async function PUT(
 
     if (updateData.alternativeEmail !== undefined) {
       const email = updateData.alternativeEmail.trim();
-      if (email === '' || isValidEmail(email)) {
+      if (email === "" || isValidEmail(email)) {
         updates.alternativeEmail = email || null;
       } else {
         return NextResponse.json({ error: "Email alternativo inválido" }, { status: 400 });
       }
     }
-    
+
     if (updateData.phone !== undefined) {
       const phone = updateData.phone.trim();
-      if (phone === '' || isValidPhone(phone)) {
+      if (phone === "" || isValidPhone(phone)) {
         updates.phone = phone || null;
       } else {
         return NextResponse.json({ error: "Número de telefone inválido" }, { status: 400 });
       }
     }
-    
+
     if (updateData.preferredContactMethod !== undefined) {
-      const validMethods = ['email', 'alternativeEmail', 'phone'];
+      const validMethods = ["email", "alternativeEmail", "phone"];
       if (validMethods.includes(updateData.preferredContactMethod)) {
         let dbContactMethod = updateData.preferredContactMethod;
-        if (updateData.preferredContactMethod === 'alternativeEmail') {
-          dbContactMethod = 'alternative_email';
+        if (updateData.preferredContactMethod === "alternativeEmail") {
+          dbContactMethod = "alternative_email";
         }
         updates.preferredContactMethod = dbContactMethod;
       } else {
@@ -103,7 +102,7 @@ export async function PUT(
         try {
           await updateUserPhoto(targetUserId, updateData.photo);
         } catch (photoError) {
-          console.error('Error updating photo:', photoError);
+          console.error("Error updating photo:", photoError);
           return NextResponse.json({ error: "Erro ao atualizar foto" }, { status: 500 });
         }
       }
@@ -116,21 +115,23 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Perfil atualizado com sucesso"
+    return NextResponse.json({
+      success: true,
+      message: "Perfil atualizado com sucesso",
     });
-
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    console.error("Error updating user profile:", error);
 
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
 
-    return NextResponse.json({ 
-      error: "Erro interno do servidor" 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Erro interno do servidor",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -143,5 +144,5 @@ function isValidEmail(email: string): boolean {
 // Helper function to validate phone number
 function isValidPhone(phone: string): boolean {
   const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ""));
 }

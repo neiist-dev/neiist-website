@@ -15,7 +15,8 @@ export async function fetchUserData() {
     });
 
     if (!response.ok) {
-      if (response.status === 401) // No accessToken present.
+      if (response.status === 401)
+        // No accessToken present.
         return null;
       console.error("Failed to fetch user data:", response.statusText);
       return null;

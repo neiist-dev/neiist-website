@@ -5,7 +5,7 @@ export interface User {
   alternativeEmail?: string;
   alternativeEmailVerified: boolean;
   phone?: string;
-  preferredContactMethod?: 'email' | 'alternativeEmail' | 'phone';
+  preferredContactMethod?: "email" | "alternativeEmail" | "phone";
   photo: string;
   courses: string[];
   roles: UserRole[];
@@ -17,7 +17,7 @@ interface DbUser {
   email: string;
   alternative_email?: string;
   phone?: string;
-  preferred_contact_method?: 'email' | 'alternativeEmail' | 'phone';
+  preferred_contact_method?: "email" | "alternativeEmail" | "phone";
   photo_path?: string;
   courses?: string[];
   roles?: string[];
@@ -31,22 +31,22 @@ export function getFirstAndLastName(user: User): string {
 }
 
 export enum UserRole {
-  GUEST = 'guest',
-  MEMBER = 'member',
-  COORDINATOR = 'coordinator',
-  ADMIN = 'admin',
+  _GUEST = "guest",
+  _MEMBER = "member",
+  _COORDINATOR = "coordinator",
+  _ADMIN = "admin",
 }
 
 export function mapRoleToUserRole(role: string): UserRole {
   switch (role.toLowerCase()) {
-    case 'member':
-      return UserRole.MEMBER;
-    case 'coordinator':
-      return UserRole.COORDINATOR;
-    case 'admin':
-      return UserRole.ADMIN;
+    case "member":
+      return UserRole._MEMBER;
+    case "coordinator":
+      return UserRole._COORDINATOR;
+    case "admin":
+      return UserRole._ADMIN;
     default:
-      return UserRole.GUEST;
+      return UserRole._GUEST;
   }
 }
 
@@ -54,7 +54,7 @@ export function mapDbUserToUser(dbUser: DbUser): User {
   // If userRoles empty it is guest
   let userRoles: UserRole[];
   if (!dbUser.roles || dbUser.roles.length === 0) {
-    userRoles = [UserRole.GUEST];
+    userRoles = [UserRole._GUEST];
   } else {
     userRoles = dbUser.roles.map(mapRoleToUserRole);
   }

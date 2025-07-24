@@ -68,7 +68,9 @@
   font-size: 0.9rem;
   background: white;
   color: var(--foreground-colour);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   box-sizing: border-box;
 }
 
@@ -88,20 +90,20 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .section {
     padding: 1rem;
   }
-  
+
   .field {
     padding: 0.75rem;
     min-height: 60px;
   }
-  
+
   .value {
     font-size: 0.9rem;
   }
-  
+
   .input {
     font-size: 0.85rem;
     padding: 0.5rem;
@@ -112,11 +114,11 @@
   .grid {
     grid-template-columns: 1fr;
   }
-  
+
   .field {
     min-height: 55px;
   }
-  
+
   .value {
     font-size: 0.85rem;
   }

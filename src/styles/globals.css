@@ -1,23 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Secular+One&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Secular+One&display=swap");
 
 :root {
-  --background-colour: #F2F2F7;
+  --background-colour: #f2f2f7;
   --foreground-colour: #333333;
-  --primary-colour: #2863FD;
-  --secondary-colour: #258BE3;
-  --tertiary-colour: #34D1F9;
-  --quaternary-colour: #5EE8FA;
+  --primary-colour: #2863fd;
+  --secondary-colour: #258be3;
+  --tertiary-colour: #34d1f9;
+  --quaternary-colour: #5ee8fa;
   --hover: rgba(0, 0, 0, 0.05);
-  --font-family: 'Secular One';
+  --font-family: "Secular One";
 }
 
 .dark {
-  --background-colour: #1E1E1E;
-  --foreground-colour: #E0E0E0;
+  --background-colour: #1e1e1e;
+  --foreground-colour: #e0e0e0;
   --hover: (224, 224, 224, 0.1);
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
@@ -25,7 +26,15 @@ html, body {
   background-color: var(--background-colour);
 }
 
-h1, h2, h3, h4, h5, h6, p, a, li {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+li {
   color: var(--foreground-colour);
 }
 
@@ -42,7 +51,8 @@ ul li {
   margin-bottom: 0.3rem;
 }
 
-p, ul {
+p,
+ul {
   font-size: 0.9rem;
   line-height: 1.6;
 }

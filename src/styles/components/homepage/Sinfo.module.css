@@ -45,7 +45,7 @@
 }
 
 .button:active {
-  transform: scale(0.90);
+  transform: scale(0.9);
 }
 
 .text {
@@ -70,7 +70,6 @@
     width: 80vw;
   }
 }
-
 
 @media (max-width: 480px) {
   .title {

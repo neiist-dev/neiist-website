@@ -47,7 +47,9 @@
   min-width: 180px;
   background-color: var(--background-colour);
   padding: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.07);
   box-sizing: border-box;
@@ -65,7 +67,7 @@
 
 .divider {
   height: 1px;
-  background: rgba(0,0,0,0.07);
+  background: rgba(0, 0, 0, 0.07);
   margin: 0.25rem 0;
 }
 
@@ -101,7 +103,7 @@
     padding: 0.5rem;
   }
 
-.profileDropdown {
+  .profileDropdown {
     position: fixed;
     top: 4.5rem;
     width: 100vw;

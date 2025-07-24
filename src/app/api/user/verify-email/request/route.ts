@@ -29,8 +29,7 @@ export async function POST(request: Request) {
     from: `"NEIIST" <${process.env.SMTP_USER}>`,
     to: alternativeEmail,
     subject: "Verifique o seu email alternativo",
-    html: 
-    ` <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
+    html: ` <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
         <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
         <h2 style="color: #2863FD; margin-bottom: 1rem;">Confirmação de Email Alternativo</h2>
         <p style="font-size: 1.1rem;">Olá!</p>

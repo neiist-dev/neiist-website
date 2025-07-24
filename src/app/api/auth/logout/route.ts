@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const response = NextResponse.redirect(new URL('/', request.url));
+  const response = NextResponse.redirect(new URL("/", request.url));
 
-  response.cookies.set('accessToken', '', {
+  response.cookies.set("accessToken", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === "production",
     maxAge: 0,
-    path: '/',
+    path: "/",
   });
 
-  response.cookies.set('userData', '', {
+  response.cookies.set("userData", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === "production",
     maxAge: 0,
-    path: '/',
+    path: "/",
   });
 
   return response;

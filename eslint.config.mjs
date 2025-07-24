@@ -1,21 +1,17 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
+  baseDirectory: import.meta.dirname,
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.config({
+    extends: ["next/core-web-vitals", "next/typescript", "prettier"],
+  }),
   {
-   plugins: {
-    "validate-filename": await import("eslint-plugin-validate-filename"),
+    plugins: {
+      "validate-filename": await import("eslint-plugin-validate-filename"),
     },
-
     rules: {
       "validate-filename/naming-rules": [
         "error",
@@ -39,14 +35,32 @@ const eslintConfig = [
               target: "**/hooks/**",
               patterns: "^use",
             },
-            {
-              case: "camel",
-              target: "**/providers/**",
-              patterns: "^[a-zA-Z]*Provider",
-            },
           ],
         },
       ],
+      "max-len": [
+        "error",
+        {
+          code: 100,
+          tabWidth: 2,
+          ignoreUrls: true,
+          ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+          ignoreRegExpLiterals: true,
+          ignoreComments: true,
+          ignoreTrailingComments: true,
+          ignorePattern: "^\\s*// eslint-disable-next-line|^\\s*[A-Za-zÀ-ÿ\\s.,!?()\\-–—]+\\s*$",
+        },
+      ],
+      "no-console": ["error", { allow: ["error", "warn"] }],
+      "no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+      "no-irregular-whitespace": "error",
     },
   },
 ];

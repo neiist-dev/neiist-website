@@ -1,95 +1,99 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import PersonalInfoCard from '@/components/profile/PersonalInfoCard';
-import { useUser } from '@/context/UserContext';
-import { User, UserRole, mapRoleToUserRole } from '@/types/user';
-import styles from '@/styles/pages/ProfilePage.module.css';
+import { useState, useEffect } from "react";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import PersonalInfoCard from "@/components/profile/PersonalInfoCard";
+import { useUser } from "@/context/UserContext";
+import { User, UserRole, mapRoleToUserRole } from "@/types/user";
+import styles from "@/styles/pages/ProfilePage.module.css";
 
 export default function ProfilePage() {
   const { user, setUser } = useUser();
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    alternativeEmail: '',
-    phone: '',
-    preferredContactMethod: 'email' as 'email' | 'alternativeEmail' | 'phone',
-    photo: ''
+    alternativeEmail: "",
+    phone: "",
+    preferredContactMethod: "email" as "email" | "alternativeEmail" | "phone",
+    photo: "",
   });
   const [saving, setSaving] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
-  const userRoles = user?.roles?.map(role => mapRoleToUserRole(role)) || [UserRole.GUEST];
-  const canEditPhoto = userRoles.includes(UserRole.ADMIN);
+  const userRoles = user?.roles?.map((role) => mapRoleToUserRole(role)) || [UserRole._GUEST];
+  const canEditPhoto = userRoles.includes(UserRole._ADMIN);
 
   useEffect(() => {
     if (user) {
       setFormData({
-        alternativeEmail: user.alternativeEmail || '',
-        phone: user.phone || '',
-        preferredContactMethod: (user.preferredContactMethod || 'email') as 'email' | 'alternativeEmail' | 'phone',
-        photo: user.photo || ''
+        alternativeEmail: user.alternativeEmail || "",
+        phone: user.phone || "",
+        preferredContactMethod: (user.preferredContactMethod || "email") as
+          | "email"
+          | "alternativeEmail"
+          | "phone",
+        photo: user.photo || "",
       });
       setPhotoPreview(null);
     }
   }, [user]);
 
   const handleFormChange = (field: string, value: string) => {
-    if (field === 'preferredContactMethod') {
-      const validMethods: Array<'email' | 'alternativeEmail' | 'phone'> = ['email', 'alternativeEmail', 'phone'];
-      if (validMethods.includes(value as 'email' | 'alternativeEmail' | 'phone')) {
-        setFormData(prev => ({ 
-          ...prev, 
-          [field]: value as 'email' | 'alternativeEmail' | 'phone'
+    if (field === "preferredContactMethod") {
+      const validMethods: Array<"email" | "alternativeEmail" | "phone"> = [
+        "email",
+        "alternativeEmail",
+        "phone",
+      ];
+      if (validMethods.includes(value as "email" | "alternativeEmail" | "phone")) {
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value as "email" | "alternativeEmail" | "phone",
         }));
       }
     } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+      setFormData((prev) => ({ ...prev, [field]: value }));
     }
   };
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    setError('');
+    setError("");
 
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024 || !file.type.startsWith('image/')) {
-      setError('Invalid image, select a image file with less than 5 Mb.');
+    if (file.size > 5 * 1024 * 1024 || !file.type.startsWith("image/")) {
+      setError("Invalid image, select a image file with less than 5 Mb.");
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => {
       setPhotoPreview(reader.result as string);
-      setFormData(prev => ({ ...prev, photo: reader.result as string }));
+      setFormData((prev) => ({ ...prev, photo: reader.result as string }));
     };
     reader.readAsDataURL(file);
   };
 
-const handleSave = async () => {
+  const handleSave = async () => {
     setSaving(true);
-    setError('');
+    setError("");
     try {
-      if (
-        formData.alternativeEmail &&
-        formData.alternativeEmail !== user?.alternativeEmail
-      ) {
-        const res = await fetch('/api/user/verify-email/request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+      if (formData.alternativeEmail && formData.alternativeEmail !== user?.alternativeEmail) {
+        const res = await fetch("/api/user/verify-email/request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             istid: user?.istid,
-            alternativeEmail: formData.alternativeEmail
+            alternativeEmail: formData.alternativeEmail,
           }),
         });
         if (!res.ok) {
           const errorData = await res.json();
-          throw new Error(errorData.error || 'Falha ao enviar email de verificação');
+          throw new Error(errorData.error || "Falha ao enviar email de verificação");
         }
-        setError('Verifique o seu email alternativo para concluir a alteração.');
-        const userRes = await fetch('/api/auth/userdata');
+        setError("Verifique o seu email alternativo para concluir a alteração.");
+        const userRes = await fetch("/api/auth/userdata");
         if (userRes.ok) {
           const updatedUser = await userRes.json();
           setUser(updatedUser);
@@ -100,7 +104,7 @@ const handleSave = async () => {
       }
       const updateData: Partial<User> = {
         phone: formData.phone,
-        preferredContactMethod: formData.preferredContactMethod
+        preferredContactMethod: formData.preferredContactMethod,
       };
 
       if (canEditPhoto && photoPreview) {
@@ -108,19 +112,19 @@ const handleSave = async () => {
       }
 
       const res = await fetch(`/api/user/update/${user?.istid}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
-        credentials: 'include'
+        credentials: "include",
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to update');
+        throw new Error(errorData.error || "Failed to update");
       }
 
       // Refresh user data after update
-      const userRes = await fetch('/api/auth/userdata');
+      const userRes = await fetch("/api/auth/userdata");
       if (userRes.ok) {
         const updatedUser = await userRes.json();
         setUser(updatedUser);
@@ -128,7 +132,7 @@ const handleSave = async () => {
 
       setEditing(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao atualizar perfil.');
+      setError(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
     } finally {
       setSaving(false);
     }
@@ -137,14 +141,17 @@ const handleSave = async () => {
   const handleCancel = () => {
     if (user) {
       setFormData({
-        alternativeEmail: user.alternativeEmail || '',
-        phone: user.phone || '',
-        preferredContactMethod: (user.preferredContactMethod || 'email') as 'email' | 'alternativeEmail' | 'phone',
-        photo: user.photo || ''
+        alternativeEmail: user.alternativeEmail || "",
+        phone: user.phone || "",
+        preferredContactMethod: (user.preferredContactMethod || "email") as
+          | "email"
+          | "alternativeEmail"
+          | "phone",
+        photo: user.photo || "",
       });
     }
     setPhotoPreview(null);
-    setError('');
+    setError("");
     setEditing(false);
   };
 
@@ -167,7 +174,7 @@ const handleSave = async () => {
             name: user.name,
             istid: user.istid,
             roles: user.roles || [],
-            photo: user.photo
+            photo: user.photo,
           }}
           photoPreview={photoPreview}
           editing={editing}
@@ -175,11 +182,7 @@ const handleSave = async () => {
           canEditPhoto={canEditPhoto}
         />
 
-        {error && (
-          <p className={styles.error}>
-            {error}
-          </p>
-        )}
+        {error && <p className={styles.error}>{error}</p>}
 
         <PersonalInfoCard
           user={user}
@@ -191,7 +194,7 @@ const handleSave = async () => {
         {editing && (
           <div className={styles.actionRow}>
             <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Guardar'}
+              {saving ? "Saving..." : "Guardar"}
             </button>
             <button className={styles.cancelBtn} onClick={handleCancel}>
               Cancelar

@@ -56,50 +56,95 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
     setTimeout(logout, 100);
   };
 
-  const isAdmin = userData.roles.includes(UserRole.ADMIN);
-  const isCoordinator = userData.roles.includes(UserRole.COORDINATOR);
-  const isMember = userData.roles.includes(UserRole.MEMBER);
+  const isAdmin = userData.roles.includes(UserRole._ADMIN);
+  const isCoordinator = userData.roles.includes(UserRole._COORDINATOR);
+  const isMember = userData.roles.includes(UserRole._MEMBER);
 
   const menuPages: MenuPage[] = [
-    { href: "/profile", label: "Profile", icon: GoPerson, roles: [UserRole.GUEST, UserRole.MEMBER, UserRole.COORDINATOR, UserRole.ADMIN] },
-    { href: "/my-orders", label: "As Minhas Encomendas", icon: LuPackage, roles: [UserRole.GUEST, UserRole.MEMBER, UserRole.COORDINATOR, UserRole.ADMIN] },
-    { href: "/placeholder", label: "Encomendas", icon: LuFileText, roles: [UserRole.MEMBER] }, //TODO Add the actual page url when existent
-    { href: "/placeholder", label: "Gerir Encomendas", icon: LuFileText, roles: [], coordinatorOnly: true }, //TODO Add the actual page url when existent
-    { href: "/placeholder", label: "Gerir Equipa", icon: GoPeople, roles: [], coordinatorOnly: true }, //TODO Add the actual page url when existent
-    { href: "/placeholder", label: "Gerir Loja", icon: LuShoppingBag, roles: [], adminOnly: true }, //TODO Add the actual page url when existent
-    { href: "/placeholder", label: "Gerir Equipas", icon: GoPeople, roles: [], adminOnly: true }, //TODO Add the actual page url when existent
+    {
+      href: "/profile",
+      label: "Profile",
+      icon: GoPerson,
+      roles: [UserRole._GUEST, UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN],
+    },
+    {
+      href: "/my-orders",
+      label: "As Minhas Encomendas",
+      icon: LuPackage,
+      roles: [UserRole._GUEST, UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN],
+    },
+    {
+      href: "/placeholder",
+      label: "Encomendas",
+      icon: LuFileText,
+      roles: [UserRole._MEMBER],
+    }, //TODO Add the actual page url when existent
+    {
+      href: "/placeholder",
+      label: "Gerir Encomendas",
+      icon: LuFileText,
+      roles: [],
+      coordinatorOnly: true,
+    }, //TODO Add the actual page url when existent
+    {
+      href: "/placeholder",
+      label: "Gerir Equipa",
+      icon: GoPeople,
+      roles: [],
+      coordinatorOnly: true,
+    }, //TODO Add the actual page url when existent
+    {
+      href: "/placeholder",
+      label: "Gerir Loja",
+      icon: LuShoppingBag,
+      roles: [],
+      adminOnly: true,
+    }, //TODO Add the actual page url when existent
+    {
+      href: "/placeholder",
+      label: "Gerir Equipas",
+      icon: GoPeople,
+      roles: [],
+      adminOnly: true,
+    }, //TODO Add the actual page url when existent
   ];
 
   const getAvailablePages = () => {
-    if (isAdmin) return menuPages.filter(p => p.roles.includes(UserRole.ADMIN) || p.adminOnly);
-    if (isCoordinator) return menuPages.filter(p => p.roles.includes(UserRole.COORDINATOR) || p.coordinatorOnly);
-    if (isMember) return menuPages.filter(p => p.roles.includes(UserRole.MEMBER));
-    return menuPages.filter(p => p.roles.includes(UserRole.GUEST));
+    if (isAdmin) return menuPages.filter((p) => p.roles.includes(UserRole._ADMIN) || p.adminOnly);
+    if (isCoordinator)
+      return menuPages.filter((p) => p.roles.includes(UserRole._COORDINATOR) || p.coordinatorOnly);
+    if (isMember) return menuPages.filter((p) => p.roles.includes(UserRole._MEMBER));
+    return menuPages.filter((p) => p.roles.includes(UserRole._GUEST));
   };
 
   const availablePages = getAvailablePages();
   const isMenuVisible = menuState === "open" || menuState === "closing";
 
-return (
+  return (
     <div className={styles.userMenuContainer} ref={menuRef} onClick={toggleMenu}>
       <Image
-        src={userData.photo} alt="User photo" 
-        width={40} height={40} className={styles.userPhoto}
+        src={userData.photo}
+        alt="User photo"
+        width={40}
+        height={40}
+        className={styles.userPhoto}
       />
       <div className={styles.userDetails}>
         <span className={styles.userName}>{userData.name}</span>
-        <span className={styles.userStatus}>{userData.roles.join(', ')}</span>
+        <span className={styles.userStatus}>{userData.roles.join(", ")}</span>
       </div>
 
       {isMenuVisible && (
         <div
-          className={`${styles.profileDropdown} ${menuState === "closing" ? styles.slideOut : ''}`}
-          onClick={(e) => e.stopPropagation()}
-        >
+          className={`${styles.profileDropdown} ${menuState === "closing" ? styles.slideOut : ""}`}
+          onClick={(e) => e.stopPropagation()}>
           {availablePages.map((page) => (
-            <UserMenuItem 
-              key={page.href + page.label} href={page.href}
-              label={page.label} icon={page.icon} onClick={closeMenu}
+            <UserMenuItem
+              key={page.href + page.label}
+              href={page.href}
+              label={page.label}
+              icon={page.icon}
+              onClick={closeMenu}
             />
           ))}
           <div className={styles.divider} />

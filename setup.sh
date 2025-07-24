@@ -3,6 +3,8 @@ set -e  # Exit immediately if a command exits with a non-zero status
 echo "🚀 NEIIST Dev Env Setup Script"
 echo "==============================="
 
+chmod +x .husky/pre-commit
+
 # Function to prompt for y/n and only accept valid input
 prompt_yes_no() {
   local prompt="$1"

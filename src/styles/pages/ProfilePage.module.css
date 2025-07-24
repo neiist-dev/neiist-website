@@ -10,7 +10,7 @@
 .profileCard {
   background: var(--background-colour);
   border-radius: 1.25em;
-  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.07);
   padding: 2.5em 2em;
   width: 100%;
   margin: 0 1em;
@@ -45,7 +45,9 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.editBtn:hover { background: var(--secondary-colour); }
+.editBtn:hover {
+  background: var(--secondary-colour);
+}
 
 .actionRow {
   display: flex;
@@ -92,6 +94,10 @@
 }
 
 @media (max-width: 700px) {
-  .profileCard { padding: 1em; }
-  .profileHeader h1 { font-size: 1.3rem; }
+  .profileCard {
+    padding: 1em;
+  }
+  .profileHeader h1 {
+    font-size: 1.3rem;
+  }
 }

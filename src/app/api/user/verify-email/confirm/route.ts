@@ -19,5 +19,5 @@ export async function GET(request: Request) {
   await updateUser(record.istid, { alternativeEmail: record.email });
   await deleteEmailVerification(token);
 
-  return NextResponse.redirect(new URL('/email-confirmation', request.url));
+  return NextResponse.redirect(new URL("/email-confirmation", request.url));
 }

@@ -1,12 +1,7 @@
 import * as React from "react";
 
 const NeiistLogo: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    id="Layer_1"
-    viewBox="0 0 770 204"
-    xmlSpace="preserve"
-    {...props}
-  >
+  <svg id="Layer_1" viewBox="0 0 770 204" xmlSpace="preserve" {...props}>
     <path
       fill="#FFFFFF"
       opacity={0}
