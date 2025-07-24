@@ -13,8 +13,8 @@ async function handleAddNews() {
       body: JSON.stringify({
         title: 'Notícia de Exemplo',
         description: 'Descrição de exemplo para a notícia.',
-        date: '2025-01-01',
-        author: 'Administrador',
+        date: new Date().toISOString().split('T')[0],
+        author: 'João Costa',
         tag: 'geral',
         image: ''
       }),

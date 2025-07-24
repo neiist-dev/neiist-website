@@ -45,14 +45,18 @@ export function NewsCard({
       </div>
 
       <CardHeader className="gap-2">
-        <div className="flex items-center text-sm text-muted-foreground space-x-3">
+        <div className="flex items-center text-sm text-muted-foreground space-x-2">
           <Avatar className="w-8 h-8">
             <AvatarImage src="TODO" alt={author} />
             <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
           </Avatar>
-          <span className="text-gray-800">{author}</span>
+          <span className="text-gray-800">
+            {author ? author.split(' ')[0] : ''}
+          </span>
           <span>|</span>
-          <span>{date}</span>
+          <span className="sm:inline block mt-1 sm:mt-0">
+            {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
+          </span>
         </div>
         <CardTitle className="text-base leading-snug mt-2">{title}</CardTitle>
       </CardHeader>
