@@ -19,14 +19,26 @@ export default function BlogPage() {
   const { user, loading } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  const allNews = [
-    { title: "Primeira Notícia", description: "Descrição curta da primeira notícia para testar o card.", image: "", date: "23/07/2025", author: "João Silva", tag: "Tag 1" },
-  ];
 
-  const pageSize = 6;
+  const [news, setNews] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const pageCount = Math.ceil(allNews.length / pageSize);
-  const paginatedNews = allNews.slice((page - 1) * pageSize, page * pageSize);
+  const pageSize = 6;
+  const pageCount = Math.ceil(news.length / pageSize);
+  const paginatedNews = news.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    async function fetchNews() {
+      try {
+        const res = await fetch('/api/blog');
+        if (!res.ok) throw new Error('Error fetching news');
+        const data = await res.json();
+        setNews(data);
+      } catch (err) {
+        setNews([]);
+      }
+    }
+    fetchNews();
+  }, []);
 
   const toolbarRef = useRef<HTMLDivElement>(null);
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db_query } from "@/lib/db";
+import { db_query } from "@/utils/dbUtils";
 
 // GET: List all posts
 export async function GET() {
