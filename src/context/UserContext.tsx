@@ -10,14 +10,16 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export function UserProvider({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
+  const [user, setUser] = useState<User | null>(initialUser);
 
   useEffect(() => {
-    fetchUserData()
-      .then(setUser)
-      .catch(() => setUser(null));
-  }, []);
+    if (!initialUser) {
+      fetchUserData()
+        .then(setUser)
+        .catch(() => setUser(null));
+    }
+  }, [initialUser]);
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
