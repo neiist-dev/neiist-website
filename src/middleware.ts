@@ -10,7 +10,7 @@ const adminRoutes = ["/admin"];
 const protectedRoutes = [...guestRoutes, ...memberRoutes, ...coordRoutes, ...adminRoutes];
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
+  matcher: ["/((?!api|_next/|favicon.ico|.*\\..*$|static/|images/|image/).*)"],
 };
 
 function canAccess(path: string, roles: UserRole[]) {
