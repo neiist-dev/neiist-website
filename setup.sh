@@ -115,7 +115,7 @@ echo
 if [ "$override" = "y" ]; then
   echo "📝 Note: Your database credentials are:"
   echo "   - user: neiist_app_user"
-  echo "   - password: neiist_app_password"
+  echo "   - password: neiist_app_user_password"
   echo "   - database: neiist"
   echo
 fi
