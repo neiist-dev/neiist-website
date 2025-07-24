@@ -101,8 +101,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       adminOnly: true,
     }, //TODO Add the actual page url when existent
     {
-      href: "/placeholder",
-      label: "Gerir Equipas",
+      href: "/admin",
+      label: "Gerir Equipas e Membros",
       icon: GoPeople,
       roles: [],
       adminOnly: true,

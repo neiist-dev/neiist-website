@@ -1,0 +1,189 @@
+.section {
+  background: white;
+  border-radius: 1.2rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.08);
+}
+
+.sectionTitle {
+  color: var(--primary-colour);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.addRoleForm {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+}
+
+.input,
+.select {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  border: 1px solid #d1d5db;
+  background: var(--background-colour);
+  color: var(--foreground-colour);
+  font-family: inherit;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--primary-colour);
+}
+
+.addRoleBtn {
+  background: var(--primary-colour);
+  color: white;
+  border-radius: 0.6rem;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+.addRoleBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  border-radius: 0.4rem;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.filterBar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  background: var(--background-colour);
+  color: var(--foreground-colour);
+  transition: background 0.2s;
+}
+
+.filterBtn.active {
+  background: var(--primary-colour);
+  color: white;
+}
+
+.rolesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.roleCard {
+  background: var(--background-colour);
+  border-radius: 0.6rem;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.roleName {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.departmentName {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin-left: 0.5rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-right: 0.5rem;
+  background: #fff;
+  color: var(--foreground-colour);
+}
+
+.badge.admin {
+  color: red;
+}
+
+.badge.inactive {
+  color: var(--light-foreground-colour);
+}
+
+.deleteBtn {
+  background: #ffeaea;
+  color: #d32f2f;
+  border: none;
+  border-radius: 0.6rem;
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 1rem;
+  white-space: nowrap;
+}
+
+.deleteBtn:hover {
+  background: #ffd6d6;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--light-foreground-colour);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 1.2rem;
+  }
+  .addRoleForm .row,
+  .filterBar {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .addRoleBtn,
+  .filterBtn,
+  .deleteBtn {
+    width: 100%;
+  }
+  .roleCard {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+}

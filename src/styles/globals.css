@@ -2,6 +2,7 @@
 
 :root {
   --background-colour: #f2f2f7;
+  --background-colour-hover: #e7e7ee;
   --foreground-colour: #333333;
   --primary-colour: #2863fd;
   --secondary-colour: #258be3;
@@ -9,6 +10,7 @@
   --quaternary-colour: #5ee8fa;
   --hover: rgba(0, 0, 0, 0.05);
   --font-family: "Secular One";
+  --light-foreground-colour: #7b7b8b;
 }
 
 .dark {

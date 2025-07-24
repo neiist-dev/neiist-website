@@ -328,8 +328,8 @@ export const getAllDepartments = async (): Promise<Array<{ name: string; active:
 // Team management
 export const addTeam = async (name: string, description: string): Promise<boolean> => {
   try {
-      await db_query('SELECT neiist.add_department($1)', [name]);
-      await db_query('SELECT neiist.add_team($1, $2)', [name, description]);
+    await db_query("SELECT neiist.add_department($1)", [name]);
+    await db_query("SELECT neiist.add_team($1, $2)", [name, description]);
     return true;
   } catch (error) {
     console.error("Error adding team:", error);
@@ -366,9 +366,9 @@ export const getAllTeams = async (): Promise<
 // Admin body management
 export const addAdminBody = async (name: string): Promise<boolean> => {
   try {
-      await db_query('SELECT neiist.add_department($1)', [name]);
-      await db_query('SELECT neiist.add_admin_body($1)', [name]);
-      return true;
+    await db_query("SELECT neiist.add_department($1)", [name]);
+    await db_query("SELECT neiist.add_admin_body($1)", [name]);
+    return true;
   } catch (error) {
     console.error("Error adding admin body:", error);
     return false;

@@ -1,0 +1,128 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { User, UserRole } from "@/types/user";
+import Image from "next/image";
+import styles from "@/styles/components/admin/UsersSearchList.module.css";
+
+interface Membership {
+  id: string;
+  userNumber: string;
+  userName: string;
+  departmentName: string;
+  roleName: string;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+  userEmail: string;
+}
+
+interface Role {
+  role_name: string;
+  access: string;
+  active: boolean;
+}
+
+interface UserWithMemberships extends User {
+  memberships: Membership[];
+}
+
+export default function UsersSearchList({
+  users,
+  roles,
+}: {
+  users: UserWithMemberships[];
+  roles: Role[];
+}) {
+  const [search, setSearch] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    if (!s) return users;
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(s) ||
+        u.istid.toLowerCase().includes(s) ||
+        u.email.toLowerCase().includes(s)
+    );
+  }, [search, users]);
+
+  const getAccessLevelForRole = (roleName: string): string => {
+    const role = roles.find((r) => r.role_name === roleName);
+    return role?.access || UserRole._GUEST;
+  };
+
+  const getAccessClass = (accessLevel: string): string => {
+    return styles[accessLevel] || styles.guest;
+  };
+
+  return (
+    <>
+      <input
+        className={styles.input}
+        style={{ marginBottom: 16, width: "100%" }}
+        type="text"
+        placeholder="Pesquisar por nome, ISTID ou email..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {filteredUsers.length === 0 ? (
+        <p className={styles.emptyMessage}>Nenhum utilizador encontrado.</p>
+      ) : (
+        <div className={styles.itemsList}>
+          {filteredUsers.map((user) => (
+            <section key={user.istid} className={styles.item}>
+              <Image
+                src={user.photo}
+                height={56}
+                width={56}
+                alt={`Foto de ${user.name}`}
+                className={styles.userPhoto}
+              />
+              <div className={styles.itemContent}>
+                <h4>
+                  {user.name} <span className={styles.istid}>({user.istid})</span>
+                </h4>
+                <p>
+                  <strong>Email:</strong> {user.email}
+                </p>
+                {user.phone && (
+                  <p>
+                    <strong>Telefone:</strong> {user.phone}
+                  </p>
+                )}
+                {user.courses?.length > 0 && (
+                  <p>
+                    <strong>Cursos:</strong> {user.courses.join(", ")}
+                  </p>
+                )}
+                {user.memberships?.length > 0 && (
+                  <>
+                    <strong>Equipas/Órgãos:</strong>
+                    <ul className={styles.membershipsList}>
+                      {user.memberships.map((membership, idx) => {
+                        const accessLevel = getAccessLevelForRole(membership.roleName);
+                        return (
+                          <li key={idx} className={styles.membershipItem}>
+                            <span className={styles.teamName}>{membership.departmentName}</span>
+                            <span className={styles.roleSeparator}>–</span>
+                            <span>{membership.roleName}</span>
+                            <span
+                              className={`${styles.accessBadge} ${getAccessClass(accessLevel)}`}>
+                              {accessLevel}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
