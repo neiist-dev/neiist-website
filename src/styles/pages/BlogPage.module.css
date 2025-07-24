@@ -1,0 +1,130 @@
+.container {
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.headerInfo {
+  margin: 1rem 30rem;
+}
+
+.content {
+  margin-top: 2rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem auto;
+}
+
+.filterButton {
+  padding: 0.8rem 1rem;
+  background: #06023a;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.filterButton:hover {
+  background: #0b074e;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #cacaca;
+  border-radius: 8px;
+  padding: 0 0.5rem;
+  height: 40px;
+}
+
+.searchIcon {
+  color: #888;
+  font-size: 1rem;
+  margin-right: 0.5rem;
+}
+
+.searchBar {
+  width: 400px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 320px;
+  background: #fff;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.08);
+  z-index: 2000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.2rem 1rem 1.2rem;
+  border-bottom: 1px solid #eee;
+}
+
+.sidebarTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #06023a;
+}
+
+.sidebarClose {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #06023a;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.sidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.18);
+  z-index: 1500;
+  animation: fadeIn 0.2s;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+

@@ -1,5 +1,3 @@
--- TODO: Add shop and blog tables. Add getter functions.
-
 -- SCHEMA
 CREATE SCHEMA IF NOT EXISTS neiist;
 
@@ -93,6 +91,19 @@ CREATE TABLE neiist.user_access_roles (
     user_istid VARCHAR(10) REFERENCES neiist.users(istid),
     access neiist.user_access_enum,
     PRIMARY KEY (user_istid, access)
+);
+
+-- BLOG/NEWS TABLE
+CREATE TABLE neiist.news (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    image TEXT,
+    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    author TEXT NOT NULL,
+    tag TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- FUNCTIONS
