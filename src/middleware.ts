@@ -1,109 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UserRole } from '@/types/user';
 
-// Routes requiring authentication
-const protectedRoutes = [
-  '/dashboard',
-  '/admin',
-  '/thesismaster',
-  '/mag',
-  '/collaborators',
-  '/profile'
-];
-
-// Public routes - accessible to all users
-const publicRoutes = [
-  '/',
-  '/home',
-  '/about',
-];
-
+const publicRoutes = ['/', '/home', '/about-us'];
+const guestRoutes = ['/profile', '/my-orders'];
+const memberRoutes = ['/orders'];
+const coordRoutes = ['/team'];
 const adminRoutes = ['/admin'];
-const collabRoutes = ['/collaborators'];
-const memberRoutes = ['/thesismaster'];
 
-export function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname;
-
-  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route));
-  const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
-
-  const accessToken = req.cookies.get('accessToken')?.value;
-  const isAuthenticated = !!accessToken;
-
-  // Redirect unauthenticated users from protected routes to login
-  if (isProtectedRoute && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/api/auth/login', req.url));
-  }
-
-  if (isAuthenticated && isProtectedRoute) {
-    const userDataCookie = req.cookies.get('userData')?.value;
-    if (!userDataCookie) {
-      return NextResponse.next();
-    }
-
-    let userData;
-    try {
-      userData = JSON.parse(userDataCookie);
-    } catch {
-      return NextResponse.next();
-    }
-
-    const isAdmin = userData.isAdmin;
-    const isCollab = userData.isCollab || userData.isAdmin;
-    const isMember = ['Member', 'Collaborator', 'Admin'].includes(userData.status);
-
-    // Admin routes: only admins can access
-    if (adminRoutes.some(r => path.startsWith(r)) && !isAdmin) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
-    }
-
-    // Admin's can access everything
-    if (isAdmin) {
-      return NextResponse.next();
-    }
-
-    // Admin routes: only admins can access
-    if (adminRoutes.some(r => path.startsWith(r)) && !isAdmin) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
-
-    // Collab routes: only collabs and admins can access
-    if (collabRoutes.some(r => path.startsWith(r)) && !isCollab) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
-
-    // For collaborators: can access /collab + everything members can access
-    if (isCollab && !isAdmin) {
-      const canAccessCollabRoute = collabRoutes.some(r => path.startsWith(r));
-      const canAccessMemberRoute = memberRoutes.some(r => path.startsWith(r));
-      
-      if (!isPublicRoute && !canAccessCollabRoute && !canAccessMemberRoute) {
-        return NextResponse.redirect(new URL('/', req.url));
-      }
-    }
-
-    // For regular members: only allow public routes and /thesismaster
-    if (isMember && !isCollab && !isAdmin) {
-      const canAccessMemberRoute = memberRoutes.some(r => path.startsWith(r));
-
-      if (!isPublicRoute && !canAccessMemberRoute) {
-        return NextResponse.redirect(new URL('/', req.url));
-      }
-    }
-
-    // For non-members who are authenticated but not collab/admin
-    if (!isMember && !isCollab && !isAdmin) {
-      if (!isPublicRoute) {
-        return NextResponse.redirect(new URL('/', req.url));
-      }
-    }
-  }
-
-  return NextResponse.next();
-}
+const protectedRoutes = [
+  ...guestRoutes,
+  ...memberRoutes,
+  ...coordRoutes,
+  ...adminRoutes,
+];
 
 export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'
   ],
 };
+
+function canAccess(path: string, roles: UserRole[]) {
+  if (path === '/' || publicRoutes.slice(1).some(r => path.startsWith(r))) {
+    return true;
+  }
+  if (adminRoutes.some(r => path.startsWith(r))) {
+    return roles.includes(UserRole.ADMIN);
+  } else if (coordRoutes.some(r => path.startsWith(r))) {
+    return roles.some(role => [UserRole.ADMIN, UserRole.COORDINATOR].includes(role));
+  } else if (memberRoutes.some(r => path.startsWith(r))) {
+    return roles.some(role => [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.MEMBER].includes(role));
+  } else if (guestRoutes.some(r => path.startsWith(r))) {
+    return roles.some(role => [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.MEMBER, UserRole.GUEST].includes(role));
+  }
+  return false;
+}
+
+export function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+  const accessToken = req.cookies.get('accessToken')?.value;
+  const isAuthenticated = !!accessToken;
+
+  if (!isAuthenticated && protectedRoutes.some(r => path.startsWith(r))) {
+    return NextResponse.redirect(new URL('/api/auth/login', req.url));
+  }
+
+  if (isAuthenticated) {
+    const userDataCookie = req.cookies.get('userData')?.value;
+    let userData;
+    try {
+      userData = userDataCookie ? JSON.parse(userDataCookie) : null;
+    } catch {
+      userData = null;
+    }
+    const roles = userData?.roles || [UserRole.GUEST];
+
+    if (!canAccess(path, roles)) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    }
+  }
+
+  return NextResponse.next();
+}

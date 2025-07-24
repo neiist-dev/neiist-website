@@ -5,7 +5,8 @@ export async function GET(request: Request) {
   const authCode = searchParams.get('code');
 
   if (!authCode) {
-    return NextResponse.json({ error: 'No authCode provided' }, { status: 400 });
+    return NextResponse.json({ error: 'No authCode provided' },
+      { status: 400 });
   }
 
   try {
@@ -27,14 +28,16 @@ export async function GET(request: Request) {
     });
 
     if (!accessTokenResponse.ok) {
-      return NextResponse.json({ error: 'Failed to retrieve access token' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to retrieve access token' },
+        { status: 500 });
     }
 
     const data = await accessTokenResponse.json();
     const accessToken = data.access_token;
 
     if (!accessToken) {
-      return NextResponse.json({ error: 'Access token not found in response' }, { status: 500 });
+      return NextResponse.json({ error: 'Access token not found in response' },
+        { status: 500 });
     }
 
     const response = NextResponse.redirect(new URL('/?login=true', request.url));
@@ -48,6 +51,7 @@ export async function GET(request: Request) {
     return response;
   } catch (error) {
     console.error("Error in callback:", error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' },
+      { status: 500 });
   }
 }

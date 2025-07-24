@@ -1,0 +1,35 @@
+.navLink {
+  color: var(--foreground-colour);
+  font-weight: 600;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: color 0.3s ease;
+  user-select: none;
+}
+
+.navLink:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark .navLink:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+.menuItem {
+  display: flex;
+  color: var(--foreground-colour);
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.menuItem:hover {
+  color: var(--secondary-colour);
+}
+
+.dark .menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}

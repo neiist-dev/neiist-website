@@ -2,102 +2,74 @@ export interface User {
   istid: string;
   name: string;
   email: string;
+  alternativeEmail?: string;
+  alternativeEmailVerified: boolean;
   phone?: string;
-  courses?: string[];
-  campus?: string;
-  photo?: string | number; // OID in DB, string when retrieved
-  photoData?: string; // Base64 photo data when retrieved from LO
-}
-
-export interface UserRoleDetails {
-  roles: string[];
-  teams: string[];
-  position?: string;
-  registerDate?: string;
-  electorDate?: string;
-  fromDate?: string;
-  toDate?: string;
-  startRenewalDate?: string;
-  endRenewalDate?: string;
-  renewalNotification?: boolean;
-}
-
-export interface TeamRole {
-  value: string;
-  label: string;
-  isCoordinator: boolean;
-}
-
-export interface UserData {
-  username: string;
-  displayName: string;
-  email?: string;
-  courses?: string[];
-  campus?: string;
-  isActiveTecnicoStudent?: boolean;
-  isAdmin?: boolean;
-  isCollab?: boolean;
-  isActiveLMeicStudent?: boolean;
-  isGacMember?: boolean;
+  preferredContactMethod?: 'email' | 'alternativeEmail' | 'phone';
   photo: string;
-  status: string;
+  courses: string[];
+  roles: UserRole[];
+  teams?: string[];
+}
+interface DbUser {
+  istid: string;
+  name: string;
+  email: string;
+  alternative_email?: string;
+  phone?: string;
+  preferred_contact_method?: 'email' | 'alternativeEmail' | 'phone';
+  photo_path?: string;
+  courses?: string[];
   roles?: string[];
   teams?: string[];
-  position?: string;
-  registerDate?: string;
-  electorDate?: string;
-  fromDate?: string;
-  toDate?: string;
-  startRenewalDate?: string;
-  endRenewalDate?: string;
-  renewalNotification?: boolean;
 }
 
-export function mapUserToUserData(
-  user: User,
-  dbPermissions: {
-    isActiveTecnicoStudent?: boolean;
-    isActiveLMeicStudent?: boolean;
-    isCollab?: boolean;
-    isAdmin?: boolean;
-    isGacMember?: boolean;
-    status: string;
-    fenixPhoto?: string;
-    // Add role details
-    roles?: string[];
-    teams?: string[];
-    position?: string;
-    registerDate?: string;
-    electorDate?: string;
-    fromDate?: string;
-    toDate?: string;
-    startRenewalDate?: string;
-    endRenewalDate?: string;
-    renewalNotification?: boolean;
+export function getFirstAndLastName(user: User): string {
+  const parts = user.name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1]}`;
+}
+
+export enum UserRole {
+  GUEST = 'guest',
+  MEMBER = 'member',
+  COORDINATOR = 'coordinator',
+  ADMIN = 'admin',
+}
+
+export function mapRoleToUserRole(role: string): UserRole {
+  switch (role.toLowerCase()) {
+    case 'member':
+      return UserRole.MEMBER;
+    case 'coordinator':
+      return UserRole.COORDINATOR;
+    case 'admin':
+      return UserRole.ADMIN;
+    default:
+      return UserRole.GUEST;
   }
-): UserData {
+}
+
+export function mapDbUserToUser(dbUser: DbUser): User {
+  // If userRoles empty it is guest
+  let userRoles: UserRole[];
+  if (!dbUser.roles || dbUser.roles.length === 0) {
+    userRoles = [UserRole.GUEST];
+  } else {
+    userRoles = dbUser.roles.map(mapRoleToUserRole);
+  }
+
   return {
-    username: user.istid,
-    displayName: user.name,
-    email: user.email,
-    courses: user.courses || [],
-    campus: user.campus || 'Unknown',
-    photo: user.photoData || dbPermissions.fenixPhoto || '/default_user.png',
-    isActiveTecnicoStudent: dbPermissions.isActiveTecnicoStudent || false,
-    isActiveLMeicStudent: dbPermissions.isActiveLMeicStudent || false,
-    isCollab: dbPermissions.isCollab || false,
-    isAdmin: dbPermissions.isAdmin || false,
-    isGacMember: dbPermissions.isGacMember || false,
-    status: dbPermissions.status,
-    roles: dbPermissions.roles || [],
-    teams: dbPermissions.teams || [],
-    position: dbPermissions.position,
-    registerDate: dbPermissions.registerDate,
-    electorDate: dbPermissions.electorDate,
-    fromDate: dbPermissions.fromDate,
-    toDate: dbPermissions.toDate,
-    startRenewalDate: dbPermissions.startRenewalDate,
-    endRenewalDate: dbPermissions.endRenewalDate,
-    renewalNotification: dbPermissions.renewalNotification
+    istid: dbUser.istid,
+    name: dbUser.name,
+    email: dbUser.email,
+    alternativeEmail: dbUser.alternative_email ?? undefined,
+    alternativeEmailVerified: true,
+    phone: dbUser.phone ?? undefined,
+    preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
+    photo: dbUser.photo_path ?? `/api/user/photo/${dbUser.istid}`,
+    courses: dbUser.courses ?? [],
+    roles: userRoles,
+    teams: dbUser.teams ?? [],
   };
 }

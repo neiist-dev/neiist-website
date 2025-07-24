@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
 import { LuFileText } from "react-icons/lu";
 import { TbGavel } from "react-icons/tb";
-import { ProfileItem } from "@/components/NavBar/NavItem";
+import { ProfileItem } from "@/components/navbar/NavItem";
 import styles from "@/styles/components/navbar/ProfileMenu.module.css";
 import { summarizeName, statusToString } from "@/utils/profileUtils";
 import { UserData } from "@/types/user";

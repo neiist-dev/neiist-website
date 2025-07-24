@@ -1,0 +1,15 @@
+.cartButton {
+  background: none;
+  border: none;
+  color: var(--foreground-colour);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.cartButton:hover {
+  color: var(--primary-colour);
+}

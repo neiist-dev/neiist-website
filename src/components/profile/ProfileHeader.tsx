@@ -5,16 +5,15 @@ import styles from '@/styles/components/profile/ProfileHeader.module.css';
 
 interface ProfileHeaderProps {
   user: {
-    displayName?: string;
-    username: string;
-    status: string;
+    name: string;
+    istid: string;
+    roles: string[];
     photo?: string;
   };
   photoPreview: string | null;
   editing: boolean;
   onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  nameValue?: string;
-  onNameChange?: (val: string) => void;
+  canEditPhoto: boolean;
 }
 
 export default function ProfileHeader({
@@ -22,29 +21,26 @@ export default function ProfileHeader({
   photoPreview,
   editing,
   onPhotoChange,
-  nameValue,
-  onNameChange,
+  canEditPhoto
 }: ProfileHeaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className={styles.profileSection}>
+    <div className={styles.header}>
       <div className={styles.photoContainer}>
         <Image
-          src={photoPreview || user.photo || '/default_user.png'}
+          src={photoPreview || user.photo || '/default-profile.png'}
           alt="Profile"
-          className={styles.profileImage}
+          className={styles.photo}
           width={120}
           height={120}
-          style={{ objectFit: 'cover' }}
         />
-        {editing && (
+        {editing && canEditPhoto && (
           <>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className={styles.photoIconBtn}
-              aria-label="Change photo"
+              className={styles.photoBtn}
             >
               <FiCamera size={20} />
             </button>
@@ -53,25 +49,16 @@ export default function ProfileHeader({
               type="file"
               accept="image/*"
               onChange={onPhotoChange}
-              className={styles.hiddenInput}
+              style={{ display: 'none' }}
             />
           </>
         )}
       </div>
-      <div className={styles.userInfo}>
-        {editing ? (
-          <input
-            type="text"
-            value={nameValue ?? ''}
-            onChange={e => onNameChange?.(e.target.value)}
-            className={styles.input}
-            placeholder="Name"
-          />
-        ) : (
-          <h2>{user.displayName}</h2>
-        )}
-        <p className={styles.username}>{user.username}</p>
-        <p className={styles.status}>{user.status}</p>
+      
+      <div className={styles.info}>
+        <h2>{user.name}</h2>
+        <p className={styles.istid}>{user.istid}</p>
+        <p className={styles.roles}>{user.roles.join(', ')}</p>
       </div>
     </div>
   );

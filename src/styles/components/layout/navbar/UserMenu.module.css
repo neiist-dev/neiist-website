@@ -1,0 +1,116 @@
+.userMenuContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.25rem;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.userMenuContainer:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.userPhoto {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.userName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  white-space: nowrap;
+}
+
+.userStatus {
+  font-size: 0.8rem;
+  color: gray;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background-color: var(--background-colour);
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 50;
+  animation: slideIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+.profileDropdown.slideOut {
+  animation: slideOut 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(0,0,0,0.07);
+  margin: 0.25rem 0;
+}
+
+.logoutButton {
+  color: #b00020;
+  font-weight: 600;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+}
+
+@media (max-width: 767px) {
+  .userMenuContainer {
+    padding: 0.5rem;
+  }
+
+.profileDropdown {
+    position: fixed;
+    top: 4.5rem;
+    width: 100vw;
+    border-radius: 8px;
+    border-left: none;
+    border-right: none;
+  }
+
+  .userDetails {
+    display: none;
+  }
+}

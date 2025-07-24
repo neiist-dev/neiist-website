@@ -1,43 +1,121 @@
+import { useEffect } from 'react';
 import styles from '@/styles/components/profile/PersonalInfoCard.module.css';
-
-type User = {
-  email?: string;
-  campus?: string;
-  courses?: string[];
-};
+import { User } from '@/types/user';
 
 type Props = {
   user: User;
   editing: boolean;
-  form?: { name: string };
-  onNameChange?: (val: string) => void;
+  formData?: {
+    alternativeEmail: string;
+    phone: string;
+    preferredContactMethod: string;
+  };
+  onFormChange?: (field: string, value: string) => void;
 };
 
-export default function PersonalInfoCard({ user }: Props) {
+export default function PersonalInfoCard({ 
+  user, 
+  editing, 
+  formData, 
+  onFormChange
+}: Props) {
+  useEffect(() => {
+    if (editing && formData && onFormChange) {
+      const hasAlternativeEmail = formData.alternativeEmail || user.alternativeEmail;
+      const hasPhone = formData.phone || user.phone;
+      if (formData.preferredContactMethod === 'alternativeEmail' && !hasAlternativeEmail) {
+        onFormChange('preferredContactMethod', 'email');
+      }
+      else if (formData.preferredContactMethod === 'phone' && !hasPhone) {
+        onFormChange('preferredContactMethod', 'email');
+      }
+    }
+  }, [editing, formData, formData?.alternativeEmail, formData?.phone, formData?.preferredContactMethod, user.alternativeEmail, user.phone, onFormChange]);
+
   return (
-    <>
-      <div className={styles.title}>Personal Information</div>
+    <div className={styles.section}>
+      <h3 className={styles.title}>Dados Pessoais</h3>
       <div className={styles.grid}>
-        <div className={styles.card}>
-          <div className={styles.label}>Email</div>
-          <div className={styles.value}>{user.email || 'Not specified'}</div>
+        
+        <div className={styles.field}>
+          <div className={styles.label}>Nome</div>
+          <div className={styles.value}>{user.name}</div>
         </div>
-        <div className={styles.card}>
-          <div className={styles.label}>Campus</div>
-          <div className={styles.value}>{user.campus || 'Not specified'}</div>
+
+        <div className={styles.field}>
+          <div className={styles.label}>IST ID</div>
+          <div className={styles.value}>{user.istid}</div>
         </div>
-        <div className={styles.card}>
-          <div className={styles.label}>Courses</div>
-          <div className={styles.tags}>
-            {user.courses?.length
-              ? user.courses.map((c, i) => (
-                  <span className={styles.tag} key={i}>{c}</span>
-                ))
-              : <span className={styles.empty}>No courses registered</span>
-            }
-          </div>
+
+        <div className={styles.field}>
+          <div className={styles.label}>Email Principal</div>
+          <div className={styles.value}>{user.email || 'Não especificado'}</div>
         </div>
+
+        <div className={styles.field}>
+          <div className={styles.label}>Email Alternativo</div>
+          {editing ? (
+            <input
+              type="email"
+              value={formData?.alternativeEmail || ''}
+              onChange={(e) => onFormChange?.('alternativeEmail', e.target.value)}
+              className={styles.input}
+              placeholder="email@exemplo.com"
+            />
+          ) : (
+            <div className={styles.value}>
+              {user.alternativeEmail || 'Não especificado'}
+              {user.alternativeEmail && !user.alternativeEmailVerified && (
+                <span style={{ color: 'orange', marginLeft: '0.5rem' }}>
+                  (por verificar)
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.field}>
+          <div className={styles.label}>Telefone</div>
+          {editing ? (
+            <input
+              type="tel"
+              value={formData?.phone || ''}
+              onChange={(e) => onFormChange?.('phone', e.target.value)}
+              className={styles.input}
+              placeholder="+351 xxx xxx xxx"
+            />
+          ) : (
+            <div className={styles.value}>{user.phone || 'Não especificado'}</div>
+          )}
+        </div>
+
+        <div className={styles.field}>
+          <div className={styles.label}>Contacto Preferido</div>
+          {editing ? (
+            <select
+              value={formData?.preferredContactMethod || 'email'}
+              onChange={(e) => onFormChange?.('preferredContactMethod', e.target.value)}
+              className={styles.input}
+            >
+              <option value="email">Email Principal</option>
+              {(formData?.alternativeEmail || user.alternativeEmail) && (
+                <option value="alternativeEmail">Email Alternativo</option>
+              )}
+              {(formData?.phone || user.phone) && (
+                <option value="phone">Telefone</option>
+              )}
+            </select>
+          ) : (
+            <div className={styles.value}>
+              {user.preferredContactMethod === 'email' ? 'Email Principal' :
+               user.preferredContactMethod === 'alternativeEmail' ? 'Email Alternativo' :
+               user.preferredContactMethod === 'phone' ? 'Telefone' :
+               'Email Principal (padrão)'}
+            </div>
+          )}
+        </div>
+
       </div>
-    </>
+    </div>
   );
 }
