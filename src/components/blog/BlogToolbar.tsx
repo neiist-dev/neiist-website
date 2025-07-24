@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"
 
 interface BlogToolbarProps {
   onFilterClick: () => void;

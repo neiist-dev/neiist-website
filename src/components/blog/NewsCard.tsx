@@ -5,9 +5,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle
-} from "@/components/ui/Card"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar"
-import { Badge } from "@/components/ui/Badge"
+} from "@/components/ui/card"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 
 interface NewsCardProps {
   title: string
