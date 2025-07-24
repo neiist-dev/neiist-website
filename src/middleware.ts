@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserRole } from '@/types/user';
 
-const publicRoutes = ['/', '/home', '/about-us', '/blog'];
+const publicRoutes = ['/', '/home', '/about-us'];
 const guestRoutes = ['/profile', '/my-orders'];
 const memberRoutes = ['/orders'];
 const coordRoutes = ['/team'];
