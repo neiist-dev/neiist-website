@@ -4,6 +4,8 @@ import { UserProvider } from '@/context/UserContext';
 import NavBar from '@/components/layout/navbar/NavBar';
 import Footer from '@/components/layout/Footer';
 import '@/styles/globals.css';
+import { cookies } from 'next/headers';
+import { cookies as nextCookies } from 'next/headers';
 
 const secularOne = Secular_One({
   subsets: ['latin'],
@@ -17,11 +19,12 @@ export const metadata = {
   description: 'Núcleo Estudantil de Informática do Instituto Superior Técnico',
 };
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({ children }: { children: ReactNode }) {
+  const user = await getUserFromCookies(cookies());
   return (
     <html lang="pt" suppressHydrationWarning>
       <body className={secularOne.className}>
-        <UserProvider>
+        <UserProvider initialUser={user}>
           <NavBar />
           <main>{children}</main>
           <Footer />
@@ -29,4 +32,15 @@ export default function Layout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+}
+
+async function getUserFromCookies(cookieStorePromise = nextCookies()) {
+  const cookieStore = await cookieStorePromise;
+  const userDataCookie = cookieStore.get("userData")?.value;
+  if (!userDataCookie) return null;
+  try {
+    return JSON.parse(userDataCookie);
+  } catch {
+    return null;
+  }
 }
