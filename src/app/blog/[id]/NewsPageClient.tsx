@@ -3,9 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FaChevronLeft, FaSearch } from "react-icons/fa";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import PostHeader from "@/components/blog/post/PostHeader";
+import PostContent from "@/components/blog/post/PostContent";
+import PostMeta from "@/components/blog/post/PostMeta";
 
 interface News {
   id: string;
@@ -47,52 +47,10 @@ export default function NewsPageClient({ news }: { news: News }) {
           />
         </div>
       </div>
-
-      {/* Título e imagem */}
-      <h1 className="text-3xl font-bold mt-13 mb-4">{news.title}</h1>
-      <div className="w-full h-80 relative mb-6 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-        <Image
-          src={news.image || "/placeholder.jpg"}
-          alt={news.title}
-          fill
-          className="object-cover w-full h-full bg-black"
-          sizes="(max-width: 768px) 100vw, 768px"
-        />
-      </div>
-
-      {/* Conteúdo */}
-      <div className="prose prose-neutral max-w-none mb-8">
-        {news.description}
-      </div>
-
-      {/* Linha */}
+      <PostHeader title={news.title} image={news.image} />
+      <PostContent description={news.description} />
       <hr className="my-6 border-gray-200" />
-
-      {/* Info autor, data, tags */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Avatar className="w-10 h-10">
-            <AvatarImage src="TODO" alt={news.author} />
-            <AvatarFallback>{news.author ? news.author[0] : "?"}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-500">Artigo publicado por:</span>
-            <span className="text-sm text-black font-bold leading-tight">{news.author}</span>
-          </div>
-        </div>
-        
-        <div className="flex flex-col gap-2 items-end text-right">
-          <span>{news.date ? new Date(news.date).toLocaleDateString('pt-PT') : ''}</span>
-          <div className="flex gap-2 flex-wrap justify-end">
-            {tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="bg-pink-100 text-pink-800">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-        
-      </div>
+      <PostMeta author={news.author} date={news.date} tags={tags} />
     </div>
   );
 }
