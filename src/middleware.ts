@@ -4,8 +4,8 @@ import { UserRole } from "@/types/user";
 const publicRoutes = ["/", "/home", "/about-us"];
 const guestRoutes = ["/profile", "/my-orders"];
 const memberRoutes = ["/orders"];
-const coordRoutes = ["/team"];
-const adminRoutes = ["/admin"];
+const coordRoutes = ["/team-management"];
+const adminRoutes = ["/management"];
 
 const protectedRoutes = [...guestRoutes, ...memberRoutes, ...coordRoutes, ...adminRoutes];
 

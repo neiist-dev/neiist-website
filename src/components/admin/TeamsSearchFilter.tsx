@@ -10,7 +10,7 @@ interface Team {
 }
 
 export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team[] }) {
-  const [teams, setTeams] = useState<Team[]>(initialTeams);
+  const [teams] = useState<Team[]>(initialTeams);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [newTeam, setNewTeam] = useState({ name: "", description: "" });

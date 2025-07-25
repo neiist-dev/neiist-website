@@ -9,8 +9,12 @@ interface AdminBody {
   active?: boolean;
 }
 
-export default function AdminBodiesSearchFilter({ initialAdminBodies }: { initialAdminBodies: AdminBody[] }) {
-  const [adminBodies, setAdminBodies] = useState<AdminBody[]>(initialAdminBodies);
+export default function AdminBodiesSearchFilter({
+  initialAdminBodies,
+}: {
+  initialAdminBodies: AdminBody[];
+}) {
+  const [adminBodies] = useState<AdminBody[]>(initialAdminBodies);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [newAdminBody, setNewAdminBody] = useState({ name: "", description: "" });

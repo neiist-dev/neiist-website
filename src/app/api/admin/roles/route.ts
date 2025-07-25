@@ -41,13 +41,15 @@ async function checkAdminPermission(): Promise<{
     const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
       UserRole._GUEST,
     ];
-    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
+    const hasPermissions =
+      currentUserRoles.includes(UserRole._ADMIN) ||
+      currentUserRoles.includes(UserRole._COORDINATOR);
 
-    if (!isAdmin) {
+    if (!hasPermissions) {
       return {
         isAuthorized: false,
         error: NextResponse.json(
-          { error: "Insufficient permissions - Admin required" },
+          { error: "Insufficient permissions - Admin or Coordinator required" },
           { status: 403 }
         ),
       };

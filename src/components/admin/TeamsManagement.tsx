@@ -1,5 +1,5 @@
 import { getAllTeams } from "@/utils/dbUtils";
-import TeamsSearchFilter from '@/components/admin/TeamsSearchFilter';
+import TeamsSearchFilter from "@/components/admin/TeamsSearchFilter";
 import styles from "@/styles/components/admin/TeamsManagement.module.css";
 
 export default async function TeamsManagement() {
