@@ -7,7 +7,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const { id } = params;
   try {
     const { rows } = await db_query(
-      `SELECT id, title, description, image, date, author, tag, created_at, updated_at
+      `SELECT id, title, description, image, date, author, tags, created_at, updated_at
        FROM neiist.news WHERE id = $1`,
       [id]
     );

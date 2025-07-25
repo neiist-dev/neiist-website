@@ -14,7 +14,7 @@ interface News {
   description: string;
   author?: string;
   date?: string;
-  tag?: string;
+  tags?: string[];
 }
 
 function formatAuthorName(name?: string) {
@@ -26,9 +26,7 @@ function formatAuthorName(name?: string) {
 
 export default function NewsPageClient({ news }: { news: News }) {
   const router = useRouter();
-  const tags: string[] = typeof news.tag === 'string' && news.tag.length > 0
-    ? news.tag.split(',').map((t: string) => t.trim()).filter(Boolean)
-    : [];
+  const tags: string[] = Array.isArray(news.tags) ? news.tags : [];
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Search bar e voltar */}
@@ -83,9 +81,9 @@ export default function NewsPageClient({ news }: { news: News }) {
           </div>
         </div>
         
-        <div className="flex flex-col gap-2 sm:items-start">
+        <div className="flex flex-col gap-2 items-end text-right">
           <span>{news.date ? new Date(news.date).toLocaleDateString('pt-PT') : ''}</span>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap justify-end">
             {tags.map((tag) => (
               <Badge key={tag} variant="outline" className="bg-pink-100 text-pink-800">
                 {tag}
