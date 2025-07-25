@@ -93,7 +93,7 @@
   margin-top: 0.5rem;
 }
 
-.deleteBtn {
+.deleteButton {
   background: #ffeaea;
   color: #d32f2f;
   border: none;
@@ -107,7 +107,7 @@
   white-space: nowrap;
 }
 
-.deleteBtn:hover {
+.deleteButton:hover {
   background: #ffd6d6;
 }
 
@@ -118,29 +118,7 @@
   font-size: 1rem;
 }
 
-.form {
-  margin-bottom: 2rem;
-}
-
-.formRow {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-}
-
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--foreground-colour);
-}
-
-.primaryBtn {
+.addButton {
   background: var(--primary-colour);
   color: white;
   border-radius: 0.6rem;
@@ -152,22 +130,24 @@
   transition: background 0.2s;
 }
 
-.primaryBtn:disabled {
+.addButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
 @media (max-width: 768px) {
-  .section {
-    padding: 1.2rem;
-  }
-  .searchBar,
-  .formRow {
+  .searchBar {
     flex-direction: column;
     gap: 0.7rem;
   }
-  .deleteBtn,
-  .primaryBtn {
+  .deleteButton,
+  .addButton {
     width: 100%;
     margin-left: 0;
   }

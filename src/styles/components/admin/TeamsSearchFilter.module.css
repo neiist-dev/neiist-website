@@ -5,12 +5,6 @@
   margin-bottom: 2rem;
 }
 
-.formRow {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-}
-
 .input {
   flex: 1;
   padding: 0.5rem 0.75rem;
@@ -117,28 +111,6 @@
   font-size: 1rem;
 }
 
-.form {
-  margin-bottom: 2rem;
-}
-
-.formRow {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-}
-
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--foreground-colour);
-}
-
 .primaryBtn {
   background: var(--primary-colour);
   color: white;
@@ -156,12 +128,22 @@
   cursor: not-allowed;
 }
 
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.searchBar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
-  .section {
-    padding: 1.2rem;
-  }
-  .searchBar,
-  .formRow {
+  .searchBar {
     flex-direction: column;
     gap: 0.7rem;
   }

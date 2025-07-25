@@ -1,47 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import { DepartmentsSearchFilter } from "@/components/admin/DepartementsSearchFilter";
+import { useState, useMemo } from "react";
 import styles from "@/styles/components/admin/AdminBodiesSearchFilter.module.css";
 
-interface Department {
+interface AdminBody {
   name: string;
   description?: string;
   active?: boolean;
 }
 
-export function AdminBodiesSearch({ adminBodies }: { adminBodies: Department[] }) {
-  return (
-    <DepartmentsSearchFilter
-      entities={adminBodies}
-      entityLabel="órgão administrativo"
-      onRemove={async (name: string) => {
-        await fetch("/api/admin/admin-bodies", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
-        });
-        window.location.reload();
-      }}
-    />
-  );
-}
-
-export function AddAdminBodyForm() {
-  const [newAdminBodyName, setNewAdminBodyName] = useState("");
+export default function AdminBodiesSearchFilter({ initialAdminBodies }: { initialAdminBodies: AdminBody[] }) {
+  const [adminBodies, setAdminBodies] = useState<AdminBody[]>(initialAdminBodies);
+  const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
+  const [newAdminBody, setNewAdminBody] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
 
+  const filteredAdminBodies = useMemo(() => {
+    let arr = adminBodies;
+    if (!showInactive) arr = arr.filter((e) => e.active !== false);
+    if (search.trim()) {
+      const s = search.trim().toLowerCase();
+      arr = arr.filter(
+        (e) =>
+          e.name.toLowerCase().includes(s) || (e.description?.toLowerCase().includes(s) ?? false)
+      );
+    }
+    return arr;
+  }, [adminBodies, search, showInactive]);
+
   const addAdminBody = async () => {
-    if (!newAdminBodyName.trim()) return;
+    if (!newAdminBody.name.trim()) return;
     setLoading(true);
     try {
       const response = await fetch("/api/admin/admin-bodies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newAdminBodyName }),
+        body: JSON.stringify(newAdminBody),
       });
       if (response.ok) {
-        setNewAdminBodyName("");
+        setNewAdminBody({ name: "", description: "" });
         window.location.reload();
       } else {
         const error = await response.json();
@@ -52,6 +50,15 @@ export function AddAdminBodyForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const removeAdminBody = async (name: string) => {
+    await fetch("/api/admin/admin-bodies", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    window.location.reload();
   };
 
   return (
@@ -65,19 +72,74 @@ export function AddAdminBodyForm() {
         }}>
         <input
           type="text"
-          value={newAdminBodyName}
-          onChange={(e) => setNewAdminBodyName(e.target.value)}
+          value={newAdminBody.name}
+          onChange={(e) => setNewAdminBody({ ...newAdminBody, name: e.target.value })}
           placeholder="ex: Direção, Mesa da Assembleia Geral"
+          className={styles.input}
+          disabled={loading}
+        />
+        <input
+          type="text"
+          value={newAdminBody.description}
+          onChange={(e) => setNewAdminBody({ ...newAdminBody, description: e.target.value })}
+          placeholder="Descrição (opcional)"
           className={styles.input}
           disabled={loading}
         />
         <button
           type="submit"
-          disabled={loading || !newAdminBodyName.trim()}
-          className={styles.primaryBtn}>
+          disabled={loading || !newAdminBody.name.trim()}
+          className={styles.addButton}>
           {loading ? "A adicionar..." : "Adicionar Órgão"}
         </button>
       </form>
+
+      <div className={styles.sectionTitle}>Órgãos Administrativos Existentes</div>
+      <div className={styles.searchBar}>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Pesquisar órgão administrativo..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button
+          className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
+          onClick={() => setShowInactive(false)}
+          type="button">
+          Ativos
+        </button>
+        <button
+          className={`${styles.filterBtn} ${showInactive ? styles.active : ""}`}
+          onClick={() => setShowInactive(true)}
+          type="button">
+          Mostrar Inativos
+        </button>
+      </div>
+      {filteredAdminBodies.length === 0 ? (
+        <div className={styles.emptyMessage}>Nenhum órgão administrativo encontrado.</div>
+      ) : (
+        <div className={styles.list}>
+          {filteredAdminBodies.map((body) => (
+            <div key={body.name} className={styles.item}>
+              <div className={styles.itemContent}>
+                <div className={styles.itemName}>{body.name}</div>
+                {body.description && (
+                  <div className={styles.itemDescription}>{body.description}</div>
+                )}
+                {body.active === false && <span className={styles.badge}>Inativo</span>}
+              </div>
+              <button
+                onClick={() => removeAdminBody(body.name)}
+                className={styles.deleteButton}
+                title="Desativar órgão"
+                type="button">
+                Desativar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

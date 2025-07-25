@@ -1,20 +1,18 @@
 .input {
-  padding: 1rem;
-  border: 1px solid var(--light-foreground-colour);
-  border-radius: 0.8rem;
-  font-size: 1rem;
-  background: var(--background-colour-hover);
+  flex: 1;
+  padding: 0.75rem 1.1rem;
+  border-radius: 0.6rem;
+  font-size: 1.085rem;
+  border: 1px solid #d1d5db;
+  background: var(--background-colour);
   color: var(--foreground-colour);
-  margin-bottom: 2rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  font-family: inherit;
+  transition: border-color 0.2s;
   box-sizing: border-box;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--primary-colour);
   box-shadow: 0 0 0 2px var(--background-colour-hover);
 }
 

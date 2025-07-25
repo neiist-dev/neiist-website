@@ -7,7 +7,6 @@
 }
 
 .section h3 {
-  color: var(--foreground-colour);
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 1.5rem 0;
@@ -21,14 +20,13 @@
 
 .input {
   flex: 1;
-  width: 100%;
   padding: 0.5rem 0.75rem;
   border-radius: 0.6rem;
   font-size: 0.95rem;
+  font-family: inherit;
   border: 1px solid #d1d5db;
   background: var(--background-colour);
-  font-family: inherit;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s;
   box-sizing: border-box;
 }
 
@@ -178,13 +176,9 @@
     padding: 1.5rem;
   }
 
-  .form {
+  .addMemberForm {
     flex-direction: column;
     gap: 1rem;
-  }
-
-  .primaryBtn {
-    width: 100%;
   }
 
   .searchBar {
@@ -193,7 +187,7 @@
     gap: 0.75rem;
   }
 
-  .item {
+  .members {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
@@ -201,10 +195,5 @@
 
   .deleteBtn {
     margin-left: 0;
-    width: 100%;
-  }
-
-  .section h3 {
-    font-size: 1.25rem;
   }
 }

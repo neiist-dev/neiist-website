@@ -1,33 +1,18 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { DepartmentsSearchFilter } from "@/components/admin/DepartementsSearchFilter";
+import { useState, useMemo, useRef, useEffect } from "react";
 import styles from "@/styles/components/admin/TeamsSearchFilter.module.css";
 
-interface Department {
+interface Team {
   name: string;
   description?: string;
   active?: boolean;
 }
 
-export function TeamsSearch({ teams }: { teams: Department[] }) {
-  return (
-    <DepartmentsSearchFilter
-      entities={teams}
-      entityLabel="equipa"
-      onRemove={async (name: string) => {
-        await fetch("/api/admin/teams", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
-        });
-        window.location.reload();
-      }}
-    />
-  );
-}
-
-export function AddTeamForm() {
+export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team[] }) {
+  const [teams, setTeams] = useState<Team[]>(initialTeams);
+  const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const [newTeam, setNewTeam] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -38,6 +23,19 @@ export function AddTeamForm() {
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
   }, [newTeam.description]);
+
+  const filteredTeams = useMemo(() => {
+    let arr = teams;
+    if (!showInactive) arr = arr.filter((e) => e.active !== false);
+    if (search.trim()) {
+      const s = search.trim().toLowerCase();
+      arr = arr.filter(
+        (e) =>
+          e.name.toLowerCase().includes(s) || (e.description?.toLowerCase().includes(s) ?? false)
+      );
+    }
+    return arr;
+  }, [teams, search, showInactive]);
 
   const addTeam = async () => {
     if (!newTeam.name.trim()) return;
@@ -50,6 +48,7 @@ export function AddTeamForm() {
       });
       if (response.ok) {
         setNewTeam({ name: "", description: "" });
+        // Optionally, fetch updated teams or reload
         window.location.reload();
       } else {
         const error = await response.json();
@@ -60,6 +59,15 @@ export function AddTeamForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const removeTeam = async (name: string) => {
+    await fetch("/api/admin/teams", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    window.location.reload();
   };
 
   return (
@@ -96,6 +104,53 @@ export function AddTeamForm() {
           {loading ? "A adicionar..." : "Adicionar Equipa"}
         </button>
       </form>
+
+      <div className={styles.sectionTitle}>Equipas Existentes</div>
+      <div className={styles.searchBar}>
+        <input
+          className={styles.input}
+          type="text"
+          placeholder="Pesquisar equipa..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button
+          className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
+          onClick={() => setShowInactive(false)}
+          type="button">
+          Ativos
+        </button>
+        <button
+          className={`${styles.filterBtn} ${showInactive ? styles.active : ""}`}
+          onClick={() => setShowInactive(true)}
+          type="button">
+          Mostrar Inativos
+        </button>
+      </div>
+      {filteredTeams.length === 0 ? (
+        <div className={styles.emptyMessage}>Nenhuma equipa encontrada.</div>
+      ) : (
+        <div className={styles.list}>
+          {filteredTeams.map((team) => (
+            <div key={team.name} className={styles.item}>
+              <div className={styles.itemContent}>
+                <div className={styles.itemName}>{team.name}</div>
+                {team.description && (
+                  <div className={styles.itemDescription}>{team.description}</div>
+                )}
+                {team.active === false && <span className={styles.badge}>Inativo</span>}
+              </div>
+              <button
+                onClick={() => removeTeam(team.name)}
+                className={styles.deleteBtn}
+                title="Desativar equipa"
+                type="button">
+                Desativar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

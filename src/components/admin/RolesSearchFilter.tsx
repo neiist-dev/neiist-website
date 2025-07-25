@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import styles from "@/styles/components/admin/RolesSearchFilter.module.css";
 
 interface Role {
@@ -32,31 +32,20 @@ export default function RolesSearchFilter({
   const [newRole, setNewRole] = useState({ roleName: "", access: "member" });
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (selectedDepartment === "") {
-      fetchAllRoles();
-    } else if (selectedDepartment) {
-      fetchRoles(selectedDepartment);
-    } else {
-      setRoles([]);
-    }
-  }, [selectedDepartment]);
-
-  const fetchRoles = async (department: string) => {
+  const fetchRoles = useCallback(async (department: string) => {
     if (!department) return;
     try {
       const response = await fetch(`/api/admin/roles?department=${encodeURIComponent(department)}`);
       if (response.ok) {
         const data = await response.json();
-        // Add department info for display
         setRoles(data.map((r: Role) => ({ ...r, department })));
       } else setRoles([]);
     } catch {
       setRoles([]);
     }
-  };
+  }, []);
 
-  const fetchAllRoles = async () => {
+  const fetchAllRoles = useCallback(async () => {
     try {
       const results = await Promise.all(
         departments.map(async (dept) => {
@@ -74,7 +63,17 @@ export default function RolesSearchFilter({
     } catch {
       setRoles([]);
     }
-  };
+  }, [departments]);
+
+  useEffect(() => {
+    if (selectedDepartment === "") {
+      fetchAllRoles();
+    } else if (selectedDepartment) {
+      fetchRoles(selectedDepartment);
+    } else {
+      setRoles([]);
+    }
+  }, [selectedDepartment, fetchAllRoles, fetchRoles]);
 
   const addRole = async () => {
     setError("");
@@ -93,7 +92,11 @@ export default function RolesSearchFilter({
       if (response.ok) {
         setNewRole({ roleName: "", access: "member" });
         if (addDepartment === selectedDepartment || selectedDepartment === "") {
-          selectedDepartment === "" ? await fetchAllRoles() : await fetchRoles(selectedDepartment);
+          if (selectedDepartment === "") {
+            await fetchAllRoles();
+          } else {
+            await fetchRoles(selectedDepartment);
+          }
         }
       } else {
         const error = await response.json();
@@ -119,7 +122,11 @@ export default function RolesSearchFilter({
         body: JSON.stringify({ departmentName: dept, roleName }),
       });
       if (response.ok) {
-        selectedDepartment === "" ? await fetchAllRoles() : await fetchRoles(dept);
+        if (selectedDepartment === "") {
+          await fetchAllRoles();
+        } else {
+          await fetchRoles(dept);
+        }
       } else {
         const error = await response.json();
         setError(error.error || "Erro ao remover cargo");
