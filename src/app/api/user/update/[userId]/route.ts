@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { User } from "@/types/user";
 import { getUser, updateUser, updateUserPhoto } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole } from "@/types/user";
+import fs from "fs/promises";
+import path from "path";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
   const accessToken = (await cookies()).get("accessToken")?.value;
@@ -100,7 +102,13 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
     if (updateData.photo !== undefined && isAdmin) {
       if (updateData.photo && updateData.photo !== existingUser.photo) {
         try {
-          await updateUserPhoto(targetUserId, updateData.photo);
+          const buffer = Buffer.from(updateData.photo, "base64");
+          const photoDir = path.join(process.cwd(), "data", "user_photos");
+          await fs.mkdir(photoDir, { recursive: true });
+          const filePath = path.join(photoDir, `${targetUserId}.png`);
+          await fs.writeFile(filePath, buffer);
+          // Save custom photo path to DB
+          await updateUserPhoto(targetUserId, `/api/user/photo/${targetUserId}?custom&v=${Date.now()}`);
         } catch (photoError) {
           console.error("Error updating photo:", photoError);
           return NextResponse.json({ error: "Erro ao atualizar foto" }, { status: 500 });

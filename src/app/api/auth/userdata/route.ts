@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import fs from "fs/promises";
+import path from "path";
 import { getUser, createUser, getEmailVerificationByUser } from "@/utils/dbUtils";
 
 export async function GET() {
@@ -51,6 +53,15 @@ export async function GET() {
       user.alternativeEmailVerified = false;
     } else {
       user.alternativeEmailVerified = true;
+    }
+
+    // Save/update on disk a cached version of the user fenix photo (if no custom one present)
+    if ((!user?.photo || !user.photo.includes("?custom")) && userInformation.photo?.data) {
+      const photoBuffer = Buffer.from(userInformation.photo.data, "base64");
+      const fenixDir = path.join(process.cwd(), "data", "fenix_cache");
+      await fs.mkdir(fenixDir, { recursive: true });
+      const filePath = path.join(fenixDir, `${user.istid}.png`);
+      await fs.writeFile(filePath, photoBuffer);
     }
 
     const response = NextResponse.json(user);
