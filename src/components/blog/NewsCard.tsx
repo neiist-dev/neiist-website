@@ -60,9 +60,8 @@ export function NewsCard({
         </div>
         <CardTitle className="text-base leading-snug mt-2">{title}</CardTitle>
       </CardHeader>
-
       <CardContent className="flex flex-col gap-4">
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
         <Badge variant="outline" className="w-fit bg-pink-100 text-pink-800"> {/* TODO - attribute to each tag a diff color */}
           {tag}
         </Badge>

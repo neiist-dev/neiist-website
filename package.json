@@ -12,15 +12,16 @@
     "start": "next start"
   },
   "dependencies": {
-    "@types/nodemailer": "^6.4.17",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.15.1",
-    "crypto": "^1.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "crypto": "^1.0.1",
     "hamburger-react": "^2.5.2",
     "lucide-react": "^0.525.0",
     "next": "15.2.4",
