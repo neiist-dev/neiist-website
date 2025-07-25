@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/admin/RolesSearchFilter.module.css";
 
 interface Role {
@@ -31,6 +32,9 @@ export default function RolesSearchFilter({
   const [addDepartment, setAddDepartment] = useState<string>("");
   const [newRole, setNewRole] = useState({ roleName: "", access: "member" });
   const [error, setError] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingRemove, setPendingRemove] =
+    useState<{ roleName: string; departmentName?: string } | null>(null);
 
   const fetchRoles = useCallback(async (department: string) => {
     if (!department) return;
@@ -109,17 +113,22 @@ export default function RolesSearchFilter({
     }
   };
 
-  const removeRole = async (roleName: string, departmentName?: string) => {
+  const handleRemoveClick = (roleName: string, departmentName?: string) => {
+    setPendingRemove({ roleName, departmentName });
+    setConfirmOpen(true);
+  };
+
+  const confirmRemove = async () => {
     setError("");
-    const dept = selectedDepartment === "" ? departmentName : selectedDepartment;
+    setConfirmOpen(false);
+    if (!pendingRemove) return;
+    const dept = selectedDepartment === "" ? pendingRemove.departmentName : selectedDepartment;
     if (!dept) return;
-    if (!confirm(`Tem a certeza que quer remover o cargo "${roleName}" do departamento "${dept}"?`))
-      return;
     try {
       const response = await fetch("/api/admin/roles", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ departmentName: dept, roleName }),
+        body: JSON.stringify({ departmentName: dept, roleName: pendingRemove.roleName }),
       });
       if (response.ok) {
         if (selectedDepartment === "") {
@@ -133,7 +142,14 @@ export default function RolesSearchFilter({
       }
     } catch {
       setError("Erro ao remover cargo");
+    } finally {
+      setPendingRemove(null);
     }
+  };
+
+  const cancelRemove = () => {
+    setConfirmOpen(false);
+    setPendingRemove(null);
   };
 
   const filteredRoles = useMemo(() => {
@@ -160,6 +176,16 @@ export default function RolesSearchFilter({
 
   return (
     <>
+      <ConfirmDialog
+        open={confirmOpen}
+        message={
+          pendingRemove
+            ? `Tem a certeza que quer remover o cargo "${pendingRemove.roleName}" do departamento "${selectedDepartment === "" ? pendingRemove.departmentName : selectedDepartment}"?`
+            : ""
+        }
+        onConfirm={confirmRemove}
+        onCancel={cancelRemove}
+      />
       <section className={styles.section}>
         <div className={styles.sectionTitle}>Adicionar Novo Cargo</div>
         <form
@@ -211,7 +237,6 @@ export default function RolesSearchFilter({
           {error && <div className={styles.error}>{error}</div>}
         </form>
       </section>
-
       <section className={styles.section}>
         <div className={styles.sectionTitle}>Cargos Existentes</div>
         <div className={styles.filterBar}>
@@ -275,7 +300,7 @@ export default function RolesSearchFilter({
                 </div>
                 {role.active && (
                   <button
-                    onClick={() => removeRole(role.role_name, role.department)}
+                    onClick={() => handleRemoveClick(role.role_name, role.department)}
                     className={styles.deleteBtn}>
                     Remover
                   </button>

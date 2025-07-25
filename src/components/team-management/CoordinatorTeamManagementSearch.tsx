@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@/types/user";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
 
 interface Membership {
@@ -38,6 +39,9 @@ export default function CoordinatorTeamManagementSearch({
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingRemove, setPendingRemove] =
+    useState<{ userNumber: string; roleName: string } | null>(null);
 
   const fetchRoles = useCallback(
     async (team: string) => {
@@ -130,18 +134,24 @@ export default function CoordinatorTeamManagementSearch({
     }
   }
 
-  async function handleRemoveMember(userNumber: string, roleName: string) {
-    if (!confirm("Tem a certeza que quer remover este membro?")) return;
+  function handleRemoveMember(userNumber: string, roleName: string) {
+    setPendingRemove({ userNumber, roleName });
+    setConfirmOpen(true);
+  }
+
+  async function confirmRemove() {
+    if (!pendingRemove) return;
     setLoading(true);
     setError("");
+    setConfirmOpen(false);
     try {
       const res = await fetch("/api/admin/memberships", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          istid: userNumber,
+          istid: pendingRemove.userNumber,
           departmentName: selectedTeam,
-          roleName,
+          roleName: pendingRemove.roleName,
         }),
       });
       if (res.ok) {
@@ -153,11 +163,23 @@ export default function CoordinatorTeamManagementSearch({
       setError("Erro ao remover membro.");
     } finally {
       setLoading(false);
+      setPendingRemove(null);
     }
+  }
+
+  function cancelRemove() {
+    setConfirmOpen(false);
+    setPendingRemove(null);
   }
 
   return (
     <>
+      <ConfirmDialog
+        open={confirmOpen}
+        message="Tem a certeza que quer remover este membro?"
+        onConfirm={confirmRemove}
+        onCancel={cancelRemove}
+      />
       <div className={styles.header}>
         <h1 className={styles.title}>Gestão da Equipa</h1>
         <select

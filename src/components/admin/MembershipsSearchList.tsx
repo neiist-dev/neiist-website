@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { User } from "@/types/user";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
 
 interface Membership {
@@ -41,6 +42,12 @@ export default function MembershipsSearchList({
     roleName: "",
   });
   const [roles, setRoles] = useState<{ role_name: string; access: string; active: boolean }[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState<{
+    userNumber: string;
+    departmentName: string;
+    roleName: string;
+  } | null>(null);
 
   const filteredMemberships = useMemo(() => {
     let filtered = memberships;
@@ -110,14 +117,24 @@ export default function MembershipsSearchList({
     }
   };
 
-  const removeMembership = async (userNumber: string, departmentName: string, roleName: string) => {
+  const handleRemoveClick = (userNumber: string, departmentName: string, roleName: string) => {
+    setPendingRemove({ userNumber, departmentName, roleName });
+    setConfirmOpen(true);
+  };
+
+  const confirmRemove = async () => {
+    if (!pendingRemove) return;
     setError("");
-    if (!confirm("Tem a certeza que quer remover este membro?")) return;
+    setConfirmOpen(false);
     try {
       const response = await fetch("/api/admin/memberships", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ istid: userNumber, departmentName, roleName }),
+        body: JSON.stringify({
+          istid: pendingRemove.userNumber,
+          departmentName: pendingRemove.departmentName,
+          roleName: pendingRemove.roleName,
+        }),
       });
       if (response.ok) {
         const refreshed = await fetch("/api/admin/memberships");
@@ -131,11 +148,25 @@ export default function MembershipsSearchList({
       }
     } catch {
       setError("Erro ao remover membro");
+    } finally {
+      setPendingRemove(null);
     }
+  };
+
+  const cancelRemove = () => {
+    setConfirmOpen(false);
+    setPendingRemove(null);
   };
 
   return (
     <>
+      <ConfirmDialog
+        open={confirmOpen}
+        message="Tem a certeza que quer remover este membro?"
+        onConfirm={confirmRemove}
+        onCancel={cancelRemove}
+      />
+
       <section className={styles.section}>
         <h3>Adicionar Novo Membro</h3>
         <div className={styles.addMemberForm}>
@@ -251,7 +282,7 @@ export default function MembershipsSearchList({
                 </div>
                 <button
                   onClick={() =>
-                    removeMembership(
+                    handleRemoveClick(
                       membership.userNumber,
                       membership.departmentName,
                       membership.roleName
