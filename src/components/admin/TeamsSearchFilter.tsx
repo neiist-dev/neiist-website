@@ -16,6 +16,7 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
   const [newTeam, setNewTeam] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -25,16 +26,17 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
   }, [newTeam.description]);
 
   const filteredTeams = useMemo(() => {
-    let arr = teams;
-    if (!showInactive) arr = arr.filter((e) => e.active !== false);
+    let filteredTeams = teams;
+    if (!showInactive) filteredTeams = filteredTeams.filter((e) => e.active !== false);
     if (search.trim()) {
       const s = search.trim().toLowerCase();
-      arr = arr.filter(
-        (e) =>
-          e.name.toLowerCase().includes(s) || (e.description?.toLowerCase().includes(s) ?? false)
+      filteredTeams = filteredTeams.filter(
+        (team) =>
+          team.name.toLowerCase().includes(s) ||
+          (team.description?.toLowerCase().includes(s) ?? false)
       );
     }
-    return arr;
+    return filteredTeams;
   }, [teams, search, showInactive]);
 
   const addTeam = async () => {
@@ -52,10 +54,10 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(error.error || "Erro ao adicionar equipa");
+        setErrorMessage(error.error || "Erro ao adicionar equipa");
       }
     } catch {
-      alert("Erro ao adicionar equipa");
+      setErrorMessage("Erro ao adicionar equipa");
     } finally {
       setLoading(false);
     }
@@ -75,14 +77,14 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
       <h3 className={styles.sectionTitle}>Adicionar Nova Equipa</h3>
       <form
         className={styles.form}
-        onSubmit={(e) => {
-          e.preventDefault();
+        onSubmit={(inputEvent) => {
+          inputEvent.preventDefault();
           addTeam();
         }}>
         <input
           type="text"
           value={newTeam.name}
-          onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+          onChange={(inputEvent) => setNewTeam({ ...newTeam, name: inputEvent.target.value })}
           placeholder="Nome da equipa"
           className={styles.input}
           disabled={loading}
@@ -90,7 +92,9 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
         <textarea
           ref={textareaRef}
           value={newTeam.description}
-          onChange={(e) => setNewTeam({ ...newTeam, description: e.target.value })}
+          onChange={(inputEvent) =>
+            setNewTeam({ ...newTeam, description: inputEvent.target.value })
+          }
           placeholder="Descrição da equipa (opcional)"
           className={styles.input}
           disabled={loading}
@@ -103,6 +107,11 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
           className={styles.primaryBtn}>
           {loading ? "A adicionar..." : "Adicionar Equipa"}
         </button>
+        {errorMessage && (
+          <div style={{ color: "#d32f2f", marginTop: "0.5rem", fontWeight: 500 }}>
+            {errorMessage}
+          </div>
+        )}
       </form>
 
       <div className={styles.sectionTitle}>Equipas Existentes</div>
@@ -112,7 +121,7 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
           type="text"
           placeholder="Pesquisar equipa..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(inputEvent) => setSearch(inputEvent.target.value)}
         />
         <button
           className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}

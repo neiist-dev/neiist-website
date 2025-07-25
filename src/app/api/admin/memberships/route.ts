@@ -3,58 +3,6 @@ import { cookies } from "next/headers";
 import { addTeamMember, removeTeamMember, getUser, getAllMemberships } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole } from "@/types/user";
 
-async function checkAdminPermission(): Promise<{
-  isAuthorized: boolean;
-  error?: NextResponse;
-}> {
-  const accessToken = (await cookies()).get("accessToken")?.value;
-
-  if (!accessToken) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
-    };
-  }
-
-  try {
-    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
-    if (!userData) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUser = await getUser(userData.istid);
-    if (!currentUser) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "Current user not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
-      UserRole._GUEST,
-    ];
-    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
-
-    if (!isAdmin) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "Admin access required" }, { status: 403 }),
-      };
-    }
-
-    return { isAuthorized: true };
-  } catch (error) {
-    console.error("Error checking permissions:", error);
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Internal server error" }, { status: 500 }),
-    };
-  }
-}
-
 async function checkMembershipPermission(
   departmentName: string
 ): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
@@ -96,7 +44,7 @@ async function checkMembershipPermission(
 
     if (isCoordinator) {
       const userTeams = currentUser.teams || [];
-      if (userTeams.includes(departmentName)) {
+      if (userTeams.includes(departmentName) || departmentName === "") {
         return { isAuthorized: true }; // Coordinator can manage their own team
       }
     }
@@ -119,7 +67,7 @@ async function checkMembershipPermission(
 }
 
 export async function GET() {
-  const permissionCheck = await checkAdminPermission();
+  const permissionCheck = await checkMembershipPermission("");
   if (!permissionCheck.isAuthorized) {
     return permissionCheck.error;
   }

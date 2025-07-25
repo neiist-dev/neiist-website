@@ -29,15 +29,15 @@ export default async function UsersManagement() {
   const users = await getAllUsers();
   const membershipsRaw = await getAllMemberships();
 
-  const memberships: Membership[] = membershipsRaw.map((m, idx) => ({
-    id: `${m.user_istid}-${m.department_name}-${m.role_name}-${idx}`,
-    userNumber: m.user_istid,
-    userName: m.user_name,
-    departmentName: m.department_name,
-    roleName: m.role_name,
-    startDate: m.from_date,
-    endDate: m.to_date ?? undefined,
-    isActive: m.active,
+  const memberships: Membership[] = membershipsRaw.map((membership, id) => ({
+    id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${id}`,
+    userNumber: membership.user_istid,
+    userName: membership.user_name,
+    departmentName: membership.department_name,
+    roleName: membership.role_name,
+    startDate: membership.from_date,
+    endDate: membership.to_date ?? undefined,
+    isActive: membership.active,
     userEmail: "",
   }));
 

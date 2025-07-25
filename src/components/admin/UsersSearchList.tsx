@@ -40,15 +40,15 @@ export default function UsersSearchList({
     const s = search.trim().toLowerCase();
     if (!s) return users;
     return users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(s) ||
-        u.istid.toLowerCase().includes(s) ||
-        u.email.toLowerCase().includes(s)
+      (user) =>
+        user.name.toLowerCase().includes(s) ||
+        user.istid.toLowerCase().includes(s) ||
+        user.email.toLowerCase().includes(s)
     );
   }, [search, users]);
 
   const getAccessLevelForRole = (roleName: string): string => {
-    const role = roles.find((r) => r.role_name === roleName);
+    const role = roles.find((role) => role.role_name === roleName);
     return role?.access || UserRole._GUEST;
   };
 
@@ -64,7 +64,7 @@ export default function UsersSearchList({
         type="text"
         placeholder="Pesquisar por nome, ISTID ou email..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(inputEvent) => setSearch(inputEvent.target.value)}
       />
 
       {filteredUsers.length === 0 ? (
@@ -101,10 +101,10 @@ export default function UsersSearchList({
                   <>
                     <strong>Equipas/Órgãos:</strong>
                     <ul className={styles.membershipsList}>
-                      {user.memberships.map((membership, idx) => {
+                      {user.memberships.map((membership, id) => {
                         const accessLevel = getAccessLevelForRole(membership.roleName);
                         return (
-                          <li key={idx} className={styles.membershipItem}>
+                          <li key={id} className={styles.membershipItem}>
                             <span className={styles.teamName}>{membership.departmentName}</span>
                             <span className={styles.roleSeparator}>–</span>
                             <span>{membership.roleName}</span>

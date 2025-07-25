@@ -19,18 +19,18 @@ export default async function MembershipsManagement() {
   const users = await getAllUsers();
   const departments = await getAllDepartments();
 
-  const memberships: Membership[] = membershipsRaw.map((m, idx) => {
-    const user = users.find((u) => u.istid === m.user_istid);
+  const memberships: Membership[] = membershipsRaw.map((membership, id) => {
+    const user = users.find((user) => user.istid === membership.user_istid);
     return {
-      id: `${m.user_istid}-${m.department_name}-${m.role_name}-${idx}`,
-      userNumber: m.user_istid,
-      userName: m.user_name,
+      id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${id}`,
+      userNumber: membership.user_istid,
+      userName: membership.user_name,
       userEmail: user?.email || "",
-      departmentName: m.department_name,
-      roleName: m.role_name,
-      startDate: m.from_date,
-      endDate: m.to_date ?? undefined,
-      isActive: m.active,
+      departmentName: membership.department_name,
+      roleName: membership.role_name,
+      startDate: membership.from_date,
+      endDate: membership.to_date ?? undefined,
+      isActive: membership.active,
     };
   });
 

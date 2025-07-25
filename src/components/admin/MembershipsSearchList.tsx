@@ -44,16 +44,16 @@ export default function MembershipsSearchList({
 
   const filteredMemberships = useMemo(() => {
     let filtered = memberships;
-    if (!showInactive) filtered = filtered.filter((m) => m.isActive);
+    if (!showInactive) filtered = filtered.filter((membership) => membership.isActive);
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       filtered = filtered.filter(
-        (m) =>
-          m.userName.toLowerCase().includes(s) ||
-          m.userNumber.toLowerCase().includes(s) ||
-          m.userEmail.toLowerCase().includes(s) ||
-          m.departmentName.toLowerCase().includes(s) ||
-          m.roleName.toLowerCase().includes(s)
+        (membership) =>
+          membership.userName.toLowerCase().includes(s) ||
+          membership.userNumber.toLowerCase().includes(s) ||
+          membership.userEmail.toLowerCase().includes(s) ||
+          membership.departmentName.toLowerCase().includes(s) ||
+          membership.roleName.toLowerCase().includes(s)
       );
     }
     return filtered;
@@ -62,9 +62,11 @@ export default function MembershipsSearchList({
   const handleDepartmentChange = async (departmentName: string) => {
     setNewMembership({ ...newMembership, departmentName, roleName: "" });
     if (departmentName) {
-      const res = await fetch(`/api/admin/roles?department=${encodeURIComponent(departmentName)}`);
-      if (res.ok) {
-        const data = await res.json();
+      const response = await fetch(
+        `/api/admin/roles?department=${encodeURIComponent(departmentName)}`
+      );
+      if (response.ok) {
+        const data = await response.json();
         setRoles(Array.isArray(data) ? data.filter((r: { active: boolean }) => r.active) : []);
       } else {
         setRoles([]);
@@ -139,7 +141,9 @@ export default function MembershipsSearchList({
         <div className={styles.addMemberForm}>
           <select
             value={newMembership.userNumber}
-            onChange={(e) => setNewMembership({ ...newMembership, userNumber: e.target.value })}
+            onChange={(inputEvent) =>
+              setNewMembership({ ...newMembership, userNumber: inputEvent.target.value })
+            }
             className={styles.input}
             disabled={adding}>
             <option value="">Selecione um utilizador</option>
@@ -151,7 +155,7 @@ export default function MembershipsSearchList({
           </select>
           <select
             value={newMembership.departmentName}
-            onChange={(e) => handleDepartmentChange(e.target.value)}
+            onChange={(inputEvent) => handleDepartmentChange(inputEvent.target.value)}
             className={styles.input}
             disabled={adding}>
             <option value="">Selecione um departamento</option>
@@ -163,7 +167,9 @@ export default function MembershipsSearchList({
           </select>
           <select
             value={newMembership.roleName}
-            onChange={(e) => setNewMembership({ ...newMembership, roleName: e.target.value })}
+            onChange={(inputEvent) =>
+              setNewMembership({ ...newMembership, roleName: inputEvent.target.value })
+            }
             className={styles.input}
             disabled={adding || !newMembership.departmentName}>
             <option value="">Selecione um cargo</option>

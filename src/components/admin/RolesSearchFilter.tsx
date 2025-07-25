@@ -138,14 +138,14 @@ export default function RolesSearchFilter({
 
   const filteredRoles = useMemo(() => {
     let filtered = roles;
-    if (!showInactive) filtered = filtered.filter((r) => r.active);
+    if (!showInactive) filtered = filtered.filter((role) => role.active);
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       filtered = filtered.filter(
-        (r) =>
-          r.role_name.toLowerCase().includes(s) ||
-          r.access.toLowerCase().includes(s) ||
-          (r.department && r.department.toLowerCase().includes(s))
+        (role) =>
+          role.role_name.toLowerCase().includes(s) ||
+          role.access.toLowerCase().includes(s) ||
+          (role.department && role.department.toLowerCase().includes(s))
       );
     }
     if (selectedDepartment === "") {
@@ -164,14 +164,14 @@ export default function RolesSearchFilter({
         <div className={styles.sectionTitle}>Adicionar Novo Cargo</div>
         <form
           className={styles.addRoleForm}
-          onSubmit={(e) => {
-            e.preventDefault();
+          onSubmit={(inputEvent) => {
+            inputEvent.preventDefault();
             addRole();
           }}>
           <div className={styles.row}>
             <select
               value={addDepartment}
-              onChange={(e) => setAddDepartment(e.target.value)}
+              onChange={(inputEvent) => setAddDepartment(inputEvent.target.value)}
               className={styles.select}
               disabled={loading}>
               <option value="">Todos</option>
@@ -184,14 +184,16 @@ export default function RolesSearchFilter({
             <input
               type="text"
               value={newRole.roleName}
-              onChange={(e) => setNewRole({ ...newRole, roleName: e.target.value })}
+              onChange={(inputEvent) =>
+                setNewRole({ ...newRole, roleName: inputEvent.target.value })
+              }
               placeholder="Nome do Cargo"
               className={styles.input}
               disabled={loading}
             />
             <select
               value={newRole.access}
-              onChange={(e) => setNewRole({ ...newRole, access: e.target.value })}
+              onChange={(inputEvent) => setNewRole({ ...newRole, access: inputEvent.target.value })}
               className={styles.select}
               disabled={loading}>
               <option value="guest">Convidado</option>
@@ -215,7 +217,7 @@ export default function RolesSearchFilter({
         <div className={styles.filterBar}>
           <select
             value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
+            onChange={(inputEvent) => setSelectedDepartment(inputEvent.target.value)}
             className={styles.select}>
             <option value="">Todos</option>
             {departments.map((dept) => (
@@ -229,7 +231,7 @@ export default function RolesSearchFilter({
             type="text"
             placeholder="Pesquisar cargo, nível de acesso ou departamento..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(inputEvent) => setSearch(inputEvent.target.value)}
           />
           <button
             className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}

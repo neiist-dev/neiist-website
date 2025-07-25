@@ -19,18 +19,20 @@ export default function AdminBodiesSearchFilter({
   const [showInactive, setShowInactive] = useState(false);
   const [newAdminBody, setNewAdminBody] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const filteredAdminBodies = useMemo(() => {
-    let arr = adminBodies;
-    if (!showInactive) arr = arr.filter((e) => e.active !== false);
+    let filteredAdminBodies = adminBodies;
+    if (!showInactive) filteredAdminBodies = filteredAdminBodies.filter((e) => e.active !== false);
     if (search.trim()) {
       const s = search.trim().toLowerCase();
-      arr = arr.filter(
-        (e) =>
-          e.name.toLowerCase().includes(s) || (e.description?.toLowerCase().includes(s) ?? false)
+      filteredAdminBodies = filteredAdminBodies.filter(
+        (adminBody) =>
+          adminBody.name.toLowerCase().includes(s) ||
+          (adminBody.description?.toLowerCase().includes(s) ?? false)
       );
     }
-    return arr;
+    return filteredAdminBodies;
   }, [adminBodies, search, showInactive]);
 
   const addAdminBody = async () => {
@@ -47,10 +49,10 @@ export default function AdminBodiesSearchFilter({
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(error.error || "Erro ao adicionar órgão administrativo");
+        setErrorMessage(error.error || "Erro ao adicionar órgão administrativo");
       }
     } catch {
-      alert("Erro ao adicionar órgão administrativo");
+      setErrorMessage("Erro ao adicionar órgão administrativo");
     } finally {
       setLoading(false);
     }
@@ -70,14 +72,16 @@ export default function AdminBodiesSearchFilter({
       <h3 className={styles.sectionTitle}>Adicionar Novo Órgão</h3>
       <form
         className={styles.form}
-        onSubmit={(e) => {
-          e.preventDefault();
+        onSubmit={(inputEvent) => {
+          inputEvent.preventDefault();
           addAdminBody();
         }}>
         <input
           type="text"
           value={newAdminBody.name}
-          onChange={(e) => setNewAdminBody({ ...newAdminBody, name: e.target.value })}
+          onChange={(inputEvent) =>
+            setNewAdminBody({ ...newAdminBody, name: inputEvent.target.value })
+          }
           placeholder="ex: Direção, Mesa da Assembleia Geral"
           className={styles.input}
           disabled={loading}
@@ -85,7 +89,9 @@ export default function AdminBodiesSearchFilter({
         <input
           type="text"
           value={newAdminBody.description}
-          onChange={(e) => setNewAdminBody({ ...newAdminBody, description: e.target.value })}
+          onChange={(inputEvent) =>
+            setNewAdminBody({ ...newAdminBody, description: inputEvent.target.value })
+          }
           placeholder="Descrição (opcional)"
           className={styles.input}
           disabled={loading}
@@ -96,6 +102,11 @@ export default function AdminBodiesSearchFilter({
           className={styles.addButton}>
           {loading ? "A adicionar..." : "Adicionar Órgão"}
         </button>
+        {errorMessage && (
+          <div style={{ color: "#d32f2f", marginTop: "0.5rem", fontWeight: 500 }}>
+            {errorMessage}
+          </div>
+        )}
       </form>
 
       <div className={styles.sectionTitle}>Órgãos Administrativos Existentes</div>
@@ -105,7 +116,7 @@ export default function AdminBodiesSearchFilter({
           type="text"
           placeholder="Pesquisar órgão administrativo..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(inputEvent) => setSearch(inputEvent.target.value)}
         />
         <button
           className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}

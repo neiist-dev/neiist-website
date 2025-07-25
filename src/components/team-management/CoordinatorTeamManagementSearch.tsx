@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@/types/user";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
 
@@ -39,11 +39,37 @@ export default function CoordinatorTeamManagementSearch({
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
 
+  const fetchRoles = useCallback(
+    async (team: string) => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/admin/roles?department=${encodeURIComponent(team)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const assignedRoles = initialMemberships
+            .filter((m) => m.departmentName === team && m.isActive)
+            .map((m) => m.roleName);
+
+          setRoles(
+            Array.isArray(data)
+              ? data.filter((r: Role) => r.active && !assignedRoles.includes(r.role_name))
+              : []
+          );
+        } else {
+          setRoles([]);
+        }
+      } catch {
+        setRoles([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [initialMemberships]
+  );
+
   useEffect(() => {
     setMemberships(
-      initialMemberships.filter(
-        (m) => m.departmentName === selectedTeam && m.isActive
-      )
+      initialMemberships.filter((m) => m.departmentName === selectedTeam && m.isActive)
     );
     setSelectedUser("");
     setSelectedRole("");
@@ -51,32 +77,7 @@ export default function CoordinatorTeamManagementSearch({
     if (selectedTeam) {
       fetchRoles(selectedTeam);
     }
-  }, [selectedTeam, initialMemberships]);
-
-  async function fetchRoles(team: string) {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/admin/roles?department=${encodeURIComponent(team)}`);
-      if (res.ok) {
-        const data = await res.json();
-        const assignedRoles = memberships.map((m) => m.roleName);
-        setRoles(
-          Array.isArray(data)
-            ? data.filter(
-                (r: Role) =>
-                  r.active && !assignedRoles.includes(r.role_name)
-              )
-            : []
-        );
-      } else {
-        setRoles([]);
-      }
-    } catch {
-      setRoles([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [selectedTeam, initialMemberships, fetchRoles]);
 
   async function refreshMemberships() {
     setLoading(true);
@@ -163,8 +164,7 @@ export default function CoordinatorTeamManagementSearch({
           className={styles.teamSelector}
           value={selectedTeam}
           onChange={(e) => setSelectedTeam(e.target.value)}
-          disabled={loading || coordinatorTeams.length < 2}
-        >
+          disabled={loading || coordinatorTeams.length < 2}>
           {coordinatorTeams.map((team) => (
             <option key={team} value={team}>
               {team}
@@ -179,8 +179,7 @@ export default function CoordinatorTeamManagementSearch({
             className={styles.input}
             value={selectedUser}
             onChange={(e) => setSelectedUser(e.target.value)}
-            disabled={loading}
-          >
+            disabled={loading}>
             <option value="">Selecione um utilizador</option>
             {users.map((u) => (
               <option key={u.istid} value={u.istid}>
@@ -192,8 +191,7 @@ export default function CoordinatorTeamManagementSearch({
             className={styles.input}
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            disabled={loading}
-          >
+            disabled={loading}>
             <option value="">Selecione um cargo</option>
             {roles.map((r) => (
               <option key={r.role_name} value={r.role_name}>
@@ -204,8 +202,7 @@ export default function CoordinatorTeamManagementSearch({
           <button
             className={styles.addMemberBtn}
             type="submit"
-            disabled={loading || !selectedUser || !selectedRole}
-          >
+            disabled={loading || !selectedUser || !selectedRole}>
             Adicionar Membro
           </button>
         </form>
@@ -233,15 +230,15 @@ export default function CoordinatorTeamManagementSearch({
                     <span className={styles.label}>Email:</span> {member.userEmail}
                   </div>
                   <div>
-                    <span className={styles.label}>Desde:</span> {new Date(member.startDate).toLocaleDateString('pt-PT')}
+                    <span className={styles.label}>Desde:</span>{" "}
+                    {new Date(member.startDate).toLocaleDateString("pt-PT")}
                   </div>
                   <span className={styles.badge + " " + styles.memberStatus}>Ativo</span>
                 </div>
                 <button
                   className={styles.deleteBtn}
                   onClick={() => handleRemoveMember(member.userNumber, member.roleName)}
-                  disabled={loading}
-                >
+                  disabled={loading}>
                   Remover
                 </button>
               </div>
