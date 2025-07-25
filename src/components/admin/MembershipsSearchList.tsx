@@ -3,18 +3,20 @@
 import { useState, useMemo } from "react";
 import { User } from "@/types/user";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import Image from "next/image";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
 
 interface Membership {
   id: string;
   userNumber: string;
   userName: string;
-  userEmail: string;
   departmentName: string;
   roleName: string;
   startDate: string;
   endDate?: string;
   isActive: boolean;
+  userEmail: string;
+  userPhoto: string;
 }
 
 interface Department {
@@ -250,49 +252,48 @@ export default function MembershipsSearchList({
           <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
         ) : (
           <div className={styles.membersList}>
-            {filteredMemberships.map((membership) => (
-              <div key={membership.id} className={styles.members}>
+          {filteredMemberships.map((membership) => (
+            <div key={membership.id} className={styles.memberCard}>
+              <Image
+                className={styles.memberPhoto}
+                src={membership.userPhoto}
+                alt={membership.userName}
+                width={160}
+                height={160}
+              />
+              <div className={styles.memberInfo}>
+                <div className={styles.memberName}>
+                  {membership.userName} ({membership.userNumber})
+                </div>
+                <div><strong>Departamento:</strong> {membership.departmentName}</div>
+                <div><strong>Cargo:</strong> {membership.roleName}</div>
+                <div><strong>Email:</strong> {membership.userEmail}</div>
                 <div>
-                  <div className={styles.memberName}>
-                    {membership.userName} ({membership.userNumber})
-                  </div>
-                  <div>
-                    <strong>Departamento:</strong> {membership.departmentName}
-                  </div>
-                  <div>
-                    <strong>Cargo:</strong> {membership.roleName}
-                  </div>
-                  <div>
-                    <strong>Email:</strong> {membership.userEmail}
-                  </div>
-                  <div>
-                    <strong>Desde:</strong>{" "}
-                    {new Date(membership.startDate).toLocaleDateString("pt-PT")}
-                  </div>
+                  <strong>Desde:</strong> {new Date(membership.startDate).toLocaleDateString("pt-PT")}
                   {membership.endDate && (
-                    <div>
-                      <strong>Até:</strong>{" "}
-                      {new Date(membership.endDate).toLocaleDateString("pt-PT")}
-                    </div>
+                    <> <strong>Até:</strong> {new Date(membership.endDate).toLocaleDateString("pt-PT")}</>
                   )}
-                  <span
-                    className={`${styles.badge} ${membership.isActive ? styles.memberStatus : styles.guest}`}>
+                </div>
+              </div>
+              <div className={styles.memberActions}>
+                  <span className={styles.badge}>
                     {membership.isActive ? "Ativo" : "Inativo"}
                   </span>
+                  <button
+                    onClick={() =>
+                      handleRemoveClick(
+                        membership.userNumber,
+                        membership.departmentName,
+                        membership.roleName
+                      )
+                    }
+                    className={styles.deleteBtn}
+                  >
+                    Remover
+                  </button>
                 </div>
-                <button
-                  onClick={() =>
-                    handleRemoveClick(
-                      membership.userNumber,
-                      membership.departmentName,
-                      membership.roleName
-                    )
-                  }
-                  className={styles.deleteBtn}>
-                  Remover
-                </button>
-              </div>
-            ))}
+            </div>
+          ))}
           </div>
         )}
       </section>

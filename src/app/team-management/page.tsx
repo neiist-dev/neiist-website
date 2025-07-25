@@ -13,6 +13,7 @@ interface Membership {
   endDate?: string;
   isActive: boolean;
   userEmail: string;
+  userPhoto: string;
 }
 
 interface Role {
@@ -42,6 +43,7 @@ export default async function TeamManagementPage() {
     endDate: m.to_date ?? undefined,
     isActive: m.active,
     userEmail: users.find((u) => u.istid === m.user_istid)?.email || "",
+    userPhoto: users.find((user) => user.istid === m.user_istid)?.photo || '',
   }));
 
   const userMemberships = memberships.filter(

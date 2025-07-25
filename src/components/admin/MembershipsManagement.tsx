@@ -6,12 +6,13 @@ interface Membership {
   id: string;
   userNumber: string;
   userName: string;
-  userEmail: string;
   departmentName: string;
   roleName: string;
   startDate: string;
   endDate?: string;
   isActive: boolean;
+  userEmail: string;
+  userPhoto: string;
 }
 
 export default async function MembershipsManagement() {
@@ -26,6 +27,7 @@ export default async function MembershipsManagement() {
       userNumber: membership.user_istid,
       userName: membership.user_name,
       userEmail: user?.email || "",
+      userPhoto: user?.photo || "",
       departmentName: membership.department_name,
       roleName: membership.role_name,
       startDate: membership.from_date,

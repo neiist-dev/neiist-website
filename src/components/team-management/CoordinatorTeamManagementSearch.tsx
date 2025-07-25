@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@/types/user";
+import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
 
@@ -9,12 +10,13 @@ interface Membership {
   id: string;
   userNumber: string;
   userName: string;
-  userEmail: string;
   departmentName: string;
   roleName: string;
   startDate: string;
   endDate?: string;
   isActive: boolean;
+  userEmail: string;
+  userPhoto: string;
 }
 
 interface Role {
@@ -230,44 +232,40 @@ export default function CoordinatorTeamManagementSearch({
         </form>
         {error && <div className={styles.error}>{error}</div>}
       </section>
-      <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Membros Existentes</h3>
-        {memberships.length === 0 ? (
-          <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
-        ) : (
-          <div className={styles.membersList}>
-            {memberships.map((member) => (
-              <div key={member.id} className={styles.members}>
-                <div>
-                  <div className={styles.memberName}>
-                    {member.userName} ({member.userNumber})
-                  </div>
-                  <div>
-                    <span className={styles.label}>Departamento:</span> {member.departmentName}
-                  </div>
-                  <div>
-                    <span className={styles.label}>Cargo:</span> {member.roleName}
-                  </div>
-                  <div>
-                    <span className={styles.label}>Email:</span> {member.userEmail}
-                  </div>
-                  <div>
-                    <span className={styles.label}>Desde:</span>{" "}
-                    {new Date(member.startDate).toLocaleDateString("pt-PT")}
-                  </div>
-                  <span className={styles.badge + " " + styles.memberStatus}>Ativo</span>
-                </div>
-                <button
-                  className={styles.deleteBtn}
-                  onClick={() => handleRemoveMember(member.userNumber, member.roleName)}
-                  disabled={loading}>
-                  Remover
-                </button>
+     <section className={styles.section}>
+      <h3 className={styles.sectionTitle}>Membros Existentes</h3>
+      {memberships.length === 0 ? (
+        <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
+      ) : (
+        <div className={styles.membersList}>
+          {memberships.map((member) => (
+            <div key={member.id} className={styles.memberCard}>
+              <Image
+              className={styles.memberPhoto}
+              src={member.userPhoto}
+              alt={member.userName}
+              width={48}
+              height={48}
+              />
+              <div className={styles.memberName}>{member.userName}</div>
+              <div className={styles.memberRole}>{member.roleName}</div>
+              <div className={styles.memberEmail}>{member.userEmail}</div>
+              <div className={styles.memberSince}>
+              Desde: {new Date(member.startDate).toLocaleDateString("pt-PT")}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+              <span className={styles.badge}>Ativo</span>
+              <button
+              className={styles.deleteBtn}
+              onClick={() => handleRemoveMember(member.userNumber, member.roleName)}
+              disabled={loading}
+              >
+              Remover
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
     </>
   );
 }

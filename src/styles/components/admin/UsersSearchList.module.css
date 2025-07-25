@@ -35,10 +35,10 @@
   box-shadow:
     0 4px 24px rgba(40, 99, 253, 0.1),
     0 1.5px 4px rgba(0, 0, 0, 0.04);
-  padding: 2rem 2rem 1.5rem 2rem;
+  padding: 2rem 2.5rem 2rem 2.5rem;
   display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 2rem;
   transition:
     box-shadow 0.2s,
     transform 0.2s;
@@ -61,11 +61,31 @@
 }
 
 .userPhoto {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
+  border-radius: 1.2rem;
+  margin: 0;
+}
+
+.changePhoto {
+  position: relative;
+  display: inline-block;
+}
+
+.changePhoto:hover::after {
+  content: "Clique para alterar a foto";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 99, 253, 0.45);
+  color: white;
+  font-size: 1.08rem;
+  font-weight: 600;
+  border-radius: 1.2rem;
+  pointer-events: none;
+  z-index: 2;
+  backdrop-filter: blur(2.5px);
+  text-align: center;
 }
 
 .istid {
@@ -141,11 +161,26 @@
 @media (max-width: 900px) {
   .item {
     flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    gap: 0rem;
     padding: 1.2rem;
+    text-align: center;
   }
+
   .userPhoto {
-    width: 44px;
-    height: 44px;
+    width: 128px;
+    height: 128px;
+    margin: 0 auto 0 auto;
+    display: block;
+  }
+
+  .itemContent {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .hideOnMobile {
+    display: none !important;
   }
 }
