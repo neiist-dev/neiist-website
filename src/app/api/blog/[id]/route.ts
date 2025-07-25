@@ -8,7 +8,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   try {
     const { rows } = await db_query(
       `SELECT id, title, description, image, date, author, tags, created_at, updated_at
-       FROM neiist.news WHERE id = $1`,
+       FROM neiist.posts WHERE id = $1`,
       [id]
     );
     if (!rows[0]) {
@@ -16,7 +16,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
     return NextResponse.json(rows[0]);
   } catch (error) {
-    console.error("Error fetching news by id:", error);
+    console.error("Error fetching post by id:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -26,7 +26,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   const { id } = params;
   try {
     const { rowCount } = await db_query(
-      `DELETE FROM neiist.news WHERE id = $1`,
+      `DELETE FROM neiist.posts WHERE id = $1`,
       [id]
     );
     if (rowCount === 0) {
@@ -34,7 +34,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting news:", error);
+    console.error("Error deleting post:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

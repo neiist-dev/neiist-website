@@ -93,8 +93,10 @@ CREATE TABLE neiist.user_access_roles (
     PRIMARY KEY (user_istid, access)
 );
 
--- BLOG/NEWS TABLE
-CREATE TABLE neiist.news (
+
+DROP TABLE IF EXISTS neiist.news CASCADE;
+-- BLOG/POSTS TABLE
+CREATE TABLE neiist.posts (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -105,6 +107,8 @@ CREATE TABLE neiist.news (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA neiist TO neiist_app_user;
 
 -- FUNCTIONS
 

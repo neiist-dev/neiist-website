@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
 
-interface NewsCardProps {
+interface PostCardProps {
   id: string
   title: string
   description: string
@@ -21,7 +21,7 @@ interface NewsCardProps {
   author?: string
   tags?: string[];
 }
-export function NewsCard(props: NewsCardProps) {
+export function PostCard(props: PostCardProps) {
   const { id, title, description, image, date, author, tags = [] } = props;
   return (
     <Link href={`/blog/${id}`} className="block group">

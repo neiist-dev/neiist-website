@@ -12,7 +12,7 @@ import BlogToolbar from '@/components/blog/BlogToolbar';
 import BlogFilterbar from '@/components/blog/BlogFilterbar';
 
 
-import { NewsGrid } from "@/components/blog/NewsGrid"
+import { PostGrid } from "@/components/blog/PostGrid"
 import Pagination from "@/components/blog/Pagination";
 import Newsletter from "@/components/blog/Newsletter";
 
@@ -22,24 +22,24 @@ export default function BlogPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
 
-  const [news, setNews] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 6;
-  const pageCount = Math.ceil(news.length / pageSize);
-  const paginatedNews = news.slice((page - 1) * pageSize, page * pageSize);
+  const pageCount = Math.ceil(posts.length / pageSize);
+  const paginatedPosts = posts.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
-    async function fetchNews() {
+    async function fetchPosts() {
       try {
         const res = await fetch('/api/blog');
-        if (!res.ok) throw new Error('Error fetching news');
+        if (!res.ok) throw new Error('Error fetching posts');
         const data = await res.json();
-        setNews(data);
+        setPosts(data);
       } catch (err) {
-        setNews([]);
+        setPosts([]);
       }
     }
-    fetchNews();
+    fetchPosts();
   }, []);
 
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -71,7 +71,7 @@ useEffect(() => {
         <BlogToolbar onFilterClick={() => setSidebarOpen(true)} />
       </div>
       <div className={styles.content}>
-        <NewsGrid news={paginatedNews} />
+        <PostGrid posts={paginatedPosts} />
         <Pagination page={page} pageCount={pageCount} setPage={setPage} />
         <Newsletter />
       </div>

@@ -1,7 +1,6 @@
-import { NewsCard } from "./NewsCard";
+import { PostCard } from "./PostCard";
 
-
-interface News {
+interface Post {
   id: string;
   title: string;
   description: string;
@@ -11,16 +10,16 @@ interface News {
   tags?: string[];
 }
 
-interface NewsGridProps {
-  news: News[];
+interface PostGridProps {
+  posts: Post[];
 }
 
-export function NewsGrid({ news }: NewsGridProps) {
+export function PostGrid({ posts }: PostGridProps) {
   return (
     <div className="w-full flex justify-center p-10">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-10">
-        {news.map((item) => (
-          <NewsCard key={item.id} {...item} tags={item.tags || []} />
+        {posts.map((item) => (
+          <PostCard key={item.id} {...item} tags={item.tags || []} />
         ))}
       </div>
     </div>

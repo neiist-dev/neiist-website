@@ -6,12 +6,12 @@ export async function GET() {
   try {
     const { rows } = await db_query(
       `SELECT id, title, description, image, date, author, tags, created_at, updated_at
-       FROM neiist.news
+       FROM neiist.posts
        ORDER BY date DESC, created_at DESC`
     );
     return NextResponse.json(rows);
   } catch (error) {
-    console.error("Error fetching news:", error);
+    console.error("Error fetching posts:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -25,14 +25,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     const result = await db_query(
-      `INSERT INTO neiist.news (title, description, image, date, author, tags)
+      `INSERT INTO neiist.posts (title, description, image, date, author, tags)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
       [title, description, image, date, author, tags]
     );
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
-    console.error("Error creating news:", error);
+    console.error("Error creating post:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
