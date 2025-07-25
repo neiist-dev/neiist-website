@@ -1,6 +1,6 @@
 
 import { NextResponse } from "next/server";
-import { db_query } from "@/lib/db";
+import { db_query } from "@/utils/dbUtils";
 
 // GET /api/blog/[id] - Get a single post by id
 export async function GET(request: Request, { params }: { params: { id: string } }) {
