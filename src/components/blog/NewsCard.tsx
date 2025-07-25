@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 
 import Link from "next/link"
 
+
 interface NewsCardProps {
   id: string
   title: string
@@ -18,18 +19,10 @@ interface NewsCardProps {
   image?: string
   date?: string
   author?: string
-  tag?: string
+  tags?: string[];
 }
-
-export function NewsCard({
-  id,
-  title,
-  description,
-  image,
-  date,
-  author,
-  tag,
-}: NewsCardProps) {
+export function NewsCard(props: NewsCardProps) {
+  const { id, title, description, image, date, author, tags = [] } = props;
   return (
     <Link href={`/blog/${id}`} className="block group">
       <Card className="w-full max-w-xs flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
@@ -73,9 +66,13 @@ export function NewsCard({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
-          <Badge variant="outline" className="w-fit bg-pink-100 text-pink-800"> {/* TODO - attribute to each tag a diff color */}
-            {tag}
-          </Badge>
+          <div className="flex flex-wrap gap-2">
+            {tags && tags.length > 0 && tags.map((tag, idx) => (
+              <Badge key={idx} variant="outline" className="w-fit bg-pink-100 text-pink-800">
+                {tag}
+              </Badge>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </Link>

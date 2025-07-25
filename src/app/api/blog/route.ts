@@ -5,7 +5,7 @@ import { db_query } from "@/utils/dbUtils";
 export async function GET() {
   try {
     const { rows } = await db_query(
-      `SELECT id, title, description, image, date, author, tag, created_at, updated_at
+      `SELECT id, title, description, image, date, author, tags, created_at, updated_at
        FROM neiist.news
        ORDER BY date DESC, created_at DESC`
     );
@@ -20,16 +20,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, image, date, author, tag } = body;
+    const { title, description, image, date, author, tags } = body;
     if (!title || !description || !author) {
-      //! Decide which fields are required
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     const result = await db_query(
-      `INSERT INTO neiist.news (title, description, image, date, author, tag)
+      `INSERT INTO neiist.news (title, description, image, date, author, tags)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [title, description, image, date, author, tag]
+      [title, description, image, date, author, tags]
     );
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {

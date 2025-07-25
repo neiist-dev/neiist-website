@@ -15,7 +15,7 @@ async function handleAddNews() {
         description: 'Descrição de exemplo para a notícia.Descrição de exemplo para a notícia.Descrição de exemplo para a notícia.Descrição de exemplo para a notícia.Descrição de exemplo para a notícia.Descrição de exemplo para a notícia.',
         date: new Date().toISOString().split('T')[0],
         author: 'Francisca Almeida',
-        tag: 'geral',
+        tags: ['geral', 'notícias'],
         image: ''
       }),
     });
