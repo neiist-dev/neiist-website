@@ -50,8 +50,14 @@ export function NewsCard({
             <AvatarImage src="TODO" alt={author} />
             <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
           </Avatar>
-          <span className="text-gray-800">
-            {author ? author.split(' ')[0] : ''}
+          <span className="text-gray-800 truncate max-w-[110px] block">
+            {author ? (() => {
+              const parts = author.trim().split(' ');
+              if (parts.length === 1) return parts[0];
+              const full = `${parts[0]} ${parts[1]}`;
+              if (full.length <= 16) return full;
+              return `${parts[0]} ${parts[1][0]}.`;
+            })() : ''}
           </span>
           <span>|</span>
           <span className="sm:inline block mt-1 sm:mt-0">

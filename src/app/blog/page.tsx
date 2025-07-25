@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { UserRole } from '@/types/user';
+import MemberControls from '@/components/blog/MemberControls';
 import styles from '@/styles/pages/BlogPage.module.css';
-import AdminBlogPage from '@/app/blog/admin';
+import { Switch } from '@/components/ui/switch';
 import { useUser } from '@/context/UserContext';
 import { FaSearch, FaChevronLeft } from 'react-icons/fa';
 import BlogHeader from '@/components/blog/BlogHeader';
@@ -53,16 +55,18 @@ useEffect(() => {
     return <div className={styles.loading}>Loading...</div>;
   }
 
-  const isMember = user && ['Member', 'Collaborator', 'Admin'].includes(user.status);
-
-  if (isMember) {
-    return <AdminBlogPage />;
-  }
+  const isMember = user && user.roles?.includes(UserRole.MEMBER);
+  const [memberView, setMemberView] = useState(true);
 
   return (
     <div className={styles.container}>
       <BlogFilterbar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <BlogHeader />
+      <div className="flex flex-col items-center gap-2 mb-4">
+        <BlogHeader />
+        {!isMember && (
+          <MemberControls memberView={memberView} setMemberView={setMemberView} />
+        )}
+      </div>
       <div ref={toolbarRef}>
         <BlogToolbar onFilterClick={() => setSidebarOpen(true)} />
       </div>
