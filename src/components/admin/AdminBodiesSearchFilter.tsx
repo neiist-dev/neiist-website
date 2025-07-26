@@ -22,7 +22,11 @@ export default function AdminBodiesSearchFilter({
 
   const filteredAdminBodies = useMemo(() => {
     let filteredAdminBodies = adminBodies;
-    if (!showInactive) filteredAdminBodies = filteredAdminBodies.filter((e) => e.active !== false);
+    if (showInactive) {
+      filteredAdminBodies = filteredAdminBodies.filter((e) => e.active === false);
+    } else {
+      filteredAdminBodies = filteredAdminBodies.filter((e) => e.active !== false);
+    }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       filteredAdminBodies = filteredAdminBodies.filter((adminBody) =>

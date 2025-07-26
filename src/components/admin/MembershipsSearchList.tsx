@@ -53,7 +53,11 @@ export default function MembershipsSearchList({
 
   const filteredMemberships = useMemo(() => {
     let filtered = memberships;
-    if (!showInactive) filtered = filtered.filter((membership) => membership.isActive);
+    if (showInactive) {
+      filtered = filtered.filter((membership) => !membership.isActive);
+    } else {
+      filtered = filtered.filter((membership) => membership.isActive);
+    }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       filtered = filtered.filter(

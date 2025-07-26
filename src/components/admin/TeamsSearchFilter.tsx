@@ -27,7 +27,11 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
 
   const filteredTeams = useMemo(() => {
     let filteredTeams = teams;
-    if (!showInactive) filteredTeams = filteredTeams.filter((e) => e.active !== false);
+    if (showInactive) {
+      filteredTeams = filteredTeams.filter((e) => e.active === false);
+    } else {
+      filteredTeams = filteredTeams.filter((e) => e.active !== false);
+    }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       filteredTeams = filteredTeams.filter(
@@ -40,7 +44,10 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
   }, [teams, search, showInactive]);
 
   const addTeam = async () => {
-    if (!newTeam.name.trim()) return;
+    if (!newTeam.name.trim() || !newTeam.description.trim()) {
+      setErrorMessage("Nome e descrição são obrigatórios.");
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch("/api/admin/teams", {
@@ -50,7 +57,6 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
       });
       if (response.ok) {
         setNewTeam({ name: "", description: "" });
-        // Optionally, fetch updated teams or reload
         window.location.reload();
       } else {
         const error = await response.json();
@@ -88,6 +94,7 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
           placeholder="Nome da equipa"
           className={styles.input}
           disabled={loading}
+          required
         />
         <textarea
           ref={textareaRef}
@@ -95,15 +102,16 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
           onChange={(inputEvent) =>
             setNewTeam({ ...newTeam, description: inputEvent.target.value })
           }
-          placeholder="Descrição da equipa (opcional)"
+          placeholder="Descrição da equipa (obrigatória)"
           className={styles.input}
           disabled={loading}
           rows={2}
           style={{ overflow: "hidden" }}
+          required
         />
         <button
           type="submit"
-          disabled={loading || !newTeam.name.trim()}
+          disabled={loading || !newTeam.name.trim() || !newTeam.description.trim()}
           className={styles.primaryBtn}>
           {loading ? "A adicionar..." : "Adicionar Equipa"}
         </button>

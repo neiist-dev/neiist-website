@@ -13,6 +13,7 @@ interface Role {
 
 interface Department {
   name: string;
+  department_type: string;
   active: boolean;
 }
 
@@ -156,7 +157,11 @@ export default function RolesSearchFilter({
 
   const filteredRoles = useMemo(() => {
     let filtered = roles;
-    if (!showInactive) filtered = filtered.filter((role) => role.active);
+    if (showInactive) {
+      filtered = filtered.filter((role) => !role.active);
+    } else {
+      filtered = filtered.filter((role) => role.active);
+    }
     if (search.trim()) {
       const s = search.trim().toLowerCase();
       filtered = filtered.filter(

@@ -10,11 +10,13 @@ import { GoPeople, GoOrganization, GoBriefcase, GoPerson, GoShield } from "react
 type AdminSection = "teams" | "admin-bodies" | "roles" | "memberships" | "users";
 
 const sections = [
+  { id: "users" as AdminSection, name: "Utilizadores", icon: <GoShield /> },
+  { id: "memberships" as AdminSection, name: "Membros", icon: <GoPerson /> },
   { id: "teams" as AdminSection, name: "Equipas", icon: <GoPeople /> },
   { id: "admin-bodies" as AdminSection, name: "Órgãos Administrativos", icon: <GoOrganization /> },
   { id: "roles" as AdminSection, name: "Cargos", icon: <GoBriefcase /> },
-  { id: "memberships" as AdminSection, name: "Membros", icon: <GoPerson /> },
-  { id: "users" as AdminSection, name: "Utilizadores", icon: <GoShield /> },
+
+ 
 ];
 
 export const metadata: Metadata = {
