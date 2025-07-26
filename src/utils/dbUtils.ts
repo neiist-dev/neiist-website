@@ -23,7 +23,7 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
     const {
       rows: [newUser],
     } = await db_query<User>(
-      `SELECT * FROM neiist.add_user($1::VARCHAR(10), $2::TEXT, $3::TEXT, $4::TEXT, $5::VARCHAR(15), $6::TEXT, $7::TEXT[])`,
+      `SELECT * FROM neiist.add_user($1::VARCHAR(10), $2::TEXT, $3::TEXT, $4::TEXT, $5::TEXT, $6::TEXT, $7::TEXT[])`,
       [
         user.istid,
         user.name,
@@ -313,9 +313,11 @@ export const removeDepartment = async (name: string): Promise<boolean> => {
   }
 };
 
-export const getAllDepartments = async (): Promise<Array<{ name: string; active: boolean }>> => {
+export const getAllDepartments = async (): Promise<
+  Array<{ name: string; department_type: string; active: boolean }>
+> => {
   try {
-    const { rows } = await db_query<{ name: string; active: boolean }>(
+    const { rows } = await db_query<{ name: string; department_type: string; active: boolean }>(
       "SELECT * FROM neiist.get_all_departments()"
     );
     return rows;

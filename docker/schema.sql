@@ -77,7 +77,8 @@ CREATE TABLE neiist.email_token (
 -- DEPARTMENTS TABLE
 CREATE TABLE neiist.departments (
   name VARCHAR(30) PRIMARY KEY,
-  active BOOLEAN NOT NULL DEFAULT TRUE
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  department_type VARCHAR(20) CHECK (department_type IN ('team', 'admin_body'))
 );
 
 -- TEAMS TABLE
@@ -113,12 +114,11 @@ CREATE TABLE neiist.membership (
   PRIMARY KEY (user_istid, department_name, role_name)
 );
 
--- USER ACCESS ROLES TABLE
-CREATE TABLE neiist.user_access_roles (
-  user_istid VARCHAR(10) REFERENCES neiist.users(istid),
-  access neiist.user_access_enum,
-  PRIMARY KEY (user_istid, access)
-);
+-- Ensure perfomance to calculate the access level of a user
+CREATE INDEX idx_membership_active ON neiist.membership (user_istid, to_date) 
+WHERE to_date IS NULL;
+CREATE INDEX idx_membership_to_date ON neiist.membership (to_date) 
+WHERE to_date IS NOT NULL;
 
 -- FUNCTIONS
 
@@ -130,8 +130,8 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
   name TEXT,
   email TEXT,
   alt_email TEXT,
-  phone VARCHAR(15),
-  preferred_contact_method TEXT,  -- Changed from neiist.contact_method_enum to TEXT
+  phone TEXT,
+  preferred_contact_method TEXT,
   photo_path TEXT,
   courses TEXT[],
   roles TEXT[],
@@ -143,28 +143,32 @@ BEGIN
     u.istid,
     u.name,
     u.email,
-    u.alt_email,
-    u.phone,
-    u.preferred_contact_method::TEXT,
+    (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'alt_email' LIMIT 1) AS alt_email,
+    (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
+    (SELECT contact_type::TEXT FROM neiist.user_contacts WHERE user_istid = u.istid AND is_preferred = TRUE LIMIT 1) AS preferred_contact_method,
     u.photo_path,
-    u.courses,
-    COALESCE(access_levels.access_array, ARRAY[]::TEXT[]) AS roles,
+    ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
+    COALESCE(derived_access.access_array, ARRAY[]::TEXT[]) AS roles,
     COALESCE(team_list.team_array, ARRAY[]::VARCHAR(30)[]) AS teams
   FROM neiist.users u
   LEFT JOIN (
     SELECT 
-      uar.user_istid,
-      array_agg(DISTINCT uar.access::TEXT) AS access_array
-    FROM neiist.user_access_roles uar
-    WHERE uar.user_istid = u_istid
-    GROUP BY uar.user_istid
-  ) access_levels ON u.istid = access_levels.user_istid
+      m.user_istid,
+      array_agg(DISTINCT vdr.access::TEXT) AS access_array
+    FROM neiist.membership m
+    JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
+    WHERE m.user_istid = u_istid 
+      AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+      AND vdr.active = TRUE
+    GROUP BY m.user_istid
+  ) derived_access ON u.istid = derived_access.user_istid
   LEFT JOIN (
     SELECT 
       m.user_istid,
       array_agg(DISTINCT m.department_name) AS team_array
     FROM neiist.membership m
     WHERE m.user_istid = u_istid
+      AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
     GROUP BY m.user_istid
   ) team_list ON u.istid = team_list.user_istid
   WHERE u.istid = u_istid;
@@ -177,7 +181,7 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   p_name TEXT,
   p_email TEXT,
   p_alt_email TEXT,
-  p_phone VARCHAR(15),
+  p_phone TEXT,
   p_photo_path TEXT,
   p_courses TEXT[]
 ) RETURNS TABLE(
@@ -185,7 +189,7 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   name TEXT,
   email TEXT,
   alt_email TEXT,
-  phone VARCHAR(15),
+  phone TEXT,
   preferred_contact_method TEXT,
   photo_path TEXT,
   courses TEXT[],
@@ -193,22 +197,45 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   teams VARCHAR(30)[]
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO neiist.users (istid, name, email, alt_email, phone, photo_path, courses)
-  VALUES (p_istid, p_name, p_email, p_alt_email, p_phone, p_photo_path, p_courses);
-  
+  INSERT INTO neiist.users (istid, name, email, photo_path)
+  VALUES (p_istid, p_name, p_email, p_photo_path);
+
+  -- Insert alternative email if provided
+  IF p_alt_email IS NOT NULL THEN
+    INSERT INTO neiist.user_contacts (user_istid, contact_type, contact_value)
+    VALUES (p_istid, 'alt_email', p_alt_email);
+  END IF;
+
+  -- Insert phone if provided
+  IF p_phone IS NOT NULL THEN
+    INSERT INTO neiist.user_contacts (user_istid, contact_type, contact_value)
+    VALUES (p_istid, 'phone', p_phone);
+  END IF;
+
+  -- Insert courses if provided
+  IF p_courses IS NOT NULL THEN
+    INSERT INTO neiist.user_courses (user_istid, course_name)
+    SELECT p_istid, unnest(p_courses);
+  END IF;
+
   RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
 END;
 $$;
 
 -- Add department
 CREATE OR REPLACE FUNCTION neiist.add_department(
-  u_name VARCHAR(30)
+  u_name VARCHAR(30),
+  u_department_type VARCHAR(20)
 ) RETURNS VOID AS $$
 BEGIN
   IF EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_name) THEN
     RAISE EXCEPTION 'O departamento "%" já existe.', u_name;
   END IF;
-  INSERT INTO neiist.departments (name) VALUES (u_name);
+
+  IF u_department_type NOT IN ('team', 'admin_body') THEN
+    RAISE EXCEPTION 'Tipo de departamento inválido. Deve ser "team" ou "admin_body".';
+  END IF;
+  INSERT INTO neiist.departments (name, department_type) VALUES (u_name, u_department_type);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -217,13 +244,13 @@ CREATE OR REPLACE FUNCTION neiist.remove_department(
   u_name VARCHAR(30)
 ) RETURNS VOID AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_name)
-  THEN
+  IF NOT EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_name) THEN
     RAISE EXCEPTION 'O departamento "%" não existe.', u_name;
   END IF;
+
   UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
   UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-  UPDATE neiist.membership SET active = FALSE WHERE department_name = u_name;
+  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -236,6 +263,8 @@ BEGIN
   IF EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name) THEN
     RAISE EXCEPTION 'A equipa "%" já existe.', u_name;
   END IF;
+
+  INSERT INTO neiist.departments (name, department_type) VALUES (u_name, 'team');
   INSERT INTO neiist.teams (name, description) VALUES (u_name, u_description);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -245,15 +274,14 @@ CREATE OR REPLACE FUNCTION neiist.remove_team(
   u_name VARCHAR(30)
 ) RETURNS VOID AS $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name)
-    THEN
-        RAISE EXCEPTION 'A equipa "%" não existe.', u_name;
-    END IF;
-    UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
-    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-        UPDATE neiist.membership
-        SET to_date = CURRENT_DATE
-        WHERE department_name = u_name AND (to_date IS NULL OR to_date > CURRENT_DATE);
+  IF NOT EXISTS (SELECT 1 FROM neiist.teams WHERE name = u_name) THEN
+    RAISE EXCEPTION 'A equipa "%" não existe.', u_name;
+  END IF;
+
+  UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
+  UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name 
+    AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -262,10 +290,11 @@ CREATE OR REPLACE FUNCTION neiist.add_admin_body(
   u_name VARCHAR(30)
 ) RETURNS VOID AS $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name)
-  THEN
+  IF EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name) THEN
     RAISE EXCEPTION 'O órgão de administração "%" já existe.', u_name;
   END IF;
+
+  INSERT INTO neiist.departments (name, department_type) VALUES (u_name, 'admin_body');
   INSERT INTO neiist.admin_bodies (name) VALUES (u_name);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -275,15 +304,14 @@ CREATE OR REPLACE FUNCTION neiist.remove_admin_body(
   u_name VARCHAR(30)
 ) RETURNS VOID AS $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name
-    ) THEN
-        RAISE EXCEPTION 'O órgão de administração "%" não existe.', u_name;
-    END IF;
-    UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
-    UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-    UPDATE neiist.membership
-        SET to_date = CURRENT_DATE
-        WHERE department_name = u_name AND (to_date IS NULL OR to_date > CURRENT_DATE);
+  IF NOT EXISTS (SELECT 1 FROM neiist.admin_bodies WHERE name = u_name) THEN
+    RAISE EXCEPTION 'O órgão de administração "%" não existe.', u_name;
+  END IF;
+
+  UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
+  UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
+  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name 
+    AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -294,12 +322,10 @@ CREATE OR REPLACE FUNCTION neiist.add_valid_department_role(
   u_access neiist.user_access_enum DEFAULT 'member'
 ) RETURNS VOID AS $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM neiist.valid_department_roles
-             WHERE department_name = u_department_name
-               AND role_name = u_role_name
-               AND access = u_access) THEN
-    RAISE EXCEPTION 'A posição "%" para o departamento "%" já existe.', u_role_name, u_department_name;
+  IF NOT EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_department_name AND active = TRUE) THEN
+    RAISE EXCEPTION 'O departamento "%" não existe ou não está ativo.', u_department_name;
   END IF;
+
   INSERT INTO neiist.valid_department_roles (department_name, role_name, access)
   VALUES (u_department_name, u_role_name, u_access);
 END;
@@ -311,13 +337,16 @@ CREATE OR REPLACE FUNCTION neiist.remove_valid_department_role(
   u_role_name VARCHAR(40)
 ) RETURNS VOID AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.valid_department_roles
-                 WHERE department_name = u_department_name
-                   AND role_name = u_role_name) THEN
+  IF NOT EXISTS (SELECT 1 FROM neiist.valid_department_roles WHERE department_name = u_department_name
+      AND role_name = u_role_name) THEN
     RAISE EXCEPTION 'A posição "%" para o departamento "%" não existe.', u_role_name, u_department_name;
   END IF;
+
   UPDATE neiist.valid_department_roles SET active = FALSE
-  WHERE department_name = u_department_name AND role_name = u_role_name;
+    WHERE department_name = u_department_name AND role_name = u_role_name;
+  UPDATE neiist.membership SET to_date = CURRENT_DATE 
+    WHERE department_name = u_department_name AND role_name = u_role_name
+      AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -327,23 +356,13 @@ CREATE OR REPLACE FUNCTION neiist.add_team_member(
   u_department_name VARCHAR(30),
   u_role_name VARCHAR(40)
 ) RETURNS VOID AS $$
-DECLARE
-  v_role_access neiist.user_access_enum;
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = u_user_istid) THEN
     RAISE EXCEPTION 'O utilizador "%" não existe.', u_user_istid;
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM neiist.valid_department_roles
-      WHERE department_name = u_department_name
-      AND role_name = u_role_name) THEN
-    RAISE EXCEPTION 'A posição "%" para o departamento "%" não existe.', u_role_name, u_department_name;
-  END IF;
+
   INSERT INTO neiist.membership (user_istid, department_name, role_name)
   VALUES (u_user_istid, u_department_name, u_role_name);
-  SELECT access INTO v_role_access FROM neiist.valid_department_roles
-  WHERE department_name = u_department_name AND role_name = u_role_name;
-  INSERT INTO neiist.user_access_roles (user_istid, access) VALUES (u_user_istid, v_role_access)
-  ON CONFLICT DO NOTHING;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -353,38 +372,14 @@ CREATE OR REPLACE FUNCTION neiist.remove_team_member(
   u_department_name VARCHAR(30),
   u_role_name VARCHAR(40)
 ) RETURNS VOID AS $$
-DECLARE 
-  current_access neiist.user_access_enum;
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.membership
-      WHERE user_istid = u_user_istid    
-      AND department_name = u_department_name
-      AND role_name = u_role_name
-      AND (to_date IS NULL OR to_date > CURRENT_DATE)) THEN
-    RAISE EXCEPTION 'O membro da equipe "%" não existe.', u_user_istid;
+  IF NOT EXISTS (SELECT 1 FROM neiist.membership WHERE user_istid = u_user_istid    
+    AND department_name = u_department_name AND role_name = u_role_name AND (to_date IS NULL OR to_date > CURRENT_DATE)) THEN
+    RAISE EXCEPTION 'O utilizador "%" não tem uma participação ativa como "%" no departamento "%".', u_user_istid, u_role_name, u_department_name;
   END IF;
-  
-  UPDATE neiist.membership SET to_date = CURRENT_DATE 
-  WHERE user_istid = u_user_istid
-    AND department_name = u_department_name
-    AND role_name = u_role_name
-    AND (to_date IS NULL OR to_date > CURRENT_DATE);
 
-  SELECT access INTO current_access FROM neiist.valid_department_roles
-    WHERE department_name = u_department_name
-    AND role_name = u_role_name;
-  IF NOT EXISTS (
-    SELECT 1 FROM neiist.membership m
-    JOIN neiist.valid_department_roles vdr
-      ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
-    WHERE m.user_istid = u_user_istid
-      AND vdr.access = current_access
-      AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
-      AND NOT (m.department_name = u_department_name AND m.role_name = u_role_name)
-  ) THEN
-    DELETE FROM neiist.user_access_roles 
-    WHERE user_istid = u_user_istid AND access = current_access;
-  END IF;
+  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE user_istid = u_user_istid
+    AND department_name = u_department_name AND role_name = u_role_name AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -396,6 +391,10 @@ RETURNS TABLE (
   active BOOLEAN
 ) AS $$
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_department_name) THEN
+    RAISE EXCEPTION 'O departamento "%" não existe.', u_department_name;
+  END IF;
+
   RETURN QUERY
   SELECT vdr.role_name, vdr.access, vdr.active
   FROM neiist.valid_department_roles vdr
@@ -416,21 +415,30 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT DISTINCT u.istid, u.name, u.email, u.phone, u.courses, u.photo_path
+  SELECT DISTINCT
+    u.istid,
+    u.name,
+    u.email,
+    (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
+    ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
+    u.photo_path
   FROM neiist.users u
-  JOIN neiist.user_access_roles uar ON u.istid = uar.user_istid
-  WHERE uar.access = u_access
+  JOIN neiist.membership m ON u.istid = m.user_istid
+  JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
+  WHERE vdr.access = u_access
+    AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+    AND vdr.active = TRUE
   ORDER BY u.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Gett all users
+-- Gett all users TODO: send alt_email if is prefered contact as the email?
 CREATE OR REPLACE FUNCTION neiist.get_all_users()
 RETURNS TABLE (
   istid VARCHAR(10),
   name TEXT,
   email TEXT,
-  phone VARCHAR(15),
+  phone TEXT,
   courses TEXT[],
   photo_path TEXT,
   roles TEXT[],
@@ -442,19 +450,22 @@ BEGIN
     u.istid,
     u.name,
     u.email,
-    u.phone,
-    u.courses,
+    (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
+    ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     u.photo_path,
-    COALESCE(access_levels.access_array, ARRAY[]::TEXT[]) AS roles,
-    COALESCE(user_teams.teams_array,ARRAY[]::VARCHAR(30)[]) as teams
+    COALESCE(derived_access.access_array, ARRAY[]::TEXT[]) AS roles,
+    COALESCE(user_teams.teams_array, ARRAY[]::VARCHAR(30)[]) as teams
   FROM neiist.users u
   LEFT JOIN (
     SELECT 
-      uar.user_istid,
-      array_agg(uar.access::TEXT) as access_array  -- ADD ::TEXT HERE!
-    FROM neiist.user_access_roles uar
-    GROUP BY uar.user_istid
-  ) access_levels ON u.istid = access_levels.user_istid
+      m.user_istid,
+      array_agg(DISTINCT vdr.access::TEXT) as access_array
+    FROM neiist.membership m
+    JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
+    WHERE (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+      AND vdr.active = TRUE
+    GROUP BY m.user_istid
+  ) derived_access ON u.istid = derived_access.user_istid
   LEFT JOIN (
     SELECT 
       m.user_istid,
@@ -465,9 +476,9 @@ BEGIN
   ) user_teams ON u.istid = user_teams.user_istid
   ORDER BY 
     CASE 
-      WHEN 'admin' = ANY(COALESCE(access_levels.access_array, ARRAY[]::TEXT[])) THEN 1
-      WHEN 'coordinator' = ANY(COALESCE(access_levels.access_array, ARRAY[]::TEXT[])) THEN 2
-      WHEN 'member' = ANY(COALESCE(access_levels.access_array, ARRAY[]::TEXT[])) THEN 3
+      WHEN 'admin' = ANY(COALESCE(derived_access.access_array, ARRAY[]::TEXT[])) THEN 1
+      WHEN 'coordinator' = ANY(COALESCE(derived_access.access_array, ARRAY[]::TEXT[])) THEN 2
+      WHEN 'member' = ANY(COALESCE(derived_access.access_array, ARRAY[]::TEXT[])) THEN 3
       ELSE 4
     END,
     u.name;
@@ -483,83 +494,66 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
   name TEXT,
   email TEXT,
   alt_email TEXT,
-  phone VARCHAR(15),
-  preferred_contact_method TEXT,  -- Changed from enum to TEXT
+  phone TEXT,
+  preferred_contact_method TEXT,
   photo_path TEXT,
   courses TEXT[],
   roles TEXT[],
   teams VARCHAR(30)[]
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE
-  update_query TEXT := 'UPDATE neiist.users SET ';
-  where_clause TEXT := ' WHERE istid = $1';
-  set_clauses TEXT[] := ARRAY[]::TEXT[];
-  param_count INTEGER := 1;
-  param_values TEXT[] := ARRAY[]::TEXT[];
 BEGIN
-  -- Build the SET clauses and collect parameter values
+  -- Update users table fields
   IF p_updates ? 'name' THEN
-    param_count := param_count + 1;
-    set_clauses := array_append(set_clauses, 'name = $' || param_count);
-    param_values := array_append(param_values, p_updates->>'name');
+    UPDATE neiist.users SET name = p_updates->>'name' WHERE istid = p_istid;
   END IF;
-
   IF p_updates ? 'email' THEN
-    param_count := param_count + 1;
-    set_clauses := array_append(set_clauses, 'email = $' || param_count);
-    param_values := array_append(param_values, p_updates->>'email');
+    UPDATE neiist.users SET email = p_updates->>'email' WHERE istid = p_istid;
+  END IF;
+  IF p_updates ? 'photo' THEN
+    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE istid = p_istid;
   END IF;
 
+  -- Update alternativeEmail in user_contacts
   IF p_updates ? 'alternativeEmail' THEN
-    param_count := param_count + 1;
-    set_clauses := array_append(set_clauses, 'alt_email = $' || param_count);
-    param_values := array_append(param_values, p_updates->>'alternativeEmail');
-  END IF;
-
-  IF p_updates ? 'phone' THEN
-    param_count := param_count + 1;
-    set_clauses := array_append(set_clauses, 'phone = $' || param_count);
-    param_values := array_append(param_values, p_updates->>'phone');
-  END IF;
-
-  IF p_updates ? 'preferredContactMethod' THEN
-    param_count := param_count + 1;
-    set_clauses := array_append(set_clauses, 'preferred_contact_method = $' || param_count || '::neiist.contact_method_enum');
-    param_values := array_append(param_values, p_updates->>'preferredContactMethod');
-  END IF;
-
-  IF p_updates ? 'courses' THEN
-    param_count := param_count + 1;
-    set_clauses := array_append(set_clauses, 'courses = $' || param_count || '::TEXT[]');
-    param_values := array_append(param_values, array_to_string(ARRAY(SELECT jsonb_array_elements_text(p_updates->'courses')), ','));
-  END IF;
-
-  -- If no updates, just return current user
-  IF array_length(set_clauses, 1) IS NULL THEN
-    RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
-    RETURN;
-  END IF;
-
-  -- Build final query
-  update_query := update_query || array_to_string(set_clauses, ', ') || where_clause;
-
-  -- Execute with the exact number of parameters needed
-  CASE array_length(param_values, 1)
-    WHEN 1 THEN
-      EXECUTE update_query USING p_istid, param_values[1];
-    WHEN 2 THEN
-      EXECUTE update_query USING p_istid, param_values[1], param_values[2];
-    WHEN 3 THEN
-      EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3];
-    WHEN 4 THEN
-      EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3], param_values[4];
-    WHEN 5 THEN
-      EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3], param_values[4], param_values[5];
-    WHEN 6 THEN
-      EXECUTE update_query USING p_istid, param_values[1], param_values[2], param_values[3], param_values[4], param_values[5], param_values[6];
+    IF p_updates->>'alternativeEmail' IS NULL THEN
+      DELETE FROM neiist.user_contacts WHERE user_istid = p_istid AND contact_type = 'alt_email';
     ELSE
-      RAISE EXCEPTION 'Too many parameters: %', array_length(param_values, 1);
-  END CASE;
+      INSERT INTO neiist.user_contacts (user_istid, contact_type, contact_value)
+      VALUES (p_istid, 'alt_email', p_updates->>'alternativeEmail')
+      ON CONFLICT (user_istid, contact_type) DO UPDATE SET contact_value = EXCLUDED.contact_value;
+    END IF;
+  END IF;
+
+  -- Update phone in user_contacts
+  IF p_updates ? 'phone' THEN
+    IF p_updates->>'phone' IS NULL THEN
+      DELETE FROM neiist.user_contacts WHERE user_istid = p_istid AND contact_type = 'phone';
+    ELSE
+      INSERT INTO neiist.user_contacts (user_istid, contact_type, contact_value)
+      VALUES (p_istid, 'phone', p_updates->>'phone')
+      ON CONFLICT (user_istid, contact_type) DO UPDATE SET contact_value = EXCLUDED.contact_value;
+    END IF;
+  END IF;
+
+  -- Update preferredContactMethod in user_contacts
+  IF p_updates ? 'preferredContactMethod' THEN
+    -- Reset all preferred flags for this user
+    UPDATE neiist.user_contacts SET is_preferred = FALSE WHERE user_istid = p_istid;
+    -- Set preferred flag for the specified contact type if it exists
+    UPDATE neiist.user_contacts
+    SET is_preferred = TRUE
+    WHERE user_istid = p_istid AND contact_type = (p_updates->>'preferredContactMethod')::neiist.contact_method_enum;
+  END IF;
+
+  -- Update courses in user_courses
+  IF p_updates ? 'courses' THEN
+    DELETE FROM neiist.user_courses WHERE user_istid = p_istid;
+    IF jsonb_array_length(p_updates->'courses') > 0 THEN
+      INSERT INTO neiist.user_courses (user_istid, course_name)
+      SELECT p_istid, value::TEXT
+      FROM jsonb_array_elements_text(p_updates->'courses');
+    END IF;
+  END IF;
 
   RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
 END;
@@ -633,13 +627,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.get_all_departments()
 RETURNS TABLE (
   name VARCHAR(30),
+  department_type VARCHAR(20),
   active BOOLEAN
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT d.name, d.active
+  SELECT d.name, d.department_type, d.active
   FROM neiist.departments d
-  ORDER BY d.name;
+  ORDER BY d.department_type, d.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -678,15 +673,17 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.get_all_valid_department_roles()
 RETURNS TABLE (
   department_name VARCHAR(30),
+  department_type VARCHAR(20),
   role_name VARCHAR(40),
   access neiist.user_access_enum,
   active BOOLEAN
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT vdr.department_name, vdr.role_name, vdr.access, vdr.active
+  SELECT vdr.department_name, d.department_type, vdr.role_name, vdr.access, vdr.active
   FROM neiist.valid_department_roles vdr
-  ORDER BY vdr.department_name, vdr.access DESC, vdr.role_name;
+  JOIN neiist.departments d ON vdr.department_name = d.name
+  ORDER BY d.department_type, vdr.department_name, vdr.access DESC, vdr.role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -696,6 +693,7 @@ RETURNS TABLE (
   user_istid VARCHAR(10),
   user_name TEXT,
   department_name VARCHAR(30),
+  department_type VARCHAR(20),
   role_name VARCHAR(40),
   from_date DATE,
   to_date DATE,
@@ -707,6 +705,7 @@ BEGIN
     m.user_istid,
     u.name as user_name,
     m.department_name,
+    d.department_type,
     m.role_name,
     m.from_date,
     m.to_date,
@@ -716,6 +715,7 @@ BEGIN
     END as active
   FROM neiist.membership m
   JOIN neiist.users u ON m.user_istid = u.istid
-  ORDER BY u.name, m.department_name, m.role_name;
+  JOIN neiist.departments d ON m.department_name = d.name
+  ORDER BY u.name, d.department_type, m.department_name, m.role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
