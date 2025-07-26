@@ -33,8 +33,10 @@ export default function RolesSearchFilter({
   const [newRole, setNewRole] = useState({ roleName: "", access: "member" });
   const [error, setError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingRemove, setPendingRemove] =
-    useState<{ roleName: string; departmentName?: string } | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<{
+    roleName: string;
+    departmentName?: string;
+  } | null>(null);
 
   const fetchRoles = useCallback(async (department: string) => {
     if (!department) return;

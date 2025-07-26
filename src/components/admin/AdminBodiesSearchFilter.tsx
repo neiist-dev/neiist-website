@@ -5,7 +5,6 @@ import styles from "@/styles/components/admin/AdminBodiesSearchFilter.module.css
 
 interface AdminBody {
   name: string;
-  description?: string;
   active?: boolean;
 }
 
@@ -17,7 +16,7 @@ export default function AdminBodiesSearchFilter({
   const [adminBodies] = useState<AdminBody[]>(initialAdminBodies);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
-  const [newAdminBody, setNewAdminBody] = useState({ name: "", description: "" });
+  const [newAdminBodyName, setNewAdminBodyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -26,26 +25,24 @@ export default function AdminBodiesSearchFilter({
     if (!showInactive) filteredAdminBodies = filteredAdminBodies.filter((e) => e.active !== false);
     if (search.trim()) {
       const s = search.trim().toLowerCase();
-      filteredAdminBodies = filteredAdminBodies.filter(
-        (adminBody) =>
-          adminBody.name.toLowerCase().includes(s) ||
-          (adminBody.description?.toLowerCase().includes(s) ?? false)
+      filteredAdminBodies = filteredAdminBodies.filter((adminBody) =>
+        adminBody.name.toLowerCase().includes(s)
       );
     }
     return filteredAdminBodies;
   }, [adminBodies, search, showInactive]);
 
   const addAdminBody = async () => {
-    if (!newAdminBody.name.trim()) return;
+    if (!newAdminBodyName.trim()) return;
     setLoading(true);
     try {
       const response = await fetch("/api/admin/admin-bodies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAdminBody),
+        body: JSON.stringify({ name: newAdminBodyName }),
       });
       if (response.ok) {
-        setNewAdminBody({ name: "", description: "" });
+        setNewAdminBodyName("");
         window.location.reload();
       } else {
         const error = await response.json();
@@ -78,27 +75,15 @@ export default function AdminBodiesSearchFilter({
         }}>
         <input
           type="text"
-          value={newAdminBody.name}
-          onChange={(inputEvent) =>
-            setNewAdminBody({ ...newAdminBody, name: inputEvent.target.value })
-          }
+          value={newAdminBodyName}
+          onChange={(inputEvent) => setNewAdminBodyName(inputEvent.target.value)}
           placeholder="ex: Direção, Mesa da Assembleia Geral"
-          className={styles.input}
-          disabled={loading}
-        />
-        <input
-          type="text"
-          value={newAdminBody.description}
-          onChange={(inputEvent) =>
-            setNewAdminBody({ ...newAdminBody, description: inputEvent.target.value })
-          }
-          placeholder="Descrição (opcional)"
           className={styles.input}
           disabled={loading}
         />
         <button
           type="submit"
-          disabled={loading || !newAdminBody.name.trim()}
+          disabled={loading || !newAdminBodyName.trim()}
           className={styles.addButton}>
           {loading ? "A adicionar..." : "Adicionar Órgão"}
         </button>
@@ -139,9 +124,6 @@ export default function AdminBodiesSearchFilter({
             <div key={body.name} className={styles.item}>
               <div className={styles.itemContent}>
                 <div className={styles.itemName}>{body.name}</div>
-                {body.description && (
-                  <div className={styles.itemDescription}>{body.description}</div>
-                )}
                 {body.active === false && <span className={styles.badge}>Inativo</span>}
               </div>
               <button

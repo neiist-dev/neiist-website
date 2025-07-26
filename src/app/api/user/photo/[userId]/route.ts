@@ -7,10 +7,7 @@ function isValidIstId(id: string) {
   return /^[a-zA-Z0-9]+$/.test(id);
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ userId: string }> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
   try {
     const { userId } = await context.params;
 

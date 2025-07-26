@@ -252,33 +252,42 @@ export default function MembershipsSearchList({
           <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
         ) : (
           <div className={styles.membersList}>
-          {filteredMemberships.map((membership) => (
-            <div key={membership.id} className={styles.memberCard}>
-              <Image
-                className={styles.memberPhoto}
-                src={membership.userPhoto}
-                alt={membership.userName}
-                width={160}
-                height={160}
-              />
-              <div className={styles.memberInfo}>
-                <div className={styles.memberName}>
-                  {membership.userName} ({membership.userNumber})
+            {filteredMemberships.map((membership) => (
+              <div key={membership.id} className={styles.memberCard}>
+                <Image
+                  className={styles.memberPhoto}
+                  src={membership.userPhoto}
+                  alt={membership.userName}
+                  width={160}
+                  height={160}
+                />
+                <div className={styles.memberInfo}>
+                  <div className={styles.memberName}>
+                    {membership.userName} ({membership.userNumber})
+                  </div>
+                  <div>
+                    <strong>Departamento:</strong> {membership.departmentName}
+                  </div>
+                  <div>
+                    <strong>Cargo:</strong> {membership.roleName}
+                  </div>
+                  <div>
+                    <strong>Email:</strong> {membership.userEmail}
+                  </div>
+                  <div>
+                    <strong>Desde:</strong>{" "}
+                    {new Date(membership.startDate).toLocaleDateString("pt-PT")}
+                    {membership.endDate && (
+                      <>
+                        {" "}
+                        <strong>Até:</strong>{" "}
+                        {new Date(membership.endDate).toLocaleDateString("pt-PT")}
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div><strong>Departamento:</strong> {membership.departmentName}</div>
-                <div><strong>Cargo:</strong> {membership.roleName}</div>
-                <div><strong>Email:</strong> {membership.userEmail}</div>
-                <div>
-                  <strong>Desde:</strong> {new Date(membership.startDate).toLocaleDateString("pt-PT")}
-                  {membership.endDate && (
-                    <> <strong>Até:</strong> {new Date(membership.endDate).toLocaleDateString("pt-PT")}</>
-                  )}
-                </div>
-              </div>
-              <div className={styles.memberActions}>
-                  <span className={styles.badge}>
-                    {membership.isActive ? "Ativo" : "Inativo"}
-                  </span>
+                <div className={styles.memberActions}>
+                  <span className={styles.badge}>{membership.isActive ? "Ativo" : "Inativo"}</span>
                   <button
                     onClick={() =>
                       handleRemoveClick(
@@ -287,13 +296,12 @@ export default function MembershipsSearchList({
                         membership.roleName
                       )
                     }
-                    className={styles.deleteBtn}
-                  >
+                    className={styles.deleteBtn}>
                     Remover
                   </button>
                 </div>
-            </div>
-          ))}
+              </div>
+            ))}
           </div>
         )}
       </section>

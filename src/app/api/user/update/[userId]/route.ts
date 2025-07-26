@@ -108,7 +108,10 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
           const filePath = path.join(photoDir, `${targetUserId}.png`);
           await fs.writeFile(filePath, buffer);
           // Save custom photo path to DB
-          await updateUserPhoto(targetUserId, `/api/user/photo/${targetUserId}?custom&v=${Date.now()}`);
+          await updateUserPhoto(
+            targetUserId,
+            `/api/user/photo/${targetUserId}?custom&v=${Date.now()}`
+          );
         } catch (photoError) {
           console.error("Error updating photo:", photoError);
           return NextResponse.json({ error: "Erro ao atualizar foto" }, { status: 500 });

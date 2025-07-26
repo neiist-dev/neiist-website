@@ -106,7 +106,9 @@
   align-items: center;
   box-shadow: 0 2px 8px rgba(40, 99, 253, 0.06);
   position: relative;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .memberCard:hover {

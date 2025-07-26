@@ -39,6 +39,7 @@
   background: var(--primary-colour);
   color: white;
   border-radius: 0.6rem;
+  border: none;
   padding: 0.875rem 1.5rem;
   font-weight: 600;
   font-size: 1rem;

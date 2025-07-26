@@ -81,9 +81,7 @@ export default function UsersSearchList({
       if (res.ok) {
         setUsersState((prev) =>
           prev.map((u) =>
-            u.istid === istid
-              ? { ...u, photo: `/api/user/photo/${istid}?custom&${Date.now()}` }
-              : u
+            u.istid === istid ? { ...u, photo: `/api/user/photo/${istid}?custom&${Date.now()}` } : u
           )
         );
         const userRes = await fetch("/api/auth/userdata");
@@ -124,18 +122,18 @@ export default function UsersSearchList({
         <div className={styles.itemsList}>
           {filteredUsers.map((user) => (
             <section key={user.istid} className={styles.item}>
-            <div className={styles.changePhoto}>
-              <Image
-                src={user.photo}
-                height={200}
-                width={200}
-                alt={`Foto de ${user.name}`}
-                className={styles.userPhoto}
-                style={{ cursor: "pointer" }}
-                onClick={() => handlePhotoClick(user.istid)}
-                title="Clique para alterar a foto"
-              />
-            </div>
+              <div className={styles.changePhoto}>
+                <Image
+                  src={user.photo}
+                  height={200}
+                  width={200}
+                  alt={`Foto de ${user.name}`}
+                  className={styles.userPhoto}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handlePhotoClick(user.istid)}
+                  title="Clique para alterar a foto"
+                />
+              </div>
               <div className={styles.itemContent}>
                 <h4>
                   {user.name} <span className={styles.istid}>({user.istid})</span>

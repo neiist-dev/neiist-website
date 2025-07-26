@@ -42,8 +42,10 @@ export default function CoordinatorTeamManagementSearch({
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingRemove, setPendingRemove] =
-    useState<{ userNumber: string; roleName: string } | null>(null);
+  const [pendingRemove, setPendingRemove] = useState<{
+    userNumber: string;
+    roleName: string;
+  } | null>(null);
 
   const fetchRoles = useCallback(
     async (team: string) => {
@@ -232,40 +234,39 @@ export default function CoordinatorTeamManagementSearch({
         </form>
         {error && <div className={styles.error}>{error}</div>}
       </section>
-     <section className={styles.section}>
-      <h3 className={styles.sectionTitle}>Membros Existentes</h3>
-      {memberships.length === 0 ? (
-        <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
-      ) : (
-        <div className={styles.membersList}>
-          {memberships.map((member) => (
-            <div key={member.id} className={styles.memberCard}>
-              <Image
-              className={styles.memberPhoto}
-              src={member.userPhoto}
-              alt={member.userName}
-              width={48}
-              height={48}
-              />
-              <div className={styles.memberName}>{member.userName}</div>
-              <div className={styles.memberRole}>{member.roleName}</div>
-              <div className={styles.memberEmail}>{member.userEmail}</div>
-              <div className={styles.memberSince}>
-              Desde: {new Date(member.startDate).toLocaleDateString("pt-PT")}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>Membros Existentes</h3>
+        {memberships.length === 0 ? (
+          <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
+        ) : (
+          <div className={styles.membersList}>
+            {memberships.map((member) => (
+              <div key={member.id} className={styles.memberCard}>
+                <Image
+                  className={styles.memberPhoto}
+                  src={member.userPhoto}
+                  alt={member.userName}
+                  width={48}
+                  height={48}
+                />
+                <div className={styles.memberName}>{member.userName}</div>
+                <div className={styles.memberRole}>{member.roleName}</div>
+                <div className={styles.memberEmail}>{member.userEmail}</div>
+                <div className={styles.memberSince}>
+                  Desde: {new Date(member.startDate).toLocaleDateString("pt-PT")}
+                </div>
+                <span className={styles.badge}>Ativo</span>
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => handleRemoveMember(member.userNumber, member.roleName)}
+                  disabled={loading}>
+                  Remover
+                </button>
               </div>
-              <span className={styles.badge}>Ativo</span>
-              <button
-              className={styles.deleteBtn}
-              onClick={() => handleRemoveMember(member.userNumber, member.roleName)}
-              disabled={loading}
-              >
-              Remover
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
+            ))}
+          </div>
+        )}
+      </section>
     </>
   );
 }
