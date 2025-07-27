@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
 import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
 import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
+import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
 import { User, UserRole } from "@/types/user";
@@ -59,6 +60,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
   const isAdmin = userData.roles.includes(UserRole._ADMIN);
   const isCoordinator = userData.roles.includes(UserRole._COORDINATOR);
   const isMember = userData.roles.includes(UserRole._MEMBER);
+  const isPhotoCoord =
+      userData.roles.includes(UserRole._COORDINATOR) &&
+      userData.teams?.some((team) => team.toLowerCase().includes("fotografia"));
 
   const menuPages: MenuPage[] = [
     {
@@ -90,9 +94,20 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       href: "/team-management",
       label: "Gerir Equipa",
       icon: GoPeople,
-      roles: [],
+      roles: [UserRole._COORDINATOR],
       coordinatorOnly: true,
-    }, //TODO Add the actual page url when existent
+    },
+    ...(isPhotoCoord
+      ? [
+          {
+            href: "/photo-management",
+            label: "Gerir Fotos Membros",
+            icon: FiCamera,
+            roles: [UserRole._COORDINATOR],
+            coordinatorOnly: true,
+          },
+        ]
+      : []),
     {
       href: "/placeholder",
       label: "Gerir Loja",
@@ -106,7 +121,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       icon: GoPeople,
       roles: [],
       adminOnly: true,
-    }, //TODO Add the actual page url when existent
+    },
   ];
 
   const getAvailablePages = () => {

@@ -65,29 +65,6 @@
   margin: 0;
 }
 
-.changePhoto {
-  position: relative;
-  display: inline-block;
-}
-
-.changePhoto:hover::after {
-  content: "Clique para alterar a foto";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(40, 99, 253, 0.45);
-  color: white;
-  font-size: 1.08rem;
-  font-weight: 600;
-  border-radius: 1.2rem;
-  pointer-events: none;
-  z-index: 2;
-  backdrop-filter: blur(2.5px);
-  text-align: center;
-}
-
 .istid {
   font-weight: 600;
   color: var(--light-foreground-colour);

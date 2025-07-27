@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { User } from "@/types/user";
+import { useUser } from "@/context/UserContext";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import Image from "next/image";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
@@ -50,6 +51,9 @@ export default function MembershipsSearchList({
     departmentName: string;
     roleName: string;
   } | null>(null);
+  const [editingPhotoIstid, setEditingPhotoIstid] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { user, setUser } = useUser();
 
   const filteredMemberships = useMemo(() => {
     let filtered = memberships;
@@ -164,6 +168,36 @@ export default function MembershipsSearchList({
     setPendingRemove(null);
   };
 
+  const handlePhotoClick = (istid: string) => {
+    setEditingPhotoIstid(istid);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>, istid: string) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      const res = await fetch(`/api/user/update/${istid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo: base64 }),
+      });
+      if (res.ok) {
+        const newPhotoUrl = `/api/user/photo/${istid}?custom&${Date.now()}`;
+        setMemberships((prev) =>
+          prev.map((m) => (m.userNumber === istid ? { ...m, userPhoto: newPhotoUrl } : m))
+        );
+        if (user && user.istid === istid) {
+          setUser({ ...user, photo: newPhotoUrl });
+        }
+      }
+      setEditingPhotoIstid(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <>
       <ConfirmDialog
@@ -173,6 +207,15 @@ export default function MembershipsSearchList({
         onCancel={cancelRemove}
       />
 
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          if (editingPhotoIstid) handlePhotoChange(e, editingPhotoIstid);
+        }}
+      />
       <section className={styles.section}>
         <h3>Adicionar Novo Membro</h3>
         <div className={styles.addMemberForm}>
@@ -258,13 +301,24 @@ export default function MembershipsSearchList({
           <div className={styles.membersList}>
             {filteredMemberships.map((membership) => (
               <div key={membership.id} className={styles.memberCard}>
-                <Image
-                  className={styles.memberPhoto}
-                  src={membership.userPhoto}
-                  alt={membership.userName}
-                  width={160}
-                  height={160}
-                />
+                <div className={membership.isActive ? styles.changePhoto : undefined}>
+                  <Image
+                    className={styles.memberPhoto}
+                    src={membership.userPhoto}
+                    alt={membership.userName}
+                    width={160}
+                    height={160}
+                    style={{ cursor: membership.isActive ? "pointer" : "not-allowed" }}
+                    onClick={() => {
+                      if (membership.isActive) handlePhotoClick(membership.userNumber);
+                    }}
+                    title={
+                      membership.isActive
+                        ? "Clique para alterar a foto"
+                        : "Só pode alterar fotos de membros ativos"
+                    }
+                  />
+                </div>
                 <div className={styles.memberInfo}>
                   <div className={styles.memberName}>
                     {membership.userName} ({membership.userNumber})

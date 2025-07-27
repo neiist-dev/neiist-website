@@ -31,9 +31,13 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
       UserRole._GUEST,
     ];
     const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
+    const isPhotoCoord =
+      currentUserRoles.includes(UserRole._COORDINATOR) &&
+      currentUser.teams?.some((team) => team.toLowerCase().includes("fotografia"));
+
     const isSelfUpdate = userData.istid === targetUserId;
 
-    if (!isSelfUpdate && !isAdmin) {
+    if (!isSelfUpdate && !(isAdmin || isPhotoCoord)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
@@ -99,7 +103,7 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
       }
     }
 
-    if (updateData.photo !== undefined && isAdmin) {
+    if (updateData.photo !== undefined && (isAdmin || isPhotoCoord)) {
       if (updateData.photo && updateData.photo !== existingUser.photo) {
         try {
           const buffer = Buffer.from(updateData.photo, "base64");

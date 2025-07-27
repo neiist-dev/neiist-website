@@ -1,0 +1,152 @@
+.title {
+  padding: 0 0 0 2rem;
+  color: var(--primary-colour);
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  padding: 2rem;
+  background: white;
+  border-radius: 1.2rem;
+  margin: 2rem;
+  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.08);
+}
+
+.section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+}
+
+.searchBar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  border: 1px solid #d1d5db;
+  background: var(--background-colour);
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background-colour-hover);
+}
+
+.membersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  justify-content: flex-start;
+}
+
+.memberCard {
+  background: var(--background-colour);
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.06);
+  padding: 1.2rem 0.5rem 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 0 1 220px;
+  margin: 0;
+  min-width: 180px;
+  max-width: 260px;
+  height: auto;
+}
+
+.memberPhoto {
+  width: clamp(120px, 28vw, 180px);
+  height: clamp(120px, 28vw, 180px);
+  border-radius: 1.2rem;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.changePhoto {
+  position: relative;
+  display: inline-block;
+}
+
+.changePhoto:hover::after {
+  content: "Clique para alterar a foto";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 99, 253, 0.45);
+  color: white;
+  font-size: 1.08rem;
+  font-weight: 600;
+  border-radius: 1.2rem;
+  pointer-events: none;
+  z-index: 2;
+  backdrop-filter: blur(2.5px);
+  text-align: center;
+}
+
+.memberInfo {
+  width: 100%;
+  text-align: center;
+  font-size: 1.08rem;
+  word-break: break-word;
+  user-select: none;
+  margin-bottom: 0.2rem;
+}
+
+.memberName {
+  font-size: 1.18rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.memberRoles {
+  font-size: 0.98rem;
+  color: var(--light-foreground-colour);
+  font-weight: 500;
+  margin-bottom: 0.1rem;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--light-foreground-colour);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .membersList,
+  .searchBar {
+    justify-content: center;
+  }
+
+  .memberCard {
+    padding: 4vw 2vw 5vw 2vw;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .memberPhoto {
+    margin: 2vw auto 1.5vw auto;
+  }
+  .memberInfo {
+    text-align: center;
+    margin-bottom: 2vw;
+    font-size: 0.98rem;
+  }
+}

@@ -15,8 +15,6 @@ const sections = [
   { id: "teams" as AdminSection, name: "Equipas", icon: <GoPeople /> },
   { id: "admin-bodies" as AdminSection, name: "Órgãos Administrativos", icon: <GoOrganization /> },
   { id: "roles" as AdminSection, name: "Cargos", icon: <GoBriefcase /> },
-
- 
 ];
 
 export const metadata: Metadata = {
