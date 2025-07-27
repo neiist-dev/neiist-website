@@ -1,5 +1,6 @@
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { FaPlus } from 'react-icons/fa';
 import React from 'react';
 
@@ -16,10 +17,12 @@ export default function MemberControls({ memberView, setMemberView }: MemberCont
       </span>
       <Switch checked={memberView} onCheckedChange={setMemberView} />
       {memberView && (
-        <Button variant="outline" className="ml-4 flex items-center gap-2 text-sm cursor-pointer">
-          <FaPlus className="w-1 h-1" />
-          Nova publicação
-        </Button>
+        <Link href="/blog/new" passHref legacyBehavior>
+          <a className="ml-4 flex items-center gap-2 text-sm cursor-pointer border border-gray-300 rounded px-3 py-2 bg-white text-gray-800 hover:bg-gray-100 transition">
+            <FaPlus className="w-4 h-4" />
+            Nova publicação
+          </a>
+        </Link>
       )}
     </div>
   );
