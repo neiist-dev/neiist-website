@@ -25,7 +25,7 @@ export function PostCard(props: PostCardProps) {
   const { id, title, description, image, date, author, tags = [] } = props;
   return (
     <Link href={`/blog/${id}`} className="block group">
-      <Card className="w-full max-w-xs flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
+      <Card className="w-full max-w-xs min-h-[440px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
         <div className="px-4 pt-4">
           <div className="w-full h-36 bg-muted flex items-center justify-center rounded-lg overflow-hidden">
             {image ? (
@@ -45,7 +45,7 @@ export function PostCard(props: PostCardProps) {
         <CardHeader className="gap-2">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
             <Avatar className="w-8 h-8">
-              <AvatarImage src="TODO" alt={author} />
+              <AvatarImage src="avatar_TODO" alt={author} />
               <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
             </Avatar>
             <span className="text-gray-800 truncate max-w-[110px] block">
