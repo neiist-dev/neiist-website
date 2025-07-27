@@ -1,14 +1,22 @@
+
 import { NextResponse } from "next/server";
 import { db_query } from "@/utils/dbUtils";
 
-// GET: List all posts
-export async function GET() {
+
+// GET: Listar posts, com opção de pesquisa
+// TODO: Para já está apenas a pesquisar pelo título, extender para pesquisar também por descrição e tags (e talvez autor)
+export async function GET(request: Request) {
   try {
-    const { rows } = await db_query(
-      `SELECT id, title, description, image, date, author, tags, created_at, updated_at
-       FROM neiist.posts
-       ORDER BY date DESC, created_at DESC`
-    );
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search");
+    let query = `SELECT id, title, description, image, date, author, tags, created_at, updated_at FROM neiist.posts`;
+    let params: any[] = [];
+    if (search) {
+      query += ` WHERE LOWER(title) LIKE $1`;
+      params.push(`%${search.toLowerCase()}%`);
+    }
+    query += ` ORDER BY date DESC, created_at DESC`;
+    const { rows } = await db_query(query, params);
     return NextResponse.json(rows);
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -16,7 +24,7 @@ export async function GET() {
   }
 }
 
-// POST: Create new post
+// POST: Criar um novo post
 export async function POST(request: Request) {
   try {
     const body = await request.json();

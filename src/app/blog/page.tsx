@@ -20,36 +20,43 @@ import Newsletter from "@/components/blog/Newsletter";
 export default function BlogPage() {
   const { user, loading } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-
   const [posts, setPosts] = useState<any[]>([]);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const pageSize = 6;
   const pageCount = Math.ceil(posts.length / pageSize);
   const paginatedPosts = posts.slice((page - 1) * pageSize, page * pageSize);
 
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const res = await fetch('/api/blog');
-        if (!res.ok) throw new Error('Error fetching posts');
-        const data = await res.json();
-        setPosts(data);
-      } catch (err) {
-        setPosts([]);
-      }
+  const fetchPosts = async (searchQuery = "") => {
+    try {
+      const url = searchQuery ? `/api/blog?search=${encodeURIComponent(searchQuery)}` : '/api/blog';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Erro fetching posts');
+      const data = await res.json();
+      setPosts(data);
+      setPage(1); // Volta à primeira página ao pesquisar
+    } catch (err) {
+      setPosts([]);
     }
+  };
+
+  useEffect(() => {
     fetchPosts();
   }, []);
 
+  const handleSearch = (query: string) => {
+    setSearch(query);
+    fetchPosts(query);
+  };
+
   const toolbarRef = useRef<HTMLDivElement>(null);
 
-useEffect(() => {
-  if (toolbarRef.current) {
-    const y = toolbarRef.current.getBoundingClientRect().top + window.scrollY - 90;
-    window.scrollTo({ top: y, behavior: 'smooth' });
-  }
-}, [page]);
+  useEffect(() => {
+    if (toolbarRef.current) {
+      const y = toolbarRef.current.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, [page]);
 
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
@@ -68,7 +75,7 @@ useEffect(() => {
         )}
       </div>
       <div ref={toolbarRef}>
-        <BlogToolbar onFilterClick={() => setSidebarOpen(true)} />
+        <BlogToolbar onFilterClick={() => setSidebarOpen(true)} onSearch={handleSearch} />
       </div>
       <div className={styles.content}>
         <PostGrid posts={paginatedPosts} />

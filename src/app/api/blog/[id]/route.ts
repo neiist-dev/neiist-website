@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { db_query } from "@/utils/dbUtils";
 
-// GET /api/blog/[id] - Get a single post by id
+// GET /api/blog/[id] - Post por id
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   try {
@@ -21,7 +21,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/blog/[id] - Delete a post by id
+// DELETE /api/blog/[id]
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   try {
