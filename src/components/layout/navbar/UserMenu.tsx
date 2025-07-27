@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
-import { GoSignOut, GoPeople, GoPerson } from "react-icons/go";
+import { GoSignOut, GoPeople, GoPerson, GoOrganization } from "react-icons/go";
 import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
 import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
@@ -116,9 +116,16 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       adminOnly: true,
     }, //TODO Add the actual page url when existent
     {
-      href: "/management",
-      label: "Gerir Equipas e Membros",
+      href: "/users-management",
+      label: "Gerir Membros e Utilizadores",
       icon: GoPeople,
+      roles: [],
+      adminOnly: true,
+    },
+    {
+      href: "/departments-management",
+      label: "Gerir Departamentos",
+      icon: GoOrganization,
       roles: [],
       adminOnly: true,
     },

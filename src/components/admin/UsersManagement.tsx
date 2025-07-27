@@ -56,7 +56,7 @@ export default async function UsersManagement() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Gestão de Utilizadores</h2>
+      <h2 className={styles.title}>Visualização de Utilizadores</h2>
       <UsersSearchList users={usersWithMemberships} roles={roles} />
     </div>
   );
