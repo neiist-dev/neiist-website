@@ -1,103 +1,27 @@
-.profileMain {
-  min-height: 85vh;
-  background: var(--background-colour);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 2em 0;
+.container {
+  min-height: 100vh;
+  padding: 2rem;
 }
 
-.profileCard {
-  background: var(--background-colour);
-  border-radius: 1.25em;
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.07);
-  padding: 2.5em 2em;
-  width: 100%;
-  margin: 0 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 2em;
+.title {
+  margin-bottom: 2rem;
+  text-align: left;
+  color: var(--primary-colour);
+  font-size: 3rem;
+  font-weight: 900;
 }
 
-.profileHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1em;
-}
-
-.profileHeader h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--foreground-colour);
-  margin: 0;
-  font-family: inherit;
-}
-
-.editBtn {
-  background: var(--primary-colour);
-  color: var(--background-colour);
-  border: none;
-  border-radius: 0.5em;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 0.7em 1.5em;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.editBtn:hover {
-  background: var(--secondary-colour);
-}
-
-.actionRow {
-  display: flex;
-  gap: 1em;
-  justify-content: flex-end;
-}
-
-.saveBtn {
-  background: var(--secondary-colour);
-  color: var(--background-colour);
-  border: none;
-  border-radius: 0.5em;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 0.7em 1.5em;
-  cursor: pointer;
-}
-
-.saveBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.cancelBtn {
-  background: var(--tertiary-colour);
-  color: var(--foreground-colour);
-  border: none;
-  border-radius: 0.5em;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 0.7em 1.5em;
-  cursor: pointer;
-}
-
-.error {
-  color: #dc3545;
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin: 1rem 0;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-@media (max-width: 700px) {
-  .profileCard {
-    padding: 1em;
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem;
+    width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
-  .profileHeader h1 {
-    font-size: 1.3rem;
+
+  .title {
+    font-size: 2.25rem;
+    margin-bottom: 1.25rem;
+    text-align: left;
   }
 }

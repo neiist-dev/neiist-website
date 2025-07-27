@@ -1,0 +1,226 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  background: white;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  border: none;
+  box-shadow: 0 8px 32px rgba(40, 99, 253, 0.1);
+  width: max-content;
+  max-width: 100%;
+}
+
+.title {
+  color: var(--primary-colour);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--primary-colour);
+  padding-left: 1rem;
+  position: relative;
+}
+
+.userPhoto {
+  width: 160px;
+  height: 160px;
+  border-radius: 1.2rem;
+  object-fit: cover;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex-shrink: 0;
+}
+
+.userPhoto:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 56px rgba(40, 99, 253, 0.25);
+}
+
+.userInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.name {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--foreground-colour);
+  user-select: none;
+}
+
+.course {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin: 0;
+  font-weight: 500;
+}
+
+.userName {
+  color: var(--primary-colour);
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: var(--light-secondary-colour);
+  border-radius: 0.75rem;
+  display: inline-block;
+  user-select: none;
+  width: fit-content;
+}
+
+.lockSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--background-colour);
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  font-style: italic;
+}
+
+.lockSection svg {
+  flex-shrink: 0;
+  color: var(--light-foreground-colour);
+  opacity: 0.7;
+}
+
+.personalData {
+  margin-top: 2rem;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  background: white;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.field {
+  background: var(--background-colour);
+  border: none;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.field:hover {
+  transform: scale(1.03);
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--secondary-colour);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+.email {
+  font-size: 1.1rem;
+  font-weight: 500;
+  word-break: break-word;
+  color: var(--foreground-colour);
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  font-family: inherit;
+  padding: 0.6rem;
+  border-radius: 0.6rem;
+  font-size: 1.1rem;
+  color: var(--foreground-colour);
+  font-weight: 500;
+  box-sizing: border-box;
+  margin-top: 0.2rem;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background-colour-hover);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.error {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 1.2rem;
+    overflow-x: hidden;
+  }
+
+  .personalData {
+    margin-top: 1.25rem;
+    border-radius: 1.2rem;
+    padding: 1.25rem;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .userPhoto {
+    width: 120px;
+    height: 120px;
+  }
+
+  .userInfo {
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .lockSection {
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding-top: 1rem;
+    border-top: 1px solid var(--background-colour);
+    margin-top: 0.5rem;
+    box-sizing: border-box;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .field {
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+}

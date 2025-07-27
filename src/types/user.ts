@@ -15,7 +15,7 @@ interface DbUser {
   istid: string;
   name: string;
   email: string;
-  alternative_email?: string;
+  alt_email?: string;
   phone?: string;
   preferred_contact_method?: "email" | "alternativeEmail" | "phone";
   photo_path?: string;
@@ -63,7 +63,7 @@ export function mapDbUserToUser(dbUser: DbUser): User {
     istid: dbUser.istid,
     name: dbUser.name,
     email: dbUser.email,
-    alternativeEmail: dbUser.alternative_email ?? undefined,
+    alternativeEmail: dbUser.alt_email ?? undefined,
     alternativeEmailVerified: true,
     phone: dbUser.phone ?? undefined,
     preferredContactMethod: dbUser.preferred_contact_method ?? undefined,

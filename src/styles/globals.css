@@ -11,6 +11,7 @@
   --hover: rgba(0, 0, 0, 0.05);
   --font-family: "Secular One";
   --light-foreground-colour: #7b7b8b;
+  --light-secondary-colour: #d4e6f6;
 }
 
 .dark {
