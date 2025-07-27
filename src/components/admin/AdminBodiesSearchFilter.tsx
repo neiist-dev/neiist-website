@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/admin/AdminBodiesSearchFilter.module.css";
 
 interface AdminBody {
@@ -13,12 +14,14 @@ export default function AdminBodiesSearchFilter({
 }: {
   initialAdminBodies: AdminBody[];
 }) {
-  const [adminBodies] = useState<AdminBody[]>(initialAdminBodies);
+  const [adminBodies, setAdminBodies] = useState<AdminBody[]>(initialAdminBodies);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [newAdminBodyName, setNewAdminBodyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showAddRoleDialog, setShowAddRoleDialog] = useState(false);
+  const [newDepartmentName, setNewDepartmentName] = useState("");
 
   const filteredAdminBodies = useMemo(() => {
     let filteredAdminBodies = adminBodies;
@@ -46,8 +49,14 @@ export default function AdminBodiesSearchFilter({
         body: JSON.stringify({ name: newAdminBodyName }),
       });
       if (response.ok) {
+        const refreshed = await fetch("/api/admin/admin-bodies");
+        if (refreshed.ok) {
+          const data = await refreshed.json();
+          setAdminBodies(Array.isArray(data) ? data : []);
+        }
+        setNewDepartmentName(newAdminBodyName);
+        setShowAddRoleDialog(true);
         setNewAdminBodyName("");
-        window.location.reload();
       } else {
         const error = await response.json();
         setErrorMessage(error.error || "Erro ao adicionar órgão administrativo");
@@ -70,6 +79,17 @@ export default function AdminBodiesSearchFilter({
 
   return (
     <>
+      <ConfirmDialog
+        open={showAddRoleDialog}
+        message={`Deseja adicionar cargos ao novo departamento "${newDepartmentName}"?`}
+        onConfirm={() => {
+          setShowAddRoleDialog(false);
+          const rolesSectionElement = document.getElementById("roles-section");
+          if (rolesSectionElement) rolesSectionElement.scrollIntoView({ behavior: "smooth" });
+          window.dispatchEvent(new CustomEvent("selectDepartment", { detail: newDepartmentName }));
+        }}
+        onCancel={() => setShowAddRoleDialog(false)}
+      />
       <h3 className={styles.sectionTitle}>Adicionar Novo Órgão</h3>
       <form
         className={styles.form}

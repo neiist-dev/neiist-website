@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/admin/TeamsSearchFilter.module.css";
 
 interface Team {
@@ -10,13 +11,15 @@ interface Team {
 }
 
 export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team[] }) {
-  const [teams] = useState<Team[]>(initialTeams);
+  const [teams, setTeams] = useState<Team[]>(initialTeams);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [newTeam, setNewTeam] = useState({ name: "", description: "" });
   const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showAddRoleDialog, setShowAddRoleDialog] = useState(false);
+  const [newDepartmentName, setNewDepartmentName] = useState("");
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -56,8 +59,14 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
         body: JSON.stringify(newTeam),
       });
       if (response.ok) {
+        const refreshed = await fetch("/api/admin/teams");
+        if (refreshed.ok) {
+          const data = await refreshed.json();
+          setTeams(Array.isArray(data) ? data : []);
+        }
+        setNewDepartmentName(newTeam.name);
+        setShowAddRoleDialog(true);
         setNewTeam({ name: "", description: "" });
-        window.location.reload();
       } else {
         const error = await response.json();
         setErrorMessage(error.error || "Erro ao adicionar equipa");
@@ -80,6 +89,17 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
 
   return (
     <>
+      <ConfirmDialog
+        open={showAddRoleDialog}
+        message={`Deseja adicionar cargos ao novo departamento "${newDepartmentName}"?`}
+        onConfirm={() => {
+          setShowAddRoleDialog(false);
+          const rolesSectionElement = document.getElementById("roles-section");
+          if (rolesSectionElement) rolesSectionElement.scrollIntoView({ behavior: "smooth" });
+          window.dispatchEvent(new CustomEvent("selectDepartment", { detail: newDepartmentName }));
+        }}
+        onCancel={() => setShowAddRoleDialog(false)}
+      />
       <h3 className={styles.sectionTitle}>Adicionar Nova Equipa</h3>
       <form
         className={styles.form}
