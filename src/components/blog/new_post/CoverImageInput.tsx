@@ -22,7 +22,7 @@ const CoverImageInput: React.FC<CoverImageInputProps> = ({ image, onChange, onBu
         type="button"
         variant="default"
         onClick={onButtonClick}
-        className="mb-2"
+        className="mb-2 cursor-pointer"
       >
         Importar foto
       </Button>
