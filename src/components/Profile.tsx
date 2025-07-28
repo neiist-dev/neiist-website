@@ -59,7 +59,10 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
       } else if (pendingChange.field === "phone") {
         updateData.phone = pendingChange.value || undefined;
       } else if (pendingChange.field === "preferredContactMethod") {
-        updateData.preferredContactMethod = pendingChange.value as "email" | "alternativeEmail" | "phone";
+        updateData.preferredContactMethod = pendingChange.value as
+          | "email"
+          | "alternativeEmail"
+          | "phone";
       }
 
       if (pendingChange.field === "alternativeEmail") {
@@ -108,9 +111,9 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
 
   const getFieldDisplayName = (field: string) => {
     const fieldNames: Record<string, string> = {
-      "alternativeEmail": "Email Alternativo",
-      "phone": "Telefone", 
-      "preferredContactMethod": "Contacto Preferido"
+      alternativeEmail: "Email Alternativo",
+      phone: "Telefone",
+      preferredContactMethod: "Contacto Preferido",
     };
     return fieldNames[field] || field;
   };
@@ -118,9 +121,9 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const getValueDisplayName = (field: string, value: string) => {
     if (field === "preferredContactMethod") {
       const contactMethods: Record<string, string> = {
-        "email": "Email Principal",
-        "alternativeEmail": "Email Alternativo",
-        "phone": "Telefone"
+        email: "Email Principal",
+        alternativeEmail: "Email Alternativo",
+        phone: "Telefone",
       };
       return contactMethods[value] || value;
     }
@@ -140,17 +143,16 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
         <div className={styles.userInfo}>
           <h2 className={styles.name}>{user?.name}</h2>
           <p className={styles.course}>
-            {user?.courses && user.courses.length > 0 ? user.courses.join(", ") : "Curso não especificado"}
+            {user?.courses && user.courses.length > 0
+              ? user.courses.join(", ")
+              : "Curso não especificado"}
           </p>
           <p className={styles.userName}>{user?.istid}</p>
           <div className={styles.lockSection}>
             <FaLock />
-            <span>
-              Se quiseres alterar alguns destes dados tens de o fazer no fénix.
-            </span>
+            <span>Se quiseres alterar alguns destes dados tens de o fazer no fénix.</span>
           </div>
         </div>
-
       </div>
 
       <div className={styles.personalData}>
@@ -190,8 +192,7 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
             <select
               value={formData.preferredContactMethod}
               onChange={(e) => handlePreferredContactChange(e.target.value)}
-              className={styles.input}
-            >
+              className={styles.input}>
               <option value="email">Email Principal</option>
               {(formData.alternativeEmail || user?.alternativeEmail) && (
                 <option value="alternativeEmail">Email Alternativo</option>

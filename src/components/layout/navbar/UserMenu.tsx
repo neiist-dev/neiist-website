@@ -61,8 +61,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
   const isCoordinator = userData.roles.includes(UserRole._COORDINATOR);
   const isMember = userData.roles.includes(UserRole._MEMBER);
   const isPhotoCoord =
-      userData.roles.includes(UserRole._COORDINATOR) &&
-      userData.teams?.some((team) => team.toLowerCase().includes("fotografia"));
+    userData.roles.includes(UserRole._COORDINATOR) &&
+    userData.teams?.some((team) => team.toLowerCase().includes("fotografia"));
 
   const menuPages: MenuPage[] = [
     {

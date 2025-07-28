@@ -6,7 +6,12 @@ import { GoPeople, GoOrganization } from "react-icons/go";
 
 const tabs = [
   { id: "teams", name: "Equipas", icon: <GoPeople />, departmentType: "team" },
-  { id: "bodies", name: "Órgãos Administrativos", icon: <GoOrganization />, departmentType: "admin_body" },
+  {
+    id: "bodies",
+    name: "Órgãos Administrativos",
+    icon: <GoOrganization />,
+    departmentType: "admin_body",
+  },
 ];
 
 export default async function DepartmentsManagementPage({
@@ -17,9 +22,7 @@ export default async function DepartmentsManagementPage({
   const searchParams = searchParamsPromise ? await searchParamsPromise : {};
   const tabParam = searchParams?.tab;
   const activeTab =
-    typeof tabParam === "string" && tabs.some((t) => t.id === tabParam)
-      ? tabParam
-      : "teams";
+    typeof tabParam === "string" && tabs.some((t) => t.id === tabParam) ? tabParam : "teams";
   const activeType = tabs.find((t) => t.id === activeTab)?.departmentType ?? "team";
 
   return (
@@ -32,8 +35,7 @@ export default async function DepartmentsManagementPage({
           <a
             key={tab.id}
             href={`?tab=${tab.id}`}
-            className={`${styles.tabButton} ${activeTab === tab.id ? styles.activeTab : ""}`}
-          >
+            className={`${styles.tabButton} ${activeTab === tab.id ? styles.activeTab : ""}`}>
             <span>{tab.icon}</span>
             {tab.name}
           </a>
@@ -41,12 +43,8 @@ export default async function DepartmentsManagementPage({
       </nav>
       <div className={styles.dashboard}>
         <section>
-          {activeTab === "teams" && (
-              <TeamsManagement />
-          )}
-          {activeTab === "bodies" && (
-              <AdminBodiesManagement />
-          )}
+          {activeTab === "teams" && <TeamsManagement />}
+          {activeTab === "bodies" && <AdminBodiesManagement />}
         </section>
         <section id="roles-section">
           <RolesManagement initialDepartmentType={activeType} />

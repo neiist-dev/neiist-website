@@ -12,7 +12,7 @@ import UserMenu from "@/components/layout/navbar/UserMenu";
 import styles from "@/styles/components/layout/navbar/NavBar.module.css";
 
 const navLinks = [
-  { name: "Sobre Nós", href: "/sobre" },
+  { name: "Sobre Nós", href: "/about-us" },
   { name: "Blog", href: "/blog" },
   { name: "Loja", href: "/loja" },
 ];

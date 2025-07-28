@@ -27,7 +27,9 @@
   height: 160px;
   border-radius: 1.2rem;
   object-fit: cover;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   flex-shrink: 0;
 }
 

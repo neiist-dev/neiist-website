@@ -2,9 +2,11 @@ import { getAllDepartments, getDepartmentRoles } from "@/utils/dbUtils";
 import RolesSearchFilter from "@/components/admin/RolesSearchFilter";
 import styles from "@/styles/components/admin/RolesManagement.module.css";
 
-export default async function RolesManagement(
-  { initialDepartmentType }: { initialDepartmentType: string }
-) {
+export default async function RolesManagement({
+  initialDepartmentType,
+}: {
+  initialDepartmentType: string;
+}) {
   const departments = (await getAllDepartments()).filter(
     (dept) => dept.department_type === initialDepartmentType
   );
