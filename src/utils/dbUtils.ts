@@ -141,52 +141,6 @@ export const addCollaborator = async (
   }
 };
 
-export const addAdmin = async (
-  istid: string,
-  adminDepartment = "Administration",
-  adminRole = "Administrator"
-): Promise<boolean> => {
-  try {
-    try {
-      await db_query("SELECT neiist.add_department($1)", [adminDepartment]);
-      await db_query("SELECT neiist.add_admin_body($1)", [adminDepartment]);
-      await db_query("SELECT neiist.add_valid_department_role($1, $2, $3)", [
-        adminDepartment,
-        adminRole,
-        "admin",
-      ]);
-    } catch {}
-
-    await db_query("SELECT neiist.add_team_member($1, $2, $3)", [
-      istid,
-      adminDepartment,
-      adminRole,
-    ]);
-    return true;
-  } catch (error) {
-    console.error("Error adding admin:", error);
-    return false;
-  }
-};
-
-export const removeAdminUser = async (
-  istid: string,
-  adminDepartment = "Administration",
-  adminRole = "Administrator"
-): Promise<boolean> => {
-  try {
-    await db_query("SELECT neiist.remove_team_member($1, $2, $3)", [
-      istid,
-      adminDepartment,
-      adminRole,
-    ]);
-    return true;
-  } catch (error) {
-    console.error("Error removing admin:", error);
-    return false;
-  }
-};
-
 export const removeRole = async (
   istid: string,
   department: string,

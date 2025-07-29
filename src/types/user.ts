@@ -24,12 +24,6 @@ interface DbUser {
   teams?: string[];
 }
 
-export function getFirstAndLastName(user: User): string {
-  const parts = user.name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[parts.length - 1]}`;
-}
-
 export enum UserRole {
   _GUEST = "guest",
   _MEMBER = "member",

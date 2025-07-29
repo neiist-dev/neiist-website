@@ -1,7 +1,8 @@
-import { getAllMemberships, getAllUsers, getAllTeams, getAllAdminBodies } from "@/utils/dbUtils";
-import styles from "@/styles/pages/AboutUs.module.css";
-import teamImage from "@/assets/team.png";
 import Image from "next/image";
+import { getAllMemberships, getAllUsers, getAllTeams, getAllAdminBodies } from "@/utils/dbUtils";
+import { getFirstAndLastName } from "@/utils/userUtils";
+import teamImage from "@/assets/team.png";
+import styles from "@/styles/pages/AboutUs.module.css";
 
 interface RawMembership {
   user_istid: string;
@@ -13,7 +14,7 @@ interface RawMembership {
   active: boolean;
 }
 
-interface ProcessedMembership {
+interface Membership {
   id: string;
   userNumber: string;
   userName: string;
@@ -26,27 +27,66 @@ interface ProcessedMembership {
   userPhoto: string;
 }
 
-function getFirstAndLastName(fullName: string) {
-  if (!fullName) return "";
-  const parts = fullName.trim().split(" ");
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[parts.length - 1]}`;
+function getAcademicYearStartYear(date: Date) {
+  return date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+}
+
+function getCurrentAcademicYearStartYear() {
+  const now = new Date();
+  return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
 }
 
 function getAcademicYear(m: RawMembership) {
-  const startDate = new Date(m.from_date);
-  const endDate = m.to_date ? new Date(m.to_date) : null;
-  if (!endDate) return "2025/2026";
-  return `${startDate.getFullYear()}/${endDate.getFullYear()}`;
+  const start = new Date(m.from_date);
+  const end = m.to_date ? new Date(m.to_date) : null;
+  const currentAcademicYearStart = getCurrentAcademicYearStartYear();
+
+  const startYear = getAcademicYearStartYear(start);
+  let endYear: number;
+
+  if (end) {
+    endYear = getAcademicYearStartYear(end);
+  } else {
+    endYear = currentAcademicYearStart;
+  }
+
+  const years: string[] = [];
+  for (let y = startYear; y <= endYear; y++) {
+    years.push(`${y}/${y + 1}`);
+  }
+  return years;
 }
 
 function getAllAcademicYears(memberships: RawMembership[]) {
-  const years = new Set<string>();
-  memberships.forEach((m) => years.add(getAcademicYear(m)));
-  return Array.from(years).sort((a, b) => b.localeCompare(a));
-}
+  if (memberships.length === 0) return [];
 
-export const revalidate = 3600;
+  let minYear = Infinity;
+  let maxYear = -Infinity;
+
+  const currentAcademicYearStart = getCurrentAcademicYearStartYear();
+
+  memberships.forEach((m) => {
+    const start = new Date(m.from_date);
+    const end = m.to_date ? new Date(m.to_date) : null;
+    const startYear = getAcademicYearStartYear(start);
+    let endYear: number;
+    if (end) {
+      endYear = getAcademicYearStartYear(end);
+    } else {
+      endYear = currentAcademicYearStart;
+    }
+    if (startYear < minYear) minYear = startYear;
+    if (endYear > maxYear) maxYear = endYear;
+  });
+
+  if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
+
+  const years: string[] = [];
+  for (let y = minYear; y <= maxYear; y++) {
+    years.push(`${y}/${y + 1}`);
+  }
+  return years.reverse();
+}
 
 export default async function AboutPage({
   searchParams,
@@ -78,8 +118,8 @@ export default async function AboutPage({
   const selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
-  const memberships: ProcessedMembership[] = membershipsRaw
-    .filter((m) => getAcademicYear(m) === selectedYear)
+  const memberships: Membership[] = membershipsRaw
+    .filter((m) => getAcademicYear(m).includes(selectedYear))
     .map((m, idx) => {
       const user = users.find((u) => u.istid === m.user_istid);
       return {
@@ -96,27 +136,34 @@ export default async function AboutPage({
       };
     });
 
-  const teamsWithMembers = Array.from(departmentInfoMap.values()).filter(
-    (d) => d.active && d.type === "team" && memberships.some((m) => m.departmentName === d.name)
-  );
+  const departmentNamesWithMembers = Array.from(new Set(memberships.map((m) => m.departmentName)));
+
+  const teamsWithMembers = teams
+    .filter((team) => departmentNamesWithMembers.includes(team.name))
+    .map((team) => ({
+      name: team.name,
+      description: team.description,
+      type: "team" as const,
+      active: team.active,
+    }));
 
   const adminBodiesWithMembers = adminBodies
-    .filter((ab) => ab.active && memberships.some((m) => m.departmentName === ab.name))
-    .map((ab) => ({ name: ab.name, type: "admin_body" as const, active: ab.active }));
+    .filter((ab) => departmentNamesWithMembers.includes(ab.name))
+    .map((ab) => ({
+      name: ab.name,
+      type: "admin_body" as const,
+      active: ab.active,
+    }));
 
-  const teamsForDisplay = teamsWithMembers.map((team) => ({
-    name: team.name,
-    type: "team" as const,
-    active: team.active,
-  }));
+  const allDepartmentsWithMembers = [...adminBodiesWithMembers, ...teamsWithMembers].sort(
+    (a, b) => {
+      if (a.type === "admin_body" && b.type === "team") return -1;
+      if (a.type === "team" && b.type === "admin_body") return 1;
+      return a.name.localeCompare(b.name);
+    }
+  );
 
-  const allDepartmentsWithMembers = [...adminBodiesWithMembers, ...teamsForDisplay].sort((a, b) => {
-    if (a.type === "admin_body" && b.type === "team") return -1;
-    if (a.type === "team" && b.type === "admin_body") return 1;
-    return a.name.localeCompare(b.name);
-  });
-
-  const membersByDepartment: Record<string, ProcessedMembership[]> = {};
+  const membersByDepartment: Record<string, Membership[]> = {};
   memberships.forEach((m) => {
     if (!membersByDepartment[m.departmentName]) membersByDepartment[m.departmentName] = [];
     membersByDepartment[m.departmentName].push(m);

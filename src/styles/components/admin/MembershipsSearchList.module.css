@@ -96,11 +96,12 @@
 }
 
 .membersList {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
   margin-top: 1.5rem;
-  justify-content: center;
+  justify-items: center;
+  align-items: stretch;
 }
 
 .memberCard {
@@ -112,8 +113,11 @@
   flex-direction: column;
   align-items: center;
   position: relative;
-  flex: 1 1 320px;
-  margin: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 23rem;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .memberPhoto {
@@ -228,11 +232,19 @@
     justify-content: center;
   }
 
-  .memberCard {
-    padding: 4vw 2vw 5vw 2vw;
-    min-width: 0;
-    max-width: 100%;
+  .membersList {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-top: 1rem;
   }
+
+  .memberCard {
+    max-width: 100%;
+    width: 100%;
+    padding: 5vw 3vw 5vw 3vw;
+    margin: 0 auto;
+  }
+
   .memberPhoto {
     margin: 2vw auto 1.5vw auto;
   }
