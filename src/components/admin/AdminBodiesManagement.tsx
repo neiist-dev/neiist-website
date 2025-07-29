@@ -1,5 +1,6 @@
 import { getAllAdminBodies } from "@/utils/dbUtils";
 import AdminBodiesSearchFilter from "@/components/admin/AdminBodiesSearchFilter";
+import AddDepartmentModal from "@/components/admin/AddDepartmentModal";
 import styles from "@/styles/components/admin/AdminBodiesManagement.module.css";
 
 export default async function AdminBodiesManagement() {
@@ -11,6 +12,7 @@ export default async function AdminBodiesManagement() {
       <div className={styles.card}>
         <AdminBodiesSearchFilter initialAdminBodies={adminBodies} />
       </div>
+      <AddDepartmentModal departmentType="admin_body" />
     </div>
   );
 }

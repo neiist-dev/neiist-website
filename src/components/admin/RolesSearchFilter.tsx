@@ -194,57 +194,6 @@ export default function RolesSearchFilter({
         onCancel={cancelRemove}
       />
       <section className={styles.section}>
-        <div className={styles.sectionTitle}>Adicionar Novo Cargo</div>
-        <form
-          className={styles.addRoleForm}
-          onSubmit={(inputEvent) => {
-            inputEvent.preventDefault();
-            addRole();
-          }}>
-          <div className={styles.row}>
-            <select
-              value={addDepartment}
-              onChange={(inputEvent) => setAddDepartment(inputEvent.target.value)}
-              className={styles.select}
-              disabled={loading}>
-              <option value="">Todos</option>
-              {departments.map((dept) => (
-                <option key={dept.name} value={dept.name}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={newRole.roleName}
-              onChange={(inputEvent) =>
-                setNewRole({ ...newRole, roleName: inputEvent.target.value })
-              }
-              placeholder="Nome do Cargo"
-              className={styles.input}
-              disabled={loading}
-            />
-            <select
-              value={newRole.access}
-              onChange={(inputEvent) => setNewRole({ ...newRole, access: inputEvent.target.value })}
-              className={styles.select}
-              disabled={loading}>
-              <option value="guest">Convidado</option>
-              <option value="member">Membro</option>
-              <option value="coordinator">Coordenador</option>
-              <option value="admin">Administrador</option>
-            </select>
-            <button
-              type="submit"
-              disabled={loading || !newRole.roleName.trim() || !addDepartment}
-              className={styles.addRoleBtn}>
-              {loading ? "A adicionar..." : "Adicionar Cargo"}
-            </button>
-          </div>
-          {error && <div className={styles.error}>{error}</div>}
-        </form>
-      </section>
-      <section className={styles.section}>
         <div className={styles.sectionTitle}>Cargos Existentes</div>
         <div className={styles.filterBar}>
           <select
@@ -316,6 +265,57 @@ export default function RolesSearchFilter({
             ))}
           </div>
         )}
+      </section>
+      <section className={styles.section}>
+        <div className={styles.sectionTitle}>Adicionar Novo Cargo</div>
+        <form
+          className={styles.addRoleForm}
+          onSubmit={(inputEvent) => {
+            inputEvent.preventDefault();
+            addRole();
+          }}>
+          <div className={styles.row}>
+            <select
+              value={addDepartment}
+              onChange={(inputEvent) => setAddDepartment(inputEvent.target.value)}
+              className={styles.select}
+              disabled={loading}>
+              <option value="">Todos</option>
+              {departments.map((dept) => (
+                <option key={dept.name} value={dept.name}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={newRole.roleName}
+              onChange={(inputEvent) =>
+                setNewRole({ ...newRole, roleName: inputEvent.target.value })
+              }
+              placeholder="Nome do Cargo"
+              className={styles.input}
+              disabled={loading}
+            />
+            <select
+              value={newRole.access}
+              onChange={(inputEvent) => setNewRole({ ...newRole, access: inputEvent.target.value })}
+              className={styles.select}
+              disabled={loading}>
+              <option value="guest">Normal</option>
+              <option value="member">Membro</option>
+              <option value="coordinator">Coordenador</option>
+              <option value="admin">Administrador</option>
+            </select>
+            <button
+              type="submit"
+              disabled={loading || !newRole.roleName.trim() || !addDepartment}
+              className={styles.addRoleBtn}>
+              {loading ? "A adicionar..." : "Adicionar Cargo"}
+            </button>
+          </div>
+          {error && <div className={styles.error}>{error}</div>}
+        </form>
       </section>
     </>
   );

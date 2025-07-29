@@ -15,12 +15,12 @@ const tabs = [
 ];
 
 export default async function DepartmentsManagementPage({
-  searchParams: searchParamsPromise,
+  searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[]>>;
 }) {
-  const searchParams = searchParamsPromise ? await searchParamsPromise : {};
-  const tabParam = searchParams?.tab;
+  const params = await searchParams;
+  const tabParam = params?.tab;
   const activeTab =
     typeof tabParam === "string" && tabs.some((t) => t.id === tabParam) ? tabParam : "teams";
   const activeType = tabs.find((t) => t.id === activeTab)?.departmentType ?? "team";

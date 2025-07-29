@@ -1,5 +1,6 @@
 import { getAllTeams } from "@/utils/dbUtils";
 import TeamsSearchFilter from "@/components/admin/TeamsSearchFilter";
+import AddDepartmentModal from "@/components/admin/AddDepartmentModal";
 import styles from "@/styles/components/admin/TeamsManagement.module.css";
 
 export default async function TeamsManagement() {
@@ -11,6 +12,7 @@ export default async function TeamsManagement() {
       <div className={styles.card}>
         <TeamsSearchFilter initialTeams={teams} />
       </div>
+      <AddDepartmentModal departmentType="team" />
     </div>
   );
 }
