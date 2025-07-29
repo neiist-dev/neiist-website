@@ -9,10 +9,14 @@ import { User } from "@/types/user";
 
 export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const [user, setUser] = useState<User>(initialUser);
-  const [formData, setFormData] = useState({
-    alternativeEmail: user?.alternativeEmail || "",
-    phone: user?.phone || "",
-    preferredContactMethod: user?.preferredContactMethod || "email",
+  const [formData, setFormData] = useState<{
+    alternativeEmail: string | null;
+    phone: string | null;
+    preferredContactMethod: string;
+  }>({
+    alternativeEmail: user?.alternativeEmail ?? "",
+    phone: user?.phone ?? "",
+    preferredContactMethod: user?.preferredContactMethod ?? "email",
   });
   const [pendingChange, setPendingChange] = useState<{ field: string; value: string } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -22,15 +26,15 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
 
   useEffect(() => {
     setFormData({
-      alternativeEmail: user?.alternativeEmail || "",
-      phone: user?.phone || "",
-      preferredContactMethod: user?.preferredContactMethod || "email",
+      alternativeEmail: user?.alternativeEmail ?? "",
+      phone: user?.phone ?? "",
+      preferredContactMethod: user?.preferredContactMethod ?? "email",
     });
   }, [user]);
 
   useEffect(() => {
-    setAltEmailDraft(formData.alternativeEmail);
-    setPhoneDraft(formData.phone);
+    setAltEmailDraft(formData.alternativeEmail ?? "");
+    setPhoneDraft(formData.phone ?? "");
   }, [formData.alternativeEmail, formData.phone]);
 
   const handleBlur = (field: "alternativeEmail" | "phone", value: string) => {
@@ -52,18 +56,13 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     setShowConfirmDialog(false);
     setError("");
     try {
-      const updateData: Partial<User> = {};
-
-      if (pendingChange.field === "alternativeEmail") {
-        updateData.alternativeEmail = pendingChange.value || undefined;
-      } else if (pendingChange.field === "phone") {
-        updateData.phone = pendingChange.value || undefined;
-      } else if (pendingChange.field === "preferredContactMethod") {
-        updateData.preferredContactMethod = pendingChange.value as
-          | "email"
-          | "alternativeEmail"
-          | "phone";
+      let value = pendingChange.value.trim();
+      if (pendingChange.field === "alternativeEmail" || pendingChange.field === "phone") {
+        value = value === "" ? "" : value;
       }
+      const updateData: Record<string, string | null> = {
+        [pendingChange.field]: value,
+      };
 
       if (pendingChange.field === "alternativeEmail") {
         const res = await fetch("/api/user/verify-email/request", {
@@ -71,7 +70,7 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             istid: user.istid,
-            alternativeEmail: pendingChange.value || undefined,
+            alternativeEmail: value,
           }),
         });
         if (!res.ok) {
@@ -97,9 +96,9 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
         const updatedUser = await userRes.json();
         setUser(updatedUser);
         setFormData({
-          alternativeEmail: updatedUser.alternativeEmail || "",
-          phone: updatedUser.phone || "",
-          preferredContactMethod: updatedUser.preferredContactMethod || "email",
+          alternativeEmail: updatedUser.alternativeEmail ?? "",
+          phone: updatedUser.phone ?? "",
+          preferredContactMethod: updatedUser.preferredContactMethod ?? "email",
         });
       }
     } catch (e) {
@@ -136,39 +135,37 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
         <Image
           src={user?.photo || "/default-profile.png"}
           alt="Profile"
-          width={100}
-          height={100}
+          width={160}
+          height={160}
           className={styles.userPhoto}
         />
         <div className={styles.userInfo}>
           <h2 className={styles.name}>{user?.name}</h2>
-          <p className={styles.course}>
+          <span className={styles.course}>
             {user?.courses && user.courses.length > 0
               ? user.courses.join(", ")
               : "Curso não especificado"}
-          </p>
-          <p className={styles.userName}>{user?.istid}</p>
+          </span>
+          <div className={styles.badgeRow}>
+            <span className={styles.badge}>{user?.istid}</span>
+            <span className={styles.badge}>{user?.email || "Não especificado"}</span>
+          </div>
           <div className={styles.lockSection}>
             <FaLock />
             <span>Se quiseres alterar alguns destes dados tens de o fazer no fénix.</span>
           </div>
         </div>
       </div>
-
       <div className={styles.personalData}>
         <h3 className={styles.title}>Dados Pessoais</h3>
         <div className={styles.grid}>
           <div className={styles.field}>
-            <div className={styles.label}>Email Principal</div>
-            <div className={styles.email}>{user?.email || "Não especificado"}</div>
-          </div>
-          <div className={styles.field}>
             <div className={styles.label}>Email Alternativo</div>
             <input
               type="email"
-              value={altEmailDraft}
+              value={altEmailDraft ?? ""}
               onChange={(e) => setAltEmailDraft(e.target.value)}
-              onBlur={() => handleBlur("alternativeEmail", altEmailDraft)}
+              onBlur={() => handleBlur("alternativeEmail", altEmailDraft ?? "")}
               className={styles.input}
               placeholder="email@exemplo.com"
             />
@@ -180,9 +177,9 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
             <div className={styles.label}>Telefone</div>
             <input
               type="tel"
-              value={phoneDraft}
+              value={phoneDraft ?? ""}
               onChange={(e) => setPhoneDraft(e.target.value)}
-              onBlur={() => handleBlur("phone", phoneDraft)}
+              onBlur={() => handleBlur("phone", phoneDraft ?? "")}
               className={styles.input}
               placeholder="+351 xxx xxx xxx"
             />
@@ -209,7 +206,9 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
         open={showConfirmDialog}
         message={
           pendingChange
-            ? `Deseja guardar a alteração de "${getFieldDisplayName(pendingChange.field)}" para "${getValueDisplayName(pendingChange.field, pendingChange.value)}"?`
+            ? pendingChange.value === ""
+              ? `Deseja remover o método de contacto ${getFieldDisplayName(pendingChange.field)}?`
+              : `Deseja guardar a alteração de ${getFieldDisplayName(pendingChange.field)} para "${getValueDisplayName(pendingChange.field, pendingChange.value)}"?`
             : ""
         }
         onConfirm={handleConfirmChange}

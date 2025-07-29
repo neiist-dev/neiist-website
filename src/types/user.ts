@@ -2,9 +2,9 @@ export interface User {
   istid: string;
   name: string;
   email: string;
-  alternativeEmail?: string;
+  alternativeEmail?: string | null;
   alternativeEmailVerified: boolean;
-  phone?: string;
+  phone?: string | null;
   preferredContactMethod?: "email" | "alternativeEmail" | "phone";
   photo: string;
   courses: string[];

@@ -60,17 +60,21 @@
   font-weight: 500;
 }
 
-.userName {
+
+.badgeRow {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: var(--light-secondary-colour);
   color: var(--primary-colour);
   font-weight: 600;
   font-size: 1.1rem;
-  margin: 0;
   padding: 0.5rem 1rem;
-  background: var(--light-secondary-colour);
   border-radius: 0.75rem;
-  display: inline-block;
   user-select: none;
-  width: fit-content;
 }
 
 .lockSection {
@@ -91,7 +95,6 @@
 }
 
 .personalData {
-  margin-top: 2rem;
   border-radius: 1.5rem;
   padding: 2.5rem;
   background: white;
@@ -99,7 +102,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.4fr 0.3fr 0.3fr;
   gap: 1.5rem;
 }
 
@@ -108,12 +111,9 @@
   border: none;
   border-radius: 1rem;
   padding: 1.5rem;
-  min-height: 80px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   transition: all 0.3s ease;
-  position: relative;
   overflow: hidden;
 }
 
@@ -127,13 +127,6 @@
   color: var(--secondary-colour);
   margin-bottom: 0.6rem;
   text-transform: uppercase;
-}
-
-.email {
-  font-size: 1.1rem;
-  font-weight: 500;
-  word-break: break-word;
-  color: var(--foreground-colour);
 }
 
 .input {

@@ -49,18 +49,26 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
     const updates: Partial<User> = {};
 
     if (updateData.alternativeEmail !== undefined) {
-      const email = updateData.alternativeEmail.trim();
-      if (email === "" || isValidEmail(email)) {
-        updates.alternativeEmail = email || null;
+      let email: string | null = updateData.alternativeEmail;
+      if (typeof email !== "string") email = null;
+      email = email?.trim?.() ?? null;
+      if (email === null || email === "") {
+        updates.alternativeEmail = null;
+      } else if (isValidEmail(email)) {
+        updates.alternativeEmail = email;
       } else {
         return NextResponse.json({ error: "Email alternativo inválido" }, { status: 400 });
       }
     }
 
     if (updateData.phone !== undefined) {
-      const phone = updateData.phone.trim();
-      if (phone === "" || isValidPhone(phone)) {
-        updates.phone = phone || null;
+      let phone: string | null = updateData.phone;
+      if (typeof phone !== "string") phone = null;
+      phone = phone?.trim?.() ?? null;
+      if (phone === null || phone === "") {
+        updates.phone = null;
+      } else if (isValidPhone(phone)) {
+        updates.phone = phone;
       } else {
         return NextResponse.json({ error: "Número de telefone inválido" }, { status: 400 });
       }
