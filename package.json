@@ -17,6 +17,8 @@
     "db:reset": "docker compose -f ./docker/docker-compose.yml down && docker volume rm neiist_db && docker compose -f ./docker/docker-compose.yml up -d"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
     "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.15.1",
     "crypto": "^1.0.1",

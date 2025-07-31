@@ -60,6 +60,7 @@
 .timelineButton {
   padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.8rem, 2vw, 1.2rem);
   border-radius: 0.7rem;
+  border: none;
   font-weight: 600;
   background: var(--background-colour);
   color: var(--primary-colour);
@@ -71,13 +72,16 @@
   font-size: clamp(0.85rem, 2vw, 1rem);
   white-space: nowrap;
 }
+
 .timelineButton[data-selected="true"] {
   background: var(--primary-colour);
   color: #fff;
 }
+
 .timelineButton:hover {
   background: var(--background-colour-hover);
 }
+
 .timelineButton[data-selected="true"]:hover {
   background: var(--secondary-colour);
 }

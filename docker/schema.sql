@@ -114,6 +114,17 @@ CREATE TABLE neiist.membership (
   PRIMARY KEY (user_istid, department_name, role_name)
 );
 
+-- DEPARTMENT MEMBERS HIERARCHY
+CREATE TABLE IF NOT EXISTS neiist.department_role_order (
+    id SERIAL PRIMARY KEY,
+    department_name TEXT NOT NULL REFERENCES neiist.departments(name),
+    role_name TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    CONSTRAINT fk_valid_role FOREIGN KEY (department_name, role_name)
+      REFERENCES neiist.valid_department_roles(department_name, role_name),
+    UNIQUE (department_name, role_name)
+);
+
 -- Ensure perfomance to calculate the access level of a user
 CREATE INDEX idx_membership_active ON neiist.membership (user_istid, to_date) 
 WHERE to_date IS NULL;
@@ -717,5 +728,32 @@ BEGIN
   JOIN neiist.users u ON m.user_istid = u.istid
   JOIN neiist.departments d ON m.department_name = d.name
   ORDER BY u.name, d.department_type, m.department_name, m.role_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get hierarchy for a department
+CREATE OR REPLACE FUNCTION neiist.get_department_role_order(
+    p_department TEXT
+) RETURNS TABLE(role_name TEXT, "position" INTEGER) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT department_role_order.role_name, department_role_order."position"
+    FROM neiist.department_role_order
+    WHERE department_role_order.department_name = p_department;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Set hierarchy for a department
+CREATE OR REPLACE FUNCTION neiist.set_department_role_order(
+    p_department TEXT,
+    p_roles TEXT[]
+) RETURNS VOID AS $$
+BEGIN
+    DELETE FROM neiist.department_role_order
+    WHERE department_name = p_department;
+
+    INSERT INTO neiist.department_role_order (department_name, role_name, position)
+    SELECT p_department, role, idx
+    FROM unnest(p_roles) WITH ORDINALITY AS t(role, idx);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

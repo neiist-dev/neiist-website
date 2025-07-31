@@ -1,8 +1,9 @@
+import { GoPeople, GoOrganization } from "react-icons/go";
 import TeamsManagement from "@/components/admin/TeamsManagement";
 import AdminBodiesManagement from "@/components/admin/AdminBodiesManagement";
 import RolesManagement from "@/components/admin/RolesManagement";
+import AboutUsManager from "@/components/admin/AboutUsManager";
 import styles from "@/styles/pages/AdminDashboard.module.css";
-import { GoPeople, GoOrganization } from "react-icons/go";
 
 const tabs = [
   { id: "teams", name: "Equipas", icon: <GoPeople />, departmentType: "team" },
@@ -11,6 +12,12 @@ const tabs = [
     name: "Órgãos Administrativos",
     icon: <GoOrganization />,
     departmentType: "admin_body",
+  },
+  {
+    id: "aboutUs-order",
+    name: "Editar Página Sobre Nós",
+    icon: <GoOrganization />,
+    departmentType: null,
   },
 ];
 
@@ -45,9 +52,10 @@ export default async function DepartmentsManagementPage({
         <section>
           {activeTab === "teams" && <TeamsManagement />}
           {activeTab === "bodies" && <AdminBodiesManagement />}
+          {activeTab === "aboutUs-order" && <AboutUsManager />}
         </section>
         <section id="roles-section">
-          <RolesManagement initialDepartmentType={activeType} />
+          {activeTab !== "aboutUs-order" && <RolesManagement initialDepartmentType={activeType} />}
         </section>
       </div>
     </div>

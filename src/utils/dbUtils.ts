@@ -468,3 +468,31 @@ export const getAllMemberships = async (): Promise<
     return [];
   }
 };
+
+export const getDepartmentRoleOrder = async (
+  departmentName: string
+): Promise<Array<{ role_name: string; position: number }>> => {
+  try {
+    const { rows } = await db_query<{ role_name: string; position: number }>(
+      "SELECT * FROM neiist.get_department_role_order($1)",
+      [departmentName]
+    );
+    return rows;
+  } catch (error) {
+    console.error("Error fetching department role order:", error);
+    return [];
+  }
+};
+
+export const setDepartmentRoleOrder = async (
+  departmentName: string,
+  roles: string[]
+): Promise<boolean> => {
+  try {
+    await db_query("SELECT neiist.set_department_role_order($1, $2)", [departmentName, roles]);
+    return true;
+  } catch (error) {
+    console.error("Error setting department role order:", error);
+    return false;
+  }
+};

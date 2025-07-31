@@ -16,7 +16,7 @@ interface DbUser {
   name: string;
   email: string;
   alt_email?: string;
-  phone?: string;
+  phone?: string | null;
   preferred_contact_method?: "email" | "alternativeEmail" | "phone";
   photo_path?: string;
   courses?: string[];

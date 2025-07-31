@@ -1,8 +1,57 @@
 import Image from "next/image";
-import { getAllMemberships, getAllUsers, getAllTeams, getAllAdminBodies } from "@/utils/dbUtils";
+import {
+  getAllMemberships,
+  getAllUsers,
+  getAllTeams,
+  getAllAdminBodies,
+  getDepartmentRoleOrder,
+} from "@/utils/dbUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import teamImage from "@/assets/team.png";
 import styles from "@/styles/pages/AboutUs.module.css";
+
+function getAcademicYearRange(year: string) {
+  const [startYear, endYear] = year.split("/").map(Number);
+  return {
+    start: new Date(`${startYear}-09-01`),
+    end: new Date(`${endYear}-07-31`),
+  };
+}
+
+function isMembershipInAcademicYear(m: RawMembership, year: string) {
+  const { start, end } = getAcademicYearRange(year);
+  const from = new Date(m.from_date);
+  const to = m.to_date ? new Date(m.to_date) : null;
+  return from <= end && (to === null || to >= start);
+}
+
+function getAcademicYearStartYear(date: Date) {
+  return date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+}
+
+function getCurrentAcademicYearStartYear() {
+  const now = new Date();
+  return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
+function getAllAcademicYears(memberships: RawMembership[]) {
+  if (memberships.length === 0) return [];
+  let minYear = Infinity,
+    maxYear = -Infinity;
+  const currentAcademicYearStart = getCurrentAcademicYearStartYear();
+  memberships.forEach((m) => {
+    const start = new Date(m.from_date);
+    const end = m.to_date ? new Date(m.to_date) : null;
+    const startYear = getAcademicYearStartYear(start);
+    const endYear = end ? getAcademicYearStartYear(end) : currentAcademicYearStart;
+    if (startYear < minYear) minYear = startYear;
+    if (endYear > maxYear) maxYear = endYear;
+  });
+  if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
+  const years: string[] = [];
+  for (let y = minYear; y <= maxYear; y++) years.push(`${y}/${y + 1}`);
+  return years.reverse();
+}
 
 interface RawMembership {
   user_istid: string;
@@ -27,67 +76,6 @@ interface Membership {
   userPhoto: string;
 }
 
-function getAcademicYearStartYear(date: Date) {
-  return date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
-}
-
-function getCurrentAcademicYearStartYear() {
-  const now = new Date();
-  return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-}
-
-function getAcademicYear(m: RawMembership) {
-  const start = new Date(m.from_date);
-  const end = m.to_date ? new Date(m.to_date) : null;
-  const currentAcademicYearStart = getCurrentAcademicYearStartYear();
-
-  const startYear = getAcademicYearStartYear(start);
-  let endYear: number;
-
-  if (end) {
-    endYear = getAcademicYearStartYear(end);
-  } else {
-    endYear = currentAcademicYearStart;
-  }
-
-  const years: string[] = [];
-  for (let y = startYear; y <= endYear; y++) {
-    years.push(`${y}/${y + 1}`);
-  }
-  return years;
-}
-
-function getAllAcademicYears(memberships: RawMembership[]) {
-  if (memberships.length === 0) return [];
-
-  let minYear = Infinity;
-  let maxYear = -Infinity;
-
-  const currentAcademicYearStart = getCurrentAcademicYearStartYear();
-
-  memberships.forEach((m) => {
-    const start = new Date(m.from_date);
-    const end = m.to_date ? new Date(m.to_date) : null;
-    const startYear = getAcademicYearStartYear(start);
-    let endYear: number;
-    if (end) {
-      endYear = getAcademicYearStartYear(end);
-    } else {
-      endYear = currentAcademicYearStart;
-    }
-    if (startYear < minYear) minYear = startYear;
-    if (endYear > maxYear) maxYear = endYear;
-  });
-
-  if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
-
-  const years: string[] = [];
-  for (let y = minYear; y <= maxYear; y++) {
-    years.push(`${y}/${y + 1}`);
-  }
-  return years.reverse();
-}
-
 export default async function AboutPage({
   searchParams,
 }: {
@@ -101,25 +89,12 @@ export default async function AboutPage({
     getAllAdminBodies(),
   ]);
 
-  const departmentInfoMap = new Map<
-    string,
-    { name: string; description: string; type: string; active: boolean }
-  >();
-  teams.forEach((team) =>
-    departmentInfoMap.set(team.name, {
-      name: team.name,
-      description: team.description,
-      type: "team",
-      active: team.active,
-    })
-  );
-
   const allAcademicYears = getAllAcademicYears(membershipsRaw);
   const selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
   const memberships: Membership[] = membershipsRaw
-    .filter((m) => getAcademicYear(m).includes(selectedYear))
+    .filter((m) => isMembershipInAcademicYear(m, selectedYear))
     .map((m, idx) => {
       const user = users.find((u) => u.istid === m.user_istid);
       return {
@@ -127,7 +102,7 @@ export default async function AboutPage({
         userNumber: m.user_istid,
         userName: m.user_name,
         userEmail: user?.email || "",
-        userPhoto: user?.photo || "",
+        userPhoto: user?.photo || "/default_user.png",
         departmentName: m.department_name,
         roleName: m.role_name,
         startDate: m.from_date,
@@ -137,7 +112,6 @@ export default async function AboutPage({
     });
 
   const departmentNamesWithMembers = Array.from(new Set(memberships.map((m) => m.departmentName)));
-
   const teamsWithMembers = teams
     .filter((team) => departmentNamesWithMembers.includes(team.name))
     .map((team) => ({
@@ -146,7 +120,6 @@ export default async function AboutPage({
       type: "team" as const,
       active: team.active,
     }));
-
   const adminBodiesWithMembers = adminBodies
     .filter((ab) => departmentNamesWithMembers.includes(ab.name))
     .map((ab) => ({
@@ -154,7 +127,6 @@ export default async function AboutPage({
       type: "admin_body" as const,
       active: ab.active,
     }));
-
   const allDepartmentsWithMembers = [...adminBodiesWithMembers, ...teamsWithMembers].sort(
     (a, b) => {
       if (a.type === "admin_body" && b.type === "team") return -1;
@@ -163,11 +135,24 @@ export default async function AboutPage({
     }
   );
 
-  const membersByDepartment: Record<string, Membership[]> = {};
+  const membersByDepartmentAndRole: Record<string, Record<string, Membership[]>> = {};
   memberships.forEach((m) => {
-    if (!membersByDepartment[m.departmentName]) membersByDepartment[m.departmentName] = [];
-    membersByDepartment[m.departmentName].push(m);
+    if (!membersByDepartmentAndRole[m.departmentName])
+      membersByDepartmentAndRole[m.departmentName] = {};
+    if (!membersByDepartmentAndRole[m.departmentName][m.roleName])
+      membersByDepartmentAndRole[m.departmentName][m.roleName] = [];
+    membersByDepartmentAndRole[m.departmentName][m.roleName].push(m);
   });
+
+  const roleOrders: Record<string, string[]> = {};
+  await Promise.all(
+    allDepartmentsWithMembers.map(async (dept) => {
+      const order = await getDepartmentRoleOrder(dept.name);
+      roleOrders[dept.name] = order
+        .sort((a, b) => a.position - b.position)
+        .map((r) => r.role_name);
+    })
+  );
 
   const totalMembers = memberships.length;
 
@@ -220,26 +205,39 @@ export default async function AboutPage({
       </div>
 
       <h2 className={styles.sectionTitle}>Membros {selectedYear}</h2>
-      {allDepartmentsWithMembers.map((dept) => (
-        <div key={dept.name}>
-          <h3 className={styles.departmentTitle}>{dept.name}</h3>
-          <div className={styles.membersGrid}>
-            {(membersByDepartment[dept.name] || []).map((member) => (
-              <div key={member.id} className={styles.memberCard}>
-                <Image
-                  src={member.userPhoto}
-                  alt={member.userName}
-                  width={120}
-                  height={120}
-                  className={styles.memberPhoto}
-                />
-                <span className={styles.memberName}>{getFirstAndLastName(member.userName)}</span>
-                <span className={styles.memberRole}>{member.roleName}</span>
-              </div>
-            ))}
+      {allDepartmentsWithMembers.map((dept) => {
+        const allRolesWithMembers = Object.keys(membersByDepartmentAndRole[dept.name] || {});
+        const hierarchy = roleOrders[dept.name] || [];
+        const rolesToShow = [
+          ...hierarchy,
+          ...allRolesWithMembers.filter((role) => !hierarchy.includes(role)),
+        ];
+
+        return (
+          <div key={dept.name}>
+            <h3 className={styles.departmentTitle}>{dept.name}</h3>
+            <div className={styles.membersGrid}>
+              {rolesToShow.flatMap((role) =>
+                (membersByDepartmentAndRole[dept.name]?.[role] || []).map((member) => (
+                  <div key={member.id} className={styles.memberCard}>
+                    <Image
+                      src={member.userPhoto}
+                      alt={member.userName}
+                      width={120}
+                      height={120}
+                      className={styles.memberPhoto}
+                    />
+                    <span className={styles.memberName}>
+                      {getFirstAndLastName(member.userName)}
+                    </span>
+                    <span className={styles.memberRole}>{member.roleName}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </section>
   );
 }
