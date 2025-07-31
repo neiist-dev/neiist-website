@@ -17,19 +17,25 @@ import Pagination from "@/components/blog/Pagination";
 import Newsletter from "@/components/blog/Newsletter";
 
 
+
 export default function BlogPage() {
   const { user, loading } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [posts, setPosts] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<string[]>([]);
   const pageSize = 6;
   const pageCount = Math.ceil(posts.length / pageSize);
   const paginatedPosts = posts.slice((page - 1) * pageSize, page * pageSize);
 
-  const fetchPosts = async (searchQuery = "") => {
+  const fetchPosts = async (searchQuery = "", filterTags: string[] = []) => {
     try {
-      const url = searchQuery ? `/api/blog?search=${encodeURIComponent(searchQuery)}` : '/api/blog';
+      let url = '/api/blog';
+      const params = [];
+      if (searchQuery) params.push(`search=${encodeURIComponent(searchQuery)}`);
+      if (filterTags.length > 0) params.push(`tags=${encodeURIComponent(filterTags.join(","))}`);
+      if (params.length > 0) url += `?${params.join("&")}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('Erro fetching posts');
       const data = await res.json();
@@ -41,12 +47,21 @@ export default function BlogPage() {
   };
 
   useEffect(() => {
+    fetchPosts(search, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
+
+  useEffect(() => {
     fetchPosts();
   }, []);
 
   const handleSearch = (query: string) => {
     setSearch(query);
-    fetchPosts(query);
+    fetchPosts(query, filters);
+  };
+
+  const handleFilterChange = (selectedFilters: string[]) => {
+    setFilters(selectedFilters);
   };
 
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -67,7 +82,11 @@ export default function BlogPage() {
 
   return (
     <div className={styles.container}>
-      <BlogFilterbar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <BlogFilterbar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onFilterChange={handleFilterChange}
+      />
       <div className="flex flex-col items-center gap-2 mb-4">
         <BlogHeader />
         {!isMember && (
