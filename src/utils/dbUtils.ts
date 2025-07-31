@@ -1,4 +1,5 @@
 import { Pool, QueryResult, QueryResultRow } from "pg";
+import { Membership, RawMembership, mapRawMembershipToMembership } from "@/types/memberships";
 import { User, mapRoleToUserRole, mapDbUserToUser } from "@/types/user";
 
 const pool = new Pool({
@@ -441,28 +442,16 @@ export const removeTeamMember = async (
   }
 };
 
-export const getAllMemberships = async (): Promise<
-  Array<{
-    user_istid: string;
-    user_name: string;
-    department_name: string;
-    role_name: string;
-    from_date: string;
-    to_date: string | null;
-    active: boolean;
-  }>
-> => {
+export const getAllMemberships = async (): Promise<Membership[]> => {
   try {
-    const { rows } = await db_query<{
-      user_istid: string;
-      user_name: string;
-      department_name: string;
-      role_name: string;
-      from_date: string;
-      to_date: string | null;
-      active: boolean;
-    }>("SELECT * FROM neiist.get_all_memberships()");
-    return rows;
+    const [rawMemberships, users] = await Promise.all([
+      db_query<RawMembership>("SELECT * FROM neiist.get_all_memberships()").then((res) => res.rows),
+      getAllUsers(),
+    ]);
+    return rawMemberships.map((raw, idx) => {
+      const user = users.find((u) => u.istid === raw.user_istid);
+      return mapRawMembershipToMembership(raw, user?.email || "", user?.photo || "", idx);
+    });
   } catch (error) {
     console.error("Error fetching memberships:", error);
     return [];

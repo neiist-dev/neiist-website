@@ -105,7 +105,7 @@ export default function PhotoTeamMembers({
             type="text"
             placeholder="Pesquisar por nome, ISTID ou email..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
           />
         </div>
         {Object.keys(filteredMembers).length === 0 ? (
@@ -113,7 +113,7 @@ export default function PhotoTeamMembers({
         ) : (
           Object.entries(filteredMembers).map(([dept, memberships]) => (
             <div key={dept}>
-              <h3 style={{ margin: "2rem 0 1rem 0" }}>{dept}</h3>
+              <h3 className={styles.departmentName}>{dept}</h3>
               <div className={styles.membersList}>
                 {memberships.map((membership) => (
                   <div key={membership.id} className={styles.memberCard}>

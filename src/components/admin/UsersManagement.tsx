@@ -2,18 +2,7 @@ import { User } from "@/types/user";
 import { getAllUsers, getAllMemberships, getDepartmentRoles } from "@/utils/dbUtils";
 import UsersSearchList from "@/components/admin/UsersSearchList";
 import styles from "@/styles/components/admin/UsersManagement.module.css";
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-}
+import { Membership } from "@/types/memberships";
 
 interface Role {
   role_name: string;
@@ -27,19 +16,7 @@ interface UserWithMemberships extends User {
 
 export default async function UsersManagement() {
   const users = await getAllUsers();
-  const membershipsRaw = await getAllMemberships();
-
-  const memberships: Membership[] = membershipsRaw.map((membership, id) => ({
-    id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${id}`,
-    userNumber: membership.user_istid,
-    userName: membership.user_name,
-    departmentName: membership.department_name,
-    roleName: membership.role_name,
-    startDate: membership.from_date,
-    endDate: membership.to_date ?? undefined,
-    isActive: membership.active,
-    userEmail: "",
-  }));
+  const memberships: Membership[] = await getAllMemberships();
 
   const departments = [...new Set(memberships.map((m) => m.departmentName))];
   const roles: Role[] = (await Promise.all(departments.map((d) => getDepartmentRoles(d)))).flat();

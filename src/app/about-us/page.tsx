@@ -1,12 +1,12 @@
 import Image from "next/image";
 import {
   getAllMemberships,
-  getAllUsers,
   getAllTeams,
   getAllAdminBodies,
   getDepartmentRoleOrder,
 } from "@/utils/dbUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import { Membership } from "@/types/memberships";
 import teamImage from "@/assets/team.png";
 import styles from "@/styles/pages/AboutUs.module.css";
 
@@ -18,10 +18,10 @@ function getAcademicYearRange(year: string) {
   };
 }
 
-function isMembershipInAcademicYear(m: RawMembership, year: string) {
+function isMembershipInAcademicYear(membership: Membership, year: string) {
   const { start, end } = getAcademicYearRange(year);
-  const from = new Date(m.from_date);
-  const to = m.to_date ? new Date(m.to_date) : null;
+  const from = new Date(membership.startDate);
+  const to = membership.endDate ? new Date(membership.endDate) : null;
   return from <= end && (to === null || to >= start);
 }
 
@@ -34,14 +34,14 @@ function getCurrentAcademicYearStartYear() {
   return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
 }
 
-function getAllAcademicYears(memberships: RawMembership[]) {
+function getAllAcademicYears(memberships: Membership[]) {
   if (memberships.length === 0) return [];
   let minYear = Infinity,
     maxYear = -Infinity;
   const currentAcademicYearStart = getCurrentAcademicYearStartYear();
-  memberships.forEach((m) => {
-    const start = new Date(m.from_date);
-    const end = m.to_date ? new Date(m.to_date) : null;
+  memberships.forEach((membership) => {
+    const start = new Date(membership.startDate);
+    const end = membership.endDate ? new Date(membership.endDate) : null;
     const startYear = getAcademicYearStartYear(start);
     const endYear = end ? getAcademicYearStartYear(end) : currentAcademicYearStart;
     if (startYear < minYear) minYear = startYear;
@@ -49,31 +49,8 @@ function getAllAcademicYears(memberships: RawMembership[]) {
   });
   if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
   const years: string[] = [];
-  for (let y = minYear; y <= maxYear; y++) years.push(`${y}/${y + 1}`);
+  for (let year = minYear; year <= maxYear; year++) years.push(`${year}/${year + 1}`);
   return years.reverse();
-}
-
-interface RawMembership {
-  user_istid: string;
-  user_name: string;
-  department_name: string;
-  role_name: string;
-  from_date: string;
-  to_date: string | null;
-  active: boolean;
-}
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-  userPhoto: string;
 }
 
 export default async function AboutPage({
@@ -82,36 +59,23 @@ export default async function AboutPage({
   searchParams?: Promise<{ year?: string }>;
 }) {
   const params = searchParams ? await searchParams : {};
-  const [membershipsRaw, users, teams, adminBodies] = await Promise.all([
+  const [memberships, teams, adminBodies] = await Promise.all([
     getAllMemberships(),
-    getAllUsers(),
     getAllTeams(),
     getAllAdminBodies(),
   ]);
 
-  const allAcademicYears = getAllAcademicYears(membershipsRaw);
+  const allAcademicYears = getAllAcademicYears(memberships);
   const selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
-  const memberships: Membership[] = membershipsRaw
-    .filter((m) => isMembershipInAcademicYear(m, selectedYear))
-    .map((m, idx) => {
-      const user = users.find((u) => u.istid === m.user_istid);
-      return {
-        id: `${m.user_istid}-${m.department_name}-${m.role_name}-${idx}`,
-        userNumber: m.user_istid,
-        userName: m.user_name,
-        userEmail: user?.email || "",
-        userPhoto: user?.photo || "/default_user.png",
-        departmentName: m.department_name,
-        roleName: m.role_name,
-        startDate: m.from_date,
-        endDate: m.to_date ?? undefined,
-        isActive: m.active,
-      };
-    });
+  const filteredMemberships: Membership[] = memberships.filter((membership) =>
+    isMembershipInAcademicYear(membership, selectedYear)
+  );
 
-  const departmentNamesWithMembers = Array.from(new Set(memberships.map((m) => m.departmentName)));
+  const departmentNamesWithMembers = Array.from(
+    new Set(filteredMemberships.map((membership) => membership.departmentName))
+  );
   const teamsWithMembers = teams
     .filter((team) => departmentNamesWithMembers.includes(team.name))
     .map((team) => ({
@@ -121,11 +85,11 @@ export default async function AboutPage({
       active: team.active,
     }));
   const adminBodiesWithMembers = adminBodies
-    .filter((ab) => departmentNamesWithMembers.includes(ab.name))
-    .map((ab) => ({
-      name: ab.name,
+    .filter((adminBody) => departmentNamesWithMembers.includes(adminBody.name))
+    .map((adminBody) => ({
+      name: adminBody.name,
       type: "admin_body" as const,
-      active: ab.active,
+      active: adminBody.active,
     }));
   const allDepartmentsWithMembers = [...adminBodiesWithMembers, ...teamsWithMembers].sort(
     (a, b) => {
@@ -136,25 +100,25 @@ export default async function AboutPage({
   );
 
   const membersByDepartmentAndRole: Record<string, Record<string, Membership[]>> = {};
-  memberships.forEach((m) => {
-    if (!membersByDepartmentAndRole[m.departmentName])
-      membersByDepartmentAndRole[m.departmentName] = {};
-    if (!membersByDepartmentAndRole[m.departmentName][m.roleName])
-      membersByDepartmentAndRole[m.departmentName][m.roleName] = [];
-    membersByDepartmentAndRole[m.departmentName][m.roleName].push(m);
+  filteredMemberships.forEach((membership) => {
+    if (!membersByDepartmentAndRole[membership.departmentName])
+      membersByDepartmentAndRole[membership.departmentName] = {};
+    if (!membersByDepartmentAndRole[membership.departmentName][membership.roleName])
+      membersByDepartmentAndRole[membership.departmentName][membership.roleName] = [];
+    membersByDepartmentAndRole[membership.departmentName][membership.roleName].push(membership);
   });
 
   const roleOrders: Record<string, string[]> = {};
   await Promise.all(
-    allDepartmentsWithMembers.map(async (dept) => {
-      const order = await getDepartmentRoleOrder(dept.name);
-      roleOrders[dept.name] = order
+    allDepartmentsWithMembers.map(async (department) => {
+      const order = await getDepartmentRoleOrder(department.name);
+      roleOrders[department.name] = order
         .sort((a, b) => a.position - b.position)
-        .map((r) => r.role_name);
+        .map((role) => role.role_name);
     })
   );
 
-  const totalMembers = memberships.length;
+  const totalMembers = filteredMemberships.length;
 
   return (
     <section className={styles.page}>
@@ -196,29 +160,29 @@ export default async function AboutPage({
 
       <h2 className={styles.sectionTitle}>As nossas equipas</h2>
       <div className={styles.teamsGrid}>
-        {teamsWithMembers.map((dept) => (
-          <div key={dept.name} className={styles.teamCard}>
-            <h3 className={styles.teamCardTitle}>{dept.name}</h3>
-            <p className={styles.teamCardDescription}>{dept.description}</p>
+        {teamsWithMembers.map((department) => (
+          <div key={department.name} className={styles.teamCard}>
+            <h3 className={styles.teamCardTitle}>{department.name}</h3>
+            <p className={styles.teamCardDescription}>{department.description}</p>
           </div>
         ))}
       </div>
 
       <h2 className={styles.sectionTitle}>Membros {selectedYear}</h2>
-      {allDepartmentsWithMembers.map((dept) => {
-        const allRolesWithMembers = Object.keys(membersByDepartmentAndRole[dept.name] || {});
-        const hierarchy = roleOrders[dept.name] || [];
+      {allDepartmentsWithMembers.map((department) => {
+        const allRolesWithMembers = Object.keys(membersByDepartmentAndRole[department.name] || {});
+        const hierarchy = roleOrders[department.name] || [];
         const rolesToShow = [
           ...hierarchy,
           ...allRolesWithMembers.filter((role) => !hierarchy.includes(role)),
         ];
 
         return (
-          <div key={dept.name}>
-            <h3 className={styles.departmentTitle}>{dept.name}</h3>
+          <div key={department.name}>
+            <h3 className={styles.departmentTitle}>{department.name}</h3>
             <div className={styles.membersGrid}>
               {rolesToShow.flatMap((role) =>
-                (membersByDepartmentAndRole[dept.name]?.[role] || []).map((member) => (
+                (membersByDepartmentAndRole[department.name]?.[role] || []).map((member) => (
                   <div key={member.id} className={styles.memberCard}>
                     <Image
                       src={member.userPhoto}

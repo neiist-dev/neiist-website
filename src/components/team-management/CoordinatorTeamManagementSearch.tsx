@@ -2,28 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@/types/user";
+import { Membership } from "@/types/memberships";
 import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-  userPhoto: string;
-}
-
-interface Role {
-  role_name: string;
-  access: string;
-  active: boolean;
-}
 
 export default function CoordinatorTeamManagementSearch({
   coordinatorTeams,
@@ -36,7 +18,9 @@ export default function CoordinatorTeamManagementSearch({
 }) {
   const [selectedTeam, setSelectedTeam] = useState(coordinatorTeams[0] || "");
   const [memberships, setMemberships] = useState<Membership[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [roles, setRoles] = useState<Array<{ role_name: string; access: string; active: boolean }>>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
@@ -51,16 +35,19 @@ export default function CoordinatorTeamManagementSearch({
     async (team: string) => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/roles?department=${encodeURIComponent(team)}`);
-        if (res.ok) {
-          const data = await res.json();
+        const response = await fetch(`/api/admin/roles?department=${encodeURIComponent(team)}`);
+        if (response.ok) {
+          const data = await response.json();
           const assignedRoles = initialMemberships
-            .filter((m) => m.departmentName === team && m.isActive)
-            .map((m) => m.roleName);
+            .filter((membership) => membership.departmentName === team && membership.isActive)
+            .map((membership) => membership.roleName);
 
           setRoles(
             Array.isArray(data)
-              ? data.filter((r: Role) => r.active && !assignedRoles.includes(r.role_name))
+              ? data.filter(
+                  (role: { role_name: string; active: boolean }) =>
+                    role.active && !assignedRoles.includes(role.role_name)
+                )
               : []
           );
         } else {
@@ -77,7 +64,9 @@ export default function CoordinatorTeamManagementSearch({
 
   useEffect(() => {
     setMemberships(
-      initialMemberships.filter((m) => m.departmentName === selectedTeam && m.isActive)
+      initialMemberships.filter(
+        (membership) => membership.departmentName === selectedTeam && membership.isActive
+      )
     );
     setSelectedUser("");
     setSelectedRole("");
@@ -91,16 +80,13 @@ export default function CoordinatorTeamManagementSearch({
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/admin/memberships");
-      if (res.ok) {
-        const data = await res.json();
+      const response = await fetch("/api/admin/memberships");
+      if (response.ok) {
+        const data: Membership[] = await response.json();
         setMemberships(
-          data
-            .filter((m: Membership) => m.departmentName === selectedTeam && m.isActive)
-            .map((m: Membership, idx: number) => ({
-              ...m,
-              id: `${m.userNumber}-${m.departmentName}-${m.roleName}-${idx}`,
-            }))
+          data.filter(
+            (membership) => membership.departmentName === selectedTeam && membership.isActive
+          )
         );
       }
     } catch {
@@ -110,12 +96,12 @@ export default function CoordinatorTeamManagementSearch({
     }
   }
 
-  async function handleAddMember(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleAddMember(event: React.FormEvent) {
+    event.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/admin/memberships", {
+      const response = await fetch("/api/admin/memberships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,7 +110,7 @@ export default function CoordinatorTeamManagementSearch({
           roleName: selectedRole,
         }),
       });
-      if (res.ok) {
+      if (response.ok) {
         await refreshMemberships();
         setSelectedUser("");
         setSelectedRole("");
@@ -149,7 +135,7 @@ export default function CoordinatorTeamManagementSearch({
     setError("");
     setConfirmOpen(false);
     try {
-      const res = await fetch("/api/admin/memberships", {
+      const response = await fetch("/api/admin/memberships", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -158,7 +144,7 @@ export default function CoordinatorTeamManagementSearch({
           roleName: pendingRemove.roleName,
         }),
       });
-      if (res.ok) {
+      if (response.ok) {
         await refreshMemberships();
       } else {
         setError("Erro ao remover membro.");
@@ -189,7 +175,7 @@ export default function CoordinatorTeamManagementSearch({
         <select
           className={styles.teamSelector}
           value={selectedTeam}
-          onChange={(e) => setSelectedTeam(e.target.value)}
+          onChange={(event) => setSelectedTeam(event.target.value)}
           disabled={loading || coordinatorTeams.length < 2}>
           {coordinatorTeams.map((team) => (
             <option key={team} value={team}>
@@ -204,24 +190,24 @@ export default function CoordinatorTeamManagementSearch({
           <select
             className={styles.input}
             value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
+            onChange={(event) => setSelectedUser(event.target.value)}
             disabled={loading}>
             <option value="">Selecione um utilizador</option>
-            {users.map((u) => (
-              <option key={u.istid} value={u.istid}>
-                {u.name} ({u.email})
+            {users.map((user) => (
+              <option key={user.istid} value={user.istid}>
+                {user.name} ({user.email})
               </option>
             ))}
           </select>
           <select
             className={styles.input}
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
+            onChange={(event) => setSelectedRole(event.target.value)}
             disabled={loading}>
             <option value="">Selecione um cargo</option>
-            {roles.map((r) => (
-              <option key={r.role_name} value={r.role_name}>
-                {r.role_name}
+            {roles.map((role) => (
+              <option key={role.role_name} value={role.role_name}>
+                {role.role_name}
               </option>
             ))}
           </select>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { addTeamMember, removeTeamMember, getUser, getAllMemberships } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole } from "@/types/user";
+import { Membership } from "@/types/memberships";
 
 async function checkMembershipPermission(
   departmentName: string
@@ -45,7 +46,7 @@ async function checkMembershipPermission(
     if (isCoordinator) {
       const userTeams = currentUser.teams || [];
       if (userTeams.includes(departmentName) || departmentName === "") {
-        return { isAuthorized: true }; // Coordinator can manage their own team
+        return { isAuthorized: true };
       }
     }
     return {
@@ -73,20 +74,8 @@ export async function GET() {
   }
 
   try {
-    const memberships = await getAllMemberships();
-    const transformedMemberships = memberships.map((membership, index) => ({
-      id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${index}`,
-      userNumber: membership.user_istid,
-      userName: membership.user_name,
-      userEmail: "",
-      departmentName: membership.department_name,
-      roleName: membership.role_name,
-      startDate: membership.from_date,
-      endDate: membership.to_date,
-      isActive: membership.active,
-    }));
-
-    return NextResponse.json(transformedMemberships);
+    const memberships: Membership[] = await getAllMemberships();
+    return NextResponse.json(memberships);
   } catch (error) {
     console.error("Error fetching memberships:", error);
     return NextResponse.json({ error: "Failed to fetch memberships" }, { status: 500 });

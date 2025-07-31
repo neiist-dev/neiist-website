@@ -1,40 +1,12 @@
 import { getAllMemberships, getAllUsers, getAllDepartments } from "@/utils/dbUtils";
 import MembershipsSearchList from "./MembershipsSearchList";
 import styles from "@/styles/components/admin/MembershipsManagement.module.css";
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-  userPhoto: string;
-}
+import { Membership } from "@/types/memberships";
 
 export default async function MembershipsManagement() {
-  const membershipsRaw = await getAllMemberships();
+  const memberships: Membership[] = await getAllMemberships();
   const users = await getAllUsers();
   const departments = await getAllDepartments();
-
-  const memberships: Membership[] = membershipsRaw.map((membership, id) => {
-    const user = users.find((user) => user.istid === membership.user_istid);
-    return {
-      id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${id}`,
-      userNumber: membership.user_istid,
-      userName: membership.user_name,
-      userEmail: user?.email || "",
-      userPhoto: user?.photo || "",
-      departmentName: membership.department_name,
-      roleName: membership.role_name,
-      startDate: membership.from_date,
-      endDate: membership.to_date ?? undefined,
-      isActive: membership.active,
-    };
-  });
 
   return (
     <div className={styles.container}>

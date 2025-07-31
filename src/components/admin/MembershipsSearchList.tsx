@@ -1,24 +1,12 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
+import Image from "next/image";
 import { User } from "@/types/user";
+import { Membership } from "@/types/memberships";
 import { useUser } from "@/context/UserContext";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import Image from "next/image";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-  userPhoto: string;
-}
 
 interface Department {
   name: string;
@@ -176,18 +164,20 @@ export default function MembershipsSearchList({
   const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>, istid: string) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = (reader.result as string).split(",")[1];
-      const res = await fetch(`/api/user/update/${istid}`, {
+    const photoData = new FileReader();
+    photoData.onloadend = async () => {
+      const base64 = (photoData.result as string).split(",")[1];
+      const response = await fetch(`/api/user/update/${istid}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photo: base64 }),
       });
-      if (res.ok) {
+      if (response.ok) {
         const newPhotoUrl = `/api/user/photo/${istid}?custom&${Date.now()}`;
         setMemberships((prev) =>
-          prev.map((m) => (m.userNumber === istid ? { ...m, userPhoto: newPhotoUrl } : m))
+          prev.map((membership) =>
+            membership.userNumber === istid ? { ...membership, userPhoto: newPhotoUrl } : membership
+          )
         );
         if (user && user.istid === istid) {
           setUser({ ...user, photo: newPhotoUrl });
@@ -195,7 +185,7 @@ export default function MembershipsSearchList({
       }
       setEditingPhotoIstid(null);
     };
-    reader.readAsDataURL(file);
+    photoData.readAsDataURL(file);
   };
 
   return (

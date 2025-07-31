@@ -2,39 +2,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { User } from "@/types/user";
+import { Membership, Role, RawRole } from "@/types/memberships";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, useSortable, arrayMove } from "@dnd-kit/sortable";
 import styles from "@/styles/pages/AboutUs.module.css";
 
-interface RawMembership {
-  user_istid: string;
-  user_name: string;
-  department_name: string;
-  role_name: string;
-  from_date: string;
-  to_date: string | null;
-  active: boolean;
-}
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-  userPhoto: string;
-}
-
-interface Role {
-  roleName: string;
-  access: "guest" | "member" | "coordinator" | "admin";
-}
-
-//TODO: find a better way to fence off the academic year
 function getAcademicYearRange(year: string) {
   const [startYear, endYear] = year.split("/").map(Number);
   return {
@@ -79,40 +51,24 @@ function getAllAcademicYears(memberships: Membership[]) {
   });
   if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
   const years: string[] = [];
-  for (let y = minYear; y <= maxYear; y++) {
-    years.push(`${y}/${y + 1}`);
+  for (let year = minYear; year <= maxYear; year++) {
+    years.push(`${year}/${year + 1}`);
   }
   return years.reverse();
 }
 
 export default function AboutUsEditor({
   departments,
-  memberships: rawMemberships,
+  memberships,
   users,
 }: {
   departments: { name: string; description?: string; department_type?: string; active?: boolean }[];
-  memberships: RawMembership[];
+  memberships: Membership[];
   users: User[];
 }) {
-  const memberships: Membership[] = rawMemberships.map((membership, id) => {
-    const user = users.find((user) => user.istid === membership.user_istid);
-    return {
-      id: `${membership.user_istid}-${membership.department_name}-${membership.role_name}-${id}`,
-      userNumber: membership.user_istid,
-      userName: membership.user_name,
-      userEmail: user?.email || "",
-      userPhoto: user?.photo || "/default_user.png",
-      departmentName: membership.department_name,
-      roleName: membership.role_name,
-      startDate: membership.from_date,
-      endDate: membership.to_date ?? undefined,
-      isActive: membership.active,
-    };
-  });
   const allAcademicYears = getAllAcademicYears(memberships);
   const [selectedYear, setSelectedYear] = useState(allAcademicYears[0]);
   const [roleOrders, setRoleOrders] = useState<Record<string, string[]>>({});
-
 
   const filteredMemberships = memberships.filter((membership) =>
     isMembershipInAcademicYear(membership, selectedYear)
@@ -141,10 +97,12 @@ export default function AboutUsEditor({
           (res) => res.json()
         ),
       ]).then(([allRolesRaw, orderRaw]) => {
-        const allRoles: Role[] = (allRolesRaw as Role[]).map((role) => ({
-          roleName: role.roleName ?? (role as { role_name?: string }).role_name,
-          access: role.access,
-        }));
+        const allRoles: Role[] = (allRolesRaw as RawRole[])
+          .map((role) => ({
+            roleName: role.roleName ?? role.role_name,
+            access: role.access,
+          }))
+          .filter((role): role is Role => typeof role.roleName === "string");
 
         let orderedRoles = allRoles.map((role) => role.roleName);
 
@@ -158,15 +116,15 @@ export default function AboutUsEditor({
           orderedRoles = order
             .sort((a, b) => a.position - b.position)
             .map((role) => role.roleName)
-            .filter((role): role is string => typeof role === "string" && allRoles.some((aRole) => aRole.roleName === role));
+            .filter(
+              (role): role is string =>
+                typeof role === "string" && allRoles.some((aRole) => aRole.roleName === role)
+            );
           orderedRoles = [
             ...orderedRoles,
-            ...allRoles
-              .map((role) => role.roleName)
-              .filter((role) => !orderedRoles.includes(role)),
+            ...allRoles.map((role) => role.roleName).filter((role) => !orderedRoles.includes(role)),
           ];
         }
-
         setRoleOrders((prev) => ({ ...prev, [department.name]: orderedRoles }));
       });
     });
@@ -203,8 +161,7 @@ export default function AboutUsEditor({
             className={styles.timelineButton}
             data-selected={year === selectedYear}
             onClick={() => setSelectedYear(year)}
-            type="button"
-          >
+            type="button">
             {year}
           </button>
         ))}
@@ -218,37 +175,37 @@ export default function AboutUsEditor({
             <DndContext
               collisionDetection={closestCenter}
               onDragEnd={(event) => handleDragEnd(dept.name, event)}>
-            <SortableContext items={roles}>
-              <div className={styles.membersGrid}>
-                {roles
-                  .filter((role) => !!role)
-                  .map((role) => {
-                    const safeRole = role || "unknown";
-                    const members = membersByDepartmentAndRole[dept.name]?.[safeRole] || [];
-                    if (members.length === 0) {
-                      return (
+              <SortableContext items={roles}>
+                <div className={styles.membersGrid}>
+                  {roles
+                    .filter((role) => !!role)
+                    .map((role) => {
+                      const safeRole = role || "unknown";
+                      const members = membersByDepartmentAndRole[dept.name]?.[safeRole] || [];
+                      if (members.length === 0) {
+                        return (
+                          <SortableRoleCard
+                            key={safeRole + "-empty"}
+                            id={safeRole}
+                            name="Sem membro"
+                            photo="/default_user.png"
+                            role={safeRole}
+                            isGeneric
+                          />
+                        );
+                      }
+                      return members.map((member) => (
                         <SortableRoleCard
-                          key={safeRole + "-empty"}
+                          key={safeRole + "-" + member.id}
                           id={safeRole}
-                          name="Sem membro"
-                          photo="/default_user.png"
+                          name={member.userName}
+                          photo={member.userPhoto}
                           role={safeRole}
-                          isGeneric
                         />
-                      );
-                    }
-                    return members.map((member) => (
-                      <SortableRoleCard
-                        key={safeRole + "-" + member.id}
-                        id={safeRole}
-                        name={member.userName}
-                        photo={member.userPhoto}
-                        role={safeRole}
-                      />
-                    ));
-                  })}
-              </div>
-            </SortableContext>
+                      ));
+                    })}
+                </div>
+              </SortableContext>
             </DndContext>
           </div>
         );

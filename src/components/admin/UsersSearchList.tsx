@@ -1,21 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { User, UserRole } from "@/types/user";
 import Image from "next/image";
+import { User, UserRole } from "@/types/user";
+import { Membership } from "@/types/memberships";
 import styles from "@/styles/components/admin/UsersSearchList.module.css";
-
-interface Membership {
-  id: string;
-  userNumber: string;
-  userName: string;
-  departmentName: string;
-  roleName: string;
-  startDate: string;
-  endDate?: string;
-  isActive: boolean;
-  userEmail: string;
-}
 
 interface Role {
   role_name: string;
@@ -107,7 +96,7 @@ export default function UsersSearchList({
                         return (
                           <li key={id} className={styles.membershipItem}>
                             <span className={styles.teamName}>{membership.departmentName}</span>
-                            <span className={styles.roleSeparator}>–</span>
+                            <span className={styles.roleSeparator}>-</span>
                             <span>{membership.roleName}</span>
                             <span
                               className={`${styles.accessBadge} ${getAccessClass(accessLevel)}`}>

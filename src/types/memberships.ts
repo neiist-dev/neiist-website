@@ -26,21 +26,20 @@ export interface Role {
   access: "guest" | "member" | "coordinator" | "admin";
 }
 
-/**
- * Maps a RawMembership and user info to a Membership.
- * @param raw RawMembership from DB
- * @param userEmail Email of the user (optional)
- * @param userPhoto Photo URL of the user (optional)
- * @param idx Optional index for unique ID
- */
+export interface RawRole {
+  roleName?: string;
+  role_name?: string;
+  access: string;
+}
+
 export function mapRawMembershipToMembership(
   raw: RawMembership,
   userEmail = "",
   userPhoto = "",
-  idx = 0
+  index = 0
 ): Membership {
   return {
-    id: `${raw.user_istid}-${raw.department_name}-${raw.role_name}-${idx}`,
+    id: `${raw.user_istid}-${raw.department_name}-${raw.role_name}-${index}`,
     userNumber: raw.user_istid,
     userName: raw.user_name,
     departmentName: raw.department_name,
