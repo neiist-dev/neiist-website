@@ -49,10 +49,10 @@ export default function PostPageClient({ post }: { post: Post }) {
           />
         </div>
       </div>
+      <PostMeta author={post.author} date={post.date} tags={tags} />
       <PostHeader title={post.title} image={post.image} />
       <PostContent description={post.description} />
       <hr className="my-6 border-gray-200" />
-      <PostMeta author={post.author} date={post.date} tags={tags} />
     </div>
   );
 }

@@ -93,8 +93,6 @@ CREATE TABLE neiist.user_access_roles (
     PRIMARY KEY (user_istid, access)
 );
 
-
-DROP TABLE IF EXISTS neiist.news CASCADE;
 -- BLOG/POSTS TABLE
 CREATE TABLE neiist.posts (
     id SERIAL PRIMARY KEY,
@@ -108,7 +106,10 @@ CREATE TABLE neiist.posts (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA neiist TO neiist_app_user;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.posts TO neiist_app_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES TO neiist_app_user;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA neiist TO neiist_app_user;
+-- TODO : Retirar 
 
 -- FUNCTIONS
 

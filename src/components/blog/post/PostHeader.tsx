@@ -9,7 +9,8 @@ interface PostHeaderProps {
 export default function PostHeader({ title, image }: PostHeaderProps) {
   return (
     <>
-      <h1 className="text-3xl font-bold mt-13 mb-4">{title}</h1>
+      <hr className="my-6 border-gray-200" />
+      <h1 className="text-3xl font-bold mt-4 mb-4">{title}</h1>
       <div className="w-full h-80 relative mb-6 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
         <Image
           src={image || "/placeholder.jpg"}
