@@ -111,6 +111,33 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT INSERT, SELECT, UPDATE, DELETE O
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA neiist TO neiist_app_user;
 -- TODO : Retirar 
 
+-- TAGS TABLE
+
+CREATE TABLE neiist.tags (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    category TEXT NOT NULL
+);
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.tags TO neiist_app_user;
+
+
+-- TAGS MAPPING (seed)
+INSERT INTO neiist.tags (name, category) VALUES
+  ('Workshops', 'Eventos'),
+  ('Recrutamento', 'Eventos'),
+  ('Entrevistas', 'Eventos'),
+  ('Critical Software', 'Empresas'),
+  ('OutSystems', 'Empresas'),
+  ('Feedzai', 'Empresas'),
+  ('Farfetch', 'Empresas'),
+  ('Talkdesk', 'Empresas'),
+  ('Unbabel', 'Empresas'),
+  ('Defined.ai', 'Empresas'),
+  ('Sword Health', 'Empresas'),
+  ('Codacy', 'Empresas'),
+  ('Jumia', 'Empresas');
+
 -- FUNCTIONS
 
 -- Get user

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaChevronLeft } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -13,12 +13,25 @@ interface BlogFilterbarProps {
 }
 
 
-const EVENTOS_DEFAULT = ["workshops", "recrutamento", "posts"];
-const ENTREVISTAS_DEFAULT = ["Sonae", "Farfetch", "OutSystems"];
-
 
 const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterChange }) => {
   const [selected, setSelected] = useState<string[]>([]);
+  const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: number, name: string }[]>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/tags');
+        const data = await res.json();
+        setTagsByCategory(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTags();
+  }, []);
 
   const handleToggle = (tag: string) => {
     let newSelected;
@@ -49,35 +62,28 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8 flex flex-col">
-          <section>
-            <h4 className="text-xl mb-4 text-gray-700">Eventos</h4>
-            <div className="flex flex-col gap-2">
-              {EVENTOS_DEFAULT.map(tag => (
-                <div key={tag} className="flex items-center gap-2">
-                  <Checkbox id={tag} checked={selected.includes(tag)} onClick={() => handleToggle(tag)} />
-                  <label htmlFor={tag} className="text-sm cursor-pointer">
-                    <Badge className="text-md px-2 py-0.5">{tag}</Badge>
-                  </label>
+          {loading ? (
+            <div className="text-center text-gray-400">A carregar tags...</div>
+          ) : (
+            Object.entries(tagsByCategory).map(([category, tags]) => (
+              <section key={category}>
+                <h4 className="text-xl mb-4 text-gray-700 capitalize">{category}</h4>
+                <div className="flex flex-col gap-2">
+                  {tags.map(tag => (
+                    <div key={tag.id} className="flex items-center gap-2">
+                      <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
+                      <label htmlFor={tag.name} className="text-sm cursor-pointer">
+                        <Badge className="text-md px-2 py-0.5">{tag.name}</Badge>
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-          <section>
-            <h4 className="text-xl mb-4 text-gray-700">Empresas</h4>
-            <div className="flex flex-col gap-2">
-              {ENTREVISTAS_DEFAULT.map(tag => (
-                <div key={tag} className="flex items-center gap-2">
-                  <Checkbox id={tag} checked={selected.includes(tag)} onClick={() => handleToggle(tag)} />
-                  <label htmlFor={tag} className="text-sm cursor-pointer">
-                    <Badge variant="secondary" className="text-md px-2 py-0.5">{tag}</Badge>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </section>
+              </section>
+            ))
+          )}
         </div>
         {selected.length > 0 && (
-          <div className="px-8 pb-10 pt-2">
+          <div className="px-8 pb-6 pt-2">
             <Button
               variant="outline"
               className="w-full text-medium px-4 py-2"
