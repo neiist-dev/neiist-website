@@ -101,10 +101,18 @@ CREATE TABLE neiist.posts (
     image TEXT,
     date DATE NOT NULL DEFAULT CURRENT_DATE,
     author TEXT NOT NULL,
-    tags TEXT[],
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- POST_TAGS TABLE (associação N:N entre posts e tags)
+CREATE TABLE neiist.post_tags (
+    post_id INTEGER NOT NULL REFERENCES neiist.posts(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES neiist.tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, tag_id)
+);
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.post_tags TO neiist_app_user;
 
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.posts TO neiist_app_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES TO neiist_app_user;
@@ -120,7 +128,6 @@ CREATE TABLE neiist.tags (
 );
 
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.tags TO neiist_app_user;
-
 
 -- TAGS MAPPING (seed)
 INSERT INTO neiist.tags (name, category) VALUES
