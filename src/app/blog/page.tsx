@@ -48,7 +48,6 @@ export default function BlogPage() {
 
   useEffect(() => {
     fetchPosts(search, filters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   useEffect(() => {

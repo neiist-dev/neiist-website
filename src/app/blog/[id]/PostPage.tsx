@@ -18,14 +18,6 @@ interface Post {
   tags?: string[];
 }
 
-function formatAuthorName(name?: string) {
-  if (!name) return '';
-  const parts = name.trim().split(' ');
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[1][0]}.`;
-}
-
-
 export default function PostPageClient({ post }: { post: Post }) {
   const router = useRouter();
   const tags: string[] = Array.isArray(post.tags) ? post.tags : [];

@@ -3,6 +3,11 @@ import { FaSearch } from 'react-icons/fa';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 
+interface BlogToolbarProps {
+  onFilterClick: () => void;
+  onSearch: (query: string) => void;
+}
+
 async function handleAddPost() {
   try {
     const res = await fetch('/api/blog', {
@@ -25,12 +30,6 @@ async function handleAddPost() {
     alert('Erro');
   }
 }
-
-interface BlogToolbarProps {
-  onFilterClick: () => void;
-  onSearch: (query: string) => void;
-}
-
 
 const BlogToolbar: React.FC<BlogToolbarProps> = ({ onFilterClick, onSearch }) => {
   const [search, setSearch] = React.useState("");

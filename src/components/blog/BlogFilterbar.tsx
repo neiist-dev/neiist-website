@@ -12,8 +12,6 @@ interface BlogFilterbarProps {
   onFilterChange?: (filters: string[]) => void;
 }
 
-
-
 const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterChange }) => {
   const [selected, setSelected] = useState<string[]>([]);
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: number, name: string }[]>>({});
