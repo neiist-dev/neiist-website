@@ -1,9 +1,10 @@
 {
   "name": "neiist",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "setup": "chmod +x ./setup.sh && ./setup.sh",
+    "release": "yarn changeset && yarn changeset version && yarn changeset publish",
     "dev": "docker compose -f ./docker/docker-compose.yml up -d && next dev --turbopack; docker compose -f ./docker/docker-compose.yml stop > /dev/null 2>&1",
     "build": "next build",
     "start": "next start",
@@ -33,6 +34,7 @@
     "swiper": "^11.2.8"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.5",
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^19",

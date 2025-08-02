@@ -4,6 +4,7 @@ echo "NEIIST Dev Env Setup Script"
 echo "==============================="
 
 chmod +x .husky/pre-commit
+chmod +x .husky/post-commit
 
 # Function to prompt for y/n and only accept valid input
 prompt_yes_no() {
