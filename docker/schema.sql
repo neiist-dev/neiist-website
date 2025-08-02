@@ -121,7 +121,6 @@ CREATE TABLE neiist.tags (
 
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.tags TO neiist_app_user;
 
-
 -- TAGS MAPPING (seed)
 INSERT INTO neiist.tags (name, category) VALUES
   ('Workshops', 'Eventos'),

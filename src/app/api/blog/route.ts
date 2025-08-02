@@ -9,12 +9,26 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
-    let query = `SELECT id, title, description, image, date, author, created_at, updated_at FROM neiist.posts`;
+    const tagsParam = searchParams.get("tags");
+    let query = `SELECT id, title, description, image, date, author, tags, created_at, updated_at FROM neiist.posts`;
     let params: any[] = [];
-    if (search) {
-      query += ` WHERE LOWER(title) LIKE $1`;
+    let where = '';
+
+    if (search && tagsParam) {
+      const tags = tagsParam.split(',').map(t => t.trim()).filter(Boolean);
+      // Só retorna posts que tenham o texto pesquisado no título e pelo menos uma das tags escolhidas.
+      where = `WHERE LOWER(title) LIKE $1 AND tags && $2::text[]`;
+      params.push(`%${search.toLowerCase()}%`, tags);
+    } else if (search) {
+      where = `WHERE LOWER(title) LIKE $1`;
       params.push(`%${search.toLowerCase()}%`);
+    } else if (tagsParam) {
+      const tags = tagsParam.split(',').map(t => t.trim()).filter(Boolean);
+      where = `WHERE tags && $1::text[]`;
+      params.push(tags);
     }
+    query += ' ' + where;
+    
     query += ` ORDER BY date DESC, created_at DESC`;
     const { rows } = await db_query(query, params);
     return NextResponse.json(rows);

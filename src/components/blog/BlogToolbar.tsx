@@ -20,7 +20,7 @@ async function handleAddPost() {
         description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
         date: new Date().toISOString().split('T')[0],
         author: 'Francisca Almeida',
-        tags: ['geral', 'posts'],
+        tags: ['geral', 'posts', 'Entrevistas'],
         image: ''
       }),
     });
