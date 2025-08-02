@@ -69,14 +69,16 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
               <section key={category}>
                 <h4 className="text-xl mb-4 text-gray-700 capitalize">{category}</h4>
                 <div className="flex flex-col gap-2">
-                  {tags.map(tag => (
+                  {Array.isArray(tags) && tags.length > 0 ? tags.map(tag => (
                     <div key={tag.id} className="flex items-center gap-2">
                       <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
                       <label htmlFor={tag.name} className="text-sm cursor-pointer">
                         <Badge className="text-md px-2 py-0.5">{tag.name}</Badge>
                       </label>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-gray-400 text-sm">Sem tags nesta categoria.</div>
+                  )}
                 </div>
               </section>
             ))
