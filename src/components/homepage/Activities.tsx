@@ -118,40 +118,23 @@ function Activities() {
   }, []);
 
   return (
-    <div className="slider-container" style={{ position: "relative" }}>
-      <h1 className={styles.title}>Atividades</h1>
+    <>
+    <h1 className={styles.title}>Atividades</h1>
+    <div className={styles.container}>
       {showArrows && (
         <>
           <button
-            className={styles.handle + " " + styles.leftHandle}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 10,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-            }}
+            className={`${styles.arrow} ${styles.left}`}
             onClick={() => swiperInstance?.slidePrev()}
-            aria-label="Previous">
+            aria-label="Previous"
+          >
             <IoIosArrowBack size={40} color="#FFF" />
           </button>
           <button
-            className={styles.handle + " " + styles.rightHandle}
-            style={{
-              position: "absolute",
-              right: 0,
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 10,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-            }}
+            className={`${styles.arrow} ${styles.right}`}
             onClick={() => swiperInstance?.slideNext()}
-            aria-label="Next">
+            aria-label="Next"
+          >
             <IoIosArrowForward size={40} color="#FFF" />
           </button>
         </>
@@ -163,7 +146,7 @@ function Activities() {
         autoplay={{ delay: 3000, disableOnInteraction: true }}
         loop={true}
         speed={500}
-        slidesPerView={4}
+        slidesPerView={3}
         spaceBetween={20}
         breakpoints={{
           1024: { slidesPerView: 3 },
@@ -175,12 +158,17 @@ function Activities() {
           <SwiperSlide key={index}>
             <div className={styles.card}>
               <Image src={event.image} alt={event.title} className={styles.image} />
-              <p className={styles.description}>{event.title}</p>
+              <div className={styles.label}>{event.title}</div>
+              <div className={styles.overlay}>
+                <h3 className={styles.eventTitle}>{event.title}</h3>
+                <p className={styles.description}>{event.description}</p>
+              </div>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
     </div>
+    </>
   );
 }
 
