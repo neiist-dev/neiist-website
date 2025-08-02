@@ -119,55 +119,53 @@ function Activities() {
 
   return (
     <>
-    <h1 className={styles.title}>Atividades</h1>
-    <div className={styles.container}>
-      {showArrows && (
-        <>
-          <button
-            className={`${styles.arrow} ${styles.left}`}
-            onClick={() => swiperInstance?.slidePrev()}
-            aria-label="Previous"
-          >
-            <IoIosArrowBack size={40} color="#FFF" />
-          </button>
-          <button
-            className={`${styles.arrow} ${styles.right}`}
-            onClick={() => swiperInstance?.slideNext()}
-            aria-label="Next"
-          >
-            <IoIosArrowForward size={40} color="#FFF" />
-          </button>
-        </>
-      )}
-      <Swiper
-        onSwiper={setSwiperInstance}
-        modules={[Navigation, Autoplay]}
-        navigation={false}
-        autoplay={{ delay: 3000, disableOnInteraction: true }}
-        loop={true}
-        speed={500}
-        slidesPerView={3}
-        spaceBetween={20}
-        breakpoints={{
-          1024: { slidesPerView: 3 },
-          600: { slidesPerView: 2 },
-          0: { slidesPerView: 1 },
-        }}
-        className={styles.slider}>
-        {events.map((event, index) => (
-          <SwiperSlide key={index}>
-            <div className={styles.card}>
-              <Image src={event.image} alt={event.title} className={styles.image} />
-              <div className={styles.label}>{event.title}</div>
-              <div className={styles.overlay}>
-                <h3 className={styles.eventTitle}>{event.title}</h3>
-                <p className={styles.description}>{event.description}</p>
+      <h1 className={styles.title}>Atividades</h1>
+      <div className={styles.container}>
+        {showArrows && (
+          <>
+            <button
+              className={`${styles.arrow} ${styles.left}`}
+              onClick={() => swiperInstance?.slidePrev()}
+              aria-label="Previous">
+              <IoIosArrowBack size={40} color="#FFF" />
+            </button>
+            <button
+              className={`${styles.arrow} ${styles.right}`}
+              onClick={() => swiperInstance?.slideNext()}
+              aria-label="Next">
+              <IoIosArrowForward size={40} color="#FFF" />
+            </button>
+          </>
+        )}
+        <Swiper
+          onSwiper={setSwiperInstance}
+          modules={[Navigation, Autoplay]}
+          navigation={false}
+          autoplay={{ delay: 3000, disableOnInteraction: true }}
+          loop={true}
+          speed={500}
+          slidesPerView={3}
+          spaceBetween={20}
+          breakpoints={{
+            1024: { slidesPerView: 3 },
+            600: { slidesPerView: 2 },
+            0: { slidesPerView: 1 },
+          }}
+          className={styles.slider}>
+          {events.map((event, index) => (
+            <SwiperSlide key={index}>
+              <div className={styles.card}>
+                <Image src={event.image} alt={event.title} className={styles.image} />
+                <div className={styles.label}>{event.title}</div>
+                <div className={styles.overlay}>
+                  <h3 className={styles.eventTitle}>{event.title}</h3>
+                  <p className={styles.description}>{event.description}</p>
+                </div>
               </div>
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </>
   );
 }

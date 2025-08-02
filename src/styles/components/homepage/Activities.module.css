@@ -30,7 +30,7 @@
 }
 
 .arrow:active {
-  transform: translateY(-50%) scale(0.80);
+  transform: translateY(-50%) scale(0.8);
   filter: brightness(0.75);
 }
 
