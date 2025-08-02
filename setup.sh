@@ -1,6 +1,6 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 
-echo "🚀 NEIIST Dev Env Setup Script"
+echo "NEIIST Dev Env Setup Script"
 echo "==============================="
 
 chmod +x .husky/pre-commit
@@ -31,7 +31,7 @@ prompt_yes_no() {
 # Function to collect Fénix Application details only if not already set
 collect_fenix_env() {
   if [ -z "${fenix_client_id}" ] || [ -z "${fenix_client_secret}" ]; then
-    echo "🔑 Enter your Fénix Application details:"
+    echo "Enter your Fénix Application details:"
   fi
   if [ -z "${fenix_client_id}" ]; then
     read -p "FENIX_CLIENT_ID: " fenix_client_id
@@ -41,49 +41,88 @@ collect_fenix_env() {
   fi
 }
 
+# Function to collect SMTP config
+collect_smtp_env() {
+  if [ -z "${smtp_host}" ]; then
+    read -p "SMTP_HOST (e.g. smtp.yourprovider.com): " smtp_host
+  fi
+  if [ -z "${smtp_port}" ]; then
+    read -p "SMTP_PORT (e.g. 587): " smtp_port
+  fi
+  if [ -z "${smtp_user}" ]; then
+    read -p "SMTP_USER (your email): " smtp_user
+  fi
+  if [ -z "${smtp_pass}" ]; then
+    read -p "SMTP_PASS (your SMTP password): " smtp_pass
+  fi
+}
+
+# Function to collect NEXT_PUBLIC_BASE_URL
+collect_base_url() {
+  if [ -z "${next_public_base_url}" ]; then
+    read -p "NEXT_PUBLIC_BASE_URL (e.g. https://neiist.tecnico.ulisboa.pt): " next_public_base_url
+  fi
+}
+
 # Create .env file in project root
-echo "📝 Creating .env file..."
+echo "Creating .env file..."
 if [ -f ".env" ]; then
-  override=$(prompt_yes_no "ℹ️ .env file already exists. Override? (y/n): ")
+  override=$(prompt_yes_no ".env file already exists. Override? (y/n): ")
   if [ "$override" != "y" ]; then
-    echo "ℹ️ Keeping existing .env file."
+    echo "Keeping existing .env file."
   else
     collect_fenix_env
+    collect_smtp_env
+    collect_base_url
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
 FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
 # This username and password must match the ones created in schema.sql
 DATABASE_URL=postgresql://neiist_app_user:neiist_app_user_password@localhost:5432/neiist
+# SMTP configuration to send emails
+SMTP_HOST=${smtp_host}
+SMTP_PORT=${smtp_port}
+SMTP_USER=${smtp_user}
+SMTP_PASS=${smtp_pass}
+NEXT_PUBLIC_BASE_URL=${next_public_base_url}
 EOF
-    echo "✅ .env file created successfully."
+    echo ".env file created successfully."
   fi
 else
   collect_fenix_env
+  collect_smtp_env
+  collect_base_url
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
 FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
 # This username and password must match the ones created in schema.sql
 DATABASE_URL=postgresql://neiist_app_user:neiist_app_user_password@localhost:5432/neiist
+# SMTP configuration to send emails
+SMTP_HOST=${smtp_host}
+SMTP_PORT=${smtp_port}
+SMTP_USER=${smtp_user}
+SMTP_PASS=${smtp_pass}
+NEXT_PUBLIC_BASE_URL=${next_public_base_url}
 EOF
-  echo "✅ .env file created successfully."
+  echo ".env file created successfully."
 fi
 
 # Create docker/.env file
 file="docker/.env"
-echo "📝 Creating $file file..."
+echo "Creating $file file..."
 if [ -f "$file" ]; then
-  override=$(prompt_yes_no "ℹ️ $file file already exists. Override? (y/n): ")
+  override=$(prompt_yes_no "$file file already exists. Override? (y/n): ")
   if [ "$override" != "y" ]; then
-    echo "ℹ️ Keeping existing $file file."
+    echo "Keeping existing $file file."
   else
     cat > "$file" << EOF
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_DB=neiist
 EOF
-    echo "✅ $file file created successfully."
+    echo "$file file created successfully."
   fi
 else
   cat > "$file" << EOF
@@ -91,31 +130,36 @@ POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_DB=neiist
 EOF
-  echo "✅ $file file created successfully."
+  echo "$file file created successfully."
 fi
 
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
-  echo "⚠️ Docker is not installed. Please install Docker to continue."
-  echo "🔗 https://docs.docker.com/get-docker/"
+  echo "Docker is not installed. Please install Docker to continue."
+  echo "https://docs.docker.com/get-docker/"
   exit 1
 fi
 
 # Start Docker containers
-echo "🐳 Building Docker containers..."
+echo "Building Docker containers..."
 cd docker
 docker compose -p neiist build
 wait
 cd ..
 
-echo "✅ Setup completed successfully!"
+# Setup of husky pre-commit
+echo "Setting up Husky Pre-Commit..."
+chmod +x .husky/pre-commit
+yarn husky
+
+echo "Setup completed successfully!"
 echo 
-echo "🚀 Next steps:"
+echo "Next steps:"
 echo "1. Run 'yarn install' to install dependencies."
 echo "2. Run 'yarn dev' to start the development server."
 echo 
 if [ "$override" = "y" ]; then
-  echo "📝 Note: Your database credentials are:"
+  echo "Note: Your database credentials are:"
   echo "   - user: neiist_app_user"
   echo "   - password: neiist_app_user_password"
   echo "   - database: neiist"
