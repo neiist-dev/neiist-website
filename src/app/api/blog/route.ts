@@ -41,16 +41,33 @@ export async function GET(request: Request) {
 // POST: Criar um novo post
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { title, description, image, date, author, tags } = body;
+    const formData = await request.formData();
+    const title = formData.get('title');
+    const description = formData.get('description');
+    const author = formData.get('author');
+    const tagsRaw = formData.get('tags');
+    let tags: string[] = [];
+    try {
+      tags = tagsRaw ? JSON.parse(tagsRaw as string) : [];
+    } catch {
+      tags = [];
+    }
+    let imageBase64: string | null = null;
+    const imageFile = formData.get('image');
+    if (imageFile && typeof imageFile === 'object' && 'arrayBuffer' in imageFile) {
+      const buffer = await (imageFile as File).arrayBuffer();
+      imageBase64 = Buffer.from(buffer).toString('base64');
+    }
+    // TODO - IMAGEM (para já só a guardar em base64)
     if (!title || !description || !author) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+    const date = new Date().toISOString();
     const result = await db_query(
       `INSERT INTO neiist.posts (title, description, image, date, author, tags)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [title, description, image, date, author, tags]
+      [title, description, imageBase64, date, author, tags]
     );
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
