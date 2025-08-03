@@ -23,11 +23,11 @@ export default function Newsletter() {
             placeholder="O teu email..."
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2863FD] focus:border-transparent transition-colors"
           />
           <button
             type="submit"
-            className="px-6 py-2 rounded bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+            className="px-6 py-2 rounded bg-[#2863FD] text-primary-foreground font-semibold hover:bg-[#1e4fc1] transition-colors cursor-pointer"
           >
             Subscrever
           </button>

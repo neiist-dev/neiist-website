@@ -97,6 +97,72 @@ h1, h2, h3, h4, h5, h6, p, a, li {
   color: var(--foreground-colour);
 }
 
+.prose h1 { font-size: 2.5rem; color: #2863FD; }
+.prose h2 { font-size: 2rem; color: #258BE3; }
+.prose h3 { font-size: 1.75rem; color: #34D1F9; }
+.prose p { font-size: 1rem; }
+.prose img { border-radius: 8px; }
+.prose code {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: var(--hover);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+.prose pre {
+  background-color: var(--hover);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  color: var(--secondary-colour);
+  margin: 1rem 0;
+}
+.prose a {
+  color: var(--primary-colour);
+  text-decoration: underline;
+}
+.prose a:hover {
+  color: var(--secondary-colour);
+  text-decoration: none;
+}
+.prose ul {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+.prose li {
+  margin-bottom: 0.5rem;
+}
+.prose li::marker {
+  color: var(--primary-colour);
+}
+.prose strong {
+  color: var(--primary-colour);
+}
+.prose em {
+  color: var(--secondary-colour);
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+.prose th, .prose td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+.prose th {
+  background-color: var(--secondary-colour);
+  color: var(--foreground-colour);
+}
+.prose td {
+  background-color: var(--background-colour);
+  color: var(--foreground-colour);
+}
+
 a {
   text-decoration: none;
 }
