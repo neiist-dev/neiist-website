@@ -7,7 +7,7 @@ const BlogHeader = () => (
       Bem vindo/a ao Blog do núcleo!
     </h1>
     <div>
-      <p className="leading-7  p-3 [&:not(:first-child)]:mt-6">
+      <p className="leading-7  p-3 [&:not(:first-child)]:mt-6 sm:mx-20 md:mx-40 lg:mx-80">
         O teu espaço para te manteres atualizado! Publicamos regularmente as últimas novidades, 
         eventos e informações mais importantes para todos os estudantes.
       </p>

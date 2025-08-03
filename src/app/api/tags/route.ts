@@ -14,3 +14,27 @@ export async function GET() {
     return NextResponse.json({ error: "Erro ao requisitar tags." }, { status: 500 });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { name, category } = body;
+    if (!name || !category) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    const exists = await db_query(
+      "SELECT id FROM neiist.tags WHERE name = $1 AND category = $2",
+      [name, category]
+    );
+    if (exists.rows.length > 0) {
+      return NextResponse.json({ error: "Tag já existe" }, { status: 409 });
+    }
+    const result = await db_query(
+      "INSERT INTO neiist.tags (name, category) VALUES ($1, $2) RETURNING *",
+      [name, category]
+    );
+    return NextResponse.json(result.rows[0], { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: "Erro ao criar tag." }, { status: 500 });
+  }
+}

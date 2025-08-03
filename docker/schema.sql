@@ -119,6 +119,11 @@ CREATE TABLE neiist.tags (
     category TEXT NOT NULL
 );
 
+-- SEQUENCE FOR AUTO-INCREMENTING TAGS TABLE
+CREATE SEQUENCE IF NOT EXISTS neiist.tags_id_seq;
+ALTER TABLE neiist.tags ALTER COLUMN id SET DEFAULT nextval('neiist.tags_id_seq');
+GRANT USAGE, SELECT ON SEQUENCE neiist.tags_id_seq TO neiist_app_user;
+
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.tags TO neiist_app_user;
 
 -- TAGS MAPPING (seed)

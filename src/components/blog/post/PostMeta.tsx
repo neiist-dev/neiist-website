@@ -10,7 +10,7 @@ interface PostMetaProps {
 
 export default function PostMeta({ author, date, tags = [] }: PostMetaProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-muted-foreground">
+    <div className="flex flex-row items-center justify-between gap-3 text-sm text-muted-foreground w-full flex-wrap">
       <div className="flex items-center gap-2">
         <Avatar className="w-10 h-10">
           <AvatarImage src="TODO" alt={author} />

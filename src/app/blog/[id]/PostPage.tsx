@@ -32,14 +32,6 @@ export default function PostPageClient({ post }: { post: Post }) {
         >
           <FaChevronLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1 relative">
-          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Pesquisar posts..."
-            className="w-full pl-10 pr-4 py-2 rounded border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
       </div>
       <PostMeta author={post.author} date={post.date} tags={tags} />
       <PostHeader title={post.title} image={post.image} />
