@@ -16,7 +16,7 @@ const protectedRoutes = [
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'
+    '/((?!api|_next/static|_next/image|favicon.ico|tinymce|.*\.png$).*)'
   ],
 };
 

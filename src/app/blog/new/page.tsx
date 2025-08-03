@@ -4,7 +4,8 @@ import Link from 'next/link';
 import BackButton from '@/components/blog/new_post/BackButton';
 import TitleInput from '@/components/blog/new_post/TitleInput';
 import CoverImageInput from '@/components/blog/new_post/CoverImageInput';
-import ContentTextarea from '@/components/blog/new_post/ContentTextarea';
+import dynamic from 'next/dynamic';
+const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Editor), { ssr: false });
 import ActionButtons from '@/components/blog/new_post/ActionButtons';
 import DropdownsSection from '@/components/blog/new_post/DropdownsSection';
 
@@ -50,7 +51,16 @@ const NewPostPage: React.FC = () => {
         onChange={handleImageChange}
         onButtonClick={() => document.getElementById('file-input')?.click()}
       />
-      <ContentTextarea value={description} onChange={e => setDescription(e.target.value)} />
+      <Editor
+        tinymceScriptSrc="/tinymce/tinymce.min.js"
+        value={description}
+        onEditorChange={setDescription}
+        init={{
+          menubar: false,
+          toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',          license_key: 'gpl',
+        }}
+        initialValue="Escreve aqui o conteúdo do post..."
+      />
       <DropdownsSection
         authors={authors}
         selectedAuthor={selectedAuthor}
