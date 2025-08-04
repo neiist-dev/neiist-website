@@ -5,7 +5,7 @@ const publicRoutes = ["/", "/home", "/about-us", "/email-confirmation"];
 const guestRoutes = ["/profile", "/my-orders"];
 const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management"];
-const adminRoutes = ["/users-management", "/departments-management"];
+const adminRoutes = ["/users-management", "/departments-management", "/activities-management"];
 
 const protectedRoutes = [...guestRoutes, ...memberRoutes, ...coordRoutes, ...adminRoutes];
 

@@ -1,4 +1,5 @@
 import { Pool, QueryResult, QueryResultRow } from "pg";
+import { Event } from "@/types/events";
 import { Membership, RawMembership, mapRawMembershipToMembership } from "@/types/memberships";
 import { User, mapRoleToUserRole, mapDbUserToUser } from "@/types/user";
 
@@ -483,5 +484,29 @@ export const setDepartmentRoleOrder = async (
   } catch (error) {
     console.error("Error setting department role order:", error);
     return false;
+  }
+};
+
+export const addEvent = async (event: Partial<Event>): Promise<Event | null> => {
+  try {
+    const { rows } = await db_query<Event>("SELECT * FROM neiist.add_event($1, $2, $3)", [
+      event.title,
+      event.description,
+      event.image,
+    ]);
+    return rows[0] ?? null;
+  } catch (error) {
+    console.error("Error saving the event:", error);
+    return null;
+  }
+};
+
+export const getAllEvents = async (): Promise<Event[]> => {
+  try {
+    const { rows } = await db_query<Event>("SELECT * FROM neiist.get_all_events()");
+    return rows;
+  } catch (error) {
+    console.error("Error fetching all events:", error);
+    return [];
   }
 };

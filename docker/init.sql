@@ -52,3 +52,17 @@ SELECT neiist.add_user('istID', 'FullName', 'tecnicoEmail', Null, Null, Null, '{
 
 SELECT neiist.add_team_member('istID', 'Direção', 'Vice-Presidente');
 SELECT neiist.add_team_member('istID', 'Dev-Team', 'Cordenador');
+
+SELECT neiist.add_event('Advent of Code', 'O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!', 'aoc.jpg');
+SELECT neiist.add_event('Torneio de E-Sports', 'Gostas de jogar? Que coincidência, este evento foi mesmo feito a pensar em ti! Reúne uma equipa e vem passar o dia connosco a jogar, comer e beber... e quem sabe ganhar um prémio ou outro!', 'esports.jpg');
+SELECT neiist.add_event('Sweats EIC', 'E o que achas de teres uma sweat com o nome do teu curso? Não te esqueças, o NEIIST dá-te a oportunidade de teres a sweat do melhor curso!', 'sweats.jpg');
+SELECT neiist.add_event('Concurso de Layout de Sweats', 'O Concurso de Layout de Sweats é a tua oportunidade de criar o layout oficial para a edição especial de cada ano. Se és estudante de EIC do IST podes submeter até 3 designs originais. Se ganhares a votação online, ganhas a sweat!', 'layout.jpg');
+SELECT neiist.add_event('Churrasco EIC', 'Mesmo que fosse uma semana de projetos ou exames, haveria sempre tempo para um convívio com amigos!', 'churras.jpg');
+SELECT neiist.add_event('Jantar de Curso', 'Muito stressado com o Técnico? Nós também, junta-te aos teus colegas no melhor jantar de curso!  A cerveja já está a tua espera…', 'jantar_curso.jpg');
+SELECT neiist.add_event('Let''s Talk about LEIC', 'Acabaste de chegar ao curso e sentes-te perdido? Vem aprender connosco todos os truques para sobreviveres! Com este evento, junto dos alunos mais velhos, vais compreender como funciona LEIC e as suas disciplinas.', 'ltal.jpg');
+SELECT neiist.add_event('(Quase) Tudo Sobre MEIC', 'Vais entrar em MEIC? Se estás indeciso sobre quais áreas ou cadeiras escolher, vem assistir a estas sessões! Irão explicar-te tudo o que precisas saber sobre a estrutura do mestrado, o currículo, as diferentes áreas de especialização, a tese e muito mais.', 'qtsm.jpg');
+SELECT neiist.add_event('Workshop de Python', 'Estás preocupado com o projeto de FP ou queres aprender mais sobre Python? Vem a este workshop onde vamos falar das principais bases da programação e ensinar-te os primeiros passos essenciais para o mundo informático!', 'python.jpg');
+SELECT neiist.add_event('Workshop Assembly', 'Não sabes o que quer dizer MOV, ADD, CMP? Não sabes o que são registos e flags? Então junta-te a nós neste workshop onde te ensinamos as bases de Assembly que irão ser fundamentais em IAC!', 'assembly.jpg');
+SELECT neiist.add_event('Workshop C', 'Queres finalmente perceber o que é alocação de memória, o que são ponteiros, como funciona a pilha e muito mais? Junta-te a nós neste workshop e tira todas as tuas dúvidas!', 'C.jpg');
+SELECT neiist.add_event('Hash Code', 'Junta-te a nós na competição de código desenvolvida pela Google na qual o NEIIST organiza uma Hub onde todos os alunos do técnico são bem-vindos a integrar e participar.', 'hashcode.jpg');
+SELECT neiist.add_event('Linux Install Party', 'Vem instalar o Linux no teu PC, junto a alunos com experiência na área e na instalação dos vários flavors que o Linux tem para oferecer!', 'lip.jpg');

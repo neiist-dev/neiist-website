@@ -1,5 +1,11 @@
 # neiist
 
+## 0.3.0
+
+### Minor Changes
+
+- Store the events/activities data on db. New page for managing the events/activities.
+
 ## 0.2.1
 
 ### Patch Changes

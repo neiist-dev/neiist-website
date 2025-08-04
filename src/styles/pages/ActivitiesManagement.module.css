@@ -1,0 +1,99 @@
+.title {
+  font-size: 2rem;
+  margin-left: 2rem;
+  font-weight: 700;
+  color: var(--primary-colour);
+}
+
+.form {
+  margin: 2rem;
+  gap: 2rem;
+}
+
+.inputsAndPreview {
+  display: flex;
+  gap: 2rem;
+}
+
+.inputsCol {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.input {
+  padding: 1rem 1.2rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 1.2rem;
+  font-size: 1.1rem;
+  background: #f8f9fa;
+  font-family: inherit;
+}
+
+.fileButton,
+.button {
+  background: var(--primary-colour);
+  color: #fff;
+  padding: 0.8rem 1.6rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: center;
+  border: none;
+}
+
+.fileButton:hover,
+.button:hover:not(:disabled) {
+  background: #1741b6;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileName {
+  color: #2863fd;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.button:disabled {
+  background: #b3c7ff;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.success {
+  color: green;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.preview {
+  border-radius: 1.2rem;
+  object-fit: cover;
+  display: block;
+}
+
+.noImage {
+  color: #888;
+  font-size: 1.1rem;
+  font-family: inherit;
+}
+
+@media (max-width: 768px) {
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
