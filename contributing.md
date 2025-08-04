@@ -70,6 +70,15 @@ Before making changes, please **fork the repository** and **create a new branch*
 1. **Commit Your Changes**:
    * Write clear, concise commit messages following the [Conventional Commits]([https://www.conventionalcommits.org/en/v1.0.0/](https://www.conventionalcommits.org/en/v1.0.0/)) specification.
    * Example: `feat: add user authentication endpoint` or `fix: typo in README`.
+2. **Update Changelog and Bump Version**:
+  * Before pushing your final changes and opening a pull request, generate a changelog and bump the project version using the changeset package:
+    ```bash
+    yarn release
+    ```
+  * You’ll be prompted to:
+    - Select the type of version update: patch, minor, or major.
+    - Write a changelog message — for small fixes, this can be the same as your commit message.
+  * Write a concise changelog message following the Keep a ChangeLog [format]([https://keepachangelog.com/]) specification.
 2. **Push Your Branch**:
    ```bash
    git push origin feature/<your-feature-name>
