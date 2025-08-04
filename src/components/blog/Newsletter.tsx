@@ -23,7 +23,7 @@ export default function Newsletter() {
             placeholder="O teu email..."
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2863FD] focus:border-transparent transition-colors"
+            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
           />
           <button
             type="submit"

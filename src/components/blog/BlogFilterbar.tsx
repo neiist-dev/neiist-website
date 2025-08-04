@@ -71,7 +71,7 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
                     <div key={tag.id} className="flex items-center gap-2">
                       <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
                       <label htmlFor={tag.name} className="text-sm cursor-pointer">
-                        <Badge className="text-md px-2 py-0.5">{tag.name}</Badge>
+                        <Badge className="text-md px-2 py-0.5 bg-blue-100 text-blue-800">{tag.name}</Badge>
                       </label>
                     </div>
                   ))}

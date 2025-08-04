@@ -40,7 +40,7 @@ export function PostCard(props: PostCardProps) {
 
   return (
     <Link href={`/blog/${id}`} className="block group">
-      <Card className="w-full max-w-xs h-[460px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
+      <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
         <div className="px-4 pt-4">
           <div className="w-full h-36 bg-muted flex items-center justify-center rounded-lg overflow-hidden">
             {image ? (
@@ -86,7 +86,7 @@ export function PostCard(props: PostCardProps) {
           />
           <div className="flex flex-wrap gap-2">
             {tags && tags.length > 0 && tags.map((tag, idx) => (
-              <Badge key={idx} variant="outline" className="w-fit bg-pink-100 text-pink-800">
+              <Badge key={idx} variant="outline" className="w-fit bg-blue-100 text-blue-800">
                 {tag}
               </Badge>
             ))}

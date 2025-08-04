@@ -73,23 +73,27 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
               {filteredTags.length === 0 ? (
                 <div className="px-2 py-2 text-sm text-muted-foreground">Nenhuma tag encontrada</div>
               ) : (
-                filteredTags.map((tag) => (
-                  <div
-                    key={tag}
-                    className="flex items-center px-2 py-1 cursor-pointer hover:bg-muted"
-                    onClick={e => {
-                      e.stopPropagation();
-                      if (selectedTags.includes(tag)) {
-                        onTagsChange(selectedTags.filter(t => t !== tag));
-                      } else {
-                        onTagsChange([...selectedTags, tag]);
-                      }
-                    }}
-                  >
-                    <Checkbox checked={selectedTags.includes(tag)} className="mr-2" />
-                    <span>{tag}</span>
-                  </div>
-                ))
+                filteredTags.map((tag) => {
+                  const isSelected = selectedTags.includes(tag);
+                  const canSelectMore = selectedTags.length < 3;
+                  return (
+                    <div
+                      key={tag}
+                      className={`flex items-center px-2 py-1 cursor-pointer hover:bg-muted ${!isSelected && !canSelectMore ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (isSelected) {
+                          onTagsChange(selectedTags.filter(t => t !== tag));
+                        } else if (canSelectMore) {
+                          onTagsChange([...selectedTags, tag]);
+                        }
+                      }}
+                    >
+                      <Checkbox checked={isSelected} className="mr-2" disabled={!isSelected && !canSelectMore} />
+                      <span>{tag}</span>
+                    </div>
+                  );
+                })
               )}
             </SelectContent>
           </Select>
