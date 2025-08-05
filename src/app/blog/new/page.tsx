@@ -12,6 +12,8 @@ import AddTagModal from '@/components/blog/new_post/AddTagModal';
 import { useSearchParams } from 'next/navigation';
 
 const NewPostPage: React.FC = () => {
+  const { useRouter } = require('next/navigation');
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null); // ?
@@ -27,7 +29,8 @@ const NewPostPage: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
-
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  
   React.useEffect(() => {
     fetch('/api/tags')
       .then(res => res.json())
@@ -97,10 +100,13 @@ const NewPostPage: React.FC = () => {
       });
 
       if (!res.ok) {
+        setToast({ type: 'error', message: 'Erro ao publicar o post' });
         throw new Error('Erro ao publicar o post');
       }
-      // TODO: popup de sucesso e redirecionar
+      setToast({ type: 'success', message: 'Post publicado com sucesso!' });
+      setTimeout(() => router.push('/blog'), 2000);
     } catch (error) {
+      setToast({ type: 'error', message: 'Erro ao publicar o post' });
       console.error(error);
     } finally {
       setSaving(false);
@@ -124,18 +130,34 @@ const NewPostPage: React.FC = () => {
       });
 
       if (!res.ok) {
+        setToast({ type: 'error', message: 'Erro ao atualizar o post' });
         throw new Error('Erro ao atualizar o post');
       }
-      // TODO: popup de sucesso e redirecionar
+      setToast({ type: 'success', message: 'Post atualizado com sucesso!' });
+      setTimeout(() => router.push('/blog'), 2000);
     } catch (error) {
+      setToast({ type: 'error', message: 'Erro ao atualizar o post' });
       console.error(error);
     } finally {
       setSaving(false);
     }
   };
 
+  // Pop up timeout
+  React.useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   return (
     <div className="max-w-2xl mx-auto p-6 flex flex-col gap-6">
+      {toast && (
+        <div className={`fixed top-20 right-6 z-[100] px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+          {toast.message}
+        </div>
+      )}
       {showTagForm && (
         <AddTagModal
           categories={categories}
