@@ -22,6 +22,7 @@ interface Post {
 }
 
 export default function PostPageClient({ post }: { post: Post }) {
+  const [toast, setToast] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const router = useRouter();
   const { user } = useUser();
   const tags: string[] = Array.isArray(post.tags) ? post.tags : [];
@@ -35,16 +36,23 @@ export default function PostPageClient({ post }: { post: Post }) {
     try {
       const res = await fetch(`/api/blog/${post.id}`, { method: 'DELETE' });
       if (res.ok) {
-        router.push('/blog');
+        setToast({ type: 'success', message: 'Post apagado com sucesso!' });
+        setTimeout(() => router.push('/blog'), 1800);
       } else {
-        alert('Erro ao apagar o post');
+        setToast({ type: 'error', message: 'Erro ao apagar o post' });
       }
     } catch (err) {
-      alert('Erro ao apagar o post');
+      setToast({ type: 'error', message: 'Erro ao apagar o post' });
     } finally {
       setDeleting(false);
       setShowDialog(false);
     }
+  React.useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
   };
 
   return (
@@ -92,6 +100,11 @@ export default function PostPageClient({ post }: { post: Post }) {
           )}
         </div>
       </div>
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[100] px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.message}
+        </div>
+      )}
       <PostMeta author={post.author} date={post.date} tags={tags} />
       <PostHeader title={post.title} image={post.image} />
       <PostContent description={post.description} />

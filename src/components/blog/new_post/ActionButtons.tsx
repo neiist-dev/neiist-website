@@ -6,9 +6,10 @@ interface ActionButtonsProps {
   onUpdate?: () => void;
   saving: boolean;
   editMode?: boolean;
+  onPreview?: () => void;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving, editMode }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving, editMode, onPreview }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [actionType, setActionType] = useState<'save' | 'update' | null>(null);
 
@@ -30,7 +31,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
 
   return (
     <div className="flex justify-end mb-4">
-      <Button variant="outline" className="w-full sm:w-auto self-end mr-2 cursor-pointer">
+      <Button variant="outline" className="w-full sm:w-auto self-end mr-2 cursor-pointer" onClick={onPreview}>
         Pré-visualizar
       </Button>
       {editMode ? (
