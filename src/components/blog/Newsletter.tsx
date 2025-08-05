@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -23,14 +24,13 @@ export default function Newsletter() {
             placeholder="O teu email..."
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:border-transparent transition-colors text-sm"
           />
-          <button
-            type="submit"
-            className="px-6 py-2 rounded bg-[#2863FD] text-primary-foreground font-semibold hover:bg-[#1e4fc1] transition-colors cursor-pointer"
+          <Button
+            variant="outline" className="px-6 py-5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors text-sm cursor-pointer"
           >
             Subscrever
-          </button>
+          </Button>
         </form>
       )}
     </div>

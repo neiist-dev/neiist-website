@@ -22,7 +22,7 @@ export default function Pagination({ page, pageCount, setPage }: PaginationProps
             key={i}
             className={`px-3 py-1 rounded font-medium border transition-colors cursor-pointer ${
               page === i + 1
-                ? 'bg-[#2863FD] text-primary-foreground border-transparent hover:bg-[#1e4fc1]'
+                ? 'text-black border-transparent bg-[#2863FD] text-white hover:bg-[#2863FD]/90'
                 : 'bg-muted text-foreground border-transparent hover:bg-[#2863FD]/10'
             }`}
             onClick={() => setPage(i + 1)}
