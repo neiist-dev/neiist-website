@@ -30,9 +30,10 @@ export default function PostMeta({ author, date, tags = [], content }: PostMetaP
 
   const readingTime = getReadingTime(content);
 
+
   return (
-    <div className="flex flex-row items-center justify-between gap-3 text-sm text-muted-foreground w-full flex-wrap">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground w-full flex-wrap p-2">
+      <div className="flex items-center gap-2 mb-2 sm:mb-0">
         <Avatar className="w-10 h-10">
           <AvatarImage src="TODO" alt={author} />
           <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
@@ -42,13 +43,12 @@ export default function PostMeta({ author, date, tags = [], content }: PostMetaP
           <span className="text-sm text-black font-bold leading-tight">{author}</span>
         </div>
       </div>
-      <span className="text-xs text-black-300 font-semibold">
+      <span className="text-xs text-black-300 font-semibold mb-2 sm:mb-0">
         {readingTime < 1 ? "< 1 min" : `~ ${readingTime} min`}
       </span>
-
-      <div className="flex flex-col gap-2 items-end text-right">
+      <div className="flex flex-col gap-2 items-start sm:items-end text-left sm:text-right">
         <span>{date ? new Date(date).toLocaleDateString('pt-PT') : ''}</span>
-        <div className="flex gap-2 flex-wrap justify-end">
+        <div className="flex gap-2 flex-wrap justify-start sm:justify-end">
           {tags.map((tag) => (
             <Badge key={tag} variant="outline" className="bg-blue-100 text-blue-800">
               {tag}
@@ -56,7 +56,6 @@ export default function PostMeta({ author, date, tags = [], content }: PostMetaP
           ))}
         </div>
       </div>
-
     </div>
   );
 }

@@ -9,10 +9,12 @@ const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Ed
 import ActionButtons from '@/components/blog/new_post/ActionButtons';
 import DropdownsSection from '@/components/blog/new_post/DropdownsSection';
 import AddTagModal from '@/components/blog/new_post/AddTagModal';
+import { useSearchParams } from 'next/navigation';
 
 const NewPostPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null); // ?
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [authors, setAuthors] = useState<string[]>(["Autor 1"]); // TODO: Fetch from API
@@ -23,7 +25,9 @@ const NewPostPage: React.FC = () => {
   const [newTag, setNewTag] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
-  
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('edit');
+
   React.useEffect(() => {
     fetch('/api/tags')
       .then(res => res.json())
@@ -36,6 +40,24 @@ const NewPostPage: React.FC = () => {
         }
       });
   }, []);
+
+  // Quando se clica no botão de editar, fetch dos dados do post
+  // e preenche os campos do formulário
+  React.useEffect(() => {
+    if (editId) {
+      fetch(`/api/blog/${editId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data) {
+            setTitle(data.title || '');
+            setDescription(data.description || '');
+            setSelectedAuthor(data.author || '');
+            setSelectedTags(Array.isArray(data.tags) ? data.tags : []);
+            if (data.image) setImageUrl(data.image);
+          }
+        });
+    }
+  }, [editId]);
 
   const handleAddAuthor = () => {
     // TODO 
@@ -106,6 +128,7 @@ const NewPostPage: React.FC = () => {
       <TitleInput value={title} onChange={e => setTitle(e.target.value)} />
       <CoverImageInput
         image={image}
+        imageUrl={imageUrl}
         onChange={handleImageChange}
         onButtonClick={() => document.getElementById('file-input')?.click()}
       />
@@ -115,9 +138,10 @@ const NewPostPage: React.FC = () => {
         onEditorChange={setDescription}
         init={{
           menubar: false,
-          toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',          license_key: 'gpl',
+          toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+          license_key: 'gpl',
         }}
-        initialValue="Escreve aqui o conteúdo do post..."
+        initialValue={editId ? '' : 'Escreve aqui o conteúdo do post...'}
       />
       <DropdownsSection
         authors={authors}

@@ -20,7 +20,7 @@ export default function Pagination({ page, pageCount, setPage }: PaginationProps
         {Array.from({ length: pageCount }, (_, i) => (
           <button
             key={i}
-            className={`px-3 py-1 rounded font-medium border transition-colors cursor-pointer ${
+            className={`px-2.5 py-0.5 rounded font-medium border transition-colors cursor-pointer ${
               page === i + 1
                 ? 'text-black border-transparent bg-[#2863FD] text-white hover:bg-[#2863FD]/90'
                 : 'bg-muted text-foreground border-transparent hover:bg-[#2863FD]/10'
