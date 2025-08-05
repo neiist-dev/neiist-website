@@ -99,7 +99,33 @@ const NewPostPage: React.FC = () => {
       if (!res.ok) {
         throw new Error('Erro ao publicar o post');
       }
+      // TODO: popup de sucesso e redirecionar
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
+  const handleUpdate = async () => {
+    if (!editId) return;
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      if (image) formData.append('image', image);
+      formData.append('author', selectedAuthor);
+      formData.append('tags', JSON.stringify(selectedTags));
+
+      const res = await fetch(`/api/blog/${editId}`, {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Erro ao atualizar o post');
+      }
       // TODO: popup de sucesso e redirecionar
     } catch (error) {
       console.error(error);
@@ -153,7 +179,12 @@ const NewPostPage: React.FC = () => {
         onTagsChange={setSelectedTags}
         onAddTag={handleAddTag}
       />
-      <ActionButtons onSave={handleSave} saving={saving} />
+      <ActionButtons 
+        onSave={handleSave} 
+        onUpdate={handleUpdate} 
+        saving={saving} 
+        editMode={!!editId} 
+      />
     </div>
   );
 };
