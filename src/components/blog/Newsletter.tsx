@@ -24,7 +24,7 @@ export default function Newsletter() {
             placeholder="O teu email..."
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:border-transparent transition-colors text-sm"
+            className="flex-1 px-4 py-2 rounded border bg-white border-gray-300 focus:outline-none focus:ring-2 focus:border-transparent transition-colors text-sm"
           />
           <Button
             variant="outline" className="px-6 py-5 rounded border border-gray-300 bg-white hover:bg-gray-100 transition-colors text-sm cursor-pointer"

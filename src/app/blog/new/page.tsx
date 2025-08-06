@@ -88,7 +88,16 @@ const NewPostPage: React.FC = () => {
     }
   };
   
+  const validateFields = () => {
+    if (!title.trim() || !description.trim() || !selectedAuthor.trim() || selectedTags.length === 0) {
+      setToast({ type: 'error', message: 'Preenche todos os campos obrigatórios: título, conteúdo, autor e pelo menos uma tag.' });
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
+    if (!validateFields()) return;
     setSaving(true);
     try {
       const formData = new FormData();
@@ -97,18 +106,16 @@ const NewPostPage: React.FC = () => {
       if (image) formData.append('image', image);
       formData.append('author', selectedAuthor);
       formData.append('tags', JSON.stringify(selectedTags));
-      
       const res = await fetch('/api/blog', {
         method: 'POST',
         body: formData,
       });
-      
       if (!res.ok) {
         setToast({ type: 'error', message: 'Erro ao publicar o post' });
         throw new Error('Erro ao publicar o post');
       }
       setToast({ type: 'success', message: 'Post publicado com sucesso!' });
-      setTimeout(() => router.push('/blog'), 2000);
+      setTimeout(() => router.push('/blog'), 3000);
     } catch (error) {
       setToast({ type: 'error', message: 'Erro ao publicar o post' });
       console.error(error);
@@ -119,6 +126,7 @@ const NewPostPage: React.FC = () => {
   
   const handleUpdate = async () => {
     if (!editId) return;
+    if (!validateFields()) return;
     setSaving(true);
     try {
       const formData = new FormData();
@@ -127,18 +135,16 @@ const NewPostPage: React.FC = () => {
       if (image) formData.append('image', image);
       formData.append('author', selectedAuthor);
       formData.append('tags', JSON.stringify(selectedTags));
-      
       const res = await fetch(`/api/blog/${editId}`, {
         method: 'PUT',
         body: formData,
       });
-      
       if (!res.ok) {
         setToast({ type: 'error', message: 'Erro ao atualizar o post' });
         throw new Error('Erro ao atualizar o post');
       }
       setToast({ type: 'success', message: 'Post atualizado com sucesso!' });
-      setTimeout(() => router.push('/blog'), 2000);
+      setTimeout(() => router.push('/blog'), 3000);
     } catch (error) {
       setToast({ type: 'error', message: 'Erro ao atualizar o post' });
       console.error(error);

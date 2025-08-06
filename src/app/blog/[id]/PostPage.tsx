@@ -30,7 +30,14 @@ export default function PostPageClient({ post }: { post: Post }) {
   const [deleting, setDeleting] = React.useState(false);
   
   const canEdit = user && (user.roles.includes(UserRole.MEMBER) || user.roles.includes(UserRole.COORDINATOR) || user.roles.includes(UserRole.ADMIN));
-  
+
+  React.useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   const handleDelete = async () => {
     setDeleting(true);
     try {
@@ -47,12 +54,6 @@ export default function PostPageClient({ post }: { post: Post }) {
       setDeleting(false);
       setShowDialog(false);
     }
-  React.useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
   };
 
   return (
@@ -101,7 +102,7 @@ export default function PostPageClient({ post }: { post: Post }) {
         </div>
       </div>
       {toast && (
-        <div className={`fixed top-6 right-6 z-[100] px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div className={`fixed top-20 right-6 z-[100] px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}> 
           {toast.message}
         </div>
       )}
