@@ -195,7 +195,6 @@ const NewPostPage: React.FC = () => {
       
       {showTagForm && (
         <AddTagModal
-          categories={categories}
           onCreate={(tag, category) => {
             setTags(prev => [...prev, tag]);
             setSelectedTags(prev => [...prev, tag]);
