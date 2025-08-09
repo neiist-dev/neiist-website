@@ -18,7 +18,8 @@ const NewPostPage: React.FC = () => {
   const { useRouter } = require('next/navigation');
   const router = useRouter();
   const [title, setTitle] = useState('');
-  const [image, setImage] = useState<File | null>(null);
+  const [image, setImage] = useState<File | string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [authors, setAuthors] = useState<string[]>(["Autor 1"]); // TODO: Fetch from API
@@ -84,7 +85,13 @@ const NewPostPage: React.FC = () => {
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImage(e.target.files[0]);
+      const file = e.target.files[0];
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
   
@@ -180,7 +187,7 @@ const NewPostPage: React.FC = () => {
             <h2 className="text-xl font-bold mb-4">Pré-visualização do Post</h2>
             <div className="w-full overflow-y-auto flex-1">
               <PostMeta author={selectedAuthor} date={new Date().toISOString()} tags={selectedTags} content={description} />
-              <PostHeader title={title} image={image || undefined} />
+              <PostHeader title={title} image={previewImage || (typeof image === 'string' ? image : undefined)} />
               <PostContent description={description} />
             </div>
             <button
