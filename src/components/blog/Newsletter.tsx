@@ -5,10 +5,22 @@ export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO
-    setSubmitted(true);
+    try {
+      await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          subject: "Obrigado por subscreveres a newsletter do NEIIST!",
+          html: `<h1>Obrigado por subscreveres!</h1><p>A partir de agora, vais começar a receber as mais recentes novidades e atualizações do NEIIST.</p><p>Se tiveres alguma dúvida ou sugestão, não hesites em entrar em contacto connosco.</p><p>Até breve!</p><p>A equipa do NEIIST.</p>`,
+        })
+      });
+      setSubmitted(true);
+    } catch {
+      alert("Erro ao subscrever. Tenta novamente mais tarde.");
+    }
   };
 
   return (
