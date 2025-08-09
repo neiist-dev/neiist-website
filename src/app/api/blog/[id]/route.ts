@@ -32,7 +32,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const author = formData.get('author');
     let tags = formData.get('tags');
     
-    // array PostgreSQL
+    // array PostgreSQL para conversão de tags
     if (typeof tags === 'string') {
       try {
         const arr = JSON.parse(tags);
@@ -44,19 +44,24 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       }
     }
 
-    let imageUrl = null;
-    // Se imagem foi enviada, processa aqui (exemplo: salva em pasta/public, retorna url)
-    const image = formData.get('image');
-    if (image && typeof image === 'object' && 'arrayBuffer' in image) {
-      imageUrl = `/public/uploads/TODO`;
-      // TODO
+    let imageBase64: string | null = null;
+    const imageFile = formData.get('image');
+    if (imageFile && typeof imageFile === 'object' && 'arrayBuffer' in imageFile) {
+      const buffer = await (imageFile as File).arrayBuffer();
+      imageBase64 = Buffer.from(buffer).toString('base64');
     }
 
-    const query = `UPDATE neiist.posts SET title = $1, description = $2, author = $3, tags = $4, updated_at = NOW()${imageUrl ? ', image = $5' : ''} WHERE id = $${imageUrl ? 6 : 5} RETURNING *`;
-    const paramsArr = imageUrl
-      ? [title, description, author, tags, imageUrl, id]
-      : [title, description, author, tags, id];
-
+    let query = `UPDATE neiist.posts SET title = $1, description = $2, author = $3, tags = $4, updated_at = NOW()`;
+    const paramsArr: any[] = [title, description, author, tags];
+    if (imageBase64) {
+      query += ', image = $5';
+      paramsArr.push(imageBase64);
+      query += ' WHERE id = $6 RETURNING *';
+      paramsArr.push(id);
+    } else {
+      query += ' WHERE id = $5 RETURNING *';
+      paramsArr.push(id);
+    }
     const { rows } = await db_query(query, paramsArr);
     if (!rows[0]) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

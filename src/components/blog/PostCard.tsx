@@ -25,32 +25,46 @@ export function PostCard(props: PostCardProps) {
   const { id, title, description, image, date, author, tags = [] } = props;
 
 
-  // Remove heading, bold, and italic tags from description
+  // Remove heading, bold, e itálico da descrição do post no postcard 
   function stripFormatting(html: string) {
-    // Remove headings
+    // headings
     let clean = html.replace(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi, "");
-    // Remove bold tags
+    // bold 
     clean = clean.replace(/<(b|strong)[^>]*>(.*?)<\/(b|strong)>/gi, "$2");
-    // Remove italic tags
+    // italico
     clean = clean.replace(/<(i|em)[^>]*>(.*?)<\/(i|em)>/gi, "$2");
     return clean;
   }
 
   const descriptionNoFormatting = stripFormatting(description);
 
+  // prefixo data:image/jpeg;base64,
+  const getImageSrc = (img?: string) => {
+    if (!img || img === "null" || img.trim() === "") return "/placeholder.jpg";
+    if (img.startsWith('data:')) return img;
+    // Pode ser base64 sem prefixo
+    if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 20))) {
+      return `data:image/jpeg;base64,${img}`;
+    }
+    return img;
+  };
+
   return (
     <Link href={`/blog/${id}`} className="block group">
       <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
         <div className="px-4 pt-4">
-          <div className="w-full h-36 bg-muted flex items-center justify-center rounded-lg overflow-hidden">
-            {image ? (
-              <Image
-                src={image}
-                alt={title}
-                fill
-                className="object-cover w-full h-full"
-                sizes="(max-width: 384px) 100vw, 384px"
-              />
+          <div className="w-full aspect-[16/9] bg-muted flex items-center justify-center rounded-lg overflow-hidden relative">
+            {image && getImageSrc(image) !== "/placeholder.jpg" ? (
+              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                <Image
+                  src={getImageSrc(image)}
+                  alt={title}
+                  style={{ objectFit: 'cover', borderRadius: '0.5rem' }}
+                  fill
+                  sizes="(max-width: 384px) 100vw, 384px"
+                  priority={false}
+                />
+              </div>
             ) : (
               <div className="text-sm text-muted-foreground">Sem imagem</div>
             )}
