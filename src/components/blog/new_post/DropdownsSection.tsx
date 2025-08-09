@@ -8,7 +8,7 @@ interface DropdownsSectionProps {
   selectedAuthor: string;
   onAuthorChange: (value: string) => void;
   onAddAuthor: () => void;
-  tags: string[];
+  tagsByCategory: Record<string, { id: string, name: string }[]>;
   selectedTags: string[];
   onTagsChange: (value: string[]) => void;
   onAddTag: () => void;
@@ -19,13 +19,12 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
   selectedAuthor = "",
   onAuthorChange,
   onAddAuthor,
-  tags,
+  tagsByCategory,
   selectedTags = [],
   onTagsChange,
   onAddTag,
 }) => {
-    const [search, setSearch] = useState("");
-    const filteredTags = tags.filter(tag => tag.toLowerCase().includes(search.toLowerCase()));
+  const [search, setSearch] = useState("");
 
     return (
       <div className="flex gap-4 mb-2">
@@ -70,27 +69,36 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
                   autoFocus
                 />
               </div>
-              {filteredTags.length === 0 ? (
+              {Object.entries(tagsByCategory).length === 0 ? (
                 <div className="px-2 py-2 text-sm text-muted-foreground">Nenhuma tag encontrada</div>
               ) : (
-                filteredTags.map((tag) => {
-                  const isSelected = selectedTags.includes(tag);
-                  const canSelectMore = selectedTags.length < 3;
+                Object.entries(tagsByCategory).map(([category, tags]) => {
+                  const filtered = (tags as { id: string; name: string }[]).filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
+                  if (filtered.length === 0) return null;
                   return (
-                    <div
-                      key={tag}
-                      className={`flex items-center px-2 py-1 cursor-pointer hover:bg-muted ${!isSelected && !canSelectMore ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (isSelected) {
-                          onTagsChange(selectedTags.filter(t => t !== tag));
-                        } else if (canSelectMore) {
-                          onTagsChange([...selectedTags, tag]);
-                        }
-                      }}
-                    >
-                      <Checkbox checked={isSelected} className="mr-2" disabled={!isSelected && !canSelectMore} />
-                      <span>{tag}</span>
+                    <div key={category} className="mb-2">
+                      <div className="font-semibold text-xs text-gray-500 px-2 py-1 uppercase">{category}</div>
+                      {filtered.map((tag: { id: string; name: string }) => {
+                        const isSelected = selectedTags.includes(tag.name);
+                        const canSelectMore = selectedTags.length < 3;
+                        return (
+                          <div
+                            key={tag.id}
+                            className={`flex items-center px-2 py-1 cursor-pointer hover:bg-muted ${!isSelected && !canSelectMore ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (isSelected) {
+                                onTagsChange(selectedTags.filter(t => t !== tag.name));
+                              } else if (canSelectMore) {
+                                onTagsChange([...selectedTags, tag.name]);
+                              }
+                            }}
+                          >
+                            <Checkbox checked={isSelected} className="mr-2" disabled={!isSelected && !canSelectMore} />
+                            <span>{tag.name}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })

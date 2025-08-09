@@ -8,7 +8,7 @@ export async function notifySubscribersOfNewPost(post: { title: string, id: stri
   const html = `
       <h2 style="color: #3063E6;">Nova publicação no Blog do NEIIST!</h2>
       <p>Olá subscritor(a),</p>
-      <p>Foi publicada uma nova entrada no nosso blog:</p>
+      <p>Foi publicado um novo post no nosso blog:</p>
       <h3 style="color: #3063E6; margin-top: 24px;">${post.title}</h3>
       <p style="margin: 24px 0;">Podes ler o artigo completo clicando no botão abaixo:</p>
       <a href="https://neiist.org/blog/${post.id}" style="display: inline-block; background: #3063E6; color: #fff; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: none; transition: background 0.2s; margin-bottom: 16px; letter-spacing: 0.5px;">Ler o artigo completo</a>

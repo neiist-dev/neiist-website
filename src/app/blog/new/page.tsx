@@ -24,7 +24,7 @@ const NewPostPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [authors, setAuthors] = useState<string[]>(["Autor 1"]); // TODO: Fetch from API
   const [selectedAuthor, setSelectedAuthor] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: string, name: string }[]>>({});
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagForm, setShowTagForm] = useState(false);
   const [newTag, setNewTag] = useState("");
@@ -42,9 +42,7 @@ const NewPostPage: React.FC = () => {
       .then(data => {
         if (data && typeof data === 'object') {
           setCategories(Object.keys(data));
-          // Junta todas as tags de todas as categorias
-          const allTags = Object.values(data).flat().map((tag: any) => tag.name);
-          setTags(allTags);
+          setTagsByCategory(data);
         }
       });
   }, []);
@@ -73,14 +71,13 @@ const NewPostPage: React.FC = () => {
   
   const handleAddTag = () => {
     fetch('/api/tags')
-    .then(res => res.json())
-    .then(data => {
-      if (data && typeof data === 'object') {
-        const allTags = Object.values(data).flat().map((tag: any) => tag.name);
-        setTags(allTags);
-      }
-      setShowTagForm(true);
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data === 'object') {
+          setTagsByCategory(data);
+        }
+        setShowTagForm(true);
+      });
   };
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -203,9 +200,16 @@ const NewPostPage: React.FC = () => {
       {showTagForm && (
         <AddTagModal
           onCreate={(tag, category) => {
-            setTags(prev => [...prev, tag]);
-            setSelectedTags(prev => [...prev, tag]);
-            setShowTagForm(false);
+            // Após criar, buscar tags novamente e fechar modal
+            fetch('/api/tags')
+              .then(res => res.json())
+              .then(data => {
+                if (data && typeof data === 'object') {
+                  setTagsByCategory(data);
+                  setSelectedTags(prev => [...prev, tag]);
+                }
+                setShowTagForm(false);
+              });
           }}
           onClose={() => setShowTagForm(false)}
         />
@@ -236,7 +240,7 @@ const NewPostPage: React.FC = () => {
         selectedAuthor={selectedAuthor}
         onAuthorChange={setSelectedAuthor}
         onAddAuthor={handleAddAuthor}
-        tags={tags}
+        tagsByCategory={tagsByCategory}
         selectedTags={selectedTags}
         onTagsChange={setSelectedTags}
         onAddTag={handleAddTag}
