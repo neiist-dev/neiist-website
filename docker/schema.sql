@@ -142,6 +142,17 @@ INSERT INTO neiist.tags (name, category) VALUES
   ('Codacy', 'Empresas'),
   ('Jumia', 'Empresas');
 
+CREATE TABLE IF NOT EXISTS neiist.newsletter_subscribers (
+    id SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL
+);
+
+ALTER SEQUENCE neiist.newsletter_subscribers_id_seq OWNER TO neiist_app_user;
+ALTER TABLE neiist.newsletter_subscribers OWNER TO neiist_app_user;
+
+GRANT USAGE, SELECT ON SEQUENCE neiist.newsletter_subscribers_id_seq TO neiist_app_user;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.newsletter_subscribers TO neiist_app_user;
+
 -- FUNCTIONS
 
 -- Get user

@@ -58,7 +58,6 @@ export async function POST(request: Request) {
       const buffer = await (imageFile as File).arrayBuffer();
       imageBase64 = Buffer.from(buffer).toString('base64');
     }
-    // TODO - IMAGEM (para já só a guardar em base64)
     if (!title || !description || !author) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -69,6 +68,12 @@ export async function POST(request: Request) {
        RETURNING *`,
       [title, description, imageBase64, date, author, tags]
     );
+    try {
+      const { notifySubscribersOfNewPost } = await import("@/utils/notifySubscribers");
+      await notifySubscribersOfNewPost({ title: String(title), id: result.rows[0].id });
+    } catch (e) {
+      console.error("Erro ao notificar subscritores:", e);
+    }
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
     console.error("Error creating post:", error);
