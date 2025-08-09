@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import ManageTagsModal from './ManageTagsModal';
 import { FaChevronLeft } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -16,7 +17,9 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
   const [selected, setSelected] = useState<string[]>([]);
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: number, name: string }[]>>({});
   const [loading, setLoading] = useState(true);
-
+  const [showManageModal, setShowManageModal] = useState(false);
+  
+  
   useEffect(() => {
     const fetchTags = async () => {
       setLoading(true);
@@ -30,7 +33,29 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
     };
     fetchTags();
   }, []);
+  const handleDeleteTag = async (id: number) => {
+    await fetch('/api/tags', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    const res = await fetch('/api/tags');
+    const data = await res.json();
+    setTagsByCategory(data);
+  };
 
+  // Eliminar categoria de tag
+  const handleDeleteCategory = async (category: string) => {
+    await fetch('/api/tags', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category }),
+    });
+    const res = await fetch('/api/tags');
+    const data = await res.json();
+    setTagsByCategory(data);
+  };
+  
   const handleToggle = (tag: string) => {
     let newSelected;
     if (selected.includes(tag)) {
@@ -46,7 +71,7 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
     <>
       <aside
         className={`fixed top-0 left-0 h-full w-72 max-w-full sm:w-72 sm:min-w-[18rem] sm:max-w-[18rem] bg-white z-[9999] shadow-2xl border-r border-gray-200 transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : '-translate-x-full sm:-translate-x-80'}`}
-        style={{ minWidth: '0', maxWidth: '100vw' }}
+        style={{ minWidth: '0', maxWidth: '100vw', overflow: 'hidden' }}
       >
         <div className="flex flex-col gap-2 px-6 py-4 border-b border-gray-200 mb-2 mt-3">
           <div className="flex items-center">
@@ -59,13 +84,22 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
             <span className="font-semibold text-2xl tracking-tight">Filtros</span>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8 flex flex-col">
+  <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8 flex flex-col scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <button
+            className="mb-6 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 font-semibold cursor-pointer"
+            onClick={() => setShowManageModal(true)}
+          >
+            Gerir categorias/tags
+          </button>
+
           {loading ? (
             <div className="text-center text-gray-400">A carregar tags...</div>
           ) : (
             Object.entries(tagsByCategory).map(([category, tags]) => (
               <section key={category}>
-                <h4 className="text-xl mb-4 text-gray-700 capitalize">{category}</h4>
+                <div className="flex items-center mb-2">
+                  <h4 className="text-xl text-gray-700 capitalize">{category}</h4>
+                </div>
                 <div className="flex flex-col gap-2">
                   {tags.map(tag => (
                     <div key={tag.id} className="flex items-center gap-2">
@@ -79,6 +113,29 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
               </section>
             ))
           )}
+
+      {showManageModal && (
+        <div className="absolute left-0 top-0 w-full h-full bg-white z-50 flex flex-col p-0 border-r border-gray-200 shadow-2xl animate-fadeIn">
+          <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <ManageTagsModal
+              tagsByCategory={tagsByCategory}
+              onCreate={async (tag, category) => {
+                await fetch('/api/tags', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: tag, category }),
+                });
+                const res = await fetch('/api/tags');
+                const data = await res.json();
+                setTagsByCategory(data);
+              }}
+              onDeleteTag={handleDeleteTag}
+              onDeleteCategory={handleDeleteCategory}
+              onClose={() => setShowManageModal(false)}
+            />
+          </div>
+        </div>
+      )}
         </div>
         {selected.length > 0 && (
           <div className="px-8 pb-6 pt-2">

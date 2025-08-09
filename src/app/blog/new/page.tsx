@@ -200,7 +200,6 @@ const NewPostPage: React.FC = () => {
       {showTagForm && (
         <AddTagModal
           onCreate={(tag, category) => {
-            // Após criar, buscar tags novamente e fechar modal
             fetch('/api/tags')
               .then(res => res.json())
               .then(data => {
