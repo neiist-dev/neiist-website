@@ -9,6 +9,7 @@ const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Ed
 import ActionButtons from '@/components/blog/new_post/ActionButtons';
 import DropdownsSection from '@/components/blog/new_post/DropdownsSection';
 import AddTagModal from '@/components/blog/new_post/AddTagModal';
+import AddAuthorModal from '@/components/blog/new_post/AddAuthorModal';
 import { useSearchParams } from 'next/navigation';
 import PostMeta from '@/components/blog/post/PostMeta';
 import PostHeader from '@/components/blog/post/PostHeader';
@@ -27,6 +28,7 @@ const NewPostPage: React.FC = () => {
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: string, name: string }[]>>({});
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagForm, setShowTagForm] = useState(false);
+  const [showAuthorForm, setShowAuthorForm] = useState(false);
   const [newTag, setNewTag] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
@@ -72,7 +74,23 @@ const NewPostPage: React.FC = () => {
   }, [editId]);
   
   const handleAddAuthor = () => {
-    // TODO 
+    setShowAuthorForm(true);
+  };
+  const handleCreateAuthor = async (author: { name: string; email: string; photo: string | null }) => {
+    try {
+      const res = await fetch('/api/authors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(author)
+      });
+      if (!res.ok) throw new Error('Erro ao criar autor');
+      const data = await res.json();
+      setAuthors(prev => [...prev, data.name]);
+      setSelectedAuthors(prev => [...prev, data.name]);
+      setShowAuthorForm(false);
+    } catch (e) {
+      setToast({ type: 'error', message: 'Erro ao criar autor' });
+    }
   };
   
   const handleAddTag = () => {
@@ -203,6 +221,12 @@ const NewPostPage: React.FC = () => {
         </div>
       )}
       
+      {showAuthorForm && (
+        <AddAuthorModal
+          onCreate={handleCreateAuthor}
+          onClose={() => setShowAuthorForm(false)}
+        />
+      )}
       {showTagForm && (
         <AddTagModal
           onCreate={(tag, category) => {

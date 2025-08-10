@@ -17,6 +17,7 @@ interface Post {
   image?: string;
   description: string;
   author?: string;
+  authors?: any[];
   date?: string;
   tags?: string[];
 }
@@ -106,7 +107,22 @@ export default function PostPageClient({ post }: { post: Post }) {
           {toast.message}
         </div>
       )}
-  <PostMeta authors={Array.isArray(post.authors) ? post.authors : post.author ? [post.author] : []} date={post.date} tags={tags} content={post.description} />
+  <PostMeta
+    authors={
+      Array.isArray(post.authors)
+        ? post.authors.map((a: any) => {
+            if (typeof a === 'string') return { name: a, photo: undefined };
+            if (a && typeof a === 'object') return { name: a.name, photo: a.photo };
+            return { name: '?', photo: undefined };
+          })
+        : post.author
+        ? [{ name: post.author, photo: undefined }]
+        : []
+    }
+    date={post.date}
+    tags={tags}
+    content={post.description}
+  />
       <PostHeader title={post.title} image={post.image} />
       <PostContent description={post.description} />
       <hr className="my-6 border-gray-200" />

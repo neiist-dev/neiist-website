@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     // Fetch das tags para cada post
     const postIds = posts.map((p: any) => p.id);
     let tagsByPost: Record<number, string[]> = {};
-    let authorsByPost: Record<number, string[]> = {};
+    let authorsByPost: Record<number, { name: string, photo: string | null }[]> = {};
     if (postIds.length > 0) {
       // Tags
       const { rows: tagRows } = await db_query(
@@ -39,12 +39,12 @@ export async function GET(request: Request) {
       }
       // Autores
       const { rows: authorRows } = await db_query(
-        `SELECT pa.post_id, a.name FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = ANY($1)`,
+        `SELECT pa.post_id, a.name, a.photo FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = ANY($1)`,
         [postIds]
       );
-      for (const { post_id, name } of authorRows) {
+      for (const { post_id, name, photo } of authorRows) {
         if (!authorsByPost[post_id]) authorsByPost[post_id] = [];
-        authorsByPost[post_id].push(name);
+        authorsByPost[post_id].push({ name, photo });
       }
     }
     // Filtrar por tags se necessário
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       });
     }
     // Adicionar tags e autores ao resultado
-    const result = filteredPosts.map(post => ({ ...post, tags: tagsByPost[post.id] || [], authors: authorsByPost[post.id] || [] }));
+  const result = filteredPosts.map(post => ({ ...post, tags: tagsByPost[post.id] || [], authors: authorsByPost[post.id] || [] }));
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching posts:", error);

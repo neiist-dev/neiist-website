@@ -109,7 +109,9 @@ CREATE TABLE neiist.posts (
 -- AUTHORS TABLE
 CREATE TABLE neiist.authors (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    email TEXT UNIQUE,
+    photo TEXT
 );
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.authors TO neiist_app_user;
 

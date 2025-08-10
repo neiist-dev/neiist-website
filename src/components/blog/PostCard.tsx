@@ -5,13 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
+export interface AuthorCard {
+  name: string;
+  photo?: string | null;
+}
+
 export interface PostCardProps {
   id: string;
   title: string;
   description: string;
   image?: string;
   date?: string;
-  authors?: string[];
+  authors?: (string | AuthorCard)[];
   tags?: string[];
 }
 
@@ -36,8 +41,18 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
     return img;
   }
 
-  return (
+  // Suporte a array de string ou array de objetos {name, photo}
+  const firstAuthor = authors[0];
+  let avatarName = "?";
+  let avatarPhoto: string | undefined | null = undefined;
+  if (typeof firstAuthor === "string") {
+    avatarName = firstAuthor;
+  } else if (firstAuthor && typeof firstAuthor === "object") {
+    avatarName = firstAuthor.name;
+    avatarPhoto = firstAuthor.photo;
+  }
 
+  return (
     <Link href={`/blog/${id}`} className="block group">
       <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
         <div className="px-4 pt-4">
@@ -57,10 +72,15 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
         <CardHeader className="gap-2">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
             <Avatar className="w-8 h-8">
-              <AvatarFallback>{authors[0] ? authors[0][0] : "?"}</AvatarFallback>
+              {avatarPhoto ? (
+                <AvatarImage src={avatarPhoto} alt={avatarName} />
+              ) : null}
+              <AvatarFallback>{avatarName ? avatarName[0] : "?"}</AvatarFallback>
             </Avatar>
             <span className="text-gray-800 truncate max-w-[110px] block">
-              {authors.length > 0 ? authors.join(', ') : ''}
+              {Array.isArray(authors)
+                ? authors.map(a => typeof a === "string" ? a : a.name).join(', ')
+                : ''}
             </span>
             <span>|</span>
             <span className="sm:inline block mt-1 sm:mt-0">
