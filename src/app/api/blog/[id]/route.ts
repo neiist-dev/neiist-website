@@ -5,7 +5,8 @@ import { db_query } from "@/utils/dbUtils";
 
 // GET /api/blog/[id] - Post por id
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   try {
     const { rows } = await db_query(
       `SELECT id, title, description, image, date, created_at, updated_at

@@ -17,7 +17,9 @@ async function fetchPostById(id: string) {
   return res.json();
 }
 
+
 export default async function PostPage({ params }: PostPageProps) {
-  const post = await fetchPostById(params.id);
+  const resolvedParams = await params;
+  const post = await fetchPostById(resolvedParams.id);
   return <PostPageClient post={post} />;
 }
