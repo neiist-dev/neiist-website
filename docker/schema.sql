@@ -101,7 +101,6 @@ CREATE TABLE neiist.posts (
     image TEXT,
     date DATE NOT NULL DEFAULT CURRENT_DATE,
     author TEXT NOT NULL,
-    tags TEXT[],
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -123,6 +122,15 @@ CREATE TABLE neiist.tags (
 CREATE SEQUENCE IF NOT EXISTS neiist.tags_id_seq;
 ALTER TABLE neiist.tags ALTER COLUMN id SET DEFAULT nextval('neiist.tags_id_seq');
 GRANT USAGE, SELECT ON SEQUENCE neiist.tags_id_seq TO neiist_app_user;
+
+CREATE TABLE neiist.post_tags (
+    post_id INT NOT NULL,
+    tag_id INT NOT NULL,
+    PRIMARY KEY (post_id, tag_id),
+    FOREIGN KEY (post_id) REFERENCES neiist.posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES neiist.tags(id) ON DELETE CASCADE
+);
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.post_tags TO neiist_app_user;
 
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.tags TO neiist_app_user;
 
