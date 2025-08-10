@@ -5,8 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 interface DropdownsSectionProps {
   authors: string[];
-  selectedAuthor: string;
-  onAuthorChange: (value: string) => void;
+  selectedAuthors: string[];
+  onAuthorsChange: (value: string[]) => void;
   onAddAuthor: () => void;
   tagsByCategory: Record<string, { id: string, name: string }[]>;
   selectedTags: string[];
@@ -16,8 +16,8 @@ interface DropdownsSectionProps {
 
 const DropdownsSection: React.FC<DropdownsSectionProps> = ({
   authors,
-  selectedAuthor = "",
-  onAuthorChange,
+  selectedAuthors = [],
+  onAuthorsChange,
   onAddAuthor,
   tagsByCategory,
   selectedTags = [],
@@ -30,15 +30,38 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
       <div className="flex gap-4 mb-2">
 
         <div className="flex flex-col w-full max-w-[300px]">
-          <label className="block mb-1 text-s text-black">Autor</label>
-          <Select value={selectedAuthor} onValueChange={onAuthorChange}>
+          <label className="block mb-1 text-s text-black">Autores</label>
+          <Select
+            value={selectedAuthors.join(',')}
+            onValueChange={() => {}}
+            open={undefined}
+          >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Escolher autor" className="truncate" />
+              <SelectValue placeholder="Escolher autores" className="truncate">
+                {selectedAuthors.length ? selectedAuthors.join(', ') : ''}
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent>
-              {authors.map((author) => (
-                <SelectItem key={author} value={author}>{author}</SelectItem>
-              ))}
+            <SelectContent className="min-h-[120px] max-h-[220px] overflow-y-auto">
+              {authors.map((author) => {
+                const isSelected = selectedAuthors.includes(author);
+                return (
+                  <div
+                    key={author}
+                    className={`flex items-center px-2 py-1 cursor-pointer hover:bg-muted`}
+                    onClick={e => {
+                      e.stopPropagation();
+                      if (isSelected) {
+                        onAuthorsChange(selectedAuthors.filter(a => a !== author));
+                      } else {
+                        onAuthorsChange([...selectedAuthors, author]);
+                      }
+                    }}
+                  >
+                    <Checkbox checked={isSelected} className="mr-2" />
+                    <span>{author}</span>
+                  </div>
+                );
+              })}
             </SelectContent>
           </Select>
           <Button type="button" variant="default" className="mt-2 w-full cursor-pointer" onClick={onAddAuthor}>

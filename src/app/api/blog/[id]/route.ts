@@ -8,7 +8,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const { id } = params;
   try {
     const { rows } = await db_query(
-      `SELECT id, title, description, image, date, author, created_at, updated_at
+      `SELECT id, title, description, image, date, created_at, updated_at
        FROM neiist.posts WHERE id = $1`,
       [id]
     );
@@ -21,7 +21,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
       [id]
     );
     const tags = tagRows.map((row: any) => row.name);
-    return NextResponse.json({ ...rows[0], tags });
+    // Fetch de autores associados
+    const { rows: authorRows } = await db_query(
+      `SELECT a.name FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = $1`,
+      [id]
+    );
+    const authors = authorRows.map((row: any) => row.name);
+    return NextResponse.json({ ...rows[0], tags, authors });
   } catch (error) {
     console.error("Error fetching post by id:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -35,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const formData = await request.formData();
     const title = formData.get('title');
     const description = formData.get('description');
-    const author = formData.get('author');
+  const authorsRaw = formData.get('authors');
     const tagsRaw = formData.get('tags');
     let tagNames: string[] = [];
     try {
@@ -51,21 +57,50 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       imageBase64 = Buffer.from(buffer).toString('base64');
     }
 
-    let query = `UPDATE neiist.posts SET title = $1, description = $2, author = $3, updated_at = NOW()`;
-    const paramsArr: any[] = [title, description, author];
+    let authorNames: string[] = [];
+    try {
+      authorNames = authorsRaw ? JSON.parse(authorsRaw as string) : [];
+    } catch {
+      authorNames = [];
+    }
+    if (authorNames.length === 0) {
+      return NextResponse.json({ error: "Pelo menos 1 autor é obrigatório" }, { status: 400 });
+    }
+    let query = `UPDATE neiist.posts SET title = $1, description = $2, updated_at = NOW()`;
+    const paramsArr: any[] = [title, description];
     if (imageBase64) {
-      query += ', image = $4';
+      query += ', image = $3';
       paramsArr.push(imageBase64);
-      query += ' WHERE id = $5 RETURNING *';
+      query += ' WHERE id = $4 RETURNING *';
       paramsArr.push(id);
     } else {
-      query += ' WHERE id = $4 RETURNING *';
+      query += ' WHERE id = $3 RETURNING *';
       paramsArr.push(id);
     }
     const { rows } = await db_query(query, paramsArr);
     if (!rows[0]) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    // Atualizar autores na tabela de associação
+    // Fetch dos ids dos autores pelo nome (criar se não existirem)
+    let authorIds: number[] = [];
+    for (const name of authorNames) {
+      const { rows: found } = await db_query(`SELECT id FROM neiist.authors WHERE name = $1`, [name]);
+      let authorId;
+      if (found.length > 0) {
+        authorId = found[0].id;
+      } else {
+        const { rows: inserted } = await db_query(`INSERT INTO neiist.authors (name) VALUES ($1) RETURNING id`, [name]);
+        authorId = inserted[0].id;
+      }
+      authorIds.push(authorId);
+    }
+    // Remover associações antigas
+    await db_query(`DELETE FROM neiist.post_authors WHERE post_id = $1`, [id]);
+    // Criar novas associações
+    await Promise.all(authorIds.map(authorId =>
+      db_query(`INSERT INTO neiist.post_authors (post_id, author_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [id, authorId])
+    ));
     // Atualizar tags na tabela de associação
     // Fetch dos ids das tags pelo nome
     let tagIds: number[] = [];
@@ -84,13 +119,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         db_query(`INSERT INTO neiist.post_tags (post_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [id, tagId])
       ));
     }
-    // Fetch das tags atualizadas
+    // Fetch tags e autores atualizados
     const { rows: tagRows2 } = await db_query(
       `SELECT t.name FROM neiist.post_tags pt JOIN neiist.tags t ON pt.tag_id = t.id WHERE pt.post_id = $1`,
       [id]
     );
     const tags = tagRows2.map((row: any) => row.name);
-    return NextResponse.json({ ...rows[0], tags });
+    const { rows: authorRows2 } = await db_query(
+      `SELECT a.name FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = $1`,
+      [id]
+    );
+    const authors = authorRows2.map((row: any) => row.name);
+    return NextResponse.json({ ...rows[0], tags, authors });
   } catch (error) {
     console.error("Error updating post:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

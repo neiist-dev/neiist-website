@@ -3,13 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface PostMetaProps {
-  author?: string;
+  authors?: string[];
   date?: string;
   tags?: string[];
   content?: string;
 }
 
-export default function PostMeta({ author, date, tags = [], content }: PostMetaProps) {
+export default function PostMeta({ authors = [], date, tags = [], content }: PostMetaProps) {
   function getReadingTime(text?: string) {
   if (!text || !text.trim()) return 0;
 
@@ -35,12 +35,12 @@ export default function PostMeta({ author, date, tags = [], content }: PostMetaP
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground w-full flex-wrap p-2">
       <div className="flex items-center gap-2 mb-2 sm:mb-0">
         <Avatar className="w-10 h-10">
-          <AvatarImage src="TODO" alt={author} />
-          <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
+          <AvatarImage src="TODO" alt={authors[0]} />
+          <AvatarFallback>{authors[0] ? authors[0][0] : "?"}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
           <span className="text-xs text-gray-500">Artigo publicado por:</span>
-          <span className="text-sm text-black font-bold leading-tight">{author}</span>
+          <span className="text-sm text-black font-bold leading-tight">{authors.join(', ')}</span>
         </div>
       </div>
       <span className="text-xs text-black-300 font-semibold mb-2 sm:mb-0">

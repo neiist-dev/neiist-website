@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     let params: any[] = [];
     
     // Começa com fetch dos posts
-    let query = `SELECT id, title, description, image, date, author, created_at, updated_at FROM neiist.posts`;
+  let query = `SELECT id, title, description, image, date, created_at, updated_at FROM neiist.posts`;
     let where = '';
 
     if (search) {
@@ -26,7 +26,9 @@ export async function GET(request: Request) {
     // Fetch das tags para cada post
     const postIds = posts.map((p: any) => p.id);
     let tagsByPost: Record<number, string[]> = {};
+    let authorsByPost: Record<number, string[]> = {};
     if (postIds.length > 0) {
+      // Tags
       const { rows: tagRows } = await db_query(
         `SELECT pt.post_id, t.name FROM neiist.post_tags pt JOIN neiist.tags t ON pt.tag_id = t.id WHERE pt.post_id = ANY($1)`,
         [postIds]
@@ -34,6 +36,15 @@ export async function GET(request: Request) {
       for (const { post_id, name } of tagRows) {
         if (!tagsByPost[post_id]) tagsByPost[post_id] = [];
         tagsByPost[post_id].push(name);
+      }
+      // Autores
+      const { rows: authorRows } = await db_query(
+        `SELECT pa.post_id, a.name FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = ANY($1)`,
+        [postIds]
+      );
+      for (const { post_id, name } of authorRows) {
+        if (!authorsByPost[post_id]) authorsByPost[post_id] = [];
+        authorsByPost[post_id].push(name);
       }
     }
     // Filtrar por tags se necessário
@@ -45,8 +56,8 @@ export async function GET(request: Request) {
         return filterTags.some(tag => postTags.includes(tag));
       });
     }
-    // Adicionar as tags ao resultado
-    const result = filteredPosts.map(post => ({ ...post, tags: tagsByPost[post.id] || [] }));
+    // Adicionar tags e autores ao resultado
+    const result = filteredPosts.map(post => ({ ...post, tags: tagsByPost[post.id] || [], authors: authorsByPost[post.id] || [] }));
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -60,7 +71,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const title = formData.get('title');
     const description = formData.get('description');
-    const author = formData.get('author');
+  const authorsRaw = formData.get('authors');
     const tagsRaw = formData.get('tags');
     let tagNames: string[] = [];
     try {
@@ -68,24 +79,47 @@ export async function POST(request: Request) {
     } catch {
       tagNames = [];
     }
+    let authorNames: string[] = [];
+    try {
+      authorNames = authorsRaw ? JSON.parse(authorsRaw as string) : [];
+    } catch {
+      authorNames = [];
+    }
     let imageBase64: string | null = null;
     const imageFile = formData.get('image');
     if (imageFile && typeof imageFile === 'object' && 'arrayBuffer' in imageFile) {
       const buffer = await (imageFile as File).arrayBuffer();
       imageBase64 = Buffer.from(buffer).toString('base64');
     }
-    if (!title || !description || !author) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!title || !description || authorNames.length === 0) {
+      return NextResponse.json({ error: "Missing required fields (título, descrição, pelo menos 1 autor)" }, { status: 400 });
     }
     const date = new Date().toISOString();
-    // Inserir post sem tags
+    // Inserir post
     const result = await db_query(
-      `INSERT INTO neiist.posts (title, description, image, date, author)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO neiist.posts (title, description, image, date)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [title, description, imageBase64, date, author]
+      [title, description, imageBase64, date]
     );
     const postId = result.rows[0].id;
+    // Criar autores (criar se não existirem)
+    let authorIds: number[] = [];
+    for (const name of authorNames) {
+      const { rows: found } = await db_query(`SELECT id FROM neiist.authors WHERE name = $1`, [name]);
+      let authorId;
+      if (found.length > 0) {
+        authorId = found[0].id;
+      } else {
+        const { rows: inserted } = await db_query(`INSERT INTO neiist.authors (name) VALUES ($1) RETURNING id`, [name]);
+        authorId = inserted[0].id;
+      }
+      authorIds.push(authorId);
+    }
+    // Criar associações na post_authors
+    await Promise.all(authorIds.map(authorId =>
+      db_query(`INSERT INTO neiist.post_authors (post_id, author_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [postId, authorId])
+    ));
     // Buscar ids das tags pelo nome
     let tagIds: number[] = [];
     if (tagNames.length > 0) {

@@ -6,7 +6,7 @@ interface Post {
   description: string;
   image?: string;
   date?: string;
-  author?: string;
+  authors?: string[];
   tags?: string[];
 }
 
@@ -26,7 +26,7 @@ export function PostGrid({ posts }: PostGridProps) {
     <div className="w-full flex justify-center p-10">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-10">
         {posts.map((item) => (
-          <PostCard key={item.id} {...item} tags={item.tags || []} />
+          <PostCard key={item.id} {...item} tags={item.tags || []} authors={item.authors || []} />
         ))}
       </div>
     </div>

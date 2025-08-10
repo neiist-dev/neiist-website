@@ -100,11 +100,28 @@ CREATE TABLE neiist.posts (
     description TEXT NOT NULL,
     image TEXT,
     date DATE NOT NULL DEFAULT CURRENT_DATE,
-    author TEXT NOT NULL,
+    -- tags (association table below)
+    -- authors (association table below)
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- AUTHORS TABLE
+CREATE TABLE neiist.authors (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.authors TO neiist_app_user;
+
+-- ASSOCIATION TABLE POSTS <-> AUTHORS
+CREATE TABLE neiist.post_authors (
+    post_id INT NOT NULL,
+    author_id INT NOT NULL,
+    PRIMARY KEY (post_id, author_id),
+    FOREIGN KEY (post_id) REFERENCES neiist.posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES neiist.authors(id) ON DELETE CASCADE
+);
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.post_authors TO neiist_app_user;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE neiist.posts TO neiist_app_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES TO neiist_app_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA neiist TO neiist_app_user;
@@ -123,6 +140,7 @@ CREATE SEQUENCE IF NOT EXISTS neiist.tags_id_seq;
 ALTER TABLE neiist.tags ALTER COLUMN id SET DEFAULT nextval('neiist.tags_id_seq');
 GRANT USAGE, SELECT ON SEQUENCE neiist.tags_id_seq TO neiist_app_user;
 
+-- ASSOCIATION TABLE POST <-> TAGS
 CREATE TABLE neiist.post_tags (
     post_id INT NOT NULL,
     tag_id INT NOT NULL,

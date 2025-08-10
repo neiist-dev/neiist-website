@@ -1,37 +1,25 @@
-import * as React from "react"
-import Image from "next/image"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
-import Link from "next/link"
-
-
-interface PostCardProps {
-  id: string
-  title: string
-  description: string
-  image?: string
-  date?: string
-  author?: string
+export interface PostCardProps {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  date?: string;
+  authors?: string[];
   tags?: string[];
 }
-export function PostCard(props: PostCardProps) {
-  const { id, title, description, image, date, author, tags = [] } = props;
 
-
-  // Remove heading, bold, e itálico da descrição do post no postcard 
+export function PostCard({ id, title, description, image, date, authors = [], tags = [] }: PostCardProps) {
+  // Remove heading, bold, e itálico da descrição do post no postcard
   function stripFormatting(html: string) {
-    // headings
     let clean = html.replace(/<h[1-6][^>]*>.*?<\/h[1-6]>/gi, "");
-    // bold 
     clean = clean.replace(/<(b|strong)[^>]*>(.*?)<\/(b|strong)>/gi, "$2");
-    // italico
     clean = clean.replace(/<(i|em)[^>]*>(.*?)<\/(i|em)>/gi, "$2");
     return clean;
   }
@@ -39,17 +27,17 @@ export function PostCard(props: PostCardProps) {
   const descriptionNoFormatting = stripFormatting(description);
 
   // prefixo data:image/jpeg;base64,
-  const getImageSrc = (img?: string) => {
+  function getImageSrc(img?: string) {
     if (!img || img === "null" || img.trim() === "") return "/placeholder.jpg";
-    if (img.startsWith('data:')) return img;
-    // Pode ser base64 sem prefixo
+    if (img.startsWith("data:")) return img;
     if (/^[A-Za-z0-9+/=]+$/.test(img.substring(0, 20))) {
       return `data:image/jpeg;base64,${img}`;
     }
     return img;
-  };
+  }
 
   return (
+
     <Link href={`/blog/${id}`} className="block group">
       <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
         <div className="px-4 pt-4">
@@ -70,21 +58,13 @@ export function PostCard(props: PostCardProps) {
             )}
           </div>
         </div>
-
         <CardHeader className="gap-2">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
             <Avatar className="w-8 h-8">
-              <AvatarImage src="avatar_TODO" alt={author} />
-              <AvatarFallback>{author ? author[0] : "?"}</AvatarFallback>
+              <AvatarFallback>{authors[0] ? authors[0][0] : "?"}</AvatarFallback>
             </Avatar>
             <span className="text-gray-800 truncate max-w-[110px] block">
-              {author ? (() => {
-                const parts = author.trim().split(' ');
-                if (parts.length === 1) return parts[0];
-                const full = `${parts[0]} ${parts[1]}`;
-                if (full.length <= 16) return full;
-                return `${parts[0]} ${parts[1][0]}.`;
-              })() : ''}
+              {authors.length > 0 ? authors.join(', ') : ''}
             </span>
             <span>|</span>
             <span className="sm:inline block mt-1 sm:mt-0">
@@ -108,5 +88,5 @@ export function PostCard(props: PostCardProps) {
         </CardContent>
       </Card>
     </Link>
-  )
-}
+  );
+

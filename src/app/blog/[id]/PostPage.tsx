@@ -106,7 +106,7 @@ export default function PostPageClient({ post }: { post: Post }) {
           {toast.message}
         </div>
       )}
-      <PostMeta author={post.author} date={post.date} tags={tags} />
+  <PostMeta authors={Array.isArray(post.authors) ? post.authors : post.author ? [post.author] : []} date={post.date} tags={tags} content={post.description} />
       <PostHeader title={post.title} image={post.image} />
       <PostContent description={post.description} />
       <hr className="my-6 border-gray-200" />

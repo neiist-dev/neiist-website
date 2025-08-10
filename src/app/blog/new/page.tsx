@@ -22,8 +22,8 @@ const NewPostPage: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
-  const [authors, setAuthors] = useState<string[]>(["Autor 1"]); // TODO: Fetch from API
-  const [selectedAuthor, setSelectedAuthor] = useState("");
+  const [authors, setAuthors] = useState<string[]>([]);
+  const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: string, name: string }[]>>({});
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagForm, setShowTagForm] = useState(false);
@@ -35,7 +35,6 @@ const NewPostPage: React.FC = () => {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
-  
   React.useEffect(() => {
     fetch('/api/tags')
       .then(res => res.json())
@@ -43,6 +42,13 @@ const NewPostPage: React.FC = () => {
         if (data && typeof data === 'object') {
           setCategories(Object.keys(data));
           setTagsByCategory(data);
+        }
+      });
+    fetch('/api/authors')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setAuthors(data.map((a: any) => a.name));
         }
       });
   }, []);
@@ -57,7 +63,7 @@ const NewPostPage: React.FC = () => {
         if (data) {
           setTitle(data.title || '');
           setDescription(data.description || '');
-          setSelectedAuthor(data.author || '');
+          setSelectedAuthors(Array.isArray(data.authors) ? data.authors : (data.author ? [data.author] : []));
           setSelectedTags(Array.isArray(data.tags) ? data.tags : []);
           if (data.image) setImage(data.image);
         }
@@ -93,8 +99,8 @@ const NewPostPage: React.FC = () => {
   };
   
   const validateFields = () => {
-    if (!title.trim() || !description.trim() || !selectedAuthor.trim() || selectedTags.length === 0) {
-      setToast({ type: 'error', message: 'Preenche todos os campos obrigatórios: título, conteúdo, autor e pelo menos uma tag.' });
+    if (!title.trim() || !description.trim() || selectedAuthors.length === 0 || selectedTags.length === 0) {
+      setToast({ type: 'error', message: 'Preenche todos os campos obrigatórios: título, conteúdo, pelo menos um autor e uma tag.' });
       return false;
     }
     return true;
@@ -108,7 +114,7 @@ const NewPostPage: React.FC = () => {
       formData.append('title', title);
       formData.append('description', description);
       if (image) formData.append('image', image);
-      formData.append('author', selectedAuthor);
+      formData.append('authors', JSON.stringify(selectedAuthors));
       formData.append('tags', JSON.stringify(selectedTags));
       const res = await fetch('/api/blog', {
         method: 'POST',
@@ -137,7 +143,7 @@ const NewPostPage: React.FC = () => {
       formData.append('title', title);
       formData.append('description', description);
       if (image) formData.append('image', image);
-      formData.append('author', selectedAuthor);
+      formData.append('authors', JSON.stringify(selectedAuthors));
       formData.append('tags', JSON.stringify(selectedTags));
       const res = await fetch(`/api/blog/${editId}`, {
         method: 'PUT',
@@ -183,7 +189,7 @@ const NewPostPage: React.FC = () => {
           <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl h-[80vh] flex flex-col items-center overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Pré-visualização do Post</h2>
             <div className="w-full overflow-y-auto flex-1">
-              <PostMeta author={selectedAuthor} date={new Date().toISOString()} tags={selectedTags} content={description} />
+          <PostMeta authors={selectedAuthors} date={new Date().toISOString()} tags={selectedTags} content={description} />
               <PostHeader title={title} image={previewImage || (typeof image === 'string' ? image : undefined)} />
               <PostContent description={description} />
             </div>
@@ -236,8 +242,8 @@ const NewPostPage: React.FC = () => {
       />
       <DropdownsSection
         authors={authors}
-        selectedAuthor={selectedAuthor}
-        onAuthorChange={setSelectedAuthor}
+        selectedAuthors={selectedAuthors}
+        onAuthorsChange={setSelectedAuthors}
         onAddAuthor={handleAddAuthor}
         tagsByCategory={tagsByCategory}
         selectedTags={selectedTags}
