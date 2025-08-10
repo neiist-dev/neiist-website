@@ -42,20 +42,16 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
       <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
         <div className="px-4 pt-4">
           <div className="w-full aspect-[16/9] bg-muted flex items-center justify-center rounded-lg overflow-hidden relative">
-            {image && getImageSrc(image) !== "/placeholder.jpg" ? (
-              <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                <Image
-                  src={getImageSrc(image)}
-                  alt={title}
-                  style={{ objectFit: 'cover', borderRadius: '0.5rem' }}
-                  fill
-                  sizes="(max-width: 384px) 100vw, 384px"
-                  priority={false}
-                />
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">Sem imagem</div>
-            )}
+            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+              <Image
+                src={getImageSrc(image)}
+                alt={title}
+                style={{ objectFit: 'cover', borderRadius: '0.5rem' }}
+                fill
+                sizes="(max-width: 384px) 100vw, 384px"
+                priority={false}
+              />
+            </div>
           </div>
         </div>
         <CardHeader className="gap-2">
