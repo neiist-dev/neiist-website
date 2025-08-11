@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 export interface ManageTagsModalProps {
   tagsByCategory: Record<string, { id: number; name: string }[]>;
@@ -25,6 +26,9 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
   const [error, setError] = useState("");
   const [editingTag, setEditingTag] = useState<{ id: number; name: string } | null>(null);
   const [editingValue, setEditingValue] = useState("");
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [confirmDeleteTag, setConfirmDeleteTag] = useState<number | null>(null);
+  const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/tags')
@@ -57,18 +61,32 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
 
   // Atualiza lista após eliminar tag
   const handleDeleteTagLocal = async (id: number) => {
-    await onDeleteTag(id);
-    fetch('/api/tags')
-      .then(res => res.json())
-      .then(data => setTagsByCategory(data));
+    if (confirmDeleteTag === id) {
+      await onDeleteTag(id);
+      setToast({ type: 'success', message: 'Tag eliminada com sucesso!' });
+      setConfirmDeleteTag(null);
+      fetch('/api/tags')
+        .then(res => res.json())
+        .then(data => setTagsByCategory(data));
+    } else {
+      setConfirmDeleteTag(id);
+      setTimeout(() => setConfirmDeleteTag(null), 3000);
+    }
   };
 
   // Atualiza lista após eliminar categoria
   const handleDeleteCategoryLocal = async (category: string) => {
-    await onDeleteCategory(category);
-    fetch('/api/tags')
-      .then(res => res.json())
-      .then(data => setTagsByCategory(data));
+    if (confirmDeleteCategory === category) {
+      await onDeleteCategory(category);
+      setToast({ type: 'success', message: 'Categoria eliminada com sucesso!' });
+      setConfirmDeleteCategory(null);
+      fetch('/api/tags')
+        .then(res => res.json())
+        .then(data => setTagsByCategory(data));
+    } else {
+      setConfirmDeleteCategory(category);
+      setTimeout(() => setConfirmDeleteCategory(null), 3000);
+    }
   };
 
   const handleEditTag = (tag: { id: number; name: string }) => {
@@ -81,14 +99,27 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
       await onUpdateTag(editingTag.id, editingValue.trim());
       setEditingTag(null);
       setEditingValue("");
+      setToast({ type: 'success', message: 'Tag atualizada com sucesso!' });
       fetch('/api/tags')
         .then(res => res.json())
         .then(data => setTagsByCategory(data));
     }
   };
 
+  React.useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   return (
   <div className="flex flex-col gap-4 p-4 w-full max-h-[300vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+    {toast && (
+      <div className={`fixed top-6 right-4 z-[100] px-3 py-1.5 rounded shadow-md text-white font-semibold text-sm transition-all ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} style={{ minWidth: 180, maxWidth: 260 }}>
+        {toast.message}
+      </div>
+    )}
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-bold text-gray-800">Gerir Tags</h3>
         <button className="text-gray-500 hover:text-gray-700 cursor-pointer" onClick={onClose}>✕</button>
@@ -136,7 +167,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold text-gray-700">{category}</span>
                 <button className="text-xs text-red-500 hover:underline cursor-pointer" onClick={() => handleDeleteCategoryLocal(category)}>
-                  Eliminar categoria
+                  {confirmDeleteCategory === category ? 'Confirmar eliminar' : 'Eliminar categoria'}
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -174,7 +205,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
                           {tag.name}
                         </span>
                         <button className="text-md text-red-500 hover:underline cursor-pointer" onClick={() => handleDeleteTagLocal(tag.id)}>
-                          x
+                          {confirmDeleteTag === tag.id ? 'Confirmar' : 'x'}
                         </button>
                       </>
                     )}
