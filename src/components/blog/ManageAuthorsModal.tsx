@@ -93,7 +93,6 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
     }
   }, [toast]);
 
-  // Função para fechar ao clicar fora do modal
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();

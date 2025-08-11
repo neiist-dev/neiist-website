@@ -105,12 +105,12 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
           ) : (
             Object.entries(tagsByCategory).map(([category, tags]) => (
               <section key={category}>
-                <div className="flex items-center mb-2">
+                <div className="flex items-center mb-2 mt-4 mx-3">
                   <h4 className="text-xl text-gray-700 capitalize">{category}</h4>
                 </div>
                 <div className="flex flex-col gap-2">
                   {tags.map(tag => (
-                    <div key={tag.id} className="flex items-center gap-2">
+                    <div key={tag.id} className="flex items-center gap-2 mx-3">
                       <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
                       <label htmlFor={tag.name} className="text-sm cursor-pointer">
                         <Badge className="text-md px-2 py-0.5 bg-blue-100 text-blue-800">{tag.name}</Badge>
