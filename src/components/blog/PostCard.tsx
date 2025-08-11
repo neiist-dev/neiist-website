@@ -42,15 +42,12 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
   }
 
   // Suporte a array de string ou array de objetos {name, photo}
-  const firstAuthor = authors[0];
-  let avatarName = "?";
-  let avatarPhoto: string | undefined | null = undefined;
-  if (typeof firstAuthor === "string") {
-    avatarName = firstAuthor;
-  } else if (firstAuthor && typeof firstAuthor === "object") {
-    avatarName = firstAuthor.name;
-    avatarPhoto = firstAuthor.photo;
-  }
+  const authorList: { name: string; photo?: string | null }[] = Array.isArray(authors)
+    ? authors.map(a => typeof a === 'string' ? { name: a } : { name: a.name, photo: a.photo })
+    : [];
+  const maxAvatars = 3;
+  const showAuthors = authorList.slice(0, maxAvatars);
+  const extraAuthors = authorList.length - maxAvatars;
 
   return (
     <Link href={`/blog/${id}`} className="block group">
@@ -71,21 +68,31 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
         </div>
         <CardHeader className="gap-2">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
-            <Avatar className="w-8 h-8">
-              {avatarPhoto ? (
-                <AvatarImage src={avatarPhoto} alt={avatarName} />
-              ) : null}
-              <AvatarFallback>{avatarName ? avatarName[0] : "?"}</AvatarFallback>
-            </Avatar>
-            <span className="text-gray-800 truncate max-w-[110px] block">
-              {Array.isArray(authors)
-                ? authors.map(a => typeof a === "string" ? a : a.name).join(', ')
-                : ''}
-            </span>
-            <span>|</span>
+            <div className="flex -space-x-2">
+              {showAuthors.map((a, idx) => (
+                <Avatar
+                  key={a.name + idx}
+                  className="w-8 h-8 border-2 border-white shadow-sm z-10"
+                  style={{ zIndex: 10 - idx }}
+                >
+                  {a.photo ? (
+                    <AvatarImage src={a.photo} alt={a.name} />
+                  ) : null}
+                  <AvatarFallback>{a.name ? a.name[0].toUpperCase() : "?"}</AvatarFallback>
+                </Avatar>
+              ))}
+              {extraAuthors > 0 && (
+                <Avatar className="w-8 h-8 border-2 border-white bg-gray-200 text-gray-700 font-bold shadow-sm z-0 flex items-center justify-center">
+                  <span className="w-full h-full flex items-center justify-center text-base">{extraAuthors}</span>
+                </Avatar>
+              )}
+            </div>
             <span className="sm:inline block mt-1 sm:mt-0">
-              {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
             </span>
+              <span className="flex-1" />
+              <span className="block text-right min-w-[80px]">
+                {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
+              </span>
           </div>
           <CardTitle className="text-base leading-snug mt-3">{title}</CardTitle>
         </CardHeader>
