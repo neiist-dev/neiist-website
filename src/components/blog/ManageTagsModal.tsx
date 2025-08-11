@@ -6,6 +6,7 @@ export interface ManageTagsModalProps {
   onCreate: (tag: string, category: string) => Promise<void> | void;
   onDeleteTag: (id: number) => Promise<void> | void;
   onDeleteCategory: (category: string) => Promise<void> | void;
+  onUpdateTag: (id: number, name: string) => Promise<void> | void;
   onClose: () => void;
 }
 
@@ -14,6 +15,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
   onCreate,
   onDeleteTag,
   onDeleteCategory,
+  onUpdateTag,
   onClose,
 }) => {
   const [tagsByCategory, setTagsByCategory] = useState(initialTagsByCategory);
@@ -21,6 +23,8 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
   const [selectedCategory, setSelectedCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [error, setError] = useState("");
+  const [editingTag, setEditingTag] = useState<{ id: number; name: string } | null>(null);
+  const [editingValue, setEditingValue] = useState("");
 
   useEffect(() => {
     fetch('/api/tags')
@@ -65,6 +69,22 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
     fetch('/api/tags')
       .then(res => res.json())
       .then(data => setTagsByCategory(data));
+  };
+
+  const handleEditTag = (tag: { id: number; name: string }) => {
+    setEditingTag(tag);
+    setEditingValue(tag.name);
+  };
+
+  const handleUpdateTag = async () => {
+    if (editingTag && editingValue.trim()) {
+      await onUpdateTag(editingTag.id, editingValue.trim());
+      setEditingTag(null);
+      setEditingValue("");
+      fetch('/api/tags')
+        .then(res => res.json())
+        .then(data => setTagsByCategory(data));
+    }
   };
 
   return (
@@ -122,10 +142,42 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
               <div className="flex flex-wrap gap-2">
                 {tags.map(tag => (
                   <div key={tag.id} className="flex items-center bg-white border rounded px-2 py-1">
-                    <span className="mr-2 text-gray-800 text-sm">{tag.name}</span>
-                    <button className="text-md text-red-500 hover:underline cursor-pointer" onClick={() => handleDeleteTagLocal(tag.id)}>
-                      x
-                    </button>
+                    {editingTag && editingTag.id === tag.id ? (
+                      <>
+                        <input
+                          className="border px-1 py-0.5 rounded text-sm mr-2 w-24"
+                          value={editingValue}
+                          autoFocus
+                          onChange={e => setEditingValue(e.target.value)}
+                          onBlur={handleUpdateTag}
+                        />
+                        <button
+                          className="text-xs text-blue-600 hover:underline mr-1 cursor-pointer"
+                          onMouseDown={e => { e.preventDefault(); handleUpdateTag(); }}
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          className="text-xs text-gray-400 hover:underline cursor-pointer"
+                          onMouseDown={e => { e.preventDefault(); setEditingTag(null); setEditingValue(""); }}
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className="mr-2 text-gray-800 text-sm cursor-pointer hover:underline"
+                          onClick={() => handleEditTag(tag)}
+                          title="Editar nome da tag"
+                        >
+                          {tag.name}
+                        </span>
+                        <button className="text-md text-red-500 hover:underline cursor-pointer" onClick={() => handleDeleteTagLocal(tag.id)}>
+                          x
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

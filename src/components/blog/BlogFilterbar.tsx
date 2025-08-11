@@ -131,6 +131,16 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
               }}
               onDeleteTag={handleDeleteTag}
               onDeleteCategory={handleDeleteCategory}
+              onUpdateTag={async (id, name) => {
+                await fetch(`/api/tags/${id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name }),
+                });
+                const res = await fetch('/api/tags');
+                const data = await res.json();
+                setTagsByCategory(data);
+              }}
               onClose={() => setShowManageModal(false)}
             />
           </div>
