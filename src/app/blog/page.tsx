@@ -88,7 +88,7 @@ export default function BlogPage() {
       />
       <div className="flex flex-col items-center gap-2 mb-4">
         <BlogHeader />
-        {!isMember && (
+        {isMember && (
           <MemberControls memberView={memberView} setMemberView={setMemberView} />
         )}
       </div>

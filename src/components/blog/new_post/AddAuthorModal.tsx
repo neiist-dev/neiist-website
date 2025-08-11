@@ -97,8 +97,8 @@ const AddAuthorModal: React.FC<AddAuthorModalProps> = ({ onCreate, onClose }) =>
           )}
           {error && <div className="text-red-500 mb-2">{error}</div>}
           <div className="flex gap-2 mt-2 self-end">
-            <button className="px-4 py-2 bg-gray-200 rounded" onClick={onClose}>Cancelar</button>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded" onClick={handleCreate}>Adicionar</button>
+            <Button variant="outline" className="px-4 py-2 rounded cursor-pointer" onClick={onClose}>Cancelar</Button>
+            <Button variant="default" className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer" onClick={handleCreate}>Adicionar</Button>
           </div>
         </div>
       </div>

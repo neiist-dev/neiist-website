@@ -93,14 +93,21 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
     }
   }, [toast]);
 
+  // Função para fechar ao clicar fora do modal
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleBackdropClick}>
       {toast && (
         <div className={`fixed top-6 right-4 z-[100] px-3 py-1.5 rounded shadow-md text-white font-semibold text-sm transition-all ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} style={{ minWidth: 180, maxWidth: 260 }}>
           {toast.message}
         </div>
       )}
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4 gap-2">
           <h2 className="text-xl font-bold">Gerir Autores</h2>
           <div className="flex items-center gap-2">

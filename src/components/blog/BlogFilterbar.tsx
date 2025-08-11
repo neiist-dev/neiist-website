@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import { useUser } from '@/context/UserContext';
+import { UserRole } from '@/types/user';
 import ManageTagsModal from './ManageTagsModal';
 import { FaChevronLeft, FaEdit } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +16,8 @@ interface BlogFilterbarProps {
 }
 
 const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterChange }) => {
+  const { user } = useUser();
+  const isMember = user && user.roles?.includes(UserRole.MEMBER);
   const [selected, setSelected] = useState<string[]>([]);
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: number, name: string }[]>>({});
   const [loading, setLoading] = useState(true);
@@ -84,15 +88,17 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
             <span className="font-semibold text-2xl tracking-tight mx-2">Filtros</span>
             <span className="text-sm text-gray-500 ml-2">({selected.length})</span>
           </div>
-          <div className="flex justify-center w-full">
-            <button
-              className="my-3 px-16 py-1 border border-gray-300 rounded bg-white text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-              onClick={() => setShowManageModal(true)}
-            >
-              <FaEdit className="w-4 h-4" />
-              Gerir tags
-            </button>
-          </div>
+          {isMember && (
+            <div className="flex justify-center w-full">
+              <button
+                className="my-3 px-16 py-1 border border-gray-300 rounded bg-white text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
+                onClick={() => setShowManageModal(true)}
+              >
+                <FaEdit className="w-4 h-4" />
+                Gerir tags
+              </button>
+            </div>
+          )}
 
           {loading ? (
             <div className="text-center text-gray-400">A carregar tags...</div>
@@ -116,7 +122,7 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
             ))
           )}
 
-      {showManageModal && (
+      {isMember && showManageModal && (
         <div className="absolute left-0 top-0 w-full h-full bg-white z-50 flex flex-col p-0 border-r border-gray-200 shadow-2xl animate-fadeIn">
           <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <ManageTagsModal
