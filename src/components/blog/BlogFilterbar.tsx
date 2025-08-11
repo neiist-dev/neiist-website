@@ -77,7 +77,7 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
         className={`fixed top-0 left-0 h-full w-72 max-w-full sm:w-72 sm:min-w-[18rem] sm:max-w-[18rem] bg-white z-[9999] shadow-2xl border-r border-gray-200 transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : '-translate-x-full sm:-translate-x-80'}`}
         style={{ minWidth: '0', maxWidth: '100vw', overflow: 'hidden' }}
       >
-  <div className="flex flex-col gap-2 px-6 py-4 mb-2 mt-3">
+        <div className="flex flex-col gap-2 px-6 py-4 mb-2 mt-3">
           <div className="flex items-center">
             <button
               className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer mr-2"
@@ -103,23 +103,25 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
           {loading ? (
             <div className="text-center text-gray-400">A carregar tags...</div>
           ) : (
-            Object.entries(tagsByCategory).map(([category, tags]) => (
-              <section key={category}>
-                <div className="flex items-center mb-2 mt-4 mx-3">
-                  <h4 className="text-xl text-gray-700 capitalize">{category}</h4>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {tags.map(tag => (
-                    <div key={tag.id} className="flex items-center gap-2 mx-3">
-                      <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
-                      <label htmlFor={tag.name} className="text-sm cursor-pointer">
-                        <Badge className="text-md px-2 py-0.5 bg-blue-100 text-blue-800">{tag.name}</Badge>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 230px)' }}>
+              {Object.entries(tagsByCategory).map(([category, tags]) => (
+                <section key={category}>
+                  <div className="flex items-center mb-2 mt-4 mx-3">
+                    <h4 className="text-xl text-gray-700 capitalize">{category}</h4>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {tags.map(tag => (
+                      <div key={tag.id} className="flex items-center gap-2 mx-3">
+                        <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
+                        <label htmlFor={tag.name} className="text-sm cursor-pointer">
+                          <Badge className="text-md px-2 py-0.5 bg-blue-100 text-blue-800">{tag.name}</Badge>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
           )}
 
       {isMember && showManageModal && (

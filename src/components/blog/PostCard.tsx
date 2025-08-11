@@ -52,22 +52,22 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
   return (
     <Link href={`/blog/${id}`} className="block group">
       <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
-        <div className="px-4 pt-4">
+        <div className="px-4">
           <div className="w-full aspect-[16/9] bg-muted flex items-center justify-center rounded-lg overflow-hidden relative">
             <div style={{ width: '100%', height: '100%', position: 'relative' }}>
               <Image
                 src={getImageSrc(image)}
                 alt={title}
-                style={{ objectFit: 'cover', borderRadius: '0.5rem' }}
+                style={{ objectFit: 'cover', borderRadius: '0.5rem', maxWidth: '100%', maxHeight: '100%' }}
                 fill
                 sizes="(max-width: 384px) 100vw, 384px"
                 priority={false}
               />
-            </div>
+            </div>  
           </div>
         </div>
-        <CardHeader className="gap-2">
-          <div className="flex items-center text-sm text-muted-foreground space-x-2">
+        <CardHeader className="gap-1 min-h-0">
+          <div className="flex items-center text-sm text-muted-foreground space-x-2 min-w-0">
             <div className="flex -space-x-2">
               {showAuthors.map((a, idx) => (
                 <Avatar
@@ -87,23 +87,24 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
                 </Avatar>
               )}
             </div>
-            <span className="sm:inline block mt-1 sm:mt-0">
+            <span className="sm:inline block mt-1 sm:mt-0" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             </span>
-              <span className="flex-1" />
-              <span className="block text-right min-w-[80px]">
+              <span className="flex-1 min-w-0" />
+              <span className="block text-right min-w-[80px] truncate">
                 {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
               </span>
           </div>
-          <CardTitle className="text-base leading-snug mt-3">{title}</CardTitle>
+          <CardTitle className="text-base leading-snug line-clamp-3 break-words max-w-full mt-3">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-3 min-h-0">
           <div
-            className="text-sm text-muted-foreground line-clamp-3 prose prose-sm"
+            className="text-sm text-muted-foreground line-clamp-3 break-words max-w-full"
+            style={{ wordBreak: 'break-word', overflow: 'hidden' }}
             dangerouslySetInnerHTML={{ __html: descriptionNoFormatting }}
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1 overflow-hidden">
             {tags && tags.length > 0 && tags.map((tag, idx) => (
-              <Badge key={idx} variant="outline" className="w-fit bg-blue-100 text-blue-800">
+              <Badge key={idx} variant="outline" className="w-fit bg-blue-100 text-blue-800 truncate max-w-full">
                 {tag}
               </Badge>
             ))}

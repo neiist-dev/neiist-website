@@ -65,7 +65,11 @@ const NewPostPage: React.FC = () => {
         if (data) {
           setTitle(data.title || '');
           setDescription(data.description || '');
-          setSelectedAuthors(Array.isArray(data.authors) ? data.authors : (data.author ? [data.author] : []));
+          setSelectedAuthors(
+            Array.isArray(data.authors)
+              ? data.authors.map((a: any) => typeof a === 'string' ? a : a.name)
+              : (data.author ? [typeof data.author === 'string' ? data.author : data.author.name] : [])
+          );
           setSelectedTags(Array.isArray(data.tags) ? data.tags : []);
           if (data.image) setImage(data.image);
         }
