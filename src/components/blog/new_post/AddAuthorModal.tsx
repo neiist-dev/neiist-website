@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { FaImage } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
 
 interface AddAuthorModalProps {
   onCreate: (author: { name: string; email: string; photo: string | null }) => void;
@@ -11,6 +13,7 @@ const AddAuthorModal: React.FC<AddAuthorModalProps> = ({ onCreate, onClose }) =>
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleCreate = async () => {
     if (!name.trim() || !email.trim()) {
@@ -57,22 +60,35 @@ const AddAuthorModal: React.FC<AddAuthorModalProps> = ({ onCreate, onClose }) =>
             onChange={e => setEmail(e.target.value)}
           />
           <label className="text-sm font-semibold">Foto</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full"
-            onChange={e => {
-              const file = e.target.files ? e.target.files[0] : null;
-              setPhoto(file);
-              if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => setPhotoPreview(reader.result as string);
-                reader.readAsDataURL(file);
-              } else {
-                setPhotoPreview(null);
-              }
-            }}
-          />
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 cursor-pointer bg-[#2863FD] text-white hover:bg-[#1e4bb8] hover:text-white border-none"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <FaImage className="text-md" />
+              {photo ? "Alterar foto" : "Importar foto"}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files ? e.target.files[0] : null;
+                setPhoto(file);
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => setPhotoPreview(reader.result as string);
+                  reader.readAsDataURL(file);
+                } else {
+                  setPhotoPreview(null);
+                }
+              }}
+            />
+          </div>
           {photoPreview && (
             <div className="flex flex-col items-center mt-2">
               <span className="text-xs text-gray-500 mb-1">Pré-visualização:</span>
