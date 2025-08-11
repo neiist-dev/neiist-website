@@ -39,12 +39,12 @@ export async function GET(request: Request) {
       }
       // Autores
       const { rows: authorRows } = await db_query(
-        `SELECT pa.post_id, a.name, a.photo FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = ANY($1)`,
+        `SELECT pa.post_id, a.name, a.photo, a.email FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = ANY($1)`,
         [postIds]
       );
-      for (const { post_id, name, photo } of authorRows) {
+      for (const { post_id, name, photo, email } of authorRows) {
         if (!authorsByPost[post_id]) authorsByPost[post_id] = [];
-        authorsByPost[post_id].push({ name, photo });
+        authorsByPost[post_id].push({ name, photo, email });
       }
     }
     // Filtrar por tags se necessário

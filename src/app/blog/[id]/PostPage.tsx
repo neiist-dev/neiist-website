@@ -111,12 +111,12 @@ export default function PostPageClient({ post }: { post: Post }) {
     authors={
       Array.isArray(post.authors)
         ? post.authors.map((a: any) => {
-            if (typeof a === 'string') return { name: a, photo: undefined };
-            if (a && typeof a === 'object') return { name: a.name, photo: a.photo };
-            return { name: '?', photo: undefined };
+            if (typeof a === 'string') return { name: a, photo: undefined, email: undefined };
+            if (a && typeof a === 'object') return { name: a.name, photo: a.photo, email: a.email };
+            return { name: '?', photo: undefined, email: undefined };
           })
         : post.author
-        ? [{ name: post.author, photo: undefined }]
+        ? [{ name: post.author, photo: undefined, email: undefined }]
         : []
     }
     date={post.date}

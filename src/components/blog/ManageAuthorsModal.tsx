@@ -22,7 +22,6 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
     fetch('/api/authors')
       .then(res => res.json())
       .then(data => {
-        // Garante que cada autor tem name, email e photo
         setAuthors(Array.isArray(data) ? data.map((a: any) => ({
           id: a.id,
           name: a.name,

@@ -22,12 +22,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
       [id]
     );
     const tags = tagRows.map((row: any) => row.name);
-    // Fetch de autores associados
     const { rows: authorRows } = await db_query(
-      `SELECT a.name FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = $1`,
+      `SELECT a.name, a.photo, a.email FROM neiist.post_authors pa JOIN neiist.authors a ON pa.author_id = a.id WHERE pa.post_id = $1`,
       [id]
     );
-    const authors = authorRows.map((row: any) => row.name);
+    const authors = authorRows.map((row: any) => ({ name: row.name, photo: row.photo, email: row.email }));
     return NextResponse.json({ ...rows[0], tags, authors });
   } catch (error) {
     console.error("Error fetching post by id:", error);
