@@ -66,7 +66,7 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
             </div>  
           </div>
         </div>
-        <CardHeader className="gap-1 min-h-0">
+        <CardHeader className="min-h-0">
           <div className="flex items-center text-sm text-muted-foreground space-x-2 min-w-0">
             <div className="flex -space-x-2">
               {showAuthors.map((a, idx) => (
@@ -94,15 +94,15 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
                 {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
               </span>
           </div>
-          <CardTitle className="text-base leading-snug line-clamp-3 break-words max-w-full mt-3">{title}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 min-h-0">
+          <CardTitle className="text-base leading-snug line-clamp-3 break-words max-w-full">{title}</CardTitle>
           <div
             className="text-sm text-muted-foreground line-clamp-3 break-words max-w-full"
             style={{ wordBreak: 'break-word', overflow: 'hidden' }}
             dangerouslySetInnerHTML={{ __html: descriptionNoFormatting }}
           />
-          <div className="flex flex-wrap gap-1 overflow-hidden">
+          <div className="flex flex-wrap gap-2 overflow-hidden">
             {tags && tags.length > 0 && tags.map((tag, idx) => (
               <Badge key={idx} variant="outline" className="w-fit bg-blue-100 text-blue-800 truncate max-w-full">
                 {tag}
