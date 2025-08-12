@@ -1,0 +1,67 @@
+.card {
+  background: var(--background-colour);
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.1);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  transition: box-shadow 0.2s;
+  border: none;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(40, 99, 253, 0.18);
+  border-color: var(--secondary-colour);
+}
+
+.image {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  transition:
+    width 0.2s,
+    height 0.2s;
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary-colour);
+  margin: 0.5rem 0 0.2rem 0;
+  text-align: center;
+}
+
+.description {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--secondary-colour);
+  margin-bottom: 0.5rem;
+}
+
+.addBtn {
+  background: var(--primary-colour);
+  color: white;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.9rem 1.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.7rem;
+}
+
+.addBtn:hover {
+  background: var(--secondary-colour);
+}

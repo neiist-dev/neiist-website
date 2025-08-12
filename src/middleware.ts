@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 
-const publicRoutes = ["/", "/home", "/about-us", "/email-confirmation"];
-const guestRoutes = ["/profile", "/my-orders"];
+const publicRoutes = ["/", "/home", "/about-us", "/email-confirmation", "/shop"];
+const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
 const memberRoutes = ["/orders"];
-const coordRoutes = ["/team-management", "/photo-management"];
-const adminRoutes = ["/users-management", "/departments-management", "/activities-management"];
+const coordRoutes = ["/team-management", "/photo-management", "/orders/manage"];
+const adminRoutes = [
+  "/users-management",
+  "/departments-management",
+  "/activities-management",
+  "/shop/manage",
+];
 
 const protectedRoutes = [...guestRoutes, ...memberRoutes, ...coordRoutes, ...adminRoutes];
 

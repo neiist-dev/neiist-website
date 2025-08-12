@@ -4,6 +4,8 @@ export const login = () => {
 
 export const logout = async () => {
   await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  localStorage.removeItem("cart"); //TODO: Delete shopping cart data with api when available
+  window.dispatchEvent(new Event("cartUpdated"));
   window.location.href = "/";
 };
 

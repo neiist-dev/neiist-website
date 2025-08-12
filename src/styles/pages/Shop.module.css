@@ -1,0 +1,13 @@
+.title {
+  color: var(--foreground-colour);
+  font-size: 2.5rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 3rem 0 2rem 0;
+}
+
+.content {
+  min-height: 100vh;
+  background: var(--background-colour);
+  padding: 0 2rem 4rem 2rem;
+}

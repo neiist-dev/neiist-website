@@ -6,6 +6,8 @@ import Footer from "@/components/layout/Footer";
 import "@/styles/globals.css";
 import { cookies } from "next/headers";
 import { cookies as nextCookies } from "next/headers";
+import { ShopProvider } from "@/context/ShopContext";
+import Cart from "@/components/shop/Cart";
 
 const secularOne = Secular_One({
   subsets: ["latin"],
@@ -24,11 +26,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt" suppressHydrationWarning>
       <body className={secularOne.className}>
-        <UserProvider initialUser={user}>
-          <NavBar />
-          <main>{children}</main>
-          <Footer />
-        </UserProvider>
+        <ShopProvider>
+          <UserProvider initialUser={user}>
+            <NavBar />
+            <Cart />
+            <main>{children}</main>
+            <Footer />
+          </UserProvider>
+        </ShopProvider>
       </body>
     </html>
   );

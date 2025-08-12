@@ -1,0 +1,147 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cart {
+  background: var(--background-colour);
+  box-shadow: -2px 0 16px rgba(40, 99, 253, 0.08);
+  padding: 1.5rem;
+  display: flex;
+  min-width: 25%;
+  flex-direction: column;
+  animation: slideIn 0.2s;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--secondary-colour);
+  cursor: pointer;
+}
+
+.cart h2 {
+  font-weight: 700;
+  margin: 0.5rem 0 1rem;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.empty {
+  text-align: center;
+  color: var(--light-foreground-colour);
+  margin: 2rem 0;
+}
+
+.item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.item img {
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.item > div {
+  flex: 1;
+}
+
+.item h4 {
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+}
+
+.item p {
+  color: var(--light-foreground-colour);
+  margin: 0 0 0.2rem;
+}
+
+.item strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.quantity button {
+  background: var(--background-colour-hover);
+  border: none;
+  border-radius: 0.3rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity span {
+  min-width: 1rem;
+  text-align: center;
+}
+
+.item > button {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.footer {
+  border-top: 1px solid var(--background-colour-hover);
+  padding-top: 1rem;
+}
+
+.footer > div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.footer button {
+  background: var(--primary-colour);
+  color: white;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.8rem;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.footer button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
