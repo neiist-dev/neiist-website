@@ -3,6 +3,10 @@
   position: relative;
 }
 
+.noEvents {
+  text-align: center;
+}
+
 .title {
   padding-left: 6vw;
   margin-bottom: 1.5rem;
