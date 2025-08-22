@@ -78,18 +78,18 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       roles: [UserRole._GUEST, UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN],
     },
     {
-      href: "/placeholder",
+      href: "/orders",
       label: "Encomendas",
       icon: LuFileText,
-      roles: [UserRole._MEMBER],
-    }, //TODO Add the actual page url when existent
+      roles: [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN],
+    },
     {
-      href: "/placeholder",
+      href: "/orders/manage",
       label: "Gerir Encomendas",
       icon: LuFileText,
       roles: [],
       coordinatorOnly: true,
-    }, //TODO Add the actual page url when existent
+    },
     {
       href: "/team-management",
       label: "Gerir Equipa",
@@ -109,12 +109,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
         ]
       : []),
     {
-      href: "/placeholder",
+      href: "/shop/manage",
       label: "Gerir Loja",
       icon: LuShoppingBag,
       roles: [],
       adminOnly: true,
-    }, //TODO Add the actual page url when existent
+    },
     {
       href: "/users-management",
       label: "Gerir Membros e Utilizadores",
