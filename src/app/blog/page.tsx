@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { UserRole } from '@/types/user';
-import AdminControls from '@/components/blog/main-page/AdminControls';
+import MemberControls from '@/components/blog/main-page/MemberControls';
 import styles from '@/styles/pages/BlogPage.module.css';
 import { Switch } from '@/components/ui/switch';
 import { useUser } from '@/context/UserContext';
@@ -76,7 +76,7 @@ export default function BlogPage() {
     return <div className={styles.loading}>Loading...</div>;
   }
 
-  const isAdmin = user && user.roles?.includes(UserRole.ADMIN);
+  const isMember = user && user.roles?.includes(UserRole.MEMBER);
   const [memberView, setMemberView] = useState(true);
 
   return (
@@ -88,8 +88,8 @@ export default function BlogPage() {
       />
       <div className="flex flex-col items-center gap-2 mb-4">
         <BlogHeader />
-        {isAdmin && (
-          <AdminControls isAdmin={isAdmin} />
+        {isMember && (
+          <MemberControls memberView={memberView} setMemberView={setMemberView} />
         )}
       </div>
       <div ref={toolbarRef}>
