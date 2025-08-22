@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AddAuthorModal from '../blog/new_post/AddAuthorModal';
+import AddAuthorModal from '../new-post-form/AddAuthorModal';
 
 interface Author {
   id: number;

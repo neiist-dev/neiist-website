@@ -113,4 +113,4 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
       </Card>
     </Link>
   );
-
+}
