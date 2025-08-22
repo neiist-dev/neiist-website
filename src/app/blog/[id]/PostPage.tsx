@@ -30,7 +30,7 @@ export default function PostPageClient({ post }: { post: Post }) {
   const [showDialog, setShowDialog] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
   
-  const canEdit = user && (user.roles.includes(UserRole.MEMBER) || user.roles.includes(UserRole.COORDINATOR) || user.roles.includes(UserRole.ADMIN));
+  const canEdit = user && user.roles.includes(UserRole.ADMIN);
 
   React.useEffect(() => {
     if (toast) {
