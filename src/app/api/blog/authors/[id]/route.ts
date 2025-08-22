@@ -1,7 +1,7 @@
 import { db_query } from "@/utils/dbUtils";
 import { NextResponse } from "next/server";
 
-// GET, PUT, DELETE para /api/authors/[id]
+// GET, PUT, DELETE para /api/blog/authors/[id]
 export async function GET(request: Request, context: { params: { id: string } }) {
   const { id } = await context.params;
   try {

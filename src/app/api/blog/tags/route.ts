@@ -40,23 +40,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erro ao criar tag." }, { status: 500 });
   }
 }
-
-// DELETE tag
-export async function DELETE(request: Request) {
-  try {
-    const { id, category } = await request.json();
-    if (id) {
-      // Apagar tag específica
-      await db_query("DELETE FROM neiist.tags WHERE id = $1", [id]);
-      return NextResponse.json({ success: true });
-    } else if (category) {
-      // Apagar todas as tags de uma categoria
-      await db_query("DELETE FROM neiist.tags WHERE category = $1", [category]);
-      return NextResponse.json({ success: true });
-    } else {
-      return NextResponse.json({ error: "Missing id or category" }, { status: 400 });
-    }
-  } catch (error) {
-    return NextResponse.json({ error: "Erro ao eliminar tag/categoria." }, { status: 500 });
-  }
-}

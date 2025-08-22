@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/context/UserContext';
 import { UserRole } from '@/types/user';
@@ -28,7 +27,7 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
     const fetchTags = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/tags');
+        const res = await fetch('/api/blog/tags');
         const data = await res.json();
         setTagsByCategory(data);
       } finally {
@@ -38,24 +37,24 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
     fetchTags();
   }, []);
   const handleDeleteTag = async (id: number) => {
-    await fetch('/api/tags', {
+    await fetch('/api/blog/tags', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
-    const res = await fetch('/api/tags');
+    const res = await fetch('/api/blog/tags');
     const data = await res.json();
     setTagsByCategory(data);
   };
 
   // Eliminar categoria de tag
   const handleDeleteCategory = async (category: string) => {
-    await fetch('/api/tags', {
+    await fetch('/api/blog/tags', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category }),
     });
-    const res = await fetch('/api/tags');
+    const res = await fetch('/api/blog/tags');
     const data = await res.json();
     setTagsByCategory(data);
   };
@@ -130,24 +129,24 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
             <ManageTagsModal
               tagsByCategory={tagsByCategory}
               onCreate={async (tag, category) => {
-                await fetch('/api/tags', {
+                await fetch('/api/blog/tags', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ name: tag, category }),
                 });
-                const res = await fetch('/api/tags');
+                const res = await fetch('/api/blog/tags');
                 const data = await res.json();
                 setTagsByCategory(data);
               }}
               onDeleteTag={handleDeleteTag}
               onDeleteCategory={handleDeleteCategory}
               onUpdateTag={async (id, name) => {
-                await fetch(`/api/tags/${id}`, {
+                await fetch(`/api/blog/tags/${id}`, {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ name }),
                 });
-                const res = await fetch('/api/tags');
+                const res = await fetch('/api/blog/tags');
                 const data = await res.json();
                 setTagsByCategory(data);
               }}

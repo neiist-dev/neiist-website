@@ -22,7 +22,7 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchAuthors = () => {
-    fetch('/api/authors')
+    fetch('/api/blog/authors')
       .then(res => res.json())
       .then(data => {
         setAuthors(Array.isArray(data) ? data.map((a: any) => ({
@@ -40,7 +40,7 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
   const handleEdit = (id: number) => setEditingId(id);
   const handleDelete = async (id: number) => {
     if (confirmDeleteId === id) {
-      await fetch(`/api/authors/${id}`, { method: 'DELETE' });
+      await fetch(`/api/blog/authors/${id}`, { method: 'DELETE' });
       setAuthors(authors.filter(a => a.id !== id));
       setToast({ type: 'success', message: 'Autor removido com sucesso!' });
       setConfirmDeleteId(null);
@@ -51,7 +51,7 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
   };
   const handleSave = async (author: Author) => {
     if (confirmSaveId === author.id) {
-      const res = await fetch(`/api/authors/${author.id}`, {
+      const res = await fetch(`/api/blog/authors/${author.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(author)
@@ -71,7 +71,7 @@ const ManageAuthorsModal: React.FC<ManageAuthorsModalProps> = ({ onClose }) => {
   };
 
   const handleAddAuthor = async (author: { name: string; email: string; photo: string | null }) => {
-    const res = await fetch('/api/authors', {
+    const res = await fetch('/api/blog/authors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(author)

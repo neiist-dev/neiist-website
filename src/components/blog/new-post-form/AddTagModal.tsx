@@ -13,7 +13,7 @@ const AddTagModal: React.FC<AddTagModalProps> = ({ onCreate, onClose }) => {
   const [error, setError] = useState("");
 
   React.useEffect(() => {
-    fetch('/api/tags')
+    fetch('/api/blog/tags')
       .then(res => res.json())
       .then(data => {
         if (data && typeof data === 'object') {
@@ -34,7 +34,7 @@ const AddTagModal: React.FC<AddTagModalProps> = ({ onCreate, onClose }) => {
 
     let allTags: string[] = [];
     try {
-      const tagsRes = await fetch('/api/tags');
+      const tagsRes = await fetch('/api/blog/tags');
       const tagsData = await tagsRes.json();
       if (tagsData && typeof tagsData === 'object') {
         allTags = Object.values(tagsData).flat().map((tag: any) => tag.name.toLowerCase());
@@ -46,7 +46,7 @@ const AddTagModal: React.FC<AddTagModalProps> = ({ onCreate, onClose }) => {
     }
 
     try {
-      const res = await fetch("/api/tags", {
+      const res = await fetch("/api/blog/tags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: tagToUse, category: categoryToUse })

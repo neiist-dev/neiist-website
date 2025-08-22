@@ -1,7 +1,7 @@
 import { db_query } from "@/utils/dbUtils";
 import { NextResponse } from "next/server";
 
-// GET /api/authors - Lista todos os autores existentes
+// GET /api/blog/authors - Lista todos os autores existentes
 export async function GET() {
     try {
         const { rows } = await db_query("SELECT id, name, email, photo FROM neiist.authors ORDER BY name ASC");
@@ -11,7 +11,7 @@ export async function GET() {
     }
 }
 
-// POST /api/authors - Adiciona um novo autor
+// POST /api/blog/authors - Adiciona um novo autor
 export async function POST(request: Request) {
     try {
         const { name, email, photo } = await request.json();

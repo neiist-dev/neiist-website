@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { db_query } from "@/utils/dbUtils";
 
@@ -36,12 +35,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // PUT /api/blog/[id] - Atualiza post por id
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   try {
     const formData = await request.formData();
     const title = formData.get('title');
     const description = formData.get('description');
-  const authorsRaw = formData.get('authors');
+    const authorsRaw = formData.get('authors');
     const tagsRaw = formData.get('tags');
     let tagNames: string[] = [];
     try {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +30,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
   const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/tags')
+    fetch('/api/blog/tags')
       .then(res => res.json())
       .then(data => setTagsByCategory(data));
   }, []);
@@ -54,7 +53,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
     setSelectedCategory("");
     setCustomCategory("");
     setError("");
-    fetch('/api/tags')
+    fetch('/api/blog/tags')
       .then(res => res.json())
       .then(data => setTagsByCategory(data));
   };
@@ -65,7 +64,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
       await onDeleteTag(id);
       setToast({ type: 'success', message: 'Tag eliminada com sucesso!' });
       setConfirmDeleteTag(null);
-      fetch('/api/tags')
+      fetch('/api/blog/tags')
         .then(res => res.json())
         .then(data => setTagsByCategory(data));
     } else {
@@ -80,7 +79,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
       await onDeleteCategory(category);
       setToast({ type: 'success', message: 'Categoria eliminada com sucesso!' });
       setConfirmDeleteCategory(null);
-      fetch('/api/tags')
+      fetch('/api/blog/tags')
         .then(res => res.json())
         .then(data => setTagsByCategory(data));
     } else {
@@ -100,7 +99,7 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
       setEditingTag(null);
       setEditingValue("");
       setToast({ type: 'success', message: 'Tag atualizada com sucesso!' });
-      fetch('/api/tags')
+      fetch('/api/blog/tags')
         .then(res => res.json())
         .then(data => setTagsByCategory(data));
     }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db_query } from "@/utils/dbUtils";
 
-// PATCH /api/tags/[id] - update tag name
+// PATCH /api/blog/tags/[id] - update tag name
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     const { name } = await request.json();

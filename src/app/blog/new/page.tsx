@@ -5,7 +5,6 @@ import BackButton from '@/components/blog/new-post-form/BackButton';
 import TitleInput from '@/components/blog/new-post-form/TitleInput';
 import CoverImageInput from '@/components/blog/new-post-form/CoverImageInput';
 import dynamic from 'next/dynamic';
-const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Editor), { ssr: false });
 import ActionButtons from '@/components/blog/new-post-form/ActionButtons';
 import DropdownsSection from '@/components/blog/new-post-form/DropdownsSection';
 import AddTagModal from '@/components/blog/new-post-form/AddTagModal';
@@ -14,6 +13,8 @@ import { useSearchParams } from 'next/navigation';
 import PostMeta from '@/components/blog/post/PostMeta';
 import PostHeader from '@/components/blog/post/PostHeader';
 import PostContent from '@/components/blog/post/PostContent';
+
+const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Editor), { ssr: false });
 
 const NewPostPage: React.FC = () => {
   const { useRouter } = require('next/navigation');
@@ -38,7 +39,7 @@ const NewPostPage: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
 
   React.useEffect(() => {
-    fetch('/api/tags')
+    fetch('/api/blog/tags')
       .then(res => res.json())
       .then(data => {
         if (data && typeof data === 'object') {
@@ -46,7 +47,7 @@ const NewPostPage: React.FC = () => {
           setTagsByCategory(data);
         }
       });
-    fetch('/api/authors')
+    fetch('/api/blog/authors')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -82,7 +83,7 @@ const NewPostPage: React.FC = () => {
   };
   const handleCreateAuthor = async (author: { name: string; email: string; photo: string | null }) => {
     try {
-      const res = await fetch('/api/authors', {
+      const res = await fetch('/api/blog/authors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(author)
@@ -98,7 +99,7 @@ const NewPostPage: React.FC = () => {
   };
   
   const handleAddTag = () => {
-    fetch('/api/tags')
+    fetch('/api/blog/tags')
       .then(res => res.json())
       .then(data => {
         if (data && typeof data === 'object') {
@@ -234,7 +235,7 @@ const NewPostPage: React.FC = () => {
       {showTagForm && (
         <AddTagModal
           onCreate={(tag, category) => {
-            fetch('/api/tags')
+            fetch('/api/blog/tags')
               .then(res => res.json())
               .then(data => {
                 if (data && typeof data === 'object') {
