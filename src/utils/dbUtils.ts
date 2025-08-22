@@ -2,6 +2,17 @@ import { Pool, QueryResult, QueryResultRow } from "pg";
 import { Event } from "@/types/events";
 import { Membership, RawMembership, mapRawMembershipToMembership } from "@/types/memberships";
 import { User, mapRoleToUserRole, mapDbUserToUser } from "@/types/user";
+import {
+  Product,
+  DbProduct,
+  ProductVariant,
+  mapDbProductToProduct,
+  DbProductVariant,
+  Order,
+  DbOrder,
+  mapDbOrderToOrder,
+  OrderStatus,
+} from "@/types/shop";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -509,4 +520,179 @@ export const getAllEvents = async (): Promise<Event[]> => {
     console.error("Error fetching all events:", error);
     return [];
   }
+};
+
+export const addProduct = async (
+  product: Partial<Product> & {
+    name: string;
+    price: number;
+    stock_type: Product["stock_type"];
+    active?: boolean;
+  }
+): Promise<Product | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbProduct>(
+    `SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    [
+      product.name,
+      product.description ?? null,
+      product.price,
+      product.images ?? [],
+      product.category ?? null,
+      product.stock_type,
+      product.stock_quantity ?? null,
+      product.order_deadline ?? null,
+      product.estimated_delivery ?? null,
+      product.active ?? true,
+    ]
+  );
+  return row ? mapDbProductToProduct(row) : null;
+};
+
+export const addProductVariant = async (
+  productId: number,
+  variant: Partial<ProductVariant> & {
+    variant_name: string;
+    variant_value: string;
+    price_multiplier?: number;
+  }
+): Promise<Product | null> => {
+  let priceMultiplier = variant.price_multiplier;
+  if (priceMultiplier == null && variant.price_modifier != null) {
+    const {
+      rows: [p],
+    } = await db_query<{ price: string }>(`SELECT price FROM neiist.products WHERE id = $1`, [
+      productId,
+    ]);
+    const base = Number(p?.price ?? 0);
+    priceMultiplier = base > 0 ? Number(variant.price_modifier) / base : 0;
+  }
+
+  const {
+    rows: [row],
+  } = await db_query<DbProduct>(
+    `SELECT * FROM neiist.add_product_variant($1,$2,$3,$4,$5,$6,$7,$8)`,
+    [
+      productId,
+      variant.variant_name,
+      variant.variant_value,
+      variant.images ?? [],
+      priceMultiplier ?? 0,
+      variant.stock_quantity ?? null,
+      variant.size ?? null,
+      variant.active ?? true,
+    ]
+  );
+  return row ? mapDbProductToProduct(row) : null;
+};
+
+export const getAllProducts = async (): Promise<Product[]> => {
+  const { rows } = await db_query<DbProduct>(`SELECT * FROM neiist.get_all_products()`);
+  return rows.map(mapDbProductToProduct);
+};
+
+export const getProduct = async (productId: number): Promise<Product | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbProduct>(`SELECT * FROM neiist.get_product($1)`, [productId]);
+  return row ? mapDbProductToProduct(row) : null;
+};
+
+export const updateProduct = async (
+  productId: number,
+  updates: Partial<Product> & { category?: string; active?: boolean }
+): Promise<Product | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbProduct>(`SELECT * FROM neiist.update_product($1,$2)`, [
+    productId,
+    JSON.stringify(updates),
+  ]);
+  return row ? mapDbProductToProduct(row) : null;
+};
+
+export const updateProductVariant = async (
+  productId: number,
+  variantId: number,
+  updates: Partial<ProductVariant> & { price_multiplier?: number }
+): Promise<ProductVariant | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbProductVariant>(`SELECT * FROM neiist.update_product_variant($1,$2,$3)`, [
+    productId,
+    variantId,
+    JSON.stringify(updates),
+  ]);
+  return row
+    ? {
+        id: row.id,
+        variant_name: row.variant_name,
+        variant_value: row.variant_value,
+        images: row.images ?? [],
+        price_modifier: Number(row.price_modifier ?? 0),
+        stock_quantity: row.stock_quantity ?? undefined,
+        size: row.size ?? undefined,
+        active: row.active,
+      }
+    : null;
+};
+
+export const newOrder = async (
+  order: Partial<Order> & {
+    user_istid?: string;
+    items: Array<{ product_id: number; variant_id?: number; quantity: number }>;
+  }
+): Promise<Order | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbOrder>(`SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7)`, [
+    order.user_istid ?? null,
+    order.customer_nif ?? null,
+    order.campus ?? null,
+    order.notes ?? null,
+    order.payment_method ?? null,
+    order.payment_reference ?? null,
+    JSON.stringify(
+      order.items.map((i) => ({
+        product_id: i.product_id,
+        variant_id: i.variant_id ?? null,
+        quantity: i.quantity,
+      }))
+    ),
+  ]);
+  return row ? mapDbOrderToOrder(row) : null;
+};
+
+export const getAllOrders = async (): Promise<Order[]> => {
+  const { rows } = await db_query<DbOrder>(`SELECT * FROM neiist.get_all_orders()`);
+  return rows.map(mapDbOrderToOrder);
+};
+
+export const updateOrder = async (
+  orderId: number,
+  updates: Partial<Order>
+): Promise<Order | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbOrder>(`SELECT * FROM neiist.update_order($1,$2)`, [
+    orderId,
+    JSON.stringify(updates),
+  ]);
+  return row ? mapDbOrderToOrder(row) : null;
+};
+
+export const setOrderState = async (
+  orderId: number,
+  status: OrderStatus,
+  actor?: string
+): Promise<Order | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbOrder>(`SELECT * FROM neiist.set_order_state($1,$2,$3)`, [
+    orderId,
+    status,
+    actor ?? null,
+  ]);
+  return row ? mapDbOrderToOrder(row) : null;
 };

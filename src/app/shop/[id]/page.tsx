@@ -1,16 +1,10 @@
 import ProductDetail from "@/components/shop/ProductDetail";
+import { getAllProducts, getProduct } from "@/utils/dbUtils";
 import styles from "@/styles/pages/ProductDetail.module.css";
-import { getTempProducts, Product } from "@/types/shop";
-
-const getProduct = async (id: string): Promise<Product | null> => {
-  const products = getTempProducts();
-  const product = products.find((p) => p.id === parseInt(id));
-  return product || null;
-};
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
-  const { id } = await params;
-  const product = await getProduct(id);
+  const productId = Number(params.id);
+  const [product, allProducts] = await Promise.all([getProduct(productId), getAllProducts()]);
 
   if (!product) {
     return (
@@ -22,7 +16,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
 
   return (
     <div className={styles.wrapper}>
-      <ProductDetail product={product} />
+      <ProductDetail product={product} allProducts={allProducts} />
     </div>
   );
 }

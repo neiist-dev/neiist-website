@@ -59,154 +59,125 @@ export interface OrderItem {
 
 export type OrderStatus = "pending" | "paid" | "preparing" | "ready" | "delivered" | "cancelled";
 
-export function getTempProducts(): Product[] {
-  return [
-    {
-      id: 1,
-      name: "T-shirt NEIIST",
-      description: "Camisola oficial do núcleo.",
-      price: 12,
-      images: ["/products/green-0.png", "/products/green-1.png"],
-      category: "Vestuário",
-      stock_type: "limited",
-      stock_quantity: 50,
-      order_deadline: "2025-09-01",
-      estimated_delivery: "2025-09-15",
-      variants: [
-        {
-          id: 1,
-          variant_name: "Tamanho",
-          variant_value: "M",
-          images: ["/products/green-1.png"],
-          price_modifier: 0,
-          stock_quantity: 20,
-          size: "M",
-          active: true,
-        },
-        {
-          id: 2,
-          variant_name: "Tamanho",
-          variant_value: "L",
-          images: ["/products/green-2.png"],
-          price_modifier: 0,
-          stock_quantity: 30,
-          size: "L",
-          active: true,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Sticker NEIIST",
-      description: "Autocolante para portátil.",
-      price: 2,
-      images: ["/products/green-4.png"],
-      category: "Merch",
-      stock_type: "on_demand",
-      order_deadline: "2025-09-10",
-      estimated_delivery: "2025-09-25",
-      variants: [],
-    },
-    {
-      id: 3,
-      name: "Sweat NEIIST",
-      description: "Sweat confortável para os dias frios.",
-      price: 25,
-      images: ["/products/green-0.png", "/products/green-3.png"],
-      category: "Vestuário",
-      stock_type: "limited",
-      stock_quantity: 15,
-      order_deadline: "2025-09-01",
-      estimated_delivery: "2025-09-20",
-      variants: [
-        {
-          id: 3,
-          variant_name: "Tamanho",
-          variant_value: "M",
-          images: ["/products/green-3.png"],
-          price_modifier: 0,
-          stock_quantity: 7,
-          size: "M",
-          active: true,
-        },
-        {
-          id: 4,
-          variant_name: "Tamanho",
-          variant_value: "L",
-          images: ["/products/green-3.png"],
-          price_modifier: 0,
-          stock_quantity: 8,
-          size: "L",
-          active: true,
-        },
-      ],
-    },
-  ];
+export interface DbProductVariant {
+  id: number;
+  product_id: number;
+  variant_name: string;
+  variant_value: string;
+  images?: string[] | null;
+  price_modifier: number | string | null;
+  stock_quantity?: number | null;
+  size?: string | null;
+  active: boolean;
 }
 
-export function getTempOrders(): Order[] {
-  return [
-    {
-      id: 1,
-      order_number: "ORD-2025001",
-      customer_name: "Miguel Póvoa Raposo",
-      user_istid: "ist1109686",
-      customer_email: "miguel.p.raposo@tecnico.ulisboa.pt",
-      customer_phone: "912345678",
-      customer_nif: "123456789",
-      campus: "TagusPark",
-      items: [
-        {
-          product_id: 1,
-          product_name: "T-shirt NEIIST",
-          variant_id: 1,
-          variant_info: "Tamanho: M",
-          quantity: 2,
-          unit_price: 12,
-          total_price: 24,
-        },
-        {
-          product_id: 2,
-          product_name: "Sticker NEIIST",
-          quantity: 5,
-          unit_price: 2,
-          total_price: 10,
-        },
-      ],
-      notes: "Entregar na sala do núcleo.",
-      total_amount: 34,
-      payment_method: "MBWay",
-      payment_reference: "MBW123456",
-      created_at: "2025-08-01T10:00:00Z",
-      paid_at: "2025-08-01T12:00:00Z",
-      paid_by: "Miguel Póvoa Raposo",
-      delivered_at: "2025-08-05T15:00:00Z",
-      delivered_by: "Francisca Almeida",
-      updated_at: "2025-08-05T15:00:00Z",
-      status: "delivered",
-    },
-    {
-      id: 2,
-      order_number: "ORD-2025002",
-      customer_name: "Inês Costa",
-      user_istid: "ist1110632",
-      customer_email: "inesiscosta@tecnico.ulisboa.pt",
-      customer_phone: "934567890",
-      items: [
-        {
-          product_id: 3,
-          product_name: "Sweat NEIIST",
-          variant_id: 4,
-          variant_info: "Tamanho: L",
-          quantity: 1,
-          unit_price: 25,
-          total_price: 25,
-        },
-      ],
-      total_amount: 25,
-      payment_method: "Dinheiro",
-      created_at: "2025-08-02T11:30:00Z",
-      status: "pending",
-    },
-  ];
+export interface DbProduct {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string | number;
+  images: string[] | null;
+  category: string | null;
+  size: string | null;
+  stock_type: string;
+  stock_quantity: number | null;
+  order_deadline: string | null;
+  estimated_delivery: string | null;
+  variants: DbProductVariant[] | null;
+}
+
+export interface DbOrderItem {
+  product_id: number;
+  product_name: string;
+  variant_id: number | null;
+  variant_info: string | null;
+  quantity: number;
+  unit_price: number | string;
+  total_price: number | string;
+}
+
+export interface DbOrder {
+  id: number;
+  order_number: string;
+  customer_name: string;
+  user_istid: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  customer_nif: string | null;
+  campus: string | null;
+  items: DbOrderItem[] | null;
+  notes: string | null;
+  total_amount: string | number;
+  payment_method: string | null;
+  payment_reference: string | null;
+  created_at: string;
+  paid_at: string | null;
+  paid_by: string | null;
+  delivered_at: string | null;
+  delivered_by: string | null;
+  updated_at: string | null;
+  status: string;
+}
+
+export function mapDbProductToProduct(row: DbProduct): Product {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? undefined,
+    price: Number(row.price),
+    images: row.images ?? [],
+    category: row.category ?? undefined,
+    size: row.size ?? undefined,
+    stock_type: row.stock_type as Product["stock_type"],
+    stock_quantity: row.stock_quantity ?? undefined,
+    order_deadline: row.order_deadline ?? undefined,
+    estimated_delivery: row.estimated_delivery ?? undefined,
+    variants: (row.variants ?? []).map(
+      (v): ProductVariant => ({
+        id: v.id,
+        variant_name: v.variant_name,
+        variant_value: v.variant_value,
+        images: v.images ?? [],
+        price_modifier: Number(v.price_modifier ?? 0),
+        stock_quantity: v.stock_quantity ?? undefined,
+        size: v.size ?? undefined,
+        active: Boolean(v.active),
+      })
+    ),
+  };
+}
+
+export function mapDbOrderToOrder(row: DbOrder): Order {
+  return {
+    id: row.id,
+    order_number: row.order_number,
+    customer_name: row.customer_name ?? "",
+    user_istid: row.user_istid ?? undefined,
+    customer_email: row.customer_email ?? undefined,
+    customer_phone: row.customer_phone ?? undefined,
+    customer_nif: row.customer_nif ?? undefined,
+    campus: row.campus ?? undefined,
+    items: (row.items ?? []).map(
+      (it): OrderItem => ({
+        product_id: it.product_id,
+        product_name: it.product_name,
+        variant_id: it.variant_id ?? undefined,
+        variant_info: it.variant_info ?? undefined,
+        quantity: it.quantity,
+        unit_price: Number(it.unit_price),
+        total_price: Number(it.total_price),
+      })
+    ),
+    notes: row.notes ?? undefined,
+    total_amount: Number(row.total_amount),
+    payment_method: row.payment_method ?? undefined,
+    payment_reference: row.payment_reference ?? undefined,
+    created_at: row.created_at,
+    paid_at: row.paid_at ?? undefined,
+    paid_by: row.paid_by ?? undefined,
+    delivered_at: row.delivered_at ?? undefined,
+    delivered_by: row.delivered_by ?? undefined,
+    updated_at: row.updated_at ?? undefined,
+    status: row.status as Order["status"],
+  };
 }
