@@ -3,7 +3,8 @@ import { getAllProducts, getProduct } from "@/utils/dbUtils";
 import styles from "@/styles/pages/ProductDetail.module.css";
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
-  const productId = Number(params.id);
+  const { id } = await params;
+  const productId = Number(id);
   const [product, allProducts] = await Promise.all([getProduct(productId), getAllProducts()]);
 
   if (!product) {

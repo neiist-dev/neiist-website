@@ -1175,35 +1175,35 @@ DECLARE
 BEGIN
   IF p_updates ? 'category' THEN
     v_cat_id := neiist.verify_category(p_updates->>'category');
-    UPDATE neiist.products SET category_id = v_cat_id WHERE id = p_product_id;
+    UPDATE neiist.products SET category_id = v_cat_id WHERE products.id = p_product_id;
   END IF;
 
   IF p_updates ? 'name' THEN
-    UPDATE neiist.products SET name = p_updates->>'name' WHERE id = p_product_id;
+    UPDATE neiist.products SET name = p_updates->>'name' WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'description' THEN
-    UPDATE neiist.products SET description = p_updates->>'description' WHERE id = p_product_id;
+    UPDATE neiist.products SET description = p_updates->>'description' WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'price' THEN
-    UPDATE neiist.products SET price = (p_updates->>'price')::NUMERIC WHERE id = p_product_id;
+    UPDATE neiist.products SET price = (p_updates->>'price')::NUMERIC WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'images' THEN
-    UPDATE neiist.products SET images = COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_updates->'images')), '{}') WHERE id = p_product_id;
+    UPDATE neiist.products SET images = COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_updates->'images')), '{}') WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'stock_type' THEN
-    UPDATE neiist.products SET stock_type = (p_updates->>'stock_type')::neiist.shop_stock_type_enum WHERE id = p_product_id;
+    UPDATE neiist.products SET stock_type = (p_updates->>'stock_type')::neiist.shop_stock_type_enum WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'stock_quantity' THEN
-    UPDATE neiist.products SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE id = p_product_id;
+    UPDATE neiist.products SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'order_deadline' THEN
-    UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::DATE WHERE id = p_product_id;
+    UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::DATE WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'estimated_delivery' THEN
-    UPDATE neiist.products SET estimated_delivery = NULLIF(p_updates->>'estimated_delivery','')::DATE WHERE id = p_product_id;
+    UPDATE neiist.products SET estimated_delivery = NULLIF(p_updates->>'estimated_delivery','')::DATE WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'active' THEN
-    UPDATE neiist.products SET active = (p_updates->>'active')::BOOLEAN WHERE id = p_product_id;
+    UPDATE neiist.products SET active = (p_updates->>'active')::BOOLEAN WHERE products.id = p_product_id;
   END IF;
 
   RETURN QUERY SELECT * FROM neiist.get_product(p_product_id);
@@ -1228,16 +1228,16 @@ CREATE OR REPLACE FUNCTION neiist.update_product_variant(
 ) AS $$
 BEGIN
   IF p_updates ? 'variant_name' THEN
-    UPDATE neiist.product_variants SET variant_name = p_updates->>'variant_name' WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET variant_name = p_updates->>'variant_name' WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   END IF;
   IF p_updates ? 'variant_value' THEN
-    UPDATE neiist.product_variants SET variant_value = p_updates->>'variant_value' WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET variant_value = p_updates->>'variant_value' WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   END IF;
   IF p_updates ? 'images' THEN
-    UPDATE neiist.product_variants SET images = COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_updates->'images')), '{}') WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET images = COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_updates->'images')), '{}') WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   END IF;
   IF p_updates ? 'price_multiplier' THEN
-    UPDATE neiist.product_variants SET price_multiplier = (p_updates->>'price_multiplier')::NUMERIC WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET price_multiplier = (p_updates->>'price_multiplier')::NUMERIC WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   ELSIF p_updates ? 'price_modifier' THEN
     UPDATE neiist.product_variants v
     SET price_multiplier = GREATEST(ROUND((( (p_updates->>'price_modifier')::NUMERIC + p.price ) / NULLIF(p.price,0)) - 1, 4), 0)
@@ -1245,13 +1245,13 @@ BEGIN
     WHERE v.id = p_variant_id AND v.product_id = p_product_id AND p.id = v.product_id;
   END IF;
   IF p_updates ? 'stock_quantity' THEN
-    UPDATE neiist.product_variants SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   END IF;
   IF p_updates ? 'size' THEN
-    UPDATE neiist.product_variants SET size = p_updates->>'size' WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET size = p_updates->>'size' WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   END IF;
   IF p_updates ? 'active' THEN
-    UPDATE neiist.product_variants SET active = (p_updates->>'active')::BOOLEAN WHERE id = p_variant_id AND product_id = p_product_id;
+    UPDATE neiist.product_variants SET active = (p_updates->>'active')::BOOLEAN WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
   END IF;
 
   RETURN QUERY
