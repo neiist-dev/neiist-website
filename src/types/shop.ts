@@ -59,6 +59,11 @@ export interface OrderItem {
 
 export type OrderStatus = "pending" | "paid" | "preparing" | "ready" | "delivered" | "cancelled";
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export interface DbProductVariant {
   id: number;
   product_id: number;

@@ -7,28 +7,31 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import "swiper/css";
 import "swiper/css/navigation";
 import styles from "@/styles/components/shop/ShopProductList.module.css";
-import { Product, Order } from "@/types/shop";
+import { Product, Order, Category } from "@/types/shop";
 import ProductCard from "@/components/shop/ProductCard";
 import { getFeaturedAndTopProducts } from "@/utils/shopUtils";
 
 export default function ShopProductList({
   products,
   orders,
+  categories,
 }: {
   products: Product[];
   orders: Order[];
+  categories: Category[];
 }) {
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [showArrows, setShowArrows] = useState(false);
 
-  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
   const { top } = getFeaturedAndTopProducts(products, orders);
 
   const filtered = products.filter(
     (p) =>
-      (category === "all" || p.category === category) &&
+      (category === "all" ||
+        p.category === categories.find((c) => c.id.toString() === category)?.name ||
+        p.category === category) &&
       (search === "" || p.name.toLowerCase().includes(search.toLowerCase()))
   );
 
@@ -50,10 +53,10 @@ export default function ShopProductList({
         </button>
         {categories.map((cat) => (
           <button
-            key={cat ?? "unknown"}
-            onClick={() => setCategory(cat ?? "")}
-            className={`${styles.tabButton} ${category === cat ? styles.activeTab : ""}`}>
-            {cat ?? "Sem categoria"}
+            key={cat.id}
+            onClick={() => setCategory(cat.name)}
+            className={`${styles.tabButton} ${category === cat.name ? styles.activeTab : ""}`}>
+            {cat.name}
           </button>
         ))}
       </div>

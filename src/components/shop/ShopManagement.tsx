@@ -3,12 +3,17 @@ import { useState } from "react";
 import Image from "next/image";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
-import { Product } from "@/types/shop";
+import { Product, Category } from "@/types/shop";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import ProductForm from "@/components/shop/ProductForm";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 
-export default function ShopManagement({ products }: { products: Product[] }) {
+interface ShopManagementProps {
+  products: Product[];
+  categories: Category[];
+}
+
+export default function ShopManagement({ products, categories }: ShopManagementProps) {
   const [view, setView] = useState<"list" | "add" | "edit">("list");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
@@ -99,6 +104,7 @@ export default function ShopManagement({ products }: { products: Product[] }) {
           setView("list");
           setEditingProduct(null);
         }}
+        categories={categories}
       />
     );
   }
@@ -133,8 +139,11 @@ export default function ShopManagement({ products }: { products: Product[] }) {
           />
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
             <option value="all">Todas categorias</option>
-            <option value="Vestuário">Vestuário</option>
-            <option value="Merch">Merch</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.name}>
+                {cat.name}
+              </option>
+            ))}
           </select>
         </div>
 

@@ -1,8 +1,8 @@
 import ShopManagement from "@/components/shop/ShopManagement";
-import { getAllProducts } from "@/utils/dbUtils";
+import { getAllProducts, getAllCategories } from "@/utils/dbUtils";
 
 export default async function ShopManagePage() {
-  const products = await getAllProducts();
+  const [products, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
 
-  return <ShopManagement products={products} />;
+  return <ShopManagement products={products} categories={categories} />;
 }

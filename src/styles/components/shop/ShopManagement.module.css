@@ -17,6 +17,7 @@
 .addBtn {
   background: var(--primary-colour);
   color: white;
+  font-family: inherit;
   border: none;
   border-radius: 0.5rem;
   padding: 0.75rem 1.5rem;
@@ -34,6 +35,7 @@
 
 .filters input,
 .filters select {
+  font-family: inherit;
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 0.5rem;
@@ -154,6 +156,7 @@
 }
 
 .actions button {
+  font-family: inherit;
   flex: 1;
   padding: 0.5rem;
   border: none;

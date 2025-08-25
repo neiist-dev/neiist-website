@@ -1,9 +1,152 @@
-.container {
-  padding: 2rem;
-  margin: 0 auto;
+.form {
+  margin: 1.5rem;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr 1fr;
 }
 
-.backBtn {
+.title {
+  grid-column: 1 / -1;
+  font-size: 1.7rem;
+  color: var(--primary-colour);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.field {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+  background: #f9fafb;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--primary-colour);
+  background: #fff;
+}
+
+.row {
+  display: flex;
+  gap: 0.7rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+
+.addButton {
+  display: inline-flex;
+  justify-content: center;
+  padding: 0.25rem 1rem;
+  background: var(--primary-colour);
+  color: #fff;
+  border: none;
+  border-radius: 0.6rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.addButton:hover {
+  background: #1741b6;
+}
+
+.imageArea {
+  width: 100%;
+  aspect-ratio: 1/1;
+  position: relative;
+  background: #f3f4f6;
+  border-radius: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.imagePreview :global(img) {
+  border-radius: 0.8rem;
+  object-fit: cover;
+}
+
+.imageNav {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border-radius: 2rem;
+  padding: 0.3rem 1.2rem;
+  font-size: 1rem;
+  z-index: 2;
+}
+
+.imageNav button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.noImage {
+  color: #888;
+  font-style: italic;
+}
+
+.thumbList {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.thumbItem {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.thumb {
+  border-radius: 0.4rem;
+  object-fit: cover;
+}
+
+.thumbBtn {
+  background: none;
+  border: none;
+  color: var(--primary-colour);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.backButton {
   background: white;
   border: none;
   border-radius: 1.5rem;
@@ -13,272 +156,95 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 2rem;
-  transition: all 0.2s ease;
+  max-width: fit-content;
 }
 
-.backBtn:hover {
+.backButton:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(40, 99, 253, 0.12);
 }
 
-.title {
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0 0 2rem 0;
-}
-
-.form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: start;
-}
-
-.imageSection,
-.formSection {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.imagePreview {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 1rem;
-  overflow: hidden;
-  background: #f5f5f5;
-  display: flex;
+.button {
   align-items: center;
   justify-content: center;
-}
-
-.mainImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.noImage {
-  color: #666;
-  font-weight: 600;
-}
-
-.imageArrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.input {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  background: white;
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--primary-colour);
-}
-
-.focused {
-  border-color: var(--primary-colour);
-}
-
-.dateInput {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.timeInput {
-  width: 80px;
-  flex-shrink: 0;
-}
-
-.priceInput {
-  display: flex;
-  align-items: center;
-  background: var(--primary-colour);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  width: fit-content;
-  gap: 0.5rem;
-}
-
-.priceInput input {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  width: 80px;
-}
-
-.priceInput input:focus {
-  outline: none;
-}
-
-.priceInput span {
-  font-weight: 700;
-}
-
-.addBtn {
-  background: var(--primary-colour);
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: center;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.addBtn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
-.variantsSection {
-  background: white;
-  border-radius: 0.5rem;
-  padding: 1rem;
-}
-
-.variantHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.variant {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  padding: 0.75rem;
-  background: #f9f9f9;
-  border-radius: 0.5rem;
-}
-
-.variant .input {
-  flex: 1;
-  padding: 0.5rem;
-  margin: 0;
-}
-
-.removeBtn {
-  background: #ffe6e6;
-  color: #d32f2f;
-  border: none;
-  border-radius: 0.25rem;
-  padding: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.removeBtn:hover {
-  background: #ffcccc;
-}
-
-.noVariants {
-  color: #666;
-  font-style: italic;
-  text-align: center;
-  margin: 1rem 0;
-}
-
-.saveBtn {
-  background: var(--primary-colour);
-  color: white;
+  gap: 0.4rem;
   border: none;
   border-radius: 0.6rem;
-  padding: 0.875rem 1.5rem;
   font-weight: 600;
-  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 1rem;
+  font-size: 1rem;
+  padding: 0.5rem 1.2rem;
+  background: var(--primary-colour);
+  color: #fff;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  text-align: center;
+  display: inline-flex;
 }
 
-.saveBtn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.12);
+.button:hover {
+  background: #1741b6;
 }
 
-:global(.nice-dates-popover) {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+.deleteButton {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.3rem 0.7rem;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background 0.2s;
 }
 
-:global(.nice-dates-navigation) {
-  color: var(--primary-colour);
-  font-weight: 600;
+.deleteButton:hover {
+  background: #fecaca;
 }
 
-:global(.nice-dates-day_today) {
-  color: var(--primary-colour);
-  font-weight: 700;
+.noVarients {
+  font-size: 0.9rem;
+  color: #888;
+  font-style: italic;
 }
 
-:global(.nice-dates-day_selected) {
-  background-color: var(--primary-colour);
-  color: white;
-}
-
-:global(.nice-dates-day:hover) {
-  background-color: rgba(40, 99, 253, 0.1);
+.error {
+  color: #d32f2f;
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
 }
 
 @media (max-width: 768px) {
   .form {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    padding: 1rem 0.2rem;
+    gap: 1.2rem;
+    margin: 0.5rem;
   }
-
-  .container {
-    padding: 1rem;
+  .title {
+    font-size: 1.2rem;
   }
-
-  .dateInput {
+  .button,
+  .backButton,
+  .deleteButton,
+  .addButton {
+    font-size: 0.98rem;
+    padding: 0.5rem 0.7rem;
+    height: 2.2rem;
+    width: 2.2rem;
+  }
+  .field {
+    font-size: 0.98rem;
+    padding: 0.4rem 0.5rem;
+  }
+  .imageArea {
+    min-height: 140px;
+  }
+  .variantRow {
     flex-direction: column;
-  }
-
-  .timeInput {
-    width: 100%;
+    align-items: stretch;
+    gap: 0.5rem;
   }
 }

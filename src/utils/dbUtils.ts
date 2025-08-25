@@ -12,6 +12,7 @@ import {
   DbOrder,
   mapDbOrderToOrder,
   OrderStatus,
+  Category,
 } from "@/types/shop";
 
 const pool = new Pool({
@@ -695,4 +696,14 @@ export const setOrderState = async (
     actor ?? null,
   ]);
   return row ? mapDbOrderToOrder(row) : null;
+};
+
+export const getAllCategories = async (): Promise<Category[]> => {
+  try {
+    const { rows } = await db_query<Category>("SELECT * FROM neiist.get_all_categories()");
+    return rows;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
 };

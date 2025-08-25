@@ -47,17 +47,7 @@
 }
 
 .item:hover {
-  box-shadow:
-    0 8px 32px rgba(40, 99, 253, 0.16),
-    0 2px 8px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px) scale(1.012);
-  background: linear-gradient(
-    90deg,
-    var(--primary-colour) 10%,
-    var(--secondary-colour) 33%,
-    var(--terciary-colour) 66%,
-    var(--quartenary-colour) 90%
-  );
 }
 
 .userPhoto {

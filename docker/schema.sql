@@ -1625,3 +1625,14 @@ BEGIN
   WHERE g.id = p_order_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all available product categories
+CREATE OR REPLACE FUNCTION neiist.get_all_categories()
+RETURNS TABLE (
+  id INTEGER,
+  name TEXT
+) AS $$
+BEGIN
+  RETURN QUERY SELECT categories.id, categories.name FROM neiist.categories ORDER BY categories.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
