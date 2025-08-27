@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FaPlus, FaEdit } from 'react-icons/fa';
 import React, { useState } from 'react';
-import ManageAuthorsModal from './ManageAuthorsModal';
+import ManageAuthorsModal from './manageauthors/ManageAuthorsModal';
 import styles from '@/styles/components/blog/mainpage/MemberControls.module.css';
 
 interface MemberControlsProps {

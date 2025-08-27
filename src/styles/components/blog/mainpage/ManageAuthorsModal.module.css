@@ -1,3 +1,19 @@
+/* Close button for Gerir Autores modal header */
+.modalHeaderClose {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 10;
+}
+.modalHeaderClose:hover {
+  color: #e53e3e;
+}
 .modal {
   position: fixed;
   top: 0;
@@ -33,13 +49,21 @@
   border-radius: 12px 12px 0 0;
 }
 
+.modalHeader button {
+  top: 0.7rem;
+}
+
 .closeButton {
+  position: absolute;
+  top: 18px;
+  right: 24px;
   background: none;
   border: none;
   font-size: 2rem;
   color: #888;
   cursor: pointer;
   transition: color 0.2s;
+  z-index: 10;
 }
 .closeButton:hover {
   color: #e53e3e;
@@ -49,7 +73,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0rem 1.5rem;
   background: #fff;
 }
 
@@ -82,6 +106,20 @@
   min-width: 150px;
   margin-bottom: 0.5rem;
   cursor: pointer;
+  background: #2863FD;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.08);
+}
+
+.addAuthorButton:hover {
+  background: #1e4bb8;
+  color: #fff;
 }
 
 .authorList h3 {
@@ -171,6 +209,7 @@
   color: #dc2626;
   border-color: #dc2626;
 }
+
 .removeButton:hover {
   background: #dc2626;
   color: white;
@@ -221,7 +260,9 @@
   color: #222;
   outline: none;
   transition: border 0.2s;
+  margin: 0.6rem 0;
 }
+
 .input:focus {
   border-color: #2563eb;
 }
@@ -232,6 +273,7 @@
   align-items: center;
   gap: 0.5rem;
 }
+
 .importButton {
   display: flex;
   align-items: center;
@@ -246,13 +288,16 @@
   transition: background 0.2s, color 0.2s;
   box-shadow: none;
 }
+
 .importButton:hover {
   background: #e0e7ff;
   color: #1e40af;
 }
+
 .importIcon {
   font-size: 0.95rem;
 }
+
 .fileInput {
   display: none;
 }
@@ -264,14 +309,111 @@
   background: none;
   padding: 0; 
 }
+
 .avatarEditButton .avatar {
   border: 2px solid #2563eb;
   box-shadow: 0 0 0 2px #e0e7ff;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
+
 .avatarEditButton:hover .avatar {
   border-color: #1e40af;
   box-shadow: 0 0 0 2px #2563eb;
+}
+
+.addFormOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.addFormContainer {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  position: relative;
+  height: auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.addFormContainer h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #111827;
+}
+
+.addFormField {
+  margin-bottom: 1rem;
+}
+
+.addFormField label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.addFormPhotoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.addFormPhotoPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.addFormPhotoPreviewLabel {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.addFormPhotoPreviewImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.addFormAvatarWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.addFormError {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.addFormActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
 }
 
 @media (max-width: 768px) {
@@ -279,15 +421,14 @@
     width: 95%;
     max-height: 95vh;
   }
-  .modalHeader,
-  .modalActions {
+  .modalHeader {
     padding: 1rem;
   }
   .modalHeader {
     font-size: 1.25rem;
   }
   .authorListHeader {
-    padding: 1rem 1rem 0 1rem;
+    padding: 3rem 1rem 0 1rem;
   }
   .authorList h3 {
     padding: 1rem 1rem 0 1rem;
@@ -308,4 +449,191 @@
     min-width: 100px;
     font-size: 0.95rem;
   }
+  .toast {
+    right: 10px;
+    left: 10px;
+    top: 10px;
+  }
+}
+
+/* Add Author Form */
+
+.addFormTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.addFormFields {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.addFormLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.addFormPhotoButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: #2863FD;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.addFormPhotoButton:hover {
+  background: #1e4bb8;
+  color: #fff;
+}
+
+.addFormPhotoIcon {
+  font-size: 1rem;
+}
+
+.addFormPhotoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.addFormPhotoPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.addFormPhotoPreviewLabel {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.addFormPhotoPreviewImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.addFormError {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.addFormActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.addFormCancelButton {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.addFormCancelButton:hover {
+  background: #e5e7eb;
+}
+
+.addFormSubmitButton {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #fff;
+  background: #2863FD;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.addFormSubmitButton:hover {
+  background: #1e4bb8;
+}
+
+/* Toast Notification Styles */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1100;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+.toast.success {
+  background: #10b981;
+}
+
+.toast.error {
+  background: #ef4444;
+}
+
+.toastClose {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.toastClose:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
+.avatarEditable {
+  border: 2px solid #2563eb;
+  box-shadow: 0 0 0 2px #e0e7ff;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
