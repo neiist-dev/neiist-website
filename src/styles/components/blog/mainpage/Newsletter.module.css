@@ -1,0 +1,63 @@
+.newsletter {
+  border-radius: 10px;
+  padding: 2rem;
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.newsletterTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #06023a;
+  margin-bottom: 0.5rem;
+}
+
+.newsletterDesc {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.newsletterForm {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 450px;
+}
+
+.successMessage {
+  font-size: 1rem;
+  color: grey;
+}
+
+.emailInput {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 1rem;
+  box-sizing: border-box;
+  height: 40px;
+}
+
+.emailInput:focus {
+  outline: none;
+  border: 2px solid #2863FD;
+  border-color: grey;
+}
+
+.subscribeButton {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  box-sizing: border-box;
+  height: 40px;
+}

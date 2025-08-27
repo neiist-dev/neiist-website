@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import styles from '@/styles/components/blog/mainpage/PostCard.module.css';
 
 export interface AuthorCard {
   name: string;
@@ -50,30 +51,22 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
   const extraAuthors = authorList.length - maxAvatars;
 
   return (
-    <Link href={`/blog/${id}`} className="block group">
-      <Card className="w-full max-w-xs h-[470px] flex flex-col overflow-hidden group-hover:shadow-lg transition-shadow cursor-pointer">
-        <div className="px-4">
-          <div className="w-full aspect-[16/9] bg-muted flex items-center justify-center rounded-lg overflow-hidden relative">
-            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-              <Image
-                src={getImageSrc(image)}
-                alt={title}
-                style={{ objectFit: 'cover', borderRadius: '0.5rem', maxWidth: '100%', maxHeight: '100%' }}
-                fill
-                sizes="(max-width: 384px) 100vw, 384px"
-                priority={false}
-              />
-            </div>  
-          </div>
+  <Link href={`/blog/${id}`} className={styles.noDecoration}>
+      <Card className={styles.postCard}>
+        <div>
+          <img
+            src={getImageSrc(image)}
+            alt={title}
+            className={styles.postImage}
+          />
         </div>
-        <CardHeader className="min-h-0">
-          <div className="flex items-center text-sm text-muted-foreground space-x-2 min-w-0">
-            <div className="flex -space-x-2">
+        <CardHeader>
+          <div className={styles.postMeta}>
+            <div className={styles.authorRow}>
               {showAuthors.map((a, idx) => (
                 <Avatar
                   key={a.name + idx}
-                  className="w-8 h-8 border-2 border-white shadow-sm z-10"
-                  style={{ zIndex: 10 - idx }}
+                  className={styles.authorAvatar}
                 >
                   {a.photo ? (
                     <AvatarImage src={a.photo} alt={a.name} />
@@ -82,29 +75,26 @@ export function PostCard({ id, title, description, image, date, authors = [], ta
                 </Avatar>
               ))}
               {extraAuthors > 0 && (
-                <Avatar className="w-8 h-8 border-2 border-white bg-gray-200 text-gray-700 font-bold shadow-sm z-0 flex items-center justify-center">
-                  <span className="w-full h-full flex items-center justify-center text-base">{extraAuthors}</span>
+                <Avatar className={styles.extraAuthorsAvatar}>
+                  <span className={styles.extraAuthorsCount}>{extraAuthors}</span>
                 </Avatar>
               )}
             </div>
-            <span className="sm:inline block mt-1 sm:mt-0" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span className={styles.flexSpacer} />
+            <span className={styles.dateText}>
+              {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
             </span>
-              <span className="flex-1 min-w-0" />
-              <span className="block text-right min-w-[80px] truncate">
-                {date ? new Date(date).toLocaleDateString('pt-PT') : ''}
-              </span>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3 min-h-0">
-          <CardTitle className="text-base leading-snug line-clamp-3 break-words max-w-full">{title}</CardTitle>
+        <CardContent>
+          <div className={styles.postTitle}>{title}</div>
           <div
-            className="text-sm text-muted-foreground line-clamp-3 break-words max-w-full"
-            style={{ wordBreak: 'break-word', overflow: 'hidden' }}
+            className={styles.postDescription}
             dangerouslySetInnerHTML={{ __html: descriptionNoFormatting }}
           />
-          <div className="flex flex-wrap gap-2 overflow-hidden">
+          <div className={styles.postTags}>
             {tags && tags.length > 0 && tags.map((tag, idx) => (
-              <Badge key={idx} variant="outline" className="w-fit bg-blue-100 text-blue-800 truncate max-w-full">
+              <Badge key={idx} variant="default">
                 {tag}
               </Badge>
             ))}

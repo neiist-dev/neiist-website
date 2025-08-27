@@ -1,4 +1,5 @@
 import { PostCard } from "./PostCard";
+import styles from '@/styles/components/blog/mainpage/PostGrid.module.css';
 
 interface Post {
   id: string;
@@ -17,14 +18,14 @@ interface PostGridProps {
 export function PostGrid({ posts }: PostGridProps) {
   if (!posts || posts.length === 0) {
     return (
-      <div className="w-full flex justify-center p-30">
-        <span className="text-gray-500 text-lg">Nenhum post encontrado.</span>
+      <div className={styles.centeredRow}>
+        <span className={styles.noPosts}>Nenhum post encontrado.</span>
       </div>
     );
   }
   return (
-    <div className="w-full flex justify-center p-10">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-10">
+    <div className={styles.centeredRow}>
+      <div className={styles.postGrid}>
         {posts.map((item) => (
           <PostCard key={item.id} {...item} tags={item.tags || []} authors={item.authors || []} />
         ))}

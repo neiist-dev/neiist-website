@@ -1,0 +1,66 @@
+.modal {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+  padding: 2rem;
+  max-width: 500px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalHeader {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #06023a;
+  margin-bottom: 1rem;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.authorList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.closeButton {
+  float: right;
+  font-size: 1.5rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.authorItem {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editButton {
+  color: blue;
+  font-size: 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.3rem;
+}
+
+.removeButton {
+  color: red;
+  font-size: 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

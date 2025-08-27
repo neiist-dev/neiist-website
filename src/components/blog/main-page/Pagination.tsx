@@ -1,4 +1,5 @@
 import React from "react";
+import styles from '@/styles/components/blog/mainpage/Pagination.module.css';
 
 interface PaginationProps {
   page: number;
@@ -8,23 +9,23 @@ interface PaginationProps {
 
 export default function Pagination({ page, pageCount, setPage }: PaginationProps) {
   return (
-    <div className="flex justify-center items-center gap-2 px-2 py-4 w-full">
+    <div className={styles.pagination}>
       <button
-        className="px-4 py-2 rounded text-foreground disabled:opacity-50 transition-colors cursor-pointer"
+        className={styles.nextPage}
         onClick={() => setPage(Math.max(1, page - 1))}
         disabled={page === 1}
       >
         Anterior
       </button>
-      <div className="flex gap-1">
+      <div className={styles.pageNumbers}>
         {Array.from({ length: pageCount }, (_, i) => (
           <button
             key={i}
-            className={`px-2.5 py-0.5 rounded font-medium border transition-colors cursor-pointer ${
+            className={
               page === i + 1
-                ? 'text-black border-transparent bg-[#2863FD] text-white hover:bg-[#2863FD]/90'
-                : ' text-foreground border-transparent hover:bg-[#2863FD]/10'
-            }`}
+                ? `${styles.pageButton} ${styles.active}`
+                : styles.pageButton
+            }
             onClick={() => setPage(i + 1)}
           >
             {i + 1}
@@ -32,7 +33,7 @@ export default function Pagination({ page, pageCount, setPage }: PaginationProps
         ))}
       </div>
       <button
-        className="px-4 py-2 rounded text-foreground disabled:opacity-50 transition-colors cursor-pointer"
+        className={styles.nextPage}
         onClick={() => setPage(Math.min(pageCount, page + 1))}
         disabled={page === pageCount}
       >

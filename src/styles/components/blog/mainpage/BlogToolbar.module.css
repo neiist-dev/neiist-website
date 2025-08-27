@@ -1,0 +1,50 @@
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .toolbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.filterButton {
+  cursor: pointer;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .filterButton {
+    width: auto;
+    margin-bottom: 0;
+  }
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+}
+
+.searchInput {
+  width: 100%;
+  border: 1px solid #ccc;
+  background: #fff;
+  min-width: 0;
+  font-size: 1rem;
+  padding: 1.2rem 2.5rem;
+}

@@ -4,19 +4,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UserRole } from '@/types/user';
 import MemberControls from '@/components/blog/main-page/MemberControls';
 import styles from '@/styles/pages/BlogPage.module.css';
-import { Switch } from '@/components/ui/switch';
 import { useUser } from '@/context/UserContext';
-import { FaSearch, FaChevronLeft } from 'react-icons/fa';
 import BlogHeader from '@/components/blog/main-page/BlogHeader';
 import BlogToolbar from '@/components/blog/main-page/BlogToolbar';
 import BlogFilterbar from '@/components/blog/main-page/BlogFilterbar';
-
-
 import { PostGrid } from "@/components/blog/main-page/PostGrid"
 import Pagination from "@/components/blog/main-page/Pagination";
 import Newsletter from "@/components/blog/main-page/Newsletter";
-
-
 
 export default function BlogPage() {
   const { user, loading } = useUser();
@@ -86,9 +80,9 @@ export default function BlogPage() {
         onClose={() => setSidebarOpen(false)}
         onFilterChange={handleFilterChange}
       />
-      <div className="flex flex-col items-center gap-2 mb-4">
+  <div className={styles.headerSection}>
         <BlogHeader />
-        {isMember && (
+        {!isMember && (
           <MemberControls memberView={memberView} setMemberView={setMemberView} />
         )}
       </div>

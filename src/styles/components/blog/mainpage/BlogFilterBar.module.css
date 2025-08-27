@@ -1,0 +1,86 @@
+.filterbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 320px;
+  background: #fff;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.08);
+  z-index: 2000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.filterbarOpen {
+  transform: translateX(0);
+}
+
+.filterbarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.2rem 1rem 1.2rem;
+  border-bottom: 1px solid #eee;
+}
+
+.filterbarTitle {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #06023a;
+}
+
+.filterbarClose {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #06023a;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.filterbarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.18);
+  z-index: 1500;
+  animation: fadeIn 0.2s;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.category {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.clearButton {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.scrollArea {
+  max-height: calc(100vh - 230px);
+  overflow-y: auto;
+}

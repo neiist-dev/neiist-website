@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from '@/styles/components/blog/mainpage/BlogFilterBar.module.css';
 import { useUser } from '@/context/UserContext';
 import { UserRole } from '@/types/user';
 import ManageTagsModal from './ManageTagsModal';
@@ -72,48 +73,35 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
 
   return (
     <>
-      <aside
-        className={`fixed top-0 left-0 h-full w-72 max-w-full sm:w-72 sm:min-w-[18rem] sm:max-w-[18rem] bg-white z-[9999] shadow-2xl border-r border-gray-200 transition-transform duration-300 flex flex-col ${open ? 'translate-x-0' : '-translate-x-full sm:-translate-x-80'}`}
-        style={{ minWidth: '0', maxWidth: '100vw', overflow: 'hidden' }}
-      >
-        <div className="flex flex-col gap-2 px-6 py-4 mb-2 mt-3">
-          <div className="flex items-center">
-            <button
-              className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer mr-2"
-              onClick={onClose}
-            >
-              <FaChevronLeft className="w-4 h-4 text-gray-600" />
+      <aside className={`${styles.filterbar} ${open ? styles.filterbarOpen : ''}`}>
+        <div className={styles.filterbarHeader}>
+          <button className={styles.filterbarClose} onClick={onClose}>
+            <FaChevronLeft />
+          </button>
+          <span className={styles.filterbarTitle}>Filtros</span>
+          <span>({selected.length})</span>
+        </div>
+        {!isMember && (
+          <div>
+            <button className={styles.filterbarClose} onClick={() => setShowManageModal(true)}>
+              <FaEdit /> Gerir tags
             </button>
-            <span className="font-semibold text-2xl tracking-tight mx-2">Filtros</span>
-            <span className="text-sm text-gray-500 ml-2">({selected.length})</span>
           </div>
-          {isMember && (
-            <div className="flex justify-center w-full">
-              <button
-                className="my-3 px-16 py-1 border border-gray-300 rounded bg-white text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-                onClick={() => setShowManageModal(true)}
-              >
-                <FaEdit className="w-4 h-4" />
-                Gerir tags
-              </button>
-            </div>
-          )}
-
+        )}
+        <div>
           {loading ? (
-            <div className="text-center text-gray-400">A carregar tags...</div>
+            <div className={styles.loading}>A carregar tags...</div>
           ) : (
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 230px)' }}>
+            <div className={styles.scrollArea}>
               {Object.entries(tagsByCategory).map(([category, tags]) => (
                 <section key={category}>
-                  <div className="flex items-center mb-2 mt-4 mx-3">
-                    <h4 className="text-xl text-gray-700 capitalize">{category}</h4>
-                  </div>
-                  <div className="flex flex-col gap-2">
+                  <div className={styles.category}>{category}</div>
+                  <div>
                     {tags.map(tag => (
-                      <div key={tag.id} className="flex items-center gap-2 mx-3">
+                      <div key={tag.id} className={styles.tag}>
                         <Checkbox id={tag.name} checked={selected.includes(tag.name)} onClick={() => handleToggle(tag.name)} />
-                        <label htmlFor={tag.name} className="text-sm cursor-pointer">
-                          <Badge className="text-md px-2 py-0.5 bg-blue-100 text-blue-800">{tag.name}</Badge>
+                        <label htmlFor={tag.name}>
+                          <Badge>{tag.name}</Badge>
                         </label>
                       </div>
                     ))}
@@ -122,10 +110,9 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
               ))}
             </div>
           )}
-
-      {isMember && showManageModal && (
-        <div className="absolute left-0 top-0 w-full h-full bg-white z-50 flex flex-col p-0 border-r border-gray-200 shadow-2xl animate-fadeIn">
-          <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        </div>
+        {!isMember && showManageModal && (
+          <div>
             <ManageTagsModal
               tagsByCategory={tagsByCategory}
               onCreate={async (tag, category) => {
@@ -153,14 +140,12 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
               onClose={() => setShowManageModal(false)}
             />
           </div>
-        </div>
-      )}
-        </div>
+        )}
         {selected.length > 0 && (
-          <div className="px-8 pb-6 pt-2">
+          <div>
             <Button
               variant="outline"
-              className="w-full text-medium px-4 py-2 cursor-pointer"
+              className={styles.clearButton}
               onClick={() => { setSelected([]); onFilterChange?.([]); }}
             >
               Limpar filtros
@@ -169,10 +154,7 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
         )}
       </aside>
       {open && (
-        <div
-          className="fixed inset-0 bg-black/20 z-[9998]"
-          onClick={onClose}
-        />
+        <div className={styles.filterbarOverlay} onClick={onClose} />
       )}
     </>
   );

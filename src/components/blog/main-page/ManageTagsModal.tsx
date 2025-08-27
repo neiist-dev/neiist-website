@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import styles from '@/styles/components/blog/mainpage/ManageTagsModal.module.css';
 
 export interface ManageTagsModalProps {
   tagsByCategory: Record<string, { id: number; name: string }[]>;
@@ -113,109 +114,107 @@ const ManageTagsModal: React.FC<ManageTagsModalProps> = ({
   }, [toast]);
 
   return (
-  <div className="flex flex-col gap-4 p-4 w-full max-h-[300vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+  <div className={styles.modal}>
     {toast && (
-      <div className={`fixed top-6 right-4 z-[100] px-3 py-1.5 rounded shadow-md text-white font-semibold text-sm transition-all ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} style={{ minWidth: 180, maxWidth: 260 }}>
+  <div className={toast.type === 'success' ? styles.toastSuccess : styles.toastError}>
         {toast.message}
       </div>
     )}
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-bold text-gray-800">Gerir Tags</h3>
-        <button className="text-gray-500 hover:text-gray-700 cursor-pointer" onClick={onClose}>✕</button>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold mb-1">Nova tag</label>
-        <select
-          className="border px-2 py-1 rounded w-full mb-1"
-          value={selectedCategory}
-          onChange={e => setSelectedCategory(e.target.value)}
-        >
-          <option value="">Escolher categoria</option>
-          {Object.keys(tagsByCategory).map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-          <option value="__custom__">Nova categoria...</option>
-        </select>
-        {selectedCategory === "__custom__" && (
-          <input
-            className="border px-2 py-1 rounded w-full mb-1"
-            type="text"
-            value={customCategory}
-            onChange={e => setCustomCategory(e.target.value)}
-            placeholder="Nome da nova categoria"
-          />
-        )}
-        <input
-          className="border px-2 py-1 rounded w-full mb-1"
-          type="text"
-          value={newTag}
-          onChange={e => setNewTag(e.target.value)}
-          placeholder="Nome da tag"
-        />
-        <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 w-full text-sm" onClick={handleCreate}>
-          Adicionar
-        </button>
-      </div>
-      {error && <span className="text-red-500 text-xs mt-1">{error}</span>}
-      <div className="mt-4">
-        {Object.entries(tagsByCategory).length === 0 ? (
-          <div className="text-gray-400 text-sm">Nenhuma categoria/tag</div>
-        ) : (
-          Object.entries(tagsByCategory).map(([category, tags]) => (
-            <div key={category} className="mb-4">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-semibold text-gray-700">{category}</span>
-                <button className="text-xs text-red-500 hover:underline cursor-pointer" onClick={() => handleDeleteCategoryLocal(category)}>
-                  {confirmDeleteCategory === category ? 'Confirmar eliminar' : 'Eliminar categoria'}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tags.map(tag => (
-                  <div key={tag.id} className="flex items-center bg-white border rounded px-2 py-1">
-                    {editingTag && editingTag.id === tag.id ? (
-                      <>
-                        <input
-                          className="border px-1 py-0.5 rounded text-sm mr-2 w-24"
-                          value={editingValue}
-                          autoFocus
-                          onChange={e => setEditingValue(e.target.value)}
-                          onBlur={handleUpdateTag}
-                        />
-                        <button
-                          className="text-xs text-blue-600 hover:underline mr-1 cursor-pointer"
-                          onMouseDown={e => { e.preventDefault(); handleUpdateTag(); }}
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          className="text-xs text-gray-400 hover:underline cursor-pointer"
-                          onMouseDown={e => { e.preventDefault(); setEditingTag(null); setEditingValue(""); }}
-                        >
-                          Cancelar
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span
-                          className="mr-2 text-gray-800 text-sm cursor-pointer hover:underline"
-                          onClick={() => handleEditTag(tag)}
-                          title="Editar nome da tag"
-                        >
-                          {tag.name}
-                        </span>
-                        <button className="text-md text-red-500 hover:underline cursor-pointer" onClick={() => handleDeleteTagLocal(tag.id)}>
-                          {confirmDeleteTag === tag.id ? 'Confirmar' : 'x'}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+    <div className={styles.modalHeader}>
+      <h3>Gerir Tags</h3>
+  <button onClick={onClose} className={styles.closeButton}>✕</button>
     </div>
+    <div>
+      <label>Nova tag</label>
+      <select
+        value={selectedCategory}
+        onChange={e => setSelectedCategory(e.target.value)}
+  className={styles.selectInput}
+      >
+        <option value="">Escolher categoria</option>
+        {Object.keys(tagsByCategory).map(cat => (
+          <option key={cat} value={cat}>{cat}</option>
+        ))}
+        <option value="__custom__">Nova categoria...</option>
+      </select>
+      {selectedCategory === "__custom__" && (
+        <input
+          type="text"
+          value={customCategory}
+          onChange={e => setCustomCategory(e.target.value)}
+          placeholder="Nome da nova categoria"
+          className={styles.textInput}
+        />
+      )}
+      <input
+        type="text"
+        value={newTag}
+        onChange={e => setNewTag(e.target.value)}
+        placeholder="Nome da tag"
+        className={styles.textInput}
+      />
+  <Button variant="outline" onClick={handleCreate} className={styles.addButton}>Adicionar</Button>
+    </div>
+  {error && <span className={styles.error}>{error}</span>}
+    <div className={styles.tagList}>
+      {Object.entries(tagsByCategory).length === 0 ? (
+  <div className={styles.noCategory}>Nenhuma categoria/tag</div>
+      ) : (
+        Object.entries(tagsByCategory).map(([category, tags]) => (
+          <div key={category} className={styles.categoryBlock}>
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryTitle}>{category}</span>
+              <button onClick={() => handleDeleteCategoryLocal(category)} className={styles.deleteCategoryButton}>
+                {confirmDeleteCategory === category ? 'Confirmar eliminar' : 'Eliminar categoria'}
+              </button>
+            </div>
+            <div className={styles.tagWrap}>
+              {tags.map(tag => (
+                <div key={tag.id} className={styles.tagItem}>
+                  {editingTag && editingTag.id === tag.id ? (
+                    <>
+                      <input
+                        value={editingValue}
+                        autoFocus
+                        onChange={e => setEditingValue(e.target.value)}
+                        onBlur={handleUpdateTag}
+                        className={styles.editTagInput}
+                      />
+                      <button
+                        className={styles.saveTagButton}
+                        onMouseDown={e => { e.preventDefault(); handleUpdateTag(); }}
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        className={styles.cancelTagButton}
+                        onMouseDown={e => { e.preventDefault(); setEditingTag(null); setEditingValue(""); }}
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        className={styles.tagName}
+                        onClick={() => handleEditTag(tag)}
+                        title="Editar nome da tag"
+                      >
+                        {tag.name}
+                      </span>
+                      <button onClick={() => handleDeleteTagLocal(tag.id)} className={styles.deleteTagButton}>
+                        {confirmDeleteTag === tag.id ? 'Confirmar' : 'x'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
   );
 };
 
