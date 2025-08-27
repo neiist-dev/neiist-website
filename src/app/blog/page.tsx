@@ -7,7 +7,7 @@ import styles from '@/styles/pages/BlogPage.module.css';
 import { useUser } from '@/context/UserContext';
 import BlogHeader from '@/components/blog/main-page/BlogHeader';
 import BlogToolbar from '@/components/blog/main-page/BlogToolbar';
-import BlogFilterbar from '@/components/blog/main-page/BlogFilterbar';
+import BlogFilterbar from '@/components/blog/main-page/filterbar/BlogFilterbar';
 import { PostGrid } from "@/components/blog/main-page/PostGrid"
 import Pagination from "@/components/blog/main-page/Pagination";
 import Newsletter from "@/components/blog/main-page/Newsletter";
