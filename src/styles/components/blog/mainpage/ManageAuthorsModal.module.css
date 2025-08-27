@@ -1,66 +1,311 @@
 .modal {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
-  padding: 2rem;
-  max-width: 500px;
-  margin: 2rem auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal > div {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .modalHeader {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #06023a;
-  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 1.2rem 1.5rem 0.5rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.closeButton:hover {
+  color: #e53e3e;
 }
 
 .modalActions {
   display: flex;
-  gap: 0.5rem;
   justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #fff;
 }
 
 .authorList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  background: #fff;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-.closeButton {
-  float: right;
-  font-size: 1.5rem;
-  color: #888;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.authorItem {
-  border: 1px solid #eee;
-  border-radius: 6px;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
+.authorListHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 2rem 4rem 0.6rem 4rem;
+}
+
+.authorListHeader h3 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.3rem;
+}
+
+.addAuthorButton {
+  margin-left: auto;
+  min-width: 150px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.authorList h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0rem 1.5rem 1.5rem;
+  margin: 0 0 0.3rem 0;
+  color: #111827;
+  text-align: center;
+}
+
+.authorTable {
+  margin: 0 auto 4rem auto;
+  width: 100%;
+  max-width: 800px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.authorTable th {
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.authorTable td {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+  background: #fff;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authorTable td.name,
+.authorTable td.email {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 150px;
+  overflow-wrap: anywhere;
+}
+
+.authorTable tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.authorTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.editButton,
+.removeButton {
+  background: none;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  margin: 0.2rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
 }
 
 .editButton {
-  color: blue;
-  font-size: 0.85rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: 0.3rem;
+  color: #2563eb;
+  border-color: #2563eb;
+}
+.editButton:hover {
+  background: #2563eb;
+  color: white;
 }
 
 .removeButton {
-  color: red;
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.removeButton:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.removeButton:last-child {
+  margin-right: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  border: 1px solid #e5e7eb;
+}
+
+.avatarPlaceholder {
+  color: #888;
+}
+
+.avatarIcon {
+  font-size: 1.2rem;
+}
+
+.avatarInput {
+  width: 80px;
+  min-width: 80px;
+  max-width: 120px;
+  text-align: center;
+  background: #f3f4f6;
+  border-radius: 50px;
+  font-size: 0.95rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  color: #222;
+  outline: none;
+  transition: border 0.2s;
+}
+.input:focus {
+  border-color: #2563eb;
+}
+
+.avatarEditCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.importButton {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f3f4f6;
+  color: #2563eb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
   font-size: 0.85rem;
-  background: none;
-  border: none;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: none;
+}
+.importButton:hover {
+  background: #e0e7ff;
+  color: #1e40af;
+}
+.importIcon {
+  font-size: 0.95rem;
+}
+.fileInput {
+  display: none;
+}
+
+.avatarEditButton {
+  display: inline-block;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0; 
+}
+.avatarEditButton .avatar {
+  border: 2px solid #2563eb;
+  box-shadow: 0 0 0 2px #e0e7ff;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.avatarEditButton:hover .avatar {
+  border-color: #1e40af;
+  box-shadow: 0 0 0 2px #2563eb;
+}
+
+@media (max-width: 768px) {
+  .modal > div {
+    width: 95%;
+    max-height: 95vh;
+  }
+  .modalHeader,
+  .modalActions {
+    padding: 1rem;
+  }
+  .modalHeader {
+    font-size: 1.25rem;
+  }
+  .authorListHeader {
+    padding: 1rem 1rem 0 1rem;
+  }
+  .authorList h3 {
+    padding: 1rem 1rem 0 1rem;
+    font-size: 1.125rem;
+  }
+  .authorTable th,
+  .authorTable td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  .editButton,
+  .removeButton {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+    margin-right: 0.25rem;
+  }
+  .addAuthorButton {
+    min-width: 100px;
+    font-size: 0.95rem;
+  }
 }

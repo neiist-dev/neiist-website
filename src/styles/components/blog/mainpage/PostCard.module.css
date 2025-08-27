@@ -2,16 +2,17 @@
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  min-width: 340px;
+  max-width: 340px;
+  width: 340px;
+  min-height: 470px;
+  max-height: 470px;
+  height: 470px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   transition: box-shadow 0.2s;
-  min-width: 320px;
-  max-width: 340px;
-  min-height: 440px;
-  max-height: 440px;
-  height: 440px;
   box-sizing: border-box;
 }
 
