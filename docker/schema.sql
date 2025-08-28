@@ -158,7 +158,7 @@ WHERE to_date IS NOT NULL;
 -- NEIIST EVENTS
 CREATE TABLE neiist.activities (
   id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
+  title TEXT NOT NULL UNIQUE,
   description TEXT NOT NULL,
   image TEXT NOT NULL
 );

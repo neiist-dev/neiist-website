@@ -63,40 +63,44 @@ function Activities({ events: initialEvents = [], adminPreview = false }: Activi
                 </button>
               </>
             )}
-            <Swiper
-              onSwiper={setSwiperInstance}
-              modules={[Navigation, Autoplay]}
-              navigation={false}
-              autoplay={{ delay: 3000, disableOnInteraction: true }}
-              loop={events.length > 1}
-              speed={500}
-              slidesPerView={3}
-              spaceBetween={20}
-              breakpoints={{
-                1024: { slidesPerView: 3 },
-                600: { slidesPerView: 2 },
-                0: { slidesPerView: 1 },
-              }}
-              className={styles.slider}>
-              {events.map((event, index) => (
-                <SwiperSlide key={event.id || index}>
-                  <div className={styles.card}>
-                    <Image
-                      src={`/events/${event.image}`}
-                      alt={event.title}
-                      className={styles.image}
-                      width={400}
-                      height={250}
-                    />
-                    <div className={styles.label}>{event.title}</div>
-                    <div className={styles.overlay}>
-                      <h3 className={styles.eventTitle}>{event.title}</h3>
-                      <p className={styles.description}>{event.description}</p>
+            <div
+              onMouseEnter={() => swiperInstance?.autoplay?.stop()}
+              onMouseLeave={() => swiperInstance?.autoplay?.start()}>
+              <Swiper
+                onSwiper={setSwiperInstance}
+                modules={[Navigation, Autoplay]}
+                navigation={false}
+                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                loop={events.length > 1}
+                speed={500}
+                slidesPerView={3}
+                spaceBetween={20}
+                breakpoints={{
+                  1024: { slidesPerView: 3 },
+                  600: { slidesPerView: 2 },
+                  0: { slidesPerView: 1 },
+                }}
+                className={styles.slider}>
+                {events.map((event, index) => (
+                  <SwiperSlide key={event.id || index}>
+                    <div className={styles.card}>
+                      <Image
+                        src={`/events/${event.image}`}
+                        alt={event.title}
+                        className={styles.image}
+                        width={400}
+                        height={250}
+                      />
+                      <div className={styles.label}>{event.title}</div>
+                      <div className={styles.overlay}>
+                        <h3 className={styles.eventTitle}>{event.title}</h3>
+                        <p className={styles.description}>{event.description}</p>
+                      </div>
                     </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           </>
         )}
       </div>
