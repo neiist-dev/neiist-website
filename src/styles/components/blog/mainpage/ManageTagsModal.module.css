@@ -1,3 +1,4 @@
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -16,7 +17,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.15);
   min-width: 350px;
-  max-width: 950px;
+  max-width: 900px;
   width: 100%;
   box-sizing: border-box;
   overflow-x: auto;
@@ -28,7 +29,6 @@
   justify-content: space-between;
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 1.2rem;
   border-bottom: 1px solid #e0e0e0;
   padding: 0.7rem 1.2rem 0.7rem 1.2rem;
   border-radius: 8px 8px 0 0;
@@ -79,7 +79,7 @@
 .categoryLabel {
   font-weight: 600;
   font-size: 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -94,6 +94,12 @@
   font-size: 0.85rem;
   cursor: pointer;
   margin-left: 0.5rem;
+}
+
+.deleteCategoryButton:hover {
+  background: #ecd4d4;
+  color: #d32f2f;
+  transition: all 0.2s ease;
 }
 
 .tags {
@@ -118,7 +124,7 @@
   padding: 0.3rem 0.7rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem;
 }
 
 .deleteTagButton {
@@ -177,7 +183,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-  margin: 1rem 0;
+  justify-content: center;
+  margin: 2rem 0;
   width: 100%;
 }
 
@@ -189,4 +196,154 @@
   padding: 0.3rem 0.8rem;
   font-size: 0.95rem;
   cursor: pointer;
+}
+
+.editButton,
+.removeButton {
+  background: none;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.editButton {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+.editButton:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid #888;
+  color: #888;
+  font-size: 0.875rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.cancelButton:hover {
+  background: #888;
+  color: white;
+}
+
+.removeButton {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.removeButton:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.removeButton:last-child {
+  margin-right: 0;
+}
+
+.confirmOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.confirmModal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  min-width: 340px;
+  max-width: 95vw;
+  padding: 2.2rem 2rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.confirmModal p {
+  font-size: 1.08rem;
+  color: #222;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+}
+
+.confirmModal b {
+  color: #dc2626;
+}
+
+.confirmModal .buttonRow {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1100;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+.toast.success {
+  background: #10b981;
+}
+
+.toast.error {
+  background: #ef4444;
+}
+
+.toastClose {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.toastClose:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

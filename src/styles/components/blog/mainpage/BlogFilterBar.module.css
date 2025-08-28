@@ -28,6 +28,12 @@
   font-family: inherit;
 }
 
+.scrollArea {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: 1rem;
+}
+
 .filterbarOpen {
   transform: translateX(0);
 }

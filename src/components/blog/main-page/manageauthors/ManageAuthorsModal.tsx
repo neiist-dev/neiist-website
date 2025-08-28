@@ -129,7 +129,7 @@ export default function ManageAuthorsModal({ onClose }: { onClose: () => void })
 
   useEffect(() => {
     if (toast) {
-      const timer = setTimeout(() => setToast(null), 2500);
+      const timer = setTimeout(() => setToast(null), 3500);
       return () => clearTimeout(timer);
     }
   }, [toast]);

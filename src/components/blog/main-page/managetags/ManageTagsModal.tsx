@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import TagsForm from './TagsForm';
 import TagsList from './TagsList';
 import styles from '@/styles/components/blog/mainpage/ManageTagsModal.module.css';
+import { FaWindowClose } from 'react-icons/fa';
 
 interface Tag {
   id: number;
@@ -16,6 +17,7 @@ interface TagsByCategory {
 const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [tagsByCategory, setTagsByCategory] = useState<TagsByCategory>({});
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -31,10 +33,18 @@ const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     fetchTags();
   }, []);
 
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   const handleDeleteTag = async (id: number) => {
     await fetch(`/api/blog/tags/${id}`, {
       method: 'DELETE',
     });
+    setToast({ type: 'success', message: 'Tag removida com sucesso!' });
     const res = await fetch('/api/blog/tags');
     const data = await res.json();
     setTagsByCategory(data);
@@ -44,6 +54,7 @@ const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     await fetch(`/api/blog/tags/category/${encodeURIComponent(category)}`, {
       method: 'DELETE',
     });
+    setToast({ type: 'success', message: 'Categoria removida com sucesso!' });
     const res = await fetch('/api/blog/tags');
     const data = await res.json();
     setTagsByCategory(data);
@@ -55,6 +66,7 @@ const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName }),
     });
+    setToast({ type: 'success', message: 'Tag atualizada com sucesso!' });
     const res = await fetch('/api/blog/tags');
     const data = await res.json();
     setTagsByCategory(data);
@@ -66,6 +78,7 @@ const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ category, name }),
     });
+    setToast({ type: 'success', message: 'Tag criada com sucesso!' });
     const res = await fetch('/api/blog/tags');
     const data = await res.json();
     setTagsByCategory(data);
@@ -77,7 +90,12 @@ const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [newTagName, setNewTagName] = useState('');
 
   return (
-    <div className={styles.modalOverlay}>
+    <div
+      className={styles.modalOverlay}
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className={styles.modal}>
         <div className={styles.modalHeader}>
           <span>Gerir Tags</span>
@@ -109,6 +127,12 @@ const ManageTagsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </>
           )}
         </div>
+        {toast && (
+          <div className={`${styles.toast} ${styles[toast.type]}`}> 
+            <span>{toast.message}</span>
+            <button onClick={() => setToast(null)} className={styles.toastClose}>x</button>
+          </div>
+        )}
       </div>
     </div>
   );
