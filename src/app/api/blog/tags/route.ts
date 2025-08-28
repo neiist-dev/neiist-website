@@ -16,7 +16,7 @@ export async function GET() {
   }
 }
 
-// Create tag
+// POST /api/blog/tags - create a new tag
 export async function POST(request: Request) {
   try {
     const body = await request.json();

@@ -21,3 +21,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: "Erro ao atualizar tag." }, { status: 500 });
   }
 }
+
+// DELETE /api/blog/tags/[id] - remove tag by id
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const result = await db_query("DELETE FROM neiist.tags WHERE id = $1 RETURNING *", [id]);
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: "Tag não encontrada" }, { status: 404 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Erro ao eliminar tag." }, { status: 500 });
+  }
+}

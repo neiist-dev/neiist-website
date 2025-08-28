@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { UserRole } from '@/types/user';
-import MemberControls from '@/components/blog/main-page/MemberControls';
+import MemberControls from '@/components/blog/main-page/admincontrols/MemberControls';
 import styles from '@/styles/pages/BlogPage.module.css';
 import { useUser } from '@/context/UserContext';
 import BlogHeader from '@/components/blog/main-page/BlogHeader';

@@ -41,28 +41,6 @@ const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterCh
     }
   }, [selected, onFilterChange]);
 
-  const handleDeleteTag = async (id: number) => {
-    await fetch('/api/blog/tags', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    const res = await fetch('/api/blog/tags');
-    const data = await res.json();
-    setTagsByCategory(data);
-  };
-
-  const handleDeleteCategory = async (category: string) => {
-    await fetch('/api/blog/tags', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category }),
-    });
-    const res = await fetch('/api/blog/tags');
-    const data = await res.json();
-    setTagsByCategory(data);
-  };
-
   // Click outside to close
   const filterbarRef = React.useRef<HTMLDivElement>(null);
   useEffect(() => {
