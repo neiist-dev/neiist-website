@@ -26,12 +26,12 @@ function isMembershipInAcademicYear(membership: Membership, year: string) {
 }
 
 function getAcademicYearStartYear(date: Date) {
-  return date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+  return date.getMonth() >= 7 ? date.getFullYear() : date.getFullYear() - 1;
 }
 
 function getCurrentAcademicYearStartYear() {
   const now = new Date();
-  return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return getAcademicYearStartYear(now);
 }
 
 function getAllAcademicYears(memberships: Membership[]) {

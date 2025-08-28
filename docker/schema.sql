@@ -949,7 +949,6 @@ DECLARE
   v_cat_id INTEGER;
   v_id INTEGER;
 BEGIN
-  -- Avoid ambiguous "name" by using existing helper instead of explicit INSERT with (name)
   IF p_category IS NOT NULL AND length(trim(p_category)) > 0 THEN
     v_cat_id := neiist.verify_category(p_category);
   END IF;
@@ -1024,8 +1023,6 @@ BEGIN
         stock_quantity = EXCLUDED.stock_quantity,
         size = EXCLUDED.size,
         active = EXCLUDED.active;
-
-  -- Qualify id to avoid ambiguity with OUT param
   SELECT * INTO v_product
   FROM neiist.products p
   WHERE p.id = p_product_id;

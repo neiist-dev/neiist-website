@@ -23,37 +23,30 @@ function isMembershipInAcademicYear(membership: Membership, year: string) {
 }
 
 function getAcademicYearStartYear(date: Date) {
-  return date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+  return date.getMonth() >= 7 ? date.getFullYear() : date.getFullYear() - 1;
 }
 
 function getCurrentAcademicYearStartYear() {
   const now = new Date();
-  return now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return getAcademicYearStartYear(now);
 }
 
 function getAllAcademicYears(memberships: Membership[]) {
   if (memberships.length === 0) return [];
-  let minYear = Infinity;
-  let maxYear = -Infinity;
+  let minYear = Infinity,
+    maxYear = -Infinity;
   const currentAcademicYearStart = getCurrentAcademicYearStartYear();
   memberships.forEach((membership) => {
     const start = new Date(membership.startDate);
     const end = membership.endDate ? new Date(membership.endDate) : null;
     const startYear = getAcademicYearStartYear(start);
-    let endYear: number;
-    if (end) {
-      endYear = getAcademicYearStartYear(end);
-    } else {
-      endYear = currentAcademicYearStart;
-    }
+    const endYear = end ? getAcademicYearStartYear(end) : currentAcademicYearStart;
     if (startYear < minYear) minYear = startYear;
     if (endYear > maxYear) maxYear = endYear;
   });
   if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
   const years: string[] = [];
-  for (let year = minYear; year <= maxYear; year++) {
-    years.push(`${year}/${year + 1}`);
-  }
+  for (let year = minYear; year <= maxYear; year++) years.push(`${year}/${year + 1}`);
   return years.reverse();
 }
 
