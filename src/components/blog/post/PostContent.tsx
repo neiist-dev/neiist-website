@@ -1,4 +1,5 @@
 import React from "react";
+import styles from '@/styles/components/blog/post/PostContent.module.css';
 
 interface PostContentProps {
   description: string;
@@ -7,7 +8,7 @@ interface PostContentProps {
 export default function PostContent({ description }: PostContentProps) {
   return (
     <div
-      className="prose prose-neutral max-w-none mb-8"
+      className={styles.prose}
       dangerouslySetInnerHTML={{ __html: description }}
     />
   );

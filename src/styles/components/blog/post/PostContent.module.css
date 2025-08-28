@@ -1,0 +1,50 @@
+.prose {
+  color: #18181b;
+  max-width: none;
+  margin-bottom: 2rem;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  border-bottom: 2px solid #e0e7ff;
+  padding-bottom: 0.3rem;
+}
+
+.prose h1 {
+  color: #2863FD;
+}
+
+.prose h2 {
+  color: #258BE3;
+}
+
+.prose h3 {
+  color: #34D1F9;
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: black;
+}
+
+.prose h1 { font-size: 2.25rem; }
+.prose h2 { font-size: 1.75rem; }
+.prose h3 { font-size: 1.35rem; }
+.prose h4 { font-size: 1.1rem; }
+.prose h5 { font-size: 1rem; }
+.prose h6 { font-size: 0.95rem; }
+
+.prose p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  font-size: 1rem;
+}

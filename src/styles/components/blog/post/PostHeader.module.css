@@ -1,0 +1,32 @@
+.divider {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.imageWrapper {
+  width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--muted, #f3f4f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
