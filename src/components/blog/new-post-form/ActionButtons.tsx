@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import styles from "@/styles/components/blog/newpost-form/ActionButtons.module.css";
+import toastStyles from "@/styles/components/blog/newpost-form/ActionButtonsToast.module.css";
 
 interface ActionButtonsProps {
   onSave: () => void;
@@ -13,6 +14,14 @@ interface ActionButtonsProps {
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving, editMode, onPreview }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [actionType, setActionType] = useState<'save' | 'update' | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  React.useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const handleClick = (type: 'save' | 'update') => {
     setActionType(type);
@@ -21,8 +30,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
 
   const handleConfirm = () => {
     setShowConfirm(false);
-    if (actionType === 'save') onSave();
-    if (actionType === 'update' && onUpdate) onUpdate();
+    if (actionType === 'save') {
+      onSave();
+      setToast({ type: 'success', message: 'Publicação criada com sucesso!' });
+    }
+    if (actionType === 'update' && onUpdate) {
+      onUpdate();
+      setToast({ type: 'success', message: 'Publicação atualizada com sucesso!' });
+    }
   };
 
   const handleCancel = () => {
@@ -59,6 +74,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {toast && (
+        <div className={`${toastStyles.toast} ${toastStyles[toast.type]}`}>
+          <span>{toast.message}</span>
+          <button onClick={() => setToast(null)} className={toastStyles.toastClose}>x</button>
         </div>
       )}
     </div>

@@ -200,12 +200,6 @@ const NewPostPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 flex flex-col gap-6">
-      {toast && (
-        <div className={`fixed top-20 right-6 z-[100] px-4 py-2 rounded shadow-lg text-white font-semibold transition-all ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}> 
-          {toast.message}
-        </div>
-      )}
-
       {showPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowPreview(false)}></div>
