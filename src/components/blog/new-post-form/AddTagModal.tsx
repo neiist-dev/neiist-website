@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import styles from "@/styles/components/blog/newpost-form/AddTagModal.module.css";
 
 interface AddTagModalProps {
   onCreate: (tag: string, category: string) => void;
@@ -67,13 +68,13 @@ const AddTagModal: React.FC<AddTagModalProps> = ({ onCreate, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/30 transition-opacity backdrop-blur-sm"></div>
-      <div className="relative bg-white rounded-xl shadow-2xl p-7 w-full max-w-sm flex flex-col gap-4 items-center animate-fadeIn">
-        <h2 className="text-xl font-bold mb-3 text-gray-800">Adicionar nova tag</h2>
-        <label className="text-sm self-start mb-1">Categoria</label>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalBackdrop}></div>
+      <div className={styles.modalContainer}>
+        <h2 className={styles.modalTitle}>Adicionar nova tag</h2>
+        <label className={styles.label}>Categoria</label>
         <select
-          className="border border-gray-300 rounded px-3 py-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className={styles.select}
           value={newCategory}
           onChange={e => setNewCategory(e.target.value)}
         >
@@ -85,29 +86,29 @@ const AddTagModal: React.FC<AddTagModalProps> = ({ onCreate, onClose }) => {
         </select>
         {newCategory === "__custom__" && (
           <input
-            className="border border-gray-300 rounded px-3 py-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className={styles.input}
             type="text"
             value={customCategory}
             onChange={e => setCustomCategory(e.target.value)}
             placeholder="Nome da nova categoria"
           />
         )}
-        <label className="text-sm self-start mb-1">Nome da tag</label>
+        <label className={styles.label}>Nome da tag</label>
         <input
-          className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className={styles.input}
           type="text"
           value={newTag}
           onChange={e => setNewTag(e.target.value)}
           placeholder="Nova tag"
         />
-        {error && <span className="text-red-500 text-xs self-start mt-1">{error}</span>}
-        <div className="flex gap-3 mt-4 w-full justify-end">
+        {error && <span className={styles.errorMessage}>{error}</span>}
+        <div className={styles.buttonsContainer}>
           <button
-            className="px-5 py-2 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
+            className={styles.createButton}
             onClick={handleCreate}
           >Criar</button>
           <button
-            className="px-5 py-2 rounded bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors cursor-pointer"
+            className={styles.cancelButton}
             onClick={() => {
               onClose();
               setNewTag("");

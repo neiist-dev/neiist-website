@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from "@styles/components/blog/newpost-form/ContentTextarea.module.css";
 
 interface ContentTextareaProps {
   value: string;
@@ -10,8 +11,9 @@ const ContentTextarea: React.FC<ContentTextareaProps> = ({ value, onChange }) =>
     placeholder="Conteúdo..."
     value={value}
     onChange={onChange}
-    className="w-full min-h-[320px] border-2 border-gray-300 rounded px-4 py-2 resize-y"
+    className={styles.textarea}
   />
 );
 
 export default ContentTextarea;
+

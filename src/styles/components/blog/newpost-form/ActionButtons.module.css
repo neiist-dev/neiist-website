@@ -1,0 +1,67 @@
+.container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.button {
+  width: 100%;
+  align-self: flex-end;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .button {
+    width: auto;
+  }
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.confirmBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+
+.confirmWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.confirmBox {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.confirmText {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.confirmBtn {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  cursor: pointer;
+}

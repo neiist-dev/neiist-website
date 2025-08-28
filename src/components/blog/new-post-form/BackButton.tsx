@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { FaChevronLeft } from 'react-icons/fa';
 import React from 'react';
+import styles from "@/styles/components/blog/newpost-form/BackButton.module.css";
 
 const BackButton: React.FC = () => (
-  <Link href="/blog" aria-label="Voltar" className="p-2 rounded hover:bg-muted transition-colors cursor-pointer mr-7 flex items-center">
-    <FaChevronLeft className="w-5 h-5" />
+  <Link href="/blog" aria-label="Voltar" className={styles.backButton}>
+    <FaChevronLeft className={styles.backIcon} />
   </Link>
 );
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import styles from "@/styles/components/blog/newpost-form/DropdownsSection.module.css";
 
 interface DropdownsSectionProps {
   authors: string[];
@@ -27,27 +28,27 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
   const [search, setSearch] = useState("");
 
     return (
-      <div className="flex gap-4 mb-2">
+      <div className={styles.container}>
 
-        <div className="flex flex-col w-full max-w-[300px]">
-          <label className="block mb-1 text-s text-black">Autores</label>
+        <div className={styles.column}>
+          <label className={styles.label}>Autores</label>
           <Select
             value={selectedAuthors.join(',')}
             onValueChange={() => {}}
             open={undefined}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Escolher autores" className="truncate">
+            <SelectTrigger className={styles.selectTrigger}>
+              <SelectValue placeholder="Escolher autores" className={styles.selectValue}>
                 {selectedAuthors.length ? selectedAuthors.join(', ') : ''}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="min-h-[120px] max-h-[220px] overflow-y-auto">
+            <SelectContent className={styles.selectContent}>
               {authors.map((author) => {
                 const isSelected = selectedAuthors.includes(author);
                 return (
                   <div
                     key={author}
-                    className={`flex items-center px-2 py-1 cursor-pointer hover:bg-muted`}
+                    className={`${styles.selectItem}`}
                     onClick={e => {
                       e.stopPropagation();
                       if (isSelected) {
@@ -57,57 +58,57 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
                       }
                     }}
                   >
-                    <Checkbox checked={isSelected} className="mr-2" />
+                    <Checkbox checked={isSelected} className={styles.checkbox} />
                     <span>{author}</span>
                   </div>
                 );
               })}
             </SelectContent>
           </Select>
-          <Button type="button" variant="default" className="mt-2 w-full cursor-pointer" onClick={onAddAuthor}>
+          <Button type="button" variant="default" className={styles.addButton} onClick={onAddAuthor}>
             Adicionar autor
           </Button>
         </div>
 
-        <div className="flex flex-col w-full max-w-[300px]">
-          <label className="block mb-1 text-s text-black">Tags</label>
+        <div className={styles.column}>
+          <label className={styles.label}>Tags</label>
           <Select
             value={selectedTags.length ? selectedTags.join(',') : ''}
             onValueChange={() => {}}
             open={undefined}
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Escolher tags" className="truncate">
+            <SelectTrigger className={styles.selectTrigger}>
+              <SelectValue placeholder="Escolher tags" className={styles.selectValue}>
                 {selectedTags.length ? selectedTags.join(', ') : ''}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="min-h-[320px] max-h-[320px] overflow-y-auto">
-              <div className="px-2 py-2 sticky top-0 bg-white z-20">
+            <SelectContent className={styles.selectContentTags}>
+              <div className={styles.searchContainer}>
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Pesquisar tag..."
-                  className="w-full px-2 py-1 mb-2 border rounded text-sm"
+                  className={styles.searchInput}
                   autoFocus
                 />
               </div>
               {Object.entries(tagsByCategory).length === 0 ? (
-                <div className="px-2 py-2 text-sm text-muted-foreground">Nenhuma tag encontrada</div>
+                <div className={styles.noTags}>Nenhuma tag encontrada</div>
               ) : (
                 Object.entries(tagsByCategory).map(([category, tags]) => {
                   const filtered = (tags as { id: string; name: string }[]).filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
                   if (filtered.length === 0) return null;
                   return (
-                    <div key={category} className="mb-2">
-                      <div className="font-semibold text-xs text-gray-500 px-2 py-1 uppercase">{category}</div>
+                    <div key={category} className={styles.categoryContainer}>
+                      <div className={styles.categoryTitle}>{category}</div>
                       {filtered.map((tag: { id: string; name: string }) => {
                         const isSelected = selectedTags.includes(tag.name);
                         const canSelectMore = selectedTags.length < 3;
                         return (
                           <div
                             key={tag.id}
-                            className={`flex items-center px-2 py-1 cursor-pointer hover:bg-muted ${!isSelected && !canSelectMore ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`${styles.tagItem} ${!isSelected && !canSelectMore ? styles.tagItemDisabled : ''}`}
                             onClick={e => {
                               e.stopPropagation();
                               if (isSelected) {
@@ -117,7 +118,7 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
                               }
                             }}
                           >
-                            <Checkbox checked={isSelected} className="mr-2" disabled={!isSelected && !canSelectMore} />
+                            <Checkbox checked={isSelected} className={styles.checkbox} disabled={!isSelected && !canSelectMore} />
                             <span>{tag.name}</span>
                           </div>
                         );
@@ -128,7 +129,7 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
               )}
             </SelectContent>
           </Select>
-          <Button type="button" variant="default" className="mt-2 w-full cursor-pointer" onClick={onAddTag}>
+          <Button type="button" variant="default" className={styles.addButton} onClick={onAddTag}>
             Adicionar tag
           </Button>
         </div>

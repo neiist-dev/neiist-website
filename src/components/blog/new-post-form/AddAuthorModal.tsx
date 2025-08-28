@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { FaImage } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import styles from "@/styles/components/blog/newpost-form/AddAuthorModal.module.css";
 
 interface AddAuthorModalProps {
   onCreate: (author: { name: string; email: string; photo: string | null }) => void;
@@ -38,44 +39,44 @@ const AddAuthorModal: React.FC<AddAuthorModalProps> = ({ onCreate, onClose }) =>
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
-      <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col items-center">
-        <h2 className="text-lg font-bold mb-4">Adicionar Autor</h2>
-        <div className="flex flex-col gap-3 w-full">
-          <label className="text-sm font-semibold">Nome</label>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalBackdrop} onClick={onClose}></div>
+      <div className={styles.modalContainer}>
+        <h2 className={styles.modalTitle}>Adicionar Autor</h2>
+        <div className={styles.formContainer}>
+          <label className={styles.label}>Nome</label>
           <input
             type="text"
             placeholder="Nome"
-            className="px-3 py-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className={styles.input}
             value={name}
             onChange={e => setName(e.target.value)}
           />
-          <label className="text-sm font-semibold">Email</label>
+          <label className={styles.label}>Email</label>
           <input
             type="email"
             placeholder="Email"
-            className="px-3 py-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className={styles.input}
             value={email}
             onChange={e => setEmail(e.target.value)}
           />
-          <label className="text-sm font-semibold">Foto</label>
-          <div className="flex items-center gap-3">
+          <label className={styles.label}>Foto</label>
+          <div className={styles.photoContainer}>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="flex items-center gap-2 cursor-pointer bg-[#2863FD] text-white hover:bg-[#1e4bb8] hover:text-white border-none"
+              className={styles.photoButton}
               onClick={() => fileInputRef.current?.click()}
             >
-              <FaImage className="text-md" />
+              <FaImage className={styles.photoIcon} />
               {photo ? "Alterar foto" : "Importar foto"}
             </Button>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              className="hidden"
+              className={styles.hiddenInput}
               onChange={e => {
                 const file = e.target.files ? e.target.files[0] : null;
                 setPhoto(file);
@@ -90,15 +91,15 @@ const AddAuthorModal: React.FC<AddAuthorModalProps> = ({ onCreate, onClose }) =>
             />
           </div>
           {photoPreview && (
-            <div className="flex flex-col items-center mt-2">
-              <span className="text-xs text-gray-500 mb-1">Pré-visualização:</span>
-              <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border" />
+            <div className={styles.previewContainer}>
+              <span className={styles.previewLabel}>Pré-visualização:</span>
+              <img src={photoPreview} alt="Preview" className={styles.previewImage} />
             </div>
           )}
-          {error && <div className="text-red-500 mb-2">{error}</div>}
-          <div className="flex gap-2 mt-2 self-end">
-            <Button variant="outline" className="px-4 py-2 rounded cursor-pointer" onClick={onClose}>Cancelar</Button>
-            <Button variant="default" className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer" onClick={handleCreate}>Adicionar</Button>
+          {error && <div className={styles.errorMessage}>{error}</div>}
+          <div className={styles.buttonsContainer}>
+            <Button variant="outline" className={styles.button} onClick={onClose}>Cancelar</Button>
+            <Button variant="default" className={`${styles.button} ${styles.addButton}`} onClick={handleCreate}>Adicionar</Button>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import styles from "@/styles/components/blog/newpost-form/CoverImageInput.module.css";
 
 interface CoverImageInputProps {
   image: File | null;
@@ -9,24 +10,24 @@ interface CoverImageInputProps {
 
 const CoverImageInput: React.FC<CoverImageInputProps> = ({ image, onChange, onButtonClick }) => (
   <div>
-    <label className="block mb-1 text-s text-black">Foto de capa</label>
-    <div className="flex items-center gap-3">
+    <label className={styles.label}>Foto de capa</label>
+    <div className={styles.inputContainer}>
       <input
         id="file-input"
         type="file"
         accept="image/*"
         onChange={onChange}
-        className="hidden"
+        className={styles.hiddenInput}
       />
       <Button
         type="button"
         variant="default"
         onClick={onButtonClick}
-        className="mb-2 cursor-pointer"
+        className={styles.button}
       >
         Importar foto
       </Button>
-      {image && <span className="text-sm text-gray-600 truncate max-w-[180px]">{image.name}</span>}
+      {image && <span className={styles.fileName}>{image.name}</span>}
     </div>
   </div>
 );

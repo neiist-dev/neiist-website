@@ -1,0 +1,131 @@
+.container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 300px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  color: #000;
+}
+
+.selectTrigger {
+  width: 100%;
+}
+
+.selectValue {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.selectContent {
+  min-height: 120px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.selectContentTags {
+  min-height: 320px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.selectItem {
+  display: flex;
+  align-items: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  cursor: pointer;
+}
+
+.selectItem:hover {
+  background-color: hsl(var(--muted));
+}
+
+.checkbox {
+  margin-right: 0.5rem;
+}
+
+.searchContainer {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 20;
+}
+
+.searchInput {
+  width: 100%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.noTags {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.categoryContainer {
+  margin-bottom: 0.5rem;
+}
+
+.categoryTitle {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.tagItem {
+  display: flex;
+  align-items: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  cursor: pointer;
+}
+
+.tagItem:hover {
+  background-color: hsl(var(--muted));
+}
+
+.tagItemDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addButton {
+  margin-top: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}

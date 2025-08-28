@@ -1,0 +1,150 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  transition: opacity 0.3s;
+  backdrop-filter: blur(4px);
+}
+
+.modalContainer {
+  position: relative;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.input {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  width: 100%;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #60a5fa;
+}
+
+.photoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.photoButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: #2863fd;
+  color: #fff;
+  border: none;
+}
+
+.photoButton:hover {
+  background: #1e4bb8;
+  color: #fff;
+}
+
+.photoIcon {
+  font-size: 1rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.previewLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.previewImage {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #d1d5db;
+}
+
+.errorMessage {
+  color: #ef4444;
+  margin-bottom: 0.5rem;
+}
+
+.buttonsContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  align-self: flex-end;
+}
+
+.button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.addButton {
+  background: #3b82f6;
+  color: #fff;
+}
