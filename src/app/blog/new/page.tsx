@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import styles from '@/styles/components/blog/newpost-form/NewPostPage.module.css';
 import Link from 'next/link';
 import BackButton from '@/components/blog/new-post-form/BackButton';
 import TitleInput from '@/components/blog/new-post-form/TitleInput';
@@ -9,6 +10,7 @@ import ActionButtons from '@/components/blog/new-post-form/ActionButtons';
 import DropdownsSection from '@/components/blog/new-post-form/DropdownsSection';
 import AddTagModal from '@/components/blog/new-post-form/AddTagModal';
 import AddAuthorModal from '@/components/blog/new-post-form/AddAuthorModal';
+import PostPreviewModal from '@/components/blog/new-post-form/PostPreviewModal';
 import { useSearchParams } from 'next/navigation';
 import PostMeta from '@/components/blog/post/PostMeta';
 import PostHeader from '@/components/blog/post/PostHeader';
@@ -81,6 +83,7 @@ const NewPostPage: React.FC = () => {
   const handleAddAuthor = () => {
     setShowAuthorForm(true);
   };
+
   const handleCreateAuthor = async (author: { name: string; email: string; photo: string | null }) => {
     try {
       const res = await fetch('/api/blog/authors', {
@@ -186,7 +189,6 @@ const NewPostPage: React.FC = () => {
     }
   };
 
-  // Pop up timeout
   React.useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3500);
@@ -199,25 +201,17 @@ const NewPostPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 flex flex-col gap-6">
+  <div className={styles.container}>
       {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowPreview(false)}></div>
-          <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl h-[80vh] flex flex-col items-center overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Pré-visualização do Post</h2>
-            <div className="w-full overflow-y-auto flex-1">
-          <PostMeta authors={selectedAuthors} date={new Date().toISOString()} tags={selectedTags} content={description} />
-              <PostHeader title={title} image={previewImage || (typeof image === 'string' ? image : undefined)} />
-              <PostContent description={description} />
-            </div>
-            <button
-              className="mt-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
-              onClick={() => setShowPreview(false)}
-            >
-              Fechar
-            </button>
-          </div>
-        </div>
+        <PostPreviewModal
+          title={title}
+          previewImage={previewImage}
+          image={image}
+          selectedAuthors={selectedAuthors}
+          selectedTags={selectedTags}
+          description={description}
+          onClose={() => setShowPreview(false)}
+        />
       )}
       
       {showAuthorForm && (
@@ -242,9 +236,9 @@ const NewPostPage: React.FC = () => {
           onClose={() => setShowTagForm(false)}
         />
       )}
-      <div className="flex items-center mb-8">
+      <div className={styles.header}>
         <BackButton />
-        <h1 className="text-2xl font-bold flex-1">Nova Publicação</h1>
+        <h1 className={styles.title}>Nova Publicação</h1>
       </div>
       <TitleInput value={title} onChange={e => setTitle(e.target.value)} />
       <CoverImageInput

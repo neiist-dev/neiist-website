@@ -34,7 +34,7 @@ export default function BlogPage() {
       if (!res.ok) throw new Error('Erro fetching posts');
       const data = await res.json();
       setPosts(data);
-      setPage(1); // Volta à primeira página ao pesquisar
+      setPage(1);
     } catch (err) {
       setPosts([]);
     }

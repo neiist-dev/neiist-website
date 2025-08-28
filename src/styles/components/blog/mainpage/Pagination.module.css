@@ -41,12 +41,6 @@
   transition: background 0.2s;
 }
 
-.nextPage:active {
-  background: #06023a;
-  color: #fff;
-  border-color: #06023a;
-}
-
 .nextPage:hover {
-  background: #f3f3f3;
+  color: #696767;
 }
