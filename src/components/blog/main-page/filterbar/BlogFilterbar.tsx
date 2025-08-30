@@ -15,11 +15,11 @@ interface BlogFilterbarProps {
 
 const BlogFilterbar: React.FC<BlogFilterbarProps> = ({ open, onClose, onFilterChange }) => {
   const { user } = useUser();
-  const isMember = user && user.roles?.includes(UserRole.MEMBER);
   const [selected, setSelected] = useState<string[]>([]);
   const [tagsByCategory, setTagsByCategory] = useState<Record<string, { id: number, name: string }[]>>({});
   const [loading, setLoading] = useState(true);
   const [showManageModal, setShowManageModal] = useState(false);
+  const isMember = user && user.roles?.includes(UserRole.MEMBER);
 
   useEffect(() => {
     const fetchTags = async () => {

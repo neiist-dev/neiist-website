@@ -11,10 +11,10 @@ interface FilterbarHeaderProps {
 
 const FilterbarHeader: React.FC<FilterbarHeaderProps> = ({ onClose, isMember, onEdit }) => (
   <div className={styles.filterbarHeader}>
+    <span className={styles.filterbarTitle}>Filtros</span>
     <button onClick={onClose} className={styles.filterbarClose}>
       <FaChevronLeft />
     </button>
-    <span className={styles.filterbarTitle}>Filtros</span>
   </div>
 );
 

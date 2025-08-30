@@ -80,9 +80,9 @@ export default function BlogPage() {
         onClose={() => setSidebarOpen(false)}
         onFilterChange={handleFilterChange}
       />
-  <div className={styles.headerSection}>
+      <div className={styles.headerSection}>
         <BlogHeader />
-        {!isMember && (
+        {isMember && (
           <MemberControls memberView={memberView} setMemberView={setMemberView} />
         )}
       </div>

@@ -66,7 +66,7 @@ export default function PostPageClient({ post }: { post: Post }) {
         <div className={styles.actions}>
           {canEdit && (
             <>
-              <Link href={`/blog/new?edit=${post.id}`} className={styles.editLink}>
+              <Link href={`/blog/edit/${post.id}`} className={styles.editLink}>
                 <Button className={styles.editButton}>
                   Editar post
                 </Button>

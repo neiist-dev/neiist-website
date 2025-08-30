@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from "react";
 import styles from '@/styles/components/blog/newpost-form/NewPostPage.module.css';
 import Link from 'next/link';
 import BackButton from '@/components/blog/new-post-form/BackButton';
@@ -11,11 +12,15 @@ import DropdownsSection from '@/components/blog/new-post-form/DropdownsSection';
 import AddTagModal from '@/components/blog/new-post-form/AddTagModal';
 import AddAuthorModal from '@/components/blog/new-post-form/AddAuthorModal';
 import PostPreviewModal from '@/components/blog/new-post-form/PostPreviewModal';
+import { useRouter } from 'next/navigation';
 
 const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Editor), { ssr: false });
 
-const NewPostPage: React.FC = () => {
-  const { useRouter } = require('next/navigation');
+interface EditPageProps {
+  params: { id: string };
+}
+
+const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [image, setImage] = useState<File | string | null>(null);
@@ -28,11 +33,16 @@ const NewPostPage: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagForm, setShowTagForm] = useState(false);
   const [showAuthorForm, setShowAuthorForm] = useState(false);
+  const [newTag, setNewTag] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  
+  const { id } = React.use(params);
+  const editId = id;
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/blog/tags')
       .then(res => res.json())
       .then(data => {
@@ -50,7 +60,27 @@ const NewPostPage: React.FC = () => {
       });
   }, []);
 
-  
+  // Fetch and fill post data for editing
+  useEffect(() => {
+    if (editId) {
+      fetch(`/api/blog/${editId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setTitle(data.title || '');
+          setDescription(data.description || '');
+          setSelectedAuthors(
+            Array.isArray(data.authors)
+              ? data.authors.map((a: any) => typeof a === 'string' ? a : a.name)
+              : (data.author ? [typeof data.author === 'string' ? data.author : data.author.name] : [])
+          );
+          setSelectedTags(Array.isArray(data.tags) ? data.tags : []);
+          if (data.image) setImage(data.image);
+        }
+      });
+    }
+  }, [editId]);
+
   const handleAddAuthor = () => {
     setShowAuthorForm(true);
   };
@@ -71,7 +101,7 @@ const NewPostPage: React.FC = () => {
       setToast({ type: 'error', message: 'Erro ao criar autor' });
     }
   };
-  
+
   const handleAddTag = () => {
     fetch('/api/blog/tags')
       .then(res => res.json())
@@ -82,7 +112,7 @@ const NewPostPage: React.FC = () => {
         setShowTagForm(true);
       });
   };
-  
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -94,7 +124,7 @@ const NewPostPage: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
-  
+
   const validateFields = () => {
     if (!title.trim() || !description.trim() || selectedAuthors.length === 0 || selectedTags.length === 0) {
       setToast({ type: 'error', message: 'Preenche todos os campos obrigatórios: título, conteúdo, pelo menos um autor e uma tag.' });
@@ -103,7 +133,8 @@ const NewPostPage: React.FC = () => {
     return true;
   };
 
-  const handleSave = async () => {
+  const handleUpdate = async () => {
+    if (!editId) return;
     if (!validateFields()) return;
     setSaving(true);
     try {
@@ -113,26 +144,25 @@ const NewPostPage: React.FC = () => {
       if (image) formData.append('image', image);
       formData.append('authors', JSON.stringify(selectedAuthors));
       formData.append('tags', JSON.stringify(selectedTags));
-      const res = await fetch('/api/blog', {
-        method: 'POST',
+      const res = await fetch(`/api/blog/${editId}`, {
+        method: 'PUT',
         body: formData,
       });
       if (!res.ok) {
-        setToast({ type: 'error', message: 'Erro ao publicar o post' });
-        throw new Error('Erro ao publicar o post');
+        setToast({ type: 'error', message: 'Erro ao atualizar o post' });
+        throw new Error('Erro ao atualizar o post');
       }
-      setToast({ type: 'success', message: 'Post publicado com sucesso!' });
+      setToast({ type: 'success', message: 'Post atualizado com sucesso!' });
       setTimeout(() => router.push('/blog'), 3000);
     } catch (error) {
-      setToast({ type: 'error', message: 'Erro ao publicar o post' });
+      setToast({ type: 'error', message: 'Erro ao atualizar o post' });
       console.error(error);
     } finally {
       setSaving(false);
     }
   };
-  
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3500);
       return () => clearTimeout(timer);
@@ -144,7 +174,7 @@ const NewPostPage: React.FC = () => {
   };
 
   return (
-  <div className={styles.container}>
+    <div className={styles.container}>
       {showPreview && (
         <PostPreviewModal
           title={title}
@@ -156,7 +186,6 @@ const NewPostPage: React.FC = () => {
           onClose={() => setShowPreview(false)}
         />
       )}
-      
       {showAuthorForm && (
         <AddAuthorModal
           onCreate={handleCreateAuthor}
@@ -181,7 +210,7 @@ const NewPostPage: React.FC = () => {
       )}
       <div className={styles.header}>
         <BackButton />
-        <h1 className={styles.title}>Nova Publicação</h1>
+        <h1 className={styles.title}>Editar Publicação</h1>
       </div>
       <TitleInput value={title} onChange={e => setTitle(e.target.value)} />
       <CoverImageInput
@@ -198,7 +227,7 @@ const NewPostPage: React.FC = () => {
           toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
           license_key: 'gpl',
         }}
-        initialValue={'Escreve aqui o conteúdo do post...'}
+        initialValue={''}
       />
       <DropdownsSection
         authors={authors}
@@ -211,13 +240,13 @@ const NewPostPage: React.FC = () => {
         onAddTag={handleAddTag}
       />
       <ActionButtons 
-        onSave={handleSave} 
+        onUpdate={handleUpdate} 
         saving={saving} 
-        editMode={false} 
+        editMode={true} 
         onPreview={handlePreview}
       />
     </div>
   );
 };
 
-export default NewPostPage;
+export default EditPostPage;
