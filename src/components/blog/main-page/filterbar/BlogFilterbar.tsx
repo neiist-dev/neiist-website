@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import styles from '@/styles/components/blog/mainpage/BlogFilterBar.module.css';
 import { useUser } from '@/context/UserContext';
 import { UserRole } from '@/types/user';
-import ManageTagsModal from './ManageTagsModal';
 import FilterbarHeader from './FilterbarHeader';
 import FilterbarTags from './FilterbarTags';
 import FilterbarClear from './FilterbarClear';

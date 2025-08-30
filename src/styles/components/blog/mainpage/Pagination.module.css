@@ -44,3 +44,20 @@
 .nextPage:hover {
   color: #696767;
 }
+
+@media (max-width: 800px) {
+  .pagination {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 1.2rem 0;
+  }
+  .pageNumbers {
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+  .pageButton, .nextPage {
+    font-size: 0.9rem;
+    padding: 0.7rem 1.1rem;
+    border-radius: 8px;
+  }
+}
