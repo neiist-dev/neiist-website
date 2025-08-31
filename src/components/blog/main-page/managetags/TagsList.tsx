@@ -47,37 +47,41 @@ const TagsList: React.FC<TagsListProps> = ({ tagsByCategory, editTagId, editTagV
                       onChange={e => setEditTagValue(e.target.value)}
                       className={styles.input}
                     />
-                    <button
-                      className={styles.editButton}
-                      onClick={() => {
-                        if (pendingSaveId === tag.id) {
-                          handleEditTag(tag.id, editTagValue);
+                    <div className={styles.tagItemButtons}>
+                      <button
+                        className={styles.editButton}
+                        onClick={() => {
+                          if (pendingSaveId === tag.id) {
+                            handleEditTag(tag.id, editTagValue);
+                            setEditTagId(null);
+                            setEditTagValue('');
+                            setPendingSaveId(null);
+                          } else {
+                            setPendingSaveId(tag.id);
+                          }
+                        }}
+                      >{pendingSaveId === tag.id ? 'Confirmar' : 'Guardar'}</button>
+                      <button
+                        className={styles.cancelButton}
+                        onClick={() => {
                           setEditTagId(null);
                           setEditTagValue('');
                           setPendingSaveId(null);
-                        } else {
-                          setPendingSaveId(tag.id);
-                        }
-                      }}
-                    >{pendingSaveId === tag.id ? 'Confirmar' : 'Guardar'}</button>
-                    <button
-                      className={styles.cancelButton}
-                      onClick={() => {
-                        setEditTagId(null);
-                        setEditTagValue('');
-                        setPendingSaveId(null);
-                      }}
-                    >Cancelar</button>
+                        }}
+                      >Cancelar</button>
+                    </div>
                   </>
                 ) : (
                   <>
                     <span>{tag.name}</span>
-                    <button className={styles.editButton} onClick={() => { setEditTagId(tag.id); setEditTagValue(tag.name); setPendingSaveId(null); }}>
-                      <FaPencilAlt />
-                    </button>
-                    <button className={styles.removeButton} onClick={() => setConfirmTagId(tag.id)}>
-                      <FaTrash />
-                    </button>
+                    <div className={styles.tagItemButtons}>
+                      <button className={styles.editButton} onClick={() => { setEditTagId(tag.id); setEditTagValue(tag.name); setPendingSaveId(null); }}>
+                        <FaPencilAlt />
+                      </button>
+                      <button className={styles.removeButton} onClick={() => setConfirmTagId(tag.id)}>
+                        <FaTrash />
+                      </button>
+                    </div>
                   </>
                 )}
               </li>
