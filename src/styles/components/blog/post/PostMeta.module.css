@@ -137,3 +137,47 @@
     gap: 1rem;
   }
 }
+
+@media (max-width: 800px) {
+  .meta {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.95rem;
+  }
+
+  .authorBlock {
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .authorList {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .metaInfo {
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.25rem;
+  }
+
+  .tagsList {
+    justify-content: flex-start;
+    gap: 0.25rem;
+  }
+
+  .readingTime {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+  }
+
+  .authorPopup {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.6rem;
+    min-width: 120px;
+  }
+}
+

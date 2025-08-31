@@ -40,10 +40,24 @@
   background: #ef4444;
 }
 
-.deleteDialogOverlay {
-  position: absolute;
-  inset: 0;
+.fixedPreview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   background: rgba(0,0,0,0.6);
+  z-index: 9998;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.deleteDialogOverlay {
+  position: flex;
+  inset: 0;
 }
 
 .deleteDialog {
@@ -76,6 +90,7 @@
   transition: background 0.2s;
   cursor: pointer;
   margin-right: 1rem;
+  margin-bottom: 1rem;
 }
 
 .backButton:hover {
@@ -97,6 +112,7 @@
   border: 1px solid #e5e7eb;
   transition: background 0.2s;
 }
+
 .cancelButton:hover {
   background: #f3f4f6;
 }
@@ -113,4 +129,45 @@
 }
 .confirmDeleteButton:hover {
   background: #dc2626;
+}
+
+@media (max-width: 600px) {
+  .fixedPreview {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+  }
+
+  .deleteDialog {
+    min-width: unset;
+    width: 95vw;
+    max-width: 360px;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  }
+  
+  .deleteDialogText {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .deleteDialogActions {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .cancelButton, .confirmDeleteButton {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.75rem 0;
+  }
 }
