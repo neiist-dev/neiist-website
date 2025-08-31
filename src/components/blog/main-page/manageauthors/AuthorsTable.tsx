@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styles from '@/styles/components/blog/mainpage/ManageAuthorsModal.module.css';
-import { Button } from '@/components/ui/button';
 
 interface Author {
   id: number;

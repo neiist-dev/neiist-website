@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import TagsForm from './TagsForm';
 import TagsList from './TagsList';
 import styles from '@/styles/components/blog/mainpage/ManageTagsModal.module.css';
-import { FaWindowClose } from 'react-icons/fa';
 
 interface Tag {
   id: number;

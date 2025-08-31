@@ -1,7 +1,6 @@
 import React from 'react';
 import styles from '@/styles/components/blog/mainpage/BlogFilterBar.module.css';
 import { FaChevronLeft, FaEdit } from 'react-icons/fa';
-import { Button } from '@/components/ui/button';
 
 interface FilterbarHeaderProps {
   onClose: () => void;
