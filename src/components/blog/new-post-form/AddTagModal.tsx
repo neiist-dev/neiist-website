@@ -69,7 +69,13 @@ const AddTagModal: React.FC<AddTagModalProps> = ({ onCreate, onClose }) => {
 
   return (
     <div className={styles.modalOverlay}>
-      <div className={styles.modalBackdrop}></div>
+      <div className={styles.modalBackdrop} onClick={() => {
+          onClose();
+          setNewTag("");
+          setNewCategory("");
+          setCustomCategory("");
+          setError("");
+      }}></div>
       <div className={styles.modalContainer}>
         <h2 className={styles.modalTitle}>Adicionar nova tag</h2>
         <label className={styles.label}>Categoria</label>

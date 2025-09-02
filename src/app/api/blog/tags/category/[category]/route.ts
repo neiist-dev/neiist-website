@@ -2,11 +2,9 @@ import { NextResponse } from "next/server";
 import { db_query } from "@/utils/dbUtils";
 
 // DELETE /api/blog/tags/category/[category] - remove todas as tags de uma categoria
-export async function DELETE(request: Request, { params }: { params: { category: string } }) {
+export async function DELETE(request: Request, context: { params: { category: string } }) {
   try {
-    
-    const { category } = params;
-    
+    const { category } = context.params;
     if (!category) {
       return NextResponse.json({ error: "Categoria não especificada" }, { status: 400 });
     }

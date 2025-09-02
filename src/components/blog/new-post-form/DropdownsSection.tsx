@@ -25,7 +25,8 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
   onTagsChange,
   onAddTag,
 }) => {
-  const [search, setSearch] = useState("");
+  const [searchTag, setSearchTag] = useState("");
+  const [searchAuthor, setSearchAuthor] = useState("");
 
     return (
       <div className={styles.container}>
@@ -43,26 +44,40 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
               </SelectValue>
             </SelectTrigger>
             <SelectContent className={styles.selectContent}>
-              {authors.map((author) => {
-                const isSelected = selectedAuthors.includes(author);
-                return (
-                  <div
-                    key={author}
-                    className={`${styles.selectItem}`}
-                    onClick={e => {
-                      e.stopPropagation();
-                      if (isSelected) {
-                        onAuthorsChange(selectedAuthors.filter(a => a !== author));
-                      } else {
-                        onAuthorsChange([...selectedAuthors, author]);
-                      }
-                    }}
-                  >
-                    <Checkbox checked={isSelected} className={styles.checkbox} />
-                    <span>{author}</span>
-                  </div>
-                );
-              })}
+              <div className={styles.searchContainer}>
+                <input
+                  type="text"
+                  value={searchAuthor}
+                  onChange={e => setSearchAuthor(e.target.value)}
+                  placeholder="Pesquisar autor..."
+                  className={styles.searchInput}
+                  autoFocus
+                />
+              </div>
+              {authors.filter(author => author.toLowerCase().includes(searchAuthor.toLowerCase())).length === 0 ? (
+                <div className={styles.noTags}>Nenhum autor encontrado</div>
+              ) : (
+                authors.filter(author => author.toLowerCase().includes(searchAuthor.toLowerCase())).map((author) => {
+                  const isSelected = selectedAuthors.includes(author);
+                  return (
+                    <div
+                      key={author}
+                      className={`${styles.selectItem}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (isSelected) {
+                          onAuthorsChange(selectedAuthors.filter(a => a !== author));
+                        } else {
+                          onAuthorsChange([...selectedAuthors, author]);
+                        }
+                      }}
+                    >
+                      <Checkbox checked={isSelected} className={styles.checkbox} />
+                      <span>{author}</span>
+                    </div>
+                  );
+                })
+              )}
             </SelectContent>
           </Select>
           <Button type="button" variant="default" className={styles.addButton} onClick={onAddAuthor}>
@@ -86,8 +101,8 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
               <div className={styles.searchContainer}>
                 <input
                   type="text"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  value={searchTag}
+                  onChange={e => setSearchTag(e.target.value)}
                   placeholder="Pesquisar tag..."
                   className={styles.searchInput}
                   autoFocus
@@ -97,7 +112,7 @@ const DropdownsSection: React.FC<DropdownsSectionProps> = ({
                 <div className={styles.noTags}>Nenhuma tag encontrada</div>
               ) : (
                 Object.entries(tagsByCategory).map(([category, tags]) => {
-                  const filtered = (tags as { id: string; name: string }[]).filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
+                  const filtered = (tags as { id: string; name: string }[]).filter((tag) => tag.name.toLowerCase().includes(searchTag.toLowerCase()));
                   if (filtered.length === 0) return null;
                   return (
                     <div key={category} className={styles.categoryContainer}>

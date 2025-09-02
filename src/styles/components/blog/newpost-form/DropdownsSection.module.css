@@ -129,3 +129,15 @@
   width: 100%;
   cursor: pointer;
 }
+
+@media (max-width: 800px) {
+  .container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .column {
+    max-width: 100%;
+    width: 100%;
+  }
+}
