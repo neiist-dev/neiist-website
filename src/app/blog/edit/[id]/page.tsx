@@ -39,7 +39,7 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   
-  const editId = params.id;
+  const { id: editId } = React.use(params);
 
   useEffect(() => {
     fetch('/api/blog/tags')
@@ -243,7 +243,7 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
         init={{
           menubar: false,
           toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-          licenseKey: 'gpl',
+          license_key: 'gpl',
         }}
         initialValue={''}
       />
