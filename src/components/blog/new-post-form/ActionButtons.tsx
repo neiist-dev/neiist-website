@@ -6,14 +6,15 @@ import toastStyles from "@/styles/components/blog/newpost-form/ActionButtonsToas
 interface ActionButtonsProps {
   onSave: () => void;
   onUpdate?: () => void;
+  onDelete?: () => void;
   saving: boolean;
   editMode?: boolean;
   onPreview?: () => void;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving, editMode, onPreview }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, onDelete, saving, editMode, onPreview }) => {
   const [showConfirm, setShowConfirm] = useState(false);
-  const [actionType, setActionType] = useState<'save' | 'update' | null>(null);
+  const [actionType, setActionType] = useState<'save' | 'update' | 'delete' | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   React.useEffect(() => {
@@ -23,7 +24,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
     }
   }, [toast]);
 
-  const handleClick = (type: 'save' | 'update') => {
+  const handleClick = (type: 'save' | 'update' | 'delete') => {
     setActionType(type);
     setShowConfirm(true);
   };
@@ -38,6 +39,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
       onUpdate();
       setToast({ type: 'success', message: 'Publicação atualizada com sucesso!' });
     }
+    if (actionType === 'delete' && onDelete) {
+      onDelete();
+      setToast({ type: 'success', message: 'Publicação apagada com sucesso!' });
+    }
   };
 
   const handleCancel = () => {
@@ -51,9 +56,20 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
         Pré-visualizar
       </Button>
       {editMode ? (
-        <Button onClick={() => handleClick('update')} disabled={saving} className={styles.button}>
-          {saving ? 'A atualizar...' : 'Atualizar'}
-        </Button>
+        <>
+          {onDelete && (
+            <Button
+              onClick={() => handleClick('delete')}
+              disabled={saving}
+              className={`${styles.button} ${styles.deleteButton}`}
+            >
+              {saving ? 'A apagar...' : 'Apagar'}
+            </Button>
+          )}
+          <Button onClick={() => handleClick('update')} disabled={saving} className={styles.button}>
+            {saving ? 'A atualizar...' : 'Atualizar'}
+          </Button>
+        </>
       ) : (
         <Button onClick={() => handleClick('save')} disabled={saving} className={styles.button}>
           {saving ? 'A publicar...' : 'Publicar'}
@@ -66,7 +82,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onUpdate, saving,
           <div className={styles.confirmWrapper}>
             <div className={styles.confirmBox}>
               <span className={styles.confirmText}>
-                {actionType === 'save' ? 'Confirmar publicação?' : 'Confirmar atualização?'}
+                {actionType === 'save'
+                  ? 'Confirmar publicação?'
+                  : actionType === 'update'
+                  ? 'Confirmar atualização?'
+                  : 'Confirmar remoção?'}
               </span>
               <div className={styles.confirmActions}>
                 <Button variant="outline" onClick={handleCancel} className={styles.confirmBtn}>Cancelar</Button>

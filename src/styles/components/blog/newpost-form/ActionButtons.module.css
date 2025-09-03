@@ -66,6 +66,16 @@
   cursor: pointer;
 }
 
+.deleteButton {
+  background: #ef4444 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.deleteButton:hover {
+  background: #dc2626 !important;
+}
+
 @media (max-width: 800px) {
   .container {
     flex-direction: row;

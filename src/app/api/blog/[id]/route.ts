@@ -149,8 +149,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // DELETE /api/blog/[id]
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   try {
     const { rowCount } = await db_query(
       `DELETE FROM neiist.posts WHERE id = $1`,

@@ -39,8 +39,7 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   
-  const { id } = React.use(params);
-  const editId = id;
+  const editId = params.id;
 
   useEffect(() => {
     fetch('/api/blog/tags')
@@ -162,6 +161,25 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!editId) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/blog/${editId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        setToast({ type: 'error', message: 'Erro ao apagar o post' });
+        throw new Error('Erro ao apagar o post');
+      }
+      setToast({ type: 'success', message: 'Publicação apagada com sucesso!' });
+      setTimeout(() => router.push('/blog'), 3000);
+    } catch (error) {
+      setToast({ type: 'error', message: 'Erro ao apagar o post' });
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3500);
@@ -179,7 +197,7 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
         <PostPreviewModal
           title={title}
           previewImage={previewImage}
-          image={image}
+    image={typeof image === 'string' ? null : (image as File | null)}
           selectedAuthors={selectedAuthors}
           selectedTags={selectedTags}
           description={description}
@@ -225,7 +243,7 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
         init={{
           menubar: false,
           toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-          license_key: 'gpl',
+          licenseKey: 'gpl',
         }}
         initialValue={''}
       />
@@ -240,7 +258,9 @@ const EditPostPage: React.FC<EditPageProps> = ({ params }) => {
         onAddTag={handleAddTag}
       />
       <ActionButtons 
+        onSave={() => {}} 
         onUpdate={handleUpdate} 
+        onDelete={handleDelete}
         saving={saving} 
         editMode={true} 
         onPreview={handlePreview}

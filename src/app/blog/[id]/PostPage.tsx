@@ -47,8 +47,7 @@ export default function PostPageClient({ post }: { post: Post }) {
     try {
       const res = await fetch(`/api/blog/${post.id}`, { method: 'DELETE' });
       if (res.ok) {
-        setToast({ type: 'success', message: 'Post apagado com sucesso!' });
-        setTimeout(() => router.push('/blog'), 1800);
+        setTimeout(() => router.push('/blog'), 3000);
       } else {
         setToast({ type: 'error', message: 'Erro ao apagar o post' });
       }
@@ -71,20 +70,8 @@ export default function PostPageClient({ post }: { post: Post }) {
                   Editar post
                 </Button>
               </Link>
-              <Button
-                className={styles.deleteButton}
-                onClick={() => setShowDialog(true)}
-              >
-                Apagar Post
-              </Button>
             </>
           )}
-          <PostDeleteDialog
-            open={showDialog}
-            onCancel={() => setShowDialog(false)}
-            onDelete={handleDelete}
-            deleting={deleting}
-          />
         </div>
       </div>
       {toast && (
