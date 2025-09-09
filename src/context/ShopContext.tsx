@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { CartItem } from "@/types/shop";
 
 const ShopContext = createContext({
   isOpen: false,
@@ -13,11 +14,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
-  type CartItem = { quantity: number; [key: string]: unknown };
-
-  const refreshCart = React.useCallback(() => {
-    const items: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCartCount(items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0));
+  const refreshCart = useCallback(() => {
+    const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
   }, []);
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import type { Swiper as SwiperType } from "swiper";
 import ProductCard from "@/components/shop/ProductCard";
-import { Product, ProductVariant } from "@/types/shop";
+import { Product, ProductVariant, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
 import carouselStyles from "@/styles/components/shop/ShopProductList.module.css";
 
@@ -92,19 +92,20 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   };
 
   const addToCart = () => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    let variantId: number | undefined = undefined;
+    if (Object.keys(selectedVariants).length > 0) {
+      const selected = product.variants.find((v) =>
+        Object.entries(selectedVariants).every(
+          ([type, value]) => v.variant_name === type && v.variant_value === value
+        )
+      );
+      if (selected) variantId = selected.id;
+    }
     cart.push({
-      productId: product.id,
-      name: product.name,
-      price,
-      image: images[0] || product.images[0],
+      product,
+      variantId,
       quantity: qty,
-      variant:
-        Object.keys(selectedVariants).length === 0
-          ? undefined
-          : Object.entries(selectedVariants)
-              .map(([t, v]) => `${t}: ${v}`)
-              .join(", "),
     });
     localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event("cartUpdated"));

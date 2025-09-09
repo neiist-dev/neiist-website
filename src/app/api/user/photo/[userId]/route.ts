@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ use
       const customPath = path.join(process.cwd(), "data", "user_photos", `${userId}.png`);
       try {
         const imageBuffer = await fs.readFile(customPath);
-        return new NextResponse(imageBuffer, {
+        return new NextResponse(new Uint8Array(imageBuffer), {
           status: 200,
           headers: { "Content-Type": "image/png" },
         });
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ use
     const fenixCachePath = path.join(process.cwd(), "data", "fenix_cache", `${userId}.png`);
     try {
       const imageBuffer = await fs.readFile(fenixCachePath);
-      return new NextResponse(imageBuffer, {
+      return new NextResponse(new Uint8Array(imageBuffer), {
         status: 200,
         headers: { "Content-Type": "image/png" },
       });

@@ -59,15 +59,15 @@ export default function PhotoTeamMembers({
   const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>, istid: string) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = (reader.result as string).split(",")[1];
-      const res = await fetch(`/api/user/update/${istid}`, {
+    const imageInput = new FileReader();
+    imageInput.onloadend = async () => {
+      const base64 = (imageInput.result as string).split(",")[1];
+      const response = await fetch(`/api/user/update/${istid}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photo: base64 }),
       });
-      if (res.ok) {
+      if (response.ok) {
         const newPhotoUrl = `/api/user/photo/${istid}?custom&${Date.now()}`;
         setMembers((prev) => {
           const updated: typeof prev = {};
@@ -84,7 +84,7 @@ export default function PhotoTeamMembers({
       }
       setEditingPhotoIstid(null);
     };
-    reader.readAsDataURL(file);
+    imageInput.readAsDataURL(file);
   };
 
   return (

@@ -5,52 +5,51 @@ import { useCartPopup } from "@/context/ShopContext";
 import Image from "next/image";
 import { FiTrash2 } from "react-icons/fi";
 import { Squash } from "hamburger-react";
+import { CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/Cart.module.css";
 
-type CartItem = {
-  name: string;
-  image: string;
-  price: number;
-  quantity: number;
-  variant?: string;
-};
-
 export default function Cart() {
-  const { isOpen, closeCart, refreshCart } = useCartPopup();
+  const { isOpen, closeCart } = useCartPopup();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
-    if (isOpen) {
-      const items = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartItems(items);
-    }
-    const handler = () => {
-      const items = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartItems(items);
-    };
-    window.addEventListener("cartUpdated", handler);
-    return () => window.removeEventListener("cartUpdated", handler);
+    if (!isOpen) return;
+    const load = () => setCartItems(JSON.parse(localStorage.getItem("cart") || "[]"));
+    load();
+    window.addEventListener("cartUpdated", load);
+    return () => window.removeEventListener("cartUpdated", load);
   }, [isOpen]);
 
   const handleRemove = (idx: number) => {
-    const newCart = cartItems.filter((_, i) => i !== idx);
-    setCartItems(newCart);
-    localStorage.setItem("cart", JSON.stringify(newCart));
-    window.dispatchEvent(new Event("cartUpdated"));
-    refreshCart();
+    setCartItems((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      localStorage.setItem("cart", JSON.stringify(next));
+      setTimeout(() => window.dispatchEvent(new Event("cartUpdated")), 0);
+      return next;
+    });
   };
 
   const handleQuantity = (idx: number, delta: number) => {
-    const newCart = cartItems.map((item, i) =>
-      i === idx ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-    );
-    setCartItems(newCart);
-    localStorage.setItem("cart", JSON.stringify(newCart));
-    window.dispatchEvent(new Event("cartUpdated"));
-    refreshCart();
+    setCartItems((prev) => {
+      const next = prev.map((item, i) =>
+        i === idx ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+      );
+      localStorage.setItem("cart", JSON.stringify(next));
+      setTimeout(() => window.dispatchEvent(new Event("cartUpdated")), 0);
+      return next;
+    });
   };
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cartItems.reduce(
+    (sum, item) =>
+      sum +
+      (item.product.price +
+        (item.variantId
+          ? (item.product.variants.find((v) => v.id === item.variantId)?.price_modifier ?? 0)
+          : 0)) *
+        item.quantity,
+    0
+  );
 
   if (!isOpen) return null;
 
@@ -67,31 +66,42 @@ export default function Cart() {
           {cartItems.length === 0 ? (
             <p className={styles.empty}>O teu carrinho está vazio.</p>
           ) : (
-            cartItems.map((item, idx) => (
-              <div key={idx} className={styles.item}>
-                <Image src={item.image} alt={item.name} width={48} height={48} />
-                <div>
-                  <h4>{item.name}</h4>
-                  {item.variant && <p>{item.variant}</p>}
-                  <strong>{item.price}€</strong>
-                  <div className={styles.quantity}>
-                    <button onClick={() => handleQuantity(idx, -1)}>-</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => handleQuantity(idx, 1)}>+</button>
+            cartItems.map((item, idx) => {
+              const variantObj = item.variantId
+                ? item.product.variants.find((v) => v.id === item.variantId)
+                : undefined;
+              const price = item.product.price + (variantObj ? variantObj.price_modifier : 0);
+              return (
+                <div key={idx} className={styles.item}>
+                  <Image
+                    src={item.product.images[0]}
+                    alt={item.product.name}
+                    width={48}
+                    height={48}
+                  />
+                  <div>
+                    <h4>{item.product.name}</h4>
+                    {variantObj && <p>{variantObj.variant_value}</p>}
+                    <strong>{price.toFixed(2)}€</strong>
+                    <div className={styles.quantity}>
+                      <button onClick={() => handleQuantity(idx, -1)}>-</button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => handleQuantity(idx, 1)}>+</button>
+                    </div>
                   </div>
+                  <button onClick={() => handleRemove(idx)}>
+                    <FiTrash2 />
+                  </button>
                 </div>
-                <button onClick={() => handleRemove(idx)}>
-                  <FiTrash2 />
-                </button>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
         <div className={styles.footer}>
           <div>
             <span>Total: </span>
-            <strong>{total}€</strong>
+            <strong>{total.toFixed(2)}€</strong>
           </div>
           <button
             disabled={cartItems.length === 0}

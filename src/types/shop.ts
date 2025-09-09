@@ -64,6 +64,12 @@ export interface Category {
   name: string;
 }
 
+export interface CartItem {
+  product: Product;
+  variantId?: number;
+  quantity: number;
+}
+
 export interface DbProductVariant {
   id: number;
   product_id: number;
