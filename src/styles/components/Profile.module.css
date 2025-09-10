@@ -7,7 +7,6 @@
   padding: 2.5rem;
   border-radius: 1.5rem;
   border: none;
-  box-shadow: 0 8px 32px rgba(40, 99, 253, 0.1);
   width: max-content;
   max-width: 100%;
 }
@@ -35,7 +34,6 @@
 
 .userPhoto:hover {
   transform: scale(1.05);
-  box-shadow: 0 20px 56px rgba(40, 99, 253, 0.25);
 }
 
 .userInfo {
