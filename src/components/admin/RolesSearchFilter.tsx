@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/RolesSearchFilter.module.css";
 
 interface Role {
@@ -155,20 +156,27 @@ export default function RolesSearchFilter({
     setPendingRemove(null);
   };
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(roles, {
+        keys: ["role_name", "access", "department"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [roles]
+  );
+
   const filteredRoles = useMemo(() => {
-    let filtered = roles;
-    if (showInactive) {
-      filtered = filtered.filter((role) => !role.active);
-    } else {
-      filtered = filtered.filter((role) => role.active);
-    }
+    let filtered = showInactive
+      ? roles.filter((role) => !role.active)
+      : roles.filter((role) => role.active);
     if (search.trim()) {
-      const s = search.trim().toLowerCase();
-      filtered = filtered.filter(
-        (role) =>
-          role.role_name.toLowerCase().includes(s) ||
-          role.access.toLowerCase().includes(s) ||
-          (role.department && role.department.toLowerCase().includes(s))
+      const results = fuse.search(search.trim());
+      filtered = filtered.filter((roles) =>
+        results.some(
+          (role) =>
+            role.item.role_name === roles.role_name && role.item.department === roles.department
+        )
       );
     }
     if (selectedDepartment === "") {
@@ -179,7 +187,7 @@ export default function RolesSearchFilter({
       );
     }
     return filtered;
-  }, [roles, search, showInactive, selectedDepartment]);
+  }, [roles, search, showInactive, selectedDepartment, fuse]);
 
   return (
     <>

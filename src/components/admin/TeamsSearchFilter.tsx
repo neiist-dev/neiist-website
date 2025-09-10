@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/TeamsSearchFilter.module.css";
 
 interface Team {
@@ -14,23 +15,28 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(teams, {
+        keys: ["name", "description"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [teams]
+  );
+
   const filteredTeams = useMemo(() => {
-    let filteredTeams = teams;
-    if (showInactive) {
-      filteredTeams = filteredTeams.filter((e) => e.active === false);
-    } else {
-      filteredTeams = filteredTeams.filter((e) => e.active !== false);
-    }
+    let filteredTeams = showInactive
+      ? teams.filter((team) => team.active === false)
+      : teams.filter((team) => team.active !== false);
     if (search.trim()) {
-      const s = search.trim().toLowerCase();
-      filteredTeams = filteredTeams.filter(
-        (team) =>
-          team.name.toLowerCase().includes(s) ||
-          (team.description?.toLowerCase().includes(s) ?? false)
+      const results = fuse.search(search.trim());
+      filteredTeams = filteredTeams.filter((team) =>
+        results.some((r) => r.item.name === team.name)
       );
     }
     return filteredTeams;
-  }, [teams, search, showInactive]);
+  }, [teams, search, showInactive, fuse]);
 
   const removeTeam = async (name: string) => {
     await fetch("/api/admin/teams", {

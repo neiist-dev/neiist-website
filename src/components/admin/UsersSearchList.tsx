@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { User, UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/UsersSearchList.module.css";
 
 interface Role {
@@ -26,16 +27,20 @@ export default function UsersSearchList({
   const [search, setSearch] = useState("");
   const [usersState] = useState(users);
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(usersState, {
+        keys: ["name", "istid", "email"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [usersState]
+  );
+
   const filteredUsers = useMemo(() => {
-    const s = search.trim().toLowerCase();
-    if (!s) return usersState;
-    return usersState.filter(
-      (user) =>
-        user.name.toLowerCase().includes(s) ||
-        user.istid.toLowerCase().includes(s) ||
-        user.email.toLowerCase().includes(s)
-    );
-  }, [search, usersState]);
+    if (!search.trim()) return usersState;
+    return fuse.search(search.trim()).map((role) => role.item);
+  }, [search, usersState, fuse]);
 
   const getAccessLevelForRole = (roleName: string): string => {
     const role = roles.find((role) => role.role_name === roleName);

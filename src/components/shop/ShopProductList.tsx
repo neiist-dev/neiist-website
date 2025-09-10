@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -9,6 +9,7 @@ import "swiper/css/navigation";
 import styles from "@/styles/components/shop/ShopProductList.module.css";
 import { Product, Order, Category } from "@/types/shop";
 import ProductCard from "@/components/shop/ProductCard";
+import Fuse from "fuse.js";
 import { getFeaturedAndTopProducts } from "@/utils/shopUtils";
 
 export default function ShopProductList({
@@ -27,13 +28,38 @@ export default function ShopProductList({
 
   const { top } = getFeaturedAndTopProducts(products, orders);
 
-  const filtered = products.filter(
-    (p) =>
-      (category === "all" ||
-        p.category === categories.find((c) => c.id.toString() === category)?.name ||
-        p.category === category) &&
-      (search === "" || p.name.toLowerCase().includes(search.toLowerCase()))
+  const fuse = useMemo(
+    () =>
+      new Fuse(products, {
+        keys: ["name", "category", "description"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [products]
   );
+
+  const filtered = useMemo(() => {
+    let filteredProducts = products;
+    if (category !== "all") {
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.category === categories.find((c) => c.id.toString() === category)?.name ||
+          product.category === category
+      );
+    }
+    if (search.trim()) {
+      return fuse
+        .search(search.trim())
+        .map((r) => r.item)
+        .filter(
+          (product) =>
+            category === "all" ||
+            product.category === categories.find((c) => c.id.toString() === category)?.name ||
+            product.category === category
+        );
+    }
+    return filteredProducts;
+  }, [products, search, category, categories, fuse]);
 
   useEffect(() => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;

@@ -1,5 +1,11 @@
 # neiist
 
+## 0.5.0
+
+### Minor Changes
+
+- Use FuzyFind search (fuse.js) for all the search functionality on the page.
+
 ## 0.4.0
 
 ### Minor Changes

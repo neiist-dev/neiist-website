@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/AdminBodiesSearchFilter.module.css";
 
 interface AdminBody {
@@ -17,17 +18,26 @@ export default function AdminBodiesSearchFilter({
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(adminBodies, {
+        keys: ["name"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [adminBodies]
+  );
+
   const filteredAdminBodies = useMemo(() => {
-    let filtered = adminBodies;
-    filtered = showInactive
-      ? filtered.filter((e) => e.active === false)
-      : filtered.filter((e) => e.active !== false);
+    let filtered = showInactive
+      ? adminBodies.filter((adminBody) => adminBody.active === false)
+      : adminBodies.filter((adminBody) => adminBody.active !== false);
     if (search.trim()) {
-      const s = search.trim().toLowerCase();
-      filtered = filtered.filter((adminBody) => adminBody.name.toLowerCase().includes(s));
+      const results = fuse.search(search.trim());
+      filtered = filtered.filter((body) => results.some((r) => r.item.name === body.name));
     }
     return filtered;
-  }, [adminBodies, search, showInactive]);
+  }, [adminBodies, search, showInactive, fuse]);
 
   const removeAdminBody = async (name: string) => {
     await fetch("/api/admin/admin-bodies", {

@@ -6,6 +6,7 @@ import { User } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { useUser } from "@/context/UserContext";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
 
 interface Department {
@@ -43,6 +44,16 @@ export default function MembershipsSearchList({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user, setUser } = useUser();
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(memberships, {
+        keys: ["userName", "userNumber", "userEmail", "departmentName", "roleName"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [memberships]
+  );
+
   const filteredMemberships = useMemo(() => {
     let filtered = memberships;
     if (showInactive) {
@@ -51,18 +62,10 @@ export default function MembershipsSearchList({
       filtered = filtered.filter((membership) => membership.isActive);
     }
     if (search.trim()) {
-      const s = search.trim().toLowerCase();
-      filtered = filtered.filter(
-        (membership) =>
-          membership.userName.toLowerCase().includes(s) ||
-          membership.userNumber.toLowerCase().includes(s) ||
-          membership.userEmail.toLowerCase().includes(s) ||
-          membership.departmentName.toLowerCase().includes(s) ||
-          membership.roleName.toLowerCase().includes(s)
-      );
+      return fuse.search(search.trim()).map((r) => r.item);
     }
     return filtered;
-  }, [memberships, search, showInactive]);
+  }, [memberships, search, showInactive, fuse]);
 
   const handleDepartmentChange = async (departmentName: string) => {
     setNewMembership({ ...newMembership, departmentName, roleName: "" });

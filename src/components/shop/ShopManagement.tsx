@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { Product, Category } from "@/types/shop";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import ProductForm from "@/components/shop/ProductForm";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 
 interface ShopManagementProps {
@@ -21,11 +22,29 @@ export default function ShopManagement({ products, categories }: ShopManagementP
   const [showConfirm, setShowConfirm] = useState(false);
   const [removingProductId, setRemovingProductId] = useState<number | null>(null);
 
-  const filteredProducts = products.filter(
-    (p) =>
-      (search === "" || p.name.toLowerCase().includes(search.toLowerCase())) &&
-      (categoryFilter === "all" || p.category === categoryFilter)
+  const fuse = useMemo(
+    () =>
+      new Fuse(products, {
+        keys: ["name", "category", "description"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [products]
   );
+
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((products) => products.category === categoryFilter);
+    }
+    if (search.trim()) {
+      return fuse
+        .search(search.trim())
+        .map((r) => r.item)
+        .filter((products) => categoryFilter === "all" || products.category === categoryFilter);
+    }
+    return filtered;
+  }, [products, search, categoryFilter, fuse]);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);

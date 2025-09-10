@@ -3,6 +3,7 @@
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import { useUser } from "@/context/UserContext";
+import Fuse from "fuse.js";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
 
 interface Membership {
@@ -35,21 +36,25 @@ export default function PhotoTeamMembers({
   const [members, setMembers] = useState(membersByDepartment);
   const { user, setUser } = useUser();
 
+  const fuse = useMemo(() => {
+    const allMembers = Object.values(members).flat();
+    return new Fuse(allMembers, {
+      keys: ["userName", "userNumber", "userEmail"],
+      threshold: 0.4,
+      ignoreLocation: true,
+    });
+  }, [members]);
+
   const filteredMembers = useMemo(() => {
     if (!search.trim()) return members;
-    const s = search.trim().toLowerCase();
-    const filtered: Record<string, Membership[]> = {};
+    const results = fuse.search(search.trim()).map((r) => r.item);
+    const grouped: Record<string, Membership[]> = {};
     Object.entries(members).forEach(([dept, memberships]) => {
-      const filteredMemberships = memberships.filter(
-        (m) =>
-          m.userName.toLowerCase().includes(s) ||
-          m.userNumber.toLowerCase().includes(s) ||
-          m.userEmail.toLowerCase().includes(s)
-      );
-      if (filteredMemberships.length) filtered[dept] = filteredMemberships;
+      grouped[dept] = memberships.filter((m) => results.includes(m));
+      if (grouped[dept].length === 0) delete grouped[dept];
     });
-    return filtered;
-  }, [search, members]);
+    return grouped;
+  }, [search, members, fuse]);
 
   const handlePhotoClick = (istid: string) => {
     setEditingPhotoIstid(istid);
