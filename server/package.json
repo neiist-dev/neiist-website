@@ -9,7 +9,7 @@
 		"format": "biome format --write"
 	},
 	"dependencies": {
-		"axios": "1.11.0",
+		"axios": "1.12.1",
 		"cors": "2.8.5",
 		"dotenv": "17.2.1",
 		"exceljs": "^4.4.0",
