@@ -216,7 +216,7 @@ CREATE TABLE neiist.orders (
   payment_reference TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   paid_at TIMESTAMPTZ,
-  paid_by TEXT,
+  payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -1287,7 +1287,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   payment_reference TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
-  paid_by TEXT,
+  payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
@@ -1418,7 +1418,7 @@ BEGIN
       WHERE oi.order_id = o.id
     ), '[]'::JSONB) AS items,
     o.notes, o.total_amount, o.payment_method, o.payment_reference,
-    o.created_at, o.paid_at, o.paid_by, o.delivered_at, o.delivered_by, o.updated_at,
+    o.created_at, o.paid_at, o.payment_checked_by, o.delivered_at, o.delivered_by, o.updated_at,
     o.status::TEXT
   FROM neiist.orders o
   LEFT JOIN neiist.users u ON u.istid = o.user_istid
@@ -1444,7 +1444,7 @@ RETURNS TABLE (
   payment_reference TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
-  paid_by TEXT,
+  payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
@@ -1492,7 +1492,7 @@ BEGIN
     o.payment_reference,
     o.created_at,
     o.paid_at,
-    o.paid_by,
+    o.payment_checked_by,
     o.delivered_at,
     o.delivered_by,
     o.updated_at,
@@ -1523,7 +1523,7 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   payment_reference TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
-  paid_by TEXT,
+  payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
@@ -1548,8 +1548,8 @@ BEGIN
   IF p_updates ? 'payment_reference' THEN
     UPDATE neiist.orders SET payment_reference = p_updates->>'payment_reference' WHERE id = p_order_id;
   END IF;
-  IF p_updates ? 'paid_by' THEN
-    UPDATE neiist.orders SET paid_by = NULLIF(p_updates->>'paid_by','') WHERE id = p_order_id;
+  IF p_updates ? 'payment_checked_by' THEN
+    UPDATE neiist.orders SET payment_checked_by = NULLIF(p_updates->>'payment_checked_by','') WHERE id = p_order_id;
   END IF;
   IF p_updates ? 'delivered_by' THEN
     UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE id = p_order_id;
@@ -1580,7 +1580,7 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   payment_reference TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
-  paid_by TEXT,
+  payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
@@ -1590,7 +1590,7 @@ BEGIN
   UPDATE neiist.orders o
   SET status = p_status,
       paid_at = CASE WHEN p_status = 'paid' THEN NOW() ELSE o.paid_at END,
-      paid_by = CASE WHEN p_status = 'paid' THEN COALESCE(p_actor, o.paid_by) ELSE o.paid_by END,
+      payment_checked_by = CASE WHEN p_status = 'paid' THEN COALESCE(p_actor, o.payment_checked_by) ELSE o.payment_checked_by END,
       delivered_at = CASE WHEN p_status = 'delivered' THEN NOW() ELSE o.delivered_at END,
       delivered_by = CASE WHEN p_status = 'delivered' THEN COALESCE(p_actor, o.delivered_by) ELSE o.delivered_by END,
       updated_at = NOW()
@@ -1613,7 +1613,7 @@ BEGIN
     g.payment_reference,
     g.created_at,
     g.paid_at,
-    g.paid_by,
+    g.payment_checked_by,
     g.delivered_at,
     g.delivered_by,
     g.updated_at,

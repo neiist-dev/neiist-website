@@ -40,7 +40,7 @@ export interface Order {
   payment_reference?: string;
   created_at: string;
   paid_at?: string;
-  paid_by?: string;
+  payment_checked_by?: string;
   delivered_at?: string;
   delivered_by?: string;
   updated_at?: string;
@@ -123,7 +123,7 @@ export interface DbOrder {
   payment_reference: string | null;
   created_at: string;
   paid_at: string | null;
-  paid_by: string | null;
+  payment_checked_by: string | null;
   delivered_at: string | null;
   delivered_by: string | null;
   updated_at: string | null;
@@ -185,7 +185,7 @@ export function mapDbOrderToOrder(row: DbOrder): Order {
     payment_reference: row.payment_reference ?? undefined,
     created_at: row.created_at,
     paid_at: row.paid_at ?? undefined,
-    paid_by: row.paid_by ?? undefined,
+    payment_checked_by: row.payment_checked_by ?? undefined,
     delivered_at: row.delivered_at ?? undefined,
     delivered_by: row.delivered_by ?? undefined,
     updated_at: row.updated_at ?? undefined,
