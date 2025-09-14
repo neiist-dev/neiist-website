@@ -21,6 +21,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showConfirm, setShowConfirm] = useState(false);
   const [removingProductId, setRemovingProductId] = useState<number | null>(null);
+  const [imageIndex, setImageIndex] = useState<{ [productId: number]: number }>({});
 
   const fuse = useMemo(
     () =>
@@ -170,8 +171,13 @@ export default function ShopManagement({ products, categories }: ShopManagementP
           {filteredProducts.map((product) => (
             <div key={product.id} className={styles.card}>
               <div className={styles.imageContainer}>
-                {product.images && product.images[0] ? (
-                  <Image src={product.images[0]} alt={product.name} width={140} height={140} />
+                {product.images && product.images.length > 0 ? (
+                  <Image
+                    src={product.images[imageIndex[product.id] || 0] || "/placeholder.jpg"}
+                    alt={product.name}
+                    width={140}
+                    height={140}
+                  />
                 ) : (
                   <div className={styles.placeholder}>Nenhuma imagem</div>
                 )}
@@ -179,7 +185,33 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                   {getStockDisplay(product)}
                 </div>
               </div>
-
+              {product.images && product.images.length > 1 && (
+                <div className={styles.thumbnails}>
+                  {product.images.map((img, idx) => (
+                    <button
+                      key={img + idx}
+                      className={`${styles.thumbBtn} ${(imageIndex[product.id] || 0) === idx ? styles.activeThumb : ""}`}
+                      onClick={() =>
+                        setImageIndex((prev) => ({
+                          ...prev,
+                          [product.id]: idx,
+                        }))
+                      }
+                      tabIndex={-1}
+                      aria-label={`Ver imagem ${idx + 1}`}
+                      type="button">
+                      <Image
+                        src={img}
+                        alt=""
+                        width={28}
+                        height={28}
+                        className={styles.thumbImg}
+                        draggable={false}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className={styles.cardContent}>
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>

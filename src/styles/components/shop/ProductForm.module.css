@@ -48,6 +48,18 @@
   align-items: center;
 }
 
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 9rem;
+}
+.subLabel {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
 .addButton {
   display: inline-flex;
   justify-content: center;

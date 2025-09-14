@@ -9,7 +9,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import type { Swiper as SwiperType } from "swiper";
 import ProductCard from "@/components/shop/ProductCard";
-import { Product, ProductVariant, CartItem } from "@/types/shop";
+import { Product, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
 import carouselStyles from "@/styles/components/shop/ShopProductList.module.css";
 
@@ -20,91 +20,73 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product, allProducts }: ProductDetailProps) {
   const router = useRouter();
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
-  const [imgIndex, setImgIndex] = useState(0);
-  const [qty, setQty] = useState(1);
+  const optionNames = useMemo(() => {
+    const all = new Set<string>();
+    product.variants.forEach((v) => Object.keys(v.options || {}).forEach((k) => all.add(k)));
+    return Array.from(all);
+  }, [product.variants]);
 
-  const variantGroups: Record<string, ProductVariant[]> = useMemo(
-    () =>
-      (product.variants || []).reduce(
-        (variantMap, varient) => {
-          (variantMap[varient.variant_name] ||= []).push(varient);
-          return variantMap;
-        },
-        {} as Record<string, ProductVariant[]>
-      ),
-    [product.variants]
-  );
+  const mainOption = optionNames[0] || "Cor";
+  const subOption = optionNames[1] || "Tamanho";
+  const mainValues = useMemo(() => {
+    const set = new Set<string>();
+    product.variants.forEach((v) => {
+      if (v.options?.[mainOption]) set.add(v.options[mainOption]);
+    });
+    return Array.from(set);
+  }, [product.variants, mainOption]);
+
+  const [selectedMain, setSelectedMain] = useState(mainValues[0] || "");
+  const subValues = useMemo(() => {
+    const set = new Set<string>();
+    product.variants.forEach((v) => {
+      if (v.options?.[mainOption] === selectedMain && v.options?.[subOption]) {
+        set.add(v.options[subOption]);
+      }
+    });
+    return Array.from(set);
+  }, [product.variants, mainOption, subOption, selectedMain]);
+
+  const [selectedSub, setSelectedSub] = useState(subValues[0] || "");
+  const [qty, setQty] = useState(1);
+  const [imgIndex, setImgIndex] = useState(0);
+  const selectedVariant = useMemo(() => {
+    return product.variants.find(
+      (v) => v.options?.[mainOption] === selectedMain && v.options?.[subOption] === selectedSub
+    );
+  }, [product.variants, mainOption, subOption, selectedMain, selectedSub]);
 
   const images = useMemo(() => {
-    const base: string[] = [];
-    if (product.images?.length) base.push(product.images[0]);
-    Object.entries(selectedVariants).forEach(([variantType, selectedValue]) => {
-      const varients = product.variants?.find(
-        (currentVariant) =>
-          currentVariant.variant_name === variantType &&
-          currentVariant.variant_value === selectedValue &&
-          currentVariant.images?.length
-      );
-      if (varients?.images?.[0] && !base.includes(varients.images[0]))
-        base.push(varients.images[0]);
-    });
-    if (!Object.keys(selectedVariants).length && product.variants) {
-      product.variants.forEach((varient) => {
-        if (varient.images?.[0] && !base.includes(varient.images[0])) base.push(varient.images[0]);
-      });
-    }
-    return base;
-  }, [product, selectedVariants]);
+    const v = product.variants.find(
+      (v) => v.options?.[mainOption] === selectedMain && v.images?.length
+    );
+    return v?.images?.length
+      ? v.images
+      : product.images.length
+        ? product.images
+        : ["/placeholder.jpg"];
+  }, [product, selectedMain, mainOption]);
 
   const price = useMemo(() => {
-    let itemPrice = product.price;
-    Object.values(selectedVariants).forEach((variantSelection) => {
-      const selectedVariant = product.variants?.find(
-        (productVariant) => productVariant.variant_value === variantSelection
-      );
-      if (selectedVariant) itemPrice += selectedVariant.price_modifier;
-    });
-    return itemPrice;
-  }, [product, selectedVariants]);
+    return (product.price || 0) + (selectedVariant?.price_modifier || 0);
+  }, [product.price, selectedVariant]);
 
   const related = useMemo(
     () =>
       allProducts.filter(
         (currentProduct) =>
-          currentProduct.id !== product.id &&
-          (currentProduct.category === product.category ||
-            (product.variants?.length &&
-              currentProduct.variants?.some((variant) =>
-                product.variants?.some(
-                  (productVariant) =>
-                    productVariant.variant_name === variant.variant_name &&
-                    productVariant.variant_value === variant.variant_value
-                )
-              )))
+          currentProduct.id !== product.id && currentProduct.category === product.category
       ),
     [allProducts, product]
   );
-
-  const selectVariant = (type: string, value: string) => {
-    setSelectedVariants((prev) => ({ ...prev, [type]: value }));
-    setImgIndex(0);
-  };
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
+  const showArrows = related.length > 3;
 
   const addToCart = () => {
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
-    let variantId: number | undefined = undefined;
-    if (Object.keys(selectedVariants).length > 0) {
-      const selected = product.variants.find((v) =>
-        Object.entries(selectedVariants).every(
-          ([type, value]) => v.variant_name === type && v.variant_value === value
-        )
-      );
-      if (selected) variantId = selected.id;
-    }
     cart.push({
       product,
-      variantId,
+      variantId: selectedVariant?.id,
       quantity: qty,
     });
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -112,18 +94,20 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     router.push("/shop");
   };
 
-  const allVariantsChosen =
-    Object.keys(variantGroups).length === 0 ||
-    Object.keys(selectedVariants).length === Object.keys(variantGroups).length;
+  const handleMainChange = (val: string) => {
+    setSelectedMain(val);
+    const newSub = product.variants.find((v) => v.options?.[mainOption] === val)?.options?.[
+      subOption
+    ];
+    setSelectedSub(newSub || "");
+    setImgIndex(0);
+  };
 
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const showArrows = related.length > 3;
   return (
     <div className={styles.container}>
       <button className={styles.backButton} onClick={() => router.push("/shop")}>
         <IoIosArrowBack size={18} /> Voltar
       </button>
-
       <div className={styles.grid}>
         <div className={styles.imageSection}>
           {images.length > 1 && (
@@ -133,15 +117,13 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <IoIosArrowBack size={26} />
             </button>
           )}
-
           <Image
-            src={images[imgIndex] || "/placeholder.jpg"}
+            src={images[imgIndex]}
             alt={product.name}
             width={600}
             height={600}
             className={styles.mainImage}
           />
-
           {images.length > 1 && (
             <button
               className={styles.imageArrowRight}
@@ -149,7 +131,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <IoIosArrowForward size={26} />
             </button>
           )}
-
           {images.length > 1 && (
             <div className={styles.thumbnails}>
               {images.map((src, i) => (
@@ -163,50 +144,64 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
           )}
         </div>
-
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
-          <div className={styles.price}>{price}€</div>
-
-          {Object.entries(variantGroups).map(([type, variants]) => (
-            <div key={type}>
-              <span className={styles.label}>{type}</span>
-              <div className={styles.options}>
-                {variants.map((v) => (
-                  <button
-                    key={v.id}
-                    disabled={!v.active || (v.stock_quantity || 0) <= 0}
-                    onClick={() => selectVariant(type, v.variant_value)}
-                    className={`${styles.option} ${
-                      selectedVariants[type] === v.variant_value ? styles.selected : ""
-                    }`}>
-                    {v.variant_value}
-                  </button>
-                ))}
-              </div>
+          <div className={styles.price}>{price.toFixed(2)}€</div>
+          <div>
+            <span className={styles.label}>{mainOption}</span>
+            <div className={styles.options}>
+              {mainValues.map((val) => (
+                <button
+                  key={val}
+                  className={`${styles.option} ${selectedMain === val ? styles.selected : ""}`}
+                  onClick={() => handleMainChange(val)}>
+                  {val}
+                </button>
+              ))}
             </div>
-          ))}
-
+          </div>
+          <div>
+            <span className={styles.label}>{subOption}</span>
+            <div className={styles.options}>
+              {subValues.map((val) => (
+                <button
+                  key={val}
+                  className={`${styles.option} ${selectedSub === val ? styles.selected : ""}`}
+                  onClick={() => setSelectedSub(val)}
+                  disabled={
+                    !product.variants.some(
+                      (v) =>
+                        v.options?.[mainOption] === selectedMain &&
+                        v.options?.[subOption] === val &&
+                        v.active &&
+                        (product.stock_type === "on_demand" || (v.stock_quantity ?? 0) > 0)
+                    )
+                  }>
+                  {val}
+                </button>
+              ))}
+            </div>
+          </div>
           <p className={styles.description}>{product.description}</p>
           <div className={styles.stockInfo}>
             <div
-              className={`${styles.stockType} ${product.stock_type === "limited" ? styles.limited : styles.onDemand}`}>
+              className={`${styles.stockType} ${
+                product.stock_type === "limited" ? styles.limited : styles.onDemand
+              }`}>
               {product.stock_type === "limited" ? "Stock Limitado" : "Sob Encomenda"}
-              {product.stock_type === "limited" && product.stock_quantity && (
-                <span> - {product.stock_quantity} disponíveis</span>
+              {product.stock_type === "limited" && selectedVariant?.stock_quantity != null && (
+                <span> - {selectedVariant.stock_quantity} disponíveis</span>
               )}
             </div>
-
             <div className={styles.deliveryInfo}>
               {product.order_deadline && (
                 <div className={styles.orderDeadline}>
                   Prazo de encomenda: {new Date(product.order_deadline).toLocaleDateString("pt-PT")}
                 </div>
               )}
-
               {product.estimated_delivery && (
                 <div className={styles.deliveryDate}>
-                  {product.stock_type === "limited" ? "Entrega estimada: " : "Entrega estimada: "}
+                  Entrega estimada:{" "}
                   {new Date(product.estimated_delivery).toLocaleDateString("pt-PT")}
                 </div>
               )}
@@ -220,10 +215,14 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <button onClick={() => setQty((q) => q + 1)}>+</button>
             </div>
           </div>
-
-          <button className={styles.addButton} onClick={addToCart} disabled={!allVariantsChosen}>
+          <button className={styles.addButton} onClick={addToCart} disabled={!selectedVariant}>
             Adicionar ao Carrinho
           </button>
+          {selectedVariant && selectedVariant.label && (
+            <div className={styles.label} style={{ marginTop: ".5rem" }}>
+              Variante: {selectedVariant.label}
+            </div>
+          )}
         </div>
       </div>
       {related.length > 0 && (

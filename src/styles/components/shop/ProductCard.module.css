@@ -34,6 +34,51 @@
   width: 100%;
   height: 100%;
   background: #f6f6f6;
+  transition: opacity 0.25s;
+  opacity: 1;
+}
+
+.thumbnails {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0.7rem 0;
+  justify-content: center;
+  width: 100%;
+}
+
+.thumbBtn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 0.3rem;
+  outline: none;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s,
+    border 0.15s;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbBtn:hover,
+.thumbBtn:focus {
+  border-color: var(--primary-colour, #3b82f6);
+}
+
+.activeThumb {
+  border-color: var(--primary-colour, #3b82f6);
+  box-shadow: 0 0 0 2px #e0e7ff;
+}
+
+.thumbImg {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 0.3rem;
+  pointer-events: none;
+  user-select: none;
 }
 
 .info {
