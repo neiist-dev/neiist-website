@@ -8,6 +8,13 @@ import { Squash } from "hamburger-react";
 import { CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/Cart.module.css";
 
+function formatOptions(options?: Record<string, string>): string {
+  if (!options) return "";
+  return Object.entries(options)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(", ");
+}
+
 export default function Cart() {
   const { isOpen, closeCart } = useCartPopup();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -81,7 +88,7 @@ export default function Cart() {
                   />
                   <div>
                     <h4>{item.product.name}</h4>
-                    {variantObj && <p>{variantObj.variant_value}</p>}
+                    {variantObj && <p>{variantObj.label || formatOptions(variantObj.options)}</p>}
                     <strong>{price.toFixed(2)}€</strong>
                     <div className={styles.quantity}>
                       <button onClick={() => handleQuantity(idx, -1)}>-</button>

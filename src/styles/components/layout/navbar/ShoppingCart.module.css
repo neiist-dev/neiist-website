@@ -1,3 +1,20 @@
+.itemCount {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background-color: var(--primary-colour);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: bold;
+  min-width: 16px;
+}
+
 .cartButton {
   background: none;
   border: none;
@@ -7,7 +24,9 @@
   align-items: center;
   justify-content: center;
   transition: color 0.3s ease;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+  position: relative;
+  padding: 8px;
 }
 
 .cartButton:hover {
