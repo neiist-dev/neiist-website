@@ -13,6 +13,8 @@ import {
   mapDbOrderToOrder,
   OrderStatus,
   Category,
+  DbCategory,
+  mapDbCategoryToCategory,
 } from "@/types/shop";
 
 const pool = new Pool({
@@ -553,38 +555,19 @@ export const addProduct = async (
 
 export const addProductVariant = async (
   productId: number,
-  variant: Partial<ProductVariant> & {
-    variant_name: string;
-    variant_value: string;
-    price_multiplier?: number;
-  }
+  variant: Partial<ProductVariant> & { price_modifier?: number }
 ): Promise<Product | null> => {
-  let priceMultiplier = variant.price_multiplier;
-  if (priceMultiplier == null && variant.price_modifier != null) {
-    const {
-      rows: [p],
-    } = await db_query<{ price: string }>(`SELECT price FROM neiist.products WHERE id = $1`, [
-      productId,
-    ]);
-    const base = Number(p?.price ?? 0);
-    priceMultiplier = base > 0 ? Number(variant.price_modifier) / base : 0;
-  }
-
   const {
     rows: [row],
-  } = await db_query<DbProduct>(
-    `SELECT * FROM neiist.add_product_variant($1,$2,$3,$4,$5,$6,$7,$8)`,
-    [
-      productId,
-      variant.variant_name,
-      variant.variant_value,
-      variant.images ?? [],
-      priceMultiplier ?? 0,
-      variant.stock_quantity ?? null,
-      variant.size ?? null,
-      variant.active ?? true,
-    ]
-  );
+  } = await db_query<DbProduct>(`SELECT * FROM neiist.add_product_variant($1,$2,$3,$4,$5,$6,$7)`, [
+    productId,
+    variant.sku ?? null,
+    variant.images ?? [],
+    variant.price_modifier ?? 0,
+    variant.stock_quantity ?? null,
+    variant.active ?? true,
+    JSON.stringify(variant.options ?? {}),
+  ]);
   return row ? mapDbProductToProduct(row) : null;
 };
 
@@ -614,27 +597,32 @@ export const updateProduct = async (
 };
 
 export const updateProductVariant = async (
-  productId: number,
   variantId: number,
-  updates: Partial<ProductVariant> & { price_multiplier?: number }
+  updates: Partial<ProductVariant>
 ): Promise<ProductVariant | null> => {
   const {
     rows: [row],
-  } = await db_query<DbProductVariant>(`SELECT * FROM neiist.update_product_variant($1,$2,$3)`, [
-    productId,
+  } = await db_query<DbProductVariant>(`SELECT * FROM neiist.update_product_variant($1,$2)`, [
     variantId,
-    JSON.stringify(updates),
+    JSON.stringify({
+      sku: updates.sku,
+      images: updates.images,
+      price_modifier: updates.price_modifier,
+      stock_quantity: updates.stock_quantity,
+      active: updates.active,
+      options: updates.options,
+    }),
   ]);
   return row
     ? {
         id: row.id,
-        variant_name: row.variant_name,
-        variant_value: row.variant_value,
-        images: row.images ?? [],
+        sku: row.sku ?? undefined,
+        images: row.images ?? undefined,
         price_modifier: Number(row.price_modifier ?? 0),
         stock_quantity: row.stock_quantity ?? undefined,
-        size: row.size ?? undefined,
         active: row.active,
+        options: row.options ?? {},
+        label: row.label ?? undefined,
       }
     : null;
 };
@@ -705,5 +693,17 @@ export const getAllCategories = async (): Promise<Category[]> => {
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
+  }
+};
+
+export const addCategory = async (name: string): Promise<Category | null> => {
+  try {
+    const {
+      rows: [row],
+    } = await db_query<DbCategory>(`SELECT * FROM neiist.get_or_create_category($1)`, [name]);
+    return row ? mapDbCategoryToCategory(row) : null;
+  } catch (error) {
+    console.error("Error adding category:", error);
+    return null;
   }
 };

@@ -5,7 +5,6 @@ export interface Product {
   price: number;
   images: string[];
   category?: string;
-  size?: string;
   stock_type: "limited" | "on_demand";
   stock_quantity?: number;
   order_deadline?: string;
@@ -15,13 +14,13 @@ export interface Product {
 
 export interface ProductVariant {
   id: number;
-  variant_name: string;
-  variant_value: string;
+  sku?: string;
   images?: string[];
   price_modifier: number;
   stock_quantity?: number;
-  size?: string;
   active: boolean;
+  options: Record<string, string>;
+  label?: string;
 }
 
 export interface Order {
@@ -51,7 +50,8 @@ export interface OrderItem {
   product_id: number;
   product_name: string;
   variant_id?: number;
-  variant_info?: string;
+  variant_label?: string;
+  variant_options?: Record<string, string>;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -70,16 +70,21 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface DbCategory {
+  category_id: number;
+  category_name: string;
+}
+
 export interface DbProductVariant {
   id: number;
-  product_id: number;
-  variant_name: string;
-  variant_value: string;
-  images?: string[] | null;
+  product_id?: number | null;
+  sku: string | null;
+  images: string[] | null;
   price_modifier: number | string | null;
-  stock_quantity?: number | null;
-  size?: string | null;
+  stock_quantity: number | null;
   active: boolean;
+  options: Record<string, string> | null;
+  label: string | null;
 }
 
 export interface DbProduct {
@@ -89,7 +94,6 @@ export interface DbProduct {
   price: string | number;
   images: string[] | null;
   category: string | null;
-  size: string | null;
   stock_type: string;
   stock_quantity: number | null;
   order_deadline: string | null;
@@ -101,7 +105,8 @@ export interface DbOrderItem {
   product_id: number;
   product_name: string;
   variant_id: number | null;
-  variant_info: string | null;
+  variant_label: string | null;
+  variant_options: Record<string, string> | null;
   quantity: number;
   unit_price: number | string;
   total_price: number | string;
@@ -130,6 +135,13 @@ export interface DbOrder {
   status: string;
 }
 
+export function mapDbCategoryToCategory(row: DbCategory): Category {
+  return {
+    id: row.category_id,
+    name: row.category_name,
+  };
+}
+
 export function mapDbProductToProduct(row: DbProduct): Product {
   return {
     id: row.id,
@@ -138,7 +150,6 @@ export function mapDbProductToProduct(row: DbProduct): Product {
     price: Number(row.price),
     images: row.images ?? [],
     category: row.category ?? undefined,
-    size: row.size ?? undefined,
     stock_type: row.stock_type as Product["stock_type"],
     stock_quantity: row.stock_quantity ?? undefined,
     order_deadline: row.order_deadline ?? undefined,
@@ -146,13 +157,13 @@ export function mapDbProductToProduct(row: DbProduct): Product {
     variants: (row.variants ?? []).map(
       (v): ProductVariant => ({
         id: v.id,
-        variant_name: v.variant_name,
-        variant_value: v.variant_value,
-        images: v.images ?? [],
+        sku: v.sku ?? undefined,
+        images: v.images ?? undefined,
         price_modifier: Number(v.price_modifier ?? 0),
         stock_quantity: v.stock_quantity ?? undefined,
-        size: v.size ?? undefined,
         active: Boolean(v.active),
+        options: v.options ?? {},
+        label: v.label ?? undefined,
       })
     ),
   };
@@ -173,7 +184,8 @@ export function mapDbOrderToOrder(row: DbOrder): Order {
         product_id: it.product_id,
         product_name: it.product_name,
         variant_id: it.variant_id ?? undefined,
-        variant_info: it.variant_info ?? undefined,
+        variant_label: it.variant_label ?? undefined,
+        variant_options: it.variant_options ?? undefined,
         quantity: it.quantity,
         unit_price: Number(it.unit_price),
         total_price: Number(it.total_price),

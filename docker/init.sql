@@ -71,162 +71,39 @@ SELECT neiist.add_event('Workshop C', 'Queres finalmente perceber o que é aloca
 SELECT neiist.add_event('Hash Code', 'Junta-te a nós na competição de código desenvolvida pela Google na qual o NEIIST organiza uma Hub onde todos os alunos do técnico são bem-vindos a integrar e participar.', 'hashcode.jpg');
 SELECT neiist.add_event('Linux Install Party', 'Vem instalar o Linux no teu PC, junto a alunos com experiência na área e na instalação dos vários flavors que o Linux tem para oferecer!', 'lip.jpg');
 
--- Add Sample products to the shop for testing in prod use real products
-DO $$
-DECLARE
-  p_tshirt INTEGER;
-  p_sticker INTEGER;
-  p_sweat INTEGER;
+-- Create Shop Categories
+INSERT INTO neiist.categories (id, name) VALUES (1, 'Vestuário');
+INSERT INTO neiist.categories (id, name) VALUES (2, 'Stickers');
+INSERT INTO neiist.categories (id, name) VALUES (3, 'Merch');
 
-  v_tshirt_m INTEGER;
-  v_tshirt_l INTEGER;
-  v_sweat_m INTEGER;
-  v_sweat_l INTEGER;
+-- Add Sample Products
+INSERT INTO neiist.products (id, name, description, price, images, category_id, stock_type, stock_quantity, order_deadline, estimated_delivery, active) VALUES (5, 'SweatShirt', null, 20.00, '{/products/beige0png.jpg,/products/black0png.jpg,/products/blue0png.jpg,/products/green0png.jpg,/products/red0png.jpg}', null, 'on_demand', 0, '2025-09-09 23:00:00.000000 +00:00', '2025-09-17 23:00:00.000000 +00:00', true);
+INSERT INTO neiist.products (id, name, description, price, images, category_id, stock_type, stock_quantity, order_deadline, estimated_delivery, active) VALUES (6, 'Sweat Special 2026', '', 22.00, '{/products/blacknew3png.jpg,/products/black0png.jpg}', null, 'limited', 0, '2025-09-23 23:00:00.000000 +00:00', '2025-09-29 23:00:00.000000 +00:00', true);
 
-  o1 INTEGER;
-  o2 INTEGER;
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = 'ist1109686') THEN
-    PERFORM 1 FROM neiist.add_user(
-      'ist1109686',
-      'Miguel Póvoa Raposo',
-      'miguel.p.raposo@tecnico.ulisboa.pt',
-      NULL,
-      NULL,
-      NULL,
-      ARRAY['Engenharia Informática e de Computadores - Taguspark']
-    );
-  END IF;
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (13, 6, null, '{/products/blacknew0png.jpg,/products/blacknew1png.jpg,/products/blacknew2png.jpg,/products/blacknew3png.jpg,/products/blacknew4png.jpg}', 0.00, 6, true, '2025-09-14 20:57:53.584433 +00:00', '2025-09-14 20:57:53.584433 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (14, 6, null, '{/products/blacknew0png.jpg}', 0.00, 16, true, '2025-09-14 20:57:53.588150 +00:00', '2025-09-14 20:57:53.588150 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (15, 6, null, '{/products/blacknew0png.jpg}', 0.00, 3, true, '2025-09-14 20:57:53.589826 +00:00', '2025-09-14 20:57:53.589826 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (16, 6, null, '{/products/blacknew0png.jpg}', 0.00, 1, true, '2025-09-14 20:57:53.591601 +00:00', '2025-09-14 20:57:53.591601 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (7, 5, null, '{/products/beige-0.png,/products/beige-1.png}', 0.00, 2, true, '2025-09-14 19:43:02.821470 +00:00', '2025-09-14 20:59:17.650247 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (8, 5, null, '{/products/beige-0.png,/products/beige-1.png}', 0.00, 6, true, '2025-09-14 19:43:02.846909 +00:00', '2025-09-14 20:59:17.654296 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (9, 5, null, '{/products/beige-3.png,/products/beige-4.png}', 0.00, 3, true, '2025-09-14 19:43:02.869095 +00:00', '2025-09-14 20:59:17.657509 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (10, 5, null, '{/products/green-1.png,/products/green-0.png,/products/green-3.png}', 0.00, 7, true, '2025-09-14 19:43:02.894657 +00:00', '2025-09-14 20:59:17.660780 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (11, 5, null, '{/products/green-3.png,/products/green-2.png,/products/green-0.png}', 0.00, 13, true, '2025-09-14 19:43:02.928384 +00:00', '2025-09-14 20:59:17.666174 +00:00');
+INSERT INTO neiist.product_variants (id, product_id, sku, images, price_modifier, stock_quantity, active, created_at, updated_at) VALUES (12, 5, null, '{/products/green-2.png}', 0.00, 2, true, '2025-09-14 19:43:02.963538 +00:00', '2025-09-14 20:59:17.670348 +00:00');
 
-  IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = 'ist1110632') THEN
-    PERFORM 1 FROM neiist.add_user(
-      'ist1110632',
-      'Inês Costa',
-      'inesiscosta@tecnico.ulisboa.pt',
-      NULL,
-      NULL,
-      NULL,
-      ARRAY['Engenharia Informática e de Computadores - Taguspark']
-    );
-  END IF;
-
-  SELECT id INTO p_tshirt FROM neiist.add_product(
-    'T-shirt NEIIST',
-    'Camisola oficial do núcleo.',
-    12.00,
-    ARRAY['/products/green-0.png','/products/green-1.png'],
-    'Vestuário',
-    'limited',
-    50,
-    '2025-09-01',
-    '2025-09-15',
-    TRUE
-  );
-
-  PERFORM neiist.add_product_variant(
-    p_tshirt,
-    'Tamanho',
-    'M',
-    ARRAY['/products/green-1.png'],
-    0.00,
-    20,
-    'M',
-    TRUE
-  );
-  PERFORM neiist.add_product_variant(
-    p_tshirt,
-    'Tamanho',
-    'L',
-    ARRAY['/products/green-2.png'],
-    0.00,
-    30,
-    'L',
-    TRUE
-  );
-
-  SELECT id INTO v_tshirt_m FROM neiist.product_variants
-    WHERE product_id = p_tshirt AND variant_name='Tamanho' AND variant_value='M';
-  SELECT id INTO v_tshirt_l FROM neiist.product_variants
-    WHERE product_id = p_tshirt AND variant_name='Tamanho' AND variant_value='L';
-
-  SELECT id INTO p_sticker FROM neiist.add_product(
-    'Sticker NEIIST',
-    'Autocolante para portátil.',
-    2.00,
-    ARRAY['/products/green-4.png'],
-    'Merch',
-    'on_demand',
-    NULL,
-    '2025-09-10',
-    '2025-09-25',
-    TRUE
-  );
-
-  SELECT id INTO p_sweat FROM neiist.add_product(
-    'Sweat NEIIST',
-    'Sweat confortável para os dias frios.',
-    25.00,
-    ARRAY['/products/green-0.png','/products/green-3.png'],
-    'Vestuário',
-    'limited',
-    15,
-    '2025-09-01',
-    '2025-09-20',
-    TRUE
-  );
-
-  PERFORM neiist.add_product_variant(
-    p_sweat,
-    'Tamanho',
-    'M',
-    ARRAY['/products/green-3.png'],
-    0.00,
-    7,
-    'M',
-    TRUE
-  );
-  PERFORM neiist.add_product_variant(
-    p_sweat,
-    'Tamanho',
-    'L',
-    ARRAY['/products/green-3.png'],
-    0.00,
-    8,
-    'L',
-    TRUE
-  );
-
-  SELECT id INTO v_sweat_m FROM neiist.product_variants
-    WHERE product_id = p_sweat AND variant_name='Tamanho' AND variant_value='M';
-  SELECT id INTO v_sweat_l FROM neiist.product_variants
-    WHERE product_id = p_sweat AND variant_name='Tamanho' AND variant_value='L';
-
-  SELECT id INTO o1 FROM neiist.new_order(
-    'ist1109686',
-    '123456789',
-    'TagusPark',
-    'Entregar na sala do núcleo.',
-    'MBWay',
-    'MBW123456',
-    jsonb_build_array(
-      jsonb_build_object('product_id', p_tshirt, 'variant_id', v_tshirt_m, 'quantity', 2),
-      jsonb_build_object('product_id', p_sticker, 'variant_id', NULL, 'quantity', 5)
-    )
-  );
-
-  PERFORM 1 FROM neiist.set_order_state(o1, 'paid', 'Miguel Póvoa Raposo');
-  PERFORM 1 FROM neiist.set_order_state(o1, 'delivered', 'Francisca Almeida');
-
-  SELECT id INTO o2 FROM neiist.new_order(
-    'ist1110632',
-    NULL,
-    'TagusPark',
-    NULL,
-    'Dinheiro',
-    NULL,
-    jsonb_build_array(
-      jsonb_build_object('product_id', p_sweat, 'variant_id', v_sweat_l, 'quantity', 1)
-    )
-  );
-END;
-$$;
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (11, 'Tamanho', 'M');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (12, 'Tamanho', 'L');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (9, 'Tamanho', 'M');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (10, 'Cor', 'Verde');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (8, 'Cor', 'Bege');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (12, 'Cor', 'Verde');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (8, 'Tamanho', 'S');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (7, 'Cor', 'Bege');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (11, 'Cor', 'Verde');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (10, 'Tamanho', 'XS');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (7, 'Tamanho', 'XS');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (9, 'Cor', 'Bege');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (13, 'Tamanho', '"XS"');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (14, 'Tamanho', '"S"');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (15, 'Tamanho', '"M"');
+INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (16, 'Tamanho', '"L"');

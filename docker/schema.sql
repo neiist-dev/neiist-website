@@ -179,8 +179,8 @@ CREATE TABLE neiist.products (
   category_id INTEGER REFERENCES neiist.categories(id),
   stock_type neiist.shop_stock_type_enum NOT NULL,
   stock_quantity INTEGER,
-  order_deadline DATE,
-  estimated_delivery DATE,
+  order_deadline TIMESTAMPTZ,
+  estimated_delivery TIMESTAMPTZ,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   CONSTRAINT chk_products_stock
     CHECK (
@@ -189,19 +189,32 @@ CREATE TABLE neiist.products (
     )
 );
 
--- PRODUCTS VARIENTS
+-- PRODUCTS VARIANTS
 CREATE TABLE neiist.product_variants (
   id SERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL REFERENCES neiist.products(id) ON DELETE CASCADE,
-  variant_name TEXT NOT NULL,
-  variant_value TEXT NOT NULL,
+  sku TEXT UNIQUE,
   images TEXT[] NOT NULL DEFAULT '{}',
-  price_multiplier NUMERIC(10,2) NOT NULL DEFAULT 0,
+  price_modifier NUMERIC(10,2) NOT NULL DEFAULT 0,
   stock_quantity INTEGER,
-  size TEXT,
   active BOOLEAN NOT NULL DEFAULT TRUE,
-  UNIQUE (product_id, variant_name, variant_value)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_variant_stock CHECK (stock_quantity IS NULL OR stock_quantity >= 0)
 );
+
+-- PRODUCTS VARIANTS OPTIONS
+CREATE TABLE neiist.product_variant_options (
+  variant_id INTEGER NOT NULL REFERENCES neiist.product_variants(id) ON DELETE CASCADE,
+  option_name TEXT NOT NULL,
+  option_value TEXT NOT NULL,
+  PRIMARY KEY (variant_id, option_name)
+);
+
+-- Index for better search performance on products variants
+CREATE INDEX idx_product_variants_product ON neiist.product_variants(product_id);
+CREATE INDEX idx_variant_options_name ON neiist.product_variant_options(option_name);
+
 
 -- ORDERS
 CREATE TABLE neiist.orders (
@@ -229,8 +242,8 @@ CREATE TABLE neiist.order_items (
   product_id INTEGER NOT NULL REFERENCES neiist.products(id),
   variant_id INTEGER REFERENCES neiist.product_variants(id),
   product_name TEXT NOT NULL,
-  variant_name TEXT,
-  variant_value TEXT,
+  variant_label TEXT,
+  variant_options JSONB,
   quantity INTEGER NOT NULL CHECK (quantity > 0),
   unit_price NUMERIC(10,2) NOT NULL,
   total_price NUMERIC(10,2) NOT NULL
@@ -894,30 +907,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Check Product Category
-CREATE OR REPLACE FUNCTION neiist.verify_category(p_name TEXT)
-RETURNS INTEGER AS $$
-DECLARE v_id INTEGER;
+-- GET OR CREATE A CATEGORY
+CREATE OR REPLACE FUNCTION neiist.get_or_create_category(p_name TEXT)
+RETURNS TABLE (
+  category_id INTEGER,
+  category_name TEXT
+) AS $$
+DECLARE
+  v_category_id INTEGER;
 BEGIN
-  IF p_name IS NULL OR LENGTH(TRIM(p_name)) = 0 THEN
-    RETURN NULL;
+  IF p_name IS NULL OR LENGTH(BTRIM(p_name)) = 0 THEN
+    RETURN;
   END IF;
 
-  INSERT INTO neiist.categories(name) VALUES (p_name)
-  ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-  RETURNING id INTO v_id;
+  -- Insert or do nothing if exists, then get id
+  INSERT INTO neiist.categories (name)
+  VALUES (p_name)
+  ON CONFLICT (name) DO NOTHING
+  RETURNING neiist.categories.id INTO v_category_id;
 
-  RETURN v_id;
+  IF v_category_id IS NULL THEN
+    SELECT c.id INTO v_category_id FROM neiist.categories c WHERE c.name = p_name;
+  END IF;
+
+  RETURN QUERY
+  SELECT c.id, c.name
+  FROM neiist.categories c
+  WHERE c.id = v_category_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Calculate varient price from base and multiplier
-CREATE OR REPLACE FUNCTION neiist.get_variant_price(p_base NUMERIC, p_multiplier NUMERIC)
-RETURNS NUMERIC AS $$
-BEGIN
-  RETURN ROUND(p_base * (1 + COALESCE(p_multiplier, 0)) - p_base, 2);
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Create a new product and varients if existent
 CREATE OR REPLACE FUNCTION neiist.add_product(
@@ -928,8 +946,8 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   p_category TEXT,
   p_stock_type neiist.shop_stock_type_enum,
   p_stock_quantity INTEGER,
-  p_order_deadline DATE,
-  p_estimated_delivery DATE,
+  p_order_deadline TIMESTAMPTZ,
+  p_estimated_delivery TIMESTAMPTZ,
   p_active BOOLEAN DEFAULT TRUE
 ) RETURNS TABLE (
   id INTEGER,
@@ -938,11 +956,10 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   price NUMERIC(10,2),
   images TEXT[],
   category TEXT,
-  size TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
-  order_deadline DATE,
-  estimated_delivery DATE,
+  order_deadline TIMESTAMPTZ,
+  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 DECLARE
@@ -950,7 +967,7 @@ DECLARE
   v_id INTEGER;
 BEGIN
   IF p_category IS NOT NULL AND length(trim(p_category)) > 0 THEN
-    v_cat_id := neiist.verify_category(p_category);
+   SELECT id INTO v_cat_id FROM neiist.get_or_create_category(p_category);
   END IF;
 
   INSERT INTO neiist.products(
@@ -970,7 +987,6 @@ BEGIN
     pr.price,
     pr.images,
     c.name AS category,
-    NULL::TEXT AS size,
     pr.stock_type::TEXT,
     pr.stock_quantity,
     pr.order_deadline,
@@ -985,13 +1001,12 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Add a new product varient
 CREATE OR REPLACE FUNCTION neiist.add_product_variant(
   p_product_id INTEGER,
-  p_variant_name TEXT,
-  p_variant_value TEXT,
+  p_sku TEXT,
   p_images TEXT[],
-  p_price_multiplier NUMERIC(10,2),
+  p_price_modifier NUMERIC(10,2),
   p_stock_quantity INTEGER,
-  p_size TEXT,
-  p_active BOOLEAN DEFAULT TRUE
+  p_active BOOLEAN DEFAULT TRUE,
+  p_options JSONB DEFAULT '{}'::JSONB
 ) RETURNS TABLE (
   id INTEGER,
   name TEXT,
@@ -999,33 +1014,43 @@ CREATE OR REPLACE FUNCTION neiist.add_product_variant(
   price NUMERIC(10,2),
   images TEXT[],
   category TEXT,
-  size TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
-  order_deadline DATE,
-  estimated_delivery DATE,
+  order_deadline TIMESTAMPTZ,
+  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 DECLARE
   v_product neiist.products%ROWTYPE;
   v_category TEXT;
+  v_variant_id INTEGER;
+  kv RECORD;
 BEGIN
-  INSERT INTO neiist.product_variants(
-    product_id, variant_name, variant_value, images, price_multiplier,
-    stock_quantity, size, active
-  ) VALUES (
-    p_product_id, p_variant_name, p_variant_value, COALESCE(p_images, '{}'),
-    COALESCE(p_price_multiplier, 0), p_stock_quantity, p_size, COALESCE(p_active, TRUE)
-  )
-  ON CONFLICT (product_id, variant_name, variant_value) DO UPDATE
-    SET images = EXCLUDED.images,
-        price_multiplier = EXCLUDED.price_multiplier,
-        stock_quantity = EXCLUDED.stock_quantity,
-        size = EXCLUDED.size,
-        active = EXCLUDED.active;
   SELECT * INTO v_product
   FROM neiist.products p
   WHERE p.id = p_product_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product % not found', p_product_id;
+  END IF;
+
+  INSERT INTO neiist.product_variants(
+    product_id, sku, images, price_modifier, stock_quantity, active
+  ) VALUES (
+    p_product_id, NULLIF(p_sku,''), COALESCE(p_images, '{}'),
+    COALESCE(p_price_modifier, 0), p_stock_quantity, COALESCE(p_active, TRUE)
+  )
+  RETURNING neiist.product_variants.id INTO v_variant_id;
+
+  IF p_options IS NOT NULL AND jsonb_typeof(p_options) = 'object' THEN
+    FOR kv IN SELECT key, value FROM jsonb_each(p_options)
+    LOOP
+      INSERT INTO neiist.product_variant_options(variant_id, option_name, option_value)
+      VALUES (v_variant_id, kv.key, kv.value #>> '{}')
+      ON CONFLICT (variant_id, option_name) DO UPDATE
+      SET option_value = EXCLUDED.option_value;
+    END LOOP;
+  END IF;
 
   SELECT c.name INTO v_category
   FROM neiist.categories c
@@ -1039,22 +1064,31 @@ BEGIN
     v_product.price,
     v_product.images,
     v_category,
-    NULL::TEXT AS size,
     v_product.stock_type::TEXT,
     v_product.stock_quantity,
     v_product.order_deadline,
     v_product.estimated_delivery,
     (
-      SELECT jsonb_agg(jsonb_build_object(
-        'id', pv.id,
-        'variant_name', pv.variant_name,
-        'variant_value', pv.variant_value,
-        'images', pv.images,
-        'price_modifier', neiist.get_variant_price(v_product.price, pv.price_multiplier),
-        'stock_quantity', pv.stock_quantity,
-        'size', pv.size,
-        'active', pv.active
-      ) ORDER BY pv.id)
+      SELECT COALESCE(jsonb_agg(
+        jsonb_build_object(
+          'id', pv.id,
+          'sku', pv.sku,
+          'images', pv.images,
+          'price_modifier', pv.price_modifier,
+          'stock_quantity', pv.stock_quantity,
+          'active', pv.active,
+          'options', COALESCE((
+              SELECT jsonb_object_agg(pvo.option_name, pvo.option_value)
+              FROM neiist.product_variant_options pvo
+              WHERE pvo.variant_id = pv.id
+            ), '{}'::jsonb),
+          'label', NULLIF((
+              SELECT string_agg(pvo.option_name || ': ' || pvo.option_value, ' | ' ORDER BY pvo.option_name)
+              FROM neiist.product_variant_options pvo
+              WHERE pvo.variant_id = pv.id
+            ), '')
+        )
+      ORDER BY pv.id), '[]'::JSONB)
       FROM neiist.product_variants pv
       WHERE pv.product_id = v_product.id
     ) AS variants;
@@ -1070,11 +1104,10 @@ RETURNS TABLE (
   price NUMERIC(10,2),
   images TEXT[],
   category TEXT,
-  size TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
-  order_deadline DATE,
-  estimated_delivery DATE,
+  order_deadline TIMESTAMPTZ,
+  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 BEGIN
@@ -1082,19 +1115,29 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    NULL::TEXT AS size,
     p.stock_type::TEXT, p.stock_quantity, p.order_deadline, p.estimated_delivery,
     COALESCE((
-      SELECT jsonb_agg(jsonb_build_object(
-        'id', v.id,
-        'variant_name', v.variant_name,
-        'variant_value', v.variant_value,
-        'images', v.images,
-        'price_modifier', neiist.get_variant_price(p.price, v.price_multiplier),
-        'stock_quantity', v.stock_quantity,
-        'size', v.size,
-        'active', v.active
-      ) ORDER BY v.id)
+      SELECT jsonb_agg(
+        jsonb_build_object(
+          'id', v.id,
+          'sku', v.sku,
+          'images', v.images,
+          'price_modifier', v.price_modifier,
+          'stock_quantity', v.stock_quantity,
+          'active', v.active,
+          'options', COALESCE((
+              SELECT jsonb_object_agg(vo.option_name, vo.option_value)
+              FROM neiist.product_variant_options vo
+              WHERE vo.variant_id = v.id
+            ), '{}'::jsonb),
+          'label', NULLIF((
+              SELECT string_agg(vo.option_name || ': ' || vo.option_value, ' | ' ORDER BY vo.option_name)
+              FROM neiist.product_variant_options vo
+              WHERE vo.variant_id = v.id
+            ), '')
+        )
+        ORDER BY v.id
+      )
       FROM neiist.product_variants v
       WHERE v.product_id = p.id
     ), '[]'::JSONB) AS variants
@@ -1114,11 +1157,10 @@ RETURNS TABLE (
   price NUMERIC(10,2),
   images TEXT[],
   category TEXT,
-  size TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
-  order_deadline DATE,
-  estimated_delivery DATE,
+  order_deadline TIMESTAMPTZ,
+  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 BEGIN
@@ -1126,19 +1168,29 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    NULL::TEXT AS size,
     p.stock_type::TEXT, p.stock_quantity, p.order_deadline, p.estimated_delivery,
     COALESCE((
-      SELECT jsonb_agg(jsonb_build_object(
-        'id', v.id,
-        'variant_name', v.variant_name,
-        'variant_value', v.variant_value,
-        'images', v.images,
-        'price_modifier', neiist.get_variant_price(p.price, v.price_multiplier),
-        'stock_quantity', v.stock_quantity,
-        'size', v.size,
-        'active', v.active
-      ) ORDER BY v.id)
+      SELECT jsonb_agg(
+        jsonb_build_object(
+          'id', v.id,
+          'sku', v.sku,
+          'images', v.images,
+          'price_modifier', v.price_modifier,
+          'stock_quantity', v.stock_quantity,
+          'active', v.active,
+          'options', COALESCE((
+              SELECT jsonb_object_agg(vo.option_name, vo.option_value)
+              FROM neiist.product_variant_options vo
+              WHERE vo.variant_id = v.id
+            ), '{}'::jsonb),
+          'label', NULLIF((
+              SELECT string_agg(vo.option_name || ': ' || vo.option_value, ' | ' ORDER BY vo.option_name)
+              FROM neiist.product_variant_options vo
+              WHERE vo.variant_id = v.id
+            ), '')
+        )
+        ORDER BY v.id
+      )
       FROM neiist.product_variants v
       WHERE v.product_id = p.id
     ), '[]'::JSONB) AS variants
@@ -1160,18 +1212,17 @@ CREATE OR REPLACE FUNCTION neiist.update_product(
   price NUMERIC(10,2),
   images TEXT[],
   category TEXT,
-  size TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
-  order_deadline DATE,
-  estimated_delivery DATE,
+  order_deadline TIMESTAMPTZ,
+  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 DECLARE
   v_cat_id INTEGER;
 BEGIN
   IF p_updates ? 'category' THEN
-    v_cat_id := neiist.verify_category(p_updates->>'category');
+    SELECT id INTO v_cat_id FROM neiist.get_or_create_category(p_updates->>'category');
     UPDATE neiist.products SET category_id = v_cat_id WHERE products.id = p_product_id;
   END IF;
 
@@ -1179,7 +1230,7 @@ BEGIN
     UPDATE neiist.products SET name = p_updates->>'name' WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'description' THEN
-    UPDATE neiist.products SET description = p_updates->>'description' WHERE products.id = p_product_id;
+    UPDATE neiist.products SET description = NULLIF(p_updates->>'description','') WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'price' THEN
     UPDATE neiist.products SET price = (p_updates->>'price')::NUMERIC WHERE products.id = p_product_id;
@@ -1194,10 +1245,10 @@ BEGIN
     UPDATE neiist.products SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'order_deadline' THEN
-    UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::DATE WHERE products.id = p_product_id;
+    UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::TIMESTAMPTZ WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'estimated_delivery' THEN
-    UPDATE neiist.products SET estimated_delivery = NULLIF(p_updates->>'estimated_delivery','')::DATE WHERE products.id = p_product_id;
+    UPDATE neiist.products SET estimated_delivery = NULLIF(p_updates->>'estimated_delivery','')::TIMESTAMPTZ WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'active' THEN
     UPDATE neiist.products SET active = (p_updates->>'active')::BOOLEAN WHERE products.id = p_product_id;
@@ -1209,56 +1260,72 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Update a product varient data
 CREATE OR REPLACE FUNCTION neiist.update_product_variant(
-  p_product_id INTEGER,
   p_variant_id INTEGER,
   p_updates JSONB
 ) RETURNS TABLE (
   id INTEGER,
   product_id INTEGER,
-  variant_name TEXT,
-  variant_value TEXT,
+  sku TEXT,
   images TEXT[],
   price_modifier NUMERIC(10,2),
   stock_quantity INTEGER,
-  size TEXT,
-  active BOOLEAN
+  active BOOLEAN,
+  options JSONB,
+  label TEXT
 ) AS $$
+DECLARE
+  kv RECORD;
 BEGIN
-  IF p_updates ? 'variant_name' THEN
-    UPDATE neiist.product_variants SET variant_name = p_updates->>'variant_name' WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
-  END IF;
-  IF p_updates ? 'variant_value' THEN
-    UPDATE neiist.product_variants SET variant_value = p_updates->>'variant_value' WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
+  IF p_updates ? 'sku' THEN
+    UPDATE neiist.product_variants SET sku = NULLIF(p_updates->>'sku','') WHERE product_variants.id = p_variant_id;
   END IF;
   IF p_updates ? 'images' THEN
-    UPDATE neiist.product_variants SET images = COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_updates->'images')), '{}') WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
+    UPDATE neiist.product_variants SET images = COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_updates->'images')), '{}') WHERE product_variants.id = p_variant_id;
   END IF;
-  IF p_updates ? 'price_multiplier' THEN
-    UPDATE neiist.product_variants SET price_multiplier = (p_updates->>'price_multiplier')::NUMERIC WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
-  ELSIF p_updates ? 'price_modifier' THEN
-    UPDATE neiist.product_variants v
-    SET price_multiplier = GREATEST(ROUND((( (p_updates->>'price_modifier')::NUMERIC + p.price ) / NULLIF(p.price,0)) - 1, 4), 0)
-    FROM neiist.products p
-    WHERE v.id = p_variant_id AND v.product_id = p_product_id AND p.id = v.product_id;
+  IF p_updates ? 'price_modifier' THEN
+    UPDATE neiist.product_variants SET price_modifier = (p_updates->>'price_modifier')::NUMERIC WHERE product_variants.id = p_variant_id;
   END IF;
   IF p_updates ? 'stock_quantity' THEN
-    UPDATE neiist.product_variants SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
-  END IF;
-  IF p_updates ? 'size' THEN
-    UPDATE neiist.product_variants SET size = p_updates->>'size' WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
+    UPDATE neiist.product_variants SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE product_variants.id = p_variant_id;
   END IF;
   IF p_updates ? 'active' THEN
-    UPDATE neiist.product_variants SET active = (p_updates->>'active')::BOOLEAN WHERE product_variants.id = p_variant_id AND product_variants.product_id = p_product_id;
+    UPDATE neiist.product_variants SET active = (p_updates->>'active')::BOOLEAN WHERE product_variants.id = p_variant_id;
   END IF;
+
+  IF p_updates ? 'options' THEN
+    DELETE FROM neiist.product_variant_options WHERE variant_id = p_variant_id;
+    IF p_updates->'options' IS NOT NULL AND jsonb_typeof(p_updates->'options') = 'object' THEN
+      FOR kv IN SELECT key, value FROM jsonb_each(p_updates->'options')
+      LOOP
+      INSERT INTO neiist.product_variant_options(variant_id, option_name, option_value)
+      VALUES (v_variant_id, kv.key, kv.value #>> '{}')
+      END LOOP;
+    END IF;
+  END IF;
+
+  UPDATE neiist.product_variants SET updated_at = NOW() WHERE product_variants.id = p_variant_id;
 
   RETURN QUERY
   SELECT
-    v.id, v.product_id, v.variant_name, v.variant_value, v.images,
-    neiist.get_variant_price(p.price, v.price_multiplier) AS price_modifier,
-    v.stock_quantity, v.size, v.active
+    v.id,
+    v.product_id,
+    v.sku,
+    v.images,
+    v.price_modifier,
+    v.stock_quantity,
+    v.active,
+    COALESCE((
+      SELECT jsonb_object_agg(vo.option_name, vo.option_value)
+      FROM neiist.product_variant_options vo
+      WHERE vo.variant_id = v.id
+    ), '{}'::jsonb) AS options,
+    NULLIF((
+      SELECT string_agg(vo.option_name || ': ' || vo.option_value, ' | ' ORDER BY vo.option_name)
+      FROM neiist.product_variant_options vo
+      WHERE vo.variant_id = v.id
+    ), '') AS label
   FROM neiist.product_variants v
-  JOIN neiist.products p ON p.id = v.product_id
-  WHERE v.id = p_variant_id AND v.product_id = p_product_id;
+  WHERE v.id = p_variant_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1300,15 +1367,14 @@ DECLARE
   v_vid INTEGER;
   v_qty INTEGER;
   v_base NUMERIC(10,2);
-  v_mult NUMERIC(10,2);
   v_unit NUMERIC(10,2);
   v_total NUMERIC(10,2) := 0;
   v_stock_type neiist.shop_stock_type_enum;
   v_variant_stock INTEGER;
   v_product_stock INTEGER;
   v_pname TEXT;
-  v_vname TEXT;
-  v_vvalue TEXT;
+  v_v_label TEXT;
+  v_v_opts JSONB;
 BEGIN
   INSERT INTO neiist.orders(user_istid, nif, campus, notes, payment_method, payment_reference)
   VALUES (p_user_istid, p_nif, p_campus, p_notes, p_payment_method, p_payment_reference)
@@ -1334,38 +1400,48 @@ BEGIN
     END IF;
 
     IF v_vid IS NOT NULL THEN
-      SELECT pv.variant_name, pv.variant_value, pv.price_multiplier, pv.stock_quantity
-        INTO v_vname, v_vvalue, v_mult, v_variant_stock
-      FROM neiist.product_variants pv
-      WHERE pv.id = v_vid AND pv.product_id = v_pid AND pv.active = TRUE;
-
-      IF v_vname IS NULL THEN
+      -- Lock variant row for stock check
+      PERFORM 1 FROM neiist.product_variants WHERE product_variants.id = v_vid AND product_variants.product_id = v_pid AND product_variants.active = TRUE FOR UPDATE;
+      IF NOT FOUND THEN
         RAISE EXCEPTION 'Variant % for product % not found or inactive', v_vid, v_pid;
       END IF;
-    ELSE
-      v_vname := NULL;
-      v_vvalue := NULL;
-      v_mult := 0;
-    END IF;
 
-    v_unit := ROUND(v_base * (1 + COALESCE(v_mult, 0)), 2);
-    v_total := v_total + v_unit * v_qty;
+      SELECT
+        NULLIF((
+          SELECT string_agg(pvo.option_name || ': ' || pvo.option_value, ' | ' ORDER BY pvo.option_name)
+          FROM neiist.product_variant_options pvo
+          WHERE pvo.variant_id = pv.id
+        ), '') AS label,
+        COALESCE((
+          SELECT jsonb_object_agg(pvo.option_name, pvo.option_value)
+          FROM neiist.product_variant_options pvo
+          WHERE pvo.variant_id = pv.id
+        ), '{}'::jsonb) AS options,
+        pv.price_modifier,
+        pv.stock_quantity
+      INTO v_v_label, v_v_opts, v_unit, v_variant_stock
+      FROM neiist.product_variants pv
+      WHERE pv.id = v_vid AND pv.product_id = v_pid;
 
-    IF v_stock_type = 'limited' THEN
-      IF v_vid IS NOT NULL THEN
-        SELECT pv.stock_quantity INTO v_variant_stock
-        FROM neiist.product_variants pv
-        WHERE pv.id = v_vid FOR UPDATE;
+      v_unit := ROUND(v_base + COALESCE(v_unit,0), 2);
 
+      IF v_stock_type = 'limited' THEN
         IF v_variant_stock IS NULL OR v_variant_stock < v_qty THEN
           RAISE EXCEPTION 'Insufficient variant stock (product %, variant %, have %, need %)',
             v_pid, v_vid, COALESCE(v_variant_stock, -1), v_qty;
         END IF;
 
         UPDATE neiist.product_variants
-        SET stock_quantity = stock_quantity - v_qty
-        WHERE product_variants.id = v_vid;
-      ELSE
+          SET stock_quantity = stock_quantity - v_qty,
+              updated_at = NOW()
+          WHERE product_variants.id = v_vid;
+      END IF;
+    ELSE
+      v_v_label := NULL;
+      v_v_opts := NULL;
+      v_unit := ROUND(v_base, 2);
+
+      IF v_stock_type = 'limited' THEN
         SELECT p.stock_quantity INTO v_product_stock
         FROM neiist.products p
         WHERE p.id = v_pid FOR UPDATE;
@@ -1377,19 +1453,22 @@ BEGIN
 
         UPDATE neiist.products
         SET stock_quantity = stock_quantity - v_qty
-        WHERE products.id = v_pid;
+        WHERE id = v_pid;
       END IF;
     END IF;
 
+    v_total := v_total + v_unit * v_qty;
+
     INSERT INTO neiist.order_items(
-      order_id, product_id, variant_id, product_name, variant_name, variant_value,
+      order_id, product_id, variant_id, product_name, variant_label, variant_options,
       quantity, unit_price, total_price
     ) VALUES (
-      v_order_id, v_pid, v_vid, v_pname, v_vname, v_vvalue, v_qty, v_unit, v_unit * v_qty
+      v_order_id, v_pid, v_vid, v_pname, v_v_label, v_v_opts,
+      v_qty, v_unit, v_unit * v_qty
     );
   END LOOP;
 
-  UPDATE neiist.orders SET total_amount = ROUND(v_total, 2) WHERE orders.id = v_order_id;
+  UPDATE neiist.orders SET total_amount = ROUND(v_total, 2), updated_at = NOW() WHERE orders.id = v_order_id;
 
   RETURN QUERY
   SELECT
@@ -1399,17 +1478,14 @@ BEGIN
     u.email AS customer_email,
     (SELECT c.contact_value FROM neiist.user_contacts c WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone' LIMIT 1) AS customer_phone,
     o.nif AS customer_nif,
-    o.campus,
+     o.campus,
     COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
         'product_id', oi.product_id,
         'product_name', oi.product_name,
         'variant_id', oi.variant_id,
-        'variant_info', CASE
-          WHEN oi.variant_name IS NOT NULL AND oi.variant_value IS NOT NULL
-          THEN oi.variant_name || ': ' || oi.variant_value
-          ELSE NULL
-        END,
+        'variant_label', oi.variant_label,
+        'variant_options', oi.variant_options,
         'quantity', oi.quantity,
         'unit_price', oi.unit_price,
         'total_price', oi.total_price
@@ -1467,22 +1543,19 @@ BEGIN
     o.nif AS customer_nif,
     o.campus,
     (
-      SELECT jsonb_agg(
+      SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
           'product_id', oi.product_id,
           'product_name', oi.product_name,
           'variant_id', oi.variant_id,
-          'variant_info',
-             CASE
-               WHEN oi.variant_name IS NOT NULL
-                 THEN oi.variant_name || ': ' || oi.variant_value
-               ELSE NULL
-             END,
+          'variant_label', oi.variant_label,
+          'variant_options', oi.variant_options,
           'quantity', oi.quantity,
           'unit_price', oi.unit_price,
           'total_price', oi.total_price
-        ) ORDER BY oi.id
-      )
+        )
+        ORDER BY oi.id
+      ), '[]'::jsonb)
       FROM neiist.order_items oi
       WHERE oi.order_id = o.id
     ) AS items,
@@ -1555,7 +1628,32 @@ BEGIN
     UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE id = p_order_id;
   END IF;
 
-  RETURN QUERY SELECT * FROM neiist.get_all_orders() WHERE id = p_order_id;
+  UPDATE neiist.orders SET updated_at = NOW() WHERE id = p_order_id;
+
+  RETURN QUERY
+  SELECT
+    g.id,
+    g.order_number,
+    g.customer_name,
+    g.user_istid,
+    g.customer_email,
+    g.customer_phone,
+    g.customer_nif,
+    g.campus,
+    g.items,
+    g.notes,
+    g.total_amount,
+    g.payment_method,
+    g.payment_reference,
+    g.created_at,
+    g.paid_at,
+    g.payment_checked_by,
+    g.delivered_at,
+    g.delivered_by,
+    g.updated_at,
+    g.status::TEXT
+  FROM neiist.get_all_orders() g
+  WHERE g.id = p_order_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1630,6 +1728,6 @@ RETURNS TABLE (
   name TEXT
 ) AS $$
 BEGIN
-  RETURN QUERY SELECT categories.id, categories.name FROM neiist.categories ORDER BY categories.name;
+  RETURN QUERY SELECT c.id, c.name FROM neiist.categories c ORDER BY c.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
