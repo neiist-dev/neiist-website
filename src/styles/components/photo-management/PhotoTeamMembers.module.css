@@ -8,10 +8,8 @@
 
 .section {
   padding: 2rem;
-  background: white;
-  border-radius: 1.2rem;
+  background: none;
   margin: 2rem;
-  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.08);
 }
 
 .section h3 {
@@ -57,7 +55,7 @@
 }
 
 .memberCard {
-  background: var(--background-colour);
+  background: white;
   border-radius: 1.2rem;
   box-shadow: 0 2px 8px rgba(40, 99, 253, 0.06);
   padding: 1.2rem 0.5rem 1rem 0.5rem;

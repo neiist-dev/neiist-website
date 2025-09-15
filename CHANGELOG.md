@@ -1,5 +1,26 @@
 # neiist
 
+## 0.6.0
+
+### Minor Changes
+
+- Shop and Product Management
+  - Added shop categories for better product organization
+  - Introduced product variants (color, size) with support for images
+  - Enabled creating, editing, and removing product variants and stock
+  - Updated product cards to show thumbnails for all available variants
+  - Improved product management with support for multiple colors and sizes per product
+
+  Orders
+  - Added "My Orders" page with filters
+  - Added "Orders Management" page with status and search filters
+
+  Cart
+  - Fixed cart item counter to correctly reflect items in the cart
+
+  Database
+  - Updated Postgres init.sql to support new features
+
 ## 0.5.0
 
 ### Minor Changes
