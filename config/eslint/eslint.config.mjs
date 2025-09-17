@@ -5,6 +5,22 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      "**/.next/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/out/**",
+      "**/public/**",
+      "**/docker/**",
+      "**/.husky/**",
+      "**/yarn.lock",
+      "**/*.md",
+      "**/*.yml",
+      "**/*.yaml",
+    ],
+  },
   ...compat.config({
     extends: ["next/core-web-vitals", "next/typescript", "prettier"],
   }),

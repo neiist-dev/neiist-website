@@ -7,8 +7,8 @@
   padding: 2.5rem;
   border-radius: 1.5rem;
   border: none;
-  width: max-content;
-  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .title {
