@@ -160,6 +160,12 @@
   font-weight: 500;
 }
 
+.calendar {
+  color: var(--primary-colour);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .header {
     flex-direction: column;

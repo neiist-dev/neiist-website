@@ -6,6 +6,7 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/Profile.module.css";
 import { FaLock } from "react-icons/fa";
 import { User } from "@/types/user";
+import { UserRole } from "@/types/user";
 
 export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const [user, setUser] = useState<User>(initialUser);
@@ -23,6 +24,14 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const [altEmailDraft, setAltEmailDraft] = useState(formData.alternativeEmail);
   const [phoneDraft, setPhoneDraft] = useState(formData.phone);
   const [error, setError] = useState<string>("");
+
+  const calendarUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar?istid=${user.istid}`
+    ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar?istid=${user.istid}`)}`
+    : "";
+  const isMember =
+    user?.roles?.includes(UserRole._MEMBER) ||
+    user?.roles?.includes(UserRole._COORDINATOR) ||
+    user?.roles?.includes(UserRole._ADMIN);
 
   useEffect(() => {
     setFormData({
@@ -201,7 +210,21 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
-
+      {isMember && calendarUrl && (
+        <div style={{ marginTop: "2rem", textAlign: "center" }}>
+          <span>
+            Para ter acesso ao calendário de Eventos e Reuniões, por favor&nbsp;
+            <a
+              href={calendarUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.calendar}>
+              clique aqui
+            </a>
+            .
+          </span>
+        </div>
+      )}
       <ConfirmDialog
         open={showConfirmDialog}
         message={

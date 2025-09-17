@@ -1,6 +1,6 @@
 {
   "name": "neiist",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "scripts": {
     "setup": "chmod +x ./setup.sh && ./setup.sh",
@@ -27,6 +27,7 @@
     "date-fns": "^4.1.0",
     "fuse.js": "^7.1.0",
     "hamburger-react": "^2.5.2",
+    "ical-generator": "^9.0.0",
     "next": "15.2.4",
     "next-themes": "^0.4.6",
     "nodemailer": "^7.0.5",

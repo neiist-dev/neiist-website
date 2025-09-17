@@ -1,5 +1,15 @@
 # neiist
 
+## 0.7.0
+
+### Minor Changes
+
+- Notion Calendar provider:
+  - Add support for Notion API v2022-06-28
+  - New route to serve a calendar feed in ICAL format
+  - For Meetings only displays the one where the user is an attendee
+  - Add a link on the Profile page to access the feed and directly Add to Google Calendar
+
 ## 0.6.0
 
 ### Minor Changes
