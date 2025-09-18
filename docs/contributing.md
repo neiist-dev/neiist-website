@@ -51,7 +51,7 @@ You can contribute code to fix bugs, implement features, or improve the project 
 
 ### Setting Up the Development Environment
 
-Follow the steps in the [Installation](https://github.com/neiist-dev/neiist-website/blob/master/installation.md) guide to begin.
+Follow the steps in the [Installation](installation.md) guide to begin.
 
 ### Finding Issues to Work On
 

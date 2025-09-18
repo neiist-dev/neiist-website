@@ -22,8 +22,8 @@
 
 ### Getting Started
 
-* [Installation](./docs/installation.md)
-* [Contributing](./docs/contributing.md)
+* [Installation](/docs/installation.md)
+* [Contributing](/docs/contributing.md)
 
 ### Built With
 > [Next.js](https://nextjs.org/), [React](https://react.dev/), [PostgreSQL](https://www.postgresql.org/), [TypeScript](https://www.typescriptlang.org/)
