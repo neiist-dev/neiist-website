@@ -12,7 +12,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import { Product, ProductVariant, Category } from "@/types/shop";
+import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 
 interface ProductFormProps {
@@ -22,44 +22,18 @@ interface ProductFormProps {
   categories: Category[];
 }
 
-//Temp save the varaints images before upload
-type VariantFormRow = ProductVariant & {
-  imageUploads?: Array<{ imageBase64: string; imageName: string }>;
-};
-
-function variantToFormRow(v: ProductVariant): VariantFormRow {
-  return {
-    id: v.id,
-    sku: v.sku,
-    images: v.images,
-    price_modifier: v.price_modifier ?? 0,
-    stock_quantity: v.stock_quantity,
-    active: v.active,
-    label: v.label ?? undefined,
-    options: v.options ?? {},
-  };
-}
-
 export default function ProductForm({
   product,
   isEdit = false,
   onBack,
   categories,
 }: ProductFormProps) {
-  const [optionTypes, setOptionTypes] = useState<string[]>(
-    product?.variants?.length
-      ? Array.from(new Set(product.variants.flatMap((v) => Object.keys(v.options || {}))))
-      : ["Cor", "Tamanho"]
-  );
-
-  const [formData, setFormData] = useState({
-    name: product?.name || "",
-    description: product?.description || "",
-    price: product?.price || 0,
-    category: product?.category || (categories[0]?.name ?? ""),
-    stock_type: product?.stock_type || ("limited" as const),
-    stock_quantity: product?.stock_quantity || 0,
-  });
+  const [name, setName] = useState(product?.name || "");
+  const [description, setDescription] = useState(product?.description || "");
+  const [price, setPrice] = useState(product?.price || 0);
+  const [category, setCategory] = useState(product?.category || "");
+  const [stockType, setStockType] = useState(product?.stock_type || "limited");
+  const [stockQuantity, setStockQuantity] = useState(product?.stock_quantity || 0);
 
   const [orderDeadline, setOrderDeadline] = useState<Date | undefined>(
     product?.order_deadline ? new Date(product.order_deadline) : undefined
@@ -69,278 +43,281 @@ export default function ProductForm({
   );
 
   const [existingImages, setExistingImages] = useState<string[]>(product?.images || []);
-  const [cats, setCats] = useState<Category[]>(categories);
-  const [newCategory, setNewCategory] = useState("");
-  const [variantsForm, setVariantsForm] = useState<VariantFormRow[]>(
-    (product?.variants || []).map(variantToFormRow)
-  );
+  const [newImages, setNewImages] = useState<Array<{ file: File; preview: string }>>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [pendingUploads, setPendingUploads] = useState<
-    Array<{ imageBase64: string; imageName: string; previewUrl: string }>
-  >([]);
 
-  const allImages = [...existingImages, ...pendingUploads.map((u) => u.previewUrl)].filter(Boolean);
-  const totalVariantStock = variantsForm.reduce(
-    (sum, variant) => sum + (variant.stock_quantity || 0),
-    0
+  const [allCategories, setAllCategories] = useState<Category[]>(categories);
+  const [newCategory, setNewCategory] = useState("");
+
+  const [optionTypes, setOptionTypes] = useState<string[]>(
+    product?.variants?.length
+      ? [...new Set(product.variants.flatMap((v) => Object.keys(v.options || {})))]
+      : ["Cor", "Tamanho"]
   );
-  const hasVariants = variantsForm.length > 0;
 
-  const orderDeadlineTimeProps = useDateInput({
-    date: orderDeadline || undefined,
+  const [variants, setVariants] = useState(
+    product?.variants?.map((v) => ({
+      id: v.id || Math.random().toString(),
+      options: Object.fromEntries(
+        Object.entries(v.options || {}).map(([key, value]) => [
+          key,
+          typeof value === "string" ? value.replace(/^["']|["']$/g, "") : value,
+        ])
+      ),
+      price_modifier: v.price_modifier || 0,
+      stock_quantity: v.stock_quantity || 0,
+      active: v.active !== false,
+      images: v.images || [],
+      newImages: [] as Array<{ file: File; preview: string }>,
+    })) || []
+  );
+
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  const allImages = [...existingImages, ...newImages.map((img) => img.preview)];
+
+  const orderTimeProps = useDateInput({
+    date: orderDeadline,
     format: "HH:mm",
     locale: enGB,
-    onDateChange: (d) => setOrderDeadline(d || undefined),
+    onDateChange: setOrderDeadline,
   });
-  const estimatedDeliveryTimeProps = useDateInput({
-    date: estimatedDelivery || undefined,
+
+  const deliveryTimeProps = useDateInput({
+    date: estimatedDelivery,
     format: "HH:mm",
     locale: enGB,
-    onDateChange: (d) => setEstimatedDelivery(d || undefined),
+    onDateChange: setEstimatedDelivery,
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((p) => ({
-      ...p,
-      [name]: name === "price" || name === "stock_quantity" ? Number(value) : value,
-    }));
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const isImage =
-      (file.type && file.type.startsWith("image/")) || /\.(png|jpe?g)$/i.test(file.name);
+    if (!file || !file.type.startsWith("image/")) return;
 
-    if (!isImage) {
-      setUploadError("Por favor selecione uma imagem (jpg, jpeg ou png)");
-      return;
-    }
-
-    setUploading(true);
-    setUploadError(null);
-    try {
-      const imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const imageName = file.name;
-      const previewUrl = `data:${file.type || "image/*"};base64,${imageBase64}`;
-
-      setPendingUploads((prev) => [...prev, { imageBase64, imageName, previewUrl }]);
-      setSelectedImageIndex(existingImages.length + pendingUploads.length);
-    } catch {
-      setUploadError("Erro ao processar a imagem");
-    } finally {
-      setUploading(false);
-    }
+    const preview = URL.createObjectURL(file);
+    setNewImages((prev) => [...prev, { file, preview }]);
+    setSelectedImageIndex(allImages.length);
   };
 
-  const removeImage = (index: number, isPending: boolean) => {
-    if (isPending) {
-      setPendingUploads((p) => p.filter((_, i) => i !== index - existingImages.length));
+  const removeImage = (index: number) => {
+    if (index < existingImages.length) {
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
     } else {
-      setExistingImages((p) => p.filter((_, i) => i !== index));
+      const newIndex = index - existingImages.length;
+      setNewImages((prev) => {
+        URL.revokeObjectURL(prev[newIndex].preview);
+        return prev.filter((_, i) => i !== newIndex);
+      });
     }
     setSelectedImageIndex(0);
   };
 
-  const addOptionType = () => {
-    setOptionTypes((prev) => [...prev, ""]);
+  const handleAddCategory = async () => {
+    const trimmedName = newCategory.trim();
+    if (!trimmedName) return;
+
+    setError("");
+
+    try {
+      const response = await fetch("/api/shop/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmedName }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newCat = data.category || data;
+        const categoryToAdd = {
+          id: newCat.id || Date.now(),
+          name: newCat.name || trimmedName,
+        };
+
+        setAllCategories((prev) => [...prev, categoryToAdd]);
+        setCategory(categoryToAdd.name);
+        setNewCategory("");
+      } else {
+        const errorData = await response.json();
+        setError("Erro ao criar categoria: " + (errorData.message || errorData.error));
+      }
+    } catch (error) {
+      console.error("Category creation error:", error);
+      setError("Erro ao criar categoria");
+    }
   };
-  const updateOptionType = (idx: number, value: string) => {
-    setOptionTypes((prev) => prev.map((t, i) => (i === idx ? value : t)));
-    setVariantsForm((prev) =>
-      prev.map((v) => {
-        const newOptions: Record<string, string> = {};
-        optionTypes.forEach((oldType, i) => {
-          const newType = i === idx ? value : oldType;
-          if (v.options[oldType] !== undefined) {
-            newOptions[newType] = v.options[oldType];
-          }
-        });
-        return { ...v, options: newOptions };
+
+  const addOptionType = () => setOptionTypes((prev) => [...prev, ""]);
+
+  const updateOptionType = (index: number, value: string) => {
+    const oldType = optionTypes[index];
+    setOptionTypes((prev) => prev.map((type, i) => (i === index ? value : type)));
+    setVariants((prev) =>
+      prev.map((variant) => {
+        const newOptions = { ...variant.options };
+        if (oldType in newOptions && value !== oldType) {
+          newOptions[value] = newOptions[oldType];
+          delete newOptions[oldType];
+        }
+        return { ...variant, options: newOptions };
       })
     );
   };
-  const removeOptionType = (idx: number) => {
-    const typeToRemove = optionTypes[idx];
-    setOptionTypes((prev) => prev.filter((_, i) => i !== idx));
-    setVariantsForm((prev) =>
-      prev.map((v) => {
-        const newOptions = { ...v.options };
-        delete newOptions[typeToRemove];
-        return { ...v, options: newOptions };
-      })
+
+  const removeOptionType = (index: number) => {
+    const removedType = optionTypes[index];
+    setOptionTypes((prev) => prev.filter((_, i) => i !== index));
+    setVariants((prev) =>
+      prev.map((variant) => ({
+        ...variant,
+        options: Object.fromEntries(
+          Object.entries(variant.options).filter(([key]) => key !== removedType)
+        ),
+      }))
     );
   };
 
   const addVariant = () => {
-    setVariantsForm((p) => [
-      ...p,
-      {
-        id: Date.now() + Math.floor(Math.random() * 10000),
-        price_modifier: 0,
-        stock_quantity: 0,
-        active: true,
-        options: Object.fromEntries(optionTypes.map((t) => [t, ""])),
-      },
-    ]);
+    const newVariant = {
+      id: Math.random().toString(),
+      options: Object.fromEntries(optionTypes.map((type) => [type, ""])),
+      price_modifier: 0,
+      stock_quantity: 0,
+      active: true,
+      images: [],
+      newImages: [],
+    };
+    setVariants((prev) => [...prev, newVariant]);
   };
 
-  const removeVariant = (index: number) => {
-    setVariantsForm((p) => p.filter((_, i) => i !== index));
-  };
-
-  const updateVariantField = (
-    index: number,
-    field: keyof VariantFormRow,
-    value: string | number | boolean | string[]
-  ) => {
-    setVariantsForm((p) => p.map((v, i) => (i === index ? { ...v, [field]: value } : v)));
+  const updateVariant = (index: number, updates: Partial<(typeof variants)[0]>) => {
+    setVariants((prev) =>
+      prev.map((variant, i) => (i === index ? { ...variant, ...updates } : variant))
+    );
   };
 
   const updateVariantOption = (variantIndex: number, optionType: string, value: string) => {
-    setVariantsForm((p) =>
-      p.map((v, i) =>
-        i === variantIndex ? { ...v, options: { ...v.options, [optionType]: value } } : v
+    setVariants((prev) =>
+      prev.map((variant, i) =>
+        i === variantIndex
+          ? { ...variant, options: { ...variant.options, [optionType]: value } }
+          : variant
       )
     );
   };
 
-  const handleVariantImageUpload = async (
+  const removeVariant = (index: number) => {
+    setVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleVariantImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     variantIndex: number
   ) => {
     const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const uploads: Array<{ imageBase64: string; imageName: string }> = [];
-    for (const file of files) {
-      const isImage =
-        (file.type && file.type.startsWith("image/")) || /\.(png|jpe?g)$/i.test(file.name);
-      if (!isImage) continue;
-      const imageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      uploads.push({ imageBase64, imageName: file.name });
-    }
-    setVariantsForm((p) =>
-      p.map((v, i) =>
-        i === variantIndex ? { ...v, imageUploads: [...(v.imageUploads || []), ...uploads] } : v
-      )
-    );
-  };
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
-  const removeVariantImage = (variantIndex: number, imgIdx: number) => {
-    setVariantsForm((p) =>
-      p.map((v, i) =>
-        i === variantIndex ? { ...v, images: (v.images || []).filter((_, j) => j !== imgIdx) } : v
-      )
-    );
-  };
+    const newImages = imageFiles.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
 
-  const removeVariantUpload = (variantIndex: number, uploadIdx: number) => {
-    setVariantsForm((p) =>
-      p.map((v, i) =>
-        i === variantIndex
-          ? { ...v, imageUploads: (v.imageUploads || []).filter((_, j) => j !== uploadIdx) }
-          : v
-      )
-    );
+    updateVariant(variantIndex, {
+      newImages: [...variants[variantIndex].newImages, ...newImages],
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    for (const v of variantsForm) {
-      for (const t of optionTypes) {
-        if (!v.options[t] || !v.options[t].trim()) {
-          alert(`Todas as variantes devem ter o campo "${t}" preenchido.`);
+    setError("");
+
+    if (!name.trim()) {
+      setError("Nome é obrigatório");
+      return;
+    }
+    if (!category) {
+      setError("Categoria é obrigatória");
+      return;
+    }
+    for (const variant of variants) {
+      for (const optionType of optionTypes) {
+        if (!variant.options[optionType]?.trim()) {
+          setError(`Variante deve ter "${optionType}" preenchido`);
           return;
         }
       }
     }
-    const seen = new Set();
-    for (const v of variantsForm) {
-      const key = optionTypes.map((t) => v.options[t]).join("|");
-      if (seen.has(key)) {
-        alert("Não pode haver variantes duplicadas (mesma combinação de opções).");
-        return;
-      }
-      seen.add(key);
-    }
 
-    const variants: ProductVariant[] = variantsForm.map((row) => ({
-      ...row,
-      imageUploads: row.imageUploads || [],
-      images: row.images || [],
-      options: { ...row.options },
-    }));
+    setUploading(true);
 
-    const productData = {
-      ...formData,
-      images: existingImages,
-      variants,
-      order_deadline: orderDeadline ? orderDeadline.toISOString() : null,
-      estimated_delivery: estimatedDelivery ? estimatedDelivery.toISOString() : null,
-      id: product?.id || Date.now(),
-      imageUploads: pendingUploads.map(({ imageBase64, imageName }) => ({
-        imageBase64,
-        imageName,
-      })),
-    };
     try {
-      const response = await fetch(
-        isEdit ? `/api/shop/products/${product?.id}` : "/api/shop/products",
-        {
-          method: isEdit ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(productData),
-        }
+      const convertToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+
+      const imageUploads = await Promise.all(
+        newImages.map(async ({ file }) => ({
+          imageBase64: await convertToBase64(file),
+          imageName: file.name,
+        }))
       );
-      if (response.ok) window.location.href = "/shop/manage";
-      else {
-        const error = await response.json();
-        alert("Error: " + error.error);
-      }
-    } catch {
-      alert("Error saving product.");
-    }
-  };
 
-  const handleAddCategory = async () => {
-    const name = newCategory.trim();
-    if (!name) return;
-    try {
-      const res = await fetch("/api/shop/categories", {
-        method: "POST",
+      const variantsWithUploads = await Promise.all(
+        variants.map(async (variant) => ({
+          id: variant.id,
+          options: variant.options,
+          price_modifier: variant.price_modifier,
+          stock_quantity: variant.stock_quantity,
+          active: variant.active,
+          images: variant.images,
+          imageUploads: await Promise.all(
+            variant.newImages.map(async ({ file }) => ({
+              imageBase64: await convertToBase64(file),
+              imageName: file.name,
+            }))
+          ),
+        }))
+      );
+
+      const productData = {
+        id: product?.id,
+        name: name.trim(),
+        description: description.trim(),
+        price: Number(price),
+        category: category,
+        stock_type: stockType,
+        stock_quantity: Number(stockQuantity),
+        images: existingImages,
+        imageUploads,
+        variants: variantsWithUploads,
+        order_deadline: orderDeadline?.toISOString() || null,
+        estimated_delivery: estimatedDelivery?.toISOString() || null,
+      };
+
+      const url = isEdit ? `/api/shop/products/${product?.id}` : "/api/shop/products";
+      const method = isEdit ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify(productData),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert(err.error || "Erro ao criar categoria");
-        return;
+
+      if (response.ok) {
+        window.location.href = "/shop/manage";
+      } else {
+        const errorData = await response.json();
+        setError("Erro: " + (errorData.message || errorData.error || "Erro desconhecido"));
       }
-      const { category } = await res.json();
-      setCats((prev) =>
-        prev.some((c) => c.name.toLowerCase() === category.name.toLowerCase())
-          ? prev
-          : [...prev, category]
-      );
-      setFormData((p) => ({ ...p, category: category.name }));
-      setNewCategory("");
     } catch {
-      alert("Erro ao criar categoria");
+      setError("Erro ao guardar produto");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -349,12 +326,15 @@ export default function ProductForm({
       <button type="button" className={styles.backButton} onClick={onBack}>
         <FaArrowLeft /> Voltar
       </button>
-      <h1 className={styles.title}>{isEdit ? `Editar ${formData.name}` : "Adicionar Produto"}</h1>
+
+      <h1 className={styles.title}>{isEdit ? `Editar ${name}` : "Adicionar Produto"}</h1>
+
+      {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.section}>
         <label className={styles.label}>Imagens</label>
         <div className={styles.imageArea}>
-          {allImages.length ? (
+          {allImages.length > 0 ? (
             <div className={styles.imagePreview}>
               <Image
                 src={allImages[selectedImageIndex]}
@@ -366,7 +346,7 @@ export default function ProductForm({
                 <div className={styles.imageNav}>
                   <button
                     type="button"
-                    onClick={() => setSelectedImageIndex((i) => Math.max(0, i - 1))}>
+                    onClick={() => setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))}>
                     <FaChevronLeft />
                   </button>
                   <span>
@@ -375,7 +355,7 @@ export default function ProductForm({
                   <button
                     type="button"
                     onClick={() =>
-                      setSelectedImageIndex((i) => Math.min(allImages.length - 1, i + 1))
+                      setSelectedImageIndex(Math.min(allImages.length - 1, selectedImageIndex + 1))
                     }>
                     <FaChevronRight />
                   </button>
@@ -386,17 +366,12 @@ export default function ProductForm({
             <div className={styles.noImage}>Nenhuma imagem</div>
           )}
         </div>
+
         <label className={styles.button}>
-          <FaUpload /> {uploading ? "A processar..." : "Upload (.jpg, .jpeg, .png)"}
-          <input
-            type="file"
-            accept=".jpg,.jpeg,.png,image/*"
-            onChange={handleImageUpload}
-            disabled={uploading}
-            hidden
-          />
+          <FaUpload /> Upload Imagem
+          <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
         </label>
-        {uploadError && <div className={styles.error}>{uploadError}</div>}
+
         <div className={styles.thumbList}>
           {allImages.map((img, idx) => (
             <span key={idx} className={styles.thumbItem}>
@@ -410,30 +385,28 @@ export default function ProductForm({
               <button
                 type="button"
                 className={styles.deleteButton}
-                onClick={() => removeImage(idx, idx >= existingImages.length)}>
+                onClick={() => removeImage(idx)}>
                 <FaTrash />
               </button>
             </span>
           ))}
         </div>
       </div>
-
       <div className={styles.section}>
         <input
           className={styles.field}
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          placeholder="Nome"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome do produto"
           required
         />
+
         <div className={styles.row}>
           <input
             className={styles.field}
             type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleInputChange}
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
             step="0.01"
             min="0"
             placeholder="Preço"
@@ -441,26 +414,28 @@ export default function ProductForm({
           />
           <span>€</span>
         </div>
+
         <textarea
           className={styles.field}
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder="Descrição"
           rows={3}
         />
+
         <select
           className={styles.field}
-          name="category"
-          value={formData.category}
-          onChange={handleInputChange}>
-          <option value="">Escolha uma categoria</option>
-          {cats.map((cat) => (
-            <option key={cat.id ?? cat.name} value={cat.name}>
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          required>
+          <option value="">Escolha categoria</option>
+          {allCategories.map((cat) => (
+            <option key={cat.id || cat.name} value={cat.name}>
               {cat.name}
             </option>
           ))}
         </select>
+
         <div className={styles.row}>
           <input
             className={styles.field}
@@ -468,66 +443,59 @@ export default function ProductForm({
             onChange={(e) => setNewCategory(e.target.value)}
             placeholder="Nova categoria"
           />
-          <button
-            type="button"
-            className={styles.button}
-            onClick={handleAddCategory}
-            disabled={!newCategory.trim()}>
+          <button type="button" className={styles.button} onClick={handleAddCategory}>
             Adicionar
           </button>
         </div>
+
         <select
           className={styles.field}
-          name="stock_type"
-          value={formData.stock_type}
-          onChange={handleInputChange}>
+          value={stockType}
+          onChange={(e) => setStockType(e.target.value as "limited" | "on_demand")}>
           <option value="limited">Stock Limitado</option>
           <option value="on_demand">Sob Encomenda</option>
         </select>
-        {formData.stock_type === "limited" && !hasVariants && (
+
+        {stockType === "limited" && variants.length === 0 && (
           <input
             className={styles.field}
             type="number"
-            name="stock_quantity"
-            value={formData.stock_quantity}
-            onChange={handleInputChange}
-            placeholder="Quantidade"
+            value={stockQuantity}
+            onChange={(e) => setStockQuantity(Number(e.target.value))}
+            placeholder="Quantidade em stock"
             min="0"
           />
         )}
-        {hasVariants && formData.stock_type === "limited" && (
-          <div>Stock Total: {totalVariantStock}</div>
-        )}
-
         <div className={styles.row}>
           <DatePicker
             date={orderDeadline}
-            onDateChange={(d) => setOrderDeadline(d || undefined)}
+            onDateChange={(date) => setOrderDeadline(date ?? undefined)}
             locale={enGB}
             format="dd/MM/yyyy">
             {({ inputProps }) => (
-              <input {...inputProps} placeholder="Data limite" className={styles.field} />
+              <input {...inputProps} placeholder="Data limite encomenda" className={styles.field} />
             )}
           </DatePicker>
-          <input {...orderDeadlineTimeProps} placeholder="00:00" className={styles.field} />
+          <input {...orderTimeProps} placeholder="00:00" className={styles.field} />
         </div>
+
         <div className={styles.row}>
           <DatePicker
             date={estimatedDelivery}
-            onDateChange={(d) => setEstimatedDelivery(d || undefined)}
+            onDateChange={(date) => setEstimatedDelivery(date ?? undefined)}
             locale={enGB}
             format="dd/MM/yyyy">
             {({ inputProps }) => (
-              <input {...inputProps} placeholder="Data entrega" className={styles.field} />
+              <input {...inputProps} placeholder="Data entrega estimada" className={styles.field} />
             )}
           </DatePicker>
-          <input {...estimatedDeliveryTimeProps} placeholder="00:00" className={styles.field} />
+          <input {...deliveryTimeProps} placeholder="00:00" className={styles.field} />
         </div>
-        <div className={styles.section}>
-          <label className={styles.label}>Tipos de Opção (ex: Cor, Tamanho)</label>
+        <div>
+          <label className={styles.label}>Tipos de Opção</label>
           <div className={styles.row}>
             {optionTypes.map((type, idx) => (
-              <span key={idx} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div key={idx} style={{ display: "flex", gap: "0.5rem" }}>
                 <input
                   className={styles.field}
                   style={{ width: 120 }}
@@ -543,121 +511,123 @@ export default function ProductForm({
                     <FaTrash />
                   </button>
                 )}
-              </span>
+              </div>
             ))}
             <button type="button" className={styles.addButton} onClick={addOptionType}>
               <FaPlus />
             </button>
           </div>
         </div>
-        <div style={{ marginTop: "1.2rem" }}>
-          <div className={styles.row} style={{ marginBottom: "0.5rem" }}>
+        <div>
+          <div className={styles.row}>
             <label className={styles.label}>Variantes</label>
-            <button
-              type="button"
-              className={styles.addButton}
-              onClick={addVariant}
-              aria-label="Adicionar variante">
+            <button type="button" className={styles.addButton} onClick={addVariant}>
               <FaPlus />
             </button>
           </div>
 
-          {!variantsForm.length && <div className={styles.noVarients}>Sem variantes</div>}
+          {variants.length === 0 && <div className={styles.noVarients}>Sem variantes</div>}
 
-          {variantsForm.length > 0 && (
-            <div className={styles.row} style={{ fontWeight: 600 }}>
-              {optionTypes.map((type) => (
-                <span key={type} style={{ minWidth: 90 }}>
-                  {type}
-                </span>
-              ))}
-              <span style={{ minWidth: 90 }}>Preço extra</span>
-              <span style={{ minWidth: 90 }}>Stock</span>
-              <span style={{ minWidth: 90 }}>Ativo</span>
-              <span style={{ minWidth: 90 }}>Imagens</span>
-              <span></span>
-            </div>
-          )}
+          {variants.map((variant, i) => (
+            <div
+              key={variant.id}
+              className={styles.row}
+              style={{ alignItems: "flex-start", gap: "0.5rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {optionTypes.map((type) => (
+                  <input
+                    key={type}
+                    className={styles.field}
+                    style={{ width: 100 }}
+                    value={variant.options[type] || ""}
+                    onChange={(e) => updateVariantOption(i, type, e.target.value)}
+                    placeholder={type}
+                    required
+                  />
+                ))}
+              </div>
 
-          {variantsForm.map((variant, i) => (
-            <div key={variant.id} className={styles.row}>
-              {optionTypes.map((type) => (
-                <input
-                  key={type}
-                  className={styles.field}
-                  style={{ width: 90 }}
-                  value={variant.options[type] || ""}
-                  onChange={(e) => updateVariantOption(i, type, e.target.value)}
-                  placeholder={type}
-                  required
-                />
-              ))}
               <input
                 className={styles.field}
-                style={{ width: 90 }}
+                style={{ width: 80 }}
                 type="number"
                 value={variant.price_modifier}
-                onChange={(e) => updateVariantField(i, "price_modifier", Number(e.target.value))}
+                onChange={(e) => updateVariant(i, { price_modifier: Number(e.target.value) })}
                 step="0.01"
-                aria-label="Preço extra"
+                placeholder="Preço extra"
               />
+
               <input
                 className={styles.field}
-                style={{ width: 90 }}
+                style={{ width: 60 }}
                 type="number"
-                value={variant.stock_quantity ?? 0}
-                onChange={(e) => updateVariantField(i, "stock_quantity", Number(e.target.value))}
+                value={variant.stock_quantity}
+                onChange={(e) => updateVariant(i, { stock_quantity: Number(e.target.value) })}
                 min="0"
-                aria-label="Stock"
+                placeholder="Stock"
               />
+
               <input
                 type="checkbox"
                 checked={variant.active}
-                onChange={(e) => updateVariantField(i, "active", e.target.checked)}
+                onChange={(e) => updateVariant(i, { active: e.target.checked })}
                 style={{ width: 20, height: 20 }}
               />
-              <span>
-                <label className={styles.button} style={{ marginTop: 4 }}>
-                  <FaUpload /> Imagem
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <label className={styles.button} style={{ fontSize: "0.8rem", padding: "0.25rem" }}>
+                  <FaUpload />
                   <input
                     type="file"
-                    accept=".jpg,.jpeg,.png,image/*"
+                    accept="image/*"
                     multiple
                     onChange={(e) => handleVariantImageUpload(e, i)}
-                    style={{ display: "none" }}
+                    hidden
                   />
                 </label>
+
                 <div className={styles.thumbList}>
-                  {(variant.images || []).map((img, idx) => (
-                    <span key={"img-" + idx} className={styles.thumbItem}>
-                      <Image src={img} alt="" width={32} height={32} className={styles.thumb} />
+                  {variant.images?.map((img, idx) => (
+                    <span key={`img-${idx}`} className={styles.thumbItem}>
+                      <Image src={img} alt="" width={24} height={24} className={styles.thumb} />
                       <button
                         type="button"
                         className={styles.deleteButton}
-                        onClick={() => removeVariantImage(i, idx)}>
+                        onClick={() => {
+                          const newImages =
+                            variant.images?.filter((_, imgIdx) => imgIdx !== idx) || [];
+                          updateVariant(i, { images: newImages });
+                        }}>
                         <FaTrash />
                       </button>
                     </span>
                   ))}
-                  {(variant.imageUploads || []).map((upload, idx) => (
-                    <span key={"upload-" + idx} className={styles.thumbItem}>
+                  {variant.newImages.map((upload, idx) => (
+                    <span key={`upload-${idx}`} className={styles.thumbItem}>
                       <Image
-                        src={`data:image/*;base64,${upload.imageBase64}`}
+                        src={upload.preview}
                         alt=""
-                        width={32}
-                        height={32}
+                        width={24}
+                        height={24}
                         className={styles.thumb}
                       />
                       <button
                         type="button"
                         className={styles.deleteButton}
-                        onClick={() => removeVariantUpload(i, idx)}>
+                        onClick={() => {
+                          URL.revokeObjectURL(upload.preview);
+                          const newUploads = variant.newImages.filter(
+                            (_, imgIdx) => imgIdx !== idx
+                          );
+                          updateVariant(i, { newImages: newUploads });
+                        }}>
                         <FaTrash />
                       </button>
                     </span>
                   ))}
                 </div>
-              </span>
+              </div>
+
               <button
                 type="button"
                 className={styles.deleteButton}
@@ -669,8 +639,8 @@ export default function ProductForm({
         </div>
       </div>
 
-      <button type="submit" className={styles.button}>
-        {isEdit ? "Guardar" : "Criar"}
+      <button type="submit" className={styles.button} disabled={uploading}>
+        {uploading ? "A guardar..." : isEdit ? "Guardar Alterações" : "Criar Produto"}
       </button>
     </form>
   );

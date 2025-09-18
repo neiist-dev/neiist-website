@@ -78,14 +78,13 @@ export default function Cart() {
                 ? item.product.variants.find((v) => v.id === item.variantId)
                 : undefined;
               const price = item.product.price + (variantObj ? variantObj.price_modifier : 0);
+              const imageSrc =
+                variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0
+                  ? variantObj.images[0]
+                  : item.product.images[0];
               return (
                 <div key={idx} className={styles.item}>
-                  <Image
-                    src={item.product.images[0]}
-                    alt={item.product.name}
-                    width={48}
-                    height={48}
-                  />
+                  <Image src={imageSrc} alt={item.product.name} width={48} height={48} />
                   <div>
                     <h4>{item.product.name}</h4>
                     {variantObj && <p>{variantObj.label || formatOptions(variantObj.options)}</p>}

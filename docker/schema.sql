@@ -915,25 +915,23 @@ RETURNS TABLE (
 ) AS $$
 DECLARE
   v_category_id INTEGER;
+  v_clean_name TEXT;
 BEGIN
-  IF p_name IS NULL OR LENGTH(BTRIM(p_name)) = 0 THEN
+  v_clean_name := BTRIM(p_name);
+  IF v_clean_name IS NULL OR LENGTH(v_clean_name) = 0 THEN
     RETURN;
   END IF;
-
-  -- Insert or do nothing if exists, then get id
-  INSERT INTO neiist.categories (name)
-  VALUES (p_name)
-  ON CONFLICT (name) DO NOTHING
-  RETURNING neiist.categories.id INTO v_category_id;
-
+  SELECT c.id INTO v_category_id 
+  FROM neiist.categories c 
+  WHERE LOWER(c.name) = LOWER(v_clean_name);
   IF v_category_id IS NULL THEN
-    SELECT c.id INTO v_category_id FROM neiist.categories c WHERE c.name = p_name;
+    INSERT INTO neiist.categories (name)
+    VALUES (v_clean_name)
+    RETURNING neiist.categories.id INTO v_category_id;
   END IF;
 
   RETURN QUERY
-  SELECT c.id, c.name
-  FROM neiist.categories c
-  WHERE c.id = v_category_id;
+  SELECT v_category_id, v_clean_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -967,7 +965,7 @@ DECLARE
   v_id INTEGER;
 BEGIN
   IF p_category IS NOT NULL AND length(trim(p_category)) > 0 THEN
-   SELECT id INTO v_cat_id FROM neiist.get_or_create_category(p_category);
+   SELECT category_id INTO v_cat_id FROM neiist.get_or_create_category(p_category);
   END IF;
 
   INSERT INTO neiist.products(
@@ -1221,8 +1219,8 @@ CREATE OR REPLACE FUNCTION neiist.update_product(
 DECLARE
   v_cat_id INTEGER;
 BEGIN
-  IF p_updates ? 'category' THEN
-    SELECT id INTO v_cat_id FROM neiist.get_or_create_category(p_updates->>'category');
+  IF p_updates ? 'category' AND p_updates->>'category' IS NOT NULL AND TRIM(p_updates->>'category') != '' THEN
+    SELECT category_id INTO v_cat_id FROM neiist.get_or_create_category(p_updates->>'category');
     UPDATE neiist.products SET category_id = v_cat_id WHERE products.id = p_product_id;
   END IF;
 

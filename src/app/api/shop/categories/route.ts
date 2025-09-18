@@ -50,33 +50,42 @@ async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: 
   }
 }
 
-export async function GET() {
-  try {
-    const categories = await getAllCategories();
-    return NextResponse.json(categories);
-  } catch (err) {
-    console.error("Error fetching categories:", err);
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
-  }
-}
-
 export async function POST(request: NextRequest) {
-  const permission = await checkAdminPermission();
-  if (!permission.isAuthorized) return permission.error!;
+  const permissionCheck = await checkAdminPermission();
+  if (!permissionCheck.isAuthorized) return permissionCheck.error;
 
   try {
     const { name } = await request.json();
-    const trimmed = (name ?? "").trim();
-    if (!trimmed) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
-    const created = await addCategory(trimmed);
-    if (!created) {
+
+    const category = await addCategory(name.trim());
+    if (!category) {
       return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
     }
-    return NextResponse.json({ category: created }, { status: 201 });
-  } catch (err) {
-    console.error("Error creating category:", err);
+
+    return NextResponse.json(
+      {
+        category: {
+          id: category.id,
+          name: category.name,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating category:", error);
     return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const categories = await getAllCategories();
+    return NextResponse.json({ categories });
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
   }
 }
