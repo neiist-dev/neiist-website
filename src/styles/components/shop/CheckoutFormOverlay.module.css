@@ -1,0 +1,139 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 41, 59, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.panel {
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+  width: min(760px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+  margin: 0;
+}
+
+.title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--primary-colour);
+  margin: 0 0 0.75rem 0;
+}
+
+.items {
+  list-style: none;
+  margin: 0.25rem 0 0.75rem;
+  padding: 0;
+}
+.itemLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(2, 6, 23, 0.06);
+}
+.itemLine:last-child {
+  border-bottom: none;
+}
+.itemName {
+  font-weight: 700;
+  color: var(--foreground-colour);
+}
+.itemQtyPrice {
+  color: var(--primary-colour);
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--foreground-colour);
+  background: var(--background-colour-hover);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0 1rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  width: 100%;
+  justify-content: flex-end;
+}
+.actions .btnSecondary {
+  margin-right: auto;
+}
+
+.btn,
+.btnSecondary {
+  border-radius: 0.6rem;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+}
+.btn {
+  background: var(--primary-colour);
+  color: #fff;
+}
+.btn:hover:not(:disabled) {
+  background: #1741b6;
+}
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: var(--background-colour-hover);
+  color: var(--foreground-colour);
+  border: 1px solid #d1d5db;
+}
+.btnSecondary:hover:not(:disabled) {
+  background: var(--primary-colour);
+  color: #fff;
+}
+.btnSecondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #dc2626;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+.link {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  font-weight: 600;
+}
+.link:hover {
+  color: var(--secondary-colour);
+}
+
+@media (max-width: 900px) {
+  .overlay {
+    padding: 0.75rem;
+  }
+  .panel {
+    width: min(680px, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 1.5rem);
+    padding: 1.5rem;
+  }
+}
