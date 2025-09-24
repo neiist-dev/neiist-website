@@ -181,6 +181,27 @@ const getAllOrders = async () => {
 	return orders;
 };
 
+const getAllOrdersWithItems = async () => {
+	const orders = await ordersRepository.getAllOrders();
+	const orderPromises = orders.map(async (order) => {  
+		try {  
+			const items = await ordersRepository.getOrderItems(order.order_id);  
+			return {  
+				...order,  
+				items: items,  
+			};  
+		} catch (error) {  
+			console.error(`Failed to fetch items for order ${order.order_id}:`, error);  
+			return {  
+				...order,  
+				items: [],  
+			};  
+		}  
+	});  
+	
+	return await Promise.all(orderPromises);
+};
+
 const getOrderById = async (orderId: string) => {
 	const order = await ordersRepository.getOrder(orderId);
 	return order;
@@ -469,6 +490,7 @@ export const storeService = {
 	getDeliveryInfo,
 	createOrder,
 	getAllOrders,
+	getAllOrdersWithItems,
 	getOrderById,
 	getOrdersByCustomerName,
 	getOrdersByEmail,

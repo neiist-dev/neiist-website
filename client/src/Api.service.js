@@ -138,6 +138,21 @@ export const fetchOrders = async () => {
   }
 };
 
+export const fetchOrdersWithDetails = async () => {
+  try {
+    const orders = await apiCall("/api/store/orders/details");
+
+    if (!Array.isArray(orders)) {
+      throw new Error("Invalid response format: expected array of orders");
+    }
+
+    return orders;
+  } catch (error) {
+    console.error("Failed to fetch orders with details:", error);
+    throw error;
+  }
+}
+
 export const fetchOrdersByStatus = async (status) => {
   try {
     const orders = await apiCall(`/api/store/orders?status=${status}`);

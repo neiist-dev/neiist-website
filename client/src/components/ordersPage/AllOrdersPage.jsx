@@ -1,60 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Badge, Tooltip, Button, Group } from "@mantine/core";
+import { useState, useEffect } from "react";
+import { Badge, Tooltip, Button } from "@mantine/core";
 import { MdDownload, MdEmail } from "react-icons/md";
 import { OrdersTable } from "./OrdersTable.jsx";
 import LoadSpinner from "../../hooks/loadSpinner.jsx";
-import { fetchAllOrdersDetails, generateExcel } from "../../Api.service.js";
+import { generateExcel } from "../../Api.service.js";
 
-export const AllOrdersPage = ({ keySelected, loggedInUser }) => {
+export const AllOrdersPage = ({ keySelected, loggedInUser, orders }) => {
   const [allOrders, setOrders] = useState(null);
   const [error, setError] = useState(null);
   const [bcc, setBcc] = useState("");
 
   useEffect(() => {
-    if (keySelected === "active") {
-      fetchAllOrdersDetails()
-        .then((ordersRes) => {
-          setOrders(ordersRes);
-        })
-        .catch((err) => {
-          setError(err);
-        });
-    }
-
-    if (keySelected === "pending") {
-      fetchAllOrdersDetails()
-        .then((ordersRes) => {
-          setOrders(
-            ordersRes.filter((order) => !order.delivered && !order.paid)
-          );
-        })
-        .catch((err) => {
-          setError(err);
-        });
-    }
-
-    if (keySelected === "paid") {
-      fetchAllOrdersDetails()
-        .then((ordersRes) => {
-          setOrders(
-            ordersRes.filter((order) => !order.delivered && order.paid)
-          );
-        })
-        .catch((err) => {
-          setError(err);
-        });
-    }
-
-    if (keySelected === "delivered") {
-      fetchAllOrdersDetails()
-        .then((ordersRes) => {
-          setOrders(ordersRes.filter((order) => order.delivered));
-        })
-        .catch((err) => {
-          setError(err);
-        });
-    }
-  }, [keySelected]);
+    setOrders(orders)
+  }, [orders]);
 
   useEffect(() => {
     if (allOrders) {

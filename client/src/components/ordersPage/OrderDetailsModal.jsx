@@ -254,7 +254,7 @@ export const OrderDetailsModal = ({
                   handleDeliveryToggle(event.currentTarget.checked)
                 }
                 label={localOrder?.delivered ? "Delivered" : "Pending"}
-                disabled={!localOrder?.paid}
+                // disabled={!localOrder?.paid} // Uncomment if you want to disable delivery toggle when not paid
               />
             </Group>
             {localOrder?.delivered && localOrder?.delivery_responsible && (

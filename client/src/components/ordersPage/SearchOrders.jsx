@@ -1,30 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { TextInput, Button, Group, Text } from "@mantine/core";
 import { OrdersTable } from "./OrdersTable";
 import LoadSpinner from "../../hooks/loadSpinner.jsx";
-import { fetchAllOrdersDetails } from "../../Api.service.js";
 import { BiSearch } from "react-icons/bi";
 
-export const SearchOrders = ({ keySelected, loggedInUser }) => {
+export const SearchOrders = ({ keySelected, loggedInUser, orders }) => {
   const [allOrders, setOrders] = useState(null);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (keySelected === "search" && allOrders === null) {
-      fetchAllOrdersDetails()
-        .then((ordersRes) => {
-          setOrders(ordersRes);
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          setError(err);
-          setIsLoading(false);
-        });
+      setOrders(orders);
     }
-  }, [keySelected]);
+  }, [keySelected, orders, allOrders]);
 
   const handleSearch = (value) => {
     setSearchInput(value);
@@ -33,20 +23,20 @@ export const SearchOrders = ({ keySelected, loggedInUser }) => {
       setFilteredOrders([]);
       return;
     }
-
+    
     const searchTerm = value.toLowerCase();
     const filtered =
-      allOrders?.filter(
-        (order) =>
-          order.order_id.toLowerCase().includes(searchTerm) ||
-          order.name.toLowerCase().includes(searchTerm) ||
-          order.ist_id.toLowerCase().includes(searchTerm) ||
-          order.email.toLowerCase().includes(searchTerm) ||
-          (order.notes && order.notes.toLowerCase().includes(searchTerm)) ||
-          order.campus.toLowerCase().includes(searchTerm) ||
-          (order.nif && order.nif.toLowerCase().includes(searchTerm))
-      ) ?? [];
-
+    allOrders?.filter(
+      (order) =>
+      order.order_id.toLowerCase().includes(searchTerm) ||
+      order.name.toLowerCase().includes(searchTerm) ||
+      order.ist_id.toLowerCase().includes(searchTerm) ||
+      order.email.toLowerCase().includes(searchTerm) ||
+      order.notes?.toLowerCase().includes(searchTerm) ||
+      order.campus.toLowerCase().includes(searchTerm) ||
+      order.nif?.toLowerCase().includes(searchTerm)
+    ) ?? [];
+    
     setFilteredOrders(filtered);
   };
 
@@ -91,26 +81,20 @@ export const SearchOrders = ({ keySelected, loggedInUser }) => {
         <hr />
       </div>
 
-      {isLoading ? (
-        <LoadSpinner />
+      {searchInput && filteredOrders.length === 0 ? (
+        <div className="no-results">
+          <Text align="center" color="dimmed">
+            No orders found matching your search
+          </Text>
+        </div>
       ) : (
-        <>
-          {searchInput && filteredOrders.length === 0 ? (
-            <div className="no-results">
-              <Text align="center" color="dimmed">
-                No orders found matching your search
-              </Text>
-            </div>
-          ) : (
-            filteredOrders.length > 0 && (
-              <OrdersTable
-                orders={filteredOrders}
-                onUpdateStatus={handleUpdateStatus}
-                loggedInUser={loggedInUser}
-              />
-            )
-          )}
-        </>
+        filteredOrders.length > 0 && (
+          <OrdersTable
+            orders={filteredOrders}
+            onUpdateStatus={handleUpdateStatus}
+            loggedInUser={loggedInUser}
+          />
+        )
       )}
     </div>
   );

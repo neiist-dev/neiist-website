@@ -15,12 +15,12 @@ jobs:
    
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Setup Node
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v5.0.0
         with:
-          node-version: 22.15.0
+          node-version: 22.19.0
 
       - name: Setup Npm
         run: npm install -g npm@10.2.4
@@ -56,3 +56,19 @@ jobs:
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
             bash ./deploy.sh
+
+  staging_deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    needs: build_test
+    steps:
+      - name: Deploy to Staging
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            bash ./deploy_staging.sh
