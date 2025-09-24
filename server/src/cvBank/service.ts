@@ -4,14 +4,38 @@ import fs from "fs";
 import { Readable } from "stream";
 import { UploadCVResult } from "./dto";
 
-const credentials = JSON.parse(
-  fs.readFileSync(path.resolve(process.env.GOOGLE_CLIENT_SECRET_JSON!), "utf8")
-);
-const token = JSON.parse(
-  fs.readFileSync(path.resolve(process.env.GDRIVE_TOKEN_PATH!), "utf8")
-);
+const SERVER_ROOT = path.resolve(__dirname, "../..");
+const resolveFromServerRoot = (p: string) =>
+  path.isAbsolute(p) ? p : path.resolve(SERVER_ROOT, p);
 
-const FOLDER_ID = process.env.GDRIVE_CV_FOLDER_ID!;
+const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON;
+const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH;
+const FOLDER_ID = process.env.GDRIVE_CV_FOLDER_ID;
+
+if (!CREDENTIALS_PATH) throw new Error("Missing env: GOOGLE_CLIENT_SECRET_JSON");
+if (!TOKEN_PATH) throw new Error("Missing env: GDRIVE_TOKEN_PATH");
+if (!FOLDER_ID) throw new Error("Missing env: GDRIVE_CV_FOLDER_ID");
+console.log("Looking for credentials at:", SERVER_ROOT);
+let credentials: any;
+let token: any;
+try {
+  credentials = JSON.parse(
+    fs.readFileSync(resolveFromServerRoot(CREDENTIALS_PATH), "utf8")
+  );
+} catch (e) {
+  throw new Error(
+    `Failed to read or parse GOOGLE_CLIENT_SECRET_JSON at "${CREDENTIALS_PATH}": ${(e as any).message}`
+  );
+}
+try {
+  token = JSON.parse(
+    fs.readFileSync(resolveFromServerRoot(TOKEN_PATH), "utf8")
+  );
+} catch (e) {
+  throw new Error(
+    `Failed to read or parse GDRIVE_TOKEN_PATH at "${TOKEN_PATH}": ${(e as any).message}`
+  );
+}
 
 const oAuth2Client = new google.auth.OAuth2(
   credentials.installed.client_id,
@@ -33,7 +57,7 @@ export async function uploadCV(
   const driveRes = await drive.files.create({
     requestBody: {
       name: filename,
-      parents: [FOLDER_ID],
+      parents: [FOLDER_ID as string],
       mimeType: "application/pdf",
     },
     media: {
@@ -49,10 +73,15 @@ export async function uploadCV(
   };
 }
 
+function escapeDriveQueryString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 export async function findUserCVFileId(username: string): Promise<string | null> {
   const filename = `${username}.pdf`;
+  const safeName = escapeDriveQueryString(filename);
   const res = await drive.files.list({
-    q: `'${FOLDER_ID}' in parents and name='${filename}' and trashed=false`,
+    q: `'${FOLDER_ID}' in parents and name='${safeName}' and trashed=false`,
     fields: "files(id, name)",
     spaces: "drive",
   });

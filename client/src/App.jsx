@@ -152,7 +152,10 @@ const DefinedRoutes = () => (
       path="/thesismaster"
       element={<ActiveLMeicStudentRoute children={<ThesisMasterPage />} />}
     />
-    <Route path="/cvbank" element={<CVBankPage />} />
+    <Route
+      path="/cvbank"
+      element={<ActiveTecnicoStudentRoute children={<CVBankPage />} />}
+    />
     {/* ADMIN */}
     <Route
       exact
