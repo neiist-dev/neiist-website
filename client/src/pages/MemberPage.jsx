@@ -6,6 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Alert from 'react-bootstrap/Alert';
+import { uploadCV } from "../Api.service.js";
 
 import UserDataContext from '../UserDataContext.js';
 
@@ -17,6 +18,7 @@ import axios from 'axios';
 const MembersPage = () => {
   const { userData } = useContext(UserDataContext);
   const [member, setMember] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -55,7 +57,85 @@ const MembersPage = () => {
         (member.status==="Renovar" || member.status==="NaoSocio")) && <Renew />}
       {(isLoaded && member && member.status==="SocioEleitor") && <Vote />}
       {(isLoaded && member && member.status==="SocioRegular") && <CantVote />}
+      <CVBankSection 
+              onUploadResult={(result) => setToast(result)} 
+            />
+            {toast && (
+              <div style={{ position: "fixed", top: 30, right: 30, zIndex: 9999 }}>
+                <Alert 
+                  variant={toast.success ? "success" : "danger"} 
+                  onClose={() => setToast(null)} 
+                  dismissible
+                >
+                  {toast.message}
+                </Alert>
+              </div>
+            )}
     </div> );
+};
+
+const CVBankSection = ({ onUploadResult }) => {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef();
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const result = await uploadCV(file);
+      onUploadResult({
+        success: true,
+        message: "CV enviado com sucesso!",
+        link: result.link,
+      });
+    } catch (err) {
+      onUploadResult({
+        success: false,
+        message: err.message || "Erro ao fazer upload do CV",
+      });
+    }
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  return (
+    <div className={style.cvBankSection}>
+      <Card className={style.cvBankCard}>
+        <Card.Body>
+          <Card.Title as="h4" className={style.cvBankTitle}>
+            CV-Bank
+          </Card.Title>
+          <Card.Text className={style.cvBankText}>
+            Carregar o seu CV para o nosso <b>CV-Bank</b>.<br />
+            <span className={style.cvBankHighlight}>
+              O CV-Bank permite que o seu currículo seja partilhado com empresas e oportunidades futuras, que venham a ser proporcionadas pelo NEIIST.
+            </span>
+          </Card.Text>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+            disabled={uploading}
+          />
+          <Button
+            variant="primary"
+            size="lg"
+            className={style.cvBankButton}
+            style={{
+              opacity: uploading ? 0.7 : 1,
+              pointerEvents: uploading ? "none" : "auto",
+            }}
+            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+            disabled={uploading}
+          >
+            {uploading ? "A fazer upload..." : "Upload CV"}
+          </Button>
+        </Card.Body>
+      </Card>
+    </div>
+  );
 };
 
 const NoRegisterDiv = ({noRegisterFlag=false}) => {

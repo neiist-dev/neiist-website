@@ -337,3 +337,19 @@ export const generateExcel = async (orders) => {
     throw error;
   }
 };
+
+export const uploadCV = async (file) => {
+  const formData = new FormData();
+  formData.append("cv", file);
+
+  const accessToken = window.sessionStorage.getItem("accessToken");
+  const res = await fetch("/api/cvs", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
+  });
+  if (!res.ok) throw new Error((await res.json()).error || "Erro ao fazer upload do CV");
+  return res.json();
+};
