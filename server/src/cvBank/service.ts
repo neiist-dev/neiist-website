@@ -48,3 +48,33 @@ export async function uploadCV(
     link: driveRes.data.webViewLink!,
   };
 }
+
+export async function findUserCVFileId(username: string): Promise<string | null> {
+  const filename = `${username}.pdf`;
+  const res = await drive.files.list({
+    q: `'${FOLDER_ID}' in parents and name='${filename}' and trashed=false`,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+  if (Array.isArray(res.data.files) && res.data.files.length > 0 && res.data.files[0]?.id) {
+    return res.data.files[0].id;
+  }
+  return null;
+}
+
+export async function removeUserCV(username: string): Promise<boolean> {
+  const fileId = await findUserCVFileId(username);
+  if (!fileId) return false;
+  await drive.files.delete({ fileId });
+  return true;
+}
+
+export async function downloadUserCV(username: string): Promise<Buffer | null> {
+  const fileId = await findUserCVFileId(username);
+  if (!fileId) return null;
+  const res = await drive.files.get(
+    { fileId, alt: "media" },
+    { responseType: "arraybuffer" }
+  );
+  return Buffer.from(res.data as ArrayBuffer);
+}

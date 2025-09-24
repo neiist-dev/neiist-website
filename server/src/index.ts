@@ -12,7 +12,7 @@ import { gacRoute as gacRouter } from "./gac/router";
 import { membersRouter } from "./members/router";
 import { storeRouter } from "./store/router";
 import { thesesRouter } from "./theses/router";
-import { cvsRouter } from "./cvs/router";
+import { cvBankRouter } from "./cvBank/router";
 import { banner } from "./utils/banner";
 import { initializeSchema } from "./utils/databaseSchema";
 
@@ -95,7 +95,7 @@ app.use("/api/collabs", collaboratorsRouter);
 app.use("/api/mag", gacRouter);
 app.use("/api/elections", electionsRouter);
 app.use("/api/store", storeRouter);
-app.use("/api/cvs", cvsRouter);
+app.use("/api/cvbank", cvBankRouter);
 
 // Serve static files for product images
 app.use("/images", express.static(path.join(__dirname, "../../uploads/store")));
