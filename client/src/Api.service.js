@@ -352,3 +352,35 @@ export const generateExcel = async (orders) => {
     throw error;
   }
 };
+
+export const fetchCVStatus = async () => {
+  const res = await fetch("/api/cvbank", { credentials: "include" });
+  if (!res.ok) throw new Error("Erro ao verificar o CV");
+  return res.json();
+};
+
+export const removeCV = async () => {
+  const res = await fetch("/api/cvbank", {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Erro ao remover o CV");
+  return res.json();
+};
+
+export const downloadCV = () => {
+  window.open("/api/cvbank/download", "_blank");
+};
+
+export const uploadCV = async (file) => {
+  const formData = new FormData();
+  formData.append("cv", file);
+
+  const res = await fetch("/api/cvbank", {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) throw new Error((await res.json()).error || "Erro ao fazer upload do CV");
+  return res.json();
+};

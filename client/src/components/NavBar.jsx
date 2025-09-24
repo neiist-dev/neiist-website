@@ -386,12 +386,16 @@ const LoggedIn = ({ userData, setUserData }) => {
         <ActiveTecnicoStudentNavLink hide={style.onWeb} as={Link} to="/socio">
           Sócio
         </ActiveTecnicoStudentNavLink>
+              
+        <ActiveTecnicoStudentNavLink hide={style.onWeb} as={Link} to="/cvbank">
+          CV-Bank
+        </ActiveTecnicoStudentNavLink>
 
         <CollabNavLink hide={style.onWeb} as={Link} to="/collab">
           Colaborador(a)
         </CollabNavLink>
 
-        <OrdersNavLink as={Link} to="/orders">
+        <OrdersNavLink hide={style.onWeb} as={Link} to="/orders">
           Encomendas
         </OrdersNavLink>
 
