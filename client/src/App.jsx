@@ -23,6 +23,7 @@ const AdminMenuPage = lazy(() => import("./pages/AdminMenuPage.jsx"));
 const AdminAreasPage = lazy(() => import("./pages/AdminAreasPage.jsx"));
 const AdminThesesPage = lazy(() => import("./pages/AdminThesesPage.jsx"));
 const AdminElectionsPage = lazy(() => import("./pages/AdminElectionsPage.jsx"));
+import CVBankPage from "./pages/CVBankPage.jsx";
 const AdminOrdersPage = lazy(() => import("./pages/AdminOrdersPage.jsx"));
 const GacPage = lazy(() => import("./pages/GacPage.jsx"));
 const CollabsPage = lazy(() => import("./pages/CollabsPage.jsx"));
@@ -159,7 +160,10 @@ const DefinedRoutes = () => (
       path="/thesismaster"
       element={<ActiveLMeicStudentRoute children={<ThesisMasterPage />} />}
     />
-
+    <Route
+      path="/cvbank"
+      element={<ActiveTecnicoStudentRoute children={<CVBankPage />} />}
+    />
     {/* ADMIN */}
     <Route
       exact
