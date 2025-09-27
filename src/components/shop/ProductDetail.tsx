@@ -26,12 +26,16 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     return Array.from(all);
   }, [product.variants]);
 
-  const mainOption = optionNames[0] || "Cor";
-  const subOption = optionNames[1] || "Tamanho";
+  const mainOption = optionNames[0] || "";
+  const subOption = optionNames[1] || "";
+
   const mainValues = useMemo(() => {
     const set = new Set<string>();
     product.variants.forEach((v) => {
-      if (v.options?.[mainOption]) set.add(v.options[mainOption]);
+      if (v.options?.[mainOption]) {
+        const cleanValue = v.options[mainOption].replace(/['"\\]/g, "");
+        set.add(cleanValue);
+      }
     });
     return Array.from(set);
   }, [product.variants, mainOption]);
@@ -49,23 +53,32 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
   const [selectedSub, setSelectedSub] = useState(subValues[0] || "");
   const [qty, setQty] = useState(1);
-  const [imgIndex, setImgIndex] = useState(0);
-  const selectedVariant = useMemo(() => {
-    return product.variants.find(
-      (v) => v.options?.[mainOption] === selectedMain && v.options?.[subOption] === selectedSub
-    );
-  }, [product.variants, mainOption, subOption, selectedMain, selectedSub]);
 
-  const images = useMemo(() => {
-    const v = product.variants.find(
-      (v) => v.options?.[mainOption] === selectedMain && v.images?.length
-    );
-    return v?.images?.length
-      ? v.images
-      : product.images.length
-        ? product.images
-        : ["/placeholder.jpg"];
-  }, [product, selectedMain, mainOption]);
+  const allImages = useMemo(() => {
+    const imgSet = new Set<string>();
+    product.images.forEach((img) => imgSet.add(img));
+    product.variants.forEach((v) => (v.images ?? []).forEach((img) => imgSet.add(img)));
+    return Array.from(imgSet);
+  }, [product]);
+
+  const getVariantImageIndex = (variant?: (typeof product.variants)[0]) => {
+    if (!variant?.images?.length) return 0;
+    const firstImg = variant.images[0];
+    const idx = allImages.indexOf(firstImg);
+    return idx >= 0 ? idx : 0;
+  };
+
+  const [imgIndex, setImgIndex] = useState(0);
+
+  const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
+
+  const selectedVariant = useMemo(() => {
+    return product.variants.find((v) => {
+      const mainValue = normalize(v.options?.[mainOption]);
+      const subValue = normalize(v.options?.[subOption]);
+      return mainValue === normalize(selectedMain) && subValue === normalize(selectedSub);
+    });
+  }, [product.variants, mainOption, subOption, selectedMain, selectedSub]);
 
   const price = useMemo(() => {
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
@@ -96,11 +109,26 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
   const handleMainChange = (val: string) => {
     setSelectedMain(val);
-    const newSub = product.variants.find((v) => v.options?.[mainOption] === val)?.options?.[
-      subOption
-    ];
-    setSelectedSub(newSub || "");
-    setImgIndex(0);
+    const newSub = product.variants.find(
+      (v) => normalize(v.options?.[mainOption]) === normalize(val)
+    )?.options?.[subOption];
+    setSelectedSub(normalize(newSub) || "");
+    const newVariant = product.variants.find((v) => {
+      const mainValue = normalize(v.options?.[mainOption]);
+      const subValue = normalize(v.options?.[subOption]);
+      return mainValue === normalize(val) && subValue === normalize(newSub || "");
+    });
+    setImgIndex(getVariantImageIndex(newVariant));
+  };
+
+  const handleSubChange = (val: string) => {
+    setSelectedSub(val);
+    const newVariant = product.variants.find((v) => {
+      const mainValue = normalize(v.options?.[mainOption]);
+      const subValue = normalize(v.options?.[subOption]);
+      return mainValue === normalize(selectedMain) && subValue === normalize(val);
+    });
+    setImgIndex(getVariantImageIndex(newVariant));
   };
 
   return (
@@ -110,30 +138,30 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
       </button>
       <div className={styles.grid}>
         <div className={styles.imageSection}>
-          {images.length > 1 && (
+          {allImages.length > 1 && (
             <button
               className={styles.imageArrowLeft}
-              onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}>
+              onClick={() => setImgIndex((i) => (i - 1 + allImages.length) % allImages.length)}>
               <IoIosArrowBack size={26} />
             </button>
           )}
           <Image
-            src={images[imgIndex]}
+            src={allImages[imgIndex]}
             alt={product.name}
             width={600}
             height={600}
             className={styles.mainImage}
           />
-          {images.length > 1 && (
+          {allImages.length > 1 && (
             <button
               className={styles.imageArrowRight}
-              onClick={() => setImgIndex((i) => (i + 1) % images.length)}>
+              onClick={() => setImgIndex((i) => (i + 1) % allImages.length)}>
               <IoIosArrowForward size={26} />
             </button>
           )}
-          {images.length > 1 && (
+          {allImages.length > 1 && (
             <div className={styles.thumbnails}>
-              {images.map((src, i) => (
+              {allImages.map((src, i) => (
                 <button
                   key={i}
                   className={`${styles.thumbnail} ${i === imgIndex ? styles.active : ""}`}
@@ -147,41 +175,48 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
           <div className={styles.price}>{price.toFixed(2)}€</div>
-          <div>
-            <span className={styles.label}>{mainOption}</span>
-            <div className={styles.options}>
-              {mainValues.map((val) => (
-                <button
-                  key={val}
-                  className={`${styles.option} ${selectedMain === val ? styles.selected : ""}`}
-                  onClick={() => handleMainChange(val)}>
-                  {val}
-                </button>
-              ))}
+          {mainOption && (
+            <div>
+              <span className={styles.label}>{mainOption}</span>
+              <div className={styles.options}>
+                {mainValues.map((val) => (
+                  <button
+                    key={val}
+                    className={`${styles.option} ${selectedMain === val ? styles.selected : ""}`}
+                    onClick={() => handleMainChange(val)}>
+                    {val}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div>
-            <span className={styles.label}>{subOption}</span>
-            <div className={styles.options}>
-              {subValues.map((val) => (
-                <button
-                  key={val}
-                  className={`${styles.option} ${selectedSub === val ? styles.selected : ""}`}
-                  onClick={() => setSelectedSub(val)}
-                  disabled={
-                    !product.variants.some(
-                      (v) =>
-                        v.options?.[mainOption] === selectedMain &&
-                        v.options?.[subOption] === val &&
-                        v.active &&
-                        (product.stock_type === "on_demand" || (v.stock_quantity ?? 0) > 0)
-                    )
-                  }>
-                  {val}
-                </button>
-              ))}
+          )}
+          {subOption && (
+            <div>
+              <span className={styles.label}>{subOption}</span>
+              <div className={styles.options}>
+                {subValues.map((val) => (
+                  <button
+                    key={val}
+                    className={`${styles.option} ${selectedSub === val ? styles.selected : ""}`}
+                    onClick={() => handleSubChange(val)}
+                    disabled={
+                      !product.variants.some((v) => {
+                        const mainValue = v.options?.[mainOption]?.replace(/['"\\]/g, "");
+                        const subValue = v.options?.[subOption]?.replace(/['"\\]/g, "");
+                        return (
+                          mainValue === selectedMain &&
+                          subValue === val &&
+                          v.active &&
+                          (product.stock_type === "on_demand" || (v.stock_quantity ?? 0) > 0)
+                        );
+                      })
+                    }>
+                    {val}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           <p className={styles.description}>{product.description}</p>
           <div className={styles.stockInfo}>
             <div
@@ -215,14 +250,16 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <button onClick={() => setQty((q) => q + 1)}>+</button>
             </div>
           </div>
-          <button className={styles.addButton} onClick={addToCart} disabled={!selectedVariant}>
+          <button
+            className={styles.addButton}
+            onClick={addToCart}
+            disabled={
+              !selectedVariant ||
+              !selectedVariant.active ||
+              (product.stock_type === "limited" && (selectedVariant.stock_quantity ?? 0) <= 0)
+            }>
             Adicionar ao Carrinho
           </button>
-          {selectedVariant && selectedVariant.label && (
-            <div className={styles.label} style={{ marginTop: ".5rem" }}>
-              Variante: {selectedVariant.label}
-            </div>
-          )}
         </div>
       </div>
       {related.length > 0 && (

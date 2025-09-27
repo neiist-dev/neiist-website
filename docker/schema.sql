@@ -1296,7 +1296,7 @@ BEGIN
       FOR kv IN SELECT key, value FROM jsonb_each(p_updates->'options')
       LOOP
       INSERT INTO neiist.product_variant_options(variant_id, option_name, option_value)
-      VALUES (v_variant_id, kv.key, kv.value #>> '{}')
+      VALUES (p_variant_id, kv.key, kv.value #>> '{}');
       END LOOP;
     END IF;
   END IF;

@@ -185,9 +185,10 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                   {getStockDisplay(product)}
                 </div>
               </div>
-              {product.images && product.images.length > 1 && (
-                <div className={styles.thumbnails}>
-                  {product.images.map((img, idx) => (
+              <div className={styles.thumbnails}>
+                {product.images &&
+                  product.images.length > 1 &&
+                  product.images.map((img, idx) => (
                     <button
                       key={img + idx}
                       className={`${styles.thumbBtn} ${(imageIndex[product.id] || 0) === idx ? styles.activeThumb : ""}`}
@@ -210,8 +211,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                       />
                     </button>
                   ))}
-                </div>
-              )}
+              </div>
               <div className={styles.cardContent}>
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
