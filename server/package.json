@@ -16,7 +16,7 @@
 		"express": "5.1.0",
 		"express-fileupload": "^1.5.2",
 		"express-session": "^1.18.1",
-		"googleapis": "^160.0.0",
+		"googleapis": "^162.0.0",
 		"htmlparser2": "10.0.0",
 		"morgan": "1.10.1",
 		"natural": "8.1.0",
