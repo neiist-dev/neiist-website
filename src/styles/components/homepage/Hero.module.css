@@ -9,9 +9,12 @@
 
 .title {
   color: var(--foreground-colour);
-  font-size: 2.5rem;
+  font-size: 3rem;
   margin-bottom: 0;
   margin-top: 4rem;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 1rem;
 }
 
 .primary {
@@ -39,13 +42,76 @@
   text-align: center;
 }
 
-.campusImages {
+.campusImage {
   position: relative;
   width: 100vw;
   max-width: 100%;
   height: 70vh;
-  min-height: 350px;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.student {
+  position: absolute;
+  height: auto;
+  bottom: 2rem;
+  width: 10rem;
+  transition: transform 0.1s;
+  left: var(--student-position, 50%);
+}
+
+@media (max-width: 1200px) {
+  .title {
+    font-size: 2rem;
+    margin-top: 3rem;
+  }
+
+  .student {
+    bottom: 2rem;
+    width: 8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.6rem;
+    margin-top: 2rem;
+    padding: 0 1.5rem;
+  }
+
+  .campusImage {
+    height: 60vh;
+    min-height: 300px;
+  }
+
+  .student {
+    bottom: 2rem;
+    width: 6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.3rem;
+    margin-top: 1.5rem;
+    padding: 0 2rem;
+    line-height: 1.3;
+  }
+
+  .campusImage {
+    height: 50vh;
+    min-height: 250px;
+  }
+
+  .student {
+    bottom: 1.9rem;
+    width: 4rem;
+  }
+}
+
+.flipped {
+  transform: scaleX(-1);
 }
