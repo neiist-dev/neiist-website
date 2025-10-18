@@ -9,7 +9,6 @@ export default async function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.title}>Perfil</header>
       <ProfileClient initialUser={user} />
     </div>
   );

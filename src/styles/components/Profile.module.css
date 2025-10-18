@@ -1,224 +1,306 @@
-.header {
+.title {
+  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+  font-weight: 500;
+}
+
+.primary {
+  color: var(--primary-colour);
+}
+.secondary {
+  color: var(--secondary-colour);
+}
+.tertiary {
+  color: var(--tertiary-colour);
+}
+.quaternary {
+  color: var(--quaternary-colour);
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 6vw;
+}
+
+.left,
+.right {
+  flex: 1 1 40%;
+  min-width: 300px;
+}
+
+.details {
   display: flex;
   align-items: flex-start;
-  background: white;
-  gap: 1.5rem;
+  gap: 2rem;
   margin-bottom: 3rem;
-  padding: 2.5rem;
-  border-radius: 1.5rem;
-  border: none;
-  width: 100%;
-  box-sizing: border-box;
 }
 
-.title {
-  color: var(--primary-colour);
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  border-left: 4px solid var(--primary-colour);
-  padding-left: 1rem;
-  position: relative;
-}
-
-.userPhoto {
-  width: 160px;
-  height: 160px;
-  border-radius: 1.2rem;
+.photo {
+  width: 250px;
+  height: 278px;
+  aspect-ratio: 1 / 1.1;
+  border-radius: 1rem;
   object-fit: cover;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  flex-shrink: 0;
-}
-
-.userPhoto:hover {
-  transform: scale(1.05);
 }
 
 .userInfo {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
 }
 
 .name {
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0;
-  color: var(--foreground-colour);
-  user-select: none;
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  font-weight: 700;
 }
 
-.course {
+.istID,
+.email {
+  margin: 0.2rem;
   font-size: 1rem;
-  color: var(--light-foreground-colour);
-  margin: 0;
+  color: #222;
   font-weight: 500;
+  word-break: break-word;
 }
 
-.badgeRow {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.badge {
-  background: var(--light-secondary-colour);
-  color: var(--primary-colour);
-  font-weight: 600;
-  font-size: 1.1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 0.75rem;
-  user-select: none;
-}
-
-.lockSection {
+.sectionTitle {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--background-colour);
-  font-size: 0.85rem;
-  color: var(--light-foreground-colour);
-  font-style: italic;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #3f3f3f;
+  margin-bottom: 1rem;
 }
 
-.lockSection svg {
-  flex-shrink: 0;
-  color: var(--light-foreground-colour);
-  opacity: 0.7;
-}
-
-.personalData {
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  background: white;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 0.4fr 0.3fr 0.3fr;
-  gap: 1.5rem;
-}
-
-.field {
-  background: var(--background-colour);
-  border: none;
-  border-radius: 1rem;
-  padding: 1.5rem;
+.contactInfo {
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
-  overflow: hidden;
+  gap: 2rem;
 }
 
-.field:hover {
-  transform: scale(1.03);
+.contactLabel {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #3f3f3f;
+  margin-bottom: 0.5rem;
+  margin-left: 2rem;
 }
 
-.label {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--secondary-colour);
-  margin-bottom: 0.6rem;
-  text-transform: uppercase;
+.contactField {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-left: 2rem;
 }
 
-.input {
-  width: 100%;
-  border: 1px solid #e5e7eb;
-  font-family: inherit;
-  padding: 0.6rem;
+.icon {
+  color: var(--primary-colour);
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.contactInput,
+.contactSelect {
+  font-size: 1rem;
+  padding: 0.6rem 2.5rem 0.6rem 0.9rem;
   border-radius: 0.6rem;
-  font-size: 1.1rem;
-  color: var(--foreground-colour);
-  font-weight: 500;
-  box-sizing: border-box;
-  margin-top: 0.2rem;
-  transition: border-color 0.2s;
-}
-
-.input:focus {
+  border: 2px solid #ececf0;
+  background: white;
+  color: #444;
   outline: none;
-  box-shadow: 0 0 0 2px var(--background-colour-hover);
+  transition: border 0.2s ease;
+  flex: 1 1 min(60%, 22rem);
+  max-width: min(60%, 28rem);
+  min-width: clamp(10rem, 18%, 14rem);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.input::placeholder {
-  color: #9ca3af;
-  font-weight: 400;
+.contactInput:focus,
+.contactSelect:focus {
+  border-color: var(--primary-colour);
+}
+
+.infoText {
+  color: #555d6d;
+  font-size: 1.1rem;
+  margin: 1rem 0 1.3rem 3rem;
+  max-width: 65ch;
+}
+
+.actionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-left: 3rem;
+}
+
+.button,
+.filledButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 0.6rem;
+  padding: 0.3rem 1rem;
+  border: 2px solid var(--primary-colour);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button {
+  background: white;
+  color: var(--primary-colour);
+}
+
+.button:hover {
+  background: #f5f8ff;
+}
+
+.filledButton {
+  background: var(--primary-colour);
+  color: #fff;
+  text-decoration: none;
+}
+
+.filledButton:hover {
+  background: #1743c0;
+}
+
+.schedule {
+  margin-top: 3rem;
+}
+
+.cvbank {
+  margin-top: 5rem;
+}
+
+.cvUpload {
+  display: block;
+  border-radius: 1rem;
+  border: 2px solid #d3d7df;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  text-align: center;
+  padding: 2rem 1rem;
+  margin-left: 3rem;
+}
+
+.cvUpload:hover {
+  border-color: var(--primary-colour);
+}
+
+.cvUploadIcon {
+  display: block;
+  margin: 0 auto 1rem auto;
+  color: #a3a7b3;
+  font-size: 2.5rem;
+}
+
+.cvUpload p {
+  color: #555d6d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.infoBubbleWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.infoBubble {
+  color: var(--primary-colour);
+  font-size: 1.25rem;
+  margin-left: 0.3rem;
+  cursor: pointer;
+  position: absolute;
+  top: -20px;
+  right: -12px;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: white;
+  font-size: 0.95rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  box-shadow: 0 2px 8px rgba(60, 60, 60, 0.1);
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.infoBubbleWrapper:hover .tooltip {
+  display: block;
 }
 
 .error {
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.75rem;
-  padding: 1rem 1.5rem;
-  margin-top: 1.5rem;
-  font-weight: 500;
+  margin: 2rem auto;
+  padding: 0.8rem 1.2rem;
+  background: #fde7e7;
+  color: #a40000;
+  border: 1.5px solid #f5b1b1;
+  border-radius: 0.6rem;
+  font-size: 1rem;
+  text-align: center;
+  max-width: 400px;
 }
 
-.calendar {
-  color: var(--primary-colour);
-  font-weight: 700;
-  text-decoration: underline;
+@media (max-width: 1100px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .left,
+  .right {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 768px) {
-  .header {
+  .container {
     flex-direction: column;
-    align-items: center;
-    padding: 1.25rem;
-    margin-bottom: 1.25rem;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 1.2rem;
-    overflow-x: hidden;
+    gap: 3rem;
   }
 
-  .personalData {
-    margin-top: 1.25rem;
-    border-radius: 1.2rem;
-    padding: 1.25rem;
-    background: white;
-    width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  .userPhoto {
-    width: 120px;
-    height: 120px;
-  }
-
-  .userInfo {
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .lockSection {
+  .details {
+    flex-direction: row;
     justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding-top: 1rem;
-    border-top: 1px solid var(--background-colour);
-    margin-top: 0.5rem;
-    box-sizing: border-box;
+    text-align: left;
+    flex-wrap: wrap;
   }
 
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    width: 100%;
-    box-sizing: border-box;
+  .photo {
+    margin: 0;
   }
 
-  .field {
-    width: 100%;
-    box-sizing: border-box;
-    min-width: 0;
+  .contactInput,
+  .contactSelect {
+    max-width: min(80%, 28rem);
+    min-width: clamp(10rem, 18%, 14rem);
+  }
+
+  .cvUpload,
+  .infoText,
+  .actionButtons {
+    justify-content: center;
+    margin-left: 1rem;
+  }
+
+  .contactField,
+  .contactLabel {
+    margin-left: 1rem;
   }
 }

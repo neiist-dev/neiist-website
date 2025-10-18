@@ -1,62 +1,96 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/Profile.module.css";
-import { FaLock } from "react-icons/fa";
-import { User } from "@/types/user";
-import { UserRole } from "@/types/user";
+import { User, UserRole } from "@/types/user";
+import {
+  FiCalendar,
+  FiInfo,
+  FiMail,
+  FiPhone,
+  FiUpload,
+  FiTrash2,
+  FiDownload,
+} from "react-icons/fi";
+import { RiContactsBook3Line } from "react-icons/ri";
+import { LuCopy } from "react-icons/lu";
+import { IoOpenOutline } from "react-icons/io5";
+import { getFirstAndLastName } from "@/utils/userUtils";
+
+type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod";
 
 export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const [user, setUser] = useState<User>(initialUser);
-  const [formData, setFormData] = useState<{
-    alternativeEmail: string | null;
-    phone: string | null;
-    preferredContactMethod: string;
-  }>({
-    alternativeEmail: user?.alternativeEmail ?? "",
-    phone: user?.phone ?? "",
-    preferredContactMethod: user?.preferredContactMethod ?? "email",
-  });
-  const [pendingChange, setPendingChange] = useState<{ field: string; value: string } | null>(null);
+
+  const [altEmailDraft, setAltEmailDraft] = useState<string>(initialUser?.alternativeEmail ?? "");
+  const [phoneDraft, setPhoneDraft] = useState<string>(initialUser?.phone ?? "");
+  const [preferredDraft, setPreferredDraft] = useState<string>(
+    initialUser?.preferredContactMethod ?? "email"
+  );
+
+  const [pendingChange, setPendingChange] = useState<{ field: FieldName; value: string } | null>(
+    null
+  );
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [altEmailDraft, setAltEmailDraft] = useState(formData.alternativeEmail);
-  const [phoneDraft, setPhoneDraft] = useState(formData.phone);
+
+  const [hasCV, setHasCV] = useState<boolean>(false);
+  const [cvLoading, setCvLoading] = useState<boolean>(false);
+
   const [error, setError] = useState<string>("");
 
-  const calendarUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar?istid=${user.istid}`
-    ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar?istid=${user.istid}`)}`
+  const calendarIcs = user?.istid
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar?istid=${user.istid}`
     : "";
+  const calendarUrl = user?.istid
+    ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(calendarIcs)}`
+    : "";
+
   const isMember =
     user?.roles?.includes(UserRole._MEMBER) ||
     user?.roles?.includes(UserRole._COORDINATOR) ||
     user?.roles?.includes(UserRole._ADMIN);
 
   useEffect(() => {
-    setFormData({
-      alternativeEmail: user?.alternativeEmail ?? "",
-      phone: user?.phone ?? "",
-      preferredContactMethod: user?.preferredContactMethod ?? "email",
-    });
+    setAltEmailDraft(user?.alternativeEmail ?? "");
+    setPhoneDraft(user?.phone ?? "");
+    setPreferredDraft(user?.preferredContactMethod ?? "email");
   }, [user]);
 
   useEffect(() => {
-    setAltEmailDraft(formData.alternativeEmail ?? "");
-    setPhoneDraft(formData.phone ?? "");
-  }, [formData.alternativeEmail, formData.phone]);
+    const fetchCVStatus = async () => {
+      try {
+        const res = await fetch("/api/user/cv-bank");
+        if (res.ok) {
+          const data = await res.json();
+          setHasCV(!!data.hasCV);
+        }
+      } catch {
+        setHasCV(false);
+      }
+    };
+    fetchCVStatus();
+  }, [user]);
 
-  const handleBlur = (field: "alternativeEmail" | "phone", value: string) => {
-    if (formData[field] !== value) {
-      setPendingChange({ field, value });
-      setShowConfirmDialog(true);
+  const askConfirm = (field: FieldName, value: string) => {
+    setPendingChange({ field, value });
+    setShowConfirmDialog(true);
+  };
+
+  const handleBlur = (field: Extract<FieldName, "alternativeEmail" | "phone">, value: string) => {
+    if (
+      (field === "alternativeEmail" && value !== (user?.alternativeEmail ?? "")) ||
+      (field === "phone" && value !== (user?.phone ?? ""))
+    ) {
+      askConfirm(field, value);
     }
   };
 
-  const handlePreferredContactChange = (value: string) => {
-    if (formData.preferredContactMethod !== value) {
-      setPendingChange({ field: "preferredContactMethod", value });
-      setShowConfirmDialog(true);
+  const handlePreferredChange = (value: string) => {
+    if (value !== (user?.preferredContactMethod ?? "email")) {
+      setPreferredDraft(value);
+      askConfirm("preferredContactMethod", value);
     }
   };
 
@@ -64,51 +98,38 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     if (!pendingChange || !user) return;
     setShowConfirmDialog(false);
     setError("");
-    try {
-      let value = pendingChange.value.trim();
-      if (pendingChange.field === "alternativeEmail" || pendingChange.field === "phone") {
-        value = value === "" ? "" : value;
-      }
-      const updateData: Record<string, string | null> = {
-        [pendingChange.field]: value,
-      };
 
-      if (pendingChange.field === "alternativeEmail") {
+    try {
+      const { field } = pendingChange;
+      const value = pendingChange.value.trim();
+
+      if (field === "alternativeEmail") {
         const res = await fetch("/api/user/verify-email/request", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            istid: user.istid,
-            alternativeEmail: value,
-          }),
+          body: JSON.stringify({ istid: user.istid, alternativeEmail: value }),
         });
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Falha ao enviar email de verificação");
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Falha ao enviar email de verificação");
         }
-        setError("Verifique o seu email alternativo para concluir a alteração.");
       } else {
         const res = await fetch(`/api/user/update/${user.istid}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updateData),
           credentials: "include",
+          body: JSON.stringify({ [field]: value }),
         });
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Failed to update");
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Falha ao atualizar");
         }
       }
 
       const userRes = await fetch("/api/auth/userdata");
       if (userRes.ok) {
-        const updatedUser = await userRes.json();
-        setUser(updatedUser);
-        setFormData({
-          alternativeEmail: updatedUser.alternativeEmail ?? "",
-          phone: updatedUser.phone ?? "",
-          preferredContactMethod: updatedUser.preferredContactMethod ?? "email",
-        });
+        const updated = await userRes.json();
+        setUser(updated);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
@@ -117,121 +138,248 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     }
   };
 
-  const getFieldDisplayName = (field: string) => {
-    const fieldNames: Record<string, string> = {
-      alternativeEmail: "Email Alternativo",
-      phone: "Telefone",
-      preferredContactMethod: "Contacto Preferido",
-    };
-    return fieldNames[field] || field;
+  const handleCopyCalendar = async () => {
+    if (!calendarIcs) return;
+    try {
+      await navigator.clipboard.writeText(calendarIcs);
+    } catch {
+      setError("Não foi possível copiar o link do calendário.");
+    }
   };
 
-  const getValueDisplayName = (field: string, value: string) => {
-    if (field === "preferredContactMethod") {
-      const contactMethods: Record<string, string> = {
-        email: "Email Principal",
-        alternativeEmail: "Email Alternativo",
-        phone: "Telefone",
-      };
-      return contactMethods[value] || value;
+  const onCvUpload = async (file: File | null) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      setError("Envie apenas ficheiros PDF.");
+      return;
     }
-    return value;
+    setCvLoading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("istid", user.istid);
+
+      const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
+      if (!res.ok) throw new Error("Falha ao enviar o CV.");
+      setHasCV(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao enviar o CV.");
+    } finally {
+      setCvLoading(false);
+    }
+  };
+
+  const onCvRemove = async () => {
+    setCvLoading(true);
+    try {
+      const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
+      if (!res.ok) throw new Error("Falha ao remover o CV.");
+      setHasCV(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao remover o CV.");
+    } finally {
+      setCvLoading(false);
+    }
+  };
+
+  const onCvDownload = async () => {
+    setCvLoading(true);
+    try {
+      const res = await fetch("/api/user/cv-bank/download");
+      if (!res.ok) throw new Error("CV não encontrado.");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${user.istid || "cv"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao descarregar o CV.");
+    } finally {
+      setCvLoading(false);
+    }
+  };
+
+  const getFieldDisplayName = (field: FieldName) => {
+    switch (field) {
+      case "alternativeEmail":
+        return "Email Alternativo";
+      case "phone":
+        return "Telefone";
+      case "preferredContactMethod":
+        return "Contacto Preferido";
+    }
+  };
+
+  const getValueDisplayName = (field: FieldName, value: string) => {
+    if (field === "preferredContactMethod") {
+      return (
+        (
+          {
+            email: "Email Principal",
+            alternativeEmail: "Email Alternativo",
+            phone: "Telefone",
+          } as Record<string, string>
+        )[value] || value
+      );
+    }
+    return value || "—";
   };
 
   return (
     <>
-      <div className={styles.header}>
-        <Image
-          src={user?.photo || "/default-profile.png"}
-          alt="Profile"
-          width={160}
-          height={160}
-          className={styles.userPhoto}
-        />
-        <div className={styles.userInfo}>
-          <h2 className={styles.name}>{user?.name}</h2>
-          <span className={styles.course}>
-            {user?.courses && user.courses.length > 0
-              ? user.courses.join(", ")
-              : "Curso não especificado"}
-          </span>
-          <div className={styles.badgeRow}>
-            <span className={styles.badge}>{user?.istid}</span>
-            <span className={styles.badge}>{user?.email || "Não especificado"}</span>
+      <h1 className={styles.title}>
+        <span className={styles.primary}> Pe</span>
+        <span className={styles.secondary}>r</span>
+        <span className={styles.tertiary}>fi</span>
+        <span className={styles.quaternary}>l</span>
+      </h1>
+      <div className={styles.container}>
+        <div className={styles.left}>
+          <div className={styles.details}>
+            <Image
+              src={user?.photo || "/default-profile.png"}
+              alt="Profile photo"
+              width={180}
+              height={180}
+              className={styles.photo}
+            />
+            <div className={styles.userInfo}>
+              <h2 className={styles.name}>{getFirstAndLastName(user?.name)}</h2>
+              <p className={styles.istID}>{user?.istid}</p>
+              <p className={styles.email}>{user?.email}</p>
+            </div>
           </div>
-          <div className={styles.lockSection}>
-            <FaLock />
-            <span>Se quiseres alterar alguns destes dados tens de o fazer no fénix.</span>
+          <h2 className={styles.sectionTitle}>Informações de Contacto</h2>
+          <div className={styles.contactInfo}>
+            <div>
+              <div className={styles.contactLabel}>Email Alternativo</div>
+              <div className={styles.contactField}>
+                <FiMail className={styles.icon} />
+                <input
+                  type="email"
+                  className={styles.contactInput}
+                  placeholder="email@exemplo.com"
+                  value={altEmailDraft}
+                  onChange={(e) => setAltEmailDraft(e.target.value)}
+                  onBlur={() => handleBlur("alternativeEmail", altEmailDraft)}
+                />
+                {user?.alternativeEmail && !user?.alternativeEmailVerified && (
+                  <span>(por verificar)</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <div className={styles.contactLabel}>Número de Telémovel</div>
+              <div className={styles.contactField}>
+                <FiPhone className={styles.icon} />
+                <input
+                  type="tel"
+                  className={styles.contactInput}
+                  placeholder="+351 xxx xxx xxx"
+                  value={phoneDraft}
+                  onChange={(e) => setPhoneDraft(e.target.value)}
+                  onBlur={() => handleBlur("phone", phoneDraft)}
+                />
+              </div>
+            </div>
+            <div>
+              <div className={styles.contactLabel}>Método de Contacto Preferencial</div>
+              <div className={styles.contactField}>
+                <RiContactsBook3Line className={styles.icon} />
+                <select
+                  className={styles.contactSelect}
+                  value={preferredDraft}
+                  onChange={(e) => handlePreferredChange(e.target.value)}>
+                  <option value="email">Email Principal</option>
+                  {(altEmailDraft || user?.alternativeEmail) && (
+                    <option value="alternativeEmail">Email Alternativo</option>
+                  )}
+                  {(phoneDraft || user?.phone) && <option value="phone">Telémovel</option>}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className={styles.personalData}>
-        <h3 className={styles.title}>Dados Pessoais</h3>
-        <div className={styles.grid}>
-          <div className={styles.field}>
-            <div className={styles.label}>Email Alternativo</div>
-            <input
-              type="email"
-              value={altEmailDraft ?? ""}
-              onChange={(e) => setAltEmailDraft(e.target.value)}
-              onBlur={() => handleBlur("alternativeEmail", altEmailDraft ?? "")}
-              className={styles.input}
-              placeholder="email@exemplo.com"
-            />
-            {user?.alternativeEmail && !user?.alternativeEmailVerified && (
-              <span style={{ color: "orange", marginLeft: "0.5rem" }}>(por verificar)</span>
+        <div className={styles.right}>
+          {isMember && calendarUrl && (
+            <>
+              <div className={styles.schedule}>
+                <div className={styles.sectionTitle}>
+                  <FiCalendar className={styles.icon} />
+                  <span>Calendário</span>
+                </div>
+                <p className={styles.infoText}>
+                  Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!
+                </p>
+                <div className={styles.actionButtons}>
+                  <button className={styles.button} onClick={handleCopyCalendar}>
+                    <LuCopy /> Copy Link
+                  </button>
+                  <a
+                    className={styles.filledButton}
+                    href={calendarUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    <IoOpenOutline /> Open in Google Calendar
+                  </a>
+                </div>
+              </div>
+            </>
+          )}
+          <div className={styles.cvbank}>
+            <div className={styles.sectionTitle}>
+              <FiUpload className={styles.icon} />
+              <span>CV Bank</span>
+              <div className={styles.infoBubbleWrapper}>
+                <FiInfo className={styles.infoBubble} />
+                <div className={styles.tooltip}>Explicação sobre o CV-Bank.</div>
+              </div>
+            </div>
+            {!hasCV ? (
+              <>
+                <label className={styles.cvUpload} htmlFor="cv-input">
+                  <div>
+                    <FiUpload className={styles.cvUploadIcon} />
+                    <p>Click to upload your CV (PDF only)</p>
+                  </div>
+                </label>
+                <input
+                  id="cv-input"
+                  type="file"
+                  accept="application/pdf"
+                  hidden
+                  onChange={(e) => onCvUpload(e.target.files?.[0] ?? null)}
+                  disabled={cvLoading}
+                />
+              </>
+            ) : (
+              <div className={styles.actionButtons}>
+                <button className={styles.button} onClick={onCvDownload} disabled={cvLoading}>
+                  <FiDownload /> Descarregar o CV
+                </button>
+                <button className={styles.button} onClick={onCvRemove} disabled={cvLoading}>
+                  <FiTrash2 /> Remover o CV
+                </button>
+              </div>
             )}
           </div>
-          <div className={styles.field}>
-            <div className={styles.label}>Telefone</div>
-            <input
-              type="tel"
-              value={phoneDraft ?? ""}
-              onChange={(e) => setPhoneDraft(e.target.value)}
-              onBlur={() => handleBlur("phone", phoneDraft ?? "")}
-              className={styles.input}
-              placeholder="+351 xxx xxx xxx"
-            />
-          </div>
-          <div className={styles.field}>
-            <div className={styles.label}>Contacto Preferido</div>
-            <select
-              value={formData.preferredContactMethod}
-              onChange={(e) => handlePreferredContactChange(e.target.value)}
-              className={styles.input}>
-              <option value="email">Email Principal</option>
-              {(formData.alternativeEmail || user?.alternativeEmail) && (
-                <option value="alternativeEmail">Email Alternativo</option>
-              )}
-              {(formData.phone || user?.phone) && <option value="phone">Telefone</option>}
-            </select>
-          </div>
         </div>
       </div>
-
       {error && <p className={styles.error}>{error}</p>}
-      {isMember && calendarUrl && (
-        <div style={{ marginTop: "2rem", textAlign: "center" }}>
-          <span>
-            Para ter acesso ao calendário de Eventos e Reuniões, por favor&nbsp;
-            <a
-              href={calendarUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.calendar}>
-              clique aqui
-            </a>
-            .
-          </span>
-        </div>
-      )}
       <ConfirmDialog
         open={showConfirmDialog}
         message={
           pendingChange
             ? pendingChange.value === ""
               ? `Deseja remover o método de contacto ${getFieldDisplayName(pendingChange.field)}?`
-              : `Deseja guardar a alteração de ${getFieldDisplayName(pendingChange.field)} para "${getValueDisplayName(pendingChange.field, pendingChange.value)}"?`
+              : `Deseja guardar a alteração de ${getFieldDisplayName(pendingChange.field)} para "${getValueDisplayName(
+                  pendingChange.field,
+                  pendingChange.value
+                )}"?`
             : ""
         }
         onConfirm={handleConfirmChange}
