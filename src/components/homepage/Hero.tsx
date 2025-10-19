@@ -24,13 +24,13 @@ export default function Hero() {
 
       if (event.key === "ArrowLeft") {
         setStudentMovementPosition((prev) => {
-          if (prev - 1 < minPercent) return maxPercent;
+          if (prev - 1 < minPercent) return minPercent;
           return prev - 1;
         });
         setStudentFlipped(true);
       } else if (event.key === "ArrowRight") {
         setStudentMovementPosition((prev) => {
-          if (prev + 1 > maxPercent) return minPercent;
+          if (prev + 1 > maxPercent) return maxPercent;
           return prev + 1;
         });
         setStudentFlipped(false);
