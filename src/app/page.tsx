@@ -1,5 +1,5 @@
 import React from "react";
-import SINFO from "@/components/homepage/Sinfo";
+// import SINFO from "@/components/homepage/Sinfo";
 import Partnerships from "@/components/homepage/Partnerships";
 import style from "@/styles/pages/HomePage.module.css";
 import Hero from "@/components/homepage/Hero";
@@ -13,7 +13,9 @@ const HomePage = async () => {
     <div className={style.homepage}>
       <Hero />
       <Activities events={events} />
+      {/*
       <SINFO />
+      */}
       <Partnerships />
     </div>
   );

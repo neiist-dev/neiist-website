@@ -70,7 +70,7 @@
   }
 
   .student {
-    bottom: 2rem;
+    bottom: 2.2rem;
     width: 8rem;
   }
 }
@@ -88,27 +88,38 @@
   }
 
   .student {
-    bottom: 2rem;
-    width: 6rem;
+    bottom: 1.9rem;
+    width: 7rem;
   }
 }
 
 @media (max-width: 480px) {
   .title {
-    font-size: 1.3rem;
-    margin-top: 1.5rem;
-    padding: 0 2rem;
-    line-height: 1.3;
+    font-size: 1.25rem;
+    margin-top: 1.2rem;
+    padding: 0 0.5rem;
+    line-height: 1.25;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: center;
   }
 
   .campusImage {
-    height: 50vh;
-    min-height: 250px;
+    height: 38vh;
+    min-height: 160px;
+    max-width: 100vw;
+    padding: 0;
+    margin: 0 auto;
   }
 
   .student {
-    bottom: 1.9rem;
-    width: 4rem;
+    bottom: 1.2rem;
+    width: 5rem;
+    left: var(--student-position, 50%);
+  }
+  .hero {
+    margin-bottom: 2.5rem;
+    padding: 0;
   }
 }
 
