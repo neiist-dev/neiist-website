@@ -64,11 +64,17 @@ const Partnerships: React.FC = () => {
       </a>
     ));
 
+  const showMonetaryPartners = false;
+
   return (
     <div className={styles.partnerships}>
       <h1 className={styles.title}>Parcerias</h1>
-      <h2>Parcerias Monetárias</h2>
-      <div className={styles.row}>{renderPartners(monetaryPartners)}</div>
+      {showMonetaryPartners && (
+        <>
+          <h2>Parcerias Monetárias</h2>
+          <div className={styles.row}>{renderPartners(monetaryPartners)}</div>
+        </>
+      )}
       <h2>Parcerias Não Monetárias</h2>
       <div className={styles.row}>{renderPartners(nonMonetaryPartners)}</div>
     </div>
