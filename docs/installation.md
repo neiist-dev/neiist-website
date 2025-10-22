@@ -17,3 +17,4 @@ To get a local copy up and running follow these simple steps.
    ```sh
    yarn setup
    ```
+6. Don't forget to change ISTID on your init.sql

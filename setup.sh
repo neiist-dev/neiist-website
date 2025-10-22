@@ -158,6 +158,7 @@ echo
 echo "Next steps:"
 echo "1. Run 'yarn install' to install dependencies."
 echo "2. Run 'yarn dev' to start the development server."
+echo "3. Change the ISTID on init.sql to initialize the DB."
 echo 
 if [ "$override" = "y" ]; then
   echo "Note: Your database credentials are:"
