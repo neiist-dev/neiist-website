@@ -1,59 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import ical from "ical-generator";
+import type { ICalEventData } from "ical-generator";
+import fs from "fs/promises";
+import path from "path";
+import { NotionApiResponse, NotionEvent, NotionPage } from "@/types/notion";
 import { getUser } from "@/utils/dbUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
+const CACHE_FILE = path.resolve(process.cwd(), "notion-events-cache.json");
 
-type NotionPerson = { name: string; person?: { email?: string } };
+async function loadCache(): Promise<NotionEvent[]> {
+  try {
+    const txt = await fs.readFile(CACHE_FILE, "utf8");
+    return JSON.parse(txt) as NotionEvent[];
+  } catch {
+    return [];
+  }
+}
 
-type NotionPageProperties = {
-  Name?: {
-    title: { plain_text: string }[];
-  };
-  Date?: {
-    date: { start: string | null; end: string | null };
-  };
-  Location?: {
-    multi_select: { name: string }[];
-  };
-  Type?: {
-    select: { name: string } | null;
-  };
-  Teams?: {
-    multi_select: { name: string }[];
-  };
-  Attendees?: {
-    people: NotionPerson[];
-  };
-  "Related Events"?: {
-    relation: { id: string }[];
-  };
-};
+async function saveCache(events: NotionEvent[]) {
+  await fs.writeFile(CACHE_FILE, JSON.stringify(events, null, 2), "utf8");
+}
 
-type NotionPage = {
-  id: string;
-  url: string;
-  properties: NotionPageProperties;
-};
+function parseNotionPageToEvent(page: NotionPage): NotionEvent {
+  const props = page.properties;
+  return {
+    id: page.id,
+    title: props.Name?.title?.[0]?.plain_text || "Untitled Event",
+    date: props.Date?.date?.start ?? null,
+    end: props.Date?.date?.end ?? null,
+    url: page.url,
+    location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
+    type: props.Type?.select?.name ?? null,
+    teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
+    attendees: props.Attendees?.people?.map((p) => p.name ?? "") ?? [],
+  };
+}
 
-type NotionApiResponse = {
-  results: NotionPage[];
-};
-
-type NotionEvent = {
-  id: string;
-  title: string;
-  date: string | null;
-  end: string | null;
-  url: string;
-  location: string[];
-  type: string | null;
-  teams: string[];
-  attendees: string[];
-};
-
-async function getNotionEvents(): Promise<NotionEvent[]> {
+async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   const res = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
     method: "POST",
     headers: {
@@ -64,27 +49,22 @@ async function getNotionEvents(): Promise<NotionEvent[]> {
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    console.error(errorText);
-    throw new Error("Failed to fetch Notion data: " + errorText);
+    const txt = await res.text();
+    throw new Error("Failed to fetch Notion DB: " + txt);
   }
 
   const data: NotionApiResponse = await res.json();
+  const results: NotionPage[] = data.results || [];
+  const events = results.map(parseNotionPageToEvent);
+  await saveCache(events);
+  return events;
+}
 
-  return data.results.map((page): NotionEvent => {
-    const props = page.properties;
-    return {
-      id: page.id,
-      title: props.Name?.title?.[0]?.plain_text || "Untitled Event",
-      date: props.Date?.date?.start ?? null,
-      end: props.Date?.date?.end ?? null,
-      url: page.url,
-      location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
-      type: props.Type?.select?.name ?? null,
-      teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
-      attendees: props.Attendees?.people?.map((p) => p.name ?? "") ?? [],
-    };
-  });
+async function getNotionEvents(): Promise<NotionEvent[]> {
+  const cached = await loadCache();
+  if (cached && cached.length) return cached;
+
+  return fetchAllNotionEvents();
 }
 
 async function generateICSForUser(email: string) {
@@ -92,12 +72,10 @@ async function generateICSForUser(email: string) {
   const cal = ical({ name: "User Events" });
 
   events
-    .filter((event) => event.type !== "Meeting" || event.attendees.includes(email))
+    .filter((event) => (event.type !== "Meeting" || event.attendees.includes(email)) && event.date)
     .forEach((event) => {
-      cal.createEvent({
+      const ev: ICalEventData = {
         id: event.id,
-        start: new Date(event.date!),
-        end: event.end ? new Date(event.end) : undefined,
         summary: event.title,
         url: event.url,
         location: event.location.join(", ") || undefined,
@@ -110,7 +88,10 @@ async function generateICSForUser(email: string) {
           .filter(Boolean)
           .join("\n"),
         categories: [{ name: event.type || "Event" }],
-      });
+        start: new Date(event.date!),
+      };
+      if (event.end) ev.end = new Date(event.end);
+      cal.createEvent(ev);
     });
 
   return cal.toString();
