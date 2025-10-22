@@ -10,6 +10,8 @@ export interface User {
   courses: string[];
   roles: UserRole[];
   teams?: string[];
+  github?: string;
+  linkedin?: string;
 }
 interface DbUser {
   istid: string;
@@ -22,6 +24,8 @@ interface DbUser {
   courses?: string[];
   roles?: string[];
   teams?: string[];
+  github?: string;
+  linkedin?: string;
 }
 
 export enum UserRole {
@@ -65,5 +69,7 @@ export function mapDbUserToUser(dbUser: DbUser): User {
     courses: dbUser.courses ?? [],
     roles: userRoles,
     teams: dbUser.teams ?? [],
+    github: dbUser.github ?? undefined,
+    linkedin: dbUser.linkedin ?? undefined,
   };
 }

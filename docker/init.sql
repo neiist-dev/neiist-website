@@ -47,14 +47,16 @@ SELECT neiist.add_valid_department_role('Visuais', 'Cordenador', 'coordinator');
 SELECT neiist.add_valid_department_role('Visuais', 'Membro', 'member');
 
 /* Can be used as a template to add more users
-SELECT neiist.add_user('IST_ID', 'NOME', 'EMAIL', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}');
+SELECT neiist.add_user('IST_ID', 'NOME', 'EMAIL', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}', NULL, NULL);
 */
-SELECT neiist.add_user('IST_ID', 'NOME', 'EMAIL', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}');
+SELECT neiist.add_user('ist1110632', 'Inês Isabel Santos Costa', 'inesiscosta@tecnico.ulisboa.pt', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}', NULL, NULL);
+SELECT neiist.add_user('ist1109686', 'Miguel Póvoa Raposo', 'miguel.p.raposo@tecnico.ulisboa.pt', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}', NULL, NULL);
 
 /* Can be used as a template to add more memberships
 SELECT neiist.add_team_member('IST_ID', 'Dev-Team', 'Cordenador');
 */
-SELECT neiist.add_team_member('IST_ID', 'Direção', 'Vice-Presidente');
+SELECT neiist.add_team_member('ist1110632', 'Direção', 'Presidente');
+SELECT neiist.add_team_member('ist1109686', 'Dev-Team', 'Cordenador');
 
 -- Add base Activities
 SELECT neiist.add_event('Advent of Code', 'O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!', 'aoc.jpg');

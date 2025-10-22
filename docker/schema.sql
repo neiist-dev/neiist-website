@@ -57,6 +57,8 @@ CREATE TABLE neiist.users (
   istid VARCHAR(10) PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
+  github TEXT,
+  linkedin TEXT,
   photo_path TEXT
 );
 
@@ -264,7 +266,9 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
   photo_path TEXT,
   courses TEXT[],
   roles TEXT[],
-  teams VARCHAR(30)[]
+  teams VARCHAR(30)[],
+  github TEXT,
+  linkedin TEXT
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -278,7 +282,9 @@ BEGIN
     u.photo_path,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     COALESCE(derived_access.access_array, ARRAY[]::TEXT[]) AS roles,
-    COALESCE(team_list.team_array, ARRAY[]::VARCHAR(30)[]) AS teams
+    COALESCE(team_list.team_array, ARRAY[]::VARCHAR(30)[]) AS teams,
+    u.github,
+    u.linkedin
   FROM neiist.users u
   LEFT JOIN (
     SELECT 
@@ -312,7 +318,9 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   p_alt_email TEXT,
   p_phone TEXT,
   p_photo_path TEXT,
-  p_courses TEXT[]
+  p_courses TEXT[],
+  p_github TEXT,
+  p_linkedin TEXT
 ) RETURNS TABLE(
   istid VARCHAR(10),
   name TEXT,
@@ -323,11 +331,13 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   photo_path TEXT,
   courses TEXT[],
   roles TEXT[],
-  teams VARCHAR(30)[]
+  teams VARCHAR(30)[],
+  github TEXT,
+  linkedin TEXT
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO neiist.users (istid, name, email, photo_path)
-  VALUES (p_istid, p_name, p_email, p_photo_path);
+  INSERT INTO neiist.users (istid, name, email, photo_path, github, linkedin)
+  VALUES (p_istid, p_name, p_email, p_photo_path, p_github, p_linkedin);
 
   -- Insert alternative email if provided
   IF p_alt_email IS NOT NULL THEN
@@ -540,7 +550,9 @@ RETURNS TABLE (
   email TEXT,
   phone VARCHAR(15),
   courses TEXT[],
-  photo_path TEXT
+  photo_path TEXT,
+  github TEXT,
+  linkedin TEXT
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -550,7 +562,9 @@ BEGIN
     u.email,
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
-    u.photo_path
+    u.photo_path,
+    u.github,
+    u.linkedin
   FROM neiist.users u
   JOIN neiist.membership m ON u.istid = m.user_istid
   JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
@@ -571,7 +585,9 @@ RETURNS TABLE (
   courses TEXT[],
   photo_path TEXT,
   roles TEXT[],
-  teams VARCHAR(30)[]
+  teams VARCHAR(30)[],
+  github TEXT,
+  linkedin TEXT
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -583,7 +599,9 @@ BEGIN
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     u.photo_path,
     COALESCE(derived_access.access_array, ARRAY[]::TEXT[]) AS roles,
-    COALESCE(user_teams.teams_array, ARRAY[]::VARCHAR(30)[]) as teams
+    COALESCE(user_teams.teams_array, ARRAY[]::VARCHAR(30)[]) as teams,
+    u.github,
+    u.linkedin
   FROM neiist.users u
   LEFT JOIN (
     SELECT 
@@ -628,7 +646,9 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
   photo_path TEXT,
   courses TEXT[],
   roles TEXT[],
-  teams VARCHAR(30)[]
+  teams VARCHAR(30)[],
+  github TEXT,
+  linkedin TEXT
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   -- Update users table fields
@@ -640,6 +660,12 @@ BEGIN
   END IF;
   IF p_updates ? 'photo' THEN
     UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE istid = p_istid;
+  END IF;
+  IF p_updates ? 'github' THEN
+    UPDATE neiist.users SET github = p_updates->>'github' WHERE neiist.users.istid = p_istid;
+  END IF;
+  IF p_updates ? 'linkedin' THEN
+    UPDATE neiist.users SET linkedin = p_updates->>'linkedin' WHERE neiist.users.istid = p_istid;
   END IF;
 
   -- Update alternativeEmail in user_contacts
@@ -666,9 +692,7 @@ BEGIN
 
   -- Update preferredContactMethod in user_contacts
   IF p_updates ? 'preferredContactMethod' THEN
-    -- Reset all preferred flags for this user
     UPDATE neiist.user_contacts SET is_preferred = FALSE WHERE user_istid = p_istid;
-    -- Set preferred flag for the specified contact type if it exists
     UPDATE neiist.user_contacts
     SET is_preferred = TRUE
     WHERE user_istid = p_istid AND contact_type = (p_updates->>'preferredContactMethod')::neiist.contact_method_enum;

@@ -40,6 +40,8 @@ export async function GET() {
           .flatMap((role: { registrations?: { name: string }[] }) =>
             (role.registrations || []).map((registration: { name: string }) => registration.name)
           ),
+        github: userInformation.github ?? null,
+        linkedin: userInformation.linkedin ?? null,
       });
 
       if (!user) {

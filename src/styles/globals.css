@@ -26,18 +26,11 @@ body {
   padding: 0;
   font-family: var(--font-family);
   color: var(--foreground-colour);
-  background-color: var(--background-colour);
+  background: var(--background-colour);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-a,
-li {
+/* prettier-ignore */
+h1, h2, h3, h4, h5, h6, p, a, li {
   color: var(--foreground-colour);
 }
 

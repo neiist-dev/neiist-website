@@ -13,13 +13,15 @@ import {
   FiUpload,
   FiTrash2,
   FiDownload,
+  FiGithub,
+  FiLinkedin,
 } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
 import { LuCopy } from "react-icons/lu";
 import { IoOpenOutline } from "react-icons/io5";
 import { getFirstAndLastName } from "@/utils/userUtils";
 
-type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod";
+type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
 
 export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const [user, setUser] = useState<User>(initialUser);
@@ -29,6 +31,8 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
   const [preferredDraft, setPreferredDraft] = useState<string>(
     initialUser?.preferredContactMethod ?? "email"
   );
+  const [githubDraft, setGithubDraft] = useState<string>(initialUser?.github ?? "");
+  const [linkedinDraft, setLinkedinDraft] = useState<string>(initialUser?.linkedin ?? "");
 
   const [pendingChange, setPendingChange] = useState<{ field: FieldName; value: string } | null>(
     null
@@ -56,6 +60,8 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     setAltEmailDraft(user?.alternativeEmail ?? "");
     setPhoneDraft(user?.phone ?? "");
     setPreferredDraft(user?.preferredContactMethod ?? "email");
+    setGithubDraft(user?.github ?? "");
+    setLinkedinDraft(user?.linkedin ?? "");
   }, [user]);
 
   useEffect(() => {
@@ -78,10 +84,15 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     setShowConfirmDialog(true);
   };
 
-  const handleBlur = (field: Extract<FieldName, "alternativeEmail" | "phone">, value: string) => {
+  const handleBlur = (
+    field: Extract<FieldName, "alternativeEmail" | "phone" | "github" | "linkedin">,
+    value: string
+  ) => {
     if (
       (field === "alternativeEmail" && value !== (user?.alternativeEmail ?? "")) ||
-      (field === "phone" && value !== (user?.phone ?? ""))
+      (field === "phone" && value !== (user?.phone ?? "")) ||
+      (field === "github" && value !== (user?.github ?? "")) ||
+      (field === "linkedin" && value !== (user?.linkedin ?? ""))
     ) {
       askConfirm(field, value);
     }
@@ -211,6 +222,10 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
         return "Telefone";
       case "preferredContactMethod":
         return "Contacto Preferido";
+      case "github":
+        return "GitHub";
+      case "linkedin":
+        return "LinkedIn";
     }
   };
 
@@ -302,6 +317,38 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
                 </select>
               </div>
             </div>
+            {isMember && (
+              <>
+                <div>
+                  <div className={styles.contactLabel}>GitHub</div>
+                  <div className={styles.contactField}>
+                    <FiGithub className={styles.icon} />
+                    <input
+                      type="text"
+                      className={styles.contactInput}
+                      placeholder="GitHub username"
+                      value={githubDraft}
+                      onChange={(e) => setGithubDraft(e.target.value)}
+                      onBlur={() => handleBlur("github", githubDraft)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className={styles.contactLabel}>LinkedIn</div>
+                  <div className={styles.contactField}>
+                    <FiLinkedin className={styles.icon} />
+                    <input
+                      type="text"
+                      className={styles.contactInput}
+                      placeholder="LinkedIn username"
+                      value={linkedinDraft}
+                      onChange={(e) => setLinkedinDraft(e.target.value)}
+                      onBlur={() => handleBlur("linkedin", linkedinDraft)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className={styles.right}>

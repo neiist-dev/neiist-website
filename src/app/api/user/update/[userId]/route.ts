@@ -87,6 +87,13 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
       }
     }
 
+    if (updateData.github !== undefined) {
+      updates.github = updateData.github?.trim() || null;
+    }
+    if (updateData.linkedin !== undefined) {
+      updates.linkedin = updateData.linkedin?.trim() || null;
+    }
+
     if (isAdmin) {
       if (updateData.name !== undefined) {
         const name = updateData.name.trim();
