@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import campusIST from "@/assets/homepage/CampusIST.png";
-import student from "@/assets/homepage/Student.png";
+import hero from "@/assets/homepage/hero.png";
+import student from "@/assets/homepage/student.png";
 import styles from "@/styles/components/homepage/Hero.module.css";
 import { useEffect, useState, useRef } from "react";
 
@@ -62,7 +62,7 @@ export default function Hero() {
         do Instituto Superior Técnico
       </h1>
       <div ref={campusRef} className={styles.heroImage}>
-        <Image src={campusIST} alt="IST Campus" className={styles.campusImage} />
+        <Image src={hero} alt="IST Campus" className={styles.campusImage} />
         {showStudent && (
           <Image
             ref={studentRef}
