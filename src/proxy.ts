@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 
-const publicRoutes = ["/", "/home", "/about-us", "/email-confirmation", "/shop"];
+const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop"];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
 const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management", "/orders/manage"];
@@ -11,30 +11,24 @@ const adminRoutes = [
   "/activities-management",
   "/shop/manage",
 ];
-
-const protectedRoutes = [...guestRoutes, ...memberRoutes, ...coordRoutes, ...adminRoutes];
-
-export const config = {
-  matcher: ["/((?!api|_next/|favicon.ico|.*\\..*$|static/|images/|image/).*)"],
-};
+const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
 function canAccess(path: string, roles: UserRole[]) {
-  if (path === "/" || publicRoutes.slice(1).some((r) => path.startsWith(r))) {
-    return true;
+  if (path === "/" || publicRoutes.slice(1).some((r) => path.startsWith(r))) return true;
+
+  const rules: [string[], UserRole[]][] = [
+    [adminRoutes, [UserRole._ADMIN]],
+    [coordRoutes, [UserRole._ADMIN, UserRole._COORDINATOR]],
+    [memberRoutes, [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._MEMBER]],
+    [guestRoutes, [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._MEMBER, UserRole._GUEST]],
+  ];
+
+  for (const [routes, allowed] of rules) {
+    if (routes.some((r) => path.startsWith(r))) {
+      return roles.some((role) => allowed.includes(role));
+    }
   }
-  if (adminRoutes.some((r) => path.startsWith(r))) {
-    return roles.includes(UserRole._ADMIN);
-  } else if (coordRoutes.some((r) => path.startsWith(r))) {
-    return roles.some((role) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(role));
-  } else if (memberRoutes.some((r) => path.startsWith(r))) {
-    return roles.some((role) =>
-      [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._MEMBER].includes(role)
-    );
-  } else if (guestRoutes.some((r) => path.startsWith(r))) {
-    return roles.some((role) =>
-      [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._MEMBER, UserRole._GUEST].includes(role)
-    );
-  }
+
   return false;
 }
 
@@ -70,3 +64,7 @@ export function proxy(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/((?!api|_next/|favicon.ico|.*\\..*$|static/|images/|image/).*)"],
+};
