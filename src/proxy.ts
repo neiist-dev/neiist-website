@@ -38,7 +38,7 @@ function canAccess(path: string, roles: UserRole[]) {
   return false;
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const accessToken = req.cookies.get("accessToken")?.value;
   const isAuthenticated = !!accessToken;

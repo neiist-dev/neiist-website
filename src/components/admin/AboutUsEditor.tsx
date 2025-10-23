@@ -5,6 +5,8 @@ import { User } from "@/types/user";
 import { Membership, Role, RawRole } from "@/types/memberships";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, useSortable, arrayMove } from "@dnd-kit/sortable";
+import YearSelector from "@/components/about-us/YearSelector";
+import memberCardStyles from "@/styles/components/about-us/MemberCard.module.css";
 import styles from "@/styles/pages/AboutUs.module.css";
 
 function getAcademicYearRange(year: string) {
@@ -145,29 +147,29 @@ export default function AboutUsEditor({
 
   return (
     <section className={styles.page}>
-      <h2 className={styles.sectionTitle}>Pré-visualização da Página Sobre nós</h2>
-      <div className={styles.timelineRow}>
-        <span className={styles.timelineLabel}>Ano letivo:</span>
-        {allAcademicYears.map((year) => (
-          <button
-            key={year}
-            className={styles.timelineButton}
-            data-selected={year === selectedYear}
-            onClick={() => setSelectedYear(year)}
-            type="button">
-            {year}
-          </button>
-        ))}
+      <h2 className={styles.title}>Pré-visualização da Página Sobre nós</h2>
+      <div style={{ marginBottom: "2rem" }}>
+        <YearSelector
+          {...({
+            years: allAcademicYears,
+            selectedYear: selectedYear,
+            visible: 5,
+            onChange: setSelectedYear,
+          } as any)}
+        />
       </div>
       {departmentsWithMembers.map((dept) => {
         const roles = roleOrders[dept.name] || [];
         return (
-          <div key={dept.name}>
+          <div key={dept.name} className={styles.departmentSection}>
             <h3 className={styles.departmentTitle}>{dept.name}</h3>
-            {dept.description && <p className={styles.teamCardDescription}>{dept.description}</p>}
+            {dept.description && (
+              <p className={styles.teamCardDescription}>{dept.description}</p>
+            )}
             <DndContext
               collisionDetection={closestCenter}
-              onDragEnd={(event) => handleDragEnd(dept.name, event)}>
+              onDragEnd={(event) => handleDragEnd(dept.name, event)}
+            >
               <SortableContext items={roles}>
                 <div className={styles.membersGrid}>
                   {roles
@@ -223,23 +225,35 @@ function SortableRoleCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
+
   return (
     <div
       ref={setNodeRef}
+      className={memberCardStyles.container}
       style={{
         opacity: isDragging ? 0.5 : 1,
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         transition,
         cursor: "grab",
+        background: isGeneric ? "#f3f3f3" : undefined,
       }}
-      className={styles.memberCard}
       {...attributes}
-      {...listeners}>
-      <Image src={photo} alt={name} width={120} height={120} className={styles.memberPhoto} />
-      <span className={styles.memberName} style={isGeneric ? { color: "#aaa" } : undefined}>
-        {name}
-      </span>
-      <span className={styles.memberRole}>{role}</span>
+      {...listeners}
+    >
+      <div className={memberCardStyles.imageCard}>
+        <Image
+          alt={`${name} photo`}
+          className={memberCardStyles.cardImage}
+          src={photo}
+          fill
+        />
+      </div>
+      <div className={memberCardStyles.name}>
+        <p className={memberCardStyles.nameText}>{name}</p>
+      </div>
+      <div className={memberCardStyles.role}>
+        <p className={memberCardStyles.roleText}>{role}</p>
+      </div>
     </div>
   );
 }

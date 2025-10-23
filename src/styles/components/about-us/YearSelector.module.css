@@ -1,0 +1,87 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrowButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground-colour);
+  font-size: clamp(1rem, 1vw + 0.6rem, 1.2rem);
+  border-radius: 0.5rem;
+  transition: opacity 0.15s ease-in-out;
+  flex: 0 0 auto;
+}
+
+.arrowButton:hover {
+  opacity: 0.75;
+}
+
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.yearList {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 0 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.yearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: clamp(5rem, 8ch, 7rem);
+  block-size: clamp(2rem, 1.8vw, 2.25rem);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--foreground-colour);
+  transition:
+    background-color 0.15s ease-in-out,
+    opacity 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+  flex: 0 0 auto;
+}
+
+.yearButton:hover:not(.selected) {
+  background: color-mix(in srgb, var(--foreground-colour) 6%, transparent);
+}
+
+.selected {
+  background: var(--primary-colour);
+  color: white;
+}
+
+.selected:hover {
+  background: var(--primary-colour);
+  opacity: 0.85;
+}
+
+.yearText {
+  font-weight: 650;
+  margin: 0;
+  color: inherit;
+}
+
+.mainYear {
+  font-size: 16px;
+}
+
+.selected .mainYear {
+  font-size: 18px;
+}
+
+.subYear {
+  font-size: 14px;
+  color: var(--light-foreground-colour);
+}
+
+.selected .subYear {
+  color: white;
+}

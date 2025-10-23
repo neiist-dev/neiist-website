@@ -1,0 +1,205 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  padding: 4rem 5rem 1.2rem;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 5vw;
+}
+
+.intro {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 0;
+}
+
+.description {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+  font-family: var(--font-family);
+  text-align: justify;
+  margin: 0;
+}
+
+.blobs {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+}
+
+.blobs svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+}
+
+.teamImage {
+  position: relative;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.title {
+  margin-bottom: 1.4rem;
+}
+
+.title p {
+  font-weight: 900;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.primary {
+  color: var(--primary-colour);
+}
+.secondary {
+  color: var(--secondary-colour);
+}
+.tertiary {
+  color: var(--tertiary-colour);
+}
+.quaternary {
+  color: var(--quaternary-colour);
+}
+
+@media (max-width: 950px) {
+  .header {
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+  }
+  .intro,
+  .blobs {
+    width: 100%;
+    aspect-ratio: unset;
+    height: auto;
+    max-width: 100%;
+  }
+  .blobs {
+    margin-top: 2rem;
+  }
+}
+
+.teamsSection {
+  margin-top: 60px;
+  width: 100%;
+  z-index: 2;
+}
+
+.teamsTitle {
+  font-weight: 800;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  color: #3f3f3f;
+  margin: 0 0 32px 0;
+  justify-items: center;
+}
+
+.teamsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.teamBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 1rem;
+  width: 100%;
+  max-width: 12rem;
+  min-height: 4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  padding: 0.45rem 0.8rem;
+  background: var(--primary-colour);
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.teamName {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.overlayContainer {
+  position: fixed;
+  display: flex;
+  inset: 0;
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  backdrop-filter: blur(2px);
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.overlayContainer[aria-hidden="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay {
+  position: relative;
+  flex-direction: column;
+  max-width: 42rem;
+  padding: 0 2.5rem 2rem;
+  border-radius: 0.6rem;
+  background: white;
+  box-shadow: 0 8px 32px rgba(40, 99, 253, 0.18);
+  opacity: 0;
+}
+
+.overlay[data-open] {
+  opacity: 1;
+}
+
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+}
+
+.overlayTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.overlayDescription {
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: justify;
+}

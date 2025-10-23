@@ -1,0 +1,95 @@
+.container {
+  display: grid;
+  width: min(100%, 15.625rem);
+  margin: 0;
+  padding: 0;
+}
+
+.imageCard {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 180 / 200;
+  border-radius: 1.875rem;
+  overflow: hidden;
+  box-shadow: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.cardImage {
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: var(--primary-colour);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.imageCard:hover .overlay,
+.imageCard:focus-within .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.imageCard:hover .cardImage,
+.imageCard:focus-within .cardImage {
+  opacity: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.iconLink {
+  color: white;
+  display: inline-flex;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.iconLink:hover,
+.iconLink:focus-visible {
+  transform: scale(1.1);
+}
+
+.icon {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1;
+}
+
+.username {
+  margin: 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  white-space: nowrap;
+}
+
+.name,
+.role {
+  text-align: center;
+}
+
+.nameText {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  font-weight: 700;
+  color: #3f3f3f;
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+}
+
+.roleText {
+  margin: 0;
+  font-weight: 600;
+  color: #6b6b6b;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}

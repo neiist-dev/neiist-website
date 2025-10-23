@@ -1,14 +1,16 @@
-import Image from "next/image";
 import {
   getAllMemberships,
   getAllTeams,
   getAllAdminBodies,
   getDepartmentRoleOrder,
+  getAllUsers,
 } from "@/utils/dbUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { Membership } from "@/types/memberships";
 import teamImage from "@/assets/team.png";
 import styles from "@/styles/pages/AboutUs.module.css";
+import MemberCard from "@/components/about-us/MemberCard";
+import YearSelector from "@/components/about-us/YearSelector";
+import Hero from "@/components/about-us/Hero";
 
 function getAcademicYearRange(year: string) {
   const [startYear, endYear] = year.split("/").map(Number);
@@ -18,7 +20,7 @@ function getAcademicYearRange(year: string) {
   };
 }
 
-function isMembershipInAcademicYear(membership: Membership, year: string) {
+function isMembershipInAcademicYear(membership: any, year: string) {
   const { start, end } = getAcademicYearRange(year);
   const from = new Date(membership.startDate);
   const to = membership.endDate ? new Date(membership.endDate) : null;
@@ -34,7 +36,7 @@ function getCurrentAcademicYearStartYear() {
   return getAcademicYearStartYear(now);
 }
 
-function getAllAcademicYears(memberships: Membership[]) {
+function getAllAcademicYears(memberships: any[]) {
   if (memberships.length === 0) return [];
   let minYear = Infinity,
     maxYear = -Infinity;
@@ -53,54 +55,56 @@ function getAllAcademicYears(memberships: Membership[]) {
   return years.reverse();
 }
 
+const ADMIN_PRIORITY = ["Direção", "Conselho Fiscal", "Mesa da Assembleia Geral"];
+
 export default async function AboutPage({
   searchParams,
 }: {
   searchParams?: Promise<{ year?: string }>;
 }) {
   const params = searchParams ? await searchParams : {};
-  const [memberships, teams, adminBodies] = await Promise.all([
+  const [memberships, teams, adminBodies, users] = await Promise.all([
     getAllMemberships(),
     getAllTeams(),
     getAllAdminBodies(),
+    getAllUsers(),
   ]);
 
+  const userMap = new Map(users.map((u: any) => [u.istid, u]));
+
   const allAcademicYears = getAllAcademicYears(memberships);
-  const selectedYear =
+  let selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
-  const filteredMemberships: Membership[] = memberships.filter((membership) =>
-    isMembershipInAcademicYear(membership, selectedYear)
-  );
+  const filteredMemberships = memberships
+    .filter((membership: any) => isMembershipInAcademicYear(membership, selectedYear))
+    .map((membership: any) => {
+      const user = userMap.get(membership.userNumber);
+      return {
+        ...membership,
+        userName: user?.name ?? "",
+        userPhoto: user?.photo,
+        github: user?.github ?? undefined,
+        linkedin: user?.linkedin ?? undefined,
+      };
+    });
 
   const departmentNamesWithMembers = Array.from(
-    new Set(filteredMemberships.map((membership) => membership.departmentName))
+    new Set(filteredMemberships.map((membership: any) => membership.departmentName))
   );
   const teamsWithMembers = teams
-    .filter((team) => departmentNamesWithMembers.includes(team.name))
-    .map((team) => ({
+    .filter((team: any) => departmentNamesWithMembers.includes(team.name))
+    .map((team: any) => ({
       name: team.name,
       description: team.description,
-      type: "team" as const,
-      active: team.active,
+      icon: "FiUsers",
     }));
-  const adminBodiesWithMembers = adminBodies
-    .filter((adminBody) => departmentNamesWithMembers.includes(adminBody.name))
-    .map((adminBody) => ({
-      name: adminBody.name,
-      type: "admin_body" as const,
-      active: adminBody.active,
-    }));
-  const allDepartmentsWithMembers = [...adminBodiesWithMembers, ...teamsWithMembers].sort(
-    (a, b) => {
-      if (a.type === "admin_body" && b.type === "team") return -1;
-      if (a.type === "team" && b.type === "admin_body") return 1;
-      return a.name.localeCompare(b.name);
-    }
+  const allDepartmentsWithMembers = [...adminBodies, ...teams].filter((d: any) =>
+    departmentNamesWithMembers.includes(d.name)
   );
 
-  const membersByDepartmentAndRole: Record<string, Record<string, Membership[]>> = {};
-  filteredMemberships.forEach((membership) => {
+  const membersByDepartmentAndRole: Record<string, Record<string, any[]>> = {};
+  filteredMemberships.forEach((membership: any) => {
     if (!membersByDepartmentAndRole[membership.departmentName])
       membersByDepartmentAndRole[membership.departmentName] = {};
     if (!membersByDepartmentAndRole[membership.departmentName][membership.roleName])
@@ -110,98 +114,52 @@ export default async function AboutPage({
 
   const roleOrders: Record<string, string[]> = {};
   await Promise.all(
-    allDepartmentsWithMembers.map(async (department) => {
+    allDepartmentsWithMembers.map(async (department: any) => {
       const order = await getDepartmentRoleOrder(department.name);
       roleOrders[department.name] = order
-        .sort((a, b) => a.position - b.position)
-        .map((role) => role.role_name);
+        .sort((a: any, b: any) => a.position - b.position)
+        .map((role: any) => role.role_name);
     })
   );
 
-  const totalMembers = filteredMemberships.length;
+  const sortedDepartmentsWithMembers = [
+    ...ADMIN_PRIORITY.map((name) =>
+      allDepartmentsWithMembers.find((dep) => dep.name === name)
+    ).filter(Boolean),
+    ...allDepartmentsWithMembers.filter((dep) => !ADMIN_PRIORITY.includes(dep.name)),
+  ];
 
   return (
     <section className={styles.page}>
-      <h1 className={styles.title}>Quem somos?</h1>
-      <div className={styles.introRow}>
-        <p className={styles.introText}>
-          A equipa do NEIIST é composta por {totalMembers} estudantes do Instituto Superior Técnico,
-          motivados e interessados em ajudar todos os alunos da instituição que têm interesse nas
-          mais diversas áreas da Informática. Todos os colaboradores contribuem com a sua dedicação
-          e tempo para organizar uma ampla variedade de atividades que visam auxiliar a comunidade
-          académica a ter o melhor percurso e projeto académico possível.
-        </p>
-        <Image
-          src={teamImage}
-          alt="Equipa NEIIST"
-          width={400}
-          height={300}
-          className={styles.teamImage}
-        />
-      </div>
+      <Hero
+        teams={teamsWithMembers}
+        teamImage={teamImage}
+        description={`A equipa do NEIIST é composta por ${filteredMemberships.length} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.`}
+      />
 
-      <div className={styles.timelineRow}>
-        <span className={styles.timelineLabel}>Ano letivo:</span>
-        {allAcademicYears.map((year) => {
-          const isSelected = year === selectedYear;
-          const urlParams = new URLSearchParams();
-          urlParams.set("year", year);
-          return (
-            <a
-              key={year}
-              href={`?${urlParams.toString()}`}
-              className={styles.timelineButton}
-              data-selected={isSelected}>
-              {year}
-            </a>
-          );
-        })}
-      </div>
+      <h2 className={styles.title} />
+      <YearSelector years={allAcademicYears} selectedYear={selectedYear} />
 
-      <h2 className={styles.sectionTitle}>As nossas equipas</h2>
-      <div className={styles.teamsGrid}>
-        {teamsWithMembers.map((department) => (
-          <div key={department.name} className={styles.teamCard}>
-            <h3 className={styles.teamCardTitle}>{department.name}</h3>
-            <p className={styles.teamCardDescription}>{department.description}</p>
+      {sortedDepartmentsWithMembers.map((department: any) => (
+        <div key={department.name}>
+          <h3 className={styles.departmentTitle}>{department.name}</h3>
+          <div className={styles.grid}>
+            {roleOrders[department.name]?.map((roleName: string) =>
+              membersByDepartmentAndRole[department.name][roleName]?.map((member: any) => (
+                <MemberCard
+                  key={member.id}
+                  name={getFirstAndLastName(member.userName)}
+                  role={roleName}
+                  image={member.userPhoto}
+                  githuburl={member.github}
+                  linkdinurl={member.linkedin}
+                  username={member.github}
+                />
+              ))
+            )}
           </div>
-        ))}
-      </div>
-
-      <h2 className={styles.sectionTitle}>Membros {selectedYear}</h2>
-      {allDepartmentsWithMembers.map((department) => {
-        const allRolesWithMembers = Object.keys(membersByDepartmentAndRole[department.name] || {});
-        const hierarchy = roleOrders[department.name] || [];
-        const rolesToShow = [
-          ...hierarchy,
-          ...allRolesWithMembers.filter((role) => !hierarchy.includes(role)),
-        ];
-
-        return (
-          <div key={department.name}>
-            <h3 className={styles.departmentTitle}>{department.name}</h3>
-            <div className={styles.membersGrid}>
-              {rolesToShow.flatMap((role) =>
-                (membersByDepartmentAndRole[department.name]?.[role] || []).map((member) => (
-                  <div key={member.id} className={styles.memberCard}>
-                    <Image
-                      src={member.userPhoto}
-                      alt={member.userName}
-                      width={120}
-                      height={120}
-                      className={styles.memberPhoto}
-                    />
-                    <span className={styles.memberName}>
-                      {getFirstAndLastName(member.userName)}
-                    </span>
-                    <span className={styles.memberRole}>{member.roleName}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        );
-      })}
+        </div>
+      ))}
     </section>
   );
 }
