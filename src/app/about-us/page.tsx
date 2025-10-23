@@ -98,7 +98,7 @@ export default async function AboutPage({
 
   const userMap = new Map(users.map((u) => [u.istid, u]));
 
-  const allAcademicYears = getAllAcademicYears(memberships);
+  const allAcademicYears = getAllAcademicYears(memberships).filter((year) => year !== "2025/2026");
   const selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
@@ -149,12 +149,14 @@ export default async function AboutPage({
     ...allDepartmentsWithMembers.filter((dep) => !ADMIN_PRIORITY.includes(dep.name)),
   ];
 
+  const uniqueIstids = [...new Set(filteredMemberships.map((m) => m.userName))];
+
   return (
     <section className={styles.page}>
       <Hero
         teams={teamsWithMembers}
         teamImage={teamImage}
-        description={`A equipa do NEIIST é composta por ${filteredMemberships.length} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.`}
+        description={`A equipa do NEIIST é composta por ${uniqueIstids.length} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.`}
       />
 
       <h2 className={styles.title} />

@@ -6,15 +6,15 @@ import { login, logout } from "@/utils/userUtils";
 import { Squash } from "hamburger-react";
 import { NavItem } from "@/components/layout/navbar/NavItem";
 import NeiistLogo from "@/components/layout/navbar/NeiistLogo";
-import ShoppingCart from "@/components/layout/navbar/ShoppingCart";
+//import ShoppingCart from "@/components/layout/navbar/ShoppingCart";
 import LoginButton from "@/components/layout/navbar/LoginButton";
 import UserMenu from "@/components/layout/navbar/UserMenu";
 import styles from "@/styles/components/layout/navbar/NavBar.module.css";
 
 const navLinks = [
   { name: "Sobre Nós", href: "/about-us" },
-  { name: "Blog", href: "/blog" },
-  { name: "Loja", href: "/shop" },
+  /*{ name: "Blog", href: "/blog" },
+  { name: "Loja", href: "/shop" },*/
 ];
 
 export default function NavBar() {
@@ -75,7 +75,7 @@ export default function NavBar() {
         <div className={styles.navItems}>{renderNavItems()}</div>
       </nav>
       <div className={styles.actions}>
-        <ShoppingCart />
+        {/*<ShoppingCart />*/}
         {user ? (
           <UserMenu userData={user} logout={handleLogout} />
         ) : (
