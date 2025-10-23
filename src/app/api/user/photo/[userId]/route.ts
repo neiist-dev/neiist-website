@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
 
-// Only allow alphanumeric istids, adjust regex as needed for your use case
 function isValidIstId(id: string) {
   return /^[a-zA-Z0-9]+$/.test(id);
 }
@@ -11,7 +10,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ use
   try {
     const { userId } = await context.params;
 
-    // Validate userId to prevent path traversal
     if (!isValidIstId(userId)) {
       return new NextResponse("Invalid userId", { status: 400 });
     }

@@ -1,13 +1,12 @@
-import { Secular_One } from "next/font/google";
 import { ReactNode } from "react";
-import { UserProvider } from "@/context/UserContext";
+import { Secular_One } from "next/font/google";
+import { cookies } from "next/headers";
 import NavBar from "@/components/layout/navbar/NavBar";
 import Footer from "@/components/layout/Footer";
-import "@/styles/globals.css";
-import { cookies } from "next/headers";
-import { cookies as nextCookies } from "next/headers";
-import { ShopProvider } from "@/context/ShopContext";
 import Cart from "@/components/shop/Cart";
+import { UserProvider } from "@/context/UserContext";
+import { ShopProvider } from "@/context/ShopContext";
+import "@/styles/globals.css";
 
 const secularOne = Secular_One({
   subsets: ["latin"],
@@ -20,6 +19,15 @@ export const metadata = {
   title: "NEIIST",
   description: "Núcleo Estudantil de Informática do Instituto Superior Técnico",
 };
+
+async function getUserFromCookies(cookieStore = cookies()) {
+  try {
+    const store = await cookieStore;
+    return JSON.parse(store.get("userData")?.value ?? "null");
+  } catch {
+    return null;
+  }
+}
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const user = await getUserFromCookies(cookies());
@@ -37,15 +45,4 @@ export default async function Layout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
-}
-
-async function getUserFromCookies(cookieStorePromise = nextCookies()) {
-  const cookieStore = await cookieStorePromise;
-  const userDataCookie = cookieStore.get("userData")?.value;
-  if (!userDataCookie) return null;
-  try {
-    return JSON.parse(userDataCookie);
-  } catch {
-    return null;
-  }
 }

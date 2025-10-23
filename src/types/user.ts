@@ -13,7 +13,7 @@ export interface User {
   github?: string;
   linkedin?: string;
 }
-interface DbUser {
+interface dbUser {
   istid: string;
   name: string;
   email: string;
@@ -29,10 +29,10 @@ interface DbUser {
 }
 
 export enum UserRole {
-  _GUEST = "guest",
-  _MEMBER = "member",
-  _COORDINATOR = "coordinator",
   _ADMIN = "admin",
+  _COORDINATOR = "coordinator",
+  _MEMBER = "member",
+  _GUEST = "guest",
 }
 
 export function mapRoleToUserRole(role: string): UserRole {
@@ -48,8 +48,8 @@ export function mapRoleToUserRole(role: string): UserRole {
   }
 }
 
-export function mapDbUserToUser(dbUser: DbUser): User {
-  // If userRoles empty it is guest
+export function mapdbUserToUser(dbUser: dbUser): User {
+  // If userRoles empty, user is guest.
   let userRoles: UserRole[];
   if (!dbUser.roles || dbUser.roles.length === 0) {
     userRoles = [UserRole._GUEST];

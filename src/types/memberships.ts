@@ -1,11 +1,18 @@
-export interface RawMembership {
-  user_istid: string;
-  user_name: string;
-  department_name: string;
-  role_name: string;
-  from_date: string;
-  to_date: string | null;
-  active: boolean;
+export interface Team {
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface Role {
+  roleName: string;
+  access: "guest" | "member" | "coordinator" | "admin";
+}
+
+export interface dbRole {
+  roleName?: string;
+  role_name?: string;
+  access: string;
 }
 
 export interface Membership {
@@ -21,19 +28,18 @@ export interface Membership {
   userPhoto: string;
 }
 
-export interface Role {
-  roleName: string;
-  access: "guest" | "member" | "coordinator" | "admin";
+export interface dbMembership {
+  user_istid: string;
+  user_name: string;
+  department_name: string;
+  role_name: string;
+  from_date: string;
+  to_date: string | null;
+  active: boolean;
 }
 
-export interface RawRole {
-  roleName?: string;
-  role_name?: string;
-  access: string;
-}
-
-export function mapRawMembershipToMembership(
-  raw: RawMembership,
+export function mapdbMembershipToMembership(
+  raw: dbMembership,
   userEmail = "",
   userPhoto = "",
   index = 0
@@ -50,10 +56,4 @@ export function mapRawMembershipToMembership(
     userEmail,
     userPhoto,
   };
-}
-
-export interface Team {
-  name: string;
-  description: string;
-  icon: string;
 }

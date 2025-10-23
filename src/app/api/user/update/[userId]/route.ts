@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { User } from "@/types/user";
+import { User, UserRole, mapRoleToUserRole } from "@/types/user";
 import { getUser, updateUser, updateUserPhoto } from "@/utils/dbUtils";
-import { UserRole, mapRoleToUserRole } from "@/types/user";
 import fs from "fs/promises";
 import path from "path";
 

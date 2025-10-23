@@ -1,6 +1,7 @@
-export interface NotionPerson {
-  name: string;
-  person?: { email?: string };
+export interface NotionPage {
+  id: string;
+  url: string;
+  properties: NotionPageProperties;
 }
 
 export interface NotionPageProperties {
@@ -27,16 +28,6 @@ export interface NotionPageProperties {
   };
 }
 
-export interface NotionPage {
-  id: string;
-  url: string;
-  properties: NotionPageProperties;
-}
-
-export interface NotionApiResponse {
-  results: NotionPage[];
-}
-
 export interface NotionEvent {
   id: string;
   title: string;
@@ -47,4 +38,13 @@ export interface NotionEvent {
   type: string | null;
   teams: string[];
   attendees: string[];
+}
+
+export interface NotionPerson {
+  name: string;
+  person?: { email?: string };
+}
+
+export interface NotionApiResponse {
+  results: NotionPage[];
 }

@@ -32,7 +32,7 @@ async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: 
       };
     }
 
-    // Roles are already mapped in getUser/mapDbUserToUser
+    // Roles are already mapped in getUser/mapdbUserToUser
     const isAdmin = currentUser.roles.includes(UserRole._ADMIN);
 
     if (!isAdmin) {

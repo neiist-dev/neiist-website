@@ -12,6 +12,20 @@ export interface Product {
   variants: ProductVariant[];
 }
 
+export interface dbProduct {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string | number;
+  images: string[] | null;
+  category: string | null;
+  stock_type: string;
+  stock_quantity: number | null;
+  order_deadline: string | null;
+  estimated_delivery: string | null;
+  variants: dbProductVariant[] | null;
+}
+
 export interface ProductVariant {
   id: number;
   sku?: string;
@@ -21,6 +35,18 @@ export interface ProductVariant {
   active: boolean;
   options: Record<string, string>;
   label?: string;
+}
+
+export interface dbProductVariant {
+  id: number;
+  product_id?: number | null;
+  sku: string | null;
+  images: string[] | null;
+  price_modifier: number | string | null;
+  stock_quantity: number | null;
+  active: boolean;
+  options: Record<string, string> | null;
+  label: string | null;
 }
 
 export interface Order {
@@ -46,73 +72,9 @@ export interface Order {
   status: OrderStatus;
 }
 
-export interface OrderItem {
-  product_id: number;
-  product_name: string;
-  variant_id?: number;
-  variant_label?: string;
-  variant_options?: Record<string, string>;
-  quantity: number;
-  unit_price: number;
-  total_price: number;
-}
-
 export type OrderStatus = "pending" | "paid" | "preparing" | "ready" | "delivered" | "cancelled";
 
-export interface Category {
-  id: number;
-  name: string;
-}
-
-export interface CartItem {
-  product: Product;
-  variantId?: number;
-  quantity: number;
-}
-
-export interface DbCategory {
-  category_id: number;
-  category_name: string;
-}
-
-export interface DbProductVariant {
-  id: number;
-  product_id?: number | null;
-  sku: string | null;
-  images: string[] | null;
-  price_modifier: number | string | null;
-  stock_quantity: number | null;
-  active: boolean;
-  options: Record<string, string> | null;
-  label: string | null;
-}
-
-export interface DbProduct {
-  id: number;
-  name: string;
-  description: string | null;
-  price: string | number;
-  images: string[] | null;
-  category: string | null;
-  stock_type: string;
-  stock_quantity: number | null;
-  order_deadline: string | null;
-  estimated_delivery: string | null;
-  variants: DbProductVariant[] | null;
-}
-
-export interface DbOrderItem {
-  product_id: number;
-  product_name: string;
-  variant_id: number | null;
-  variant_label: string | null;
-  variant_options: Record<string, string> | null;
-  quantity: number;
-  unit_price: number | string;
-  total_price: number | string;
-}
-
-export interface DbOrder {
+export interface dbOrder {
   id: number;
   order_number: string;
   customer_name: string;
@@ -121,7 +83,7 @@ export interface DbOrder {
   customer_phone: string | null;
   customer_nif: string | null;
   campus: string | null;
-  items: DbOrderItem[] | null;
+  items: dbOrderItem[] | null;
   notes: string | null;
   total_amount: string | number;
   payment_method: string | null;
@@ -135,14 +97,45 @@ export interface DbOrder {
   status: string;
 }
 
-export function mapDbCategoryToCategory(row: DbCategory): Category {
-  return {
-    id: row.category_id,
-    name: row.category_name,
-  };
+export interface OrderItem {
+  product_id: number;
+  product_name: string;
+  variant_id?: number;
+  variant_label?: string;
+  variant_options?: Record<string, string>;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
 }
 
-export function mapDbProductToProduct(row: DbProduct): Product {
+export interface dbOrderItem {
+  product_id: number;
+  product_name: string;
+  variant_id: number | null;
+  variant_label: string | null;
+  variant_options: Record<string, string> | null;
+  quantity: number;
+  unit_price: number | string;
+  total_price: number | string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface dbCategory {
+  category_id: number;
+  category_name: string;
+}
+
+export interface CartItem {
+  product: Product;
+  variantId?: number;
+  quantity: number;
+}
+
+export function mapdbProductToProduct(row: dbProduct): Product {
   return {
     id: row.id,
     name: row.name,
@@ -169,7 +162,7 @@ export function mapDbProductToProduct(row: DbProduct): Product {
   };
 }
 
-export function mapDbOrderToOrder(row: DbOrder): Order {
+export function mapdbOrderToOrder(row: dbOrder): Order {
   return {
     id: row.id,
     order_number: row.order_number,
@@ -202,5 +195,12 @@ export function mapDbOrderToOrder(row: DbOrder): Order {
     delivered_by: row.delivered_by ?? undefined,
     updated_at: row.updated_at ?? undefined,
     status: row.status as Order["status"],
+  };
+}
+
+export function mapdbCategoryToCategory(row: dbCategory): Category {
+  return {
+    id: row.category_id,
+    name: row.category_name,
   };
 }
