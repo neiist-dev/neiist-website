@@ -56,13 +56,14 @@ export default function AboutUsEditor({
   departments,
   memberships,
   users,
+  selectedYear,
 }: {
   departments: { name: string; description?: string; department_type?: string; active?: boolean }[];
   memberships: Membership[];
   users: User[];
+  selectedYear: string;
 }) {
   const allAcademicYears = getAllAcademicYears(memberships);
-  const [selectedYear, setSelectedYear] = useState(allAcademicYears[0]);
   const [roleOrders, setRoleOrders] = useState<Record<string, string[]>>({});
 
   const filteredMemberships = memberships.filter((membership) =>
@@ -149,14 +150,7 @@ export default function AboutUsEditor({
     <section className={styles.page}>
       <h2 className={styles.title}>Pré-visualização da Página Sobre nós</h2>
       <div style={{ marginBottom: "2rem" }}>
-        <YearSelector
-          {...({
-            years: allAcademicYears,
-            selectedYear: selectedYear,
-            visible: 5,
-            onChange: setSelectedYear,
-          } as any)}
-        />
+        <YearSelector years={allAcademicYears} selectedYear={selectedYear} visible={5} />
       </div>
       {departmentsWithMembers.map((dept) => {
         const roles = roleOrders[dept.name] || [];

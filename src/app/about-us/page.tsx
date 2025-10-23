@@ -11,6 +11,23 @@ import styles from "@/styles/pages/AboutUs.module.css";
 import MemberCard from "@/components/about-us/MemberCard";
 import YearSelector from "@/components/about-us/YearSelector";
 import Hero from "@/components/about-us/Hero";
+import { Membership, Team } from "@/types/memberships";
+import { User } from "@/types/user";
+
+type Department = {
+  name: string;
+  description?: string;
+};
+
+type RoleOrderItem = {
+  role_name: string;
+  position: number;
+};
+
+type EnrichedMembership = Membership & {
+  github?: string;
+  linkedin?: string;
+};
 
 function getAcademicYearRange(year: string) {
   const [startYear, endYear] = year.split("/").map(Number);
@@ -20,7 +37,7 @@ function getAcademicYearRange(year: string) {
   };
 }
 
-function isMembershipInAcademicYear(membership: any, year: string) {
+function isMembershipInAcademicYear(membership: Membership, year: string) {
   const { start, end } = getAcademicYearRange(year);
   const from = new Date(membership.startDate);
   const to = membership.endDate ? new Date(membership.endDate) : null;
@@ -36,7 +53,7 @@ function getCurrentAcademicYearStartYear() {
   return getAcademicYearStartYear(now);
 }
 
-function getAllAcademicYears(memberships: any[]) {
+function getAllAcademicYears(memberships: Membership[]) {
   if (memberships.length === 0) return [];
   let minYear = Infinity,
     maxYear = -Infinity;
@@ -63,48 +80,51 @@ export default async function AboutPage({
   searchParams?: Promise<{ year?: string }>;
 }) {
   const params = searchParams ? await searchParams : {};
-  const [memberships, teams, adminBodies, users] = await Promise.all([
-    getAllMemberships(),
-    getAllTeams(),
-    getAllAdminBodies(),
-    getAllUsers(),
-  ]);
+  const [memberships, rawTeams, rawAdminBodies, users]: [
+    Membership[],
+    Array<{ name: string; description: string; active: boolean }>,
+    Array<{ name: string; active: boolean }>,
+    User[],
+  ] = await Promise.all([getAllMemberships(), getAllTeams(), getAllAdminBodies(), getAllUsers()]);
+  const teams: Team[] = rawTeams.map((team) => ({
+    name: team.name,
+    description: team.description,
+    icon: "FiUsers",
+  }));
 
-  const userMap = new Map(users.map((u: any) => [u.istid, u]));
+  const adminBodies: Department[] = rawAdminBodies.map((body) => ({
+    name: body.name,
+  }));
+
+  const userMap = new Map(users.map((u) => [u.istid, u]));
 
   const allAcademicYears = getAllAcademicYears(memberships);
-  let selectedYear =
+  const selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
-  const filteredMemberships = memberships
-    .filter((membership: any) => isMembershipInAcademicYear(membership, selectedYear))
-    .map((membership: any) => {
+  const filteredMemberships: EnrichedMembership[] = memberships
+    .filter((membership) => isMembershipInAcademicYear(membership, selectedYear))
+    .map((membership) => {
       const user = userMap.get(membership.userNumber);
       return {
         ...membership,
-        userName: user?.name ?? "",
-        userPhoto: user?.photo,
-        github: user?.github ?? undefined,
-        linkedin: user?.linkedin ?? undefined,
+        github: user?.github,
+        linkedin: user?.linkedin,
       };
     });
 
   const departmentNamesWithMembers = Array.from(
-    new Set(filteredMemberships.map((membership: any) => membership.departmentName))
+    new Set(filteredMemberships.map((membership) => membership.departmentName))
   );
-  const teamsWithMembers = teams
-    .filter((team: any) => departmentNamesWithMembers.includes(team.name))
-    .map((team: any) => ({
-      name: team.name,
-      description: team.description,
-      icon: "FiUsers",
-    }));
-  const allDepartmentsWithMembers = [...adminBodies, ...teams].filter((d: any) =>
+  const teamsWithMembers: Team[] = teams.filter((team) =>
+    departmentNamesWithMembers.includes(team.name)
+  );
+  const allDepartmentsWithMembers: Department[] = [...adminBodies, ...teams].filter((d) =>
     departmentNamesWithMembers.includes(d.name)
   );
 
-  const membersByDepartmentAndRole: Record<string, Record<string, any[]>> = {};
-  filteredMemberships.forEach((membership: any) => {
+  const membersByDepartmentAndRole: Record<string, Record<string, EnrichedMembership[]>> = {};
+  filteredMemberships.forEach((membership) => {
     if (!membersByDepartmentAndRole[membership.departmentName])
       membersByDepartmentAndRole[membership.departmentName] = {};
     if (!membersByDepartmentAndRole[membership.departmentName][membership.roleName])
@@ -114,18 +134,18 @@ export default async function AboutPage({
 
   const roleOrders: Record<string, string[]> = {};
   await Promise.all(
-    allDepartmentsWithMembers.map(async (department: any) => {
-      const order = await getDepartmentRoleOrder(department.name);
+    allDepartmentsWithMembers.map(async (department) => {
+      const order: RoleOrderItem[] = await getDepartmentRoleOrder(department.name);
       roleOrders[department.name] = order
-        .sort((a: any, b: any) => a.position - b.position)
-        .map((role: any) => role.role_name);
+        .sort((a, b) => a.position - b.position)
+        .map((role) => role.role_name);
     })
   );
 
-  const sortedDepartmentsWithMembers = [
-    ...ADMIN_PRIORITY.map((name) =>
+  const sortedDepartmentsWithMembers: Department[] = [
+    ...(ADMIN_PRIORITY.map((name) =>
       allDepartmentsWithMembers.find((dep) => dep.name === name)
-    ).filter(Boolean),
+    ).filter(Boolean) as Department[]),
     ...allDepartmentsWithMembers.filter((dep) => !ADMIN_PRIORITY.includes(dep.name)),
   ];
 
@@ -140,12 +160,12 @@ export default async function AboutPage({
       <h2 className={styles.title} />
       <YearSelector years={allAcademicYears} selectedYear={selectedYear} />
 
-      {sortedDepartmentsWithMembers.map((department: any) => (
+      {sortedDepartmentsWithMembers.map((department) => (
         <div key={department.name}>
           <h3 className={styles.departmentTitle}>{department.name}</h3>
           <div className={styles.grid}>
-            {roleOrders[department.name]?.map((roleName: string) =>
-              membersByDepartmentAndRole[department.name][roleName]?.map((member: any) => (
+            {roleOrders[department.name]?.map((roleName) =>
+              membersByDepartmentAndRole[department.name][roleName]?.map((member) => (
                 <MemberCard
                   key={member.id}
                   name={getFirstAndLastName(member.userName)}

@@ -51,3 +51,9 @@ export function mapRawMembershipToMembership(
     userPhoto,
   };
 }
+
+export interface Team {
+  name: string;
+  description: string;
+  icon: string;
+}

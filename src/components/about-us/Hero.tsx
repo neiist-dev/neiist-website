@@ -5,12 +5,7 @@ import { Squash } from "hamburger-react";
 import Image, { type StaticImageData } from "next/image";
 import { FiUsers } from "react-icons/fi";
 import styles from "@/styles/components/about-us/Hero.module.css";
-
-export interface Team {
-  name: string;
-  description: string;
-  icon: string;
-}
+import { Team } from "@/types/memberships";
 
 interface HeroProps {
   teams: Team[];
