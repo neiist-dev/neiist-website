@@ -1,0 +1,39 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.neiist.rnl.tecnico.ulisboa.pt
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+
+      - name: Upload Deployment script
+        run: |
+          scp -o StrictHostKeyChecking=no scripts/deploy_staging.sh \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/deploy_staging.sh
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+              "chmod +x ~/deploy_staging.sh"
+
+      - name: Deploy to Staging
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          'bash ~/deploy_staging.sh'
+
+      - name: Confirm Staging Deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          "pm2 jlist | jq -r '.[] | select(.name==\"neiist_server_staging\" or .name==\"staging\") | \"🌿 \" + .name + \" → \" + .pm2_env.status'"
