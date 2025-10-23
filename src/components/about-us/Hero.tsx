@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { Squash } from "hamburger-react";
@@ -94,8 +94,7 @@ export default function Hero({
                 tabIndex={0}
                 aria-label={`Equipa ${team.name}`}
                 onClick={() => setSelectedTeam(team)}
-                role="button"
-              >
+                role="button">
                 <Icon className={styles.icon} />
                 <h3 className={styles.teamName}>{team.name}</h3>
               </div>
@@ -110,9 +109,13 @@ export default function Hero({
             <button
               className={styles.close}
               onClick={() => setSelectedTeam(null)}
-              aria-label="Fechar"
-            >
-              <Squash toggled={true} toggle={() => setSelectedTeam(null)} size={20} color="currentColor" />
+              aria-label="Fechar">
+              <Squash
+                toggled={true}
+                toggle={() => setSelectedTeam(null)}
+                size={20}
+                color="currentColor"
+              />
             </button>
             <h3 className={styles.overlayTitle}>{selectedTeam.name}</h3>
             <p className={styles.overlayDescription}>{selectedTeam.description}</p>

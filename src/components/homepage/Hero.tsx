@@ -11,6 +11,17 @@ export default function Hero() {
   const [isStudentFlipped, setStudentFlipped] = useState(false);
   const campusRef = useRef<HTMLDivElement>(null);
   const studentRef = useRef<HTMLImageElement>(null);
+  const [showStudent, setStudent] = useState(false);
+
+  useEffect(() => {
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    const handleResize = () => {
+      setStudent(!isTouch);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -50,16 +61,18 @@ export default function Hero() {
         <span className={styles.quaternary}>ica </span>
         do Instituto Superior Técnico
       </h1>
-      <div ref={campusRef} className={styles.campusImage}>
-        <Image src={campusIST} alt="IST Campus" fill style={{ objectFit: "cover" }} />
-        <Image
-          ref={studentRef}
-          src={student}
-          alt="Student"
-          className={styles.student + (isStudentFlipped ? " " + styles.flipped : "")}
-          style={{ left: `${studentMovementPosition}%` }}
-          priority
-        />
+      <div ref={campusRef} className={styles.heroImage}>
+        <Image src={campusIST} alt="IST Campus" className={styles.campusImage} />
+        {showStudent && (
+          <Image
+            ref={studentRef}
+            src={student}
+            alt="Student"
+            className={styles.student + (isStudentFlipped ? " " + styles.flipped : "")}
+            style={{ left: `${studentMovementPosition}%` }}
+            preload
+          />
+        )}
       </div>
     </section>
   );

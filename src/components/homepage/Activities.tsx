@@ -23,7 +23,7 @@ function Activities({ events: initialEvents = [], adminPreview = false }: Activi
   useEffect(() => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     const handleResize = () => {
-      setShowArrows(!isTouch && window.innerWidth >= 1024);
+      setShowArrows(!isTouch);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -40,8 +40,8 @@ function Activities({ events: initialEvents = [], adminPreview = false }: Activi
   }, [adminPreview, initialEvents.length]);
 
   return (
-    <>
-      <h1 className={styles.title}>Atividades</h1>
+    <div className={styles.activities}>
+      <h1>Atividades</h1>
       <div className={styles.container}>
         {events.length === 0 ? (
           <div className={styles.noEvents}>Sem atividades disponíveis.</div>
@@ -53,13 +53,13 @@ function Activities({ events: initialEvents = [], adminPreview = false }: Activi
                   className={`${styles.arrow} ${styles.left}`}
                   onClick={() => swiperInstance?.slidePrev()}
                   aria-label="Previous">
-                  <IoIosArrowBack size={40} color="#FFF" />
+                  <IoIosArrowBack size={40} />
                 </button>
                 <button
                   className={`${styles.arrow} ${styles.right}`}
                   onClick={() => swiperInstance?.slideNext()}
                   aria-label="Next">
-                  <IoIosArrowForward size={40} color="#FFF" />
+                  <IoIosArrowForward size={40} />
                 </button>
               </>
             )}
@@ -104,7 +104,7 @@ function Activities({ events: initialEvents = [], adminPreview = false }: Activi
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

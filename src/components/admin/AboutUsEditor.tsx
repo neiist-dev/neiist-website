@@ -163,13 +163,10 @@ export default function AboutUsEditor({
         return (
           <div key={dept.name} className={styles.departmentSection}>
             <h3 className={styles.departmentTitle}>{dept.name}</h3>
-            {dept.description && (
-              <p className={styles.teamCardDescription}>{dept.description}</p>
-            )}
+            {dept.description && <p className={styles.teamCardDescription}>{dept.description}</p>}
             <DndContext
               collisionDetection={closestCenter}
-              onDragEnd={(event) => handleDragEnd(dept.name, event)}
-            >
+              onDragEnd={(event) => handleDragEnd(dept.name, event)}>
               <SortableContext items={roles}>
                 <div className={styles.membersGrid}>
                   {roles
@@ -238,15 +235,9 @@ function SortableRoleCard({
         background: isGeneric ? "#f3f3f3" : undefined,
       }}
       {...attributes}
-      {...listeners}
-    >
+      {...listeners}>
       <div className={memberCardStyles.imageCard}>
-        <Image
-          alt={`${name} photo`}
-          className={memberCardStyles.cardImage}
-          src={photo}
-          fill
-        />
+        <Image alt={`${name} photo`} className={memberCardStyles.cardImage} src={photo} fill />
       </div>
       <div className={memberCardStyles.name}>
         <p className={memberCardStyles.nameText}>{name}</p>

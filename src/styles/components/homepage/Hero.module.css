@@ -1,19 +1,16 @@
 .hero {
-  width: 100%;
   background: var(--background-colour);
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 6rem;
+  overflow-x: hidden;
 }
 
 .title {
   color: var(--foreground-colour);
-  font-size: 3rem;
-  margin-bottom: 0;
+  font-size: clamp(1rem, 4vw, 3rem);
   margin-top: 4rem;
   text-align: center;
-  line-height: 1.2;
   padding: 0 1rem;
 }
 
@@ -42,84 +39,36 @@
   text-align: center;
 }
 
-.campusImage {
-  position: relative;
-  width: 100vw;
-  max-width: 100%;
-  height: 70vh;
-  min-height: 400px;
+.heroImage {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  position: relative;
   overflow: hidden;
+}
+
+.campusImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .student {
   position: absolute;
+  bottom: 1.7vw;
+  left: 50%;
+  width: 16%;
+  max-width: clamp(5rem, 14vw, 10rem);
   height: auto;
-  bottom: 2rem;
-  width: 10rem;
-  transition: transform 0.1s;
-  left: var(--student-position, 50%);
+  z-index: 2;
 }
 
-@media (max-width: 1200px) {
-  .title {
-    font-size: 2rem;
-    margin-top: 3rem;
-  }
-
+@media (max-width: 728px) {
   .student {
-    bottom: 2.2rem;
-    width: 8rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .title {
-    font-size: 1.6rem;
-    margin-top: 2rem;
-    padding: 0 1.5rem;
-  }
-
-  .campusImage {
-    height: 60vh;
-    min-height: 300px;
-  }
-
-  .student {
-    bottom: 1.9rem;
-    width: 7rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .title {
-    font-size: 1.25rem;
-    margin-top: 1.2rem;
-    padding: 0 0.5rem;
-    line-height: 1.25;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    text-align: center;
-  }
-
-  .campusImage {
-    height: 38vh;
-    min-height: 160px;
-    max-width: 100vw;
-    padding: 0;
-    margin: 0 auto;
-  }
-
-  .student {
-    bottom: 1.2rem;
-    width: 5rem;
-    left: var(--student-position, 50%);
-  }
-  .hero {
-    margin-bottom: 2.5rem;
-    padding: 0;
+    bottom: 2vw;
+    width: 10%;
+    max-width: 4rem;
   }
 }
 
