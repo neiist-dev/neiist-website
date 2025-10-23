@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
         pathname: "/api/user/photo/:path*",
       },
     ],
-    localPatterns: [{ pathname: "/api/user/photo/**" }, { pathname: "/**" }],
+    localPatterns: [
+      { pathname: "/api/user/photo/**" },
+      { pathname: "/events/**" },
+      { pathname: "/products/**" },
+    ],
   },
 };
 
