@@ -1,9 +1,7 @@
 name: Deploy Production
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -19,21 +17,21 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Upload Deployment Script
         run: |
           scp -o StrictHostKeyChecking=no scripts/deploy_prod.sh \
-              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/deploy_prod.sh
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-              "chmod +x ~/deploy_prod.sh"
+              ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/deploy_prod.sh
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+              "chmod +x /home/neiist/deploy_prod.sh"
 
       - name: Deploy to Production
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          'bash ~/deploy_prod.sh'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+           "su - neiist -c 'bash ~/deploy_prod.sh'"
 
       - name: Confirm Production Deployment
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-          "pm2 jlist | jq -r '.[] | select(.name==\"blue\" or .name==\"green\") | \"🌿 \" + .name + \" → \" + .pm2_env.status'"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+             "su - neiist -c 'pm2 jlist | jq -r \".[] | select(.name==\\\"blue\\\" or .name==\\\"green\\\") | \\\"🌿 \\\" + .name + \\\" → \\\" + .pm2_env.status\"'"

@@ -21,7 +21,7 @@ echo "🏗️ Building project..."
 yarn build
 
 echo "♻️ Restarting PM2 process..."
-pm2 restart $PM2_NAME || pm2 start "yarn start" --name "$PM2_NAME" --time
+pm2 restart $PM2_NAME || pm2 start ecosystem.config.js
 
 echo "🧹 Cleaning up..."
 git status

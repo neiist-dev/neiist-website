@@ -37,17 +37,6 @@ fi
 
 cd $DEPLOYING_TO_DIR || { echo "❌ Could not access $DEPLOYING_TO_DIR"; exit 1; }
 
-# Load NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm use 18.17.0
-
-if [ -f .env.local ]; then
-    source .env.local
-else
-    echo "⚠️ No .env.local found, continuing without"
-fi
-
 echo "📦 Pulling latest code..."
 git fetch origin
 git checkout main
@@ -60,7 +49,7 @@ echo "🏗️ Building project..."
 yarn build
 
 echo "♻️ Restarting PM2 process for $DEPLOYING_TO_NAME..."
-pm2 restart $DEPLOYING_TO_NAME || pm2 start "yarn start" --name "$DEPLOYING_TO_NAME" --time
+pm2 restart $DEPLOYING_TO_NAME || pm2 start ecosystem.config.js
 
 echo "⏳ Waiting 5s to ensure process is up..."
 sleep 5
