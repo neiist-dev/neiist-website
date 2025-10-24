@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  const response = NextResponse.redirect(new URL("/", request.url));
+export async function POST() {
+  const response = NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_BASE_URL));
 
   response.cookies.set("accessToken", "", {
     httpOnly: true,
