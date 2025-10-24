@@ -1,52 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { google, drive_v3 } from "googleapis";
+import { google } from "googleapis";
 import { Readable } from "stream";
 import fs from "fs/promises";
 
-const SERVICE_ACCOUNT_JSON = process.env.GOOGLE_SERVICE_ACCOUNT_JSON!;
+const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON!;
+const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH!;
 const FOLDER_ID = process.env.GDRIVE_CV_FOLDER_ID!;
-if (!SERVICE_ACCOUNT_JSON) throw new Error("Missing env: GOOGLE_SERVICE_ACCOUNT_JSON");
+if (!CREDENTIALS_PATH) throw new Error("Missing env: GOOGLE_CLIENT_SECRET_JSON");
+if (!TOKEN_PATH) throw new Error("Missing env: GDRIVE_TOKEN_PATH");
 if (!FOLDER_ID) throw new Error("Missing env: GDRIVE_CV_FOLDER_ID");
 
-type DriveFile = { id: string; name: string };
-let cvFilesCache: { files: DriveFile[]; updatedAt: number } | null = null;
-const CACHE_TTL = 24 * 60 * 60 * 1000;
-
-async function getGoogleDriveClient(): Promise<drive_v3.Drive> {
-  const credentials: { [key: string]: unknown } = JSON.parse(
-    await fs.readFile(SERVICE_ACCOUNT_JSON, "utf8")
+async function getGoogleDriveClient() {
+  const credentials = JSON.parse(await fs.readFile(CREDENTIALS_PATH, "utf8"));
+  const token = JSON.parse(await fs.readFile(TOKEN_PATH, "utf8"));
+  const oAuth2Client = new google.auth.OAuth2(
+    credentials.installed.client_id,
+    credentials.installed.client_secret,
+    credentials.installed.redirect_uris[0]
   );
-  const scopes: string[] = ["https://www.googleapis.com/auth/drive"];
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes,
-  });
-  return google.drive({ version: "v3", auth });
+  oAuth2Client.setCredentials(token);
+  return google.drive({ version: "v3", auth: oAuth2Client });
 }
 
-async function getCVFiles(): Promise<DriveFile[]> {
-  const now = Date.now();
-  if (cvFilesCache && now - cvFilesCache.updatedAt < CACHE_TTL) {
-    return cvFilesCache.files;
-  }
-  const drive = await getGoogleDriveClient();
-  const res = await drive.files.list({
-    q: `'${FOLDER_ID}' in parents and trashed=false`,
-    fields: "files(id, name)",
-    spaces: "drive",
-    pageSize: 1000,
-  });
-  const files = (res.data.files ?? []).map((f) => ({ id: f.id!, name: f.name! }));
-  cvFilesCache = { files, updatedAt: now };
-  return files;
+function escapeDriveQueryString(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 async function findUserCVFileId(username: string): Promise<string | null> {
+  const drive = await getGoogleDriveClient();
   const filename = `${username}.pdf`;
-  const files = await getCVFiles();
-  const file = files.find((f) => f.name === filename);
-  return file ? file.id : null;
+  const safeName = escapeDriveQueryString(filename);
+  const res = await drive.files.list({
+    q: `'${FOLDER_ID}' in parents and name='${safeName}' and trashed=false`,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+  if (Array.isArray(res.data.files) && res.data.files.length > 0 && res.data.files[0]?.id) {
+    return res.data.files[0].id;
+  }
+  return null;
 }
 
 async function removeUserCV(username: string): Promise<boolean> {
@@ -54,7 +47,6 @@ async function removeUserCV(username: string): Promise<boolean> {
   const fileId = await findUserCVFileId(username);
   if (!fileId) return false;
   await drive.files.delete({ fileId });
-  cvFilesCache = null;
   return true;
 }
 
@@ -63,16 +55,10 @@ async function downloadUserCV(username: string): Promise<Buffer | null> {
   const fileId = await findUserCVFileId(username);
   if (!fileId) return null;
   const res = await drive.files.get({ fileId, alt: "media" }, { responseType: "arraybuffer" });
-  const data = res.data as ArrayBuffer;
-  return Buffer.from(data);
+  return Buffer.from(res.data as ArrayBuffer);
 }
 
-type UploadCVResult = {
-  fileId: string;
-  link: string;
-};
-
-async function uploadCV(fileBuffer: Buffer, filename: string): Promise<UploadCVResult> {
+async function uploadCV(fileBuffer: Buffer, filename: string) {
   const drive = await getGoogleDriveClient();
   const bufferStream = new Readable();
   bufferStream.push(fileBuffer);
@@ -90,11 +76,10 @@ async function uploadCV(fileBuffer: Buffer, filename: string): Promise<UploadCVR
     },
     fields: "id,webViewLink",
   });
-  cvFilesCache = null;
 
   return {
-    fileId: driveRes.data.id ?? "",
-    link: driveRes.data.webViewLink ?? "",
+    fileId: driveRes.data.id!,
+    link: driveRes.data.webViewLink!,
   };
 }
 
@@ -103,14 +88,14 @@ async function getUsernameFromCookies(): Promise<string | null> {
   const userData = reqCookies.get("userData")?.value;
   if (!userData) return null;
   try {
-    const user: { istid?: string; username?: string } = JSON.parse(userData);
+    const user = JSON.parse(userData);
     return user.istid || user.username || null;
   } catch {
     return null;
   }
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const username = await getUsernameFromCookies();
   if (!username) {
@@ -136,11 +121,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return new NextResponse(uint8Array, { headers });
   } else {
     const fileId = await findUserCVFileId(username);
-    return NextResponse.json({ hasCV: Boolean(fileId) });
+    return NextResponse.json({ hasCV: !!fileId });
   }
 }
 
-export async function DELETE(): Promise<NextResponse> {
+export async function DELETE() {
   const username = await getUsernameFromCookies();
   if (!username) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -149,7 +134,7 @@ export async function DELETE(): Promise<NextResponse> {
   return NextResponse.json({ removed });
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(request: NextRequest) {
   const username = await getUsernameFromCookies();
   if (!username) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -167,7 +152,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
   }
   if (buffer.length > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: "Max file size of 10MB" }, { status: 413 });
+    return NextResponse.json(
+      { error: "O ficheiro é demasiado grande (máx 10MB)" },
+      { status: 413 }
+    );
   }
 
   await removeUserCV(username);
