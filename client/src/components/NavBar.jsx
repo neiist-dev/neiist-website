@@ -101,12 +101,6 @@ const NavBar = () => {
               >
                 Contactos
               </Nav.Link>
-              <Nav.Link
-                className={`${style.navLinkDisable} ${style.onWeb}`}
-                as={Link}
-              >
-                Estudante
-              </Nav.Link>
               {/* TODO: REMOVE COMMENT WHEN SHOP PAGE IS NEEDED */}
               {/* <Nav.Link
                 className={`${style.navLink} ${style.onWeb}`}
