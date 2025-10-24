@@ -27,7 +27,16 @@ export async function GET(request: Request) {
     });
 
     if (!accessTokenResponse.ok) {
-      return NextResponse.json({ error: "Failed to retrieve access token" }, { status: 500 });
+      const errorBody = await accessTokenResponse.text();
+      console.error("Failed to retrieve access token:", accessTokenResponse.status, errorBody);
+      return NextResponse.json(
+        {
+          error: "Failed to retrieve access token",
+          status: accessTokenResponse.status,
+          body: errorBody,
+        },
+        { status: accessTokenResponse.status }
+      );
     }
 
     const data = await accessTokenResponse.json();
@@ -37,7 +46,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Access token not found in response" }, { status: 500 });
     }
 
-    const response = NextResponse.redirect(new URL("/?login=true", request.url));
+    const response = NextResponse.redirect(
+      new URL("/?login=true", process.env.NEXT_PUBLIC_BASE_URL)
+    );
     response.cookies.set("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
