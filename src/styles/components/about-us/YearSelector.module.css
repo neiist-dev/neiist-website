@@ -37,15 +37,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: clamp(5rem, 8ch, 7rem);
-  block-size: clamp(2rem, 1.8vw, 2.25rem);
-  border-radius: 0.75rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.5rem;
   background: transparent;
   color: var(--foreground-colour);
-  transition:
-    background-color 0.15s ease-in-out,
-    opacity 0.15s ease-in-out,
-    box-shadow 0.15s ease-in-out;
+  transition: background-color 0.15s ease-in-out;
   flex: 0 0 auto;
 }
 

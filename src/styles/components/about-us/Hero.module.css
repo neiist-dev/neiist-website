@@ -24,7 +24,6 @@
 
 .description {
   font-size: 1.2rem;
-  font-weight: 500;
   color: #333;
   font-family: var(--font-family);
   text-align: justify;
@@ -82,7 +81,10 @@
   color: var(--quaternary-colour);
 }
 
-@media (max-width: 950px) {
+@media (max-width: 1200px) {
+  .hero {
+    padding: 2rem 3.5rem 1.2rem;
+  }
   .header {
     flex-direction: column;
     gap: 2rem;
@@ -100,6 +102,11 @@
   }
 }
 
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 2.5rem 1.2rem;
+  }
+}
 .teamsSection {
   margin-top: 60px;
   width: 100%;
