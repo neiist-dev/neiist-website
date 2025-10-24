@@ -7,9 +7,21 @@ export default async function ProfilePage() {
   const userDataCookie = cookieStore.get("userData")?.value;
   const user = userDataCookie ? JSON.parse(userDataCookie) : null;
 
+  let hasCV = false;
+  if (user) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/user/cv-bank`, {
+      headers: { cookie: `userData=${userDataCookie}` },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      hasCV = !!data.hasCV;
+    }
+  }
+
   return (
     <div className={styles.container}>
-      <ProfileClient initialUser={user} />
+      <ProfileClient initialUser={user} initialHasCV={hasCV} />
     </div>
   );
 }

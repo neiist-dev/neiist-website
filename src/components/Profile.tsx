@@ -23,8 +23,16 @@ import { getFirstAndLastName } from "@/utils/userUtils";
 
 type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
 
-export default function ProfileClient({ initialUser }: { initialUser: User }) {
+export default function ProfileClient({
+  initialUser,
+  initialHasCV,
+}: {
+  initialUser: User;
+  initialHasCV: boolean;
+}) {
   const [user, setUser] = useState<User>(initialUser);
+  const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
+  const [cvLoading, setCvLoading] = useState<boolean>(false);
 
   const [altEmailDraft, setAltEmailDraft] = useState<string>(initialUser?.alternativeEmail ?? "");
   const [phoneDraft, setPhoneDraft] = useState<string>(initialUser?.phone ?? "");
@@ -38,10 +46,6 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     null
   );
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-  const [hasCV, setHasCV] = useState<boolean>(false);
-  const [cvLoading, setCvLoading] = useState<boolean>(false);
-
   const [error, setError] = useState<string>("");
 
   const calendarIcs = user?.istid
@@ -62,21 +66,6 @@ export default function ProfileClient({ initialUser }: { initialUser: User }) {
     setPreferredDraft(user?.preferredContactMethod ?? "email");
     setGithubDraft(user?.github ?? "");
     setLinkedinDraft(user?.linkedin ?? "");
-  }, [user]);
-
-  useEffect(() => {
-    const fetchCVStatus = async () => {
-      try {
-        const res = await fetch("/api/user/cv-bank");
-        if (res.ok) {
-          const data = await res.json();
-          setHasCV(!!data.hasCV);
-        }
-      } catch {
-        setHasCV(false);
-      }
-    };
-    fetchCVStatus();
   }, [user]);
 
   const askConfirm = (field: FieldName, value: string) => {
