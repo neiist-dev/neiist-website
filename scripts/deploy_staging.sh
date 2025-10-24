@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+export PATH="$HOME/.nvm/versions/node/v23.10.0/bin:$PATH"
 
 echo "🚀 Deploying to Staging..."
 
