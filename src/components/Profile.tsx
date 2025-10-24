@@ -185,7 +185,7 @@ export default function ProfileClient({
   const onCvDownload = async () => {
     setCvLoading(true);
     try {
-      const res = await fetch("/api/user/cv-bank/download");
+      const res = await fetch("/api/user/cv-bank?download");
       if (!res.ok) throw new Error("CV não encontrado.");
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);

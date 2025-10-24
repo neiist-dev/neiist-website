@@ -96,33 +96,31 @@ async function getUsernameFromCookies(): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+  const url = new URL(request.url);
   const username = await getUsernameFromCookies();
   if (!username) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (request.nextUrl.pathname.endsWith("/download")) {
+  if (url.searchParams.has("download")) {
     const buffer = await downloadUserCV(username);
     if (!buffer) {
       return NextResponse.json({ error: "CV not found" }, { status: 404 });
     }
-    const headers: Record<string, string> = {
-      "Content-Type": "application/pdf",
-    };
-    if (!searchParams.get("preview")) {
-      headers["Content-Disposition"] = `attachment; filename="${username}.pdf"`;
-    }
-    const arrayBuffer = buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength
-    );
-    const uint8Array = new Uint8Array(arrayBuffer as ArrayBuffer);
-    return new NextResponse(uint8Array, { headers });
-  } else {
-    const fileId = await findUserCVFileId(username);
-    return NextResponse.json({ hasCV: !!fileId });
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${username}.pdf"`,
+      },
+    });
   }
+
+  const fileId = await findUserCVFileId(username);
+  if (!fileId) {
+    return NextResponse.json({ hasCV: false }, { status: 200 });
+  }
+  return NextResponse.json({ hasCV: true, fileId }, { status: 200 });
 }
 
 export async function DELETE() {
