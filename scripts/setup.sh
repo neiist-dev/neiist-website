@@ -3,9 +3,6 @@ set -e  # Exit immediately if a command exits with a non-zero status
 echo "NEIIST Dev Env Setup Script"
 echo "==============================="
 
-chmod +x .husky/pre-commit
-chmod +x .husky/post-commit
-
 # Function to prompt for y/n and only accept valid input
 prompt_yes_no() {
   local prompt="$1"
@@ -65,6 +62,52 @@ collect_base_url() {
   fi
 }
 
+# Function to collect the istID, name, and email of the user
+add_dev_admin_to_init_sql() {
+  echo "Configure Dev Admin for local development:"
+  read -p "ISTID (e.g. ist1999999): " dev_istid
+  read -p "Name (e.g. Jhon Doe): " dev_name
+  read -p "Email (e.g. jhon.doe@tecnico.ulisboa.pt): " dev_email
+
+  dev_sql="
+-- Dev Admin User (auto-added by setup.sh)
+SELECT neiist.add_user('${dev_istid}', '${dev_name}', '${dev_email}', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}', NULL, NULL);
+SELECT neiist.add_team_member('${dev_istid}', 'Dev-Team', 'Coordenador');
+"
+
+  echo "$dev_sql" >> docker/init.sql
+  echo "Dev admin user added to docker/init.sql."
+}
+
+# Function to collect Notion API config
+collect_notion_env() {
+  if [ -z "${notion_api_key}" ]; then
+    read -p "NOTION_API_KEY (your Notion integration secret): " notion_api_key
+  fi
+  if [ -z "${database_id}" ]; then
+    read -p "DATABASE_ID (your Notion database id): " database_id
+  fi
+}
+
+# Function to collect Admin ISTID
+collect_admin_istid() {
+  if [ -z "${admin_istid}" ]; then
+    read -p "ADMIN_ISTID (ISTID for dev admin user): " admin_istid
+  fi
+}
+
+# Function to collect Google Drive config
+collect_gdrive_env() {
+  if [ -z "${google_service_account_json}" ]; then
+    read -p "GOOGLE_SERVICE_ACCOUNT_JSON (path or JSON string): " google_service_account_json
+  fi
+  if [ -z "${gdrive_cv_folder_id}" ]; then
+    read -p "GDRIVE_CV_FOLDER_ID (Google Drive folder ID for CVs): " gdrive_cv_folder_id
+  fi
+}
+
+add_dev_admin_to_init_sql
+
 # Create .env file in project root
 echo "Creating .env file..."
 if [ -f ".env" ]; then
@@ -75,6 +118,8 @@ if [ -f ".env" ]; then
     collect_fenix_env
     collect_smtp_env
     collect_base_url
+    collect_notion_env
+    collect_gdrive_env
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -87,6 +132,13 @@ SMTP_PORT=${smtp_port}
 SMTP_USER=${smtp_user}
 SMTP_PASS=${smtp_pass}
 NEXT_PUBLIC_BASE_URL=${next_public_base_url}
+# Notion Calendar Api
+NOTION_API_KEY=${notion_api_key}
+DATABASE_ID=${database_id}
+# Google Drive Token
+GOOGLE_SERVICE_ACCOUNT_JSON=${google_service_account_json}
+GDRIVE_CV_FOLDER_ID=${gdrive_cv_folder_id}
+DEV_ISTID=${dev_istid}[ADMIN]
 EOF
     echo ".env file created successfully."
   fi
@@ -94,6 +146,8 @@ else
   collect_fenix_env
   collect_smtp_env
   collect_base_url
+  collect_notion_env
+  collect_gdrive_env
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -106,6 +160,13 @@ SMTP_PORT=${smtp_port}
 SMTP_USER=${smtp_user}
 SMTP_PASS=${smtp_pass}
 NEXT_PUBLIC_BASE_URL=${next_public_base_url}
+# Notion Calendar Api
+NOTION_API_KEY=${notion_api_key}
+DATABASE_ID=${database_id}
+# Google Drive Token
+GOOGLE_SERVICE_ACCOUNT_JSON=${google_service_account_json}
+GDRIVE_CV_FOLDER_ID=${gdrive_cv_folder_id}
+DEV_ISTID=${dev_istid}[ADMIN]
 EOF
   echo ".env file created successfully."
 fi
@@ -158,8 +219,8 @@ echo
 echo "Next steps:"
 echo "1. Run 'yarn install' to install dependencies."
 echo "2. Run 'yarn dev' to start the development server."
-echo "3. Change the ISTID on init.sql to initialize the DB."
-echo 
+echo "3. You can change your dev admin permissions at any time on the .env file."
+echo
 if [ "$override" = "y" ]; then
   echo "Note: Your database credentials are:"
   echo "   - user: neiist_app_user"

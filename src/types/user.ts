@@ -1,3 +1,5 @@
+import { devOverrideRole } from "@/utils/userUtils";
+
 export interface User {
   istid: string;
   name: string;
@@ -56,7 +58,11 @@ export function mapdbUserToUser(dbUser: dbUser): User {
   } else {
     userRoles = dbUser.roles.map(mapRoleToUserRole);
   }
-
+  // DEV permissions level override
+  const devRole = devOverrideRole(dbUser.istid);
+  if (devRole) {
+    userRoles = [mapRoleToUserRole(devRole)];
+  }
   return {
     istid: dbUser.istid,
     name: dbUser.name,

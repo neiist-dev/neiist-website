@@ -46,15 +46,6 @@ SELECT neiist.add_valid_department_role('Organização de Eventos', 'Membro', 'm
 SELECT neiist.add_valid_department_role('Visuais', 'Coordenador', 'coordinator');
 SELECT neiist.add_valid_department_role('Visuais', 'Membro', 'member');
 
-/* Can be used as a template to add more users
-SELECT neiist.add_user('IST_ID', 'NOME', 'EMAIL', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}', NULL, NULL);
-*/
-
-/* Can be used as a template to add more memberships
-SELECT neiist.add_team_member('IST_ID', 'Direção', 'Presidente');
-SELECT neiist.add_team_member('IST_ID', 'Dev-Team', 'Coordenador');
-*/
-
 -- Add base Activities
 SELECT neiist.add_event('Advent of Code', 'O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!', 'aoc.jpg');
 SELECT neiist.add_event('Torneio de E-Sports', 'Gostas de jogar? Que coincidência, este evento foi mesmo feito a pensar em ti! Reúne uma equipa e vem passar o dia connosco a jogar, comer e beber... e quem sabe ganhar um prémio ou outro!', 'esports.jpg');
@@ -75,6 +66,8 @@ INSERT INTO neiist.categories (id, name) VALUES (1, 'Vestuário');
 INSERT INTO neiist.categories (id, name) VALUES (2, 'Stickers');
 INSERT INTO neiist.categories (id, name) VALUES (3, 'Merch');
 
+-- Uncomment if needed
+/*
 -- Add Sample Products
 INSERT INTO neiist.products (id, name, description, price, images, category_id, stock_type, stock_quantity, order_deadline, estimated_delivery, active) VALUES (5, 'SweatShirt', null, 20.00, '{/products/beige0png.jpg,/products/black0png.jpg,/products/blue0png.jpg,/products/green0png.jpg,/products/red0png.jpg}', null, 'on_demand', 0, '2025-09-09 23:00:00.000000 +00:00', '2025-09-17 23:00:00.000000 +00:00', true);
 INSERT INTO neiist.products (id, name, description, price, images, category_id, stock_type, stock_quantity, order_deadline, estimated_delivery, active) VALUES (6, 'Sweat Special 2026', '', 22.00, '{/products/blacknew3png.jpg,/products/black0png.jpg}', null, 'limited', 0, '2025-09-23 23:00:00.000000 +00:00', '2025-09-29 23:00:00.000000 +00:00', true);
@@ -106,3 +99,4 @@ INSERT INTO neiist.product_variant_options (variant_id, option_name, option_valu
 INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (14, 'Tamanho', '"S"');
 INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (15, 'Tamanho', '"M"');
 INSERT INTO neiist.product_variant_options (variant_id, option_name, option_value) VALUES (16, 'Tamanho', '"L"');
+*/

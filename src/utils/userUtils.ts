@@ -38,3 +38,18 @@ export function getFirstAndLastName(fullName: string) {
   if (parts.length === 1) return parts[0];
   return `${parts[0]} ${parts[parts.length - 1]}`;
 }
+
+export function devOverrideRole(dbIstid: string): string | undefined {
+  const devIstidRaw = process.env.DEV_ISTID;
+  const isDev = process.env.NODE_ENV === "development";
+  if (isDev && devIstidRaw) {
+    const match = devIstidRaw.match(/^([^\[]+)\[([A-Z]+)\]$/i);
+    if (match) {
+      const [, istid, role] = match;
+      if (dbIstid === istid) {
+        return role;
+      }
+    }
+  }
+  return undefined;
+}
