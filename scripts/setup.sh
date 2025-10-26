@@ -214,6 +214,17 @@ echo "Setting up Husky Pre-Commit..."
 chmod +x .husky/pre-commit
 yarn husky
 
+# Install required Python modules for Google Drive Auth
+pip install PyQt5 google-auth-oauthlib
+
+# Run the Google Drive Auth script
+if [ -f "scripts/gdrive_auth_ui.py" ]; then
+  echo "Starting Google Drive Auth UI..."
+  python scripts/gdrive_auth_ui.py
+else
+  echo "Google Drive Auth UI script not found at scripts/gdrive_auth_ui.py"
+fi
+
 echo "Setup completed successfully!"
 echo 
 echo "Next steps:"
