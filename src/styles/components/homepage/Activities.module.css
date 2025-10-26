@@ -100,19 +100,19 @@
 }
 
 .eventTitle {
-  font-size: clamp(1rem, 2vw, 1.15rem);
+  font-size: 1.05vw;
   font-weight: bold;
   color: white;
-  max-width: 100%;
   margin: 0;
+  max-width: 90%;
 }
 
 .description {
-  font-size: clamp(0.95rem, 1.2vw, 1rem);
-  color: white;
+  font-size: 0.9vw;
   text-align: center;
+  color: white;
   margin: 0;
-  max-width: 100%;
+  max-width: 92%;
 }
 
 .card:hover .overlay {
@@ -127,13 +127,19 @@
   .activities {
     padding: 1.5rem 2vw 1rem 2vw;
   }
-  .slider {
-    margin: 0.5rem 0.5rem;
-  }
   .eventTitle {
-    font-size: clamp(0.85rem, 2vw, 1.05rem);
+    font-size: 1.7vw;
   }
   .description {
-    font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+    font-size: 1.45vw;
+  }
+}
+
+@media (max-width: 425px) {
+  .eventTitle {
+    font-size: 3.6vw;
+  }
+  .description {
+    font-size: 3.25vw;
   }
 }

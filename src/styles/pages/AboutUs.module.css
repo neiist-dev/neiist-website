@@ -27,11 +27,21 @@
   justify-content: center;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 768px) {
   .grid {
-    padding-top: 2rem;
-    padding-right: 3.5rem;
-    padding-left: 3.5rem;
+    padding-right: 2.5rem;
+    padding-left: 2.5rem;
+  }
+  .grid > * {
+    flex: 1 1 30%;
+    max-width: 30%;
+  }
+}
+
+@media (max-width: 425px) {
+  .grid {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
   }
   .grid > * {
     flex: 1 1 40%;
@@ -39,21 +49,9 @@
   }
 }
 
-@media (max-width: 768px) {
-  .grid {
-    padding-top: 2rem;
-    padding-right: 2.5rem;
-    padding-left: 2.5rem;
-  }
+@media (max-width: 320px) {
   .grid > * {
-    flex: 1 1 47%;
-    max-width: 47%;
-  }
-}
-
-@media (max-width: 480px) {
-  .grid > * {
-    flex: 1 1 95%;
-    max-width: 95%;
+    flex: 1 1 85%;
+    max-width: 85%;
   }
 }
