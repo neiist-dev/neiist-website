@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { login, logout } from "@/utils/userUtils";
@@ -18,6 +19,7 @@ const navLinks = [
 ];
 
 export default function NavBar() {
+  const router = useRouter();
   const { user, setUser } = useUser();
   const [isSticky, setIsSticky] = useState(false);
   const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
@@ -57,13 +59,27 @@ export default function NavBar() {
     setTimeout(() => setMenuState("closed"), 300);
   };
 
+  const handleMobileNavClick = (href: string) => {
+    closeMenu();
+    setTimeout(() => {
+      router.push(href);
+    }, 300);
+  };
+
   const handleLogout = async () => {
     await logout();
     setUser(null);
   };
 
-  const renderNavItems = () => {
-    return navLinks.map((link) => <NavItem key={link.name} href={link.href} label={link.name} />);
+  const renderNavItems = (onClick?: (_href: string) => void) => {
+    return navLinks.map((link) => (
+      <NavItem
+        key={link.name}
+        href={link.href}
+        label={link.name}
+        onClick={onClick ? () => onClick(link.href) : undefined}
+      />
+    ));
   };
 
   return (
@@ -95,10 +111,10 @@ export default function NavBar() {
         <div
           ref={menuRef}
           className={`${styles.menu} ${menuState === "closing" ? styles.slideOut : ""}`}>
-          <Link href="/" className={styles.logo}>
+          <Link href="/" className={styles.logo} onClick={() => handleMobileNavClick("/")}>
             <NeiistLogo />
           </Link>
-          <nav className={styles.navItems}>{renderNavItems()}</nav>
+          <nav className={styles.navItems}>{renderNavItems(handleMobileNavClick)}</nav>
         </div>
       )}
     </header>
