@@ -47,4 +47,6 @@ export interface NotionPerson {
 
 export interface NotionApiResponse {
   results: NotionPage[];
+  has_more: boolean;
+  next_cursor?: string;
 }
