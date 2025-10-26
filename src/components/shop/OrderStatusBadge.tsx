@@ -6,7 +6,6 @@ export default function OrderStatusBadge({ status }: { status: OrderStatus }) {
     <span className={`${styles.status} ${styles[status]}`}>
       {status === "pending" && "Pendente"}
       {status === "paid" && "Pago"}
-      {status === "preparing" && "A preparar"}
       {status === "ready" && "Pronto"}
       {status === "delivered" && "Entregue"}
       {status === "cancelled" && "Cancelada"}

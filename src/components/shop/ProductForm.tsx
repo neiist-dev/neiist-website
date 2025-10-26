@@ -1,9 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
-import { DatePicker, useDateInput } from "react-nice-dates";
-import { enGB } from "date-fns/locale";
-import "react-nice-dates/build/style.css";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 import {
   FaArrowLeft,
   FaPlus,
@@ -38,9 +37,8 @@ export default function ProductForm({
   const [orderDeadline, setOrderDeadline] = useState<Date | undefined>(
     product?.order_deadline ? new Date(product.order_deadline) : undefined
   );
-  const [estimatedDelivery, setEstimatedDelivery] = useState<Date | undefined>(
-    product?.estimated_delivery ? new Date(product.estimated_delivery) : undefined
-  );
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [existingImages, setExistingImages] = useState<string[]>(product?.images || []);
   const [newImages, setNewImages] = useState<Array<{ file: File; preview: string }>>([]);
@@ -76,20 +74,6 @@ export default function ProductForm({
   const [error, setError] = useState("");
 
   const allImages = [...existingImages, ...newImages.map((img) => img.preview)];
-
-  const orderTimeProps = useDateInput({
-    date: orderDeadline,
-    format: "HH:mm",
-    locale: enGB,
-    onDateChange: setOrderDeadline,
-  });
-
-  const deliveryTimeProps = useDateInput({
-    date: estimatedDelivery,
-    format: "HH:mm",
-    locale: enGB,
-    onDateChange: setEstimatedDelivery,
-  });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -295,8 +279,7 @@ export default function ProductForm({
         images: existingImages,
         imageUploads,
         variants: variantsWithUploads,
-        order_deadline: orderDeadline?.toISOString() || null,
-        estimated_delivery: estimatedDelivery?.toISOString() || null,
+        order_deadline: orderDeadline ? orderDeadline.toISOString() : null,
       };
 
       const url = isEdit ? `/api/shop/products/${product?.id}` : "/api/shop/products";
@@ -466,30 +449,31 @@ export default function ProductForm({
             min="0"
           />
         )}
-        <div className={styles.row}>
-          <DatePicker
-            date={orderDeadline}
-            onDateChange={(date) => setOrderDeadline(date ?? undefined)}
-            locale={enGB}
-            format="dd/MM/yyyy">
-            {({ inputProps }) => (
-              <input {...inputProps} placeholder="Data limite encomenda" className={styles.field} />
-            )}
-          </DatePicker>
-          <input {...orderTimeProps} placeholder="00:00" className={styles.field} />
-        </div>
-
-        <div className={styles.row}>
-          <DatePicker
-            date={estimatedDelivery}
-            onDateChange={(date) => setEstimatedDelivery(date ?? undefined)}
-            locale={enGB}
-            format="dd/MM/yyyy">
-            {({ inputProps }) => (
-              <input {...inputProps} placeholder="Data entrega estimada" className={styles.field} />
-            )}
-          </DatePicker>
-          <input {...deliveryTimeProps} placeholder="00:00" className={styles.field} />
+        <div className={styles.row} style={{ position: "relative" }}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={orderDeadline ? orderDeadline.toLocaleString("pt-PT") : ""}
+            placeholder="Data limite encomenda"
+            readOnly
+            onClick={() => setShowDatePicker(true)}
+            className={styles.field}
+          />
+          {showDatePicker && (
+            <div style={{ position: "absolute", zIndex: 10 }}>
+              <DayPicker
+                mode="single"
+                selected={orderDeadline}
+                onSelect={(date) => {
+                  setOrderDeadline(date ?? undefined);
+                  setShowDatePicker(false);
+                }}
+                weekStartsOn={1}
+                captionLayout="dropdown"
+                navLayout="around"
+              />
+            </div>
+          )}
         </div>
         <div>
           <label className={styles.label}>Tipos de Opção</label>

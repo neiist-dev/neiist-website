@@ -234,12 +234,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                   Prazo de encomenda: {new Date(product.order_deadline).toLocaleDateString("pt-PT")}
                 </div>
               )}
-              {product.estimated_delivery && (
-                <div className={styles.deliveryDate}>
-                  Entrega estimada:{" "}
-                  {new Date(product.estimated_delivery).toLocaleDateString("pt-PT")}
-                </div>
-              )}
             </div>
           </div>
           <div>

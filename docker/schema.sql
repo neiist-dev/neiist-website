@@ -36,21 +36,10 @@ CREATE TYPE neiist.contact_method_enum AS ENUM (
 CREATE TYPE neiist.shop_order_status_enum AS ENUM (
   'pending',
   'paid',
-  'preparing',
   'ready',
   'delivered',
   'cancelled'
 );
-
--- ORDER NUMBER GENERATOR
-CREATE SEQUENCE neiist.order_sequence;
-
-CREATE OR REPLACE FUNCTION neiist.generate_order_number()
-RETURNS TEXT AS $$
-BEGIN
-  RETURN 'ORD-' || to_char(NOW(), 'YYYY') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- USERS TABLE
 CREATE TABLE neiist.users (
@@ -182,7 +171,6 @@ CREATE TABLE neiist.products (
   stock_type neiist.shop_stock_type_enum NOT NULL,
   stock_quantity INTEGER,
   order_deadline TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   CONSTRAINT chk_products_stock
     CHECK (
@@ -931,6 +919,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- ORDER NUMBER GENERATOR
+CREATE SEQUENCE neiist.order_sequence;
+
+CREATE OR REPLACE FUNCTION neiist.generate_order_number()
+RETURNS TEXT AS $$
+BEGIN
+  RETURN 'ORD-' || to_char(NOW(), 'YYYY') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- GET OR CREATE A CATEGORY
 CREATE OR REPLACE FUNCTION neiist.get_or_create_category(p_name TEXT)
 RETURNS TABLE (
@@ -969,7 +967,6 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   p_stock_type neiist.shop_stock_type_enum,
   p_stock_quantity INTEGER,
   p_order_deadline TIMESTAMPTZ,
-  p_estimated_delivery TIMESTAMPTZ,
   p_active BOOLEAN DEFAULT TRUE
 ) RETURNS TABLE (
   id INTEGER,
@@ -981,7 +978,6 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   stock_type TEXT,
   stock_quantity INTEGER,
   order_deadline TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 DECLARE
@@ -994,10 +990,10 @@ BEGIN
 
   INSERT INTO neiist.products(
     name, description, price, images, category_id, stock_type, stock_quantity,
-    order_deadline, estimated_delivery, active
+    order_deadline, active
   ) VALUES (
     p_name, p_description, p_price, COALESCE(p_images,'{}'),
-    v_cat_id, p_stock_type, p_stock_quantity, p_order_deadline, p_estimated_delivery, COALESCE(p_active, TRUE)
+    v_cat_id, p_stock_type, p_stock_quantity, p_order_deadline, COALESCE(p_active, TRUE)
   )
   RETURNING products.id INTO v_id;
 
@@ -1012,7 +1008,6 @@ BEGIN
     pr.stock_type::TEXT,
     pr.stock_quantity,
     pr.order_deadline,
-    pr.estimated_delivery,
     '[]'::JSONB AS variants
   FROM neiist.products pr
   LEFT JOIN neiist.categories c ON c.id = pr.category_id
@@ -1039,7 +1034,6 @@ CREATE OR REPLACE FUNCTION neiist.add_product_variant(
   stock_type TEXT,
   stock_quantity INTEGER,
   order_deadline TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 DECLARE
@@ -1089,7 +1083,6 @@ BEGIN
     v_product.stock_type::TEXT,
     v_product.stock_quantity,
     v_product.order_deadline,
-    v_product.estimated_delivery,
     (
       SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
@@ -1129,7 +1122,6 @@ RETURNS TABLE (
   stock_type TEXT,
   stock_quantity INTEGER,
   order_deadline TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 BEGIN
@@ -1137,7 +1129,7 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    p.stock_type::TEXT, p.stock_quantity, p.order_deadline, p.estimated_delivery,
+    p.stock_type::TEXT, p.stock_quantity, p.order_deadline,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -1182,7 +1174,6 @@ RETURNS TABLE (
   stock_type TEXT,
   stock_quantity INTEGER,
   order_deadline TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 BEGIN
@@ -1190,7 +1181,7 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    p.stock_type::TEXT, p.stock_quantity, p.order_deadline, p.estimated_delivery,
+    p.stock_type::TEXT, p.stock_quantity, p.order_deadline,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -1237,7 +1228,6 @@ CREATE OR REPLACE FUNCTION neiist.update_product(
   stock_type TEXT,
   stock_quantity INTEGER,
   order_deadline TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
   variants JSONB
 ) AS $$
 DECLARE
@@ -1268,9 +1258,6 @@ BEGIN
   END IF;
   IF p_updates ? 'order_deadline' THEN
     UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::TIMESTAMPTZ WHERE products.id = p_product_id;
-  END IF;
-  IF p_updates ? 'estimated_delivery' THEN
-    UPDATE neiist.products SET estimated_delivery = NULLIF(p_updates->>'estimated_delivery','')::TIMESTAMPTZ WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'active' THEN
     UPDATE neiist.products SET active = (p_updates->>'active')::BOOLEAN WHERE products.id = p_product_id;

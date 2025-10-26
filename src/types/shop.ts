@@ -8,7 +8,6 @@ export interface Product {
   stock_type: "limited" | "on_demand";
   stock_quantity?: number;
   order_deadline?: string;
-  estimated_delivery?: string;
   variants: ProductVariant[];
 }
 
@@ -22,7 +21,6 @@ export interface dbProduct {
   stock_type: string;
   stock_quantity: number | null;
   order_deadline: string | null;
-  estimated_delivery: string | null;
   variants: dbProductVariant[] | null;
 }
 
@@ -72,7 +70,7 @@ export interface Order {
   status: OrderStatus;
 }
 
-export type OrderStatus = "pending" | "paid" | "preparing" | "ready" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "paid" | "ready" | "delivered" | "cancelled";
 
 export interface dbOrder {
   id: number;
@@ -146,7 +144,6 @@ export function mapdbProductToProduct(row: dbProduct): Product {
     stock_type: row.stock_type as Product["stock_type"],
     stock_quantity: row.stock_quantity ?? undefined,
     order_deadline: row.order_deadline ?? undefined,
-    estimated_delivery: row.estimated_delivery ?? undefined,
     variants: (row.variants ?? []).map(
       (v): ProductVariant => ({
         id: v.id,

@@ -1,6 +1,5 @@
 import { Product, Order } from "@/types/shop";
 
-//TODO: This should be done on sql function
 export function getFeaturedAndTopProducts(products: Product[], orders: Order[]) {
   const salesCount: Record<number, number> = {};
   orders.forEach((order) => {

@@ -546,7 +546,6 @@ export const addProduct = async (
       product.stock_type,
       product.stock_quantity ?? null,
       product.order_deadline ?? null,
-      product.estimated_delivery ?? null,
       product.active ?? true,
     ]
   );
