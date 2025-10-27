@@ -44,15 +44,45 @@ This guide will help you get a local copy up and running follow these simple ste
    ```sh
    npm install yarn
    ```
-5. Run the setup script with Yarn.
+5. **SMTP Setup (Optional — for email sending features):**  
+   To enable email functionality (e.g., for notifications or verification), you need SMTP credentials.  
+   - For testing, you can use [Ethereal Email](https://ethereal.email/), a free fake SMTP service:
+     1. Go to [ethereal.email](https://ethereal.email/) and create a test account.
+     2. Copy the SMTP details (host, port, user, password).
+     3. When running the setup script, enter these details when prompted.
+   - You can also use credentials from your own email provider if preferred.
+6. Run the setup script with Yarn.
    ```sh
    yarn setup
    ```
+7. **Google Drive Integration (Optional — for CV Bank file uploads):**  
+   To enable file uploads to Google Drive (used by the CV Bank feature), you need to set up a Google Cloud project:
+   1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
+   2. Enable the **Google Drive API** for your project.
+   3. Create OAuth 2.0 credentials (Desktop App) and download the `client_secret.json` file.
+   4. Add your email as a test user in the OAuth consent screen.
+   5. **Install required Python modules:**
+      ```sh
+      pip install PyQt5 google-auth google-auth-oauthlib
+      ```
+   6. Run the authentication script:
+      ```sh
+      python scripts/gdrive-auth.py
+      ```
+      - Select your `client_secret.json` file.
+      - Choose a location to save the token (e.g., `token.json`).
+      - Complete the authentication flow in your browser.
+   7. Use the generated token and credentials in your `.env` file:
+      ```
+      GOOGLE_CLIENT_SECRET_JSON=client_secret.json
+      GDRIVE_TOKEN_PATH=token.json
+      GDRIVE_CV_FOLDER_ID=your_drive_folder_id
+      ```
 
 ## Database Management
 
 - The database runs in Docker and is initialized automatically.
-- For easy editing and inspection, use **Datagrip** or any PostgreSQL client.
+- For easy editing and inspection, use **DataGrip** or any PostgreSQL client.
 - Default credentials (if you override `.env` during setup):
   - **User:** `admin`
   - **Password:** `admin`

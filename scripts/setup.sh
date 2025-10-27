@@ -66,8 +66,8 @@ collect_base_url() {
 add_dev_admin_to_init_sql() {
   echo "Configure Dev Admin for local development:"
   read -p "ISTID (e.g. ist1999999): " dev_istid
-  read -p "Name (e.g. Jhon Doe): " dev_name
-  read -p "Email (e.g. jhon.doe@tecnico.ulisboa.pt): " dev_email
+  read -p "Name (e.g. John Doe): " dev_name
+  read -p "Email (e.g. john.doe@tecnico.ulisboa.pt): " dev_email
 
   dev_sql="
 -- Dev Admin User (auto-added by setup.sh)
@@ -96,16 +96,6 @@ collect_admin_istid() {
   fi
 }
 
-# Function to collect Google Drive config
-collect_gdrive_env() {
-  if [ -z "${google_service_account_json}" ]; then
-    read -p "GOOGLE_SERVICE_ACCOUNT_JSON (path or JSON string): " google_service_account_json
-  fi
-  if [ -z "${gdrive_cv_folder_id}" ]; then
-    read -p "GDRIVE_CV_FOLDER_ID (Google Drive folder ID for CVs): " gdrive_cv_folder_id
-  fi
-}
-
 add_dev_admin_to_init_sql
 
 # Create .env file in project root
@@ -119,7 +109,6 @@ if [ -f ".env" ]; then
     collect_smtp_env
     collect_base_url
     collect_notion_env
-    collect_gdrive_env
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -135,9 +124,6 @@ NEXT_PUBLIC_BASE_URL=${next_public_base_url}
 # Notion Calendar Api
 NOTION_API_KEY=${notion_api_key}
 DATABASE_ID=${database_id}
-# Google Drive Token
-GOOGLE_SERVICE_ACCOUNT_JSON=${google_service_account_json}
-GDRIVE_CV_FOLDER_ID=${gdrive_cv_folder_id}
 DEV_ISTID=${dev_istid}[ADMIN]
 EOF
     echo ".env file created successfully."
@@ -147,7 +133,6 @@ else
   collect_smtp_env
   collect_base_url
   collect_notion_env
-  collect_gdrive_env
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -163,9 +148,6 @@ NEXT_PUBLIC_BASE_URL=${next_public_base_url}
 # Notion Calendar Api
 NOTION_API_KEY=${notion_api_key}
 DATABASE_ID=${database_id}
-# Google Drive Token
-GOOGLE_SERVICE_ACCOUNT_JSON=${google_service_account_json}
-GDRIVE_CV_FOLDER_ID=${gdrive_cv_folder_id}
 DEV_ISTID=${dev_istid}[ADMIN]
 EOF
   echo ".env file created successfully."
@@ -213,17 +195,6 @@ cd ..
 echo "Setting up Husky Pre-Commit..."
 chmod +x .husky/pre-commit
 yarn husky
-
-# Install required Python modules for Google Drive Auth
-pip install PyQt5 google-auth-oauthlib
-
-# Run the Google Drive Auth script
-if [ -f "scripts/gdrive_auth_ui.py" ]; then
-  echo "Starting Google Drive Auth UI..."
-  python scripts/gdrive_auth_ui.py
-else
-  echo "Google Drive Auth UI script not found at scripts/gdrive_auth_ui.py"
-fi
 
 echo "Setup completed successfully!"
 echo 

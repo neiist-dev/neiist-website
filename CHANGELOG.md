@@ -37,24 +37,6 @@
 
 ### Major Changes
 
-- CV-Bank & Profile
-  - New Profile Page design and CV-Bank integration
-  - Added new fields to user database: GitHub and LinkedIn usernames
-
-- Deployment & Scripts
-  - Added deploy actions and scripts
-  - Fixed deploy action typos and nvm path
-  - Improved gdrive auth and setup scripts
-  - Disabled features for first deploy 
-
-- Fixed name of hero assets
-- Fixed PDF CV download formatting 
-- Fixed style of description on the activity card
-
-## 0.9.0
-
-### Minor Changes
-
 - About Us
   - Redesigned About Us page with improved team grid and mobile scaling
   - "JoinUs" component for About Us page
@@ -67,6 +49,24 @@
 - Homepage
   - New hero styling and improved responsiveness
   - Student on hero campus image now loops around and supports arrow keybinds for movement
+
+- CV-Bank & Profile
+  - New Profile Page design and CV-Bank integration
+  - Added new fields to user database: GitHub and LinkedIn usernames
+
+- Deployment & Scripts
+  - Added deploy actions and scripts
+  - Fixed deploy action typos and nvm path
+  - Improved gdrive auth and setup scripts
+  - Disabled features for first deploy 
+
+## 0.9.0
+
+### Minor Changes
+
+- Fixed name of hero assets
+- Fixed PDF CV download formatting 
+- Fixed style of description on the activity card
 
 ## 0.8.1
 
