@@ -10,7 +10,10 @@
 
 # Testing
 /coverage
+
+# App Data
 /data
+notion-events-cache.json
 
 # Next.js
 /.next/

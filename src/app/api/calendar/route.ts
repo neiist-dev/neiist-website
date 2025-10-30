@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import ical from "ical-generator";
 import { ICalEventData } from "ical-generator";
+import { getUser } from "@/utils/dbUtils";
 import { NotionEvent, NotionPage, NotionApiResponse, NotionPerson } from "@/types/notion";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
@@ -23,7 +24,7 @@ function parseNotionPageToEvent(page: NotionPage): NotionEvent {
     location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
     type: props.Type?.select?.name ?? null,
     teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
-    attendees: props.Attendees?.people?.map((p: NotionPerson) => p.name ?? "") ?? [],
+    attendees: props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "") ?? [],
   };
 }
 
@@ -44,9 +45,8 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   const pages: NotionPage[] = [];
   let cursor: string | undefined = undefined;
   do {
-    // @ts-expect-error Notion SDK types don't include 'query', even it exists on runtime.
-    const response = (await notion.databases.query({
-      database_id: DATABASE_ID,
+    const response = (await notion.dataSources.query({
+      data_source_id: DATABASE_ID,
       start_cursor: cursor,
     })) as NotionApiResponse;
     const mappedPages: NotionPage[] = response.results.map((page) => ({
@@ -104,15 +104,21 @@ async function generateICSForUser(email: string) {
 
 export async function GET(request: NextRequest) {
   try {
-    const email = request.nextUrl.searchParams.get("email");
-    if (!email) {
-      return new NextResponse("Missing email", { status: 400 });
+    const istid = request.nextUrl.searchParams.get("istid");
+    if (!istid) {
+      return new NextResponse("Missing istid", { status: 400 });
     }
-    const ics = await generateICSForUser(email);
+    const user = await getUser(istid);
+    if (!user || !user.email) {
+      return new NextResponse("User not found or missing email", { status: 404 });
+    }
+
+    const ics = await generateICSForUser(user.email);
     return new NextResponse(ics, {
       headers: { "Content-Type": "text/calendar" },
     });
-  } catch {
-    return new NextResponse("Internal Server Error", { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return new NextResponse(`Internal Server Error: ${message}`, { status: 500 });
   }
 }
