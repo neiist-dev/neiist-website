@@ -1,5 +1,13 @@
 # neiist
 
+## 1.3.0
+
+### Minor Changes
+
+- Upgraded to Fenix API v2 for user data retrieval and course information.
+- Added OAuth state validation and refresh token support for more secure and persistent sessions.
+- Standardized cookie naming and handling across all auth endpoints.
+
 ## 1.2.3
 
 ### Patch Changes
@@ -58,22 +66,22 @@
   - Added deploy actions and scripts
   - Fixed deploy action typos and nvm path
   - Improved gdrive auth and setup scripts
-  - Disabled features for first deploy 
+  - Disabled features for first deploy
 
 ## 0.9.0
 
 ### Minor Changes
 
 - Fixed name of hero assets
-- Fixed PDF CV download formatting 
+- Fixed PDF CV download formatting
 - Fixed style of description on the activity card
 
 ## 0.8.1
 
 ### Patch Changes
 
-  - Moved setup script into scripts folder
-  - Repo cleanup and removed old assets
+- Moved setup script into scripts folder
+- Repo cleanup and removed old assets
 
 ## 0.8.0
 
