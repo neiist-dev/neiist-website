@@ -23,7 +23,7 @@ export const metadata = {
 async function getUserFromCookies(cookieStore = cookies()) {
   try {
     const store = await cookieStore;
-    return JSON.parse(store.get("userData")?.value ?? "null");
+    return JSON.parse(store.get("user_data")?.value ?? "null");
   } catch {
     return null;
   }

@@ -4,7 +4,7 @@ import { getAllOrders, newOrder, getUser } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole } from "@/types/user";
 
 async function checkMemberPermission() {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
   if (!accessToken) {
     return {
       isAuthorized: false,
@@ -12,7 +12,7 @@ async function checkMemberPermission() {
     };
   }
   try {
-    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
+    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
     if (!userData) {
       return {
         isAuthorized: false,
@@ -49,7 +49,7 @@ async function checkMemberPermission() {
 }
 
 async function checkGuestPermission() {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
   if (!accessToken) {
     return {
       isAuthorized: false,
@@ -57,7 +57,7 @@ async function checkGuestPermission() {
     };
   }
   try {
-    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
+    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
     if (!userData) {
       return {
         isAuthorized: false,

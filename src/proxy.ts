@@ -34,7 +34,7 @@ function canAccess(path: string, roles: UserRole[]) {
 
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const accessToken = req.cookies.get("accessToken")?.value;
+  const accessToken = req.cookies.get("access_token")?.value;
   const isAuthenticated = !!accessToken;
 
   if (!isAuthenticated && protectedRoutes.some((r) => path.startsWith(r))) {
@@ -45,7 +45,7 @@ export function proxy(req: NextRequest) {
   }
 
   if (isAuthenticated) {
-    const userDataCookie = req.cookies.get("userData")?.value;
+    const userDataCookie = req.cookies.get("user_data")?.value;
     let userData;
     try {
       userData = userDataCookie ? JSON.parse(userDataCookie) : null;

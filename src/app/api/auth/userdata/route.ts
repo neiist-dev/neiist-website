@@ -12,7 +12,7 @@ type FenixRegistration = {
 };
 
 export async function GET() {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
   if (!accessToken) return NextResponse.json({ error: "Not Authenticated." }, { status: 401 });
 
   try {
@@ -72,7 +72,7 @@ export async function GET() {
     }
 
     const resp = NextResponse.json(user);
-    resp.cookies.set("userData", JSON.stringify(user), {
+    resp.cookies.set("user_data", JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24,

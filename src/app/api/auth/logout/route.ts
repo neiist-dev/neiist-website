@@ -1,21 +1,28 @@
 import { NextResponse } from "next/server";
 
-export async function POST() {
-  const response = NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_BASE_URL));
+export async function POST(request: Request) {
+  const redirectUrl = new URL("/", request.url);
+  redirectUrl.searchParams.set("t", Date.now().toString());
 
-  response.cookies.set("accessToken", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 0,
-    path: "/",
-  });
+  const res = NextResponse.redirect(redirectUrl);
+  res.headers.set("Cache-Control", "no-store");
 
-  response.cookies.set("userData", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 0,
-    path: "/",
-  });
+  type CookieOptions = Parameters<typeof res.cookies.set>[2];
 
-  return response;
+  const del = (name: string, opts: Partial<CookieOptions> = {}) => {
+    const defaults: CookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    };
+    return res.cookies.set(name, "", { ...defaults, ...opts });
+  };
+
+  del("access_token");
+  del("user_data");
+  del("fenix_oauth_state");
+
+  return res;
 }

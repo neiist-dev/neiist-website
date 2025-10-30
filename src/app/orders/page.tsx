@@ -13,7 +13,7 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
   const orders = await getAllOrders();
 
   const cookieStore = await cookies();
-  const userDataCookie = cookieStore.get("userData")?.value;
+  const userDataCookie = cookieStore.get("user_data")?.value;
   const userData = userDataCookie ? JSON.parse(userDataCookie) : null;
 
   let user = null;

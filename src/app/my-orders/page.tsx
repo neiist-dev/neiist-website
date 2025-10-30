@@ -10,7 +10,7 @@ interface PageProps {
 export default async function MyOrdersPage({ searchParams }: PageProps) {
   const { orderId } = await searchParams;
   const cookieStore = await cookies();
-  const userDataCookie = cookieStore.get("userData")?.value;
+  const userDataCookie = cookieStore.get("user_data")?.value;
   const userData = userDataCookie ? JSON.parse(userDataCookie) : null;
 
   const allOrders = await getAllOrders();
