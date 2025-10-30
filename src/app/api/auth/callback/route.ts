@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     }
 
     const data = await r.json();
-    const { access_token, expires_in } = data;
+    const { access_token, refresh_token, expires_in } = data;
 
     if (!access_token) {
       const res = NextResponse.json({ error: "Access Token Missing" }, { status: 500 });
@@ -58,6 +58,14 @@ export async function GET(request: Request) {
       maxAge: Math.max(0, (Number(expires_in) || 3600) - 60),
       path: "/",
     });
+    if (refresh_token) {
+      response.cookies.set("refresh_token", refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 30,
+        path: "/",
+      });
+    }
     response.cookies.set(clearedStateCookie);
     return response;
   } catch (error) {

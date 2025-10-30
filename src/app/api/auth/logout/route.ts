@@ -22,6 +22,7 @@ export async function POST(request: Request) {
 
   del("access_token");
   del("user_data");
+  del("refresh_token");
   del("fenix_oauth_state");
 
   return res;
