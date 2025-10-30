@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
-  const redirectUrl = new URL("/", request.url);
+export async function POST() {
+  const redirectUrl = new URL("/", process.env.NEXT_PUBLIC_BASE_URL);
   redirectUrl.searchParams.set("t", Date.now().toString());
 
   const res = NextResponse.redirect(redirectUrl);

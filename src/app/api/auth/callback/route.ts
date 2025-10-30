@@ -50,7 +50,9 @@ export async function GET(request: Request) {
       return res;
     }
 
-    const response = NextResponse.redirect(new URL("/?login=true", request.url));
+    const response = NextResponse.redirect(
+      new URL("/?login=true", process.env.NEXT_PUBLIC_BASE_URL)
+    );
 
     response.cookies.set("access_token", access_token, {
       httpOnly: true,
