@@ -12,7 +12,7 @@ async function checkAdminPermission(): Promise<{
   isAuthorized: boolean;
   error?: NextResponse;
 }> {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
 
   if (!accessToken) {
     return {
@@ -22,7 +22,7 @@ async function checkAdminPermission(): Promise<{
   }
 
   try {
-    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
+    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
     if (!userData) {
       return {
         isAuthorized: false,

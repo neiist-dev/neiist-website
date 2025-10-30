@@ -52,7 +52,7 @@ export async function GET(request: Request) {
 
     const response = NextResponse.redirect(new URL("/?login=true", request.url));
 
-    response.cookies.set("accessToken", access_token, {
+    response.cookies.set("access_token", access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: Math.max(0, (Number(expires_in) || 3600) - 60),

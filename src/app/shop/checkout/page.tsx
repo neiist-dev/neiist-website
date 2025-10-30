@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 export default async function CheckoutPage() {
   const cookieStore = await cookies();
-  const userDataCookie = cookieStore.get("userData")?.value;
+  const userDataCookie = cookieStore.get("user_data")?.value;
   const user = userDataCookie ? JSON.parse(userDataCookie) : null;
 
   if (!user) {

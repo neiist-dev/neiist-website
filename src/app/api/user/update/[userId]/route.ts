@@ -6,14 +6,14 @@ import fs from "fs/promises";
 import path from "path";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
 
   if (!accessToken) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   try {
-    const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
+    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
     if (!userData) {
       return NextResponse.json({ error: "User data not found" }, { status: 404 });
     }

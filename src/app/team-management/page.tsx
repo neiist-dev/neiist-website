@@ -13,7 +13,7 @@ interface Role {
 
 export default async function TeamManagementPage() {
   const cookieStore = await cookies();
-  const userDataCookie = cookieStore.get("userData")?.value;
+  const userDataCookie = cookieStore.get("user_data")?.value;
   const userData = userDataCookie ? JSON.parse(userDataCookie) : null;
   const istid = userData?.istid;
 

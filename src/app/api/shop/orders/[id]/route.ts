@@ -12,9 +12,9 @@ import type { User } from "@/types/user";
 import type { Order } from "@/types/shop";
 
 async function getCurrentUserAndRoles() {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
   if (!accessToken) return null;
-  const userData = JSON.parse((await cookies()).get("userData")?.value || "null");
+  const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
   if (!userData) return null;
   const user = await getUser(userData.istid);
   if (!user) return null;

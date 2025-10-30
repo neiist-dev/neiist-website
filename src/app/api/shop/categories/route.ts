@@ -4,7 +4,7 @@ import { UserRole } from "@/types/user";
 import { getUser, getAllCategories, addCategory } from "@/utils/dbUtils";
 
 async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
-  const accessToken = (await cookies()).get("accessToken")?.value;
+  const accessToken = (await cookies()).get("access_token")?.value;
   if (!accessToken) {
     return {
       isAuthorized: false,
@@ -13,7 +13,7 @@ async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: 
   }
 
   try {
-    const userDataRaw = (await cookies()).get("userData")?.value || "null";
+    const userDataRaw = (await cookies()).get("user_data")?.value || "null";
     const userData = JSON.parse(userDataRaw);
     if (!userData) {
       return {

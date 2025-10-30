@@ -85,7 +85,7 @@ async function uploadCV(fileBuffer: Buffer, filename: string) {
 
 async function getUsernameFromCookies(): Promise<string | null> {
   const reqCookies = await cookies();
-  const userData = reqCookies.get("userData")?.value;
+  const userData = reqCookies.get("user_data")?.value;
   if (!userData) return null;
   try {
     const user = JSON.parse(userData);
