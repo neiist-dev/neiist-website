@@ -3,18 +3,19 @@ import { Client } from "@notionhq/client";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { NotionPage, NotionEvent, NotionPerson } from "@/types/notion";
+import { NotionPage, NotionEvent, NotionPerson, NotionApiResponse } from "@/types/notion";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
+const DATABASE_ID = process.env.DATABASE_ID!;
 const CACHE_FILE = path.resolve(process.cwd(), "notion-events-cache.json");
 const ENV_PATH = path.resolve(process.cwd(), ".env");
-
-const notion = new Client({ auth: NOTION_API_KEY });
 
 type NotionWebhookPayload = {
   verification_token?: string;
   [key: string]: unknown;
 };
+
+const notion = new Client({ auth: NOTION_API_KEY });
 
 function parseNotionPageToEvent(page: NotionPage): NotionEvent {
   const props = page.properties;
@@ -27,31 +28,38 @@ function parseNotionPageToEvent(page: NotionPage): NotionEvent {
     location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
     type: props.Type?.select?.name ?? null,
     teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
-    attendees: props.Attendees?.people?.map((p: NotionPerson) => p.name ?? "") ?? [],
+    attendees: props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "") ?? [],
   };
-}
-
-async function loadCache(): Promise<NotionEvent[]> {
-  try {
-    const txt = await fs.readFile(CACHE_FILE, "utf8");
-    return JSON.parse(txt) as NotionEvent[];
-  } catch {
-    return [];
-  }
 }
 
 async function saveCache(events: NotionEvent[]) {
   await fs.writeFile(CACHE_FILE, JSON.stringify(events, null, 2), "utf8");
 }
 
+async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
+  const pages: NotionPage[] = [];
+  let cursor: string | undefined = undefined;
+  do {
+    const response = (await notion.dataSources.query({
+      data_source_id: DATABASE_ID,
+      start_cursor: cursor,
+    })) as NotionApiResponse;
+    const mappedPages: NotionPage[] = response.results.map((page) => ({
+      id: page.id,
+      url: page.url,
+      properties: page.properties,
+    }));
+    pages.push(...mappedPages);
+    cursor = response.has_more ? response.next_cursor : undefined;
+  } while (cursor);
+
+  const events = pages.map(parseNotionPageToEvent);
+  await saveCache(events);
+  return events;
+}
+
 async function getVerificationToken(): Promise<string | undefined> {
-  try {
-    const envContent = await fs.readFile(ENV_PATH, "utf8");
-    const match = envContent.match(/^VERIFICATION_TOKEN=(.*)$/m);
-    return match ? match[1].trim() : undefined;
-  } catch {
-    return undefined;
-  }
+  return process.env.VERIFICATION_TOKEN;
 }
 
 async function saveVerificationTokenToEnv(token: string) {
@@ -70,23 +78,6 @@ async function saveVerificationTokenToEnv(token: string) {
   }
 
   await fs.writeFile(ENV_PATH, env, "utf8");
-}
-
-function extractPageIds(payload: unknown): Set<string> {
-  const ids = new Set<string>();
-  function recurse(obj: unknown) {
-    if (Array.isArray(obj)) {
-      obj.forEach(recurse);
-    } else if (obj && typeof obj === "object") {
-      for (const [key, value] of Object.entries(obj)) {
-        if (key === "id" && typeof value === "string") ids.add(value);
-        if (key === "page_id" && typeof value === "string") ids.add(value);
-        recurse(value);
-      }
-    }
-  }
-  recurse(payload);
-  return ids;
 }
 
 export async function POST(req: NextRequest) {
@@ -125,32 +116,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const pageIds = extractPageIds(payload);
-  if (pageIds.size === 0) {
-    return NextResponse.json({ ok: true });
-  }
-
   try {
-    const current = await loadCache();
-    for (const id of pageIds) {
-      try {
-        const page = (await notion.pages.retrieve({ page_id: id })) as NotionPage;
-        const ev = parseNotionPageToEvent(page);
-        const idx = current.findIndex((c) => c.id === ev.id);
-        if (idx === -1) current.push(ev);
-        else current[idx] = ev;
-      } catch (error) {
-        if ((error as { code?: string }).code === "object_not_found") {
-          const filtered = current.filter((c) => c.id !== id);
-          (current as NotionEvent[]) = filtered;
-        } else {
-          throw error;
-        }
-      }
-    }
-    await saveCache(current);
-    return NextResponse.json({ ok: true });
+    const events = await fetchAllNotionEvents();
+    await saveCache(events);
+
+    return NextResponse.json({ ok: true, refreshed: true, count: events.length });
   } catch {
-    return new NextResponse("Failed to process webhook", { status: 500 });
+    return new NextResponse("Failed to refresh cache", { status: 500 });
   }
 }

@@ -69,9 +69,68 @@ async function getNotionEvents(): Promise<NotionEvent[]> {
   return await fetchAllNotionEvents();
 }
 
+function isDateOnly(s?: string | null) {
+  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function addDays(date: Date, days: number) {
+  const d = new Date(date);
+  d.setUTCDate(d.getUTCDate() + days);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+function addHours(date: Date, hours: number) {
+  const d = new Date(date);
+  d.setTime(d.getTime() + hours * 60 * 60 * 1000);
+  return d;
+}
+
+function buildICalDatesFromNotion(
+  event: NotionEvent
+): { start: Date; end: Date; allDay: boolean } | null {
+  if (!event.date) return null;
+
+  const startIsDateOnly = isDateOnly(event.date);
+  const endExists = !!event.end;
+  const endIsDateOnly = endExists && isDateOnly(event.end!);
+
+  if (startIsDateOnly && !endExists) {
+    const start = new Date(event.date + "T00:00:00Z");
+    const end = addDays(start, 1);
+    return { start, end, allDay: true };
+  }
+
+  if (startIsDateOnly && endIsDateOnly) {
+    const start = new Date(event.date + "T00:00:00Z");
+    const endDate = new Date(event.end! + "T00:00:00Z");
+    const end = addDays(endDate, 1);
+    return { start, end, allDay: true };
+  }
+
+  if (!startIsDateOnly && !endExists) {
+    const start = new Date(event.date);
+    const end = addHours(start, 1);
+    return { start, end, allDay: false };
+  }
+
+  if (!startIsDateOnly && endExists && !endIsDateOnly) {
+    const start = new Date(event.date);
+    const end = new Date(event.end!);
+    return { start, end, allDay: false };
+  }
+
+  return null;
+}
+
 async function generateICSForUser(email: string) {
   const events = await getNotionEvents();
-  const calendar = ical({ name: "User Events" });
+  const calendar = ical({
+    name: "NEIIST",
+    prodId: { company: "neiist", product: "NEIIST Calendar", language: "EN" },
+    timezone: "UTC",
+  });
+
   events
     .filter(
       (event) =>
@@ -79,6 +138,8 @@ async function generateICSForUser(email: string) {
         (event.type !== "Meeting" || (event.type === "Meeting" && event.attendees.includes(email)))
     )
     .forEach((event) => {
+      const dates = buildICalDatesFromNotion(event);
+      if (!dates) return;
       const ev: ICalEventData = {
         id: event.id,
         summary: event.title,
@@ -86,17 +147,21 @@ async function generateICSForUser(email: string) {
         location: event.location.length ? event.location.join(", ") : undefined,
         description: [
           event.url,
-          event.type ? `Type: ${event.type}` : "",
           event.attendees.length ? `Attendees: ${event.attendees.join(", ")}` : "",
-          event.teams.length ? `Teams: ${event.teams.join(", ")}` : "",
         ]
           .filter(Boolean)
           .join("\n"),
         categories: event.type ? [{ name: event.type }] : [{ name: "Event" }],
-        start: new Date(event.date!),
+        start: dates.start,
+        end: dates.end,
       };
-      if (event.end) ev.end = new Date(event.end);
-      calendar.createEvent(ev);
+
+      if (dates.allDay) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        calendar.createEvent({ ...(ev as any), allDay: true } as any);
+      } else {
+        calendar.createEvent(ev);
+      }
     });
 
   return calendar.toString();
@@ -114,9 +179,14 @@ export async function GET(request: NextRequest) {
     }
 
     const ics = await generateICSForUser(user.email);
-    return new NextResponse(ics, {
+    const response = new NextResponse(ics, {
       headers: { "Content-Type": "text/calendar" },
     });
+    response.headers.delete("X-Frame-Options");
+    response.headers.delete("X-Content-Type-Options");
+    response.headers.delete("X-XSS-Protection");
+
+    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return new NextResponse(`Internal Server Error: ${message}`, { status: 500 });
