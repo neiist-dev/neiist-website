@@ -48,9 +48,10 @@ export default function ProfileClient({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const calendarIcs = user?.istid
-    ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar/${user.istid}/calendar.ics`
-    : "";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL?.replace("https://", "").replace("http://", "") ||
+    "localhost:3000";
+  const calendarIcs = user?.istid ? `webcal://${baseUrl}/api/calendar/${user.istid}` : "";
   const calendarUrl = user?.istid
     ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(calendarIcs)}`
     : "";

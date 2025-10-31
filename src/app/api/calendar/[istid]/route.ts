@@ -184,14 +184,21 @@ export async function GET(
     }
 
     const ics = await generateICSForUser(user.email);
+    const userAgent = request.headers.get("user-agent") || "";
+    const isCalendarClient = userAgent.includes("Google") || userAgent.includes("Calendar");
+
     return new NextResponse(ics, {
+      status: 200,
       headers: {
-        "Content-Type": "text/calendar",
-        "Content-Security-Policy": "frame-ancestors *",
+        "Content-Type": "text/calendar; charset=utf-8",
+        "Cache-Control": "no-cache, must-revalidate",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, User-Agent",
+        ...(isCalendarClient ? {} : { "Content-Disposition": "inline" }),
       },
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return new NextResponse(`Internal Server Error: ${message}`, { status: 500 });
+  } catch {
+    return new NextResponse(`Internal Server Error`, { status: 500 });
   }
 }
