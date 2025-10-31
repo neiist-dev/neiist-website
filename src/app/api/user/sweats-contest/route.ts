@@ -8,6 +8,7 @@ import { getFirstAndLastName } from "@/utils/userUtils";
 const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON!;
 const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH!;
 const SWEATS_FOLDER_ID = process.env.GDRIVE_SWEATS_FOLDER_ID!;
+const MAX_SUBMISSIONS = 3;
 
 if (!CREDENTIALS_PATH) throw new Error("Missing env: GOOGLE_CLIENT_SECRET_JSON");
 if (!TOKEN_PATH) throw new Error("Missing env: GDRIVE_TOKEN_PATH");
@@ -29,19 +30,22 @@ function escapeDriveQueryString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
-async function findUserSubmissionFileId(username: string): Promise<string | null> {
+async function getUserSubmissions(username: string): Promise<Array<{ id: string; name: string }>> {
   const drive = await getGoogleDriveClient();
-  const filename = `${username}.zip`;
-  const safeName = escapeDriveQueryString(filename);
+  const safeUsername = escapeDriveQueryString(username);
   const res = await drive.files.list({
-    q: `'${SWEATS_FOLDER_ID}' in parents and name='${safeName}' and trashed=false`,
-    fields: "files(id, name)",
+    q: `'${SWEATS_FOLDER_ID}' in parents and name contains '${safeUsername}_' and trashed=false`,
+    fields: "files(id, name, createdTime)",
     spaces: "drive",
+    orderBy: "createdTime desc",
   });
-  if (Array.isArray(res.data.files) && res.data.files.length > 0 && res.data.files[0]?.id) {
-    return res.data.files[0].id;
-  }
-  return null;
+  return (res.data.files || []) as Array<{ id: string; name: string }>;
+}
+
+async function deleteOldestSubmission(submissions: Array<{ id: string; name: string }>) {
+  const drive = await getGoogleDriveClient();
+  const oldestFile = submissions[submissions.length - 1];
+  await drive.files.delete({ fileId: oldestFile.id });
 }
 
 async function uploadSubmission(fileBuffer: Buffer, filename: string) {
@@ -111,16 +115,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const existingFileId = await findUserSubmissionFileId(username);
-  if (existingFileId) {
-    const drive = await getGoogleDriveClient();
-    await drive.files.delete({ fileId: existingFileId });
+  const existingSubmissions = await getUserSubmissions(username);
+  if (existingSubmissions.length >= MAX_SUBMISSIONS) {
+    await deleteOldestSubmission(existingSubmissions);
   }
 
-  const filename = `${username}.zip`;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").split(".")[0];
+  const filename = `${username}_${timestamp}.zip`;
+
   try {
     const result = await uploadSubmission(buffer, filename);
-    return NextResponse.json({ success: true, ...result });
+    return NextResponse.json({
+      success: true,
+      ...result,
+      submissionNumber: Math.min(existingSubmissions.length + 1, MAX_SUBMISSIONS),
+      remainingSubmissions: Math.max(MAX_SUBMISSIONS - existingSubmissions.length - 1, 0),
+    });
   } catch (err) {
     console.error("Error uploading submission:", err);
     return NextResponse.json({ error: "Failed to upload submission" }, { status: 500 });

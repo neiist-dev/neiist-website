@@ -96,37 +96,37 @@ class AuthWindow(QWidget):
             self.info_label.setText("Token path selected. Click 'Authorize and" \
             "Save Token' to continue.")
 
-def authorize(self):
-    """Google OAuth2 functions"""
-    if not self.credentials_path:
-        QMessageBox.critical(self, "Error", "No credentials file selected.")
-        self.info_label.setText("Select a valid credentials JSON file.")
-        return
-    if not self.token_path:
-        QMessageBox.critical(self, "Error", "No token path selected.")
-        self.info_label.setText("Select a valid token save location.")
-        return
-    try:
-        flow = InstalledAppFlow.from_client_secrets_file(self.credentials_path, SCOPES)
-        creds = flow.run_local_server(port=0)
-        token_dir = os.path.dirname(self.token_path)
-        if token_dir:
-            os.makedirs(token_dir, exist_ok=True)
-        with open(self.token_path, "w", encoding="utf-8") as token_file:
-            token_file.write(creds.to_json())
-        os.chmod(self.token_path, 0o600)
-        QMessageBox.information(self, "Success", f"Token stored to {self.token_path}")
-        self.info_label.setText("Token saved! You can close this window.")
-    except FileNotFoundError as e:
-        QMessageBox.critical(self, "Error", f"Credentials file not found: {e}")
-        self.info_label.setText("Credentials file not found. Select a valid JSON file.")
-    except GoogleAuthError as e:
-        QMessageBox.critical(self, "Error", f"Authentication error: {e}")
-        self.info_label.setText("Authentication failed. Try again.")
-    except (OSError, ValueError) as e:
-        QMessageBox.critical(self, "Error", f"I/O or value error: {e}")
-        self.info_label.setText("An error occurred while saving the token or" \
-        "processing the response. Try again.")
+    def authorize(self):
+        """Google OAuth2 functions"""
+        if not self.credentials_path:
+            QMessageBox.critical(self, "Error", "No credentials file selected.")
+            self.info_label.setText("Select a valid credentials JSON file.")
+            return
+        if not self.token_path:
+            QMessageBox.critical(self, "Error", "No token path selected.")
+            self.info_label.setText("Select a valid token save location.")
+            return
+        try:
+            flow = InstalledAppFlow.from_client_secrets_file(self.credentials_path, SCOPES)
+            creds = flow.run_local_server(port=0)
+            token_dir = os.path.dirname(self.token_path)
+            if token_dir:
+                os.makedirs(token_dir, exist_ok=True)
+            with open(self.token_path, "w", encoding="utf-8") as token_file:
+                token_file.write(creds.to_json())
+            os.chmod(self.token_path, 0o600)
+            QMessageBox.information(self, "Success", f"Token stored to {self.token_path}")
+            self.info_label.setText("Token saved! You can close this window.")
+        except FileNotFoundError as e:
+            QMessageBox.critical(self, "Error", f"Credentials file not found: {e}")
+            self.info_label.setText("Credentials file not found. Select a valid JSON file.")
+        except GoogleAuthError as e:
+            QMessageBox.critical(self, "Error", f"Authentication error: {e}")
+            self.info_label.setText("Authentication failed. Try again.")
+        except (OSError, ValueError) as e:
+            QMessageBox.critical(self, "Error", f"I/O or value error: {e}")
+            self.info_label.setText("An error occurred while saving the token or" \
+            "processing the response. Try again.")
 
 def main():
     """Main"""

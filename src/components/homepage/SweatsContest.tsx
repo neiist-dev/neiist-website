@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import styles from "@/styles/components/homepage/SweatsContest.module.css";
+import backgroundImage from "@/assets/background.png";
 
 export default function SweatsContest() {
   const { user } = useUser();
@@ -56,7 +57,7 @@ export default function SweatsContest() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ backgroundImage: `url(${backgroundImage.src})` }}>
       <h3 className={styles.title}>Concurso de Design de Sweats</h3>
       <p className={styles.descprition}>
         Queres criar a próxima sweat especial de EIC?
@@ -84,7 +85,7 @@ export default function SweatsContest() {
         className={`${styles.apply} ${!user || uploading ? styles.disabled : ""}`}>
         {uploading ? "A submeter..." : buttonText}
       </button>
-      {!user && <p className={styles.loginWarning}>Por favor faz login para submeter um design</p>}
+      {!user && <p className={styles.loginWarning}>Por favor faça login para submeter um design</p>}
     </div>
   );
 }
