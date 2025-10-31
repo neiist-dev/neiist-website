@@ -49,7 +49,7 @@ export default function ProfileClient({
   const [error, setError] = useState<string>("");
 
   const calendarIcs = user?.istid
-    ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar?istid=${user.istid}`
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/calendar/${user.istid}/calendar.ics`
     : "";
   const calendarUrl = user?.istid
     ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(calendarIcs)}`

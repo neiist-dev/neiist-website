@@ -167,26 +167,29 @@ async function generateICSForUser(email: string) {
   return calendar.toString();
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ istid: string }> }
+) {
   try {
-    const istid = request.nextUrl.searchParams.get("istid");
+    const { istid } = await params;
+
     if (!istid) {
       return new NextResponse("Missing istid", { status: 400 });
     }
+
     const user = await getUser(istid);
     if (!user || !user.email) {
       return new NextResponse("User not found or missing email", { status: 404 });
     }
 
     const ics = await generateICSForUser(user.email);
-    const response = new NextResponse(ics, {
-      headers: { "Content-Type": "text/calendar" },
+    return new NextResponse(ics, {
+      headers: {
+        "Content-Type": "text/calendar",
+        "Content-Security-Policy": "frame-ancestors *",
+      },
     });
-    response.headers.delete("X-Frame-Options");
-    response.headers.delete("X-Content-Type-Options");
-    response.headers.delete("X-XSS-Protection");
-
-    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return new NextResponse(`Internal Server Error: ${message}`, { status: 500 });

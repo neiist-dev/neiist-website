@@ -1,0 +1,56 @@
+.container {
+  background: var(--primary-colour);
+  padding: 2.5rem;
+  margin: 2rem 0;
+  display: flex;
+  gap: 1.1rem;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  color: white;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin: 0;
+}
+
+.descprition {
+  color: white;
+  margin: 0;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+}
+
+.link {
+  color: white;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.link:hover {
+  opacity: 0.8;
+}
+
+.apply {
+  background: transparent;
+  color: white;
+  border: 2px solid #fff;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  padding: 0.7rem 2rem;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.apply.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loginWarning {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  font-style: italic;
+}
