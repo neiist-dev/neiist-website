@@ -1,6 +1,6 @@
 {
   "name": "neiist",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "scripts": {
     "setup": "chmod +x ./setup.sh && ./setup.sh",

@@ -89,6 +89,16 @@ collect_notion_env() {
   fi
 }
 
+# Function to collect Google Calendar Service Account
+collect_google_calendar_env() {
+  if [ -z "${google_service_account_email}" ]; then
+    read -p "GOOGLE_SERVICE_ACCOUNT_EMAIL (your service account email): " google_service_account_email
+  fi
+  if [ -z "${google_service_account_key}" ]; then
+    read -p "GOOGLE_SERVICE_ACCOUNT_KEY (path to your service account JSON key file): " google_service_account_key
+  fi
+}
+
 # Function to collect Admin ISTID
 collect_admin_istid() {
   if [ -z "${admin_istid}" ]; then
@@ -109,6 +119,7 @@ if [ -f ".env" ]; then
     collect_smtp_env
     collect_base_url
     collect_notion_env
+    collect_google_calendar_env
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -124,6 +135,9 @@ NEXT_PUBLIC_BASE_URL=${next_public_base_url}
 # Notion Calendar Api
 NOTION_API_KEY=${notion_api_key}
 DATABASE_ID=${database_id}
+# Google Calendar Service Account
+GOOGLE_SERVICE_ACCOUNT_EMAIL=${google_service_account_email}
+GOOGLE_SERVICE_ACCOUNT_KEY=${google_service_account_key}
 DEV_ISTID=${dev_istid}[ADMIN]
 EOF
     echo ".env file created successfully."
@@ -133,6 +147,7 @@ else
   collect_smtp_env
   collect_base_url
   collect_notion_env
+  collect_google_calendar_env
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -148,6 +163,9 @@ NEXT_PUBLIC_BASE_URL=${next_public_base_url}
 # Notion Calendar Api
 NOTION_API_KEY=${notion_api_key}
 DATABASE_ID=${database_id}
+# Google Calendar Service Account
+GOOGLE_SERVICE_ACCOUNT_EMAIL=${google_service_account_email}
+GOOGLE_SERVICE_ACCOUNT_KEY=${google_service_account_key}
 DEV_ISTID=${dev_istid}[ADMIN]
 EOF
   echo ".env file created successfully."

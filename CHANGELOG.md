@@ -1,5 +1,11 @@
 # neiist
 
+## 1.4.0
+
+### Minor Changes
+
+- Notion and Google Calendar Integration
+
 ## 1.3.0
 
 ### Minor Changes

@@ -17,7 +17,6 @@ import {
   FiLinkedin,
 } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
-import { LuCopy } from "react-icons/lu";
 import { IoOpenOutline } from "react-icons/io5";
 import { getFirstAndLastName } from "@/utils/userUtils";
 
@@ -33,6 +32,7 @@ export default function ProfileClient({
   const [user, setUser] = useState<User>(initialUser);
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
   const [cvLoading, setCvLoading] = useState<boolean>(false);
+  const [calendarLoading, setCalendarLoading] = useState<boolean>(false);
 
   const [altEmailDraft, setAltEmailDraft] = useState<string>(initialUser?.alternativeEmail ?? "");
   const [phoneDraft, setPhoneDraft] = useState<string>(initialUser?.phone ?? "");
@@ -47,14 +47,6 @@ export default function ProfileClient({
   );
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState<string>("");
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL?.replace("https://", "").replace("http://", "") ||
-    "localhost:3000";
-  const calendarIcs = user?.istid ? `webcal://${baseUrl}/api/calendar/${user.istid}` : "";
-  const calendarUrl = user?.istid
-    ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(calendarIcs)}`
-    : "";
 
   const isMember =
     user?.roles?.includes(UserRole._MEMBER) ||
@@ -139,12 +131,23 @@ export default function ProfileClient({
     }
   };
 
-  const handleCopyCalendar = async () => {
-    if (!calendarIcs) return;
+  const handleAddCalendar = async () => {
+    if (!user?.istid) return;
+    setCalendarLoading(true);
+    setError("");
+
     try {
-      await navigator.clipboard.writeText(calendarIcs);
-    } catch {
-      setError("Não foi possível copiar o link do calendário.");
+      const response = await fetch(`/api/calendar/${user.istid}`);
+      if (!response.ok) {
+        throw new Error("Failed to get calendar link");
+      }
+
+      const data = await response.json();
+      window.open(data.addCalendarLink, "_blank");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao adicionar calendário.");
+    } finally {
+      setCalendarLoading(false);
     }
   };
 
@@ -342,7 +345,7 @@ export default function ProfileClient({
           </div>
         </div>
         <div className={styles.right}>
-          {isMember && calendarUrl && (
+          {isMember && (
             <>
               <div className={styles.schedule}>
                 <div className={styles.sectionTitle}>
@@ -353,15 +356,19 @@ export default function ProfileClient({
                   Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!
                 </p>
                 <div className={styles.actionButtons}>
-                  <button className={styles.button} onClick={handleCopyCalendar}>
-                    <LuCopy /> Copy Link
-                  </button>
                   <a
                     className={styles.filledButton}
-                    href={calendarUrl || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer">
-                    <IoOpenOutline /> Open in Google Calendar
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddCalendar();
+                    }}
+                    href="#"
+                    style={{
+                      cursor: calendarLoading ? "not-allowed" : "pointer",
+                      opacity: calendarLoading ? 0.6 : 1,
+                    }}>
+                    <IoOpenOutline />{" "}
+                    {calendarLoading ? "A carregar..." : "Abrir no Google Calendar"}
                   </a>
                 </div>
               </div>
