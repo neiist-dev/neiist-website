@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Client } from "@notionhq/client";
+import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import crypto from "crypto";
 import { NotionPage, NotionEvent, NotionPerson, NotionApiResponse } from "@/types/notion";
+import { syncEventToCalendar, getOrCreateUserCalendar } from "@/utils/googleCalendar";
+import { getAllUsers } from "@/utils/dbUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
-const CACHE_FILE = path.resolve(process.cwd(), "notion-events-cache.json");
 const ENV_PATH = path.resolve(process.cwd(), ".env");
 
 type NotionWebhookPayload = {
@@ -32,10 +33,6 @@ function parseNotionPageToEvent(page: NotionPage): NotionEvent {
   };
 }
 
-async function saveCache(events: NotionEvent[]) {
-  await fs.writeFile(CACHE_FILE, JSON.stringify(events, null, 2), "utf8");
-}
-
 async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   const pages: NotionPage[] = [];
   let cursor: string | undefined = undefined;
@@ -53,9 +50,34 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
     cursor = response.has_more ? response.next_cursor : undefined;
   } while (cursor);
 
-  const events = pages.map(parseNotionPageToEvent);
-  await saveCache(events);
-  return events;
+  return pages.map(parseNotionPageToEvent);
+}
+
+async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
+  const allUsers = await getAllUsers();
+  const users = allUsers.filter((u) => u.email && u.istid);
+
+  await Promise.all(
+    users.map(async (user) => {
+      try {
+        const alternativeEmailRaw = user.alternativeEmailVerified
+          ? user.alternativeEmail
+          : undefined;
+        const alternativeEmail = alternativeEmailRaw ?? undefined;
+        const calendarId = await getOrCreateUserCalendar(
+          user.email!,
+          user.istid,
+          user.name,
+          alternativeEmail
+        );
+        await Promise.all(
+          events.map((event) => syncEventToCalendar(calendarId, event, user.email!))
+        );
+      } catch (error) {
+        console.error(`✗ Error syncing calendar for ${user.istid}:`, error);
+      }
+    })
+  );
 }
 
 async function getVerificationToken(): Promise<string | undefined> {
@@ -118,10 +140,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const events = await fetchAllNotionEvents();
-    await saveCache(events);
+    await syncAllEventsToGoogleCalendars(events);
 
-    return NextResponse.json({ ok: true, refreshed: true, count: events.length });
-  } catch {
-    return new NextResponse("Failed to refresh cache", { status: 500 });
+    return NextResponse.json({
+      ok: true,
+      synced: true,
+      eventCount: events.length,
+      message: "All calendars updated successfully",
+    });
+  } catch (error) {
+    console.error("Webhook error:", error);
+    return new NextResponse("Failed to sync calendars", { status: 500 });
   }
 }

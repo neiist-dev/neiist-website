@@ -26,7 +26,7 @@ This guide will help you get a local copy up and running follow these simple ste
       ```
 - **Docker**:
   Download and install from [docker.com](https://docs.docker.com/get-docker/).
-- **Datagrip** (optional):  
+- **DataGrip** (optional):  
   A GUI tool for managing your PostgreSQL database.  
   [Download here](https://www.jetbrains.com/datagrip/).
 
@@ -51,12 +51,55 @@ This guide will help you get a local copy up and running follow these simple ste
      2. Copy the SMTP details (host, port, user, password).
      3. When running the setup script, enter these details when prompted.
    - You can also use credentials from your own email provider if preferred.
-6. Run the setup script with Yarn.
+6. **Google Calendar Integration (Optional):**  
+   To enable Google Calendar integration, you need a service account:
+   1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
+   2. Enable the **Google Calendar API** for your project.
+   3. Create a **Service Account**:
+      - Go to "IAM & Admin" → "Service Accounts"
+      - Click "Create Service Account"
+      - Give it a name (e.g., "neiist-calendar")
+      - Click "Done"
+   4. Generate a key for the service account:
+      - Click on the service account
+      - Go to "Keys" tab
+      - Click "Add Key" → "Create new key"
+      - Choose JSON format
+      - Download the key file
+   5. Place the json key file on the root of the app folder:
+      ```
+      GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project-id.iam.gserviceaccount.com
+      GOOGLE_SERVICE_ACCOUNT_KEY=file_name.json
+      ```
+7. **Notion Integration (Optional — for event sync):**  
+   To sync events from Notion to Google Calendar and Activities Page:
+   1. Go to [Notion Integrations](https://www.notion.so/my-integrations).
+   2. Click "New integration".
+   3. Give it a name (e.g., "NEIIST Calendar Sync").
+   4. Select the workspace where your calendar database is located.
+   5. Copy the "Internal Integration Token" (starts with `ntn_`).
+   6. Share your Notion calendar database with the integration:
+      - Open your calendar database in Notion
+      - Click "..." (more options) → "Add connections"
+      - Search for your integration and add it
+   7. Get your database ID:
+      - Open your calendar database in Notion
+      - Click on the view settings icon (top right)
+      - Click "Manage data sources"
+      - Click the three dots (`...`) next to your database source
+      - Select "Copy data source ID"
+      - The ID is a 32-character string
+   8. Add to your `.env`:
+      ```
+      NOTION_API_KEY=secret_your_integration_token
+      DATABASE_ID=your_database_id_here
+      ```
+8. After getting your secrets you can run the setup script with Yarn, and it will ask for them.
    ```sh
    yarn setup
    ```
-7. **Google Drive Integration (Optional — for CV Bank file uploads):**  
-   To enable file uploads to Google Drive (used by the CV Bank feature), you need to set up a Google Cloud project:
+9. **Google Drive Integration (Optional — for file uploads):**  
+   To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need to set up a Google Cloud project:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
    2. Enable the **Google Drive API** for your project.
    3. Create OAuth 2.0 credentials (Desktop App) and download the `client_secret.json` file.
@@ -77,7 +120,7 @@ This guide will help you get a local copy up and running follow these simple ste
       GOOGLE_CLIENT_SECRET_JSON=client_secret.json
       GDRIVE_TOKEN_PATH=token.json
       GDRIVE_CV_FOLDER_ID=your_drive_folder_id
-      ```
+      GDRIVE_SWEATS_FOLDER_ID=your_sweats_folder_id
 
 ## Database Management
 
