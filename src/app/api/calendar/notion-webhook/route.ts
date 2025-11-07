@@ -3,8 +3,14 @@ import { Client } from "@notionhq/client";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import { NotionPage, NotionEvent, NotionPerson, NotionApiResponse } from "@/types/notion";
-import { syncEventToCalendar, getOrCreateUserCalendar } from "@/utils/googleCalendar";
+import {
+  NotionPage,
+  NotionEvent,
+  NotionPerson,
+  NotionApiResponse,
+  mapNotionResultToPage,
+} from "@/types/notion";
+import { syncAllEventsToCalendar, getOrCreateUserCalendar } from "@/utils/googleCalendar";
 import { getAllUsers } from "@/utils/dbUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
@@ -29,7 +35,10 @@ function parseNotionPageToEvent(page: NotionPage): NotionEvent {
     location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
     type: props.Type?.select?.name ?? null,
     teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
-    attendees: props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "") ?? [],
+    attendees:
+      props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "").filter(Boolean) ??
+      [],
+    lastEditedTime: page.last_edited_time,
   };
 }
 
@@ -40,14 +49,10 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
     const response = (await notion.dataSources.query({
       data_source_id: DATABASE_ID,
       start_cursor: cursor,
-    })) as NotionApiResponse;
-    const mappedPages: NotionPage[] = response.results.map((page) => ({
-      id: page.id,
-      url: page.url,
-      properties: page.properties,
-    }));
+    })) as unknown as NotionApiResponse;
+    const mappedPages = response.results.map(mapNotionResultToPage);
     pages.push(...mappedPages);
-    cursor = response.has_more ? response.next_cursor : undefined;
+    cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
   } while (cursor);
 
   return pages.map(parseNotionPageToEvent);
@@ -57,7 +62,7 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
   const allUsers = await getAllUsers();
   const users = allUsers.filter((u) => u.email && u.istid);
 
-  await Promise.all(
+  const results = await Promise.all(
     users.map(async (user) => {
       try {
         const alternativeEmailRaw = user.alternativeEmailVerified
@@ -70,14 +75,30 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
           user.name,
           alternativeEmail
         );
-        await Promise.all(
-          events.map((event) => syncEventToCalendar(calendarId, event, user.email!))
+        const stats = await syncAllEventsToCalendar(
+          calendarId,
+          events,
+          user.email!,
+          alternativeEmail
         );
+        return stats;
       } catch (error) {
         console.error(`✗ Error syncing calendar for ${user.istid}:`, error);
+        return { updated: 0, deleted: 0, unchanged: 0 };
       }
     })
   );
+
+  const totals = results.reduce(
+    (acc, stat) => ({
+      updated: acc.updated + stat.updated,
+      deleted: acc.deleted + stat.deleted,
+      unchanged: acc.unchanged + stat.unchanged,
+    }),
+    { updated: 0, deleted: 0, unchanged: 0 }
+  );
+
+  return totals;
 }
 
 async function getVerificationToken(): Promise<string | undefined> {
@@ -140,13 +161,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const events = await fetchAllNotionEvents();
-    await syncAllEventsToGoogleCalendars(events);
+    const stats = await syncAllEventsToGoogleCalendars(events);
 
     return NextResponse.json({
       ok: true,
       synced: true,
       eventCount: events.length,
-      message: "All calendars updated successfully",
+      stats,
+      message: `Synced: ${stats.updated} updated, ${stats.deleted} deleted, ${stats.unchanged} unchanged`,
     });
   } catch (error) {
     console.error("Webhook error:", error);

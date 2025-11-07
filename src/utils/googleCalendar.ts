@@ -5,6 +5,8 @@ import fs from "fs";
 import path from "path";
 
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
+const BATCH_SIZE = 10;
+const BATCH_DELAY_MS = 10;
 
 function getServiceAccountCredentials() {
   const keyEnv = process.env.GOOGLE_SERVICE_ACCOUNT_KEY!;
@@ -165,7 +167,6 @@ export async function createUserCalendar(
       });
     } catch (error) {
       console.error(`Failed to share calendar with alternative email ${alternativeEmail}:`, error);
-      // Don't fail if alternative email sharing fails
     }
   }
 
@@ -204,7 +205,6 @@ export async function getOrCreateUserCalendar(
       }
     } catch (error) {
       console.error("Error updating calendar ACL:", error);
-      // Don't fail if ACL update fails
     }
 
     return existingCalendarId;
@@ -213,30 +213,65 @@ export async function getOrCreateUserCalendar(
   return await createUserCalendar(userEmail, istid, userName, alternativeEmail);
 }
 
+async function getExistingCalendarEvents(calendarId: string): Promise<Map<string, string>> {
+  const calendar = getCalendarClient();
+  const eventMap = new Map<string, string>();
+
+  try {
+    const response = await calendar.events.list({
+      calendarId,
+      maxResults: 2500,
+      singleEvents: true,
+    });
+
+    const events = response.data.items || [];
+
+    for (const event of events) {
+      if (event.id && event.extendedProperties?.private?.notionLastEdited) {
+        eventMap.set(event.id, event.extendedProperties.private.notionLastEdited);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching existing events:", error);
+  }
+
+  return eventMap;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function syncEventToCalendar(
   calendarId: string,
   event: NotionEvent,
-  userEmail: string
+  userEmail: string,
+  existingEventIds?: Set<string>,
+  alternativeEmail?: string
 ) {
   const calendar = getCalendarClient();
 
+  const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
   const shouldInclude =
     event.date &&
-    (event.type !== "Meeting" || (event.type === "Meeting" && event.attendees.includes(userEmail)));
+    (event.type !== "Meeting" ||
+      (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
+
+  const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
 
   if (!shouldInclude) {
-    try {
-      await deleteEventFromCalendar(calendarId, event.id);
-    } catch {
-      // Event doesn't exist, that's fine
+    if (existingEventIds?.has(googleEventId)) {
+      try {
+        await deleteEventFromCalendar(calendarId, event.id);
+      } catch {
+        // Event doesn't exist, that's fine
+      }
     }
     return;
   }
 
   const dates = buildGoogleCalendarDates(event);
   if (!dates) return;
-
-  const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
 
   const googleEvent = {
     id: googleEventId,
@@ -253,24 +288,133 @@ export async function syncEventToCalendar(
       title: "Notion",
       url: event.url,
     },
+    extendedProperties: {
+      private: {
+        notionLastEdited: event.lastEditedTime || new Date().toISOString(),
+      },
+    },
   };
 
-  try {
-    await calendar.events.update({
-      calendarId,
-      eventId: googleEventId,
-      requestBody: googleEvent,
-    });
-  } catch {
+  if (existingEventIds?.has(googleEventId)) {
+    try {
+      await calendar.events.update({
+        calendarId,
+        eventId: googleEventId,
+        requestBody: googleEvent,
+      });
+    } catch (error) {
+      console.error(`Error updating event ${googleEventId}:`, error);
+    }
+  } else {
     try {
       await calendar.events.insert({
         calendarId,
         requestBody: googleEvent,
       });
-    } catch (insertError) {
-      console.error("Error creating event:", insertError);
+    } catch (error) {
+      console.error(`Error inserting event ${googleEventId}:`, error);
     }
   }
+}
+
+export async function syncEventsToCalendarBatched(
+  calendarId: string,
+  events: NotionEvent[],
+  userEmail: string,
+  alternativeEmail?: string
+) {
+  const existingEvents = await getExistingCalendarEvents(calendarId);
+  const existingEventIds = new Set(existingEvents.keys());
+
+  let synced = 0;
+  for (let i = 0; i < events.length; i += BATCH_SIZE) {
+    const batch = events.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map((event) =>
+        syncEventToCalendar(calendarId, event, userEmail, existingEventIds, alternativeEmail)
+      )
+    );
+    synced += batch.length;
+    if (i + BATCH_SIZE < events.length) {
+      await delay(BATCH_DELAY_MS);
+    }
+  }
+  return synced;
+}
+
+export async function syncAllEventsToCalendar(
+  calendarId: string,
+  events: NotionEvent[],
+  userEmail: string,
+  alternativeEmail?: string
+) {
+  const existingEvents = await getExistingCalendarEvents(calendarId);
+
+  const eventsToUpdate: NotionEvent[] = [];
+  const eventsToDelete: string[] = [];
+  const existingEventIds = new Set(existingEvents.keys());
+
+  const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
+
+  for (const event of events) {
+    const shouldInclude =
+      event.date &&
+      (event.type !== "Meeting" ||
+        (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
+
+    const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
+
+    if (!shouldInclude) {
+      if (existingEventIds.has(googleEventId)) {
+        eventsToDelete.push(googleEventId);
+      }
+      continue;
+    }
+
+    const existingLastEdited = existingEvents.get(googleEventId);
+
+    if (!existingLastEdited || new Date(event.lastEditedTime) > new Date(existingLastEdited)) {
+      eventsToUpdate.push(event);
+    }
+
+    existingEventIds.delete(googleEventId);
+  }
+
+  for (const eventId of existingEventIds) {
+    eventsToDelete.push(eventId);
+  }
+
+  for (let i = 0; i < eventsToUpdate.length; i += BATCH_SIZE) {
+    const batch = eventsToUpdate.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map((event) =>
+        syncEventToCalendar(
+          calendarId,
+          event,
+          userEmail,
+          new Set(existingEvents.keys()),
+          alternativeEmail
+        )
+      )
+    );
+    if (i + BATCH_SIZE < eventsToUpdate.length) {
+      await delay(BATCH_DELAY_MS);
+    }
+  }
+
+  for (let i = 0; i < eventsToDelete.length; i += BATCH_SIZE) {
+    const batch = eventsToDelete.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map((eventId) => deleteEventFromCalendar(calendarId, eventId)));
+    if (i + BATCH_SIZE < eventsToDelete.length) {
+      await delay(BATCH_DELAY_MS);
+    }
+  }
+
+  return {
+    updated: eventsToUpdate.length,
+    deleted: eventsToDelete.length,
+    unchanged: events.length - eventsToUpdate.length - eventsToDelete.length,
+  };
 }
 
 export async function deleteEventFromCalendar(calendarId: string, eventId: string) {
