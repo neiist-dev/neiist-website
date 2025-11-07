@@ -199,9 +199,9 @@ yarn husky
 echo "Setup completed successfully!"
 echo 
 echo "Next steps:"
-echo "1. Run 'yarn install' to install dependencies."
-echo "2. Run 'yarn dev' to start the development server."
-echo "3. You can change your dev admin permissions at any time on the .env file."
+echo "1. Run 'yarn dev' to start the development server."
+echo "2. You can change your dev admin permissions at any time on the .env file."
+echo "3. Refer to INSTALLATION.md for further instructions."
 echo
 if [ "$override" = "y" ]; then
   echo "Note: Your database credentials are:"

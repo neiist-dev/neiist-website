@@ -307,8 +307,8 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   p_phone TEXT,
   p_photo_path TEXT,
   p_courses TEXT[],
-  p_github TEXT,
-  p_linkedin TEXT
+  p_github TEXT DEFAULT NULL,
+  p_linkedin TEXT DEFAULT NULL
 ) RETURNS TABLE(
   istid VARCHAR(10),
   name TEXT,
