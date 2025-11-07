@@ -175,7 +175,7 @@ export default async function AboutPage({
                   image={member.userPhoto}
                   githuburl={member.github}
                   linkdinurl={member.linkedin}
-                  username={member.github}
+                  username={member.linkedin}
                 />
               ))
             )}

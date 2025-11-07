@@ -71,7 +71,9 @@
   color: #fff;
   font-weight: 700;
   font-size: clamp(0.9rem, 1.5vw, 1.1rem);
-  white-space: nowrap;
+  word-break: break-word;
+  text-align: center;
+  padding: 0 0.75rem;
 }
 
 .name,
