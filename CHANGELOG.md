@@ -1,5 +1,13 @@
 # neiist
 
+## 1.4.1
+
+### Patch Changes
+
+- Use both emails to filter meetings
+- Use batching and api rate limit to avoid getting denied by google api
+- Code clean up
+
 ## 1.4.0
 
 ### Minor Changes

@@ -5,11 +5,17 @@ import {
   getOrCreateUserCalendar,
   getAddCalendarLink,
   getCalendarWebLink,
-  syncEventToCalendar,
+  syncEventsToCalendarBatched,
 } from "@/utils/googleCalendar";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { Client } from "@notionhq/client";
-import { NotionPage, NotionEvent, NotionPerson, NotionApiResponse } from "@/types/notion";
+import {
+  NotionPage,
+  NotionEvent,
+  NotionPerson,
+  NotionApiResponse,
+  mapNotionResultToPage,
+} from "@/types/notion";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
@@ -27,7 +33,10 @@ function parseNotionPageToEvent(page: NotionPage): NotionEvent {
     location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
     type: props.Type?.select?.name ?? null,
     teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
-    attendees: props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "") ?? [],
+    attendees:
+      props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "").filter(Boolean) ??
+      [],
+    lastEditedTime: page.last_edited_time,
   };
 }
 
@@ -38,14 +47,10 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
     const response = (await notion.dataSources.query({
       data_source_id: DATABASE_ID,
       start_cursor: cursor,
-    })) as NotionApiResponse;
-    const mappedPages: NotionPage[] = response.results.map((page) => ({
-      id: page.id,
-      url: page.url,
-      properties: page.properties,
-    }));
+    })) as unknown as NotionApiResponse;
+    const mappedPages = response.results.map(mapNotionResultToPage);
     pages.push(...mappedPages);
-    cursor = response.has_more ? response.next_cursor : undefined;
+    cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
   } while (cursor);
 
   return pages.map(parseNotionPageToEvent);
@@ -86,7 +91,12 @@ export async function GET(
     );
 
     const events = await fetchAllNotionEvents();
-    await Promise.all(events.map((event) => syncEventToCalendar(calendarId, event, user.email)));
+    const synced = await syncEventsToCalendarBatched(
+      calendarId,
+      events,
+      user.email,
+      alternativeEmail
+    );
 
     const addCalendarLink = await getAddCalendarLink(calendarId);
     const webViewLink = await getCalendarWebLink(calendarId);
@@ -98,7 +108,7 @@ export async function GET(
       addCalendarLink,
       webViewLink,
       sharedWith: [user.email, ...(alternativeEmail ? [alternativeEmail] : [])],
-      eventsSynced: events.length,
+      eventsSynced: synced,
     });
   } catch (error) {
     console.error("Calendar route error:", error);
