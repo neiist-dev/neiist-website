@@ -431,10 +431,49 @@ export async function deleteEventFromCalendar(calendarId: string, eventId: strin
   }
 }
 
+export async function setCalendarPublicLink(calendarId: string) {
+  const calendar = getCalendarClient();
+
+  try {
+    await calendar.acl.update({
+      calendarId,
+      ruleId: "default",
+      requestBody: {
+        role: "reader",
+        scope: { type: "default" },
+      },
+    });
+    return;
+  } catch (error) {
+    const err = error as { code?: number };
+
+    if (err?.code !== 404) {
+      console.error(`Failed to update public ACL for ${calendarId}:`, error);
+      return;
+    }
+  }
+
+  try {
+    await calendar.acl.insert({
+      calendarId,
+      requestBody: {
+        role: "reader",
+        scope: { type: "default" },
+      },
+    });
+  } catch (insertError) {
+    console.error(`Failed to create public ACL for ${calendarId}:`, insertError);
+  }
+}
+
 export async function getAddCalendarLink(calendarId: string) {
   return `https://calendar.google.com/calendar/r/settings/addbyurl?cid=${encodeURIComponent(calendarId)}`;
 }
 
 export async function getCalendarWebLink(calendarId: string) {
   return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}`;
+}
+
+export function getCalendarPublicLink(calendarId: string) {
+  return `https://calendar.google.com/calendar/ical/${encodeURIComponent(calendarId)}/public/basic.ics`;
 }

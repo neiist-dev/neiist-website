@@ -18,6 +18,7 @@ import {
 } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
+import { LuCopy } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
 
 type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
@@ -33,6 +34,7 @@ export default function ProfileClient({
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
   const [cvLoading, setCvLoading] = useState<boolean>(false);
   const [calendarLoading, setCalendarLoading] = useState<boolean>(false);
+  const [copyingCalendar, setCopyingCalendar] = useState<boolean>(false);
 
   const [altEmailDraft, setAltEmailDraft] = useState<string>(initialUser?.alternativeEmail ?? "");
   const [phoneDraft, setPhoneDraft] = useState<string>(initialUser?.phone ?? "");
@@ -45,6 +47,8 @@ export default function ProfileClient({
   const [pendingChange, setPendingChange] = useState<{ field: FieldName; value: string } | null>(
     null
   );
+  const [calendarPublicLink, setCalendarPublicLink] = useState<string>("");
+  const [showCopyConfirm, setShowCopyConfirm] = useState<boolean>(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState<string>("");
 
@@ -59,6 +63,7 @@ export default function ProfileClient({
     setPreferredDraft(user?.preferredContactMethod ?? "email");
     setGithubDraft(user?.github ?? "");
     setLinkedinDraft(user?.linkedin ?? "");
+    setCalendarPublicLink("");
   }, [user]);
 
   const askConfirm = (field: FieldName, value: string) => {
@@ -148,6 +153,39 @@ export default function ProfileClient({
       setError(e instanceof Error ? e.message : "Erro ao adicionar calendário.");
     } finally {
       setCalendarLoading(false);
+    }
+  };
+
+  const handleCopyCalendarClick = () => {
+    if (!user?.istid || calendarLoading || copyingCalendar) return;
+    setError("");
+    setShowCopyConfirm(true);
+  };
+
+  const handleConfirmCopyCalendar = async () => {
+    if (!user?.istid) return;
+    setShowCopyConfirm(false);
+    setCopyingCalendar(true);
+    setError("");
+
+    try {
+      let link = calendarPublicLink;
+
+      if (!link) {
+        const response = await fetch(`/api/calendar/${user.istid}?publicLink=true`);
+        const data = await response.json();
+        if (!response.ok || typeof data.publicIcsLink !== "string") {
+          throw new Error(data.error || "Falha ao obter link do calendário.");
+        }
+        link = data.publicIcsLink;
+        setCalendarPublicLink(link);
+      }
+
+      await navigator.clipboard.writeText(link);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao copiar o link do calendário.");
+    } finally {
+      setCopyingCalendar(false);
     }
   };
 
@@ -356,6 +394,12 @@ export default function ProfileClient({
                   Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!
                 </p>
                 <div className={styles.actionButtons}>
+                  <button
+                    className={styles.button}
+                    onClick={handleCopyCalendarClick}
+                    disabled={calendarLoading || copyingCalendar}>
+                    <LuCopy /> {copyingCalendar ? "A copiar..." : "Copiar Link"}
+                  </button>
                   <a
                     className={styles.filledButton}
                     onClick={(e) => {
@@ -431,6 +475,12 @@ export default function ProfileClient({
           setShowConfirmDialog(false);
           setPendingChange(null);
         }}
+      />
+      <ConfirmDialog
+        open={showCopyConfirm}
+        message="Qualquer pessoa com o link vai poder ver o calendário. Pretende continuar?"
+        onConfirm={handleConfirmCopyCalendar}
+        onCancel={() => setShowCopyConfirm(false)}
       />
     </>
   );
