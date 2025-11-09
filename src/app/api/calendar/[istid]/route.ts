@@ -6,6 +6,8 @@ import {
   getAddCalendarLink,
   getCalendarWebLink,
   syncEventsToCalendarBatched,
+  setCalendarPublicLink,
+  getCalendarPublicLink,
 } from "@/utils/googleCalendar";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { Client } from "@notionhq/client";
@@ -100,16 +102,23 @@ export async function GET(
 
     const addCalendarLink = await getAddCalendarLink(calendarId);
     const webViewLink = await getCalendarWebLink(calendarId);
-    const displayName = getFirstAndLastName(user.name);
+    const includePublicLink = request.nextUrl.searchParams.get("publicLink") === "true";
 
-    return NextResponse.json({
+    const payload: Record<string, unknown> = {
       calendarId,
-      calendarName: `NEIIST-${displayName}`,
+      calendarName: `NEIIST-${getFirstAndLastName(user.name)}`,
       addCalendarLink,
       webViewLink,
       sharedWith: [user.email, ...(alternativeEmail ? [alternativeEmail] : [])],
       eventsSynced: synced,
-    });
+    };
+
+    if (includePublicLink) {
+      await setCalendarPublicLink(calendarId);
+      payload.publicIcsLink = getCalendarPublicLink(calendarId);
+    }
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("Calendar route error:", error);
     return new NextResponse(`Internal Server Error`, { status: 500 });
