@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import pLimit from "p-limit";
 import { Client } from "@notionhq/client";
+import { google } from "googleapis";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
@@ -10,7 +12,7 @@ import {
   NotionApiResponse,
   mapNotionResultToPage,
 } from "@/types/notion";
-import { syncAllEventsToCalendar, getOrCreateUserCalendar } from "@/utils/googleCalendar";
+import { syncAllEventsToCalendar } from "@/utils/googleCalendar";
 import { getAllUsers } from "@/utils/dbUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
@@ -58,35 +60,60 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   return pages.map(parseNotionPageToEvent);
 }
 
+async function getExistingNEIISTCalendars() {
+  const SCOPES = ["https://www.googleapis.com/auth/calendar"];
+  const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!);
+  const auth = new google.auth.GoogleAuth({
+    credentials: serviceAccountKey,
+    scopes: SCOPES,
+  });
+  const calendar = google.calendar({ version: "v3", auth });
+
+  const response = await calendar.calendarList.list();
+  const calendars = response.data.items || [];
+  return calendars.filter((cal) => cal.summary?.startsWith("NEIIST-"));
+}
+
 async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
   const allUsers = await getAllUsers();
-  const users = allUsers.filter((u) => u.email && u.istid);
+  const existingCalendars = await getExistingNEIISTCalendars();
+  const calendarByIstid = new Map<string, { id: string; summary: string }>();
+
+  existingCalendars.forEach((cal) => {
+    const istidMatch = cal.description?.match(/istid:([a-zA-Z0-9]+)/);
+    if (istidMatch) {
+      calendarByIstid.set(istidMatch[1], { id: cal.id!, summary: cal.summary! });
+    }
+  });
+
+  const usersWithCalendars = allUsers.filter(
+    (u) => u.email && u.istid && calendarByIstid.has(u.istid)
+  );
+
+  const limit = pLimit(2);
 
   const results = await Promise.all(
-    users.map(async (user) => {
-      try {
-        const alternativeEmailRaw = user.alternativeEmailVerified
-          ? user.alternativeEmail
-          : undefined;
-        const alternativeEmail = alternativeEmailRaw ?? undefined;
-        const calendarId = await getOrCreateUserCalendar(
-          user.email!,
-          user.istid,
-          user.name,
-          alternativeEmail
-        );
-        const stats = await syncAllEventsToCalendar(
-          calendarId,
-          events,
-          user.email!,
-          alternativeEmail
-        );
-        return stats;
-      } catch (error) {
-        console.error(`✗ Error syncing calendar for ${user.istid}:`, error);
-        return { updated: 0, deleted: 0, unchanged: 0 };
-      }
-    })
+    usersWithCalendars.map((user) =>
+      limit(async () => {
+        try {
+          const alternativeEmailRaw = user.alternativeEmailVerified
+            ? user.alternativeEmail
+            : undefined;
+          const alternativeEmail = alternativeEmailRaw ?? undefined;
+          const calendarId = calendarByIstid.get(user.istid)!.id;
+          const stats = await syncAllEventsToCalendar(
+            calendarId,
+            events,
+            user.email!,
+            alternativeEmail
+          );
+          return stats;
+        } catch (error) {
+          console.error(`Error syncing calendar for ${user.istid}:`, error);
+          return { updated: 0, deleted: 0, unchanged: 0 };
+        }
+      })
+    )
   );
 
   const totals = results.reduce(
