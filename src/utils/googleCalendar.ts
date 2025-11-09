@@ -19,7 +19,7 @@ function getServiceAccountCredentials() {
   return JSON.parse(keyEnv);
 }
 
-function getCalendarClient() {
+export function getCalendarClient() {
   const serviceAccountKey = getServiceAccountCredentials();
 
   const auth = new google.auth.GoogleAuth({

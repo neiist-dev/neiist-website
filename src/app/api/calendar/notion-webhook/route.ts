@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import pLimit from "p-limit";
 import { Client } from "@notionhq/client";
-import { google } from "googleapis";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
@@ -12,7 +11,7 @@ import {
   NotionApiResponse,
   mapNotionResultToPage,
 } from "@/types/notion";
-import { syncAllEventsToCalendar } from "@/utils/googleCalendar";
+import { syncAllEventsToCalendar, getCalendarClient } from "@/utils/googleCalendar";
 import { getAllUsers } from "@/utils/dbUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
@@ -61,14 +60,7 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
 }
 
 async function getExistingNEIISTCalendars() {
-  const SCOPES = ["https://www.googleapis.com/auth/calendar"];
-  const serviceAccountKey = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!);
-  const auth = new google.auth.GoogleAuth({
-    credentials: serviceAccountKey,
-    scopes: SCOPES,
-  });
-  const calendar = google.calendar({ version: "v3", auth });
-
+  const calendar = getCalendarClient();
   const response = await calendar.calendarList.list();
   const calendars = response.data.items || [];
   return calendars.filter((cal) => cal.summary?.startsWith("NEIIST-"));
