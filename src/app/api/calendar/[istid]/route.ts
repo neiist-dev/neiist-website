@@ -6,8 +6,6 @@ import {
   getAddCalendarLink,
   getCalendarWebLink,
   syncEventsToCalendarBatched,
-  setCalendarPublicLink,
-  getCalendarPublicLink,
 } from "@/utils/googleCalendar";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { Client } from "@notionhq/client";
@@ -102,9 +100,8 @@ export async function GET(
 
     const addCalendarLink = await getAddCalendarLink(calendarId);
     const webViewLink = await getCalendarWebLink(calendarId);
-    const includePublicLink = request.nextUrl.searchParams.get("publicLink") === "true";
 
-    const payload: Record<string, unknown> = {
+    const payload = {
       calendarId,
       calendarName: `NEIIST-${getFirstAndLastName(user.name)}`,
       addCalendarLink,
@@ -112,11 +109,6 @@ export async function GET(
       sharedWith: [user.email, ...(alternativeEmail ? [alternativeEmail] : [])],
       eventsSynced: synced,
     };
-
-    if (includePublicLink) {
-      await setCalendarPublicLink(calendarId);
-      payload.publicIcsLink = getCalendarPublicLink(calendarId);
-    }
 
     return NextResponse.json(payload);
   } catch (error) {

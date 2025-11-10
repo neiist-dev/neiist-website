@@ -18,7 +18,7 @@ import {
 } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
-import { LuCopy } from "react-icons/lu";
+import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
 
 type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
@@ -34,7 +34,6 @@ export default function ProfileClient({
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
   const [cvLoading, setCvLoading] = useState<boolean>(false);
   const [calendarLoading, setCalendarLoading] = useState<boolean>(false);
-  const [copyingCalendar, setCopyingCalendar] = useState<boolean>(false);
 
   const [altEmailDraft, setAltEmailDraft] = useState<string>(initialUser?.alternativeEmail ?? "");
   const [phoneDraft, setPhoneDraft] = useState<string>(initialUser?.phone ?? "");
@@ -47,8 +46,10 @@ export default function ProfileClient({
   const [pendingChange, setPendingChange] = useState<{ field: FieldName; value: string } | null>(
     null
   );
-  const [calendarPublicLink, setCalendarPublicLink] = useState<string>("");
-  const [showCopyConfirm, setShowCopyConfirm] = useState<boolean>(false);
+  const [calendarData, setCalendarData] = useState<{
+    addCalendarLink: string;
+    webViewLink: string;
+  } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState<string>("");
 
@@ -63,7 +64,7 @@ export default function ProfileClient({
     setPreferredDraft(user?.preferredContactMethod ?? "email");
     setGithubDraft(user?.github ?? "");
     setLinkedinDraft(user?.linkedin ?? "");
-    setCalendarPublicLink("");
+    setCalendarData(null);
   }, [user]);
 
   const askConfirm = (field: FieldName, value: string) => {
@@ -136,56 +137,54 @@ export default function ProfileClient({
     }
   };
 
+  const getCalendarData = async () => {
+    if (calendarData) return calendarData;
+    if (!user?.istid) return null;
+    try {
+      const response = await fetch(`/api/calendar/${user.istid}`);
+      if (!response.ok) {
+        throw new Error("Failed to get calendar data");
+      }
+      const data = await response.json();
+      const links = {
+        addCalendarLink: data.addCalendarLink,
+        webViewLink: data.webViewLink,
+      };
+      setCalendarData(links);
+      return links;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao obter link do calendário.");
+      return null;
+    }
+  };
+
   const handleAddCalendar = async () => {
-    if (!user?.istid) return;
+    if (!user?.istid || calendarLoading) return;
     setCalendarLoading(true);
     setError("");
 
     try {
-      const response = await fetch(`/api/calendar/${user.istid}`);
-      if (!response.ok) {
-        throw new Error("Failed to get calendar link");
+      const data = await getCalendarData();
+      if (data?.addCalendarLink) {
+        window.open(data.addCalendarLink, "_blank");
       }
-
-      const data = await response.json();
-      window.open(data.addCalendarLink, "_blank");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro ao adicionar calendário.");
     } finally {
       setCalendarLoading(false);
     }
   };
 
-  const handleCopyCalendarClick = () => {
-    if (!user?.istid || calendarLoading || copyingCalendar) return;
-    setError("");
-    setShowCopyConfirm(true);
-  };
-
-  const handleConfirmCopyCalendar = async () => {
-    if (!user?.istid) return;
-    setShowCopyConfirm(false);
-    setCopyingCalendar(true);
+  const handleViewCalendar = async () => {
+    if (!user?.istid || calendarLoading) return;
+    setCalendarLoading(true);
     setError("");
 
     try {
-      let link = calendarPublicLink;
-
-      if (!link) {
-        const response = await fetch(`/api/calendar/${user.istid}?publicLink=true`);
-        const data = await response.json();
-        if (!response.ok || typeof data.publicIcsLink !== "string") {
-          throw new Error(data.error || "Falha ao obter link do calendário.");
-        }
-        link = data.publicIcsLink;
-        setCalendarPublicLink(link);
+      const data = await getCalendarData();
+      if (data?.webViewLink) {
+        window.open(data.webViewLink, "_blank");
       }
-
-      await navigator.clipboard.writeText(link);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro ao copiar o link do calendário.");
     } finally {
-      setCopyingCalendar(false);
+      setCalendarLoading(false);
     }
   };
 
@@ -394,12 +393,19 @@ export default function ProfileClient({
                   Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!
                 </p>
                 <div className={styles.actionButtons}>
-                  <button
+                  <a
                     className={styles.button}
-                    onClick={handleCopyCalendarClick}
-                    disabled={calendarLoading || copyingCalendar}>
-                    <LuCopy /> {copyingCalendar ? "A copiar..." : "Copiar Link"}
-                  </button>
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleViewCalendar();
+                    }}
+                    href="#"
+                    style={{
+                      cursor: calendarLoading ? "not-allowed" : "pointer",
+                      opacity: calendarLoading ? 0.6 : 1,
+                    }}>
+                    <LuCalendarDays /> {calendarLoading ? "A carregar..." : "Ver Calendário"}
+                  </a>
                   <a
                     className={styles.filledButton}
                     onClick={(e) => {
@@ -475,12 +481,6 @@ export default function ProfileClient({
           setShowConfirmDialog(false);
           setPendingChange(null);
         }}
-      />
-      <ConfirmDialog
-        open={showCopyConfirm}
-        message="Qualquer pessoa com o link vai poder ver o calendário. Pretende continuar?"
-        onConfirm={handleConfirmCopyCalendar}
-        onCancel={() => setShowCopyConfirm(false)}
       />
     </>
   );

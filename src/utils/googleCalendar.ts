@@ -140,16 +140,27 @@ export async function createUserCalendar(
 
   const calendarId = response.data.id!;
 
+  // Make calendar public with reader access
   await calendar.acl.insert({
     calendarId,
     requestBody: {
       role: "reader",
+      scope: { type: "default" },
+    },
+    sendNotifications: false,
+  });
+
+  // Share with user email as editor
+  await calendar.acl.insert({
+    calendarId,
+    requestBody: {
+      role: "writer",
       scope: {
         type: "user",
         value: userEmail,
       },
     },
-    sendNotifications: false,
+    sendNotifications: true,
   });
 
   if (alternativeEmail && alternativeEmail !== userEmail) {
@@ -157,13 +168,13 @@ export async function createUserCalendar(
       await calendar.acl.insert({
         calendarId,
         requestBody: {
-          role: "reader",
+          role: "writer",
           scope: {
             type: "user",
             value: alternativeEmail,
           },
         },
-        sendNotifications: false,
+        sendNotifications: true,
       });
     } catch (error) {
       console.error(`Failed to share calendar with alternative email ${alternativeEmail}:`, error);
@@ -183,8 +194,63 @@ export async function getOrCreateUserCalendar(
   if (existingCalendarId) {
     const calendar = getCalendarClient();
     try {
+      // Ensure calendar is public
+      try {
+        await calendar.acl.update({
+          calendarId: existingCalendarId,
+          ruleId: "default",
+          requestBody: {
+            role: "reader",
+            scope: { type: "default" },
+          },
+        });
+      } catch (error) {
+        const err = error as { code?: number };
+        if (err?.code === 404) {
+          await calendar.acl.insert({
+            calendarId: existingCalendarId,
+            requestBody: {
+              role: "reader",
+              scope: { type: "default" },
+            },
+            sendNotifications: false,
+          });
+        }
+      }
+
+      // Update user email to writer if needed
+      const aclList = await calendar.acl.list({ calendarId: existingCalendarId });
+      const userRule = aclList.data.items?.find(
+        (rule) => rule.scope?.type === "user" && rule.scope?.value === userEmail
+      );
+
+      if (userRule && userRule.role !== "writer") {
+        await calendar.acl.update({
+          calendarId: existingCalendarId,
+          ruleId: userRule.id!,
+          requestBody: {
+            role: "writer",
+            scope: {
+              type: "user",
+              value: userEmail,
+            },
+          },
+        });
+      } else if (!userRule) {
+        await calendar.acl.insert({
+          calendarId: existingCalendarId,
+          requestBody: {
+            role: "writer",
+            scope: {
+              type: "user",
+              value: userEmail,
+            },
+          },
+          sendNotifications: true,
+        });
+      }
+
       if (alternativeEmail && alternativeEmail !== userEmail) {
-        const aclList = await calendar.acl.list({ calendarId: existingCalendarId });
         const hasAltEmailAccess = aclList.data.items?.some(
           (rule) => rule.scope?.type === "user" && rule.scope?.value === alternativeEmail
         );
@@ -193,14 +259,31 @@ export async function getOrCreateUserCalendar(
           await calendar.acl.insert({
             calendarId: existingCalendarId,
             requestBody: {
-              role: "reader",
+              role: "writer",
               scope: {
                 type: "user",
                 value: alternativeEmail,
               },
             },
-            sendNotifications: false,
+            sendNotifications: true,
           });
+        } else {
+          const altRule = aclList.data.items?.find(
+            (rule) => rule.scope?.type === "user" && rule.scope?.value === alternativeEmail
+          );
+          if (altRule && altRule.role !== "writer") {
+            await calendar.acl.update({
+              calendarId: existingCalendarId,
+              ruleId: altRule.id!,
+              requestBody: {
+                role: "writer",
+                scope: {
+                  type: "user",
+                  value: alternativeEmail,
+                },
+              },
+            });
+          }
         }
       }
     } catch (error) {
@@ -431,49 +514,10 @@ export async function deleteEventFromCalendar(calendarId: string, eventId: strin
   }
 }
 
-export async function setCalendarPublicLink(calendarId: string) {
-  const calendar = getCalendarClient();
-
-  try {
-    await calendar.acl.update({
-      calendarId,
-      ruleId: "default",
-      requestBody: {
-        role: "reader",
-        scope: { type: "default" },
-      },
-    });
-    return;
-  } catch (error) {
-    const err = error as { code?: number };
-
-    if (err?.code !== 404) {
-      console.error(`Failed to update public ACL for ${calendarId}:`, error);
-      return;
-    }
-  }
-
-  try {
-    await calendar.acl.insert({
-      calendarId,
-      requestBody: {
-        role: "reader",
-        scope: { type: "default" },
-      },
-    });
-  } catch (insertError) {
-    console.error(`Failed to create public ACL for ${calendarId}:`, insertError);
-  }
-}
-
 export async function getAddCalendarLink(calendarId: string) {
-  return `https://calendar.google.com/calendar/r/settings/addbyurl?cid=${encodeURIComponent(calendarId)}`;
+  return `https://calendar.google.com/calendar/u/0?cid=${encodeURIComponent(calendarId)}&mode=WEEK`;
 }
 
 export async function getCalendarWebLink(calendarId: string) {
   return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}`;
-}
-
-export function getCalendarPublicLink(calendarId: string) {
-  return `https://calendar.google.com/calendar/ical/${encodeURIComponent(calendarId)}/public/basic.ics`;
 }
