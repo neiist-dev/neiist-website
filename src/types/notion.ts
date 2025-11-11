@@ -13,7 +13,7 @@ export interface NotionPageProperties {
     date: { start: string | null; end: string | null } | null;
   };
   Location?: {
-    multi_select: { name: string }[];
+    select: { name: string } | null;
   };
   Type?: {
     select: { name: string } | null;

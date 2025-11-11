@@ -30,7 +30,7 @@ function parseNotionPageToEvent(page: NotionPage): NotionEvent {
     date: props.Date?.date?.start ?? null,
     end: props.Date?.date?.end ?? null,
     url: page.url,
-    location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
+    location: props.Location?.select?.name ? [props.Location.select.name] : [],
     type: props.Type?.select?.name ?? null,
     teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
     attendees:
