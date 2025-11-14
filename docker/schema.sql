@@ -146,13 +146,7 @@ WHERE to_date IS NULL;
 CREATE INDEX idx_membership_to_date ON neiist.membership (to_date) 
 WHERE to_date IS NOT NULL;
 
--- NEIIST EVENTS
-CREATE TABLE neiist.activities (
-  id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL UNIQUE,
-  description TEXT NOT NULL,
-  image TEXT NOT NULL
-);
+
 
 -- SHOP CATEGORIES
 CREATE TABLE neiist.categories (
@@ -888,36 +882,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create a new event
-CREATE OR REPLACE FUNCTION neiist.add_event(
-  p_title TEXT,
-  p_description TEXT,
-  p_image TEXT
-) RETURNS INTEGER AS $$
-DECLARE
-  new_id INTEGER;
-BEGIN
-  INSERT INTO neiist.activities (title, description, image)
-  VALUES (p_title, p_description, p_image)
-  RETURNING id INTO new_id;
-  RETURN new_id;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Get all events
-CREATE OR REPLACE FUNCTION neiist.get_all_events()
-RETURNS TABLE (
-  id INTEGER,
-  title TEXT,
-  description TEXT,
-  image TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT activities.id, activities.title, activities.description, activities.image
-  FROM neiist.activities;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ORDER NUMBER GENERATOR
 CREATE SEQUENCE neiist.order_sequence;

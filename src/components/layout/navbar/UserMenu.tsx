@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
-import { GoSignOut, GoPeople, GoPerson, GoOrganization, GoCalendar } from "react-icons/go";
+import { GoSignOut, GoPeople, GoPerson, GoOrganization } from "react-icons/go";
 //import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
 import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
@@ -126,13 +126,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       href: "/departments-management",
       label: "Gerir Departamentos",
       icon: GoOrganization,
-      roles: [],
-      adminOnly: true,
-    },
-    {
-      href: "/activities-management",
-      label: "Gerir Eventos e Atividades",
-      icon: GoCalendar,
       roles: [],
       adminOnly: true,
     },

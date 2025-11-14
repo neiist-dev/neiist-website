@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 
-const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop"];
+const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
 const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management", "/orders/manage"];
-const adminRoutes = [
-  "/users-management",
-  "/departments-management",
-  "/activities-management",
-  "/shop/manage",
-];
+const adminRoutes = ["/users-management", "/departments-management", "/shop/manage"];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
 function canAccess(path: string, roles: UserRole[]) {
