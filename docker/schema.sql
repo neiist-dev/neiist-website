@@ -199,6 +199,16 @@ CREATE TABLE neiist.product_variant_options (
 CREATE INDEX idx_product_variants_product ON neiist.product_variants(product_id);
 CREATE INDEX idx_variant_options_name ON neiist.product_variant_options(option_name);
 
+-- ORDER NUMBER GENERATOR
+CREATE SEQUENCE neiist.order_sequence;
+
+CREATE OR REPLACE FUNCTION neiist.generate_order_number()
+RETURNS TEXT AS $$
+BEGIN
+  RETURN 'ORD-' || to_char(NOW(), 'YYYY') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 
 -- ORDERS
 CREATE TABLE neiist.orders (
