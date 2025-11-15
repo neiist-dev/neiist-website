@@ -893,15 +893,6 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
--- ORDER NUMBER GENERATOR
-CREATE SEQUENCE neiist.order_sequence;
-
-CREATE OR REPLACE FUNCTION neiist.generate_order_number()
-RETURNS TEXT AS $$
-BEGIN
-  RETURN 'ORD-' || to_char(NOW(), 'YYYY') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- GET OR CREATE A CATEGORY
 CREATE OR REPLACE FUNCTION neiist.get_or_create_category(p_name TEXT)
