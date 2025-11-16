@@ -9,6 +9,7 @@ const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON!;
 const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH!;
 const SWEATS_FOLDER_ID = process.env.GDRIVE_SWEATS_FOLDER_ID!;
 const MAX_SUBMISSIONS = 3;
+const CONTEST_ACTIVE = false;
 
 if (!CREDENTIALS_PATH) throw new Error("Missing env: GOOGLE_CLIENT_SECRET_JSON");
 if (!TOKEN_PATH) throw new Error("Missing env: GDRIVE_TOKEN_PATH");
@@ -86,6 +87,13 @@ async function getUsernameFromCookies(): Promise<string | null> {
 }
 
 export async function POST(request: NextRequest) {
+  if (!CONTEST_ACTIVE) {
+    return NextResponse.json(
+      { error: "O concurso está encerrado. Obrigado a todos os participantes!" },
+      { status: 403 }
+    );
+  }
+  
   const username = await getUsernameFromCookies();
   if (!username) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
