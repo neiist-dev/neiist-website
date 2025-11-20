@@ -146,7 +146,35 @@ WHERE to_date IS NULL;
 CREATE INDEX idx_membership_to_date ON neiist.membership (to_date) 
 WHERE to_date IS NOT NULL;
 
+-- ACTIVITIES EVENTS TABLE
+CREATE TABLE neiist.activities (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  url TEXT,
+  location TEXT[],
+  type TEXT,
+  teams TEXT[],
+  attendees TEXT[],
+  start TIMESTAMPTZ,
+  "end" TIMESTAMPTZ,
+  all_day BOOLEAN DEFAULT FALSE,
+  last_edited_time TIMESTAMPTZ NOT NULL,
+  signup_enabled BOOLEAN DEFAULT FALSE,
+  signup_deadline TIMESTAMPTZ,
+  max_attendees INTEGER,
+  custom_icon TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
+-- EVENT SUBSCRIPTIONS
+CREATE TABLE neiist.activities_sign_up (
+  event_id TEXT NOT NULL REFERENCES neiist.activities(id),
+  user_istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid),
+  signed_up_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (event_id, user_istid)
+);
 
 -- SHOP CATEGORIES
 CREATE TABLE neiist.categories (
@@ -208,7 +236,6 @@ BEGIN
   RETURN 'ORD-' || to_char(NOW(), 'YYYY') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 
 -- ORDERS
 CREATE TABLE neiist.orders (
@@ -892,7 +919,194 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Update Activities/Events
+CREATE OR REPLACE FUNCTION neiist.update_activities(
+  p_id TEXT,
+  p_title TEXT,
+  p_description TEXT,
+  p_url TEXT,
+  p_location TEXT[],
+  p_type TEXT,
+  p_teams TEXT[],
+  p_attendees TEXT[],
+  p_start TIMESTAMPTZ,
+  p_end TIMESTAMPTZ,
+  p_all_day BOOLEAN,
+  p_last_edited_time TIMESTAMPTZ
+) RETURNS VOID AS $$
+BEGIN
+  INSERT INTO neiist.activities (
+    id, title, description, url, location, type, teams, attendees,
+    start, "end", all_day, last_edited_time, updated_at
+  )
+  VALUES (
+    p_id, p_title, p_description, p_url, p_location, p_type, p_teams, p_attendees,
+    p_start, p_end, p_all_day, p_last_edited_time, NOW()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    title = EXCLUDED.title,
+    description = COALESCE(neiist.activities.description, EXCLUDED.description),
+    url = EXCLUDED.url,
+    location = EXCLUDED.location,
+    type = EXCLUDED.type,
+    teams = EXCLUDED.teams,
+    attendees = EXCLUDED.attendees,
+    start = EXCLUDED.start,
+    "end" = EXCLUDED."end",
+    all_day = EXCLUDED.all_day,
+    last_edited_time = EXCLUDED.last_edited_time,
+    updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Subscribe user to event
+CREATE OR REPLACE FUNCTION neiist.sign_up_to_event(
+  p_event_id TEXT,
+  p_user_istid VARCHAR(10)
+) RETURNS VOID AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM neiist.activities WHERE id = p_event_id) THEN
+    RAISE EXCEPTION 'Event % does not exist', p_event_id;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = p_user_istid) THEN
+    RAISE EXCEPTION 'User % does not exist', p_user_istid;
+  END IF;
+
+  INSERT INTO neiist.activities_sign_up (event_id, user_istid)
+  VALUES (p_event_id, p_user_istid)
+  ON CONFLICT (event_id, user_istid) DO NOTHING;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Unsubscribe user from event
+CREATE OR REPLACE FUNCTION neiist.remove_sign_up_from_event(
+  p_event_id TEXT,
+  p_user_istid VARCHAR(10)
+) RETURNS VOID AS $$
+BEGIN
+  DELETE FROM neiist.activities_sign_up
+  WHERE event_id = p_event_id AND user_istid = p_user_istid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all activities/events
+CREATE OR REPLACE FUNCTION neiist.get_all_activities()
+RETURNS TABLE (
+  id TEXT,
+  title TEXT,
+  description TEXT,
+  url TEXT,
+  location TEXT[],
+  type TEXT,
+  teams TEXT[],
+  attendees TEXT[],
+  start TIMESTAMPTZ,
+  "end" TIMESTAMPTZ,
+  all_day BOOLEAN,
+  last_edited_time TIMESTAMPTZ,
+  signup_enabled BOOLEAN,
+  signup_deadline TIMESTAMPTZ,
+  max_attendees INTEGER,
+  custom_icon TEXT,
+  subscribers VARCHAR(10)[],
+  subscriber_count BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY 
+  SELECT 
+    e.id, 
+    e.title, 
+    e.description, 
+    e.url, 
+    e.location, 
+    e.type, 
+    e.teams, 
+    e.attendees, 
+    e.start, 
+    e."end", 
+    e.all_day, 
+    e.last_edited_time,
+    e.signup_enabled,
+    e.signup_deadline,
+    e.max_attendees,
+    e.custom_icon,
+    COALESCE(
+      ARRAY_AGG(es.user_istid ORDER BY es.signed_up_at) FILTER (WHERE es.user_istid IS NOT NULL),
+      ARRAY[]::VARCHAR(10)[]
+    ) AS subscribers,
+    COUNT(es.user_istid) AS subscriber_count
+  FROM neiist.activities e
+  LEFT JOIN neiist.activities_sign_up es ON e.id = es.event_id
+  WHERE e.start IS NOT NULL
+  GROUP BY e.id, e.title, e.description, e.url, e.location, e.type, 
+           e.teams, e.attendees, e.start, e."end", e.all_day, e.last_edited_time,
+           e.signup_enabled, e.signup_deadline, e.max_attendees, e.custom_icon
+  ORDER BY e.start ASC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Update event properties (admin only)
+CREATE OR REPLACE FUNCTION neiist.update_activity_properties(
+  p_id TEXT,
+  p_signup_enabled BOOLEAN,
+  p_signup_deadline TIMESTAMPTZ,
+  p_max_attendees INTEGER,
+  p_custom_icon TEXT,
+  p_description TEXT
+) RETURNS VOID AS $$
+BEGIN
+  UPDATE neiist.activities
+  SET 
+    signup_enabled = p_signup_enabled,
+    signup_deadline = p_signup_deadline,
+    max_attendees = p_max_attendees,
+    custom_icon = p_custom_icon,
+    description = COALESCE(p_description, description),
+    updated_at = NOW()
+  WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get subscribers for an event with user details
+CREATE OR REPLACE FUNCTION neiist.get_event_subscribers(p_event_id TEXT)
+RETURNS TABLE (
+  istid VARCHAR(10),
+  name TEXT,
+  email TEXT,
+  signed_up_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    u.istid,
+    u.name,
+    COALESCE(
+      CASE 
+        WHEN uc.is_preferred = TRUE AND uc.contact_type = 'alt_email' 
+        THEN uc.contact_value
+        ELSE u.email
+      END,
+      u.email
+    ) AS email,
+    es.signed_up_at as signed_up_at
+  FROM neiist.activities_sign_up es
+  JOIN neiist.users u ON es.user_istid = u.istid
+  LEFT JOIN neiist.user_contacts uc ON u.istid = uc.user_istid 
+    AND uc.contact_type = 'alt_email' 
+    AND uc.is_preferred = TRUE
+  WHERE es.event_id = p_event_id
+  ORDER BY es.signed_up_at ASC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Delete activity/event by ID
+CREATE OR REPLACE FUNCTION neiist.delete_activities(p_id TEXT)
+RETURNS VOID AS $$
+BEGIN
+  DELETE FROM neiist.activities WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- GET OR CREATE A CATEGORY
 CREATE OR REPLACE FUNCTION neiist.get_or_create_category(p_name TEXT)

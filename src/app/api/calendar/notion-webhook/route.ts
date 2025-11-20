@@ -4,15 +4,13 @@ import { Client } from "@notionhq/client";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
-import {
-  NotionPage,
-  NotionEvent,
-  NotionPerson,
-  NotionApiResponse,
-  mapNotionResultToPage,
-} from "@/types/notion";
+import type { NotionPage, NotionApiResponse } from "@/types/notion";
+import { mapNotionResultToPage } from "@/types/notion";
+import type { NotionEvent } from "@/types/events";
 import { syncAllEventsToCalendar, getCalendarClient } from "@/utils/googleCalendar";
 import { getAllUsers } from "@/utils/dbUtils";
+import { syncNotionEventsToDb } from "@/utils/eventsUtils";
+import { parseNotionPageToEvent } from "@/utils/eventsUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
@@ -24,24 +22,6 @@ type NotionWebhookPayload = {
 };
 
 const notion = new Client({ auth: NOTION_API_KEY });
-
-function parseNotionPageToEvent(page: NotionPage): NotionEvent {
-  const props = page.properties;
-  return {
-    id: page.id,
-    title: props.Name?.title?.[0]?.plain_text || "Untitled Event",
-    date: props.Date?.date?.start ?? null,
-    end: props.Date?.date?.end ?? null,
-    url: page.url,
-    location: props.Location?.select?.name ? [props.Location.select.name] : [],
-    type: props.Type?.select?.name ?? null,
-    teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
-    attendees:
-      props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "").filter(Boolean) ??
-      [],
-    lastEditedTime: page.last_edited_time,
-  };
-}
 
 async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   const pages: NotionPage[] = [];
@@ -181,6 +161,7 @@ export async function POST(req: NextRequest) {
   try {
     const events = await fetchAllNotionEvents();
     const stats = await syncAllEventsToGoogleCalendars(events);
+    await syncNotionEventsToDb();
 
     return NextResponse.json({
       ok: true,

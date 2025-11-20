@@ -1,0 +1,105 @@
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  background: var(--background-colour);
+  border-radius: 1.2rem;
+  padding: 40px;
+  margin: 1.5rem;
+  width: 100%;
+  max-width: 550px;
+  max-height: 70vh;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: #111827;
+}
+
+.search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 18px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.search:focus {
+  border-color: var(--primary-colour);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  width: 100%;
+  overflow-y: auto;
+  padding-bottom: 2px;
+}
+
+.grid::-webkit-scrollbar {
+  display: none;
+}
+
+.iconButton {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #333;
+  font-size: 24px;
+  box-sizing: border-box;
+}
+
+.iconButton:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.iconButton.selected {
+  background: white;
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}

@@ -13,7 +13,7 @@ export interface NotionPageProperties {
     date: { start: string | null; end: string | null } | null;
   };
   Location?: {
-    select: { name: string } | null;
+    multi_select: { name: string }[];
   };
   Type?: {
     select: { name: string } | null;
@@ -27,19 +27,9 @@ export interface NotionPageProperties {
   "Related Events"?: {
     relation: { id: string }[];
   };
-}
-
-export interface NotionEvent {
-  id: string;
-  title: string;
-  date: string | null;
-  end: string | null;
-  url: string;
-  location: string[];
-  type: string | null;
-  teams: string[];
-  attendees: string[];
-  lastEditedTime: string;
+  Public?: {
+    checkbox: boolean;
+  };
 }
 
 export interface NotionPerson {
@@ -47,14 +37,12 @@ export interface NotionPerson {
   person?: { email?: string };
 }
 
-// Better typed response from Notion API
 export interface NotionApiResponse {
   results: NotionPageResult[];
   has_more: boolean;
   next_cursor?: string | null;
 }
 
-// Raw result from Notion API before mapping
 export interface NotionPageResult {
   id: string;
   url: string;
@@ -62,7 +50,6 @@ export interface NotionPageResult {
   last_edited_time: string;
 }
 
-// Helper to safely map Notion API results to NotionPage
 export function mapNotionResultToPage(result: NotionPageResult): NotionPage {
   return {
     id: result.id,
