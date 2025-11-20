@@ -1,0 +1,84 @@
+.rbc-calendar,
+.rbc-header,
+.rbc-date-cell,
+.rbc-date-cell .rbc-button-link,
+.rbc-event,
+.rbc-toolbar,
+.rbc-month-view {
+  font-family: var(--font-family) !important;
+}
+
+.rbc-month-view {
+  border-radius: 18px;
+  overflow: hidden;
+  background: white;
+  border: none;
+}
+
+.rbc-header {
+  background: transparent;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--light-foreground-colour);
+  border-bottom: none;
+  padding: 0.7rem 0;
+}
+
+.rbc-row-bg {
+  background: transparent;
+}
+
+.rbc-date-cell .rbc-button-link {
+  position: relative;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+}
+
+.rbc-date-cell.rbc-now .rbc-button-link {
+  color: white;
+  background: var(--primary-colour);
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  width: 1.8rem;
+}
+
+.rbc-month-view .rbc-date-cell:hover,
+.rbc-month-view .rbc-date-cell:active,
+.rbc-month-view .rbc-date-cell:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.rbc-toolbar {
+  display: none;
+}
+
+.rbc-month-row,
+.rbc-day-bg,
+.rbc-month-view,
+.rbc-row,
+.rbc-row-segment,
+.rbc-date-cell,
+.rbc-header {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.rbc-today {
+  background: transparent !important;
+}
+
+.rbc-event {
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  padding: 0.35rem 0.7rem;
+  background: var(--secondary-colour) !important;
+}
+
+.rbc-event:hover {
+  background: color-mix(in srgb, var(--secondary-colour) 80%, black 20%) !important;
+}

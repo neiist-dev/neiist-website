@@ -1,0 +1,30 @@
+.container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0 4rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 0 1.5rem;
+    padding: 0;
+  }
+}
+
+.title {
+  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+  font-weight: 500;
+}
+
+.primary {
+  color: var(--primary-colour);
+}
+.secondary {
+  color: var(--secondary-colour);
+}
+.tertiary {
+  color: var(--tertiary-colour);
+}
+.quaternary {
+  color: var(--quaternary-colour);
+}

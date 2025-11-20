@@ -1,11 +1,11 @@
 import { google } from "googleapis";
-import { NotionEvent } from "@/types/notion";
+import type { NotionEvent } from "@/types/events";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import fs from "fs";
 import path from "path";
 
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 50;
 const BATCH_DELAY_MS = 10;
 
 function getServiceAccountCredentials() {

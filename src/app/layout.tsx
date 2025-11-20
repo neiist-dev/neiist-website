@@ -7,6 +7,7 @@ import Cart from "@/components/shop/Cart";
 import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import "@/styles/globals.css";
+import "@/styles/components/activities/ReactBigCalendar.css";
 
 const secularOne = Secular_One({
   subsets: ["latin"],

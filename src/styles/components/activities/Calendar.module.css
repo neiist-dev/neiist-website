@@ -1,0 +1,40 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-weight: 800;
+  color: #333;
+  font-size: 1.3rem;
+  margin-bottom: 1.2rem;
+}
+
+.header button {
+  border: none;
+  background: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #333;
+  display: flex;
+  align-items: center;
+  transition: background 0.12s;
+}
+
+.header button:hover:not(:disabled) {
+  scale: 1.15;
+}
+
+.header button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@media (max-width: 425px) {
+  .header {
+    justify-items: center;
+  }
+}
+
+.calendarWrapper {
+  height: 55rem;
+  background: transparent;
+}
