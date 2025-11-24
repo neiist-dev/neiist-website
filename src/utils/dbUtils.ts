@@ -500,8 +500,6 @@ export const setDepartmentRoleOrder = async (
   }
 };
 
-
-
 export const addProduct = async (
   product: Partial<Product> & {
     name: string;
@@ -512,20 +510,17 @@ export const addProduct = async (
 ): Promise<Product | null> => {
   const {
     rows: [row],
-  } = await db_query<dbProduct>(
-    `SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-    [
-      product.name,
-      product.description ?? null,
-      product.price,
-      product.images ?? [],
-      product.category ?? null,
-      product.stock_type,
-      product.stock_quantity ?? null,
-      product.order_deadline ?? null,
-      product.active ?? true,
-    ]
-  );
+  } = await db_query<dbProduct>(`SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [
+    product.name,
+    product.description ?? null,
+    product.price,
+    product.images ?? [],
+    product.category ?? null,
+    product.stock_type,
+    product.stock_quantity ?? null,
+    product.order_deadline ?? null,
+    product.active ?? true,
+  ]);
   return row ? mapdbProductToProduct(row) : null;
 };
 
