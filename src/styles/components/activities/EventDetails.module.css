@@ -169,13 +169,13 @@
 
 .signUpButton {
   max-width: 500px;
-  padding: 18px 32px;
+  padding: 10px 20px;
   background: var(--primary-colour);
   color: white;
   border: none;
   border-radius: 0.8rem;
   font-weight: 800;
-  font-size: 26px;
+  font-size: 22px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -196,4 +196,19 @@
   text-decoration: underline;
   align-self: center;
   margin-top: 12px;
+}
+
+.shareButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  color: #333;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.shareButton:hover {
+  transform: scale(1.15);
 }

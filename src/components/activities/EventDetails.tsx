@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import * as Icons from "react-icons/fa";
-import { IoClose, IoLocationOutline } from "react-icons/io5";
+import { IoClose, IoLocationOutline, IoShareOutline } from "react-icons/io5";
 import { MdAccessTime } from "react-icons/md";
 import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
@@ -135,6 +135,11 @@ export default function EventDetails({
     }
   };
 
+  const handleShare = () => {
+    const url = `${window.location.origin}/activities?eventId=${event.id}`;
+    navigator.clipboard.writeText(url);
+  };
+
   return (
     <div
       className={styles.modalOverlay}
@@ -152,6 +157,12 @@ export default function EventDetails({
             <EventIcon size={48} />
           </div>
           <h2 className={styles.eventTitle}>{event.summary || "Untitled Event"}</h2>
+          <button
+            className={styles.shareButton}
+            onClick={handleShare}
+            title="Copiar link do evento">
+            <IoShareOutline size={22} />
+          </button>
         </div>
 
         <div className={styles.detailsSection}>
@@ -253,7 +264,6 @@ export default function EventDetails({
                   ? "Cancelar inscrição"
                   : "Sign Up"}
           </button>
-
           {isAdmin && subscriberCount > 0 && (
             <button onClick={handleEmailAttendees} className={styles.emailLink}>
               Enviar email para todos os inscritos.
