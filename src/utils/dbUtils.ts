@@ -599,7 +599,7 @@ export const addProduct = async (
   const {
     rows: [row],
   } = await db_query<dbProduct>(
-    `SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    `SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     [
       product.name,
       product.description ?? null,

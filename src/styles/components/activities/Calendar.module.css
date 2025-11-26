@@ -1,14 +1,43 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
-  font-weight: 800;
+  gap: 1.5rem;
   color: #333;
   font-size: 1.3rem;
   margin-bottom: 1.2rem;
 }
 
-.header button {
+.navigationButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.monthLabel {
+  text-transform: capitalize;
+}
+
+.todayButton {
+  border: 1.5px solid #747775;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0 16px;
+  height: 36px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+}
+
+.todayButton:hover {
+  background-color: var(--hover);
+}
+
+.navigationButtons button {
   border: none;
   background: none;
   font-size: 1.8rem;
@@ -16,14 +45,19 @@
   color: #333;
   display: flex;
   align-items: center;
+  justify-content: center;
   transition: background 0.12s;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
 }
 
-.header button:hover:not(:disabled) {
-  scale: 1.15;
+.navigationButtons button:hover:not(:disabled) {
+  background-color: var(--hover);
 }
 
-.header button:disabled {
+.navigationButtons button:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
@@ -35,6 +69,7 @@
 }
 
 .calendarWrapper {
-  height: 55rem;
+  min-height: 700px;
+  height: calc(100vh - 200px);
   background: transparent;
 }

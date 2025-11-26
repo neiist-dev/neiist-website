@@ -8,39 +8,25 @@
 !.yarn/releases
 !.yarn/versions
 
-# Testing
-/coverage
-
-# App Data
-/data
-notion-events-cache.json
-
-# Next.js
+# Build Output
 /.next/
 /out/
-
-# Production
 /build
 
-# Debug
+# Log Files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# .env files
+# Environment Variables
 .env
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
-# IDE's
+# IDEs and macOS
 .vscode
 .idea
-
-# macOS
 .DS_Store
-
-# Miscellaneous
-*.pem
