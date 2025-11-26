@@ -212,3 +212,7 @@
 .shareButton:hover {
   transform: scale(1.15);
 }
+
+.descriptionLink {
+  color: var(--secondary-colour);
+}
