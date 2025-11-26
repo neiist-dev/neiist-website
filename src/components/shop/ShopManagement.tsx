@@ -69,11 +69,9 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         } else {
           const error = await response.json();
           console.error("Error deleting product:", error);
-          alert("Error deleting product: " + error.error);
         }
       } catch (error) {
         console.error("Error deleting product:", error);
-        alert("Error deleting product. Please try again.");
       }
       setShowConfirm(false);
       setRemovingProductId(null);

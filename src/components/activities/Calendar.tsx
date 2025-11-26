@@ -110,7 +110,13 @@ function CustomToolbar({
   );
 }
 
-export default function Calendar({ events, signedUpEventIds, userIstid, isAdmin }: CalendarProps) {
+export default function Calendar({
+  events,
+  signedUpEventIds,
+  userIstid,
+  isAdmin,
+  initialSelectedEventId,
+}: CalendarProps & { initialSelectedEventId?: string }) {
   const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
   const [signUps, setSignUps] = useState<Set<string>>(new Set(signedUpEventIds));
   const [eventList, setEventList] = useState<CalendarEvent[]>(events);
@@ -131,6 +137,12 @@ export default function Calendar({ events, signedUpEventIds, userIstid, isAdmin 
     () => normalizedEvents.map(mapToBigCalendarEvent),
     [normalizedEvents]
   );
+  useEffect(() => {
+    if (initialSelectedEventId) {
+      const normalized = normalizedEvents.find((e) => e.id === initialSelectedEventId);
+      if (normalized) setSelectedEvent(normalized);
+    }
+  }, [initialSelectedEventId, normalizedEvents]);
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
     setEventList((prev) => prev.map((evt) => (evt.id === updatedEvent.id ? updatedEvent : evt)));
     setSelectedEvent((current) =>
