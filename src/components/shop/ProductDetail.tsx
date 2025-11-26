@@ -174,6 +174,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         </div>
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
+          <p className={styles.description}>{product.description}</p>
           <div className={styles.price}>{price.toFixed(2)}€</div>
           {mainOption && (
             <div>
@@ -217,7 +218,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               </div>
             </div>
           )}
-          <p className={styles.description}>{product.description}</p>
           <div className={styles.stockInfo}>
             <div
               className={`${styles.stockType} ${
