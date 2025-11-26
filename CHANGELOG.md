@@ -1,5 +1,21 @@
 # neiist
 
+## 1.5.1
+
+### Patch Changes
+
+- Persist return URL across the Fenix OAuth flow so users are returned to the page they started on
+
+
+## 1.5.0
+
+### Minor Changes
+
+- Activities Page
+- Calendar with all NEIIST events updated from notion
+- User sign up to events
+- Events management for admin
+
 ## 1.4.1
 
 ### Patch Changes

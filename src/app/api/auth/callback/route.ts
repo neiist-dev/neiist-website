@@ -1,3 +1,4 @@
+// ...existing code...
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -13,10 +14,12 @@ export async function GET(request: Request) {
   }
 
   const clearedStateCookie = { name: "fenix_oauth_state", value: "", path: "/", maxAge: 0 };
+  const clearedRedirectCookie = { name: "post_login_redirect", value: "", path: "/", maxAge: 0 };
 
   if (!authCode) {
     const res = NextResponse.json({ error: "No Auth Code Provided" }, { status: 400 });
     res.cookies.set(clearedStateCookie);
+    res.cookies.set(clearedRedirectCookie);
     return res;
   }
 
@@ -38,6 +41,7 @@ export async function GET(request: Request) {
     if (!r.ok) {
       const res = NextResponse.json({ error: "Failed to Retrieve Access Token" }, { status: 500 });
       res.cookies.set(clearedStateCookie);
+      res.cookies.set(clearedRedirectCookie);
       return res;
     }
 
@@ -47,12 +51,16 @@ export async function GET(request: Request) {
     if (!access_token) {
       const res = NextResponse.json({ error: "Access Token Missing" }, { status: 500 });
       res.cookies.set(clearedStateCookie);
+      res.cookies.set(clearedRedirectCookie);
       return res;
     }
+    const postLogin = cookieStore.get("post_login_redirect")?.value;
+    const isSafe = typeof postLogin === "string" && postLogin.startsWith("/");
+    const redirectUrl = isSafe
+      ? new URL(postLogin, process.env.NEXT_PUBLIC_BASE_URL)
+      : new URL("/?login=true", process.env.NEXT_PUBLIC_BASE_URL);
 
-    const response = NextResponse.redirect(
-      new URL("/?login=true", process.env.NEXT_PUBLIC_BASE_URL)
-    );
+    const response = NextResponse.redirect(redirectUrl);
 
     response.cookies.set("access_token", access_token, {
       httpOnly: true,
@@ -69,11 +77,13 @@ export async function GET(request: Request) {
       });
     }
     response.cookies.set(clearedStateCookie);
+    response.cookies.set(clearedRedirectCookie);
     return response;
   } catch (error) {
     console.error("Error in Callback:", error);
     const res = NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     res.cookies.set(clearedStateCookie);
+    res.cookies.set(clearedRedirectCookie);
     return res;
   }
 }

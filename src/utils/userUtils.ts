@@ -1,5 +1,6 @@
 export const login = () => {
-  window.location.href = "/api/auth/login";
+  const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+  window.location.href = `/api/auth/login?returnUrl=${returnUrl}`;
 };
 
 export const logout = async () => {

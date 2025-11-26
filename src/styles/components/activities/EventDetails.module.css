@@ -18,6 +18,7 @@
   max-width: 30rem;
   max-height: 90vh;
   position: relative;
+  box-sizing: border-box;
 }
 
 .closeButton {
@@ -76,10 +77,11 @@
   color: #3f3f3f;
 }
 
-.descriptionSection p {
-  margin: 0;
+.descriptionSection {
   color: #3f3f3f;
   font-size: 1.03rem;
+  white-space: pre-wrap;
+  hyphens: auto;
 }
 
 .adminSection {
