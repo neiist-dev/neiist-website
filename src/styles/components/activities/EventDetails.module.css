@@ -168,7 +168,7 @@
 }
 
 .signUpButton {
-  max-width: 760px;
+  max-width: 500px;
   padding: 18px 32px;
   background: var(--primary-colour);
   color: white;

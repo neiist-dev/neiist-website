@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
+import { format, parse, startOfWeek, getDay, isBefore, startOfDay } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import EventDetails from "@/components/activities/EventDetails";
@@ -92,15 +92,20 @@ function CustomToolbar({
 
   return (
     <div className={styles.header}>
-      <button onClick={() => onNavigate("PREV")} aria-label="Previous Month">
-        <FiChevronLeft />
+      <button className={styles.todayButton} onClick={() => onNavigate("TODAY")}>
+        Hoje
       </button>
-      <span>
+      <div className={styles.navigationButtons}>
+        <button onClick={() => onNavigate("PREV")} aria-label="Previous Month">
+          <FiChevronLeft />
+        </button>
+        <button onClick={() => onNavigate("NEXT")} aria-label="Next Month">
+          <FiChevronRight />
+        </button>
+      </div>
+      <span className={styles.monthLabel}>
         {month} {year}
       </span>
-      <button onClick={() => onNavigate("NEXT")} aria-label="Next Month">
-        <FiChevronRight />
-      </button>
     </div>
   );
 }
@@ -140,10 +145,29 @@ export default function Calendar({ events, signedUpEventIds, userIstid, isAdmin 
     event: IconEventsCard,
   };
 
+  const dayPropGetter = (date: Date) => {
+    const now = startOfDay(new Date());
+    if (isBefore(date, now)) {
+      return {
+        className: "rbc-past-day",
+      };
+    }
+    return {};
+  };
+
+  const eventPropGetter = (event: ReactBigCalendarEvent) => {
+    const now = new Date();
+    if (isBefore(event.end, now)) {
+      return {
+        className: "rbc-past-event",
+      };
+    }
+    return {};
+  };
+
   return (
     <>
       <div className={styles.calendarWrapper}>
-        {/* @ts-expect-error: Suppress invalid JSX component type error for BigCalendar, waiting update for react 19 */}
         <BigCalendar
           localizer={localizer}
           events={calendarEvents}
@@ -158,6 +182,9 @@ export default function Calendar({ events, signedUpEventIds, userIstid, isAdmin 
             setSelectedEvent(normalized ?? null);
           }}
           components={components}
+          dayPropGetter={dayPropGetter}
+          eventPropGetter={eventPropGetter}
+          culture="pt"
         />
       </div>
 

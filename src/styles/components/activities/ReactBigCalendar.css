@@ -12,27 +12,51 @@
   border-radius: 18px;
   overflow: hidden;
   background: white;
-  border: none;
+  border: 1px solid #dadce0;
+}
+
+.rbc-button-link {
+  pointer-events: none;
 }
 
 .rbc-header {
   background: transparent;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--light-foreground-colour);
-  border-bottom: none;
-  padding: 0.7rem 0;
+  font-size: 0.9rem;
+  font-weight: 500 !important;
+  color: #70757a;
+  border: none !important;
+  border-left: none !important;
+  border-right: 1px solid #dadce0 !important;
+  border-bottom: none !important;
+  padding-top: 0.5rem !important;
+  text-transform: uppercase;
+  font-family: sans-serif !important;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.rbc-header:last-child {
+  border-right: none !important;
 }
 
 .rbc-row-bg {
   background: transparent;
 }
 
+.rbc-date-cell {
+  display: flex;
+  justify-content: center;
+  padding-right: 0 !important;
+}
+
 .rbc-date-cell .rbc-button-link {
   position: relative;
-  font-weight: 700;
-  font-size: 1rem;
-  color: #333;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #3c4043;
+  margin: 0;
+  float: none;
 }
 
 .rbc-date-cell.rbc-now .rbc-button-link {
@@ -41,6 +65,10 @@
   border-radius: 50%;
   aspect-ratio: 1 / 1;
   width: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.2rem auto;
 }
 
 .rbc-month-view .rbc-date-cell:hover,
@@ -60,25 +88,44 @@
 .rbc-month-view,
 .rbc-row,
 .rbc-row-segment,
-.rbc-date-cell,
-.rbc-header {
-  border: none !important;
-  box-shadow: none !important;
+.rbc-date-cell {
+  border-color: #dadce0 !important;
+}
+
+.rbc-month-row {
+  border-bottom: 1px solid #dadce0;
+}
+
+.rbc-day-bg {
+  border-right: 1px solid #dadce0;
+}
+
+.rbc-day-bg:last-child {
+  border-right: none;
 }
 
 .rbc-today {
   background: transparent !important;
 }
 
+.rbc-off-range-bg {
+  background: transparent !important;
+}
+
 .rbc-event {
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.85rem;
   border: none;
-  padding: 0.35rem 0.7rem;
+  padding: 2px 8px;
   background: var(--secondary-colour) !important;
+  margin: 1px 4px;
 }
 
 .rbc-event:hover {
   background: color-mix(in srgb, var(--secondary-colour) 80%, black 20%) !important;
+}
+
+.rbc-past-event {
+  opacity: 0.6;
 }
