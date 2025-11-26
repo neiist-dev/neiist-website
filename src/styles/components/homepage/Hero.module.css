@@ -24,21 +24,81 @@
 
 .tertiary {
   color: var(--tertiary-colour);
-}
-
-.quaternary {
-  color: var(--quaternary-colour);
-}
-
-.subtitle {
-  margin-top: 0;
-  margin-bottom: 8rem;
-  color: var(--secondary-colour);
-  font-size: 1.25rem;
   font-weight: 600;
-  text-align: center;
 }
 
+.interactKey {
+  background: var(--quaternary-colour);
+  color: var(--primary-colour);
+  border-radius: 5px;
+  padding: 0.1rem 0.5rem;
+  font-size: 1.1em;
+  font-weight: bold;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  border: 1.5px solid var(--primary-colour);
+}
+
+.interactText {
+  color: var(--background-colour);
+  font-weight: 500;
+}
+
+.roomPrompt {
+  position: absolute;
+  min-width: 8rem;
+  left: 50%;
+  bottom: 24%;
+  transform: translateX(-50%) scale(1.08);
+  background: linear-gradient(90deg, var(--secondary-colour) 0%, var(--primary-colour) 100%);
+  color: var(--background-colour);
+  padding: 1rem 2rem 1rem 2rem;
+  border-radius: 16px;
+  font-size: 1.3rem;
+  font-family: inherit;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  z-index: 20;
+  border: 2.5px solid var(--quaternary-colour);
+  text-align: center;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: popRoom 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+.roomNumber {
+  font-size: 1.7rem;
+  color: var(--primary-colour);
+  background: var(--background-colour);
+  border-radius: 8px;
+  padding: 0.2rem 1.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+  border: 2px solid var(--primary-colour);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.roomSubtitle {
+  font-size: 1.1rem;
+  color: var(--background-colour);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+@keyframes popRoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(30px);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.08) translateY(0);
+  }
+}
 .heroImage {
   display: flex;
   width: 100%;
@@ -46,12 +106,20 @@
   overflow: hidden;
 }
 
-.campusImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+.interactPrompt {
+  font-size: 0.95rem;
+  padding: 0.4rem 0.8rem;
+  bottom: 22%;
+}
+.roomPrompt {
+  font-size: 1.05rem;
+  padding: 0.7rem 1.2rem;
+  min-width: 6rem;
+  bottom: 28%;
+}
+.roomNumber {
+  font-size: 1.2rem;
+  padding: 0.15rem 0.7rem;
 }
 
 .student {
@@ -64,6 +132,25 @@
   z-index: 2;
 }
 
+.interactPrompt {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  transform: translateX(-50%);
+  background: rgba(30, 30, 30, 0.85);
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+  pointer-events: none;
+  border: 2px solid var(--primary-colour);
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
 @media (max-width: 728px) {
   .student {
     bottom: 2vw;
@@ -72,6 +159,30 @@
   }
 }
 
+.campusImage {
+  width: 100vw;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
 .flipped {
   transform: scaleX(-1);
+}
+
+.jumping {
+  animation: jump-pixel 0.2s steps(2, end) forwards;
+}
+@keyframes jump-pixel {
+  0% {
+    bottom: 2rem;
+  }
+  50% {
+    bottom: 7rem;
+  }
+  100% {
+    bottom: 2rem;
+  }
 }
