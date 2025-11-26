@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       { status: 403 }
     );
   }
-  
+
   const username = await getUsernameFromCookies();
   if (!username) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

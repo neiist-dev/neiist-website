@@ -500,8 +500,6 @@ export const setDepartmentRoleOrder = async (
   }
 };
 
-
-
 export const addProduct = async (
   product: Partial<Product> & {
     name: string;

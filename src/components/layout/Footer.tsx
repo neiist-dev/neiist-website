@@ -65,7 +65,7 @@ export default function Footer() {
           <h4>Sobre o Núcleo</h4>
           <ul>
             <li>
-              <Link className={styles.link} href="/sobre-nos">
+              <Link className={styles.link} href="/about-us">
                 Equipa
               </Link>
             </li>
