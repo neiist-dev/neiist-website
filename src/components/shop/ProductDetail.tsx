@@ -176,26 +176,9 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
           <h1 className={styles.title}>{product.name}</h1>
           <p className={styles.description}>{product.description}</p>
           <div className={styles.price}>{price.toFixed(2)}€</div>
-          {/*{mainOption && (
-            <div>
-              <span className={styles.label}>{mainOption}</span>
-              <div className={styles.options}>
-                {mainValues.map((val) => (
-                  <button
-                    key={val}
-                    className={`${styles.option} ${selectedMain === val ? styles.selected : ""}`}
-                    onClick={() => handleMainChange(val)}>
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}*/}
-
           {mainOption && (
             <div>
               <span className={styles.label}>{mainOption}</span>
-
               <div
                 className={
                   mainOption.toLowerCase() === "cor" ? styles.colorOptions : styles.options
@@ -214,7 +197,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               </div>
             </div>
           )}
-
           {subOption && (
             <div>
               <span className={styles.label}>{subOption}</span>
