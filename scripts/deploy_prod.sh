@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-export PATH="$HOME/.nvm/versions/node/v23.10.0/bin:$PATH"
+export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"
 
 echo "🚀 Deploying to PRODUCTION"
 
