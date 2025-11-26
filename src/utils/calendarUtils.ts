@@ -65,18 +65,34 @@ export function normalizeCalendarEvent(raw: CalendarEvent): NormalizedCalendarEv
   };
 }
 
-export function formatEventDateTime(event: CalendarEvent): { date: string; time: string } {
-  const startStr = event.start?.dateTime || event.start?.date;
-  if (!startStr) return { date: "TBD", time: "" };
+export function formatEventDateTime(event: CalendarEvent): {
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  isAllDay: Boolean;
+} {
+  const startStr = event.start?.dateTime || event.start?.date || "";
+  const endStr = event.end?.dateTime || event.end?.date || "";
+
+  if (!startStr && !endStr)
+    return { startDate: "TBD", endDate: "TBD", startTime: "TBD", endTime: "TBD", isAllDay: false };
 
   const start = new Date(startStr);
-  const isAllDay = !!event.start?.date;
+  const end = new Date(endStr);
 
-  const time = isAllDay
-    ? "All Day"
-    : `${String(start.getHours()).padStart(2, "0")}h${String(start.getMinutes()).padStart(2, "0")}`;
+  const startTime = `${String(start.getHours()).padStart(2, "0")}h${String(start.getMinutes()).padStart(2, "0")}`;
+  const endTime = `${String(end.getHours()).padStart(2, "0")}h${String(end.getMinutes()).padStart(2, "0")}`;
 
-  return { date: formatDate(start), time };
+  const isAllDay = Boolean(event.start?.date && !event.start?.dateTime);
+
+  return {
+    startDate: formatDate(start),
+    endDate: formatDate(end),
+    startTime: startTime,
+    endTime: endTime,
+    isAllDay: isAllDay,
+  };
 }
 
 function occursOnDate(event: NormalizedCalendarEvent, target: Date) {

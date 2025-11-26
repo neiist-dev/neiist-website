@@ -41,7 +41,7 @@ export default function EventDetails({
 
   const EventIcon: IconType =
     (Icons as Record<string, IconType>)[settings.customIcon] || Icons.FaCalendar;
-  const { date, time } = formatEventDateTime(event.raw);
+  const { startDate, endDate, startTime, endTime, isAllDay } = formatEventDateTime(event.raw);
   const subscriberCount = event.raw.subscriberCount ?? 0;
   const maxAttendeesNum = parseInt(settings.maxAttendees) || Infinity;
   const canSignUp = settings.signupEnabled && subscriberCount < maxAttendeesNum;
@@ -157,9 +157,17 @@ export default function EventDetails({
         <div className={styles.detailsSection}>
           <div className={styles.detailRow}>
             <MdAccessTime size={24} />
-            <span>
-              {date} → {time}
-            </span>
+            {isAllDay ? (
+              <span>{startDate == endDate ? `${startDate}` : `${startDate} → ${endDate}`}</span>
+            ) : startDate == endDate ? (
+              <span>
+                {startDate} | {startTime} - {endTime}
+              </span>
+            ) : (
+              <span>
+                {startDate} → {endDate} | {startTime} - {endTime}
+              </span>
+            )}
           </div>
           {event.location && (
             <div className={styles.detailRow}>
