@@ -2,17 +2,29 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import * as Icons from "react-icons/fa";
+import * as FA from "react-icons/fa";
+import * as MD from "react-icons/md";
+import * as IO from "react-icons/io5";
+import * as TB from "react-icons/tb";
+import * as GI from "react-icons/gi";
+import * as HI from "react-icons/hi2";
+import * as BS from "react-icons/bs";
 import { IoClose, IoLocationOutline, IoShareOutline } from "react-icons/io5";
 import { MdAccessTime } from "react-icons/md";
 import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
 import { getEventSettings } from "@/types/events";
 import Linkify from "linkify-react";
-import type { EventSettings, NormalizedCalendarEvent, EventSubscriber } from "@/types/events";
+import type {
+  EventSettings,
+  NormalizedCalendarEvent,
+  EventSubscriber,
+  CalendarEvent,
+} from "@/types/events";
 import type { IconType } from "react-icons";
 import styles from "@/styles/components/activities/EventDetails.module.css";
 
+type CalendarEventWithOptionalCustom = CalendarEvent & { customIcon?: string };
 interface EventDetailsProps {
   event: NormalizedCalendarEvent;
   onClose: () => void;
@@ -21,7 +33,8 @@ interface EventDetailsProps {
   isAdmin: boolean;
   // eslint-disable-next-line no-unused-vars
   onSignUpChange: (eventId: string, signedUp: boolean) => void;
-  onUpdate: () => void;
+  // eslint-disable-next-line no-unused-vars
+  onUpdate: (updatedEvent?: CalendarEvent) => void;
 }
 
 export default function EventDetails({
@@ -40,8 +53,22 @@ export default function EventDetails({
   const [settings, setSettings] = useState<EventSettings>(() => getEventSettings(event.raw));
   const hasChanges = useRef(false);
 
-  const EventIcon: IconType =
-    (Icons as Record<string, IconType>)[settings.customIcon] || Icons.FaCalendar;
+  const ICON_REGISTRY: Record<string, IconType> = {
+    ...FA,
+    ...MD,
+    ...IO,
+    ...TB,
+    ...GI,
+    ...HI,
+    ...BS,
+  };
+  const resolvedIconName =
+    settings.customIcon ||
+    event.raw.extendedProperties?.private?.customIcon ||
+    (event.raw as CalendarEventWithOptionalCustom).customIcon ||
+    "FaCalendar";
+  const EventIcon: IconType = ICON_REGISTRY[resolvedIconName] || FA.FaCalendar;
+
   const { startDate, endDate, startTime, endTime, isAllDay } = formatEventDateTime(event.raw);
   const subscriberCount = event.raw.subscriberCount ?? 0;
   const maxAttendeesNum = parseInt(settings.maxAttendees) || Infinity;
@@ -72,13 +99,24 @@ export default function EventDetails({
         }),
       });
       if (res.ok) {
-        onUpdate();
+        const patchedRaw: CalendarEvent = {
+          ...(event.raw as CalendarEvent),
+          extendedProperties: {
+            ...(event.raw.extendedProperties || {}),
+            private: {
+              ...(event.raw.extendedProperties?.private || {}),
+              customIcon: settings.customIcon || undefined,
+            },
+          },
+          description: settings.description || undefined,
+        };
+        onUpdate(patchedRaw);
         router.refresh();
       }
     } catch (error) {
       console.error("Failed to save settings:", error);
     }
-  }, [isAdmin, hasChanges, settings, event.id, onUpdate, router]);
+  }, [isAdmin, hasChanges, settings, event.id, event.raw, onUpdate, router]);
 
   const handleClose = useCallback(async () => {
     await saveSettings();

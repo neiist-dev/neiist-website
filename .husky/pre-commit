@@ -4,7 +4,7 @@ set -e
 if [ -d "src" ]; then
   yarn type:check
   yarn format:check
-  yarn lint-staged
+  yarn lint:staged
 else
   echo "❌ Error: src directory not found"
   exit 1

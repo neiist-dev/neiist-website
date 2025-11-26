@@ -70,7 +70,7 @@ export function formatEventDateTime(event: CalendarEvent): {
   endDate: string;
   startTime: string;
   endTime: string;
-  isAllDay: Boolean;
+  isAllDay: boolean;
 } {
   const startStr = event.start?.dateTime || event.start?.date || "";
   const endStr = event.end?.dateTime || event.end?.date || "";

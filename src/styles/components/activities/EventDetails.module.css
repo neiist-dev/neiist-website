@@ -204,11 +204,8 @@
   background: none;
   border: none;
   cursor: pointer;
-  margin-left: 0.5rem;
   color: #333;
   transition: background 0.15s;
-  display: flex;
-  align-items: center;
 }
 
 .shareButton:hover {
