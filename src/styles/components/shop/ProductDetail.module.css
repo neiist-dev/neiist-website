@@ -101,15 +101,21 @@
   font-size: 2rem;
   font-weight: 800;
   margin: 0;
+  margin-bottom: -1.5rem;
+}
+
+.description {
+  font-size: 1rem;
 }
 
 .price {
-  background: var(--primary-colour);
-  color: white;
+  color: var(--foreground-colour);
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 700;
   width: fit-content;
+  font-size: 1.2rem;
+  margin: -1rem;
 }
 
 .label {
@@ -150,10 +156,6 @@
 .option:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.description {
-  font-size: 1rem;
 }
 
 .stockInfo {
@@ -236,4 +238,23 @@
     grid-template-columns: 1fr;
     gap: 2rem;
   }
+}
+
+.colorOptions {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.colorOptions .option {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+.colorOptions .option.selected {
+  border-color: var(--primary-colour);
+  border-width: 3px;
 }
