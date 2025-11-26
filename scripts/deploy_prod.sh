@@ -47,7 +47,7 @@ echo "📁 Installing dependencies..."
 yarn install --frozen-lockfile
 
 echo "🏗️ Building project..."
-yarn build
+NODE_OPTIONS="--max-old-space-size=4096" yarn build
 
 echo "♻️ Restarting PM2 process for $DEPLOYING_TO_NAME..."
 pm2 restart $DEPLOYING_TO_NAME || pm2 start ecosystem.config.js
