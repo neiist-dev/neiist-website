@@ -8,6 +8,7 @@ import { MdAccessTime } from "react-icons/md";
 import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
 import { getEventSettings } from "@/types/events";
+import Linkify from "linkify-react";
 import type { EventSettings, NormalizedCalendarEvent, EventSubscriber } from "@/types/events";
 import type { IconType } from "react-icons";
 import styles from "@/styles/components/activities/EventDetails.module.css";
@@ -190,7 +191,14 @@ export default function EventDetails({
 
         {settings.description && !isAdmin && (
           <div className={styles.descriptionSection}>
-            <p>{settings.description}</p>
+            <Linkify
+              options={{
+                target: "_blank",
+                rel: "noopener noreferrer",
+                attributes: { className: styles.descriptionLink },
+              }}>
+              {settings.description}
+            </Linkify>
           </div>
         )}
 
