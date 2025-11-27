@@ -20,11 +20,34 @@ export function UserProvider({
   const [user, setUser] = useState<User | null>(initialUser);
 
   useEffect(() => {
+    let mounted = true;
+    const revalidate = async () => {
+      try {
+        const fresh = await fetchUserData();
+        if (!mounted) return;
+        setUser(fresh ?? null);
+      } catch {
+        if (!mounted) return;
+        setUser(null);
+      }
+    };
     if (!initialUser) {
-      fetchUserData()
-        .then(setUser)
-        .catch(() => setUser(null));
+      revalidate();
     }
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") revalidate();
+    };
+    const onFocus = () => revalidate();
+
+    window.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [initialUser]);
 
   return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;

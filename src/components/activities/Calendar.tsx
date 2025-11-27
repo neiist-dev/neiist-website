@@ -29,8 +29,6 @@ const localizer = dateFnsLocalizer({
 interface CalendarProps {
   events: CalendarEvent[];
   signedUpEventIds: string[];
-  userIstid: string | null;
-  isAdmin: boolean;
 }
 
 interface ReactBigCalendarEvent {
@@ -113,8 +111,6 @@ function CustomToolbar({
 export default function Calendar({
   events,
   signedUpEventIds,
-  userIstid,
-  isAdmin,
   initialSelectedEventId,
 }: CalendarProps & { initialSelectedEventId?: string }) {
   const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
@@ -205,8 +201,6 @@ export default function Calendar({
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
           isSignedUp={signUps.has(selectedEvent.id)}
-          userIstid={userIstid}
-          isAdmin={isAdmin}
           onSignUpChange={(eventId: string, signedUp: boolean) => {
             setSignUps((prev) => {
               const newSet = new Set(prev);

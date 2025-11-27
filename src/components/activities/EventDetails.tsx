@@ -15,6 +15,8 @@ import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
 import { getEventSettings } from "@/types/events";
 import Linkify from "linkify-react";
+import { useUser } from "@/context/UserContext";
+import { UserRole } from "@/types/user";
 import type {
   EventSettings,
   NormalizedCalendarEvent,
@@ -29,8 +31,6 @@ interface EventDetailsProps {
   event: NormalizedCalendarEvent;
   onClose: () => void;
   isSignedUp: boolean;
-  userIstid: string | null;
-  isAdmin: boolean;
   // eslint-disable-next-line no-unused-vars
   onSignUpChange: (eventId: string, signedUp: boolean) => void;
   // eslint-disable-next-line no-unused-vars
@@ -41,12 +41,15 @@ export default function EventDetails({
   event,
   onClose,
   isSignedUp,
-  userIstid,
-  isAdmin,
   onSignUpChange,
   onUpdate,
 }: EventDetailsProps) {
   const router = useRouter();
+  const { user } = useUser();
+  const currentIstid = user?.istid ?? undefined;
+  const userRoles = (user?.roles as UserRole[] | undefined) ?? [UserRole._GUEST];
+  const isAdmin = userRoles.includes(UserRole._ADMIN);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [signedUp, setSignedUp] = useState(isSignedUp);
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -87,6 +90,7 @@ export default function EventDetails({
       const res = await fetch("/api/calendar/activities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           eventId: event.id,
           signupEnabled: settings.signupEnabled,
@@ -98,6 +102,12 @@ export default function EventDetails({
           description: settings.description || null,
         }),
       });
+
+      if (res.status === 401) {
+        window.location.reload();
+        return;
+      }
+
       if (res.ok) {
         const patchedRaw: CalendarEvent = {
           ...(event.raw as CalendarEvent),
@@ -116,7 +126,7 @@ export default function EventDetails({
     } catch (error) {
       console.error("Failed to save settings:", error);
     }
-  }, [isAdmin, hasChanges, settings, event.id, event.raw, onUpdate, router]);
+  }, [isAdmin, settings, event.id, event.raw, onUpdate, router]);
 
   const handleClose = useCallback(async () => {
     await saveSettings();
@@ -139,14 +149,21 @@ export default function EventDetails({
   };
 
   const handleSignUp = async () => {
-    if (!userIstid) return alert("Por favor, faça login para se inscrever.");
+    if (!currentIstid) return alert("Por favor, faça login para se inscrever.");
     setIsProcessing(true);
     try {
       const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ eventId: event.id, signUp: !signedUp }),
       });
+
+      if (res.status === 401) {
+        window.location.reload();
+        return;
+      }
+
       if (!res.ok) throw new Error("Failed to sign up");
       const data = await res.json();
       setSignedUp(data.signedUp);
@@ -161,7 +178,13 @@ export default function EventDetails({
 
   const handleEmailAttendees = async () => {
     try {
-      const res = await fetch(`/api/calendar/activities?eventId=${event.id}`);
+      const res = await fetch(`/api/calendar/activities?eventId=${event.id}`, {
+        credentials: "include",
+      });
+      if (res.status === 401) {
+        window.location.reload();
+        return;
+      }
       if (!res.ok) throw new Error("Failed to fetch attendees");
       const data = await res.json();
       const emails = (data.subscribers as EventSubscriber[]).map((s) => s.email).join(",");
@@ -301,11 +324,11 @@ export default function EventDetails({
           <button
             className={styles.signUpButton}
             onClick={handleSignUp}
-            disabled={isProcessing || !canSignUp || !userIstid}>
+            disabled={isProcessing || !canSignUp || !currentIstid}>
             {isProcessing
               ? "A processar..."
-              : !userIstid
-                ? "Por favor inicie sessão para se inscrever  "
+              : !currentIstid
+                ? "Por favor inicie sessão para se inscrever"
                 : signedUp
                   ? "Cancelar inscrição"
                   : "Sign Up"}

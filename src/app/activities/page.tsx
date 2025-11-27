@@ -48,7 +48,7 @@ export default async function ActivitiesPage({
   searchParams?: Promise<{ eventId?: string }>;
 }) {
   const params = searchParams ? await searchParams : {};
-  const { events, signedUpEventIds, istid, isAdmin } = await getEventsAndSubscriptions();
+  const { events, signedUpEventIds } = await getEventsAndSubscriptions();
   const urlSelectdEventID = params.eventId || undefined;
 
   return (
@@ -62,8 +62,6 @@ export default async function ActivitiesPage({
       <Calendar
         events={events}
         signedUpEventIds={signedUpEventIds}
-        userIstid={istid}
-        isAdmin={isAdmin}
         initialSelectedEventId={urlSelectdEventID}
       />
     </div>
