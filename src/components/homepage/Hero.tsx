@@ -7,8 +7,8 @@ import styles from "@/styles/components/homepage/Hero.module.css";
 import { useEffect, useState, useRef } from "react";
 
 const NEIIST_ROOMS = {
-  left: "Sala 1.10",
-  right: "Sala 1.11",
+  alameda: "Sala 1-30 ( 3º Piso - Informática I )",
+  tagus: "Sala 1-18",
 };
 
 export default function Hero() {
@@ -69,10 +69,10 @@ export default function Hero() {
         }
       } else if (event.key === "e" || event.key === "E") {
         if (isAtLeftDoor) {
-          setShowRoom(NEIIST_ROOMS.left);
+          setShowRoom(NEIIST_ROOMS.alameda);
           setTimeout(() => setShowRoom(null), 2000);
         } else if (isAtRightDoor) {
-          setShowRoom(NEIIST_ROOMS.right);
+          setShowRoom(NEIIST_ROOMS.tagus);
           setTimeout(() => setShowRoom(null), 2000);
         }
       }
@@ -83,14 +83,21 @@ export default function Hero() {
 
   return (
     <section className={styles.hero}>
-      <h1 className={styles.title}>
-        Núcleo Estudantil de
-        <span className={styles.primary}> In</span>
-        <span className={styles.secondary}>for</span>
-        <span className={styles.tertiary}>mát</span>
-        <span className={styles.quaternary}>ica </span>
-        do Instituto Superior Técnico
-      </h1>
+      <div className={styles.topRow}>
+        <div>
+          <h1 className={styles.title}>Bem vindos, ao</h1>
+          <h2 className={styles.titleSubtitle}>
+            Núcleo Estudantil de
+            <span className={styles.primary}> In</span>
+            <span className={styles.secondary}>for</span>
+            <span className={styles.tertiary}>mát</span>
+            <span className={styles.quaternary}>ica </span>
+            <br />
+            do Instituto Superior Técnico
+          </h2>
+        </div>
+        <div className={styles.terminal} aria-hidden />
+      </div>
       <div ref={campusRef} className={styles.heroImage}>
         <Image src={hero} alt="IST Campus" className={styles.campusImage} />
         {showStudent && (
@@ -127,16 +134,16 @@ export default function Hero() {
           <div
             className={styles.roomPrompt}
             style={
-              showRoom === NEIIST_ROOMS.left
+              showRoom === NEIIST_ROOMS.alameda
                 ? { left: "15%", bottom: "24%", transform: "none" }
                 : { left: "82%", bottom: "24%", transform: "none" }
             }>
-            <span className={styles.roomNumber}>{showRoom}</span>
             <span className={styles.roomSubtitle}>
-              {showRoom === NEIIST_ROOMS.left
+              {showRoom === NEIIST_ROOMS.alameda
                 ? "Sala do Campus Alameda"
                 : "Sala do Campus Taguspark"}
             </span>
+            <span className={styles.roomNumber}>{showRoom}</span>
           </div>
         )}
       </div>
