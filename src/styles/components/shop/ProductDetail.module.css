@@ -104,10 +104,6 @@
   margin-bottom: -1.5rem;
 }
 
-.description {
-  font-size: 1rem;
-}
-
 .price {
   color: var(--foreground-colour);
   padding: 0.5rem 1rem;
@@ -115,7 +111,13 @@
   font-weight: 700;
   width: fit-content;
   font-size: 1.2rem;
-  margin: -1rem;
+  margin: 0rem;
+  margin-left: -1rem;
+}
+
+.description {
+  font-size: 1rem;
+  margin: 0;
 }
 
 .label {
@@ -148,9 +150,8 @@
 }
 
 .option.selected {
-  background: var(--primary-colour);
-  border-color: var(--primary-colour);
-  color: white;
+  border-color: var(--light-foreground-colour);
+  border-width: 2px;
 }
 
 .option:disabled {
@@ -176,12 +177,12 @@
 .quantity {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: white;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-  width: fit-content;
-  margin-bottom: 1rem;
+  background: #fff;
+  border-radius: 12px; /* mais arredondado */
+  height: 46px;
+  padding: 0 12px;
+  gap: 12px;
+  border-radius: 50px;
 }
 
 .quantity button {
@@ -210,6 +211,7 @@
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  border-radius: 50px;
 }
 
 .addButton:hover:not(:disabled) {
@@ -242,19 +244,48 @@
 
 .colorOptions {
   display: flex;
-  gap: 1.5rem;
+  gap: 0.8rem;
   margin-bottom: 1rem;
 }
 
 .colorOptions .option {
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   padding: 0;
   border-radius: 50%;
-  border: 2px solid #ddd;
+  position: relative;
 }
 
 .colorOptions .option.selected {
-  border-color: var(--primary-colour);
-  border-width: 3px;
+  border-color: var(--background-colour);
+}
+
+.colorOptions .option.selected::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.qtyRowWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7px;
+}
+
+.qtyAndButton {
+  display: flex;
+  align-items: center;
+  gap: 1 rem;
+}
+
+.addButton {
+  flex: 1;
+  height: 3rem;
+  padding: 0 1.5rem;
 }

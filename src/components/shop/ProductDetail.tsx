@@ -174,8 +174,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         </div>
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
-          <p className={styles.description}>{product.description}</p>
           <div className={styles.price}>{price.toFixed(2)}€</div>
+          <p className={styles.description}>{product.description}</p>
           {mainOption && (
             <div>
               <span className={styles.label}>{mainOption}</span>
@@ -224,42 +224,26 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               </div>
             </div>
           )}
-          <div className={styles.stockInfo}>
-            <div
-              className={`${styles.stockType} ${
-                product.stock_type === "limited" ? styles.limited : styles.onDemand
-              }`}>
-              {product.stock_type === "limited" ? "Stock Limitado" : "Sob Encomenda"}
-              {product.stock_type === "limited" && selectedVariant?.stock_quantity != null && (
-                <span> - {selectedVariant.stock_quantity} disponíveis</span>
-              )}
-            </div>
-            <div className={styles.deliveryInfo}>
-              {product.order_deadline && (
-                <div className={styles.orderDeadline}>
-                  Prazo de encomenda: {new Date(product.order_deadline).toLocaleDateString("pt-PT")}
-                </div>
-              )}
-            </div>
-          </div>
-          <div>
+          <div className={styles.qtyRowWrapper}>
             <span className={styles.label}>Quantidade</span>
-            <div className={styles.quantity}>
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))}>-</button>
-              <span>{qty}</span>
-              <button onClick={() => setQty((q) => q + 1)}>+</button>
+            <div className={styles.qtyAndButton}>
+              <div className={styles.quantity}>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))}>-</button>
+                <span>{qty}</span>
+                <button onClick={() => setQty((q) => q + 1)}>+</button>
+              </div>
+              <button
+                className={styles.addButton}
+                onClick={addToCart}
+                disabled={
+                  !selectedVariant ||
+                  !selectedVariant.active ||
+                  (product.stock_type === "limited" && (selectedVariant.stock_quantity ?? 0) <= 0)
+                }>
+                Adicionar ao Carrinho
+              </button>
             </div>
           </div>
-          <button
-            className={styles.addButton}
-            onClick={addToCart}
-            disabled={
-              !selectedVariant ||
-              !selectedVariant.active ||
-              (product.stock_type === "limited" && (selectedVariant.stock_quantity ?? 0) <= 0)
-            }>
-            Adicionar ao Carrinho
-          </button>
         </div>
       </div>
       {related.length > 0 && (
