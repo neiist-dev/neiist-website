@@ -3,24 +3,6 @@
   margin: 0 auto;
 }
 
-.backButton {
-  background: white;
-  border: none;
-  border-radius: 1.5rem;
-  padding: 0.5rem 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 2rem;
-}
-
-.backButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.12);
-}
-
 .breadcrumbs {
   display: flex;
   align-items: center;
