@@ -136,6 +136,14 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
       <button className={styles.backButton} onClick={() => router.push("/shop")}>
         <IoIosArrowBack size={18} /> Voltar
       </button>
+      <div className={styles.breadcrumbs}>
+        <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
+          Store
+        </span>
+        <span className={styles.breadcrumbSeparator}>››</span>
+        <span className={styles.breadcrumbCurrent}>{product.name}</span>
+      </div>
+
       <div className={styles.grid}>
         <div className={styles.imageSection}>
           {allImages.length > 1 && (
@@ -242,6 +250,17 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                 }>
                 Adicionar ao Carrinho
               </button>
+            </div>
+            <div className={styles.asideDetails}>
+              <details className={styles.detailsBlock}>
+                <summary>Size Guide</summary>
+                <p>lore ispsum</p>
+              </details>
+
+              <details className={styles.detailsBlock}>
+                <summary>Quality Guarantee &amp; Returns</summary>
+                <p>lore ispsum</p>
+              </details>
             </div>
           </div>
         </div>
