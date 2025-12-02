@@ -133,9 +133,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
   return (
     <div className={styles.container}>
-      <button className={styles.backButton} onClick={() => router.push("/shop")}>
-        <IoIosArrowBack size={18} /> Voltar
-      </button>
       <div className={styles.breadcrumbs}>
         <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
           Store
