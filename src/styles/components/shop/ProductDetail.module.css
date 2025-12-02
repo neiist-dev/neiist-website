@@ -21,6 +21,32 @@
   box-shadow: 0 2px 8px rgba(40, 99, 253, 0.12);
 }
 
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+.breadcrumbLink {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  opacity: 0.6;
+}
+
+.breadcrumbCurrent {
+  color: #999;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -288,4 +314,36 @@
   flex: 1;
   height: 3rem;
   padding: 0 1.5rem;
+}
+
+.detailsBlock summary {
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.detailsBlock summary::after {
+  content: "›";
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.detailsBlock[open] summary::after {
+  transform: rotate(90deg);
+}
+
+.detailsBlock p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  padding-left: 1rem;
+}
+
+.asideDetails {
+  margin-top: 2rem;
 }
