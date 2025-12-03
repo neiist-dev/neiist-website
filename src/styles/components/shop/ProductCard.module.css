@@ -1,124 +1,55 @@
 .card {
-  background: #ffffff;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f3f4f6;
-  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  text-decoration: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  transition: all 0.2s ease;
-  width: 100%;
-  max-width: 320px;
-  box-sizing: border-box;
-  text-decoration: none;
-  overflow: hidden;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-color: #e5e7eb;
-}
-
-.imageWrapper {
-  width: 100%;
-  aspect-ratio: 1/1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-  background: #f9fafb;
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-.image {
-  object-fit: contain;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.2s;
+  transform: translateY(-3px);
 }
 
 .card:hover .image {
   transform: scale(1.02);
 }
 
-.thumbnails {
-  display: flex;
-  gap: 0.25rem;
-  margin: 0.5rem 0 1rem 0;
-  justify-content: center;
+.imageWrapper {
   width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--background-colour);
+  position: relative;
 }
 
-.thumbBtn {
-  border: none;
-  background: transparent;
-  padding: 2px;
-  border-radius: 0.25rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.15s;
-  border: 2px solid transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.thumbBtn:hover,
-.thumbBtn:focus {
-  border-color: var(--primary-colour, #3b82f6);
-}
-
-.activeThumb {
-  border-color: var(--primary-colour, #3b82f6);
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.thumbImg {
-  width: 32px;
-  height: 32px;
+.image {
   object-fit: cover;
-  border-radius: 0.25rem;
-  pointer-events: none;
-  user-select: none;
+  width: 100%;
+  height: 100%;
 }
 
 .info {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
 }
 
 .name {
   font-size: 1rem;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
+  margin-bottom: 0.25rem;
 }
 
 .price {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--primary-colour, #3b82f6);
+  font-size: 0.95rem;
+  color: #6b7280;
 }
 
 @media (max-width: 480px) {
   .card {
-    max-width: 280px;
-    padding: 1.25rem;
-  }
-
-  .name {
-    font-size: 0.95rem;
-  }
-
-  .price {
-    font-size: 1rem;
+    max-width: 100%;
   }
 }
