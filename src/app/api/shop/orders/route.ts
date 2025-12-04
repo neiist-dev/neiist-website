@@ -99,18 +99,15 @@ export async function POST(request: NextRequest) {
     if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
     }
-    if (!["MBWay", "Dinheiro"].includes(body.payment_method)) {
-      return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
-    }
     if (!permissionCheck.user) {
       return NextResponse.json({ error: "User information missing" }, { status: 500 });
     }
     const order = await newOrder({
-      user_istid: permissionCheck.user.istid,
+      user_istid: body.user_istid,
       customer_nif: body.customer_nif ?? null,
       campus: body.campus ?? null,
       notes: body.notes ?? null,
-      payment_method: body.payment_method,
+      payment_method: body.payment_method ?? "in-person",
       payment_reference: body.payment_reference ?? null,
       items: body.items,
     });

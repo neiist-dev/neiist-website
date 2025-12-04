@@ -47,6 +47,8 @@ export interface dbProductVariant {
   label: string | null;
 }
 
+export type PaymentMethod = "in-person" | "eupago" | "sumup";
+
 export interface Order {
   id: number;
   order_number: string;
@@ -59,7 +61,7 @@ export interface Order {
   items: OrderItem[];
   notes?: string;
   total_amount: number;
-  payment_method?: string;
+  payment_method?: PaymentMethod;
   payment_reference?: string;
   created_at: string;
   paid_at?: string;
@@ -71,6 +73,46 @@ export interface Order {
 }
 
 export type OrderStatus = "pending" | "paid" | "ready" | "delivered" | "cancelled";
+
+export interface OrderStatusConfig {
+  label: string;
+  cssClass: string;
+  progressStep: number;
+  allowedTransitions: OrderStatus[];
+}
+
+export const ORDER_STATUS_CONFIG: Record<OrderStatus, OrderStatusConfig> = {
+  pending: {
+    label: "Pendente",
+    cssClass: "statusPendente",
+    progressStep: 0,
+    allowedTransitions: ["paid", "cancelled"],
+  },
+  paid: {
+    label: "Pago",
+    cssClass: "statusPago",
+    progressStep: 33.33,
+    allowedTransitions: ["ready", "delivered", "cancelled"],
+  },
+  ready: {
+    label: "Pronto",
+    cssClass: "statusPronto",
+    progressStep: 66.66,
+    allowedTransitions: ["delivered", "cancelled"],
+  },
+  delivered: {
+    label: "Entregue",
+    cssClass: "statusEntregue",
+    progressStep: 100,
+    allowedTransitions: [],
+  },
+  cancelled: {
+    label: "Cancelado",
+    cssClass: "statusCancelled",
+    progressStep: 0,
+    allowedTransitions: [],
+  },
+} as const;
 
 export interface dbOrder {
   id: number;
@@ -133,6 +175,36 @@ export interface CartItem {
   quantity: number;
 }
 
+export function getStatusConfig(status: OrderStatus): OrderStatusConfig {
+  return ORDER_STATUS_CONFIG[status];
+}
+
+export function getStatusLabel(status: OrderStatus): string {
+  return ORDER_STATUS_CONFIG[status]?.label || status;
+}
+
+export function getStatusCssClass(status: OrderStatus): string {
+  return ORDER_STATUS_CONFIG[status]?.cssClass || "";
+}
+
+export function getProgressPercentage(status: OrderStatus): number {
+  return ORDER_STATUS_CONFIG[status]?.progressStep || 0;
+}
+
+export function canTransitionTo(currentStatus: OrderStatus, targetStatus: OrderStatus): boolean {
+  return ORDER_STATUS_CONFIG[currentStatus]?.allowedTransitions.includes(targetStatus) || false;
+}
+
+export function getProgressStepClass(
+  stepStatus: OrderStatus,
+  currentStatus: OrderStatus
+): "active" | "inactive" {
+  const currentStep = ORDER_STATUS_CONFIG[currentStatus]?.progressStep || 0;
+  const targetStep = ORDER_STATUS_CONFIG[stepStatus]?.progressStep || 0;
+
+  return targetStep <= currentStep ? "active" : "inactive";
+}
+
 export function mapdbProductToProduct(row: dbProduct): Product {
   return {
     id: row.id,
@@ -183,7 +255,7 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     ),
     notes: row.notes ?? undefined,
     total_amount: Number(row.total_amount),
-    payment_method: row.payment_method ?? undefined,
+    payment_method: (row.payment_method as PaymentMethod) ?? undefined,
     payment_reference: row.payment_reference ?? undefined,
     created_at: row.created_at,
     paid_at: row.paid_at ?? undefined,

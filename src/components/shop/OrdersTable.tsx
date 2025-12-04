@@ -1,192 +1,318 @@
 "use client";
-import { useState, useMemo } from "react";
+
+import { useMemo, useRef, useState } from "react";
 import styles from "@/styles/components/shop/OrdersTable.module.css";
-import { Order, OrderStatus } from "@/types/shop";
-import OrderStatusBadge from "@/components/shop/OrderStatusBadge";
-import { getCompactProductsSummary } from "@/utils/shopUtils";
+import {
+  Order,
+  getStatusLabel,
+  getStatusCssClass,
+  ORDER_STATUS_CONFIG,
+  Product,
+} from "@/types/shop";
+import { FiSearch, FiCheck } from "react-icons/fi";
+import { TbFilter, TbTableExport } from "react-icons/tb";
+import * as XLSX from "xlsx";
 import Fuse from "fuse.js";
-import Link from "next/link";
+import { getCompactProductsSummary } from "@/utils/shopUtils";
+import { getFirstAndLastName } from "@/utils/userUtils";
+import FilterDropdown, { FilterState } from "./OrdersFilters";
+import NewOrderModal from "./NewOrderModal";
+import { useRouter } from "next/navigation";
+import { IoIosAdd } from "react-icons/io";
 
 interface OrdersTableProps {
   orders: Order[];
-  showActions?: boolean;
+  products: Product[];
 }
 
-export default function OrdersTable({ orders, showActions = true }: OrdersTableProps) {
-  const [search, setSearch] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
-  const [productFilter, setProductFilter] = useState<string>("all");
+export default function OrdersTable({ orders, products }: OrdersTableProps) {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [showNewOrderModal, setShowNewOrderModal] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
+    dateStart: "",
+    dateEnd: "",
+    products: [],
+    campus: "",
+    status: "",
+  });
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const fuse = useMemo(
     () =>
-      new Fuse(orders, {
+      new Fuse(orders || [], {
         keys: [
-          "customer_email",
-          "customer_name",
-          "user_istid",
           "order_number",
+          "created_at",
+          "customer_name",
+          "customer_email",
+          "user_istid",
+          "campus",
           "items.product_name",
           "items.variant_label",
-          {
-            name: "items.variant_options",
-            getFn: (o: Order) =>
-              o.items.map((it) => Object.values(it.variant_options || {}).join(" ")).join(" "),
-          },
         ],
-        threshold: 0.4,
+        threshold: 0.35,
         ignoreLocation: true,
       }),
     [orders]
   );
 
   const uniqueProducts = useMemo(() => {
-    const products = new Set<string>();
-    orders.forEach((order) => {
-      order.items.forEach((item) => {
-        products.add(item.product_name);
-      });
-    });
-    return Array.from(products).sort();
+    const s = new Set<string>();
+    orders.forEach((o) => o.items.forEach((i) => s.add(i.product_name)));
+    return [...s].sort();
   }, [orders]);
 
-  const filteredOrders = useMemo(() => {
-    let filtered = orders;
-    if (search.trim()) {
-      const results = fuse.search(search.trim());
-      filtered = results.map((r) => r.item);
-    }
+  const uniqueCampuses = useMemo(() => {
+    const s = new Set<string>();
+    orders.forEach((o) => o.campus && s.add(o.campus));
+    return [...s].sort();
+  }, [orders]);
 
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
-    }
+  const availableStatuses = useMemo(() => {
+    const statusSet = new Set<string>();
+    orders.forEach((o) => statusSet.add(o.status));
+    return [...statusSet]
+      .filter((status) => ORDER_STATUS_CONFIG[status as keyof typeof ORDER_STATUS_CONFIG])
+      .map((status) => ({
+        value: status,
+        label: ORDER_STATUS_CONFIG[status as keyof typeof ORDER_STATUS_CONFIG].label,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [orders]);
 
-    if (productFilter !== "all") {
-      filtered = filtered.filter((order) =>
-        order.items.some((item) => item.product_name === productFilter)
+  const filtered = useMemo(() => {
+    let list = orders || [];
+    if (searchQuery.trim()) {
+      list = fuse.search(searchQuery.trim()).map((r) => r.item);
+    }
+    if (appliedFilters.status) {
+      list = list.filter((o) => o.status === appliedFilters.status);
+    }
+    if (appliedFilters.products.length > 0) {
+      list = list.filter((o) =>
+        o.items.some((it) => appliedFilters.products.includes(it.product_name))
       );
     }
+    if (appliedFilters.campus) {
+      list = list.filter((o) => o.campus === appliedFilters.campus);
+    }
+    if (appliedFilters.dateStart) {
+      list = list.filter((o) => new Date(o.created_at) >= new Date(appliedFilters.dateStart));
+    }
+    if (appliedFilters.dateEnd) {
+      list = list.filter((o) => new Date(o.created_at) <= new Date(appliedFilters.dateEnd));
+    }
+    return list;
+  }, [orders, searchQuery, fuse, appliedFilters]);
 
-    return filtered;
-  }, [orders, search, fuse, statusFilter, productFilter]);
+  const toggleOrder = (id: string) => {
+    const s = new Set(selectedOrders);
+    if (s.has(id)) s.delete(id);
+    else s.add(id);
+    setSelectedOrders(s);
+  };
 
-  if (!orders || orders.length === 0) {
-    return <div className={styles.info}>Não existem encomendas.</div>;
-  }
+  const toggleAll = () => {
+    if (selectedOrders.size === filtered.length) setSelectedOrders(new Set());
+    else setSelectedOrders(new Set(filtered.map((o) => String(o.id))));
+  };
+
+  const isAllSelected = selectedOrders.size === filtered.length && filtered.length > 0;
+  const isSomeSelected = selectedOrders.size > 0 && selectedOrders.size < filtered.length;
+
+  const handleApplyFilters = (filters: FilterState) => {
+    setAppliedFilters(filters);
+  };
+
+  const handleRowClick = (orderId: number) => {
+    router.push(`/orders?orderId=${orderId}`);
+  };
+
+  const handleNewOrderSubmit = () => {
+    setShowNewOrderModal(false);
+    router.refresh();
+  };
+
+  const handleExport = () => {
+    const stats: Record<string, number> = {};
+    filtered.forEach((o) =>
+      o.items.forEach((it) => {
+        const color = it.variant_options?.Cor || it.variant_options?.Color || "";
+        const labelNoSize = (it.variant_label || "").replace(/\b(XS|S|M|L|XL|XXL)\b/gi, "").trim();
+        const key =
+          `${it.product_name}${color ? ` ${color}` : labelNoSize ? ` ${labelNoSize}` : ""}`.trim();
+        stats[key] = (stats[key] || 0) + it.quantity;
+      })
+    );
+
+    const ordersSheet = filtered.map((o) => ({
+      Número: o.order_number,
+      Data: new Date(o.created_at).toLocaleString("pt-PT"),
+      Nome: o.customer_name,
+      Email: o.customer_email,
+      "IST ID": o.user_istid,
+      Campus: o.campus,
+      Telefone: o.customer_phone,
+      Estado: getStatusLabel(o.status),
+      "Total (€)": o.total_amount,
+      Produtos: o.items
+        .map((it) => `${it.product_name} ${it.variant_label || ""} x${it.quantity}`)
+        .join("; "),
+    }));
+
+    const statsRows = Object.entries(stats).map(([k, v]) => ({ Produto: k, "Vendas Totais": v }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ordersSheet), "Encomendas");
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet([{ "Total de Encomendas": filtered.length }, ...statsRows]),
+      "Estatísticas"
+    );
+    XLSX.writeFile(wb, `encomendas_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   return (
-    <div className={styles.container}>
-      <h2 className={styles.title}>Todas as Encomendas</h2>
-
-      <div className={styles.searchBar}>
-        <input
-          className={styles.searchInput}
-          type="text"
-          placeholder="Procurar por email, nome, ISTID ou nº encomenda"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          aria-label="Pesquisar encomendas"
-        />
-        <div className={styles.filter}>
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel} htmlFor="statusFilter">
-              Estado:
-            </label>
-            <select
-              id="statusFilter"
-              className={styles.filterSelect}
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as OrderStatus | "all")}
-              aria-label="Filtrar por estado">
-              <option value="all">Todos os estados</option>
-              <option value="pending">Pendente</option>
-              <option value="paid">Pago</option>
-              <option value="preparing">A preparar</option>
-              <option value="ready">Pronto</option>
-              <option value="delivered">Entregue</option>
-              <option value="cancelled">Cancelada</option>
-            </select>
+    <>
+      <div className={styles.container}>
+        <h1 className={styles.title}>
+          <span className={styles.primary}>En</span>
+          <span className={styles.secondary}>com</span>
+          <span className={styles.tertiary}>end</span>
+          <span className={styles.quaternary}>as</span>
+        </h1>
+        <div className={styles.controlsRow}>
+          <div className={styles.searchContainer}>
+            <div className={styles.searchIcon}>
+              <FiSearch size={18} />
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
           </div>
-
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel} htmlFor="productFilter">
-              Produto:
-            </label>
-            <select
-              id="productFilter"
-              className={styles.filterSelect}
-              value={productFilter}
-              onChange={(e) => setProductFilter(e.target.value)}
-              aria-label="Filtrar por produto">
-              <option value="all">Todos os produtos</option>
-              {uniqueProducts.map((product) => (
-                <option key={product} value={product}>
-                  {product}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(statusFilter !== "all" || productFilter !== "all" || search.trim()) && (
+          <div className={styles.rightControls}>
             <button
-              className={styles.filterBtn}
-              onClick={() => {
-                setStatusFilter("all");
-                setProductFilter("all");
-                setSearch("");
-              }}
-              type="button">
-              Limpar filtros
+              ref={filterButtonRef}
+              className={styles.iconBtn}
+              onClick={() => setShowFilters(!showFilters)}
+              title="Filtros"
+              aria-haspopup="true"
+              aria-expanded={showFilters}>
+              <TbFilter />
             </button>
-          )}
+            <button className={styles.iconBtn} onClick={handleExport} title="Exportar">
+              <TbTableExport />
+            </button>
+            <button className={styles.newBtn} onClick={() => setShowNewOrderModal(true)}>
+              <IoIosAdd />
+              Nova Encomenda
+            </button>
+          </div>
+        </div>
+
+        {showFilters && (
+          <FilterDropdown
+            onClose={() => setShowFilters(false)}
+            onApplyFilters={handleApplyFilters}
+            buttonRef={filterButtonRef}
+            availableProducts={uniqueProducts}
+            availableCampuses={uniqueCampuses}
+            availableStatuses={availableStatuses}
+          />
+        )}
+
+        <div className={styles.card}>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th className={styles.checkboxCol}>
+                    <div
+                      className={`${styles.checkbox} ${isAllSelected ? styles.checked : ""} ${isSomeSelected ? styles.indeterminate : ""}`}
+                      onClick={toggleAll}>
+                      {isAllSelected && <FiCheck />}
+                      {isSomeSelected && <span className={styles.indeterminateIcon}>−</span>}
+                    </div>
+                  </th>
+                  <th>Número</th>
+                  <th>Data</th>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Produtos</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((o) => (
+                  <tr
+                    key={String(o.id)}
+                    onClick={() => handleRowClick(o.id)}
+                    style={{ cursor: "pointer" }}>
+                    <td className={styles.checkboxCell}>
+                      <div
+                        className={`${styles.checkbox} ${selectedOrders.has(String(o.id)) ? styles.checked : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleOrder(String(o.id));
+                        }}>
+                        {selectedOrders.has(String(o.id)) && <FiCheck size={16} />}
+                      </div>
+                    </td>
+                    <td>{o.order_number}</td>
+                    <td>{new Date(o.created_at).toLocaleDateString("pt-PT")}</td>
+                    <td>{getFirstAndLastName(o.customer_name)}</td>
+                    <td>
+                      <a
+                        href={`mailto:${o.customer_email}`}
+                        className={styles.emailCell}
+                        onClick={(e) => e.stopPropagation()}>
+                        {o.customer_email}
+                      </a>
+                    </td>
+                    <td className={styles.productsCell}>
+                      {getCompactProductsSummary(o.items).map((line, i) => (
+                        <div key={i} className={styles.productLine}>
+                          {line}
+                        </div>
+                      ))}
+                    </td>
+                    <td>{o.total_amount.toFixed(2)}€</td>
+                    <td>
+                      <span
+                        className={`${styles.statusBadge} ${styles[getStatusCssClass(o.status)]}`}>
+                        {getStatusLabel(o.status)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ padding: 20, textAlign: "center" }}>
+                      Nenhuma encomenda encontrada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div className={styles.resultsCount}>
-        {filteredOrders.length} de {orders.length} encomendas
-      </div>
-
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Número</th>
-            <th>Data</th>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Produtos</th>
-            <th>Total</th>
-            <th>Estado</th>
-            {showActions && <th></th>}
-          </tr>
-        </thead>
-        <tbody>
-          {filteredOrders.map((order) => (
-            <tr key={order.id}>
-              <td>{order.order_number}</td>
-              <td>{new Date(order.created_at).toLocaleDateString("pt-PT")}</td>
-              <td>{order.customer_name}</td>
-              <td>{order.customer_email}</td>
-              <td className={styles.productsList}>
-                <span className={styles.productItem}>{getCompactProductsSummary(order)}</span>
-              </td>
-              <td>{order.total_amount.toFixed(2)}€</td>
-              <td>
-                <OrderStatusBadge status={order.status} />
-              </td>
-              {showActions && (
-                <td>
-                  <Link href={`/orders?orderId=${order.id}`} className={styles.link}>
-                    Gerir
-                  </Link>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {filteredOrders.length === 0 && (
-        <div className={styles.info}>Nenhuma encomenda encontrada com os filtros aplicados.</div>
+      {showNewOrderModal && (
+        <NewOrderModal
+          onClose={() => setShowNewOrderModal(false)}
+          onSubmit={handleNewOrderSubmit}
+          products={products}
+        />
       )}
-    </div>
+    </>
   );
 }

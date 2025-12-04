@@ -1,6 +1,6 @@
 import OrdersTable from "@/components/shop/OrdersTable";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
-import { getAllOrders, getUser } from "@/utils/dbUtils";
+import { getAllOrders, getAllProducts, getUser } from "@/utils/dbUtils";
 import { cookies } from "next/headers";
 import { UserRole, mapRoleToUserRole } from "@/types/user";
 
@@ -10,7 +10,7 @@ interface PageProps {
 
 export default async function OrdersManagementPage({ searchParams }: PageProps) {
   const { orderId } = await searchParams;
-  const orders = await getAllOrders();
+  const [orders, products] = await Promise.all([getAllOrders(), getAllProducts()]);
 
   const cookieStore = await cookies();
   const userDataCookie = cookieStore.get("user_data")?.value;
@@ -30,7 +30,7 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
 
   return (
     <>
-      <OrdersTable orders={orders} />
+      <OrdersTable orders={orders} products={products} />
       {orderId && (
         <OrderDetailOverlay
           orderId={Number(orderId)}

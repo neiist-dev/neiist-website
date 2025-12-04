@@ -1,132 +1,298 @@
-.overlay {
+.backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1200;
+  z-index: 1000;
+  padding: clamp(0.75rem, 3vw, 1.5rem);
 }
 
-.container {
-  width: 95%;
-  position: relative;
-  max-width: 900px;
+.modal {
   background: var(--background-colour);
-  padding: 1.8rem;
-  border-radius: 1.2rem;
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 48rem;
+  max-height: 85vh;
+  box-sizing: border-box;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  position: relative;
+  padding: 2rem;
 }
 
-.closeBtn {
+.closeButton {
   position: absolute;
-  top: 0.3rem;
-  right: 0.3rem;
+  top: clamp(0.9375rem, 3vw, 1.25rem);
+  right: clamp(0.9375rem, 3vw, 1.25rem);
   background: none;
   border: none;
-  z-index: 1200;
-  font-size: 2rem;
   cursor: pointer;
+  padding: 0.5rem;
+  color: var(--light-foreground-colour);
+  transition:
+    transform 0.15s,
+    color 0.15s;
 }
-
-.card {
-  background: #fff;
-  border-radius: 0.8rem;
-  padding: 2rem;
-  margin-bottom: 1rem;
-  position: relative;
+.closeButton:hover {
+  color: var(--foreground-colour);
+  transform: scale(1.12);
 }
 
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1rem;
+  padding-top: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 0.3rem;
+.header h2 {
+  font-size: clamp(1.125rem, 4vw, 1.5rem);
+  color: var(--foreground-colour);
+  margin: 0;
 }
 
-.grid {
+.statusBadge {
+  padding: 0.375rem 1.125rem;
+  border-radius: 0.9375rem;
+  font-size: clamp(0.6875rem, 2.5vw, 0.8125rem);
+  display: inline-block;
+}
+
+.statusPendente {
+  background: var(--quaternary-colour);
+  color: var(--foreground-colour);
+}
+.statusPago {
+  background: var(--tertiary-colour);
+  color: var(--foreground-colour);
+}
+.statusPronto {
+  background: var(--secondary-colour);
+  color: var(--foreground-colour);
+}
+.statusEntregue {
+  background: var(--primary-colour);
+  color: white;
+}
+.statusCancelled {
+  background: #ff3b30;
+  color: white;
+}
+
+.orderNumber {
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  color: var(--foreground-colour);
+  margin-bottom: clamp(1rem, 4vw, 1.5rem);
+}
+
+.section {
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  color: var(--foreground-colour);
+}
+
+.infoGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+}
+
+.infoColumnWide {
+  grid-column: span 2;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoItem label,
+.infoItem p {
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.infoItem p {
+  word-break: break-word;
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
+  overflow-x: auto;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 0.5fr 1fr 1fr;
+  gap: clamp(0.5rem, 2vw, 0.75rem);
+  color: var(--foreground-colour);
+  padding: 0.5rem clamp(0.75rem, 3vw, 1.5rem);
+  min-width: 25rem;
+}
+
+.tableHeader {
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+  border-bottom: 1px solid var(--background-colour-hover);
+}
+
+.tableRow {
+  font-size: clamp(0.6875rem, 2vw, 0.8125rem);
+}
+.tableRow span {
+  display: flex;
+  align-items: center;
+  word-break: break-word;
+}
+
+.totalRow {
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+  color: var(--foreground-colour);
+  text-align: right;
+  padding-right: clamp(0.75rem, 3vw, 1.5rem);
+  font-weight: 500;
+}
+
+.actionButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.table th,
-.table td {
-  padding: 0.5rem;
-  border-bottom: 1px solid #eee;
-  font-size: 0.95rem;
-  text-align: left;
-  vertical-align: middle;
+.buttonOutline,
+.buttonPrimary {
+  padding: clamp(0.5rem, 2vw, 0.75rem) 1rem;
+  border-radius: 0.5rem;
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  text-align: center;
 }
 
-.total {
+.buttonOutline {
+  background: white;
+  border: 1px solid var(--background-colour-hover);
+  color: var(--foreground-colour);
+}
+
+.buttonOutline:hover {
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}
+
+.buttonOutline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.buttonPrimary {
+  background: var(--primary-colour);
+  border: none;
+  color: white;
+}
+
+.buttonPrimary:hover {
+  background: var(--secondary-colour);
+}
+.buttonPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timestamp {
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
+  color: var(--light-foreground-colour);
+  margin-bottom: 0.5rem;
+}
+
+.progressContainer {
+  margin: clamp(1rem, 4vw, 2rem) 0 clamp(1rem, 3vw, 1.5rem);
+}
+
+.progressTrack {
+  height: clamp(0.25rem, 1vw, 0.375rem);
+  background: var(--background-colour-hover);
+  border-radius: 0.1875rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--primary-colour);
+  border-radius: 0.1875rem;
+  transition: width 0.3s ease;
+}
+
+.progressLabels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  text-align: center;
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
+  gap: clamp(0.25rem, 1vw, 0.5rem);
+}
+
+.progressStepActive {
+  color: var(--primary-colour);
+  font-weight: 500;
+}
+.progressStepInactive {
+  color: var(--light-foreground-colour);
+}
+
+.footer {
   display: flex;
   justify-content: flex-end;
-  font-weight: bold;
-  gap: 1rem;
-}
-
-.statusRow {
-  display: flex;
-  gap: 2rem;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.cancelBtn {
-  background: #dc2626;
-  font-family: inherit;
-  color: #fff;
+.cancelButton {
+  background: #ff3b30;
   border: none;
-  border-radius: 0.4rem;
-  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.75rem;
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  color: white;
   cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.12s;
+  position: static;
+  display: inline-block;
+  margin: 0;
 }
-
-.timeline {
-  display: flex;
-  gap: 2rem;
-  font-size: 0.85rem;
-  margin-top: 1rem;
+.cancelButton:hover {
+  background: #e02828;
+  transform: translateY(-1px);
 }
 
 .error {
   color: #dc2626;
   text-align: center;
   margin-top: 1rem;
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
 }
 
-@media (max-width: 768px) {
-  .container {
-    width: 99%;
+@media (max-width: 48rem) {
+  .infoColumnWide {
+    grid-column: span 1;
   }
-  .card {
-    padding: 1rem;
-  }
-  .grid {
+  .actionButtons {
     grid-template-columns: 1fr;
-    gap: 0.5rem;
   }
-  .statusRow,
-  .timeline {
-    flex-direction: column;
-    gap: 1rem;
+  .footer {
+    justify-content: center;
+  }
+  .cancelButton {
+    width: 100%;
+    margin-top: 1.5rem;
   }
 }

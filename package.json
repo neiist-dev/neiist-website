@@ -42,7 +42,8 @@
     "react-day-picker": "^9.11.2",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
-    "swiper": "^12.0.3"
+    "swiper": "^12.0.3",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",

@@ -34,11 +34,12 @@ function isOrderOwner(order: Order, user: User) {
   return order.user_istid === user.istid;
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, roles } = (await getCurrentUserAndRoles()) || {};
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const orderId = Number(params.id);
+  const { id } = await params;
+  const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
   const allOrders = await fetchAllOrders();
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(order);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, roles } = (await getCurrentUserAndRoles()) || {};
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
@@ -60,7 +61,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
 
-  const orderId = Number(params.id);
+  const { id } = await params;
+  const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
   const updates = await req.json();
@@ -71,7 +73,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     "notes",
     "payment_reference",
     "paid_at",
-    "  payment_checked_by",
+    "payment_checked_by",
     "campus",
   ];
   const filteredUpdates: Record<string, unknown> = {};
@@ -86,7 +88,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(updatedOrder);
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, roles } = (await getCurrentUserAndRoles()) || {};
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
@@ -94,7 +96,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
 
-  const orderId = Number(params.id);
+  const { id } = await params;
+  const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
   const { status } = await req.json();
@@ -107,11 +110,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(updatedOrder);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, roles } = (await getCurrentUserAndRoles()) || {};
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const orderId = Number(params.id);
+  const { id } = await params;
+  const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
   const allOrders = await fetchAllOrders();

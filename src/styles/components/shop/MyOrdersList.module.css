@@ -1,175 +1,120 @@
 .container {
-  padding: 2rem 0;
-  margin: 2rem auto;
+  margin: 0 4rem 4rem 4rem;
   display: flex;
+  min-height: 85vh;
   flex-direction: column;
-  gap: 1rem;
-  min-height: 100vh;
 }
 
+@media (max-width: 768px) {
+  .container {
+    margin: 0 1.5rem 1.5rem 1.5rem;
+    padding: 0;
+  }
+}
 .title {
-  color: var(--primary-colour);
-  font-size: 2rem;
-  font-weight: 900;
-  margin-bottom: 0.25rem;
-  text-align: left;
-  padding-left: 2rem;
+  margin-bottom: 1.2rem;
 }
 
-.searchBar {
-  margin: 0 2rem;
-  background: white;
-  border-radius: 1.2rem;
-  padding: 2rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.primary {
+  color: var(--primary-colour);
+}
+.secondary {
+  color: var(--secondary-colour);
+}
+.tertiary {
+  color: var(--tertiary-colour);
+}
+.quaternary {
+  color: var(--quaternary-colour);
+}
+
+.searchRow {
+  margin-bottom: 36px;
+}
+
+.searchContainer {
+  position: relative;
+  max-width: 560px;
 }
 
 .searchInput {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.6rem;
-  font-size: 0.95rem;
-  border: 1px solid #d1d5db;
-  background: var(--background-colour);
-  color: var(--foreground-colour);
-  font-family: inherit;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-.searchInput:focus {
+  width: 100%;
+  height: 44px;
+  padding: 0 3rem 0 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: #fff;
+  font-size: 14px;
   outline: none;
-  box-shadow: 0 0 0 2px var(--background-colour-hover);
 }
 
-.filter {
-  display: inline-flex;
-  align-items: center;
-}
-.filterBtn {
-  padding: 0.75rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-  background: var(--primary-colour);
-  color: white;
+.ordersGrid {
+  display: grid;
+  gap: 4.5rem;
+  grid-template-columns: repeat(4, 1fr);
 }
 
-.filterBtn:hover {
-  filter: brightness(0.94);
+.orderCard {
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 
-.filterBtn:disabled {
-  background: var(--background-colour-hover);
-  cursor: not-allowed;
-  box-shadow: none;
+.orderImageWrapper {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 0.75rem;
+  max-height: 540px;
+  overflow: hidden;
+  background: transparent;
+  display: flex;
+  position: relative;
 }
 
-.table {
-  border-collapse: separate;
-  border-spacing: 0 1rem;
-  padding: 0;
-  margin: 0 2rem;
-  font-size: 1rem;
-  width: calc(100% - 4rem);
+.orderImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
-.table th {
-  font-weight: 700;
-  font-size: 0.95rem;
-  border: none;
-  text-align: left;
-  padding: 0.5rem 1.2rem;
+.orderInfo {
+  margin-top: 14px;
+  color: #333333;
 }
 
-.table td {
-  background: white;
-  border: none;
-  vertical-align: middle;
-  padding: 1.2rem;
-  transition:
-    background 0.15s,
-    box-shadow 0.15s,
-    transform 0.15s;
+.orderStatus {
+  font-size: 18px;
+  color: #333333;
+  margin-bottom: 6px;
 }
 
-.table tbody tr td:first-child {
-  border-top-left-radius: 1.2rem;
-  border-bottom-left-radius: 1.2rem;
-  transition: transform 0.15s;
+.orderProduct {
+  font-size: 15px;
+  color: #6b6b6b;
 }
 
-.table tbody tr td:last-child {
-  border-top-right-radius: 1.2rem;
-  border-bottom-right-radius: 1.2rem;
-}
-
-.table tbody tr {
-  transition: transform 0.15s;
-}
-
-.table tbody tr:hover {
-  transform: scale(1.02);
-}
-
-.productsList {
-  max-width: 320px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #55596a;
-  white-space: pre-line;
-  word-break: break-word;
-}
-
-.productItem {
-  color: #55596a;
-}
-
-.link {
-  color: var(--primary-colour);
-  font-weight: 600;
-  font-size: 1em;
-  transition: color 0.15s;
-}
-
-.link:hover {
-  color: #1d4ed8;
-}
-
-.info {
-  text-align: center;
-  color: var(--light-foreground-colour);
-  font-size: 1.1rem;
-  padding: 2.5rem 0.5rem;
-}
-
-@media (max-width: 900px) {
-  .container {
-    padding: 1rem 0;
+@media (max-width: 1440px) {
+  .ordersGrid {
+    grid-template-columns: repeat(3, 1fr);
   }
-  .title {
-    padding-left: 0.5rem;
+}
+@media (max-width: 1024px) {
+  .content {
+    padding: 36px 32px;
   }
-  .searchBar {
-    margin: 0 0.5rem;
-    padding: 0.75rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .ordersGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
   }
-  .table {
-    margin: 0 0.5rem;
-    width: calc(100% - 1rem);
-    border-spacing: 0 0.75rem;
+}
+@media (max-width: 640px) {
+  .content {
+    padding: 24px;
   }
-  .table th,
-  .table td {
-    padding: 0.7rem 0.4rem;
-    font-size: 0.95rem;
+  .ordersGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }

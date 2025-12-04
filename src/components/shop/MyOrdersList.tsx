@@ -1,122 +1,114 @@
 "use client";
 
-import styles from "@/styles/components/shop/MyOrdersList.module.css";
-import { Order } from "@/types/shop";
-import Link from "next/link";
-import OrderStatusBadge from "@/components/shop/OrderStatusBadge";
-import Fuse from "fuse.js";
-import { getCompactProductsSummary } from "@/utils/shopUtils";
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import Fuse from "fuse.js";
+import styles from "@/styles/components/shop/MyOrdersList.module.css";
+import { Order, Product } from "@/types/shop";
+import { getCompactProductsSummary } from "@/utils/shopUtils";
 
-export default function MyOrdersList({ orders }: { orders: Order[] }) {
+type Props = { orders: Order[]; products: Product[] };
+
+export default function MyOrdersList({ orders, products }: Props) {
   const [query, setQuery] = useState("");
-  const [hideCancelled, setHideCancelled] = useState(true);
 
-  const fuse = useMemo(() => {
-    return new Fuse<Order>(orders ?? [], {
-      keys: [
-        "order_number",
-        "status",
-        "items.product_name",
-        "items.variant_label",
-        {
-          name: "items.variant_options",
-          getFn: (order: Order) =>
-            order.items.map((i) => Object.values(i.variant_options || {}).join(" ")).join(" "),
-        },
-        {
-          name: "created_at_date",
-          getFn: (order: Order) => new Date(order.created_at).toLocaleDateString("pt-PT"),
-        },
-      ],
-      threshold: 0.3,
-      ignoreLocation: true,
-      minMatchCharLength: 2,
-    });
-  }, [orders]);
-
-  const baseOrders = useMemo(() => {
-    const q = query.trim();
-    return q ? fuse.search(q).map((r) => r.item) : (orders ?? []);
-  }, [query, orders, fuse]);
-
-  const hasCancelledInBase = useMemo(
-    () => baseOrders.some((o) => o.status === "cancelled"),
-    [baseOrders]
+  const fuse = useMemo(
+    () =>
+      new Fuse<Order>(orders ?? [], {
+        keys: ["order_number", "status", "items.product_name", "items.variant_label"],
+        threshold: 0.35,
+        ignoreLocation: true,
+        minMatchCharLength: 1,
+      }),
+    [orders]
   );
 
-  const filteredOrders = useMemo(() => {
-    return hideCancelled ? baseOrders.filter((o) => o.status !== "cancelled") : baseOrders;
-  }, [baseOrders, hideCancelled]);
+  const filtered = useMemo(() => {
+    const list = orders ?? [];
+    const q = query.trim();
+    const results = q.length > 0 ? fuse.search(q).map((r) => r.item) : list;
+    return results.slice().sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  }, [orders, query, fuse]);
 
-  if (!orders || orders.length === 0) {
-    return <div className={styles.info}>Ainda não fizeste nenhuma encomenda.</div>;
-  }
+  const selectImage = (order: Order): string | undefined => {
+    if (!order.items || order.items.length === 0) return undefined;
+    const firstItem = order.items[0];
+    const product = products.find((p) => p.id === firstItem.product_id);
+    if (!product || !Array.isArray(product.images) || product.images.length === 0) return undefined;
+    return product.images[0];
+  };
+
+  const getStatusLabel = (status?: string) => {
+    const s = (status ?? "").toLowerCase();
+    if (s.includes("pend") || s === "pending") return "Pendente";
+    if (s.includes("paid") || s === "pago") return "Pago";
+    if (s.includes("prepare") || s.includes("ready") || s === "preparing") return "Pronto";
+    if (s.includes("deliver") || s.includes("entregue") || s === "delivered") return "Entregue";
+    if (s.includes("cancel")) return "Cancelado";
+    return status ?? "";
+  };
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>As Minhas Encomendas</h2>
+      <h1 className={styles.title}>
+        <span className={styles.primary}>As mi</span>
+        <span className={styles.secondary}>nhas en</span>
+        <span className={styles.tertiary}>come</span>
+        <span className={styles.quaternary}>ndas</span>
+      </h1>
 
-      <div className={styles.searchBar}>
-        <input
-          type="text"
-          className={styles.searchInput}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Procurar por número, produto, estado ou data..."
-          aria-label="Pesquisar encomendas"
-        />
-
-        <div className={styles.filter}>
-          <button
-            type="button"
-            className={styles.filterBtn}
-            disabled={!hasCancelledInBase}
-            onClick={() => setHideCancelled((v) => !v)}
-            aria-pressed={!hideCancelled}>
-            {hideCancelled ? "Mostrar canceladas" : "Ocultar canceladas"}
-          </button>
+      <div className={styles.searchRow}>
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Procurar número, produto, estado ou data..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className={styles.searchInput}
+            aria-label="Pesquisar encomendas"
+          />
         </div>
       </div>
 
-      {filteredOrders.length === 0 ? (
-        <div className={styles.info}>Nenhuma encomenda encontrada.</div>
-      ) : (
-        <div className={styles.tableCard}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Número</th>
-                <th>Produtos</th>
-                <th>Data</th>
-                <th>Total</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.order_number}</td>
-                  <td className={styles.productsList}>
-                    <span className={styles.productItem}>{getCompactProductsSummary(order)}</span>
-                  </td>
-                  <td>{new Date(order.created_at).toLocaleDateString("pt-PT")}</td>
-                  <td>{order.total_amount.toFixed(2)}€</td>
-                  <td>
-                    <OrderStatusBadge status={order.status} />
-                  </td>
-                  <td>
-                    <Link href={`/my-orders?orderId=${order.id}`} className={styles.link}>
-                      Ver detalhes
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className={styles.ordersGrid}>
+        {filtered.length > 0 ? (
+          filtered.map((order) => {
+            const img = selectImage(order);
+            const productSummary = getCompactProductsSummary(order.items).join(" · ");
+            const statusLabel = order.delivered_at
+              ? `Entregue em ${new Date(order.delivered_at).toLocaleDateString("pt-PT")}`
+              : getStatusLabel(order.status);
+
+            return (
+              <Link
+                key={order.id}
+                href={`/my-orders?orderId=${order.id}`}
+                className={styles.orderCard}
+                aria-label={`Ver encomenda ${order.order_number}`}>
+                <div className={styles.orderImageWrapper}>
+                  <Image
+                    src={img || "/images/neiist_logo.png"}
+                    alt={productSummary || `Order ${order.order_number}`}
+                    width={367}
+                    height={485}
+                    className={styles.orderImage}
+                  />
+                </div>
+
+                <div className={styles.orderInfo}>
+                  <div className={styles.orderStatus}>{statusLabel}</div>
+                  <div className={styles.orderProduct}>{productSummary}</div>
+                </div>
+              </Link>
+            );
+          })
+        ) : (
+          <div className={styles.emptyState}>
+            <p>Nenhuma encomenda encontrada.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

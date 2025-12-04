@@ -1,0 +1,204 @@
+.dropdown {
+  position: fixed;
+  background: var(--background-colour);
+  border-radius: 0.75rem;
+  width: 17.5rem;
+  z-index: 1000;
+  border: 1px solid #e0e0e0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header h3 {
+  font-size: 14px;
+  color: #333333;
+  margin: 0;
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  color: #727886;
+  transition: color 0.2s;
+}
+
+.clearButton:hover {
+  color: #333;
+}
+
+.doneButton {
+  background: var(--primary-colour);
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.filterItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filterItem:last-child {
+  border-bottom: none;
+}
+
+.filterLabel {
+  font-size: 0.75rem;
+  color: #333333;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 3px;
+  cursor: pointer;
+  appearance: none;
+  background: #ffffff;
+  transition: all 0.2s;
+  position: relative;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.checkbox:checked {
+  background: var(--primary-colour);
+  border-color: var(--primary-colour);
+}
+
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  top: 0.0625rem;
+  width: 0.1875rem;
+  height: 0.375rem;
+  border: solid white;
+  border-width: 0 0.09375rem 0.09375rem 0;
+  transform: rotate(45deg);
+}
+
+.dateRangeInputs {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.dateInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.dateInput {
+  width: 100%;
+  height: 1.75rem;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  color: #333333;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.dateInput:focus {
+  border-color: var(--primary-colour);
+}
+
+.dateInput::placeholder {
+  color: #a0a0a0;
+}
+
+.dateTo {
+  font-size: 0.625rem;
+  flex-shrink: 0;
+}
+
+.selectWrapper {
+  position: relative;
+}
+
+.selectButton {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.625rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: #727886;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selectButton:hover {
+  border-color: var(--primary-colour);
+}
+
+.selectButton:focus {
+  border-color: var(--primary-colour);
+}
+
+.selectDropdown {
+  position: absolute;
+  top: calc(100% + 0.125rem);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+  max-height: 9.375rem;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.dropdownOption {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.75rem;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdownOption:hover {
+  background: #f8f9fa;
+}
+
+.dropdownOption span {
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .dropdown {
+    width: calc(100vw - 2.5rem);
+    left: 1.25rem !important;
+    right: 1.25rem;
+  }
+}

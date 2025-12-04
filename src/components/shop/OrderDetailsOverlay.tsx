@@ -1,9 +1,16 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
-import { Order, OrderStatus } from "@/types/shop";
-import OrderStatusBadge from "@/components/shop/OrderStatusBadge";
+import {
+  Order,
+  OrderStatus,
+  getStatusLabel,
+  getStatusCssClass,
+  getProgressPercentage,
+  canTransitionTo,
+} from "@/types/shop";
+import { MdClose } from "react-icons/md";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
@@ -36,7 +43,9 @@ export default function OrderDetailOverlay({
     setOrder(orders.find((o) => o.id === orderId) || null);
   }, [orderId, orders]);
 
-  const handleClose = () => router.push(basePath);
+  const handleClose = useCallback(() => {
+    router.push(basePath);
+  }, [router, basePath]);
 
   const handleStatusChange = async (status: OrderStatus) => {
     if (!order) return;
@@ -53,141 +62,218 @@ export default function OrderDetailOverlay({
     } else setError("Erro ao atualizar estado.");
   };
 
-  const canSetPaid =
-    canManage &&
-    order &&
-    !["paid", "preparing", "ready", "delivered", "cancelled"].includes(order.status);
-  const canSetDelivered =
-    canManage &&
-    order &&
-    !["delivered", "cancelled"].includes(order.status) &&
-    ["paid", "preparing", "ready"].includes(order.status);
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [handleClose]);
 
   if (!order) {
     return (
-      <div className={styles.overlay}>
-        <div className={styles.container}>
+      <div className={styles.backdrop}>
+        <div className={styles.modal}>
           <div style={{ textAlign: "center", padding: "2rem" }}>Encomenda não encontrada.</div>
         </div>
       </div>
     );
   }
 
+  const progressPercentage = getProgressPercentage(order.status);
+  const canSetPaid = canManage && canTransitionTo(order.status, "paid");
+  const canSetReady = canManage && canTransitionTo(order.status, "ready");
+  const canSetDelivered = canManage && canTransitionTo(order.status, "delivered");
+  const canCancel = canManage && canTransitionTo(order.status, "cancelled");
+  const userCanCancel = !canManage && canTransitionTo(order.status, "cancelled");
+
   return (
-    <div className={styles.overlay} onClick={handleClose}>
-      <div className={styles.container} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={handleClose}>
-          &times;
+    <div className={styles.backdrop} onClick={handleBackdropClick}>
+      <div className={styles.modal}>
+        <button className={styles.closeButton} onClick={handleClose} aria-label="Fechar">
+          <MdClose size={20} />
         </button>
-        <div className={styles.card}>
-          <div className={styles.header}>
-            <div>
-              <div className={styles.label}>Encomenda</div>
-              <h2>#{order.order_number}</h2>
+
+        <div className={styles.header}>
+          <h2>Encomenda</h2>
+          <span className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
+            {getStatusLabel(order.status)}
+          </span>
+        </div>
+
+        <div className={styles.orderNumber}>#{order.order_number}</div>
+
+        <div className={styles.infoGrid}>
+          <div className={styles.infoColumn}>
+            <div className={styles.infoItem}>
+              <label>Nome</label>
+              <p>{order.customer_name}</p>
             </div>
-            <OrderStatusBadge status={order.status} />
           </div>
-          <div className={styles.grid}>
-            <div>
-              <div className={styles.label}>Nome</div>
-              <div>{order.customer_name}</div>
+          <div className={styles.infoColumn}>
+            <div className={styles.infoItem}>
+              <label>IST ID</label>
+              <p>{order.user_istid}</p>
             </div>
-            <div>
-              <div className={styles.label}>IST ID</div>
-              <div>{order.user_istid}</div>
-            </div>
-            <div>
-              <div className={styles.label}>Campus</div>
-              <div>{order.campus || "-"}</div>
-            </div>
-            <div>
-              <div className={styles.label}>Email</div>
-              <div>{order.customer_email}</div>
-            </div>
-            <div>
-              <div className={styles.label}>Telefone</div>
-              <div>{order.customer_phone || "-"}</div>
+          </div>
+          <div className={styles.infoColumn}>
+            <div className={styles.infoItem}>
+              <label>Campus</label>
+              <p>{order.campus || "-"}</p>
             </div>
           </div>
         </div>
-        <div className={styles.card}>
-          <div className={styles.label}>Itens da Encomenda</div>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Produto</th>
-                <th>Variante</th>
-                <th>Qtd</th>
-                <th>Preço</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.items.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{item.product_name}</td>
-                  <td>{formatVariant(item.variant_options, item.variant_label)}</td>
-                  <td>{item.quantity}</td>
-                  <td>{item.unit_price.toFixed(2)}€</td>
-                  <td>{(item.unit_price * item.quantity).toFixed(2)}€</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className={styles.total}>
-            <span>Total:</span>
-            <span>{order.total_amount.toFixed(2)}€</span>
+
+        <div className={styles.infoGrid}>
+          <div className={styles.infoColumnWide}>
+            <div className={styles.infoItem}>
+              <label>Email</label>
+              <p>{order.customer_email}</p>
+            </div>
+          </div>
+          <div className={styles.infoColumn}>
+            <div className={styles.infoItem}>
+              <label>Telefone</label>
+              <p>{order.customer_phone || "-"}</p>
+            </div>
           </div>
         </div>
-        <div className={styles.card}>
-          <div className={styles.label}>Estado & Cronologia</div>
-          <div className={styles.statusRow}>
-            <label>
-              <input
-                type="checkbox"
-                checked={["paid", "preparing", "ready", "delivered"].includes(order.status)}
-                onChange={() => canSetPaid && handleStatusChange("paid")}
-                disabled={!canSetPaid}
-              />
-              Pago
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={order.status === "delivered"}
-                onChange={() => canSetDelivered && handleStatusChange("delivered")}
-                disabled={!canSetDelivered}
-              />
-              Entregue
-            </label>
-            <button
-              className={styles.cancelBtn}
-              onClick={() => setShowCancelConfirm(true)}
-              disabled={order.status === "cancelled"}>
-              Cancelar
-            </button>
-          </div>
-          <div className={styles.timeline}>
-            <div>
-              <span className={styles.label}>Criada em </span>
-              <span>{new Date(order.created_at).toLocaleString("pt-PT")}</span>
+
+        <div className={styles.section}>
+          <h3>Itens da Encomenda</h3>
+          <div className={styles.table}>
+            <div className={styles.tableHeader}>
+              <span>Produto</span>
+              <span>Variante</span>
+              <span>Qtd</span>
+              <span>Preço</span>
+              <span>Total</span>
             </div>
-            {order.paid_at && (
-              <div>
-                <span className={styles.label}>
-                  Pagamento Verificado por {order.payment_checked_by}{" "}
-                </span>
-                <span> em {new Date(order.paid_at).toLocaleString("pt-PT")}</span>
+            {order.items.map((item, idx) => (
+              <div key={idx} className={styles.tableRow}>
+                <span>{item.product_name}</span>
+                <span>{formatVariant(item.variant_options, item.variant_label)}</span>
+                <span>{item.quantity}</span>
+                <span>{item.unit_price.toFixed(2)}€</span>
+                <span>{(item.unit_price * item.quantity).toFixed(2)}€</span>
               </div>
+            ))}
+          </div>
+          <div className={styles.totalRow}>Total: {order.total_amount.toFixed(2)}€</div>
+        </div>
+
+        {canManage ? (
+          <div className={styles.section}>
+            <h3>Estado</h3>
+            <div className={styles.actionButtons}>
+              <button
+                className={styles.buttonOutline}
+                onClick={() => handleStatusChange("paid")}
+                disabled={!canSetPaid}>
+                Marcar como Pago
+              </button>
+              <button
+                className={styles.buttonPrimary}
+                onClick={() => handleStatusChange("ready")}
+                disabled={!canSetReady}>
+                Marcar como Pronto
+              </button>
+              <button
+                className={styles.buttonPrimary}
+                onClick={() => handleStatusChange("delivered")}
+                disabled={!canSetDelivered}>
+                Marcar como Entregue
+              </button>
+              <button
+                className={styles.buttonOutline}
+                onClick={() => setShowCancelConfirm(true)}
+                disabled={!canCancel}>
+                Cancelar Encomenda
+              </button>
+            </div>
+            <p className={styles.timestamp}>
+              Criada em {new Date(order.created_at).toLocaleString("pt-PT")}
+            </p>
+            {order.paid_at && (
+              <p className={styles.timestamp}>
+                Pagamento verificado por {order.payment_checked_by} em{" "}
+                {new Date(order.paid_at).toLocaleString("pt-PT")}
+              </p>
             )}
             {order.delivered_at && (
-              <div>
-                <span className={styles.label}>Entregue por {order.delivered_by} </span>
-                <span> em {new Date(order.delivered_at).toLocaleString("pt-PT")}</span>
-              </div>
+              <p className={styles.timestamp}>
+                Entregue por {order.delivered_by} em{" "}
+                {new Date(order.delivered_at).toLocaleString("pt-PT")}
+              </p>
             )}
           </div>
-        </div>
+        ) : (
+          <>
+            {order.status !== "cancelled" && (
+              <div className={styles.progressContainer}>
+                <div className={styles.progressBar || ""}>
+                  <div className={styles.progressTrack}>
+                    <div
+                      className={styles.progressFill}
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+                  <div className={styles.progressLabels}>
+                    <span
+                      className={
+                        order.status === "pending"
+                          ? styles.progressStepActive
+                          : styles.progressStepInactive
+                      }>
+                      Pendente
+                    </span>
+                    <span
+                      className={
+                        order.status === "paid"
+                          ? styles.progressStepActive
+                          : styles.progressStepInactive
+                      }>
+                      Pago
+                    </span>
+                    <span
+                      className={
+                        order.status === "ready"
+                          ? styles.progressStepActive
+                          : styles.progressStepInactive
+                      }>
+                      Pronto
+                    </span>
+                    <span
+                      className={
+                        order.status === "delivered"
+                          ? styles.progressStepActive
+                          : styles.progressStepInactive
+                      }>
+                      Entregue
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className={styles.footer}>
+              {userCanCancel && (
+                <button className={styles.cancelButton} onClick={() => setShowCancelConfirm(true)}>
+                  Cancelar Encomenda
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      {showCancelConfirm && (
         <ConfirmDialog
           open={showCancelConfirm}
           message="Tem a certeza que quer cancelar esta encomenda?"
@@ -197,8 +283,9 @@ export default function OrderDetailOverlay({
           }}
           onCancel={() => setShowCancelConfirm(false)}
         />
-        {error && <div className={styles.error}>{error}</div>}
-      </div>
+      )}
+
+      {error && <div className={styles.error}>{error}</div>}
     </div>
   );
 }
