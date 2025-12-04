@@ -2,7 +2,7 @@ import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
 import { GoSignOut, GoPeople, GoPerson, GoOrganization } from "react-icons/go";
-//import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
+import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
 import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
@@ -71,7 +71,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       icon: GoPerson,
       roles: [UserRole._GUEST, UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN],
     },
-    /*{
+    {
       href: "/my-orders",
       label: "As Minhas Encomendas",
       icon: LuPackage,
@@ -89,7 +89,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       icon: LuFileText,
       roles: [],
       coordinatorOnly: true,
-    },*/
+    },
     {
       href: "/team-management",
       label: "Gerir Equipa",
@@ -108,13 +108,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
           },
         ]
       : []),
-    /*{
+    {
       href: "/shop/manage",
       label: "Gerir Loja",
       icon: LuShoppingBag,
       roles: [],
       adminOnly: true,
-    },*/
+    },
     {
       href: "/users-management",
       label: "Gerir Membros e Utilizadores",
