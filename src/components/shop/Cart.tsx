@@ -117,12 +117,13 @@ export default function Cart() {
                   <div>
                     <h4>{item.product.name}</h4>
                     <div className={styles.color}>
-                      {variantObj && (
-                        <div className={styles.variantRow}>
-                          {(() => {
+                      <div className={styles.variantRow}>
+                        {variantObj &&
+                          (() => {
                             const color =
                               findOptionValue(variantObj.options, ["cor", "color"]) ||
                               parseLabelForOptions(variantObj.label).color;
+
                             const size = findOptionValue(variantObj.options, ["tamanho", "size"]);
 
                             return (
@@ -138,12 +139,13 @@ export default function Cart() {
                               </>
                             );
                           })()}
-                          <span className={styles.priceTag}>{price.toFixed(2)}€</span>
-                          <button onClick={() => handleRemove(idx)} className={styles.trashBtn}>
-                            <FiTrash2 />
-                          </button>
-                        </div>
-                      )}
+
+                        <span className={styles.priceTag}>{price.toFixed(2)}€</span>
+
+                        <button onClick={() => handleRemove(idx)} className={styles.trashBtn}>
+                          <FiTrash2 />
+                        </button>
+                      </div>
                     </div>
                     <div className={styles.quantityWrapper}>
                       <div className={styles.quantityBox}>
