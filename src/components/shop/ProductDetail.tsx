@@ -131,6 +131,13 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     setImgIndex(getVariantImageIndex(newVariant));
   };
 
+  // --- NEW: allow products without variants to be purchased ---
+  const canBuy =
+    product.variants.length === 0 ||
+    (selectedVariant &&
+      selectedVariant.active &&
+      (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0));
+
   return (
     <div className={styles.container}>
       <div className={styles.breadcrumbs}>
@@ -237,14 +244,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                 <span>{qty}</span>
                 <button onClick={() => setQty((q) => q + 1)}>+</button>
               </div>
-              <button
-                className={styles.addButton}
-                onClick={addToCart}
-                disabled={
-                  !selectedVariant ||
-                  !selectedVariant.active ||
-                  (product.stock_type === "limited" && (selectedVariant.stock_quantity ?? 0) <= 0)
-                }>
+              <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
                 Adicionar ao Carrinho
               </button>
             </div>
