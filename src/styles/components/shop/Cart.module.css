@@ -86,26 +86,38 @@
   margin-bottom: 0.4rem;
 }
 
-.quantity {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+.quantityWrapper {
+  margin-top: 0.4rem;
 }
 
-.quantity button {
-  background: var(--background-colour-hover);
+.quantityBox {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 0.35rem 0.9rem;
+
+  border-radius: 999px; /* efeito pill */
+  width: fit-content; /* a caixa cresce consoante o conteúdo */
+}
+
+.quantityBox button {
+  background: none;
   border: none;
-  border-radius: 0.3rem;
-  width: 1.5rem;
-  height: 1.5rem;
+  font-size: 1rem;
   cursor: pointer;
+  color: var(--foreground-colour);
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.quantity span {
-  min-width: 1rem;
+.quantityBox span {
+  font-size: 1rem;
+  min-width: 8px;
   text-align: center;
 }
 
@@ -144,4 +156,51 @@
 .footer button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.variantRow {
+  margin-top: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 3px solid var(--foreground-colour);
+}
+
+.priceTag {
+  margin-left: auto;
+  margin-right: 2rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--foreground-colour);
+}
+
+.trashBtn {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+  display: flex;
+  padding: 0.3rem;
+}
+
+.imageWrapper {
+  width: 120px;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.productImage {
+  object-fit: cover;
 }
