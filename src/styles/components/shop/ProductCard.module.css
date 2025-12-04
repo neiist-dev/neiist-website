@@ -1,6 +1,6 @@
 .card {
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
   text-decoration: none;
   display: flex;
   flex-direction: column;
@@ -19,7 +19,7 @@
 
 .imageWrapper {
   width: 100%;
-  aspect-ratio: 1/1;
+  aspect-ratio: 3 / 4;
   border-radius: 1rem;
   overflow: hidden;
   background: var(--background-colour);
