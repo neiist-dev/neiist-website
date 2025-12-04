@@ -8,13 +8,6 @@ import { Squash } from "hamburger-react";
 import { CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/Cart.module.css";
 
-function formatOptions(options?: Record<string, string>): string {
-  if (!options) return "";
-  return Object.entries(options)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join(", ");
-}
-
 export default function Cart() {
   const { isOpen, closeCart } = useCartPopup();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -60,6 +53,35 @@ export default function Cart() {
 
   if (!isOpen) return null;
 
+  function findOptionValue(options?: Record<string, string>, possibleKeys: string[] = []) {
+    if (!options) return undefined;
+
+    const normalized: Record<string, string> = {};
+    for (const k of Object.keys(options)) {
+      normalized[k.trim().toLowerCase()] = options[k];
+    }
+
+    for (const key of possibleKeys) {
+      const found = normalized[key.toLowerCase()];
+      if (found) return found;
+    }
+
+    return undefined;
+  }
+
+  function parseLabelForOptions(label?: string) {
+    if (!label) return { color: undefined, size: undefined, rest: label || "" };
+    const obj: Record<string, string> = {};
+    const parts = label.split(/\||,/).map((p) => p.trim());
+    for (const part of parts) {
+      const [k, ...rest] = part.split(":");
+      if (!k) continue;
+      const v = rest.join(":").trim();
+      obj[k.trim().toLowerCase()] = v;
+    }
+    return { color: obj["cor"] || obj["color"], size: obj["tamanho"] || obj["size"], rest: label };
+  }
+
   return (
     <div className={styles.overlay} onClick={closeCart}>
       <div className={styles.cart} onClick={(e) => e.stopPropagation()}>
@@ -84,20 +106,53 @@ export default function Cart() {
                   : item.product.images[0];
               return (
                 <div key={idx} className={styles.item}>
-                  <Image src={imageSrc} alt={item.product.name} width={48} height={48} />
+                  <div className={styles.imageWrapper}>
+                    <Image
+                      src={imageSrc}
+                      alt={item.product.name}
+                      fill
+                      className={styles.productImage}
+                    />
+                  </div>
                   <div>
                     <h4>{item.product.name}</h4>
-                    {variantObj && <p>{variantObj.label || formatOptions(variantObj.options)}</p>}
-                    <strong>{price.toFixed(2)}€</strong>
-                    <div className={styles.quantity}>
-                      <button onClick={() => handleQuantity(idx, -1)}>-</button>
-                      <span>{item.quantity}</span>
-                      <button onClick={() => handleQuantity(idx, 1)}>+</button>
+                    <div className={styles.color}>
+                      {variantObj && (
+                        <div className={styles.variantRow}>
+                          {(() => {
+                            const color =
+                              findOptionValue(variantObj.options, ["cor", "color"]) ||
+                              parseLabelForOptions(variantObj.label).color;
+                            const size = findOptionValue(variantObj.options, ["tamanho", "size"]);
+
+                            return (
+                              <>
+                                {color && (
+                                  <span
+                                    className={styles.colorDot}
+                                    style={{ backgroundColor: color }}
+                                  />
+                                )}
+
+                                {size && <span className={styles.sizeTag}>{size}</span>}
+                              </>
+                            );
+                          })()}
+                          <span className={styles.priceTag}>{price.toFixed(2)}€</span>
+                          <button onClick={() => handleRemove(idx)} className={styles.trashBtn}>
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.quantityWrapper}>
+                      <div className={styles.quantityBox}>
+                        <button onClick={() => handleQuantity(idx, -1)}>-</button>
+                        <span>{item.quantity}</span>
+                        <button onClick={() => handleQuantity(idx, 1)}>+</button>
+                      </div>
                     </div>
                   </div>
-                  <button onClick={() => handleRemove(idx)}>
-                    <FiTrash2 />
-                  </button>
                 </div>
               );
             })
