@@ -1,30 +1,18 @@
-import { cookies } from "next/headers";
 import Calendar from "@/components/activities/Calendar";
-import { getActivitiesEventsFromDb, getUser } from "@/utils/dbUtils";
+import { getActivitiesEventsFromDb } from "@/utils/dbUtils";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
-import { UserRole, mapRoleToUserRole } from "@/types/user";
+import { UserRole } from "@/types/user";
+import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/Activities.module.css";
 
 async function getEventsAndSubscriptions() {
-  const cookieStore = await cookies();
-  const userDataCookie = cookieStore.get("user_data")?.value;
   let istid: string | null = null;
   let isAdmin = false;
 
-  if (userDataCookie) {
-    try {
-      const userData = JSON.parse(userDataCookie);
-      istid = userData.istid;
-      if (istid) {
-        const user = await getUser(istid);
-        if (user) {
-          const userRoles = user.roles?.map((role) => mapRoleToUserRole(role)) || [];
-          isAdmin = userRoles.includes(UserRole._ADMIN);
-        }
-      }
-    } catch {
-      istid = null;
-    }
+  const perm = await serverCheckRoles([]); // authenticate
+  if (perm.isAuthorized && perm.user) {
+    istid = perm.user.istid;
+    isAdmin = perm.roles?.includes(UserRole._ADMIN) ?? false;
   }
 
   let events = await getActivitiesEventsFromDb();

@@ -5,6 +5,7 @@ import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/Profile.module.css";
 import { User, UserRole } from "@/types/user";
+import { checkRoles } from "@/types/user";
 import {
   FiCalendar,
   FiInfo,
@@ -53,10 +54,7 @@ export default function ProfileClient({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState<string>("");
 
-  const isMember =
-    user?.roles?.includes(UserRole._MEMBER) ||
-    user?.roles?.includes(UserRole._COORDINATOR) ||
-    user?.roles?.includes(UserRole._ADMIN);
+  const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
 
   useEffect(() => {
     setAltEmailDraft(user?.alternativeEmail ?? "");

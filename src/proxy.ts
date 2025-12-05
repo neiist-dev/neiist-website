@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
+import { hasRequiredRole } from "@/types/user";
 
 const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
@@ -20,7 +21,7 @@ function canAccess(path: string, roles: UserRole[]) {
 
   for (const [routes, allowed] of rules) {
     if (routes.some((r) => path.startsWith(r))) {
-      return roles.some((role) => allowed.includes(role));
+      return hasRequiredRole(roles, allowed);
     }
   }
 

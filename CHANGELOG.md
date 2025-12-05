@@ -1,11 +1,19 @@
 # neiist
 
+## 1.6.0
+
+### Minor Changes
+
+- Order Management page redesign
+- New order creation and user creation for orders
+- My Orders page redesign
+- Centerlized user roles checking
+
 ## 1.5.1
 
 ### Patch Changes
 
 - Persist return URL across the Fenix OAuth flow so users are returned to the page they started on
-
 
 ## 1.5.0
 

@@ -1,76 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
   addValidDepartmentRole,
   removeValidDepartmentRole,
   getDepartmentRoles,
-  getUser,
 } from "@/utils/dbUtils";
-import { UserRole, mapRoleToUserRole } from "@/types/user";
+import { UserRole } from "@/types/user";
+import { serverCheckRoles } from "@/utils/permissionUtils";
 
-async function checkAdminPermission(): Promise<{
-  isAuthorized: boolean;
-  error?: NextResponse;
-}> {
-  const accessToken = (await cookies()).get("access_token")?.value;
-
-  if (!accessToken) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
-    };
-  }
-
-  try {
-    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
-    if (!userData) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUser = await getUser(userData.istid);
-    if (!currentUser) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "Current user not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
-      UserRole._GUEST,
-    ];
-    const hasPermissions =
-      currentUserRoles.includes(UserRole._ADMIN) ||
-      currentUserRoles.includes(UserRole._COORDINATOR);
-
-    if (!hasPermissions) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json(
-          { error: "Insufficient permissions - Admin or Coordinator required" },
-          { status: 403 }
-        ),
-      };
-    }
-    return { isAuthorized: true };
-  } catch (error) {
-    console.error("Error checking permissions:", error);
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Internal server error" }, { status: 500 }),
-    };
-  }
-}
-
-export async function GET(req: NextRequest) {
-  const permissionCheck = await checkAdminPermission();
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
+export async function GET(request: NextRequest) {
+  const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
   try {
-    const department = req.nextUrl.searchParams.get("department");
+    const department = request.nextUrl.searchParams.get("department");
     if (!department) {
       return NextResponse.json({ error: "Department parameter is required" }, { status: 400 });
     }
@@ -81,13 +24,13 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
-  const permissionCheck = await checkAdminPermission();
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
+export async function POST(request: NextRequest) {
+  const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
   try {
-    const { departmentName, roleName, access } = await req.json();
+    const { departmentName, roleName, access } = await request.json();
     if (!departmentName || !roleName) {
       return NextResponse.json(
         { error: "Department name and role name are required" },
@@ -105,13 +48,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  const permissionCheck = await checkAdminPermission();
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
+export async function DELETE(request: NextRequest) {
+  const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
   try {
-    const { departmentName, roleName } = await req.json();
+    const { departmentName, roleName } = await request.json();
     if (!departmentName || !roleName) {
       return NextResponse.json(
         { error: "Department name and role name are required" },

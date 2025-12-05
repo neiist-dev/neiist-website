@@ -7,6 +7,7 @@ import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
 import { User, UserRole } from "@/types/user";
+import { checkRoles } from "@/types/user";
 
 interface UserMenuProps {
   userData: User;
@@ -57,11 +58,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
     setTimeout(logout, 100);
   };
 
-  const isAdmin = userData.roles.includes(UserRole._ADMIN);
-  const isCoordinator = userData.roles.includes(UserRole._COORDINATOR);
-  const isMember = userData.roles.includes(UserRole._MEMBER);
   const isPhotoCoord =
-    userData.roles.includes(UserRole._COORDINATOR) &&
+    checkRoles(userData, [UserRole._COORDINATOR]) &&
     userData.teams?.some((team) => team.toLowerCase().includes("fotografia"));
 
   const menuPages: MenuPage[] = [
@@ -105,31 +103,32 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       href: "/shop/manage",
       label: "Gerir Loja",
       icon: LuShoppingBag,
-      roles: [],
+      roles: [UserRole._ADMIN],
       adminOnly: true,
     },
     {
       href: "/users-management",
       label: "Gerir Membros e Utilizadores",
       icon: GoPeople,
-      roles: [],
+      roles: [UserRole._ADMIN],
       adminOnly: true,
     },
     {
       href: "/departments-management",
       label: "Gerir Departamentos",
       icon: GoOrganization,
-      roles: [],
+      roles: [UserRole._ADMIN],
       adminOnly: true,
     },
   ];
 
   const getAvailablePages = () => {
-    if (isAdmin) return menuPages.filter((p) => p.roles.includes(UserRole._ADMIN) || p.adminOnly);
-    if (isCoordinator)
-      return menuPages.filter((p) => p.roles.includes(UserRole._COORDINATOR) || p.coordinatorOnly);
-    if (isMember) return menuPages.filter((p) => p.roles.includes(UserRole._MEMBER));
-    return menuPages.filter((p) => p.roles.includes(UserRole._GUEST));
+    return menuPages.filter((p) => {
+      if (p.adminOnly) return checkRoles(userData, [UserRole._ADMIN]);
+      if (p.coordinatorOnly) return checkRoles(userData, [UserRole._COORDINATOR]);
+      if (!p.roles || p.roles.length === 0) return true;
+      return checkRoles(userData, p.roles);
+    });
   };
 
   const availablePages = getAvailablePages();

@@ -1,70 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { addTeamMember, removeTeamMember, getUser, getAllMemberships } from "@/utils/dbUtils";
-import { UserRole, mapRoleToUserRole } from "@/types/user";
-import { Membership } from "@/types/memberships";
+import { addTeamMember, removeTeamMember, getAllMemberships } from "@/utils/dbUtils";
+import { UserRole } from "@/types/user";
+import { serverCheckRoles } from "@/utils/permissionUtils";
+import type { Membership } from "@/types/memberships";
 
-async function checkMembershipPermission(
-  departmentName: string
-): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
-  const accessToken = (await cookies()).get("access_token")?.value;
+async function checkMembershipPermission(departmentName: string) {
+  const roles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!roles.isAuthorized) return roles;
 
-  if (!accessToken) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
-    };
+  const isAdmin = roles.roles?.includes(UserRole._ADMIN);
+  const isCoordinator = roles.roles?.includes(UserRole._COORDINATOR);
+  if (isAdmin) return roles;
+
+  if (isCoordinator) {
+    const userTeams = roles.user?.teams || [];
+    if (userTeams.includes(departmentName) || departmentName === "") {
+      return roles;
+    }
   }
 
-  try {
-    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
-    if (!userData) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUser = await getUser(userData.istid);
-    if (!currentUser) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "Current user not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
-      UserRole._GUEST,
-    ];
-    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
-    const isCoordinator = currentUserRoles.includes(UserRole._COORDINATOR);
-
-    if (isAdmin) {
-      return { isAuthorized: true };
-    }
-
-    if (isCoordinator) {
-      const userTeams = currentUser.teams || [];
-      if (userTeams.includes(departmentName) || departmentName === "") {
-        return { isAuthorized: true };
-      }
-    }
-    return {
-      isAuthorized: false,
-      error: NextResponse.json(
-        {
-          error: "Insufficient permissions - Admin or team coordinator required",
-        },
-        { status: 403 }
-      ),
-    };
-  } catch (error) {
-    console.error("Error checking permissions:", error);
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Internal server error" }, { status: 500 }),
-    };
-  }
+  return {
+    isAuthorized: false,
+    error: NextResponse.json(
+      {
+        error: "Insufficient permissions - Admin or team coordinator required",
+      },
+      { status: 403 }
+    ),
+  } as const;
 }
 
 export async function GET() {
@@ -82,9 +45,9 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { istid, departmentName, roleName } = await req.json();
+    const { istid, departmentName, roleName } = await request.json();
     if (!istid || !departmentName || !roleName) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
@@ -105,9 +68,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(request: NextRequest) {
   try {
-    const { istid, departmentName, roleName } = await req.json();
+    const { istid, departmentName, roleName } = await request.json();
     if (!istid || !departmentName || !roleName) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }

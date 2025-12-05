@@ -1,65 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { addTeam, removeTeam, getAllTeams, getUser } from "@/utils/dbUtils";
-import { UserRole, mapRoleToUserRole } from "@/types/user";
-
-async function checkAdminPermission(): Promise<{
-  isAuthorized: boolean;
-  error?: NextResponse;
-}> {
-  const accessToken = (await cookies()).get("access_token")?.value;
-  if (!accessToken) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
-    };
-  }
-
-  try {
-    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
-    if (!userData) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUser = await getUser(userData.istid);
-    if (!currentUser) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "Current user not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
-      UserRole._GUEST,
-    ];
-    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
-
-    if (!isAdmin) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json(
-          { error: "Insufficient permissions - Admin required" },
-          { status: 403 }
-        ),
-      };
-    }
-    return { isAuthorized: true };
-  } catch (error) {
-    console.error("Error checking permissions:", error);
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Internal server error" }, { status: 500 }),
-    };
-  }
-}
+import { addTeam, removeTeam, getAllTeams } from "@/utils/dbUtils";
+import { UserRole } from "@/types/user";
+import { serverCheckRoles } from "@/utils/permissionUtils";
 
 export async function GET() {
-  const permissionCheck = await checkAdminPermission();
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
+  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
   try {
     const teams = await getAllTeams();
@@ -73,13 +20,13 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
-  const permissionCheck = await checkAdminPermission();
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
+export async function POST(request: NextRequest) {
+  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
   try {
-    const { name, description } = await req.json();
+    const { name, description } = await request.json();
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
@@ -94,13 +41,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
-  const permissionCheck = await checkAdminPermission();
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
+export async function DELETE(request: NextRequest) {
+  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
   try {
-    const { name } = await req.json();
+    const { name } = await request.json();
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }

@@ -1,40 +1,36 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { User, UserRole, mapRoleToUserRole } from "@/types/user";
+import { User, UserRole } from "@/types/user";
 import { getUser, updateUser, updateUserPhoto } from "@/utils/dbUtils";
 import fs from "fs/promises";
 import path from "path";
+import { serverCheckRoles } from "@/utils/permissionUtils";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
-  const accessToken = (await cookies()).get("access_token")?.value;
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const userRoles = await serverCheckRoles([
+    UserRole._ADMIN,
+    UserRole._COORDINATOR,
+    UserRole._MEMBER,
+  ]);
+  if (!userRoles.isAuthorized) {
+    return userRoles.error;
   }
 
   try {
-    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
-    if (!userData) {
-      return NextResponse.json({ error: "User data not found" }, { status: 404 });
-    }
-
     const updateData = await request.json();
     const { userId: targetUserId } = await params;
 
-    const currentUser = await getUser(userData.istid);
+    const currentUser = userRoles.user;
     if (!currentUser) {
       return NextResponse.json({ error: "Current user not found" }, { status: 404 });
     }
 
-    const currentUserRoles = currentUser.roles?.map((role) => mapRoleToUserRole(role)) || [
-      UserRole._GUEST,
-    ];
+    const currentUserRoles = userRoles.roles || [UserRole._GUEST];
     const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
     const isPhotoCoord =
       currentUserRoles.includes(UserRole._COORDINATOR) &&
       currentUser.teams?.some((team) => team.toLowerCase().includes("fotografia"));
 
-    const isSelfUpdate = userData.istid === targetUserId;
+    const isSelfUpdate = currentUser.istid === targetUserId;
 
     if (!isSelfUpdate && !(isAdmin || isPhotoCoord)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });

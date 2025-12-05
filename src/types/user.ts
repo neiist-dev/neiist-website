@@ -79,3 +79,14 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     linkedin: dbUser.linkedin ?? undefined,
   };
 }
+
+export function hasRequiredRole(userRoles: UserRole[], required: UserRole[]) {
+  if (!required || required.length === 0) return true;
+  return userRoles.some((role) => required.includes(role));
+}
+
+export function checkRoles(user: User | null | undefined, required: UserRole[]) {
+  if (!required || required.length === 0) return true;
+  const roles: UserRole[] = user?.roles?.map((r) => mapRoleToUserRole(r)) || [UserRole._GUEST];
+  return hasRequiredRole(roles, required);
+}

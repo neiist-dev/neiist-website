@@ -1,56 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { UserRole } from "@/types/user";
-import { addProduct, addProductVariant, getUser, getProduct } from "@/utils/dbUtils";
+import { addProduct, addProductVariant, getProduct } from "@/utils/dbUtils";
 import path from "path";
 import fs from "fs/promises";
-
-async function checkAdminPermission(): Promise<{ isAuthorized: boolean; error?: NextResponse }> {
-  const accessToken = (await cookies()).get("access_token")?.value;
-  if (!accessToken) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
-    };
-  }
-
-  try {
-    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
-    if (!userData) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUser = await getUser(userData.istid);
-    if (!currentUser) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "Current user not found" }, { status: 404 }),
-      };
-    }
-
-    const isAdmin = currentUser.roles.includes(UserRole._ADMIN);
-
-    if (!isAdmin) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json(
-          { error: "Insufficient permissions - Admin required" },
-          { status: 403 }
-        ),
-      };
-    }
-    return { isAuthorized: true };
-  } catch (error) {
-    console.error("Error checking permissions:", error);
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Internal server error" }, { status: 500 }),
-    };
-  }
-}
+import { serverCheckRoles } from "@/utils/permissionUtils";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -84,7 +37,7 @@ async function uploadImages(
 }
 
 export async function POST(request: NextRequest) {
-  const permissionCheck = await checkAdminPermission();
+  const permissionCheck = await serverCheckRoles([UserRole._ADMIN]);
   if (!permissionCheck.isAuthorized) return permissionCheck.error;
 
   try {

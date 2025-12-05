@@ -17,6 +17,7 @@ import { getEventSettings } from "@/types/events";
 import Linkify from "linkify-react";
 import { useUser } from "@/context/UserContext";
 import { UserRole } from "@/types/user";
+import { checkRoles } from "@/types/user";
 import type {
   EventSettings,
   NormalizedCalendarEvent,
@@ -47,8 +48,7 @@ export default function EventDetails({
   const router = useRouter();
   const { user } = useUser();
   const currentIstid = user?.istid ?? undefined;
-  const userRoles = (user?.roles as UserRole[] | undefined) ?? [UserRole._GUEST];
-  const isAdmin = userRoles.includes(UserRole._ADMIN);
+  const isAdmin = checkRoles(user, [UserRole._ADMIN]);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [signedUp, setSignedUp] = useState(isSignedUp);
