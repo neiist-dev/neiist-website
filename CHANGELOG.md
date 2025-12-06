@@ -8,6 +8,8 @@
 - New order creation and user creation for orders
 - My Orders page redesign
 - Centerlized user roles checking
+- Product Page redesign
+- Shop page redesign
 
 ## 1.5.1
 

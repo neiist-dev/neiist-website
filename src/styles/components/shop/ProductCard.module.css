@@ -10,11 +10,7 @@
 }
 
 .card:hover {
-  transform: translateY(-3px);
-}
-
-.card:hover .image {
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 
 .imageWrapper {
@@ -46,10 +42,4 @@
 .price {
   font-size: 0.95rem;
   color: #6b7280;
-}
-
-@media (max-width: 480px) {
-  .card {
-    max-width: 100%;
-  }
 }

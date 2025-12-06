@@ -1,24 +1,16 @@
 "use client";
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import type { Swiper as SwiperType } from "swiper";
-import ProductCard from "@/components/shop/ProductCard";
+import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
-import carouselStyles from "@/styles/components/shop/ShopProductList.module.css";
+import { FiChevronDown } from "react-icons/fi";
 
 interface ProductDetailProps {
   product: Product;
-  allProducts: Product[];
 }
 
-export default function ProductDetail({ product, allProducts }: ProductDetailProps) {
+export default function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
   const optionNames = useMemo(() => {
     const all = new Set<string>();
@@ -84,17 +76,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
   }, [product.price, selectedVariant]);
 
-  const related = useMemo(
-    () =>
-      allProducts.filter(
-        (currentProduct) =>
-          currentProduct.id !== product.id && currentProduct.category === product.category
-      ),
-    [allProducts, product]
-  );
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const showArrows = related.length > 3;
-
   const addToCart = () => {
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
     cart.push({
@@ -131,12 +112,12 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     setImgIndex(getVariantImageIndex(newVariant));
   };
 
-  // --- NEW: allow products without variants to be purchased ---
   const canBuy =
     product.variants.length === 0 ||
     (selectedVariant &&
       selectedVariant.active &&
       (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0));
+  const isColorOption = mainOption.toLowerCase() === "cor" || mainOption.toLowerCase() === "cores";
 
   return (
     <div className={styles.container}>
@@ -147,38 +128,25 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         <span className={styles.breadcrumbSeparator}>››</span>
         <span className={styles.breadcrumbCurrent}>{product.name}</span>
       </div>
-
       <div className={styles.grid}>
         <div className={styles.imageSection}>
-          {allImages.length > 1 && (
-            <button
-              className={styles.imageArrowLeft}
-              onClick={() => setImgIndex((i) => (i - 1 + allImages.length) % allImages.length)}>
-              <IoIosArrowBack size={26} />
-            </button>
-          )}
           <Image
             src={allImages[imgIndex]}
             alt={product.name}
             width={600}
             height={600}
             className={styles.mainImage}
+            priority
           />
-          {allImages.length > 1 && (
-            <button
-              className={styles.imageArrowRight}
-              onClick={() => setImgIndex((i) => (i + 1) % allImages.length)}>
-              <IoIosArrowForward size={26} />
-            </button>
-          )}
           {allImages.length > 1 && (
             <div className={styles.thumbnails}>
               {allImages.map((src, i) => (
                 <button
                   key={i}
                   className={`${styles.thumbnail} ${i === imgIndex ? styles.active : ""}`}
-                  onClick={() => setImgIndex(i)}>
-                  <Image src={src} alt="" width={70} height={70} />
+                  onClick={() => setImgIndex(i)}
+                  aria-label={`View image ${i + 1}`}>
+                  <Image src={src} alt="" width={80} height={80} />
                 </button>
               ))}
             </div>
@@ -191,19 +159,15 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
           {mainOption && (
             <div>
               <span className={styles.label}>{mainOption}</span>
-              <div
-                className={
-                  mainOption.toLowerCase() === "cor" ? styles.colorOptions : styles.options
-                }>
+              <div className={isColorOption ? styles.colorOptions : styles.options}>
                 {mainValues.map((val) => (
                   <button
                     key={val}
                     className={`${styles.option} ${selectedMain === val ? styles.selected : ""}`}
-                    style={
-                      mainOption.toLowerCase() === "cor" ? { backgroundColor: val } : undefined
-                    }
-                    onClick={() => handleMainChange(val)}>
-                    {mainOption.toLowerCase() === "cor" ? "" : val}
+                    style={isColorOption ? { backgroundColor: val } : undefined}
+                    onClick={() => handleMainChange(val)}
+                    aria-label={`Select ${val}`}>
+                    {!isColorOption && val}
                   </button>
                 ))}
               </div>
@@ -229,7 +193,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                           (product.stock_type === "on_demand" || (v.stock_quantity ?? 0) > 0)
                         );
                       })
-                    }>
+                    }
+                    aria-label={`Select size ${val}`}>
                     {val}
                   </button>
                 ))}
@@ -240,9 +205,15 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             <span className={styles.label}>Quantidade</span>
             <div className={styles.qtyAndButton}>
               <div className={styles.quantity}>
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))}>-</button>
+                <button
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  aria-label="Decrease quantity">
+                  -
+                </button>
                 <span>{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)}>+</button>
+                <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity">
+                  +
+                </button>
               </div>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
                 Adicionar ao Carrinho
@@ -250,62 +221,26 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
             <div className={styles.asideDetails}>
               <details className={styles.detailsBlock}>
-                <summary>Size Guide</summary>
-                <p>lore ispsum</p>
+                <summary>
+                  <span>Size Guide</span>
+                  <FiChevronDown className={styles.detailIcon} aria-hidden />
+                </summary>
+                <p>Check our size guide for detailed measurements.</p>
               </details>
 
               <details className={styles.detailsBlock}>
-                <summary>Quality Guarantee &amp; Returns</summary>
-                <p>lore ispsum</p>
+                <summary>
+                  <span>Quality Guarantee & Returns</span>
+                  <FiChevronDown className={styles.detailIcon} aria-hidden />
+                </summary>
+                <p>
+                  All products come with our quality guarantee. Returns accepted within 30 days.
+                </p>
               </details>
             </div>
           </div>
         </div>
       </div>
-      {related.length > 0 && (
-        <div className={styles.relatedSection}>
-          <h2 className={styles.relatedTitle}>Produtos Relacionados</h2>
-          <div className={carouselStyles.container}>
-            {showArrows && (
-              <>
-                <button
-                  className={`${carouselStyles.arrow} ${carouselStyles.left}`}
-                  onClick={() => swiperInstance?.slidePrev()}
-                  aria-label="Anterior">
-                  <IoIosArrowBack size={32} color="#222" />
-                </button>
-                <button
-                  className={`${carouselStyles.arrow} ${carouselStyles.right}`}
-                  onClick={() => swiperInstance?.slideNext()}
-                  aria-label="Seguinte">
-                  <IoIosArrowForward size={32} color="#222" />
-                </button>
-              </>
-            )}
-            <Swiper
-              onSwiper={setSwiperInstance}
-              modules={[Navigation, Autoplay]}
-              navigation={false}
-              autoplay={{ delay: 4000, disableOnInteraction: true }}
-              loop={related.length > 3}
-              speed={500}
-              slidesPerView={3}
-              spaceBetween={26}
-              breakpoints={{
-                1400: { slidesPerView: 4, spaceBetween: 30 },
-                1024: { slidesPerView: 3 },
-                640: { slidesPerView: 2 },
-                0: { slidesPerView: 1 },
-              }}>
-              {related.map((item) => (
-                <SwiperSlide key={item.id}>
-                  <ProductCard product={item} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

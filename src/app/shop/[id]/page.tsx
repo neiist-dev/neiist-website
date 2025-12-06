@@ -1,11 +1,11 @@
 import ProductDetail from "@/components/shop/ProductDetail";
-import { getAllProducts, getProduct } from "@/utils/dbUtils";
+import { getProduct } from "@/utils/dbUtils";
 import styles from "@/styles/pages/ProductDetail.module.css";
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
   const productId = Number(id);
-  const [product, allProducts] = await Promise.all([getProduct(productId), getAllProducts()]);
+  const product = await getProduct(productId);
 
   if (!product) {
     return (
@@ -15,9 +15,5 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     );
   }
 
-  return (
-    <div className={styles.wrapper}>
-      <ProductDetail product={product} allProducts={allProducts} />
-    </div>
-  );
+  return <ProductDetail product={product} />;
 }

@@ -18,11 +18,14 @@ export default function ShopProductList({
   }, [products]);
 
   return (
-    <div className={styles.shopContainer}>
-      <div className={styles.shopHeader}>
-        <h1 className={styles.shopTitle}>Shop</h1>
-        <p className={styles.shopSubtitle}>Os produtos que representam o teu curso!</p>
-      </div>
+    <div className={styles.container}>
+      <h1 className={styles.title}>
+        <span className={styles.primary}>S</span>
+        <span className={styles.secondary}>h</span>
+        <span className={styles.tertiary}>o</span>
+        <span className={styles.quaternary}>p</span>
+      </h1>
+      <p className={styles.subTitle}>Os produtos que representam o teu curso!</p>
 
       <div className={styles.grid}>
         {randomProducts.map((product) => (
