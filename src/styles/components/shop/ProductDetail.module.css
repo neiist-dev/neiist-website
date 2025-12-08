@@ -2,6 +2,7 @@
   min-height: 90vh;
   box-sizing: border-box;
   margin: 2rem 4rem;
+  margin-bottom: 0rem;
 }
 
 .breadcrumbs {
@@ -32,7 +33,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
-  margin-bottom: 3rem;
   align-items: start;
 }
 
@@ -119,7 +119,6 @@
 }
 
 .title {
-  font-weight: 700;
   font-size: 2.5rem;
   color: #3f3f3f;
   margin: 0 0 1.5rem;
@@ -127,14 +126,12 @@
 }
 
 .price {
-  font-weight: 700;
   font-size: 1.5rem;
   color: #3f3f3f;
   margin-bottom: 1.5rem;
 }
 
 .description {
-  font-weight: 500;
   font-size: 1.125rem;
   color: #3f3f3f;
   line-height: 1.5;
@@ -193,7 +190,6 @@
   width: 2.5rem;
   height: 2.5rem;
   min-width: auto;
-  padding: 0;
   border-radius: 50%;
   border: none;
   position: relative;
@@ -209,10 +205,6 @@
   background: white;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.qtyRowWrapper {
-  margin-bottom: 3.5rem;
 }
 
 .qtyAndButton {
@@ -295,7 +287,6 @@
   height: 2.75rem;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.5rem;
   cursor: pointer;
   list-style: none;
   font-weight: 500;
@@ -322,7 +313,6 @@
 
 .detailsBlock p {
   padding: 0.75rem 0.5rem;
-  margin: 0;
   font-size: 0.813rem;
   color: #364153;
   line-height: 1.5;
@@ -331,11 +321,9 @@
 @media (max-width: 768px) {
   .container {
     margin: 1rem 1.5rem;
-    padding: 0;
   }
 
   .grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
 }

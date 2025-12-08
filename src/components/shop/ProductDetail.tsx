@@ -134,7 +134,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             src={allImages[imgIndex]}
             alt={product.name}
             width={600}
-            height={600}
+            height={800}
             className={styles.mainImage}
             priority
           />
@@ -201,43 +201,38 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               </div>
             </div>
           )}
-          <div className={styles.qtyRowWrapper}>
-            <span className={styles.label}>Quantidade</span>
-            <div className={styles.qtyAndButton}>
-              <div className={styles.quantity}>
-                <button
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity">
-                  -
-                </button>
-                <span>{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity">
-                  +
-                </button>
-              </div>
-              <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
-                Adicionar ao Carrinho
+          <span className={styles.label}>Quantidade</span>
+          <div className={styles.qtyAndButton}>
+            <div className={styles.quantity}>
+              <button
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity">
+                -
+              </button>
+              <span>{qty}</span>
+              <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity">
+                +
               </button>
             </div>
-            <div className={styles.asideDetails}>
-              <details className={styles.detailsBlock}>
-                <summary>
-                  <span>Size Guide</span>
-                  <FiChevronDown className={styles.detailIcon} aria-hidden />
-                </summary>
-                <p>Check our size guide for detailed measurements.</p>
-              </details>
-
-              <details className={styles.detailsBlock}>
-                <summary>
-                  <span>Quality Guarantee & Returns</span>
-                  <FiChevronDown className={styles.detailIcon} aria-hidden />
-                </summary>
-                <p>
-                  All products come with our quality guarantee. Returns accepted within 30 days.
-                </p>
-              </details>
-            </div>
+            <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
+              Adicionar ao Carrinho
+            </button>
+          </div>
+          <div className={styles.asideDetails}>
+            <details className={styles.detailsBlock}>
+              <summary>
+                <span>Size Guide</span>
+                <FiChevronDown className={styles.detailIcon} aria-hidden />
+              </summary>
+              <p>Check our size guide for detailed measurements.</p>
+            </details>
+            <details className={styles.detailsBlock}>
+              <summary>
+                <span>Quality Guarantee & Returns</span>
+                <FiChevronDown className={styles.detailIcon} aria-hidden />
+              </summary>
+              <p>All products come with our quality guarantee. Returns accepted within 30 days.</p>
+            </details>
           </div>
         </div>
       </div>

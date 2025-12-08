@@ -1,71 +1,91 @@
 "use client";
-import { useEffect, useState } from "react";
-import styles from "@/styles/components/shop/CheckoutForm.module.css";
-import { FaTrash } from "react-icons/fa";
-import Image from "next/image";
-import { User } from "@/types/user";
-import { CartItem } from "@/types/shop";
-import CheckoutConfirmOverlay from "@/components/shop/CheckoutConfirmOverlay";
+import { useState, useEffect } from "react";
 import CheckoutDoneOverlay from "@/components/shop/CheckoutDoneOverlay";
+import styles from "@/styles/components/shop/CheckoutForm.module.css";
+import type { CartItem, PaymentMethod } from "@/types/shop";
+import Image from "next/image";
 
 interface CheckoutFormProps {
-  user: User;
+  user: {
+    istid: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
 }
 
 export default function CheckoutForm({ user }: CheckoutFormProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [campus, setCampus] = useState<"Alameda" | "TagusPark">("Alameda");
-  const [nif, setNif] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
-  const [payment, setPayment] = useState<"Dinheiro" | "MBWay">("Dinheiro");
-  const [step, setStep] = useState<"form" | "confirm" | "done">("form");
+  const [campus, setCampus] = useState<"alameda" | "taguspark">("taguspark");
+  const [payment, setPayment] = useState<PaymentMethod>("in-person");
+  const [showTaxInfo, setShowTaxInfo] = useState(false);
+  const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
 
+  const [phone, setPhone] = useState(user.phone || "");
+  const [nif, setNif] = useState("");
+  const [notes, setNotes] = useState("");
+
   useEffect(() => {
-    const load = () => setCart(JSON.parse(localStorage.getItem("cart") || "[]"));
+    const load = () => {
+      try {
+        const raw = localStorage.getItem("cart") || "[]";
+        setCart(JSON.parse(raw));
+      } catch {
+        setCart([]);
+      }
+    };
     load();
     window.addEventListener("cartUpdated", load);
     return () => window.removeEventListener("cartUpdated", load);
   }, []);
 
-  const unitPrice = (item: CartItem) =>
-    item.product.price +
-    (item.variantId
-      ? (item.product.variants.find((v) => v.id === item.variantId)?.price_modifier ?? 0)
-      : 0);
-
-  const updateQty = (i: number, d: number) => {
-    setCart((prev) => {
-      const next = prev.map((item, idx) =>
-        idx === i ? { ...item, quantity: Math.max(1, item.quantity + d) } : item
-      );
-      localStorage.setItem("cart", JSON.stringify(next));
-      setTimeout(() => window.dispatchEvent(new Event("cartUpdated")), 0);
-      return next;
-    });
+  const unitPrice = (item: CartItem) => {
+    const variantModifier =
+      item.variantId != null
+        ? (item.product.variants.find((v) => v.id === item.variantId)?.price_modifier ?? 0)
+        : 0;
+    return item.product.price + variantModifier;
   };
 
-  const remove = (i: number) => {
-    setCart((prev) => {
-      const next = prev.filter((_, idx) => idx !== i);
-      localStorage.setItem("cart", JSON.stringify(next));
-      setTimeout(() => window.dispatchEvent(new Event("cartUpdated")), 0);
-      return next;
-    });
+  const findOptionValue = (options?: Record<string, string>, possibleKeys: string[] = []) => {
+    if (!options) return undefined;
+
+    const normalized: Record<string, string> = {};
+    for (const k of Object.keys(options)) {
+      normalized[k.trim().toLowerCase()] = options[k];
+    }
+
+    for (const key of possibleKeys) {
+      const found = normalized[key.toLowerCase()];
+      if (found) return found;
+    }
+
+    return undefined;
   };
 
-  const clear = () => {
-    setCart([]);
-    localStorage.setItem("cart", "[]");
-    setTimeout(() => window.dispatchEvent(new Event("cartUpdated")), 0);
+  const parseLabelForOptions = (label?: string) => {
+    if (!label) return { color: undefined, size: undefined, rest: label || "" };
+    const obj: Record<string, string> = {};
+    const parts = label.split(/\||,/).map((p) => p.trim());
+    for (const part of parts) {
+      const [k, ...rest] = part.split(":");
+      if (!k) continue;
+      const v = rest.join(":").trim();
+      obj[k.trim().toLowerCase()] = v;
+    }
+    return { color: obj["cor"] || obj["color"], size: obj["tamanho"] || obj["size"], rest: label };
   };
+
+  const total = cart.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0);
+  const subtotal = total / 1.23; // Price without IVA
+  const taxes = total - subtotal; // IVA amount (23% of subtotal)
 
   const apiItems = cart.map((item) => ({
     product_id: item.product.id,
-    variant_id: item.variantId,
+    variant_id: item.variantId ?? undefined,
     quantity: item.quantity,
   }));
 
@@ -77,6 +97,9 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          user_istid: user.istid,
+          customer_name: user.name,
+          customer_email: user.email,
           items: apiItems,
           campus,
           customer_nif: nif || undefined,
@@ -89,9 +112,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       const data = await res.json();
       if (!res.ok) setError(data.error || "Erro ao submeter encomenda.");
       else {
-        clear();
         setOrderId(data.id);
-        setStep("done");
       }
     } catch {
       setError("Erro de rede.");
@@ -100,196 +121,235 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     }
   };
 
+  if (cart.length === 0 && !orderId) {
+    return (
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+        <p>O teu carrinho está vazio.</p>
+      </div>
+    );
+  }
+
+  const pickupOptions = [
+    { id: "alameda", label: "Alameda" },
+    { id: "taguspark", label: "Taguspark" },
+  ] as const;
+
+  const paymentOptions = [
+    { id: "sumup", label: "Cartão" },
+    { id: "in-person", label: "Presencial" },
+  ] as const;
+
   return (
     <div className={styles.container}>
-      <div
-        className={styles.grid}
-        style={step !== "form" ? { filter: "blur(1.5px)", pointerEvents: "none" } : {}}>
-        <section>
-          <h2 className={styles.title}>O teu Carrinho</h2>
-          {cart.length === 0 ? (
-            <div className={styles.muted}>O teu carrinho está vazio.</div>
-          ) : (
-            <ul className={styles.list}>
-              {cart.map((item, i) => {
-                const variantObj = item.variantId
-                  ? item.product.variants.find((v) => v.id === item.variantId)
-                  : undefined;
-                const imageSrc =
-                  variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0
-                    ? variantObj.images[0]
-                    : item.product.images[0];
-                return (
-                  <li key={i} className={styles.item}>
-                    <Image
-                      src={imageSrc}
-                      alt={item.product.name}
-                      width={64}
-                      height={64}
-                      className={styles.img}
-                    />
-                    <div className={styles.info}>
-                      <strong>{item.product.name}</strong>
-                      {variantObj && (
-                        <div className={styles.variant}>
-                          {variantObj.label ||
-                            Object.entries(variantObj.options || {})
-                              .map(([k, v]) => `${k}: ${v}`)
-                              .join(", ")}
-                        </div>
-                      )}
-                      <span className={styles.price}>{unitPrice(item).toFixed(2)}€</span>
-                      <div className={styles.row}>
-                        <button
-                          type="button"
-                          className={styles.btnSecondary}
-                          onClick={() => updateQty(i, -1)}
-                          disabled={item.quantity <= 1}
-                          aria-label="Diminuir quantidade">
-                          –
-                        </button>
-                        <span>{item.quantity}</span>
-                        <button
-                          type="button"
-                          className={styles.btnSecondary}
-                          onClick={() => updateQty(i, 1)}
-                          aria-label="Aumentar quantidade">
-                          +
-                        </button>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className={styles.iconBtn}
-                      onClick={() => remove(i)}
-                      aria-label="Remover"
-                      title="Remover">
-                      <FaTrash />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+      <div className={styles.leftColumn}>
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>1. Informações Pessoais</h2>
+          </div>
+
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label>Número de Telefone</label>
+              <div className={styles.inputWithIcon}>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="(505) 299-8387"
+                  className={styles.input}
+                />
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label>NIF (Opcional)</label>
+              <input
+                type="text"
+                value={nif}
+                onChange={(e) => setNif(e.target.value)}
+                placeholder="123456789"
+                className={styles.input}
+              />
+            </div>
+          </div>
         </section>
 
-        <form
-          className={styles.panel}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!campus.trim()) {
-              setError("O campo Campus é obrigatório.");
-              return;
-            }
-            setError(null);
-            setStep("confirm");
-          }}>
-          <h2 className={styles.title}>Finalizar Compra</h2>
+        <div className={styles.divider} />
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>2. Local de Entrega</h2>
 
-          <label>
-            <div className={styles.label}>
-              Campus <span style={{ color: "var(--danger)" }}>*</span>
+          <div className={styles.radioGroup}>
+            {pickupOptions.map((opt) => (
+              <label key={opt.id} className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="campus"
+                  checked={campus === opt.id}
+                  onChange={() => setCampus(opt.id as "alameda" | "taguspark")}
+                  className={styles.radioInput}
+                />
+                <span className={styles.radioLabel}>{opt.label}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <div className={styles.divider} />
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>3. Método de Pagamento</h2>
+
+          <div className={styles.radioGroup}>
+            {paymentOptions.map((opt) => (
+              <label key={opt.id} className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="payment"
+                  checked={payment === opt.id}
+                  onChange={() => setPayment(opt.id as PaymentMethod)}
+                  className={styles.radioInput}
+                />
+                <span className={styles.radioLabel}>{opt.label}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <div className={styles.divider} />
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Notas (Opcional)</h2>
+          <textarea
+            className={styles.textarea}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Adicione notas sobre a sua encomenda..."
+            rows={4}
+          />
+        </section>
+        <button className={styles.checkoutButton} onClick={handleSubmit} disabled={loading}>
+          {loading ? "A processar..." : "Finalizar Compra"}
+        </button>
+
+        {error && <div className={styles.errorMessage}>{error}</div>}
+      </div>
+
+      <div className={styles.rightColumn}>
+        <div className={styles.summarySticky}>
+          <h2 className={styles.summaryTitle}>Resumo da Encomenda</h2>
+          <div className={styles.cartItems}>
+            {cart.map((item, idx) => {
+              const variantObj =
+                item.variantId != null
+                  ? item.product.variants.find((v) => v.id === item.variantId)
+                  : null;
+
+              const imageSrc =
+                variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0
+                  ? variantObj.images[0]
+                  : item.product.images?.[0];
+              return (
+                <div
+                  key={`${item.product.id}-${item.variantId ?? "default"}-${idx}`}
+                  className={styles.cartItem}>
+                  <div className={styles.productImage}>
+                    {imageSrc ? (
+                      <Image
+                        src={imageSrc}
+                        alt={item.product.name}
+                        width={80}
+                        height={80}
+                        className={styles.productImg}
+                      />
+                    ) : (
+                      <div className={styles.placeholderImage} />
+                    )}
+                  </div>
+
+                  <div className={styles.productDetails}>
+                    <div className={styles.productHeader}>
+                      <h3>{item.product.name}</h3>
+                      <span className={styles.productPrice}>
+                        €{unitPrice(item).toFixed(2)} x {item.quantity}
+                      </span>
+                    </div>
+                    {variantObj &&
+                      (() => {
+                        const color =
+                          findOptionValue(variantObj.options, ["cor", "color"]) ||
+                          parseLabelForOptions(variantObj.label).color;
+
+                        const size =
+                          findOptionValue(variantObj.options, ["tamanho", "size"]) ||
+                          parseLabelForOptions(variantObj.label).size;
+
+                        return (
+                          <div className={styles.variantInfo}>
+                            {color && (
+                              <span
+                                className={styles.colorDot}
+                                style={{ backgroundColor: color }}
+                                title={color}
+                              />
+                            )}
+                            {size && <span className={styles.variantSize}>{size}</span>}
+                          </div>
+                        );
+                      })()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.pricingSummary}>
+            <div className={styles.priceLine}>
+              <span>Subtotal</span>
+              <span>€{subtotal.toFixed(2)}</span>
             </div>
-            <select
-              className={styles.field}
-              value={campus}
-              onChange={(e) => setCampus(e.target.value as "Alameda" | "TagusPark")}
-              required>
-              <option value="Alameda">Alameda</option>
-              <option value="TagusPark">TagusPark</option>
-            </select>
-          </label>
-
-          <label>
-            <div className={styles.label}>NIF (opcional)</div>
-            <input
-              className={styles.field}
-              value={nif}
-              onChange={(e) => setNif(e.target.value)}
-              placeholder="NIF para fatura"
-              inputMode="numeric"
-              maxLength={9}
-            />
-          </label>
-
-          {!user.phone && (
-            <label>
-              <div className={styles.label}>
-                Telemóvel <span style={{ color: "var(--danger)" }}>*</span>
-              </div>
-              <input
-                className={styles.field}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Número de telemóvel"
-                inputMode="tel"
-                maxLength={16}
-                required
-              />
-            </label>
-          )}
-
-          <label>
-            <div className={styles.label}>Notas (opcional)</div>
-            <textarea
-              className={styles.field}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notas para a encomenda"
-              rows={3}
-            />
-          </label>
-
-          <div>
-            <div className={styles.label}>Método de Pagamento</div>
-            <div className={styles.row}>
-              <label className={styles.radio}>
-                <input
-                  type="radio"
-                  name="payment"
-                  value="Dinheiro"
-                  checked={payment === "Dinheiro"}
-                  onChange={() => setPayment("Dinheiro")}
-                />
-                Dinheiro (presencial)
-              </label>
-              <label className={styles.radio}>
-                <input
-                  type="radio"
-                  name="payment"
-                  value="MBWay"
-                  checked={payment === "MBWay"}
-                  onChange={() => setPayment("MBWay")}
-                />
-                MBWay (presencial)
-              </label>
+            <div className={styles.priceLine}>
+              <span>IVA (23%)</span>
+              <span>€{taxes.toFixed(2)}</span>
+            </div>
+            <div className={styles.priceDivider} />
+            <div className={styles.totalLine}>
+              <span>Total</span>
+              <span>€{total.toFixed(2)}</span>
             </div>
           </div>
 
-          {error && <div className={styles.error}>{error}</div>}
+          <div className={styles.expandableWrapper}>
+            <button className={styles.expandButton} onClick={() => setShowTaxInfo(!showTaxInfo)}>
+              <span className={styles.expandText}>
+                Taxas incluídas. Entrega calculada no checkout.
+              </span>
+              <span className={styles.expandIcon}>+</span>
+            </button>
+            {showTaxInfo && (
+              <div className={styles.expandContent}>
+                As taxas são calculadas automaticamente com base na sua localização.
+              </div>
+            )}
 
-          <button className={styles.btn} type="submit" disabled={loading}>
-            {loading ? "A processar..." : "Submeter Encomenda"}
-          </button>
-        </form>
+            <button
+              className={styles.expandButton}
+              onClick={() => setShowDeliveryInfo(!showDeliveryInfo)}>
+              <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
+              <span className={styles.expandIcon}>+</span>
+            </button>
+            {showDeliveryInfo && (
+              <div className={styles.expandContent}>
+                O prazo de entrega pode variar conforme o local de levantamento escolhido.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      {step === "confirm" && (
-        <CheckoutConfirmOverlay
-          cart={cart}
-          campus={campus}
-          nif={nif}
-          notes={notes}
-          payment={payment}
-          user={user}
-          loading={loading}
-          error={error}
-          onBack={() => setStep("form")}
-          onSubmit={handleSubmit}
-        />
-      )}
-
-      {step === "done" && <CheckoutDoneOverlay orderId={orderId} />}
+      {orderId !== null && <CheckoutDoneOverlay orderId={orderId} paymentMethod={payment} />}
     </div>
   );
 }

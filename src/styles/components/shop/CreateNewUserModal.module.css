@@ -82,7 +82,7 @@
 .buttonRow {
   display: flex;
   gap: 0.75rem;
-  margin-top: 2rem;
+  margin-top: 1.25rem;
 }
 
 .buttonCancel,
@@ -97,24 +97,24 @@
 }
 
 .buttonCancel {
+  background: white;
+  border: 1px solid #ff3b30;
+  color: #ff3b30;
+}
+
+.buttonCancel:hover:not(:disabled) {
   background: #ff3b30;
+  color: white;
+}
+
+.buttonSubmit {
+  background: var(--primary-colour);
   border: none;
   color: white;
 }
 
-.buttonCancel:hover:not(:disabled) {
-  background: #e02828;
-}
-
-.buttonSubmit {
-  background: white;
-  border: 1px solid var(--primary-colour);
-  color: var(--primary-colour);
-}
-
 .buttonSubmit:hover:not(:disabled) {
-  background: var(--primary-colour);
-  color: white;
+  filter: brightness(0.95);
 }
 
 .buttonCancel:disabled,

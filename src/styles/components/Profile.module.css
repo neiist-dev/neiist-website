@@ -87,7 +87,6 @@
   font-weight: 600;
   color: #3f3f3f;
   margin-bottom: 0.5rem;
-  margin-left: 2rem;
 }
 
 .contactField {
@@ -95,7 +94,6 @@
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-left: 2rem;
 }
 
 .icon {
@@ -296,11 +294,6 @@
   .infoText,
   .actionButtons {
     justify-content: center;
-    margin-left: 1rem;
-  }
-
-  .contactField,
-  .contactLabel {
     margin-left: 1rem;
   }
 }

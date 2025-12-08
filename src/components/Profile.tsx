@@ -296,7 +296,6 @@ export default function ProfileClient({
               <p className={styles.email}>{user?.email}</p>
             </div>
           </div>
-          <h2 className={styles.sectionTitle}>Informações de Contacto</h2>
           <div className={styles.contactInfo}>
             <div>
               <div className={styles.contactLabel}>Email Alternativo</div>
