@@ -4,6 +4,8 @@ import CheckoutDoneOverlay from "@/components/shop/CheckoutDoneOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
 import type { CartItem, PaymentMethod } from "@/types/shop";
 import Image from "next/image";
+import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import { FaChevronDown } from "react-icons/fa";
 
 interface CheckoutFormProps {
   user: {
@@ -48,35 +50,6 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         ? (item.product.variants.find((v) => v.id === item.variantId)?.price_modifier ?? 0)
         : 0;
     return item.product.price + variantModifier;
-  };
-
-  const findOptionValue = (options?: Record<string, string>, possibleKeys: string[] = []) => {
-    if (!options) return undefined;
-
-    const normalized: Record<string, string> = {};
-    for (const k of Object.keys(options)) {
-      normalized[k.trim().toLowerCase()] = options[k];
-    }
-
-    for (const key of possibleKeys) {
-      const found = normalized[key.toLowerCase()];
-      if (found) return found;
-    }
-
-    return undefined;
-  };
-
-  const parseLabelForOptions = (label?: string) => {
-    if (!label) return { color: undefined, size: undefined, rest: label || "" };
-    const obj: Record<string, string> = {};
-    const parts = label.split(/\||,/).map((p) => p.trim());
-    for (const part of parts) {
-      const [k, ...rest] = part.split(":");
-      if (!k) continue;
-      const v = rest.join(":").trim();
-      obj[k.trim().toLowerCase()] = v;
-    }
-    return { color: obj["cor"] || obj["color"], size: obj["tamanho"] || obj["size"], rest: label };
   };
 
   const total = cart.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0);
@@ -161,7 +134,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(505) 299-8387"
+                  placeholder="+351 999 888 777"
                   className={styles.input}
                 />
               </div>
@@ -252,6 +225,10 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                 variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0
                   ? variantObj.images[0]
                   : item.product.images?.[0];
+              const colorInfo = getColorFromOptions(
+                variantObj?.options ?? undefined,
+                variantObj?.label ?? undefined
+              );
               return (
                 <div
                   key={`${item.product.id}-${item.variantId ?? "default"}-${idx}`}
@@ -269,7 +246,6 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                       <div className={styles.placeholderImage} />
                     )}
                   </div>
-
                   <div className={styles.productDetails}>
                     <div className={styles.productHeader}>
                       <h3>{item.product.name}</h3>
@@ -277,29 +253,25 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                         €{unitPrice(item).toFixed(2)} x {item.quantity}
                       </span>
                     </div>
-                    {variantObj &&
-                      (() => {
-                        const color =
-                          findOptionValue(variantObj.options, ["cor", "color"]) ||
-                          parseLabelForOptions(variantObj.label).color;
-
-                        const size =
-                          findOptionValue(variantObj.options, ["tamanho", "size"]) ||
-                          parseLabelForOptions(variantObj.label).size;
-
-                        return (
-                          <div className={styles.variantInfo}>
-                            {color && (
-                              <span
-                                className={styles.colorDot}
-                                style={{ backgroundColor: color }}
-                                title={color}
-                              />
-                            )}
-                            {size && <span className={styles.variantSize}>{size}</span>}
-                          </div>
-                        );
-                      })()}
+                    <div className={styles.variantInfo}>
+                      {colorInfo.hex && (
+                        <span
+                          className={styles.colorDot}
+                          style={{ backgroundColor: colorInfo.hex }}
+                          title={colorInfo.name || colorInfo.hex}
+                        />
+                      )}
+                      {variantObj?.options &&
+                        (() => {
+                          const entries = Object.entries(variantObj.options);
+                          const nonColorEntries = entries.filter(([k]) => !isColorKey(k));
+                          return nonColorEntries.map(([k, v]) => (
+                            <span className={styles.variantSize} key={k}>
+                              {`${k.trim()}: ${v}`}
+                            </span>
+                          ));
+                        })()}
+                    </div>
                   </div>
                 </div>
               );
@@ -323,29 +295,40 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           </div>
 
           <div className={styles.expandableWrapper}>
-            <button className={styles.expandButton} onClick={() => setShowTaxInfo(!showTaxInfo)}>
-              <span className={styles.expandText}>
-                Taxas incluídas. Entrega calculada no checkout.
-              </span>
-              <span className={styles.expandIcon}>+</span>
-            </button>
-            {showTaxInfo && (
-              <div className={styles.expandContent}>
-                As taxas são calculadas automaticamente com base na sua localização.
-              </div>
-            )}
-
-            <button
-              className={styles.expandButton}
-              onClick={() => setShowDeliveryInfo(!showDeliveryInfo)}>
-              <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
-              <span className={styles.expandIcon}>+</span>
-            </button>
-            {showDeliveryInfo && (
-              <div className={styles.expandContent}>
-                O prazo de entrega pode variar conforme o local de levantamento escolhido.
-              </div>
-            )}
+            <div className={styles.expandSection}>
+              <button
+                className={styles.expandButton}
+                onClick={() => setShowTaxInfo((v) => !v)}
+                aria-expanded={showTaxInfo}>
+                <span className={styles.expandText}>
+                  Taxas incluídas. Entrega calculada no checkout.
+                </span>
+                <FaChevronDown
+                  className={`${styles.expandIcon} ${showTaxInfo ? styles.expanded : ""}`}
+                />
+              </button>
+              {showTaxInfo && (
+                <div className={styles.expandContent}>
+                  As taxas são calculadas automaticamente com base na sua localização.
+                </div>
+              )}
+            </div>
+            <div className={styles.expandSection}>
+              <button
+                className={styles.expandButton}
+                onClick={() => setShowDeliveryInfo((v) => !v)}
+                aria-expanded={showDeliveryInfo}>
+                <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
+                <FaChevronDown
+                  className={`${styles.expandIcon} ${showDeliveryInfo ? styles.expanded : ""}`}
+                />
+              </button>
+              {showDeliveryInfo && (
+                <div className={styles.expandContent}>
+                  O prazo de entrega pode variar conforme o local de levantamento escolhido.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

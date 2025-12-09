@@ -7,6 +7,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { Squash } from "hamburger-react";
 import { CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/Cart.module.css";
+import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 
 export default function Cart() {
   const { isOpen, closeCart } = useCartPopup();
@@ -53,35 +54,6 @@ export default function Cart() {
 
   if (!isOpen) return null;
 
-  function findOptionValue(options?: Record<string, string>, possibleKeys: string[] = []) {
-    if (!options) return undefined;
-
-    const normalized: Record<string, string> = {};
-    for (const k of Object.keys(options)) {
-      normalized[k.trim().toLowerCase()] = options[k];
-    }
-
-    for (const key of possibleKeys) {
-      const found = normalized[key.toLowerCase()];
-      if (found) return found;
-    }
-
-    return undefined;
-  }
-
-  function parseLabelForOptions(label?: string) {
-    if (!label) return { color: undefined, size: undefined, rest: label || "" };
-    const obj: Record<string, string> = {};
-    const parts = label.split(/\||,/).map((p) => p.trim());
-    for (const part of parts) {
-      const [k, ...rest] = part.split(":");
-      if (!k) continue;
-      const v = rest.join(":").trim();
-      obj[k.trim().toLowerCase()] = v;
-    }
-    return { color: obj["cor"] || obj["color"], size: obj["tamanho"] || obj["size"], rest: label };
-  }
-
   return (
     <div className={styles.overlay} onClick={closeCart}>
       <div className={styles.cart} onClick={(e) => e.stopPropagation()}>
@@ -104,6 +76,10 @@ export default function Cart() {
                 variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0
                   ? variantObj.images[0]
                   : item.product.images[0];
+              const colorInfo = getColorFromOptions(
+                variantObj?.options ?? undefined,
+                variantObj?.label ?? undefined
+              );
               return (
                 <div key={idx} className={styles.item}>
                   <div className={styles.imageWrapper}>
@@ -118,26 +94,25 @@ export default function Cart() {
                     <h4>{item.product.name}</h4>
                     <div className={styles.color}>
                       <div className={styles.variantRow}>
+                        {colorInfo.hex && (
+                          <span
+                            className={styles.colorDot}
+                            style={{ backgroundColor: colorInfo.hex }}
+                            title={colorInfo.name || colorInfo.hex}
+                          />
+                        )}
                         {variantObj &&
+                          variantObj.options &&
                           (() => {
-                            const color =
-                              findOptionValue(variantObj.options, ["cor", "color"]) ||
-                              parseLabelForOptions(variantObj.label).color;
-
-                            const size = findOptionValue(variantObj.options, ["tamanho", "size"]);
-
-                            return (
-                              <>
-                                {color && (
-                                  <span
-                                    className={styles.colorDot}
-                                    style={{ backgroundColor: color }}
-                                  />
-                                )}
-
-                                {size && <span className={styles.sizeTag}>{size}</span>}
-                              </>
-                            );
+                            const entries = Object.entries(variantObj.options);
+                            const nonColorEntries = entries.filter(([k]) => !isColorKey(k));
+                            return nonColorEntries.length > 0
+                              ? nonColorEntries.map(([k, v]) => (
+                                  <span className={styles.sizeTag} key={k}>
+                                    {`${k.trim()}: ${v}`}
+                                  </span>
+                                ))
+                              : null;
                           })()}
 
                         <span className={styles.priceTag}>{price.toFixed(2)}€</span>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
 import { FiChevronDown } from "react-icons/fi";
+import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 
 interface ProductDetailProps {
   product: Product;
@@ -20,14 +21,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
   const mainOption = optionNames[0] || "";
   const subOption = optionNames[1] || "";
+  const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
 
   const mainValues = useMemo(() => {
     const set = new Set<string>();
     product.variants.forEach((v) => {
-      if (v.options?.[mainOption]) {
-        const cleanValue = v.options[mainOption].replace(/['"\\]/g, "");
-        set.add(cleanValue);
-      }
+      const raw = v.options?.[mainOption];
+      if (!raw) return;
+      const cleanValue = normalize(raw);
+      set.add(cleanValue);
     });
     return Array.from(set);
   }, [product.variants, mainOption]);
@@ -36,8 +38,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const subValues = useMemo(() => {
     const set = new Set<string>();
     product.variants.forEach((v) => {
-      if (v.options?.[mainOption] === selectedMain && v.options?.[subOption]) {
-        set.add(v.options[subOption]);
+      if (
+        normalize(v.options?.[mainOption]) === normalize(selectedMain) &&
+        v.options?.[subOption]
+      ) {
+        set.add(normalize(v.options[subOption]));
       }
     });
     return Array.from(set);
@@ -61,8 +66,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   };
 
   const [imgIndex, setImgIndex] = useState(0);
-
-  const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
 
   const selectedVariant = useMemo(() => {
     return product.variants.find((v) => {
@@ -117,7 +120,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     (selectedVariant &&
       selectedVariant.active &&
       (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0));
-  const isColorOption = mainOption.toLowerCase() === "cor" || mainOption.toLowerCase() === "cores";
+  const isColorOption = isColorKey(mainOption);
 
   return (
     <div className={styles.container}>
@@ -160,16 +163,37 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <div>
               <span className={styles.label}>{mainOption}</span>
               <div className={isColorOption ? styles.colorOptions : styles.options}>
-                {mainValues.map((val) => (
-                  <button
-                    key={val}
-                    className={`${styles.option} ${selectedMain === val ? styles.selected : ""}`}
-                    style={isColorOption ? { backgroundColor: val } : undefined}
-                    onClick={() => handleMainChange(val)}
-                    aria-label={`Select ${val}`}>
-                    {!isColorOption && val}
-                  </button>
-                ))}
+                {mainValues.map((val) => {
+                  const color = getColorFromOptions({ [mainOption]: val }, undefined);
+                  const colorHex = color.hex;
+                  const colorName = color.name ?? val;
+                  const isSelected = normalize(selectedMain) === normalize(val);
+
+                  if (isColorOption) {
+                    return (
+                      <button
+                        key={val}
+                        className={`${styles.option} ${isSelected ? styles.selected : ""}`}
+                        style={{
+                          backgroundColor: colorHex || undefined,
+                        }}
+                        onClick={() => handleMainChange(val)}
+                        title={colorName}
+                        aria-label={colorName}
+                        aria-pressed={isSelected}></button>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={val}
+                      className={`${styles.option} ${isSelected ? styles.selected : ""}`}
+                      onClick={() => handleMainChange(val)}
+                      aria-label={`Select ${val}`}>
+                      {val}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -184,10 +208,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                     onClick={() => handleSubChange(val)}
                     disabled={
                       !product.variants.some((v) => {
-                        const mainValue = v.options?.[mainOption]?.replace(/['"\\]/g, "");
-                        const subValue = v.options?.[subOption]?.replace(/['"\\]/g, "");
+                        const mainValue = normalize(v.options?.[mainOption]);
+                        const subValue = normalize(v.options?.[subOption]);
                         return (
-                          mainValue === selectedMain &&
+                          mainValue === normalize(selectedMain) &&
                           subValue === val &&
                           v.active &&
                           (product.stock_type === "on_demand" || (v.stock_quantity ?? 0) > 0)

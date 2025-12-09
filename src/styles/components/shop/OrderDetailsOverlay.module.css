@@ -95,8 +95,9 @@
 
 .infoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-  gap: clamp(0.75rem, 3vw, 1.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .infoColumnWide {
@@ -106,17 +107,18 @@
 .infoItem {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
-.infoItem label,
-.infoItem p {
-  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+.infoItem label {
+  font-size: 0.85rem;
   color: var(--foreground-colour);
   margin: 0;
 }
 
 .infoItem p {
+  font-size: 0.95rem;
+  margin: 0;
   word-break: break-word;
 }
 

@@ -12,6 +12,7 @@ import {
 } from "@/types/shop";
 import { MdClose } from "react-icons/md";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
   if (label) return label;
@@ -127,12 +128,12 @@ export default function OrderDetailOverlay({
           <div className={styles.infoColumn}>
             <div className={styles.infoItem}>
               <label>Campus</label>
-              <p>{order.campus || "-"}</p>
+              <p>
+                {order.campus ? order.campus.charAt(0).toUpperCase() + order.campus.slice(1) : "-"}
+              </p>
             </div>
           </div>
-        </div>
 
-        <div className={styles.infoGrid}>
           <div className={styles.infoColumnWide}>
             <div className={styles.infoItem}>
               <label>Email</label>
@@ -157,15 +158,67 @@ export default function OrderDetailOverlay({
               <span>Preço</span>
               <span>Total</span>
             </div>
-            {order.items.map((item, idx) => (
-              <div key={idx} className={styles.tableRow}>
-                <span>{item.product_name}</span>
-                <span>{formatVariant(item.variant_options, item.variant_label)}</span>
-                <span>{item.quantity}</span>
-                <span>{item.unit_price.toFixed(2)}€</span>
-                <span>{(item.unit_price * item.quantity).toFixed(2)}€</span>
-              </div>
-            ))}
+            {order.items.map((item, idx) => {
+              const colorInfo = getColorFromOptions(
+                item.variant_options ?? undefined,
+                item.variant_label ?? undefined
+              );
+
+              const nonColorParts: string[] = (() => {
+                if (item.variant_options && Object.keys(item.variant_options).length > 0) {
+                  return Object.entries(item.variant_options)
+                    .filter(([k]) => !isColorKey(k))
+                    .map(([k, v]) => `${k.trim()}: ${v}`);
+                }
+                if (item.variant_label) {
+                  const parts = item.variant_label
+                    .split(/\||,/)
+                    .map((p) => p.trim())
+                    .filter(Boolean);
+                  return parts.filter((part) => {
+                    const [k] = part.split(":");
+                    return !isColorKey(k);
+                  });
+                }
+                return [];
+              })();
+              const variantTextFallback =
+                nonColorParts.length > 0
+                  ? nonColorParts.join(", ")
+                  : formatVariant(
+                      item.variant_options ?? undefined,
+                      item.variant_label ?? undefined
+                    );
+              return (
+                <div key={idx} className={styles.tableRow}>
+                  <span>{item.product_name}</span>
+                  <span>
+                    {colorInfo.hex ? (
+                      <>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            width: 14,
+                            height: 14,
+                            borderRadius: 14,
+                            backgroundColor: colorInfo.hex,
+                            marginRight: 8,
+                            verticalAlign: "middle",
+                          }}
+                          title={colorInfo.name || colorInfo.hex}
+                        />
+                        {variantTextFallback}
+                      </>
+                    ) : (
+                      variantTextFallback
+                    )}
+                  </span>
+                  <span>{item.quantity}</span>
+                  <span>{item.unit_price.toFixed(2)}€</span>
+                  <span>{(item.unit_price * item.quantity).toFixed(2)}€</span>
+                </div>
+              );
+            })}
           </div>
           <div className={styles.totalRow}>Total: {order.total_amount.toFixed(2)}€</div>
         </div>

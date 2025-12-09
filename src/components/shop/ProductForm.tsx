@@ -13,6 +13,8 @@ import {
 } from "react-icons/fa";
 import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
+import { splitNameHex, joinNameHex, isColorKey } from "@/utils/shopUtils";
+import ColourPicker from "@/components/ColourPicker";
 
 interface ProductFormProps {
   product?: Product | null;
@@ -225,9 +227,19 @@ export default function ProductForm({
     }
     for (const variant of variants) {
       for (const optionType of optionTypes) {
-        if (!variant.options[optionType]?.trim()) {
+        const val = (variant.options[optionType] || "").trim();
+        if (!val) {
           setError(`Variante deve ter "${optionType}" preenchido`);
           return;
+        }
+        if (isColorKey(optionType)) {
+          const { hex } = splitNameHex(val);
+          if (!hex) {
+            setError(
+              `Opção de cor "${optionType}" precisa de um valor com hex (ex: Verde - #2C4A52)`
+            );
+            return;
+          }
         }
       }
     }
@@ -518,17 +530,48 @@ export default function ProductForm({
               className={styles.row}
               style={{ alignItems: "flex-start", gap: "0.5rem" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                {optionTypes.map((type) => (
-                  <input
-                    key={type}
-                    className={styles.field}
-                    style={{ width: 100 }}
-                    value={variant.options[type] || ""}
-                    onChange={(e) => updateVariantOption(i, type, e.target.value)}
-                    placeholder={type}
-                    required
-                  />
-                ))}
+                {optionTypes.map((type) => {
+                  const raw = variant.options[type] || "";
+                  if (isColorKey(type)) {
+                    const { name: colorName, hex: colorHex } = splitNameHex(raw);
+                    return (
+                      <div
+                        key={type}
+                        style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                        <input
+                          className={styles.field}
+                          style={{ width: 140 }}
+                          value={colorName}
+                          onChange={(e) =>
+                            updateVariantOption(i, type, joinNameHex(e.target.value, colorHex))
+                          }
+                          placeholder={type}
+                          required
+                        />
+                        <div style={{ width: 220, display: "flex", alignItems: "center", gap: 8 }}>
+                          <ColourPicker
+                            value={colorHex || "#000000"}
+                            onChange={(hex) => {
+                              updateVariantOption(i, type, joinNameHex(colorName, hex));
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <input
+                      key={type}
+                      className={styles.field}
+                      style={{ width: 100 }}
+                      value={variant.options[type] || ""}
+                      onChange={(e) => updateVariantOption(i, type, e.target.value)}
+                      placeholder={type}
+                      required
+                    />
+                  );
+                })}
               </div>
 
               <input
