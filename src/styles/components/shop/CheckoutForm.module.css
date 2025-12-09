@@ -122,6 +122,14 @@
   margin-top: 2rem;
   box-sizing: border-box;
   font-family: inherit;
+  cursor: pointer;
+  transition:
+    filter 0.25s ease,
+    transform 0.15s ease;
+}
+
+.checkoutButton:hover {
+  filter: brightness(0.9);
 }
 
 .rightColumn {

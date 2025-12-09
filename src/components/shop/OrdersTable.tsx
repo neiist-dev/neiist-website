@@ -8,6 +8,7 @@ import {
   getStatusCssClass,
   ORDER_STATUS_CONFIG,
   Product,
+  OrderStatus,
 } from "@/types/shop";
 import { FiSearch, FiCheck } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
@@ -38,6 +39,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     status: "",
   });
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const fuse = useMemo(
@@ -136,6 +138,55 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     router.refresh();
   };
 
+  const handleBulkStatusChange = async (status: OrderStatus) => {
+    if (selectedOrders.size === 0) return;
+    const confirmMessage = `Tem a certeza que deseja alterar o estado de ${selectedOrders.size} encomenda${selectedOrders.size !== 1 ? "s" : ""} para "${getStatusLabel(status)}"?`;
+
+    if (!confirm(confirmMessage)) return;
+    setBulkLoading(true);
+    const orderIds = Array.from(selectedOrders);
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      for (const orderId of orderIds) {
+        try {
+          const res = await fetch(`/api/shop/orders/${orderId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          });
+
+          if (res.ok) {
+            successCount++;
+          } else {
+            failCount++;
+            console.error(`Failed to update order ${orderId}`);
+          }
+        } catch (error) {
+          failCount++;
+          console.error(`Error updating order ${orderId}:`, error);
+        }
+      }
+      setSelectedOrders(new Set());
+      router.refresh();
+      if (failCount === 0) {
+        alert(
+          `${successCount} encomenda${successCount !== 1 ? "s" : ""} atualizada${successCount !== 1 ? "s" : ""} com sucesso!`
+        );
+      } else {
+        alert(
+          `${successCount} encomenda${successCount !== 1 ? "s" : ""} atualizada${successCount !== 1 ? "s" : ""} com sucesso.\n${failCount} encomenda${failCount !== 1 ? "s" : ""} falharam.`
+        );
+      }
+    } catch (error) {
+      console.error("Bulk update failed:", error);
+      alert("Erro ao atualizar encomendas");
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
   const handleExport = () => {
     const stats: Record<string, number> = {};
     filtered.forEach((o) =>
@@ -226,6 +277,41 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             availableCampuses={uniqueCampuses}
             availableStatuses={availableStatuses}
           />
+        )}
+
+        {selectedOrders.size > 0 && (
+          <div className={styles.bulkActions}>
+            <span className={styles.bulkCount}>
+              {selectedOrders.size} encomenda{selectedOrders.size !== 1 ? "s" : ""} selecionada
+              {selectedOrders.size !== 1 ? "s" : ""}
+            </span>
+            <div className={styles.bulkButtons}>
+              <button
+                onClick={() => handleBulkStatusChange("paid")}
+                disabled={bulkLoading}
+                className={styles.bulkBtn}>
+                {bulkLoading ? "A processar..." : "Marcar como Pago"}
+              </button>
+              <button
+                onClick={() => handleBulkStatusChange("ready")}
+                disabled={bulkLoading}
+                className={styles.bulkBtn}>
+                {bulkLoading ? "A processar..." : "Marcar como Pronto"}
+              </button>
+              <button
+                onClick={() => handleBulkStatusChange("delivered")}
+                disabled={bulkLoading}
+                className={styles.bulkBtn}>
+                {bulkLoading ? "A processar..." : "Marcar como Entregue"}
+              </button>
+              <button
+                onClick={() => handleBulkStatusChange("cancelled")}
+                disabled={bulkLoading}
+                className={styles.bulkBtnDanger}>
+                {bulkLoading ? "A processar..." : "Cancelar"}
+              </button>
+            </div>
+          </div>
         )}
 
         <div className={styles.card}>

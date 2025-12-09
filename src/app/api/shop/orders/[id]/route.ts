@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrder, setOrderState, getAllOrders as fetchAllOrders } from "@/utils/dbUtils";
+import { updateOrder, setOrderState, getAllOrders } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
-import { OrderStatus } from "@/types/shop";
+import { getStatusLabel } from "@/types/shop";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { User } from "@/types/user";
 import type { Order } from "@/types/shop";
+import { getOrderStatusUpdateTemplate, sendEmail } from "@/utils/emailUtils";
 
 function isCoordinatorOrAbove(roles: UserRole[]) {
   return roles.includes(UserRole._ADMIN) || roles.includes(UserRole._COORDINATOR);
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-  const allOrders = await fetchAllOrders();
+  const allOrders = await getAllOrders();
   const order = allOrders.find((o) => o.id === orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
@@ -69,22 +70,48 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json(updatedOrder);
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const userRoles = await serverCheckRoles([UserRole._MEMBER]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
-  const { id } = await params;
-  const orderId = Number(id);
-  if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+  try {
+    const body = await request.json();
+    const { status } = body;
+    const orderId = parseInt(params.id);
 
-  const { status } = await request.json();
-  if (!status) return NextResponse.json({ error: "Missing status" }, { status: 400 });
+    if (!status) {
+      return NextResponse.json({ error: "No status provided" }, { status: 400 });
+    }
 
-  const updatedOrder = await setOrderState(orderId, status as OrderStatus, userRoles.user!.istid);
-  if (!updatedOrder) {
-    return NextResponse.json({ error: "Failed to update order status" }, { status: 500 });
+    const allOrders = await getAllOrders();
+    const order = allOrders.find((o) => o.id === orderId);
+
+    if (!order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+    await setOrderState(orderId, status, userRoles.user?.istid ?? "system");
+
+    if (order.customer_email) {
+      const statusLabel = getStatusLabel(status);
+      await sendEmail({
+        to: order.customer_email,
+        subject: `Encomenda #${order.order_number} - ${statusLabel}`,
+        html: getOrderStatusUpdateTemplate(
+          order.order_number,
+          order.customer_name,
+          status,
+          statusLabel
+        ),
+      });
+    }
+    const updatedOrders = await getAllOrders();
+    const updatedOrder = updatedOrders.find((o) => o.id === orderId);
+
+    return NextResponse.json(updatedOrder);
+  } catch (e) {
+    console.error("Order update error:", e);
+    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
-  return NextResponse.json(updatedOrder);
 }
 
 export async function DELETE(
@@ -99,7 +126,7 @@ export async function DELETE(
   const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-  const allOrders = await fetchAllOrders();
+  const allOrders = await getAllOrders();
   const order = allOrders.find((o) => o.id === orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 

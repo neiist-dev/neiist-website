@@ -117,6 +117,79 @@
   background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), var(--primary-colour);
 }
 
+.bulkActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: #f8f9fa;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.bulkCount {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.bulkButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bulkBtn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.2s;
+  color: #333;
+}
+
+.bulkBtn:hover:not(:disabled) {
+  background: var(--primary-colour);
+  color: white;
+  border-color: var(--primary-colour);
+  transform: translateY(-1px);
+}
+
+.bulkBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulkBtnDanger {
+  padding: 0.5rem 1rem;
+  border: 1px solid #dc3545;
+  border-radius: 0.5rem;
+  background: white;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.bulkBtnDanger:hover:not(:disabled) {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.bulkBtnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .card {
   background: white;
   min-height: 75vh;
@@ -250,7 +323,25 @@
 }
 
 .statusCancelled {
-  background: red;
+  background: #ff4444;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .bulkActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bulkButtons {
+    justify-content: stretch;
+  }
+
+  .bulkBtn,
+  .bulkBtnDanger {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 425px) {
@@ -272,6 +363,15 @@
 
   .rightControls {
     justify-content: flex-end;
+    width: 100%;
+  }
+
+  .bulkButtons {
+    flex-direction: column;
+  }
+
+  .bulkBtn,
+  .bulkBtnDanger {
     width: 100%;
   }
 }
