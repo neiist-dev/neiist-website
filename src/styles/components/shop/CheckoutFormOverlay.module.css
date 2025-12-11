@@ -4,12 +4,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
   animation: fadeIn 0.3s ease-in-out;
+  padding: 20px;
 }
 
 @keyframes fadeIn {
@@ -21,18 +22,183 @@
   }
 }
 
+.widgetOnly {
+  background-color: #fff;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  min-height: 500px;
+  position: relative;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.widgetContainer {
+  width: 100%;
+  min-height: 500px;
+  padding: 0;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(4px);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loadingOverlayContent {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.loadingText {
+  margin-top: 16px;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.successOverlay {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.successIcon {
+  width: 80px;
+  height: 80px;
+  background: var(--primary-colour);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: #fff;
+  animation: checkPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 8px 20px rgba(41, 100, 253, 0.3);
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.successTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.successMessage {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.errorOverlay {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.errorIcon {
+  width: 80px;
+  height: 80px;
+  background: red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: #fff;
+  animation: errorShake 0.6s ease-in-out;
+}
+
+@keyframes errorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-8px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(8px);
+  }
+}
+
+.errorTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #991b1b;
+  margin: 0 0 16px 0;
+}
+
+.errorMessage {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.spinner {
+  color: var(--primary-colour);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .panel {
   background-color: #fff;
   border-radius: 16px;
-  padding: 48px 64px;
+  padding: 48px 40px;
   text-align: center;
-  max-width: 480px;
   animation: scaleIn 0.4s ease-out;
+  max-width: 520px;
+  width: 100%;
 }
 
 @keyframes scaleIn {
   from {
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0;
   }
   to {
@@ -41,42 +207,145 @@
   }
 }
 
+.errorPanel {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  animation: scaleIn 0.4s ease-out;
+  max-width: 520px;
+  width: 100%;
+}
+
 .checkIcon {
   width: 80px;
   height: 80px;
-  background-color: #2964fd;
+  background: var(--primary-colour);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 24px;
   color: #fff;
-  animation: checkPop 0.5s ease-out 0.2s;
-  animation-fill-mode: both;
+  animation: checkPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-@keyframes checkPop {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+.spinnerWrapper {
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: center;
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 12px 0;
+  line-height: 1.3;
 }
 
 .muted {
-  font-size: 16px;
-  color: #666;
-  margin: 0 0 20px 0;
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
   line-height: 1.6;
+}
+
+.retryInfo {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 16px 0 0 0;
+  font-weight: 500;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btnPrimary,
+.btnSecondary {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 140px;
+}
+
+.btnPrimary {
+  background: var(--primary-colour);
+  color: #fff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  filter: opacity(0.8);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btnSecondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.actionButtons {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.actionButtons .btnPrimary {
+  min-width: 180px;
+}
+
+@media (max-width: 640px) {
+  .widgetOnly {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .panel,
+  .errorPanel {
+    padding: 32px 24px;
+    max-width: 100%;
+  }
+
+  .title,
+  .errorTitle,
+  .successTitle {
+    font-size: 22px;
+  }
+
+  .errorActions,
+  .actionButtons {
+    flex-direction: column;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+  }
+
+  .successIcon,
+  .errorIcon,
+  .checkIcon {
+    width: 64px;
+    height: 64px;
+  }
 }
