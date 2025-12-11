@@ -33,6 +33,7 @@ interface dbUser {
 export enum UserRole {
   _ADMIN = "admin",
   _COORDINATOR = "coordinator",
+  _SHOP_MANAGER = "shop_manager",
   _MEMBER = "member",
   _GUEST = "guest",
 }
@@ -43,6 +44,8 @@ export function mapRoleToUserRole(role: string): UserRole {
       return UserRole._MEMBER;
     case "coordinator":
       return UserRole._COORDINATOR;
+    case "shop_manager":
+      return UserRole._SHOP_MANAGER;
     case "admin":
       return UserRole._ADMIN;
     default:

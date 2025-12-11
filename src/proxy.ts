@@ -15,8 +15,20 @@ function canAccess(path: string, roles: UserRole[]) {
   const rules: [string[], UserRole[]][] = [
     [adminRoutes, [UserRole._ADMIN]],
     [coordRoutes, [UserRole._ADMIN, UserRole._COORDINATOR]],
-    [memberRoutes, [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._MEMBER]],
-    [guestRoutes, [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._MEMBER, UserRole._GUEST]],
+    [
+      memberRoutes,
+      [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._SHOP_MANAGER, UserRole._MEMBER],
+    ],
+    [
+      guestRoutes,
+      [
+        UserRole._ADMIN,
+        UserRole._COORDINATOR,
+        UserRole._SHOP_MANAGER,
+        UserRole._MEMBER,
+        UserRole._GUEST,
+      ],
+    ],
   ];
 
   for (const [routes, allowed] of rules) {

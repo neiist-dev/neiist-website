@@ -7,12 +7,12 @@ import type { User } from "@/types/user";
 import type { Order } from "@/types/shop";
 import { getOrderStatusUpdateTemplate, sendEmail } from "@/utils/emailUtils";
 
-function isCoordinatorOrAbove(roles: UserRole[]) {
-  return roles.includes(UserRole._ADMIN) || roles.includes(UserRole._COORDINATOR);
-}
-
-function isMemberOrAbove(roles: UserRole[]) {
-  return isCoordinatorOrAbove(roles) || roles.includes(UserRole._MEMBER);
+function isShopManagerOrAbove(roles: UserRole[]) {
+  return (
+    roles.includes(UserRole._ADMIN) ||
+    roles.includes(UserRole._COORDINATOR) ||
+    roles.includes(UserRole._SHOP_MANAGER)
+  );
 }
 
 function isOrderOwner(order: Order, user: User) {
@@ -20,7 +20,7 @@ function isOrderOwner(order: Order, user: User) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([]); // authenticate and get user+roles
+  const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
   const { user, roles } = userRoles;
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const order = allOrders.find((o) => o.id === orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-  if (!isOrderOwner(order, user!) && !isMemberOrAbove(roles ?? [])) {
+  if (!isOrderOwner(order, user!) && !isShopManagerOrAbove(roles ?? [])) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
 
@@ -40,7 +40,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  const userRoles = await serverCheckRoles([
+    UserRole._ADMIN,
+    UserRole._COORDINATOR,
+    UserRole._SHOP_MANAGER,
+  ]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
   const { id } = await params;
@@ -70,14 +74,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json(updatedOrder);
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const userRoles = await serverCheckRoles([UserRole._MEMBER]);
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const userRoles = await serverCheckRoles([
+    UserRole._SHOP_MANAGER,
+    UserRole._COORDINATOR,
+    UserRole._ADMIN,
+  ]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
   try {
     const body = await request.json();
     const { status } = body;
-    const orderId = parseInt(params.id);
+    const { id } = await params;
+    const orderId = parseInt(id, 10);
 
     if (!status) {
       return NextResponse.json({ error: "No status provided" }, { status: 400 });
@@ -118,7 +127,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userRoles = await serverCheckRoles([]); // authenticate
+  const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
   const { user, roles } = userRoles;
 
@@ -129,8 +138,10 @@ export async function DELETE(
   const allOrders = await getAllOrders();
   const order = allOrders.find((o) => o.id === orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-
-  if (!isOrderOwner(order, user!) && !isCoordinatorOrAbove(roles ?? [])) {
+  if (
+    !isOrderOwner(order, user!) &&
+    !roles?.some((r) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(r))
+  ) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
 

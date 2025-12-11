@@ -6,7 +6,7 @@ export interface Team {
 
 export interface Role {
   roleName: string;
-  access: "guest" | "member" | "coordinator" | "admin";
+  access: "guest" | "shop_manager" | "member" | "coordinator" | "admin";
 }
 
 export interface dbRole {

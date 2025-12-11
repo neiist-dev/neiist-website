@@ -21,7 +21,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const userRoles = await serverCheckRoles([UserRole._COORDINATOR, UserRole._ADMIN]);
+  const userRoles = await serverCheckRoles([
+    UserRole._COORDINATOR,
+    UserRole._SHOP_MANAGER,
+    UserRole._ADMIN,
+  ]);
   if (!userRoles.isAuthorized) {
     return userRoles.error;
   }

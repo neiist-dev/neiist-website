@@ -1712,6 +1712,11 @@
   dependencies:
     tslib "^2.6.2"
 
+"@sumup/sdk@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@sumup/sdk/-/sdk-0.0.9.tgz#5fa7cd6b8c0c28c60bf2836580aa488030c3a05a"
+  integrity sha512-puVaWp8x8036NQRtQKIUqzWAoUeJn0DRe6CCgmWY+lIR46N4sExhNmo9uYuatNVqNNwqQJZZvBRCAKJu1oDUXQ==
+
 "@swc/helpers@0.5.15":
   version "0.5.15"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.5.15.tgz#79efab344c5819ecf83a43f3f9f811fc84b516d7"

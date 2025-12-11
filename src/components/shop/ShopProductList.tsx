@@ -20,10 +20,10 @@ export default function ShopProductList({
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
-        <span className={styles.primary}>S</span>
-        <span className={styles.secondary}>h</span>
-        <span className={styles.tertiary}>o</span>
-        <span className={styles.quaternary}>p</span>
+        <span className={styles.primary}>L</span>
+        <span className={styles.secondary}>o</span>
+        <span className={styles.tertiary}>j</span>
+        <span className={styles.quaternary}>a</span>
       </h1>
       <p className={styles.subTitle}>Os produtos que representam o teu curso!</p>
 

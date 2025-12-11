@@ -19,6 +19,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON SEQUENCES FROM neiist_ap
 CREATE TYPE neiist.user_access_enum AS ENUM (
   'admin',
   'coordinator',
+  'shop_manager',
   'member'
 );
 
@@ -1792,31 +1793,31 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
 ) AS $$
 BEGIN
   IF p_updates ? 'user_istid' THEN
-    UPDATE neiist.orders SET user_istid = NULLIF(p_updates->>'user_istid','') WHERE id = p_order_id;
+    UPDATE neiist.orders SET user_istid = NULLIF(p_updates->>'user_istid','') WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'nif' THEN
-    UPDATE neiist.orders SET nif = p_updates->>'nif' WHERE id = p_order_id;
+    UPDATE neiist.orders SET nif = p_updates->>'nif' WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'campus' THEN
-    UPDATE neiist.orders SET campus = p_updates->>'campus' WHERE id = p_order_id;
+    UPDATE neiist.orders SET campus = p_updates->>'campus' WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'notes' THEN
-    UPDATE neiist.orders SET notes = p_updates->>'notes' WHERE id = p_order_id;
+    UPDATE neiist.orders SET notes = p_updates->>'notes' WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'payment_method' THEN
-    UPDATE neiist.orders SET payment_method = p_updates->>'payment_method' WHERE id = p_order_id;
+    UPDATE neiist.orders SET payment_method = p_updates->>'payment_method' WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'payment_reference' THEN
-    UPDATE neiist.orders SET payment_reference = p_updates->>'payment_reference' WHERE id = p_order_id;
+    UPDATE neiist.orders SET payment_reference = p_updates->>'payment_reference' WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'payment_checked_by' THEN
-    UPDATE neiist.orders SET payment_checked_by = NULLIF(p_updates->>'payment_checked_by','') WHERE id = p_order_id;
+    UPDATE neiist.orders SET payment_checked_by = NULLIF(p_updates->>'payment_checked_by','') WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'delivered_by' THEN
-    UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE id = p_order_id;
+    UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE neiist.orders.id = p_order_id;
   END IF;
 
-  UPDATE neiist.orders SET updated_at = NOW() WHERE id = p_order_id;
+  UPDATE neiist.orders SET updated_at = NOW() WHERE neiist.orders.id = p_order_id;
 
   RETURN QUERY
   SELECT

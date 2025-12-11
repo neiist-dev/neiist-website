@@ -312,6 +312,7 @@ export default function RolesSearchFilter({
               disabled={loading}>
               <option value="guest">Normal</option>
               <option value="member">Membro</option>
+              <option value="shop_manager">Gestor de Loja</option>
               <option value="coordinator">Coordenador</option>
               <option value="admin">Administrador</option>
             </select>

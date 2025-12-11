@@ -13,8 +13,10 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
   const [orders, products] = await Promise.all([getAllOrders(), getAllProducts()]);
   const roles = (await serverCheckRoles([]))?.roles ?? [UserRole._GUEST];
 
-  const isCoordinatorOrAbove =
-    roles.includes(UserRole._COORDINATOR) || roles.includes(UserRole._ADMIN);
+  const canManage =
+    roles.includes(UserRole._COORDINATOR) ||
+    roles.includes(UserRole._ADMIN) ||
+    roles.includes(UserRole._SHOP_MANAGER);
 
   return (
     <>
@@ -23,7 +25,7 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
         <OrderDetailOverlay
           orderId={Number(orderId)}
           orders={orders}
-          canManage={isCoordinatorOrAbove}
+          canManage={canManage}
           basePath="/orders"
         />
       )}
