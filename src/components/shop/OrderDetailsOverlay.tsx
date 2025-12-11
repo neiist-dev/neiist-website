@@ -7,10 +7,10 @@ import {
   OrderStatus,
   getStatusLabel,
   getStatusCssClass,
-  getProgressPercentage,
   canTransitionTo,
 } from "@/types/shop";
 import { MdClose } from "react-icons/md";
+import { FaCheck } from "react-icons/fa";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 
@@ -89,12 +89,14 @@ export default function OrderDetailOverlay({
     );
   }
 
-  const progressPercentage = getProgressPercentage(order.status);
+  const steps = ["pending", "paid", "ready", "delivered"];
+  const currentStepIndex = Math.max(0, steps.indexOf(order.status));
+
   const canSetPaid = canManage && canTransitionTo(order.status, "paid");
   const canSetReady = canManage && canTransitionTo(order.status, "ready");
   const canSetDelivered = canManage && canTransitionTo(order.status, "delivered");
   const canCancel = canManage && canTransitionTo(order.status, "cancelled");
-  const userCanCancel = !canManage && canTransitionTo(order.status, "cancelled");
+  const userCanCancel = !canManage && order.status === "pending";
 
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
@@ -272,48 +274,40 @@ export default function OrderDetailOverlay({
           <>
             {order.status !== "cancelled" && (
               <div className={styles.progressContainer}>
-                <div className={styles.progressBar || ""}>
-                  <div className={styles.progressTrack}>
-                    <div
-                      className={styles.progressFill}
-                      style={{ width: `${progressPercentage}%` }}
-                    />
-                  </div>
-                  <div className={styles.progressLabels}>
-                    <span
-                      className={
-                        order.status === "pending"
-                          ? styles.progressStepActive
-                          : styles.progressStepInactive
-                      }>
-                      Pendente
+                <ul className={styles.progressbar}>
+                  <li
+                    className={`${styles.step0} ${currentStepIndex >= 0 ? styles.active : ""}`}
+                    id="step1">
+                    <span className={styles.stepIcon}>
+                      {currentStepIndex >= 0 && <FaCheck size={14} />}
                     </span>
-                    <span
-                      className={
-                        order.status === "paid"
-                          ? styles.progressStepActive
-                          : styles.progressStepInactive
-                      }>
-                      Pago
+                    Pendente
+                  </li>
+                  <li
+                    className={`${styles.step0} ${currentStepIndex >= 1 ? styles.active : ""}`}
+                    id="step2">
+                    <span className={styles.stepIcon}>
+                      {currentStepIndex >= 1 && <FaCheck size={14} />}
                     </span>
-                    <span
-                      className={
-                        order.status === "ready"
-                          ? styles.progressStepActive
-                          : styles.progressStepInactive
-                      }>
-                      Pronto
+                    Pago
+                  </li>
+                  <li
+                    className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""}`}
+                    id="step3">
+                    <span className={styles.stepIcon}>
+                      {currentStepIndex >= 2 && <FaCheck size={14} />}
                     </span>
-                    <span
-                      className={
-                        order.status === "delivered"
-                          ? styles.progressStepActive
-                          : styles.progressStepInactive
-                      }>
-                      Entregue
+                    Pronto
+                  </li>
+                  <li
+                    className={`${styles.step0} ${currentStepIndex >= 3 ? styles.active : ""}`}
+                    id="step4">
+                    <span className={styles.stepIcon}>
+                      {currentStepIndex >= 3 && <FaCheck size={14} />}
                     </span>
-                  </div>
-                </div>
+                    Entregue
+                  </li>
+                </ul>
               </div>
             )}
             <div className={styles.footer}>

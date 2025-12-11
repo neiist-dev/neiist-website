@@ -35,8 +35,17 @@ export default function MyOrdersList({ orders, products }: Props) {
     if (!order.items || order.items.length === 0) return undefined;
     const firstItem = order.items[0];
     const product = products.find((p) => p.id === firstItem.product_id);
-    if (!product || !Array.isArray(product.images) || product.images.length === 0) return undefined;
-    return product.images[0];
+    if (!product) return undefined;
+    const variantObj = firstItem.variant_id
+      ? product.variants?.find((v) => v.id === firstItem.variant_id)
+      : undefined;
+    if (variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0) {
+      return variantObj.images[0];
+    }
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      return product.images[0];
+    }
+    return undefined;
   };
 
   const getStatusLabel = (status?: string) => {

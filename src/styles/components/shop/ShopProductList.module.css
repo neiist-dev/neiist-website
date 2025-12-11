@@ -43,7 +43,6 @@
 
   .container {
     margin: 0 1.5rem;
-    padding: 0;
   }
 }
 
@@ -56,12 +55,11 @@
 
   .grid > * {
     width: 100%;
-    max-width: 360px;
+    max-width: 30px;
   }
 
   .container {
     margin: 0 1.25rem;
-    padding: 0;
   }
 }
 

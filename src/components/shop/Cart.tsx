@@ -21,6 +21,24 @@ export default function Cart() {
     return () => window.removeEventListener("cartUpdated", load);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const prev = document.body.style.overflow;
+    const prevTouch = document.body.style.touchAction;
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      // on some mobile browsers additionally block touch-action
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = prev || "";
+      document.body.style.touchAction = prevTouch || "";
+    }
+    return () => {
+      document.body.style.overflow = prev || "";
+      document.body.style.touchAction = prevTouch || "";
+    };
+  }, [isOpen]);
+
   const handleRemove = (idx: number) => {
     setCartItems((prev) => {
       const next = prev.filter((_, i) => i !== idx);
@@ -55,9 +73,9 @@ export default function Cart() {
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay} onClick={closeCart}>
+    <div className={styles.overlay} onClick={closeCart} role="dialog" aria-modal="true">
       <div className={styles.cart} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.close} onClick={closeCart}>
+        <button className={styles.close} onClick={closeCart} aria-label="Fechar carrinho">
           <Squash toggled={true} size={24} />
         </button>
 

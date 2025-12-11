@@ -11,6 +11,7 @@
     padding: 0;
   }
 }
+
 .title {
   margin-bottom: 1.2rem;
 }
@@ -35,86 +36,123 @@
 .searchContainer {
   position: relative;
   max-width: 560px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .searchInput {
   width: 100%;
   height: 44px;
-  padding: 0 3rem 0 1rem;
+  padding: 0 1rem;
   border-radius: 0.75rem;
   border: none;
   background: #fff;
   font-size: 14px;
   outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput::placeholder {
+  color: #999;
 }
 
 .ordersGrid {
   display: grid;
   gap: 4.5rem;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .orderCard {
-  display: block;
-  color: inherit;
+  width: 100%;
+  max-width: 350px;
   text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  justify-self: center;
+}
+
+.orderCard:hover {
+  transform: scale(1.01);
 }
 
 .orderImageWrapper {
   width: 100%;
-  aspect-ratio: 2 / 3;
-  border-radius: 0.75rem;
-  max-height: 540px;
+  aspect-ratio: 3 / 4;
+  border-radius: 1rem;
   overflow: hidden;
-  background: transparent;
-  display: flex;
+  background: var(--background-colour);
   position: relative;
 }
 
 .orderImage {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
-  object-position: center;
 }
 
 .orderInfo {
-  margin-top: 14px;
-  color: #333333;
+  margin-top: 1rem;
 }
 
 .orderStatus {
-  font-size: 18px;
-  color: #333333;
-  margin-bottom: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
 }
 
 .orderProduct {
-  font-size: 15px;
-  color: #6b6b6b;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: #999;
 }
 
 @media (max-width: 1440px) {
   .ordersGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 3rem;
   }
 }
+
 @media (max-width: 1024px) {
-  .content {
-    padding: 36px 32px;
-  }
   .ordersGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 2rem;
   }
 }
-@media (max-width: 640px) {
-  .content {
-    padding: 24px;
+
+@media (max-width: 768px) {
+  .ordersGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
   }
+
+  .searchInput {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 640px) {
   .ordersGrid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 1.25rem;
+  }
+
+  .orderCard {
+    max-width: 100%;
+  }
+
+  .searchInput {
+    height: 40px;
+    font-size: 14px;
   }
 }
