@@ -98,7 +98,7 @@ export default async function AboutPage({
 
   const userMap = new Map(users.map((u) => [u.istid, u]));
 
-  const allAcademicYears = getAllAcademicYears(memberships).filter((year) => year !== "2025/2026");
+  const allAcademicYears = getAllAcademicYears(memberships);
   const selectedYear =
     params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
 
