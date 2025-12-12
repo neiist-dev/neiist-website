@@ -6,11 +6,10 @@ This guide will help you get a local copy up and running follow these simple ste
 
 - **nvm** (Node Version Manager) - (optional — you can install Node another way):
   Install from [nvm-sh/nvm](https://github.com/nvm-sh/nvm).
-- **Node.js v22.14.0**:
+- **Node.js v24.11.1**:
   After installing nvm, run:
   ```sh
-  nvm install 22.14.0
-  nvm use 22.14.0
+  nvm use
   ```
 - **Yarn**:
   Install globally:
@@ -19,15 +18,15 @@ This guide will help you get a local copy up and running follow these simple ste
   ```
 - **Python 3**:
   Required for Google Drive authentication.
-   - **Python requirements**:
-      Install required modules:
-      ```sh
-      pip install PyQt5 google-auth-oauthlib
-      ```
+  - **Python requirements**:
+    Install required modules:
+    ```sh
+    pip install PyQt5 google-auth-oauthlib
+    ```
 - **Docker**:
   Download and install from [docker.com](https://docs.docker.com/get-docker/).
-- **DataGrip** (optional):  
-  A GUI tool for managing your PostgreSQL database.  
+- **DataGrip** (optional):
+  A GUI tool for managing your PostgreSQL database.
   [Download here](https://www.jetbrains.com/datagrip/).
 
 ## Steps
@@ -44,15 +43,13 @@ This guide will help you get a local copy up and running follow these simple ste
    ```sh
    npm install yarn
    ```
-5. **SMTP Setup (Optional — for email sending features):**  
-   To enable email functionality (e.g., for notifications or verification), you need SMTP credentials.  
+5. **SMTP Setup (Optional — for email sending features):**To enable email functionality (e.g., for notifications or verification), you need SMTP credentials.
    - For testing, you can use [Ethereal Email](https://ethereal.email/), a free fake SMTP service:
      1. Go to [ethereal.email](https://ethereal.email/) and create a test account.
      2. Copy the SMTP details (host, port, user, password).
      3. When running the setup script, enter these details when prompted.
    - You can also use credentials from your own email provider if preferred.
-6. **Google Calendar Integration (Optional):**  
-   To enable Google Calendar integration, you need a service account:
+6. **Google Calendar Integration (Optional):**To enable Google Calendar integration, you need a service account:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
    2. Enable the **Google Calendar API** for your project.
    3. Create a **Service Account**:
@@ -71,8 +68,7 @@ This guide will help you get a local copy up and running follow these simple ste
       GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project-id.iam.gserviceaccount.com
       GOOGLE_SERVICE_ACCOUNT_KEY=file_name.json
       ```
-7. **Notion Integration (Optional — for event sync):**  
-   To sync events from Notion to Google Calendar and Activities Page:
+7. **Notion Integration (Optional — for event sync):**To sync events from Notion to Google Calendar and Activities Page:
    1. Go to [Notion Integrations](https://www.notion.so/my-integrations).
    2. Click "New integration".
    3. Give it a name (e.g., "NEIIST Calendar Sync").
@@ -98,8 +94,7 @@ This guide will help you get a local copy up and running follow these simple ste
    ```sh
    yarn setup
    ```
-9. **Google Drive Integration (Optional — for file uploads):**  
-   To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need to set up a Google Cloud project:
+9. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need to set up a Google Cloud project:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
    2. Enable the **Google Drive API** for your project.
    3. Create OAuth 2.0 credentials (Desktop App) and download the `client_secret.json` file.
@@ -112,6 +107,7 @@ This guide will help you get a local copy up and running follow these simple ste
       ```sh
       python scripts/gdrive-auth.py
       ```
+
       - Select your `client_secret.json` file.
       - Choose a location to save the token (e.g., `token.json`).
       - Complete the authentication flow in your browser.
@@ -121,6 +117,8 @@ This guide will help you get a local copy up and running follow these simple ste
       GDRIVE_TOKEN_PATH=token.json
       GDRIVE_CV_FOLDER_ID=your_drive_folder_id
       GDRIVE_SWEATS_FOLDER_ID=your_sweats_folder_id
+
+      ```
 
 ## Database Management
 
@@ -134,14 +132,16 @@ This guide will help you get a local copy up and running follow these simple ste
 ## Additional Tips
 
 - Husky is set up for pre-commit hooks to help maintain code quality.
-- **DEV_ISTID**  
-  This variable sets the your ISTID as admin or other permissions.  
-  You can change its value in `.env` to instantly switch the permission level for your local session.  
+- **DEV_ISTID**
+  This variable sets the your ISTID as admin or other permissions.
+  You can change its value in `.env` to instantly switch the permission level for your local session.
   Example:
   ```
   DEV_ISTID=ist1999999[ADMIN]
   ```
+
   Change `[ADMIN]` to another role if needed, [ADMIN], [MEMBER], [GUEST].
 
 ## Next Steps
-   - Now check out the [contributing docs](/docs/contributing.md) for guidelines on how to submit your changes and collaborate with the team.
+
+- Now check out the [contributing docs](/docs/contributing.md) for guidelines on how to submit your changes and collaborate with the team.
