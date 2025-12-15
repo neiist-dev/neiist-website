@@ -11,6 +11,7 @@ export interface User {
   photo: string;
   courses: string[];
   roles: UserRole[];
+  positionName?: string;
   teams?: string[];
   github?: string;
   linkedin?: string;

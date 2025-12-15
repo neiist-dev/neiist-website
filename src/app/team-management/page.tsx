@@ -30,7 +30,8 @@ export default async function TeamManagementPage() {
         (role) =>
           role.department_name === membership.departmentName &&
           role.role_name === membership.roleName &&
-          role.access === UserRole._COORDINATOR &&
+          // Accept both possible values for coordinator
+          (role.access === UserRole._COORDINATOR || role.role_name === "Coordenador") &&
           role.active
       );
       return !!validRole;

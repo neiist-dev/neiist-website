@@ -101,7 +101,46 @@ export const getUser = async (istid: string): Promise<User | null> => {
     const {
       rows: [user],
     } = await db_query<User>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
-    return user ? mapdbUserToUser(user) : null;
+    if (!user) return null;
+    const dbMemberships = (
+      await db_query<dbMembership>(
+        "SELECT * FROM neiist.get_all_memberships() WHERE user_istid = $1 AND active = TRUE",
+        [istid]
+      )
+    ).rows;
+
+    const memberships: Membership[] = dbMemberships.map((raw, idx) =>
+      mapdbMembershipToMembership(raw, user.email, user.photo, idx)
+    );
+    let highest: { roleName: string; position: number } | null = null;
+    const normalize = (s: string) =>
+      s
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+    for (const membership of memberships) {
+      const { rows: roleOrder } = await db_query<{ role_name: string; position: number }>(
+        "SELECT role_name, position FROM neiist.get_department_role_order($1)",
+        [membership.departmentName]
+      );
+      const found = roleOrder.find(
+        (r) => normalize(r.role_name) === normalize(membership.roleName)
+      );
+      if (found) {
+        if (!highest || found.position < highest.position) {
+          highest = { roleName: membership.roleName, position: found.position };
+        }
+      }
+    }
+
+    const positionName = highest?.roleName ?? memberships[0]?.roleName ?? null;
+
+    return {
+      ...mapdbUserToUser(user),
+      positionName,
+    };
   } catch (error) {
     console.error("Error fetching user:", error);
     return null;

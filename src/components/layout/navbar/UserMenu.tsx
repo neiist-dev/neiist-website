@@ -8,6 +8,7 @@ import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
 import { User, UserRole } from "@/types/user";
 import { checkRoles } from "@/types/user";
+import { getFirstAndLastName } from "@/utils/userUtils";
 
 interface UserMenuProps {
   userData: User;
@@ -145,7 +146,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
 
   const availablePages = getAvailablePages();
   const isMenuVisible = menuState === "open" || menuState === "closing";
-
   return (
     <div className={styles.userMenuContainer} ref={menuRef} onClick={toggleMenu}>
       <Image
@@ -156,8 +156,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
         className={styles.userPhoto}
       />
       <div className={styles.userDetails}>
-        <span className={styles.userName}>{userData.name}</span>
-        <span className={styles.userStatus}>{userData.roles.join(", ")}</span>
+        <span className={styles.userName}>{getFirstAndLastName(userData.name)}</span>
+        <span className={styles.userStatus}>{userData.positionName}</span>
       </div>
 
       {isMenuVisible && (
