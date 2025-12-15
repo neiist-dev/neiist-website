@@ -706,7 +706,8 @@ export const updateProductVariant = async (
       sku: updates.sku,
       images: updates.images,
       price_modifier: updates.price_modifier,
-      stock_quantity: updates.stock_quantity,
+      stock_quantity:
+        updates.stock_quantity == null ? null : Math.round(Number(updates.stock_quantity)),
       active: updates.active,
       options: updates.options,
     }),

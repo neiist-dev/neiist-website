@@ -23,6 +23,16 @@ interface ProductFormProps {
   categories: Category[];
 }
 
+type VariantForm = {
+  id?: number;
+  options: { [k: string]: string };
+  price_modifier: number;
+  stock_quantity: number;
+  active: boolean;
+  images: string[];
+  newImages: Array<{ file: File; preview: string }>;
+};
+
 export default function ProductForm({
   product,
   isEdit = false,
@@ -55,9 +65,9 @@ export default function ProductForm({
       : ["Cor", "Tamanho"]
   );
 
-  const [variants, setVariants] = useState(
+  const [variants, setVariants] = useState<VariantForm[]>(
     product?.variants?.map((v) => ({
-      id: v.id || Math.random().toString(),
+      id: v.id,
       options: Object.fromEntries(
         Object.entries(v.options || {}).map(([key, value]) => [
           key,
@@ -68,7 +78,7 @@ export default function ProductForm({
       stock_quantity: v.stock_quantity || 0,
       active: v.active !== false,
       images: v.images || [],
-      newImages: [] as Array<{ file: File; preview: string }>,
+      newImages: [],
     })) || []
   );
 
@@ -165,7 +175,6 @@ export default function ProductForm({
 
   const addVariant = () => {
     const newVariant = {
-      id: Math.random().toString(),
       options: Object.fromEntries(optionTypes.map((type) => [type, ""])),
       price_modifier: 0,
       stock_quantity: 0,
@@ -526,7 +535,7 @@ export default function ProductForm({
 
           {variants.map((variant, i) => (
             <div
-              key={variant.id}
+              key={variant.id ?? `new-${i}`}
               className={styles.row}
               style={{ alignItems: "flex-start", gap: "0.5rem" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>

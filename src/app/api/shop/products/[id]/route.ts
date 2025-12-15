@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { updateProduct, updateProductVariant, getProduct } from "@/utils/dbUtils";
+import {
+  updateProduct,
+  updateProductVariant,
+  getProduct,
+  addProductVariant,
+} from "@/utils/dbUtils";
 import path from "path";
 import fs from "fs/promises";
 import { serverCheckRoles } from "@/utils/permissionUtils";
@@ -64,14 +69,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (Array.isArray(body.variants) && body.variants.length > 0) {
       for (const variant of body.variants) {
+        let variantImages: string[] = variant.images || [];
+        if (Array.isArray(variant.imageUploads) && variant.imageUploads.length > 0) {
+          const uploadedVariantImages = await uploadImages(variant.imageUploads);
+          variantImages = [...variantImages, ...uploadedVariantImages];
+        }
         if (variant.id) {
-          let variantImages: string[] = variant.images || [];
-          if (Array.isArray(variant.imageUploads) && variant.imageUploads.length > 0) {
-            const uploadedVariantImages = await uploadImages(variant.imageUploads);
-            variantImages = [...variantImages, ...uploadedVariantImages];
-          }
-
           await updateProductVariant(variant.id, {
+            sku: variant.sku,
+            images: variantImages,
+            price_modifier: variant.price_modifier ?? 0,
+            stock_quantity: variant.stock_quantity,
+            active: variant.active ?? true,
+            options: variant.options ?? {},
+          });
+        } else {
+          await addProductVariant(productId, {
             sku: variant.sku,
             images: variantImages,
             price_modifier: variant.price_modifier ?? 0,
