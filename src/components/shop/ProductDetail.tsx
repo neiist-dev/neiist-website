@@ -252,10 +252,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </details>
             <details className={styles.detailsBlock}>
               <summary>
-                <span>Quality Guarantee & Returns</span>
+                <span>Prazos de Entrega</span>
                 <FiChevronDown className={styles.detailIcon} aria-hidden />
               </summary>
-              <p>All products come with our quality guarantee. Returns accepted within 30 days.</p>
+              <p>
+                Encomenda até 25 de Dezembro para receberes entre 20 e 25 de Janeiro. Pedidos após
+                esta data terão um tempo de espera superior.
+              </p>
             </details>
           </div>
         </div>
