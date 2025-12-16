@@ -13,6 +13,7 @@ import { MdClose } from "react-icons/md";
 import { FaCheck } from "react-icons/fa";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import { FaArrowRightLong } from "react-icons/fa6";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
   if (label) return label;
@@ -112,7 +113,13 @@ export default function OrderDetailOverlay({
           </span>
         </div>
 
-        <div className={styles.orderNumber}>#{order.order_number}</div>
+        <div className={styles.orderNumber}>
+          #{order.order_number}
+          <FaArrowRightLong />
+          {order.payment_method
+            ? order.payment_method.charAt(0).toUpperCase() + order.payment_method.slice(1)
+            : ""}
+        </div>
 
         <div className={styles.infoGrid}>
           <div className={styles.infoColumn}>

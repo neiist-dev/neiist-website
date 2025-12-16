@@ -86,6 +86,9 @@
   font-size: clamp(0.875rem, 3vw, 1rem);
   color: var(--foreground-colour);
   margin-bottom: clamp(1rem, 4vw, 1.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .section {

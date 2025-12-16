@@ -92,7 +92,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       href: "/orders",
       label: "Gerir Encomendas",
       icon: LuFileText,
-      roles: [UserRole._MEMBER, UserRole._SHOP_MANAGER, UserRole._COORDINATOR, UserRole._ADMIN],
+      roles: [UserRole._SHOP_MANAGER, UserRole._COORDINATOR, UserRole._ADMIN],
     },
     {
       href: "/team-management",
