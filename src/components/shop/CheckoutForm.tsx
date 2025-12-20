@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import CheckoutDoneOverlay from "@/components/shop/CheckoutDoneOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
-import type { CartItem, PaymentMethod } from "@/types/shop";
+import { Campus, type CartItem, type PaymentMethod } from "@/types/shop";
 import Image from "next/image";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaChevronDown } from "react-icons/fa";
@@ -18,7 +18,7 @@ interface CheckoutFormProps {
 
 export default function CheckoutForm({ user }: CheckoutFormProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [campus, setCampus] = useState<"alameda" | "taguspark">("taguspark");
+  const [campus, setCampus] = useState<Campus>(Campus._Alameda);
   const [payment, setPayment] = useState<PaymentMethod>("in-person");
   const [showTaxInfo, setShowTaxInfo] = useState(false);
   const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
@@ -63,6 +63,10 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   }));
 
   const handleSubmit = async () => {
+    if (!campus) {
+      setError("Por favor, seleciona o campus.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -109,8 +113,8 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   }
 
   const pickupOptions = [
-    { id: "alameda", label: "Alameda" },
-    { id: "taguspark", label: "Taguspark" },
+    { id: Campus._Alameda, label: "Alameda" },
+    { id: Campus._Taguspark, label: "Taguspark" },
   ] as const;
 
   const paymentOptions = [
@@ -163,8 +167,9 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                   type="radio"
                   name="campus"
                   checked={campus === opt.id}
-                  onChange={() => setCampus(opt.id as "alameda" | "taguspark")}
+                  onChange={() => setCampus(opt.id)}
                   className={styles.radioInput}
+                  required
                 />
                 <span className={styles.radioLabel}>{opt.label}</span>
               </label>

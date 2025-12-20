@@ -3,13 +3,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "@/styles/components/shop/OrdersFilters.module.css";
 import { FiChevronDown } from "react-icons/fi";
+import { Campus } from "@/types/shop";
 
 interface FilterDropdownProps {
   onClose: () => void;
   onApplyFilters: (_filters: FilterState) => void;
   buttonRef: React.RefObject<HTMLButtonElement | null>;
   availableProducts: string[];
-  availableCampuses: string[];
   availableStatuses: { value: string; label: string }[];
 }
 
@@ -17,18 +17,22 @@ export interface FilterState {
   dateStart: string;
   dateEnd: string;
   products: string[];
-  campus: string;
+  campus: Campus | "";
   status: string;
 }
 
-const FilterDropdown: React.FC<FilterDropdownProps> = ({
+const campusOptions = [
+  { id: Campus._Alameda, label: "Alameda" },
+  { id: Campus._Taguspark, label: "Taguspark" },
+];
+
+export default function FilterDropdown({
   onClose,
   onApplyFilters,
   buttonRef,
   availableProducts,
-  availableCampuses,
   availableStatuses,
-}) => {
+}: FilterDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
@@ -38,7 +42,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showProductsDropdown, setShowProductsDropdown] = useState(false);
 
-  const [selectedCampus, setSelectedCampus] = useState("");
+  const [selectedCampus, setSelectedCampus] = useState<Campus | "">("");
   const [showCampusDropdown, setShowCampusDropdown] = useState(false);
 
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -69,7 +73,6 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
         onClose();
       }
 
-      // Close individual dropdowns when clicking outside
       if (productsDropdownRef.current && !productsDropdownRef.current.contains(e.target as Node)) {
         setShowProductsDropdown(false);
       }
@@ -206,20 +209,22 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
           <button
             className={styles.selectButton}
             onClick={() => setShowCampusDropdown(!showCampusDropdown)}>
-            {selectedCampus || "Select campus"}
+            {selectedCampus
+              ? campusOptions.find((c) => c.id === selectedCampus)?.label || selectedCampus
+              : "Select campus"}
             <FiChevronDown size={16} />
           </button>
           {showCampusDropdown && (
             <div className={styles.selectDropdown}>
-              {availableCampuses.map((campus) => (
+              {campusOptions.map((campus) => (
                 <div
-                  key={campus}
+                  key={campus.id}
                   className={styles.dropdownOption}
                   onClick={() => {
-                    setSelectedCampus(campus);
+                    setSelectedCampus(campus.id);
                     setShowCampusDropdown(false);
                   }}>
-                  <span>{campus}</span>
+                  <span>{campus.label}</span>
                 </div>
               ))}
             </div>
@@ -255,6 +260,4 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
       </div>
     </div>
   );
-};
-
-export default FilterDropdown;
+}

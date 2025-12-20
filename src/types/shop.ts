@@ -49,6 +49,11 @@ export interface dbProductVariant {
 
 export type PaymentMethod = "in-person" | "eupago" | "sumup";
 
+export enum Campus {
+  _Alameda = "alameda",
+  _Taguspark = "taguspark",
+}
+
 export interface Order {
   id: number;
   order_number: string;

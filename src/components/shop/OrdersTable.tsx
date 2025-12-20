@@ -67,12 +67,6 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     return [...s].sort();
   }, [orders]);
 
-  const uniqueCampuses = useMemo(() => {
-    const s = new Set<string>();
-    orders.forEach((o) => o.campus && s.add(o.campus));
-    return [...s].sort();
-  }, [orders]);
-
   const availableStatuses = useMemo(() => {
     const statusSet = new Set<string>();
     orders.forEach((o) => statusSet.add(o.status));
@@ -274,7 +268,6 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             onApplyFilters={handleApplyFilters}
             buttonRef={filterButtonRef}
             availableProducts={uniqueProducts}
-            availableCampuses={uniqueCampuses}
             availableStatuses={availableStatuses}
           />
         )}

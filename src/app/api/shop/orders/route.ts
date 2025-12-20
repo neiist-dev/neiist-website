@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       try {
         await sendEmail({
           to: order.customer_email,
-          subject: `Encomenda #${order.order_number} Confirmada`,
+          subject: `Encomenda #${order.order_number} Pendente`,
           html: getOrderConfirmationTemplate(
             order.order_number,
             order.customer_name,

@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getColorFromOptions } from "./shopUtils";
 
 interface EmailOptions {
   to: string;
@@ -8,6 +9,23 @@ interface EmailOptions {
 
 function isSMTPConfigured(): boolean {
   return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+export function formatVariantLabel(
+  variantLabel?: string,
+  variantOptions?: Record<string, string>
+): string {
+  const colorInfo = getColorFromOptions(variantOptions, variantLabel);
+  const colorName = colorInfo.name ?? "";
+  let size = "";
+  if (variantOptions) {
+    size = variantOptions.Tamanho || variantOptions.Size || "";
+  }
+  if (!size && variantLabel) {
+    const m = variantLabel.match(/(XS|S|M|L|XL|XXL)/);
+    if (m) size = m[1];
+  }
+  return [colorName, size].filter(Boolean).join(" - ");
 }
 
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
@@ -37,7 +55,7 @@ export async function sendEmail({ to, subject, html }: EmailOptions): Promise<vo
 }
 
 export function getEmailVerificationTemplate(verifyUrl: string): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.png`;
+  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
 
   return `
     <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
@@ -63,6 +81,7 @@ export function getOrderConfirmationTemplate(
   items: Array<{
     product_name: string;
     variant_label?: string;
+    variant_options?: Record<string, string>;
     quantity: number;
     unit_price: number;
   }>,
@@ -70,13 +89,20 @@ export function getOrderConfirmationTemplate(
   campus?: string,
   paymentMethod?: string
 ): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.png`;
+  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
 
   const itemsHtml = items
     .map(
       (item) => `
         <tr>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef;">${item.product_name} ${item.variant_label ? `- ${item.variant_label}` : ""}</td>
+          <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef;">
+            ${item.product_name}
+            ${
+              formatVariantLabel(item.variant_label, item.variant_options)
+                ? ` - ${formatVariantLabel(item.variant_label, item.variant_options)}`
+                : ""
+            }
+          </td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: center;">${item.quantity}</td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: right;">€${item.unit_price.toFixed(2)}</td>
         </tr>
@@ -87,10 +113,10 @@ export function getOrderConfirmationTemplate(
   return `
     <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
       <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Encomenda Confirmada</h2>
+      <h2 style="color: #2863FD; margin-bottom: 1rem;">Encomenda Pendente</h2>
       <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>A tua encomenda <strong>#${orderNumber}</strong> foi confirmada com sucesso.</p>
-      
+      <p>A tua encomenda <strong>#${orderNumber}</strong> foi registada com sucesso.</p>
+
       <h3 style="color: #2863FD; margin-top: 2rem;">Detalhes da Encomenda</h3>
       <table style="width: 100%; margin: 1rem 0; border-collapse: collapse;">
         <thead>
@@ -112,10 +138,13 @@ export function getOrderConfirmationTemplate(
       </table>
 
       ${campus ? `<p><strong>Local de Levantamento:</strong> ${campus.charAt(0).toUpperCase() + campus.slice(1)}</p>` : ""}
-      ${paymentMethod === "in-person" ? "<p><strong>Pagamento:</strong> Presencial (no levantamento)</p>" : "<p><strong>Pagamento:</strong> Cartão</p>"}
-      
+      ${
+        paymentMethod === "in-person"
+          ? `<p><strong>Pagamento:</strong> Presencial (numa das nossas bancas) - deve ser efetuado até ao final do período de funcionamento das bancas. Só após o pagamento a encomenda será confirmada.</p>`
+          : "<p><strong>Pagamento:</strong> Cartão</p>"
+      }
+
       <p style="margin-top: 2rem;">Receberás atualizações sobre o estado da tua encomenda por email.</p>
-      
       <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
       <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
     </div>
@@ -128,7 +157,7 @@ export function getOrderStatusUpdateTemplate(
   status: string,
   statusLabel: string
 ): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.png`;
+  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
 
   const statusMessages: Record<string, string> = {
     paid: "O pagamento da tua encomenda foi confirmado!",
@@ -148,9 +177,9 @@ export function getOrderStatusUpdateTemplate(
       <p>${message}</p>
       <p><strong>Encomenda:</strong> #${orderNumber}</p>
       <p><strong>Estado:</strong> ${statusLabel}</p>
-      
-      ${status === "ready" ? '<p style="margin-top: 1.5rem; padding: 1rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 0.25rem;">Por favor, levanta a tua encomenda no campus indicado durante o horário de funcionamento.</p>' : ""}
-      
+
+      ${status === "ready" ? "<p>Por favor, levanta a tua encomenda no campus indicado durante o horário de funcionamento.</p>" : ""}
+
       <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
       <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
     </div>

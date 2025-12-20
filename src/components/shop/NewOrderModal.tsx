@@ -6,7 +6,7 @@ import Fuse from "fuse.js";
 import CreateNewUserModal from "./CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
 import type { User } from "@/types/user";
-import type { Product, ProductVariant } from "@/types/shop";
+import { Campus, type Product, type ProductVariant } from "@/types/shop";
 
 interface Props {
   onClose: () => void;
@@ -32,7 +32,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   const [productSearch, setProductSearch] = useState("");
   const [nif, setNif] = useState("");
   const [phone, setPhone] = useState("");
-  const [campus, setCampus] = useState("");
+  const [campus, setCampus] = useState<Campus | "">("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -54,6 +54,11 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
     const values = Object.values(options);
     return values.length > 0 ? `${productName} - ${values.join(" | ")}` : productName;
   };
+
+  const campusOptions = [
+    { id: Campus._Alameda, label: "Alameda" },
+    { id: Campus._Taguspark, label: "Taguspark" },
+  ];
 
   const productVariants = useMemo(() => {
     const variants: ProductWithVariant[] = [];
@@ -245,7 +250,10 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
       setError("Por favor, selecione um utilizador e pelo menos um produto.");
       return;
     }
-
+    if (!campus) {
+      setError("Por favor, selecione o campus.");
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
 
@@ -457,12 +465,16 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
             <label>Campus</label>
             <select
               value={campus}
-              onChange={(e) => setCampus(e.target.value)}
+              onChange={(e) => setCampus(e.target.value as Campus)}
               className={styles.input}
-              disabled={isSubmitting}>
+              disabled={isSubmitting}
+              required>
               <option value="">Selecionar campus</option>
-              <option value="Alameda">Alameda</option>
-              <option value="Taguspark">Taguspark</option>
+              {campusOptions.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
 
