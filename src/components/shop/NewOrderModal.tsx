@@ -7,6 +7,7 @@ import CreateNewUserModal from "./CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
 import type { User } from "@/types/user";
 import { Campus, type Product, type ProductVariant } from "@/types/shop";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 interface Props {
   onClose: () => void;
@@ -44,6 +45,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   const [usersLoaded, setUsersLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const userInputRef = useRef<HTMLInputElement>(null);
   const productInputRef = useRef<HTMLInputElement>(null);
@@ -291,6 +293,11 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
     }
   };
 
+  const handleConfirm = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirm(true);
+  };
+
   const handleUserCreated = (newUser: User) => {
     setAllUsers([...allUsers, newUser]);
     setSelectedUser(newUser);
@@ -319,206 +326,215 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <div className={styles.formGroup}>
-          <label>User</label>
-          <div className={styles.searchWrapper}>
-            <MdSearch className={styles.searchIcon} />
-            <input
-              ref={userInputRef}
-              type="text"
-              placeholder="Search by istid...."
-              value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
-              onChange={(e) => {
-                if (selectedUser) {
-                  setSelectedUser(null);
-                  setUserSearch("");
-                } else {
-                  setUserSearch(e.target.value);
-                  setShowUserDropdown(e.target.value.length > 0);
-                  setUserHighlightIndex(0);
-                }
-              }}
-              onKeyDown={(e) =>
-                handleKeyNav(
-                  e,
-                  [...filteredUsers, ...(shouldShowCreateUser ? [null] : [])],
-                  userHighlightIndex,
-                  setUserHighlightIndex,
-                  (item) => {
-                    if (item) selectUser(item);
-                    else setShowCreateUser(true);
+        <form onSubmit={handleConfirm}>
+          <div className={styles.formGroup}>
+            <label>User</label>
+            <div className={styles.searchWrapper}>
+              <MdSearch className={styles.searchIcon} />
+              <input
+                ref={userInputRef}
+                type="text"
+                placeholder="Search by istid...."
+                value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
+                onChange={(e) => {
+                  if (selectedUser) {
+                    setSelectedUser(null);
+                    setUserSearch("");
+                  } else {
+                    setUserSearch(e.target.value);
+                    setShowUserDropdown(e.target.value.length > 0);
+                    setUserHighlightIndex(0);
                   }
-                )
-              }
-              className={styles.input}
-              disabled={isSubmitting}
-            />
-            {selectedUser && (
-              <button
-                className={styles.clearButton}
-                onClick={() => {
-                  setSelectedUser(null);
-                  setUserSearch("");
-                  userInputRef.current?.focus();
                 }}
-                type="button">
-                <MdClose size={18} />
-              </button>
-            )}
+                onKeyDown={(e) =>
+                  handleKeyNav(
+                    e,
+                    [...filteredUsers, ...(shouldShowCreateUser ? [null] : [])],
+                    userHighlightIndex,
+                    setUserHighlightIndex,
+                    (item) => {
+                      if (item) selectUser(item);
+                      else setShowCreateUser(true);
+                    }
+                  )
+                }
+                className={styles.input}
+                disabled={isSubmitting}
+              />
+              {selectedUser && (
+                <button
+                  className={styles.clearButton}
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setUserSearch("");
+                    userInputRef.current?.focus();
+                  }}
+                  type="button">
+                  <MdClose size={18} />
+                </button>
+              )}
 
-            {showUserDropdown && !selectedUser && userSearch && (
-              <div className={styles.dropdown} ref={userDropdownRef}>
-                {filteredUsers.map((user, idx) => (
-                  <div
-                    key={user.istid}
-                    className={`${styles.dropdownItem} ${idx === userHighlightIndex ? styles.highlighted : ""}`}
-                    onClick={() => selectUser(user)}
-                    onMouseEnter={() => setUserHighlightIndex(idx)}>
-                    <div className={styles.dropdownItemTitle}>
-                      {user.istid} - {user.name}
+              {showUserDropdown && !selectedUser && userSearch && (
+                <div className={styles.dropdown} ref={userDropdownRef}>
+                  {filteredUsers.map((user, idx) => (
+                    <div
+                      key={user.istid}
+                      className={`${styles.dropdownItem} ${idx === userHighlightIndex ? styles.highlighted : ""}`}
+                      onClick={() => selectUser(user)}
+                      onMouseEnter={() => setUserHighlightIndex(idx)}>
+                      <div className={styles.dropdownItemTitle}>
+                        {user.istid} - {user.name}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {shouldShowCreateUser && (
-                  <div
-                    className={`${styles.dropdownItem} ${filteredUsers.length === userHighlightIndex ? styles.highlighted : ""}`}
-                    onClick={() => setShowCreateUser(true)}
-                    onMouseEnter={() => setUserHighlightIndex(filteredUsers.length)}>
-                    <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
-                    <div className={styles.dropdownItemSubtitle}>
-                      Clique para criar novo utilizador
+                  ))}
+                  {shouldShowCreateUser && (
+                    <div
+                      className={`${styles.dropdownItem} ${filteredUsers.length === userHighlightIndex ? styles.highlighted : ""}`}
+                      onClick={() => setShowCreateUser(true)}
+                      onMouseEnter={() => setUserHighlightIndex(filteredUsers.length)}>
+                      <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
+                      <div className={styles.dropdownItemSubtitle}>
+                        Clique para criar novo utilizador
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label>Produtos</label>
-          <div className={styles.searchWrapper}>
-            <MdSearch className={styles.searchIcon} />
-            <input
-              ref={productInputRef}
-              type="text"
-              placeholder="Adicionar produtos..."
-              value={productSearch}
-              onChange={(e) => {
-                setProductSearch(e.target.value);
-                setShowProductDropdown(e.target.value.length > 0);
-                setProductHighlightIndex(0);
-              }}
-              onKeyDown={(e) =>
-                handleKeyNav(
-                  e,
-                  filteredProducts,
-                  productHighlightIndex,
-                  setProductHighlightIndex,
-                  selectProduct
-                )
-              }
-              className={styles.productInput}
-              disabled={isSubmitting}
-            />
-
-            {showProductDropdown && productSearch && filteredProducts.length > 0 && (
-              <div className={styles.dropdown} ref={productDropdownRef}>
-                {filteredProducts.map((option, idx) => (
-                  <div
-                    key={`${option.product.id}-${option.variant.id}`}
-                    className={`${styles.dropdownItem} ${idx === productHighlightIndex ? styles.highlighted : ""}`}
-                    onClick={() => selectProduct(option)}
-                    onMouseEnter={() => setProductHighlightIndex(idx)}>
-                    <div className={styles.dropdownItemTitle}>{option.displayName}</div>
-                    <div className={styles.dropdownItemSubtitle}>
-                      {option.product.price.toFixed(2)}€
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {selectedProducts.length > 0 && (
-            <div className={styles.productsList}>
-              {selectedProducts.map((item, idx) => (
-                <div key={`${item.product.id}-${item.variant.id}`} className={styles.productItem}>
-                  <span className={styles.productText}>
-                    {item.quantity}x {item.variant.label}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeProduct(idx)}
-                    className={styles.productRemoveBtn}
-                    disabled={isSubmitting}>
-                    <MdClose size={20} />
-                  </button>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
-
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label>Campus</label>
-            <select
-              value={campus}
-              onChange={(e) => setCampus(e.target.value as Campus)}
-              className={styles.input}
-              disabled={isSubmitting}
-              required>
-              <option value="">Selecionar campus</option>
-              {campusOptions.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label>NIF (opcional)</label>
+            <label>Produtos</label>
+            <div className={styles.searchWrapper}>
+              <MdSearch className={styles.searchIcon} />
+              <input
+                ref={productInputRef}
+                type="text"
+                placeholder="Adicionar produtos..."
+                value={productSearch}
+                onChange={(e) => {
+                  setProductSearch(e.target.value);
+                  setShowProductDropdown(e.target.value.length > 0);
+                  setProductHighlightIndex(0);
+                }}
+                onKeyDown={(e) =>
+                  handleKeyNav(
+                    e,
+                    filteredProducts,
+                    productHighlightIndex,
+                    setProductHighlightIndex,
+                    selectProduct
+                  )
+                }
+                className={styles.productInput}
+                disabled={isSubmitting}
+              />
+
+              {showProductDropdown && productSearch && filteredProducts.length > 0 && (
+                <div className={styles.dropdown} ref={productDropdownRef}>
+                  {filteredProducts.map((option, idx) => (
+                    <div
+                      key={`${option.product.id}-${option.variant.id}`}
+                      className={`${styles.dropdownItem} ${idx === productHighlightIndex ? styles.highlighted : ""}`}
+                      onClick={() => selectProduct(option)}
+                      onMouseEnter={() => setProductHighlightIndex(idx)}>
+                      <div className={styles.dropdownItemTitle}>{option.displayName}</div>
+                      <div className={styles.dropdownItemSubtitle}>
+                        {option.product.price.toFixed(2)}€
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {selectedProducts.length > 0 && (
+              <div className={styles.productsList}>
+                {selectedProducts.map((item, idx) => (
+                  <div key={`${item.product.id}-${item.variant.id}`} className={styles.productItem}>
+                    <span className={styles.productText}>
+                      {item.quantity}x {item.variant.label}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeProduct(idx)}
+                      className={styles.productRemoveBtn}
+                      disabled={isSubmitting}>
+                      <MdClose size={20} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Campus</label>
+              <select
+                value={campus}
+                onChange={(e) => setCampus(e.target.value as Campus)}
+                className={styles.input}
+                disabled={isSubmitting}
+                required>
+                <option value="">Selecionar campus</option>
+                {campusOptions.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>NIF (opcional)</label>
+              <input
+                type="text"
+                placeholder="123456789"
+                value={nif}
+                onChange={(e) => setNif(e.target.value)}
+                className={styles.input}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Telemóvel (opcional)</label>
             <input
               type="text"
-              placeholder="123456789"
-              value={nif}
-              onChange={(e) => setNif(e.target.value)}
+              placeholder="999333111"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               className={styles.input}
               disabled={isSubmitting}
             />
           </div>
-        </div>
 
-        <div className={styles.formGroup}>
-          <label>Telemóvel (opcional)</label>
-          <input
-            type="text"
-            placeholder="999333111"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className={styles.input}
-            disabled={isSubmitting}
+          <div className={styles.buttonRow}>
+            <button
+              type="button"
+              className={styles.buttonCancel}
+              onClick={onClose}
+              disabled={isSubmitting}>
+              Cancelar
+            </button>
+            <button type="submit" className={styles.buttonSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "A criar..." : "Criar Encomenda"}
+            </button>
+          </div>
+        </form>
+        {showConfirm && (
+          <ConfirmDialog
+            open={showConfirm}
+            message="Tem a certeza que deseja criar esta encomenda?"
+            onConfirm={async () => {
+              setShowConfirm(false);
+              await handleSubmit();
+            }}
+            onCancel={() => setShowConfirm(false)}
           />
-        </div>
-
-        <div className={styles.buttonRow}>
-          <button
-            type="button"
-            className={styles.buttonCancel}
-            onClick={onClose}
-            disabled={isSubmitting}>
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className={styles.buttonSubmit}
-            onClick={handleSubmit}
-            disabled={isSubmitting}>
-            {isSubmitting ? "A criar..." : "Criar Encomenda"}
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );

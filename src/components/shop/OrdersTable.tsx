@@ -20,6 +20,7 @@ import FilterDropdown, { FilterState } from "./OrdersFilters";
 import NewOrderModal from "./NewOrderModal";
 import { useRouter } from "next/navigation";
 import { IoIosAdd } from "react-icons/io";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -40,6 +41,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   });
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [pendingBulkStatus, setPendingBulkStatus] = useState<OrderStatus | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const fuse = useMemo(
@@ -132,11 +134,14 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     router.refresh();
   };
 
-  const handleBulkStatusChange = async (status: OrderStatus) => {
+  // Set pending status for confirmation dialog
+  const handleBulkStatusChange = (status: OrderStatus) => {
     if (selectedOrders.size === 0) return;
-    const confirmMessage = `Tem a certeza que deseja alterar o estado de ${selectedOrders.size} encomenda${selectedOrders.size !== 1 ? "s" : ""} para "${getStatusLabel(status)}"?`;
+    setPendingBulkStatus(status);
+  };
 
-    if (!confirm(confirmMessage)) return;
+  // Actual bulk update logic
+  const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
     const orderIds = Array.from(selectedOrders);
     let successCount = 0;
@@ -310,7 +315,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                 onClick={() => handleBulkStatusChange("cancelled")}
                 disabled={bulkLoading}
                 className={styles.bulkBtnDanger}>
-                {bulkLoading ? "A processar..." : "Cancelar"}
+                {bulkLoading ? "A processar..." : "Cancelar Encomendas"}
               </button>
             </div>
           </div>
@@ -399,6 +404,18 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           onClose={() => setShowNewOrderModal(false)}
           onSubmit={handleNewOrderSubmit}
           products={products}
+        />
+      )}
+
+      {pendingBulkStatus && (
+        <ConfirmDialog
+          open={!!pendingBulkStatus}
+          message={`Tem a certeza que deseja alterar o estado de ${selectedOrders.size} encomenda${selectedOrders.size !== 1 ? "s" : ""} para ${getStatusLabel(pendingBulkStatus)}?`}
+          onConfirm={async () => {
+            await doBulkStatusChange(pendingBulkStatus);
+            setPendingBulkStatus(null);
+          }}
+          onCancel={() => setPendingBulkStatus(null)}
         />
       )}
     </>

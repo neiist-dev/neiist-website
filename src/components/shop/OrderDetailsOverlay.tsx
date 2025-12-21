@@ -38,7 +38,7 @@ export default function OrderDetailOverlay({
 }: OrderDetailOverlayProps) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -238,25 +238,25 @@ export default function OrderDetailOverlay({
             <div className={styles.actionButtons}>
               <button
                 className={styles.buttonOutline}
-                onClick={() => handleStatusChange("paid")}
+                onClick={() => setPendingStatus("paid")}
                 disabled={!canSetPaid}>
                 Marcar como Pago
               </button>
               <button
                 className={styles.buttonPrimary}
-                onClick={() => handleStatusChange("ready")}
+                onClick={() => setPendingStatus("ready")}
                 disabled={!canSetReady}>
                 Marcar como Pronto
               </button>
               <button
                 className={styles.buttonPrimary}
-                onClick={() => handleStatusChange("delivered")}
+                onClick={() => setPendingStatus("delivered")}
                 disabled={!canSetDelivered}>
                 Marcar como Entregue
               </button>
               <button
                 className={styles.buttonOutline}
-                onClick={() => setShowCancelConfirm(true)}
+                onClick={() => setPendingStatus("cancelled")}
                 disabled={!canCancel}>
                 Cancelar Encomenda
               </button>
@@ -319,7 +319,9 @@ export default function OrderDetailOverlay({
             )}
             <div className={styles.footer}>
               {userCanCancel && (
-                <button className={styles.cancelButton} onClick={() => setShowCancelConfirm(true)}>
+                <button
+                  className={styles.cancelButton}
+                  onClick={() => setPendingStatus("cancelled")}>
                   Cancelar Encomenda
                 </button>
               )}
@@ -327,15 +329,19 @@ export default function OrderDetailOverlay({
           </>
         )}
       </div>
-      {showCancelConfirm && (
+      {pendingStatus && (
         <ConfirmDialog
-          open={showCancelConfirm}
-          message="Tem a certeza que quer cancelar esta encomenda?"
+          open={!!pendingStatus}
+          message={
+            pendingStatus === "cancelled"
+              ? "Tem a certeza que quer cancelar esta encomenda?"
+              : `Tem a certeza que quer marcar como ${getStatusLabel(pendingStatus)}?`
+          }
           onConfirm={async () => {
-            await handleStatusChange("cancelled");
-            setShowCancelConfirm(false);
+            await handleStatusChange(pendingStatus);
+            setPendingStatus(null);
           }}
-          onCancel={() => setShowCancelConfirm(false)}
+          onCancel={() => setPendingStatus(null)}
         />
       )}
 

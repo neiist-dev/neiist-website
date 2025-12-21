@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/styles/components/shop/CreateNewUserModal.module.css";
 import { MdClose } from "react-icons/md";
 import type { User } from "@/types/user";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 interface CreateNewUserModalProps {
   onClose: () => void;
@@ -21,6 +22,7 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -76,6 +78,11 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
     }
   };
 
+  const handleConfirm = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirm(true);
+  };
+
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
       <div className={styles.modal}>
@@ -87,51 +94,68 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <div className={styles.formGroup}>
-          <label>IST ID</label>
-          <input
-            type="text"
-            placeholder="ist1119999"
-            value={istId}
-            onChange={(e) => setIstId(e.target.value)}
-            className={styles.input}
-            autoFocus
-            disabled={isSubmitting}
-          />
-        </div>
+        <form onSubmit={handleConfirm}>
+          <div className={styles.formGroup}>
+            <label>IST ID</label>
+            <input
+              type="text"
+              placeholder="ist1119999"
+              value={istId}
+              onChange={(e) => setIstId(e.target.value)}
+              className={styles.input}
+              autoFocus
+              disabled={isSubmitting}
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label>Nome</label>
-          <input
-            type="text"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={styles.input}
-            disabled={isSubmitting}
-          />
-        </div>
+          <div className={styles.formGroup}>
+            <label>Nome</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={styles.input}
+              disabled={isSubmitting}
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="john.doe@tecnico.ulisboa.pt"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.input}
-            disabled={isSubmitting}
-          />
-        </div>
+          <div className={styles.formGroup}>
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="john.doe@tecnico.ulisboa.pt"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={styles.input}
+              disabled={isSubmitting}
+            />
+          </div>
 
-        <div className={styles.buttonRow}>
-          <button className={styles.buttonCancel} onClick={onClose} disabled={isSubmitting}>
-            Cancelar
-          </button>
-          <button className={styles.buttonSubmit} onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "A criar..." : "Guardar"}
-          </button>
-        </div>
+          <div className={styles.buttonRow}>
+            <button
+              className={styles.buttonCancel}
+              onClick={onClose}
+              disabled={isSubmitting}
+              type="button">
+              Cancelar
+            </button>
+            <button className={styles.buttonSubmit} disabled={isSubmitting} type="submit">
+              {isSubmitting ? "A criar..." : "Guardar"}
+            </button>
+          </div>
+        </form>
+        {showConfirm && (
+          <ConfirmDialog
+            open={showConfirm}
+            message={`Tem a certeza que deseja criar o utilizador ${name}?`}
+            onConfirm={async () => {
+              setShowConfirm(false);
+              await handleSubmit();
+            }}
+            onCancel={() => setShowConfirm(false)}
+          />
+        )}
       </div>
     </div>
   );
