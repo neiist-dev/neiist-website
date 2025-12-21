@@ -14,7 +14,7 @@ import { FiSearch, FiCheck } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
 import * as XLSX from "xlsx";
 import Fuse from "fuse.js";
-import { getCompactProductsSummary } from "@/utils/shopUtils";
+import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import FilterDropdown, { FilterState } from "./OrdersFilters";
 import NewOrderModal from "./NewOrderModal";
@@ -182,17 +182,6 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   };
 
   const handleExport = () => {
-    const stats: Record<string, number> = {};
-    filtered.forEach((o) =>
-      o.items.forEach((it) => {
-        const color = it.variant_options?.Cor || it.variant_options?.Color || "";
-        const labelNoSize = (it.variant_label || "").replace(/\b(XS|S|M|L|XL|XXL)\b/gi, "").trim();
-        const key =
-          `${it.product_name}${color ? ` ${color}` : labelNoSize ? ` ${labelNoSize}` : ""}`.trim();
-        stats[key] = (stats[key] || 0) + it.quantity;
-      })
-    );
-
     const ordersSheet = filtered.map((o) => ({
       Número: o.order_number,
       Data: new Date(o.created_at).toLocaleString("pt-PT"),
@@ -208,15 +197,35 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         .join("; "),
     }));
 
-    const statsRows = Object.entries(stats).map(([k, v]) => ({ Produto: k, "Vendas Totais": v }));
+    const statsMapDetalhes: Record<
+      string,
+      { modelo: string; cor: string; tamanho: string; quantidade: number }
+    > = {};
+
+    filtered.forEach((o) =>
+      o.items.forEach((it) => {
+        const modelo = it.product_name;
+        const colorInfo = getColorFromOptions(it.variant_options, it.variant_label);
+        const cor = colorInfo.name || "";
+        const tamanho =
+          it.variant_options?.Tamanho || it.variant_options?.Size || it.variant_label || "";
+        const key = `${modelo}|||${cor}|||${tamanho}`;
+        if (!statsMapDetalhes[key]) {
+          statsMapDetalhes[key] = { modelo, cor, tamanho, quantidade: 0 };
+        }
+        statsMapDetalhes[key].quantidade += it.quantity;
+      })
+    );
+
+    const statsSheet = Object.values(statsMapDetalhes).sort((a, b) => {
+      if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
+      if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
+      return a.tamanho.localeCompare(b.tamanho);
+    });
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ordersSheet), "Encomendas");
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet([{ "Total de Encomendas": filtered.length }, ...statsRows]),
-      "Estatísticas"
-    );
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(statsSheet), "Detalhes");
     XLSX.writeFile(wb, `encomendas_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
