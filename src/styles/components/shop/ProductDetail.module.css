@@ -319,6 +319,15 @@
   line-height: 1.5;
 }
 
+.sizeGuideLink {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.sizeGuideLink:hover {
+  filter: opacity(0.8);
+}
+
 @media (max-width: 768px) {
   .container {
     margin: 1rem 1.5rem;

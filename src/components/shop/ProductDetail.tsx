@@ -6,6 +6,7 @@ import { Product, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
 import { FiChevronDown } from "react-icons/fi";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
 
 interface ProductDetailProps {
   product: Product;
@@ -78,6 +79,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const price = useMemo(() => {
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
   }, [product.price, selectedVariant]);
+
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const addToCart = () => {
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -245,11 +248,24 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           <div className={styles.asideDetails}>
             <details className={styles.detailsBlock}>
               <summary>
-                <span>Size Guide</span>
+                <span>Guia de Tamanhos</span>
                 <FiChevronDown className={styles.detailIcon} aria-hidden />
               </summary>
-              <p>Check our size guide for detailed measurements.</p>
+              <p>
+                Vê o nosso{" "}
+                <a
+                  href="#"
+                  className={styles.sizeGuideLink}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowSizeGuide(true);
+                  }}>
+                  Guia de Tamanhos
+                </a>{" "}
+                para mais detalhes.
+              </p>
             </details>
+            <SizeGuideOverlay open={showSizeGuide} onClose={() => setShowSizeGuide(false)} />
             <details className={styles.detailsBlock}>
               <summary>
                 <span>Prazos de Entrega</span>
