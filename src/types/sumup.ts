@@ -18,6 +18,7 @@ export interface CheckoutPayload {
   checkout_reference: string;
   merchant_code: string;
   return_url?: string;
+  description?: string;
 }
 
 export interface CheckoutResponse {

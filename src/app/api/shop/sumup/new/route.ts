@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import SumUp from "@sumup/sdk";
 import { getAllOrders } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { formatVariantLabel } from "@/utils/emailUtils";
 import type { Order } from "@/types/shop";
 import { CheckoutPayload, CreateRequestBody, SumUpClient } from "@/types/sumup";
 
@@ -37,17 +38,6 @@ function extractStatus(err: unknown): number | null {
   return null;
 }
 
-function formatError(err: unknown): string {
-  if (!err) return "Unknown error";
-  if (typeof err === "string") return err;
-  if (err instanceof Error) return err.message;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return String(err);
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as CreateRequestBody;
@@ -59,18 +49,17 @@ export async function POST(req: NextRequest) {
     const auth = await serverCheckRoles([]);
     if (!auth.isAuthorized) return auth.error;
 
-    const orders = (await getAllOrders()) as Order[]; // typed assertion to Order[]
+    const orders = (await getAllOrders()) as Order[];
     const order = orders.find((o) => o.id === Number(orderId));
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
     if (order.user_istid && auth.user && order.user_istid !== auth.user.istid) {
       return NextResponse.json({ error: "Not order owner" }, { status: 403 });
     }
 
     const fallbackAmount = Number(order.total_amount ?? 0);
     const amountMajor = normalizeAmountToMajor(amount, fallbackAmount);
-    if (amountMajor === null || !Number.isFinite(amountMajor) || amountMajor <= 0) {
+    if (amountMajor === null || amountMajor <= 0) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
@@ -82,9 +71,8 @@ export async function POST(req: NextRequest) {
     }
 
     const client = createSumUpClient();
-    if (!client) {
+    if (!client)
       return NextResponse.json({ error: "Payment service unavailable" }, { status: 503 });
-    }
 
     const baseRef = checkout_reference ?? `order-${orderId}`;
     let lastError: unknown = null;
@@ -94,11 +82,33 @@ export async function POST(req: NextRequest) {
         attempt === 0 ? "" : `-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const uniqueRef = `${baseRef}${suffix}`;
 
-      const payload: CheckoutPayload = {
+      let description =
+        order.items
+          ?.map(
+            (item: {
+              product_name?: string;
+              name?: string;
+              quantity?: number;
+              variant_label?: string;
+              variant_options?: unknown;
+            }) => {
+              const name = item.product_name || item.name || "Produto";
+              const qty = item.quantity || 1;
+              const variant = formatVariantLabel(
+                item.variant_label,
+                item.variant_options as Record<string, string> | undefined
+              );
+              return `${qty}x ${name}${variant ? " - " + variant : ""}`;
+            }
+          )
+          .join("\n") || `Encomenda #${order.order_number || orderId}`;
+
+      const payload: CheckoutPayload & { customer_id?: string } = {
         amount: amountMajor,
         currency,
         checkout_reference: uniqueRef,
         merchant_code: SUMUP_MERCHANT_CODE,
+        description,
       };
       if (RETURN_BASE) {
         payload.return_url = `${RETURN_BASE.replace(/\/$/, "")}/my-orders?orderId=${orderId}`;
@@ -133,9 +143,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const details = formatError(lastError);
     return NextResponse.json(
-      { error: "Failed to create payment session", details },
+      { error: "Failed to create payment session", lastError },
       { status: 500 }
     );
   } catch {
