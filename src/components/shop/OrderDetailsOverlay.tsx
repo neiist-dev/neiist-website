@@ -40,6 +40,7 @@ export default function OrderDetailOverlay({
   const [order, setOrder] = useState<Order | null>(null);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
 
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
@@ -62,6 +63,19 @@ export default function OrderDetailOverlay({
       setOrder(updated);
       router.refresh();
     } else setError("Erro ao atualizar estado.");
+  };
+
+  const handleUserCancel = async () => {
+    if (!order) return;
+    setError(null);
+    const res = await fetch(`/api/shop/orders/${order.id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setOrder(updated);
+      router.refresh();
+    } else setError("Erro ao cancelar encomenda.");
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -321,7 +335,7 @@ export default function OrderDetailOverlay({
               {userCanCancel && (
                 <button
                   className={styles.cancelButton}
-                  onClick={() => setPendingStatus("cancelled")}>
+                  onClick={() => setShowUserCancelConfirm(true)}>
                   Cancelar Encomenda
                 </button>
               )}
@@ -344,7 +358,15 @@ export default function OrderDetailOverlay({
           onCancel={() => setPendingStatus(null)}
         />
       )}
-
+      <ConfirmDialog
+        open={showUserCancelConfirm}
+        message="Tem a certeza que quer cancelar esta encomenda?"
+        onConfirm={async () => {
+          setShowUserCancelConfirm(false);
+          await handleUserCancel();
+        }}
+        onCancel={() => setShowUserCancelConfirm(false)}
+      />
       {error && <div className={styles.error}>{error}</div>}
     </div>
   );

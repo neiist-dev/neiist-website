@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllOrders, newOrder } from "@/utils/dbUtils";
+import { getAllOrders, newOrder, getUser, updateUser } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import { sendEmail, getOrderConfirmationTemplate } from "@/utils/emailUtils";
@@ -44,6 +44,13 @@ export async function POST(request: NextRequest) {
     });
     if (!order) {
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    }
+
+    if (body.customer_phone && body.user_istid) {
+      const user = await getUser(body.user_istid);
+      if (user && user.phone !== body.customer_phone) {
+        await updateUser(body.user_istid, { phone: body.customer_phone });
+      }
     }
 
     if (order.customer_email) {
