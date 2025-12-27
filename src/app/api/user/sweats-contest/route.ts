@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { google } from "googleapis";
 import { Readable } from "stream";
 import fs from "fs/promises";
-import { getFirstAndLastName } from "@/utils/userUtils";
+import { getUserFromJWT } from "@/utils/authUtils";
 
 const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON!;
 const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH!;
@@ -76,14 +76,10 @@ async function uploadSubmission(fileBuffer: Buffer, filename: string) {
 
 async function getUsernameFromCookies(): Promise<string | null> {
   const reqCookies = await cookies();
-  const userData = reqCookies.get("user_data")?.value;
-  if (!userData) return null;
-  try {
-    const user = JSON.parse(userData);
-    return getFirstAndLastName(user.name).toLowerCase().replace(/ /g, "_");
-  } catch {
-    return null;
-  }
+  const sessionToken = reqCookies.get("session")?.value;
+  if (!sessionToken) return null;
+  const jwtUser = getUserFromJWT(sessionToken);
+  return jwtUser?.istid || null;
 }
 
 export async function POST(request: NextRequest) {

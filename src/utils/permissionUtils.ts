@@ -2,27 +2,20 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole, hasRequiredRole } from "@/types/user";
+import { getUserFromJWT } from "@/utils/authUtils";
 
 export async function serverCheckRoles(required: UserRole[]) {
   try {
-    const accessToken = (await cookies()).get("access_token")?.value;
-    if (!accessToken) {
+    const sessionToken = (await cookies()).get("session")?.value;
+    const jwtUser = getUserFromJWT(sessionToken);
+    if (!jwtUser) {
       return {
         isAuthorized: false,
         error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
       };
     }
 
-    const userDataRaw = (await cookies()).get("user_data")?.value || "null";
-    const userData = JSON.parse(userDataRaw);
-    if (!userData) {
-      return {
-        isAuthorized: false,
-        error: NextResponse.json({ error: "User data not found" }, { status: 404 }),
-      };
-    }
-
-    const currentUser = await getUser(userData.istid);
+    const currentUser = await getUser(jwtUser.istid);
     if (!currentUser) {
       return {
         isAuthorized: false,

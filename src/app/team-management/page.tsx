@@ -3,6 +3,7 @@ import CoordinatorTeamManagementSearch from "@/components/team-management/Coordi
 import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { cookies } from "next/headers";
+import { getUserFromJWT } from "@/utils/authUtils";
 
 interface Role {
   department_name: string;
@@ -13,9 +14,9 @@ interface Role {
 
 export default async function TeamManagementPage() {
   const cookieStore = await cookies();
-  const userDataCookie = cookieStore.get("user_data")?.value;
-  const userData = userDataCookie ? JSON.parse(userDataCookie) : null;
-  const istid = userData?.istid;
+  const sessionToken = cookieStore.get("session")?.value;
+  const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+  const istid = jwtUser?.istid;
 
   const users = await getAllUsers();
   const memberships: Membership[] = await getAllMemberships();

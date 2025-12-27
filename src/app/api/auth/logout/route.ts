@@ -21,7 +21,7 @@ export async function POST() {
   };
 
   del("access_token");
-  del("user_data");
+  del("session");
   del("refresh_token");
   del("fenix_oauth_state");
 

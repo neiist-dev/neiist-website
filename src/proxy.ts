@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import { hasRequiredRole } from "@/types/user";
+import { getUserFromJWT } from "./utils/authUtils";
 
 const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
@@ -53,14 +54,9 @@ export function proxy(req: NextRequest) {
   }
 
   if (isAuthenticated) {
-    const userDataCookie = req.cookies.get("user_data")?.value;
-    let userData;
-    try {
-      userData = userDataCookie ? JSON.parse(userDataCookie) : null;
-    } catch {
-      userData = null;
-    }
-    const roles = userData?.roles || [UserRole._GUEST];
+    const sessionToken = req.cookies.get("session")?.value;
+    const jwtUser = getUserFromJWT(sessionToken);
+    const roles = jwtUser?.roles || [UserRole._GUEST];
 
     if (!canAccess(path, roles)) {
       if (path !== "/unauthorized") {

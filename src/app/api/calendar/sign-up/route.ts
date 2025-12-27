@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { signUpToEvent, removeSignUpFromEvent } from "@/utils/dbUtils";
+import { getUserFromJWT } from "@/utils/authUtils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,12 +12,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const userDataCookie = cookieStore.get("user_data")?.value;
-    if (!userDataCookie) {
-      return NextResponse.json({ error: "User data not found" }, { status: 404 });
+    const sessionToken = cookieStore.get("session")?.value;
+    const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+    if (!jwtUser) {
+      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
     }
 
-    const userData = JSON.parse(userDataCookie);
     const { eventId, signUp } = await req.json();
 
     if (!eventId) {
@@ -24,8 +25,8 @@ export async function POST(req: NextRequest) {
     }
 
     const success = signUp
-      ? await signUpToEvent(eventId, userData.istid)
-      : await removeSignUpFromEvent(eventId, userData.istid);
+      ? await signUpToEvent(eventId, jwtUser.istid)
+      : await removeSignUpFromEvent(eventId, jwtUser.istid);
 
     if (!success) {
       return NextResponse.json({ error: "Failed to update sign-up" }, { status: 500 });

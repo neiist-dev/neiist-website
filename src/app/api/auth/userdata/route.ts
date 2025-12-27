@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
 import { getUser, createUser, getEmailVerificationByUser } from "@/utils/dbUtils";
+import { signUserJWT } from "@/utils/authUtils";
 
 type FenixRegistration = {
   degree?: {
@@ -71,14 +72,22 @@ export async function GET() {
       user.alternativeEmailVerified = true;
     }
 
-    const resp = NextResponse.json(user);
-    resp.cookies.set("user_data", JSON.stringify(user), {
+    const response = NextResponse.json(user);
+    const jwtPayload = {
+      istid: user.istid,
+      roles: user.roles,
+      name: user.name,
+      email: user.email,
+    };
+    const jwtToken = signUserJWT(jwtPayload);
+
+    response.cookies.set("session", jwtToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24,
       path: "/",
     });
-    return resp;
+    return response;
   } catch (error) {
     console.error("Error in UserData API:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

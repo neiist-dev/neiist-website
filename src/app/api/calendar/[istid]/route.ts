@@ -13,6 +13,7 @@ import type { NotionPage, NotionApiResponse } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
+import { getUserFromJWT } from "@/utils/authUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
@@ -44,15 +45,16 @@ export async function GET(
     if (!accessToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
-    const userData = JSON.parse((await cookies()).get("user_data")?.value || "null");
-    if (!userData) {
-      return NextResponse.json({ error: "User data not found" }, { status: 404 });
+    const sessionToken = (await cookies()).get("session")?.value;
+    const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+    if (!jwtUser) {
+      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
     }
     const { istid } = await params;
     if (!istid) {
       return new NextResponse("Missing istid", { status: 400 });
     }
-    if (userData.istid !== istid) {
+    if (jwtUser.istid !== istid) {
       return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
     }
     const user = await getUser(istid);

@@ -6,14 +6,10 @@ import { Campus, type CartItem, type PaymentMethod } from "@/types/shop";
 import Image from "next/image";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaChevronDown } from "react-icons/fa";
+import { User } from "@/types/user";
 
 interface CheckoutFormProps {
-  user: {
-    istid: string;
-    name: string;
-    email: string;
-    phone?: string;
-  };
+  user: User;
 }
 
 export default function CheckoutForm({ user }: CheckoutFormProps) {
