@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   url.searchParams.set("client_id", process.env.FENIX_CLIENT_ID!);
   url.searchParams.set("redirect_uri", process.env.FENIX_REDIRECT_URI!);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "read:personal read:student");
+  url.searchParams.set("scope", "read:personal");
   url.searchParams.set("state", state);
 
   const returnUrl = (() => {
