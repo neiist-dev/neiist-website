@@ -147,13 +147,11 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
 
     const createCheckout = async () => {
       try {
-        const amountValue = (Math.round(Number(order.total_amount) * 100) / 100).toFixed(2);
         const res = await fetch("/api/shop/sumup/new", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId,
-            amount: amountValue,
             currency: "EUR",
             checkout_reference: `order-${orderId}`,
           }),

@@ -16,19 +16,6 @@ function createSumUpClient(): SumUpClient | null {
   return new SumUp({ apiKey: SUMUP_API_KEY }) as SumUpClient;
 }
 
-function normalizeAmountToMajor(amount: unknown, fallback: number): number | null {
-  if (amount == null) return fallback;
-  if (typeof amount === "number") {
-    if (Number.isInteger(amount) && Math.abs(amount) > 100) return amount / 100;
-    return Number(amount);
-  }
-  if (typeof amount === "string") {
-    const parsed = Number(amount);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-}
-
 function extractStatus(err: unknown): number | null {
   if (!err || typeof err !== "object") return null;
   const e = err as Record<string, unknown>;
@@ -41,7 +28,7 @@ function extractStatus(err: unknown): number | null {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as CreateRequestBody;
-    const { orderId, amount, currency = "EUR", checkout_reference } = body ?? {};
+    const { orderId, currency = "EUR", checkout_reference } = body ?? {};
     if (!orderId) {
       return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
     }
@@ -57,9 +44,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Not order owner" }, { status: 403 });
     }
 
-    const fallbackAmount = Number(order.total_amount ?? 0);
-    const amountMajor = normalizeAmountToMajor(amount, fallbackAmount);
-    if (amountMajor === null || amountMajor <= 0) {
+    const amountMajor = Number(order.total_amount ?? 0);
+    if (amountMajor <= 0) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
