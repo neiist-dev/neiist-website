@@ -3,11 +3,18 @@ import { UserRole } from "@/types/user";
 import { hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./utils/authUtils";
 
-const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
-const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
+const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/activities"];
+const guestRoutes = ["/profile", "/my-orders"];
 const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management"];
-const adminRoutes = ["/users-management", "/departments-management", "/shop/manage"];
+const adminRoutes = [
+  "/users-management",
+  "/departments-management",
+  "/shop/manage",
+  "/shop",
+  "/shop/cart",
+  "/shop/checkout",
+];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
 function canAccess(path: string, roles: UserRole[]) {
