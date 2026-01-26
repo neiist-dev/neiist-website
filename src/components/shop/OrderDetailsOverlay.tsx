@@ -11,6 +11,7 @@ import {
 } from "@/types/shop";
 import { MdClose } from "react-icons/md";
 import { FaCheck } from "react-icons/fa";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
@@ -41,6 +42,7 @@ export default function OrderDetailOverlay({
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
@@ -244,6 +246,20 @@ export default function OrderDetailOverlay({
             })}
           </div>
           <div className={styles.totalRow}>Total: {order.total_amount.toFixed(2)}€</div>
+        </div>
+
+        <div className={styles.section}>
+          <details
+            className={styles.notesDetails}
+            onToggle={(e) => setNotesOpen((e.currentTarget as HTMLDetailsElement).open)}>
+            <summary className={styles.notesSummary}>
+              <span>Notas</span>
+              <span className={styles.notesChevron}>
+                {notesOpen ? <FiChevronUp /> : <FiChevronDown />}
+              </span>
+            </summary>
+            <div className={styles.notesText}>{order.notes ? order.notes : "Sem notas."}</div>
+          </details>
         </div>
 
         {canManage ? (

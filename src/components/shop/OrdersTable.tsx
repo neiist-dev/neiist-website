@@ -207,7 +207,16 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       string,
       { modelo: string; cor: string; tamanho: string; quantidade: number }
     > = {};
-
+    const statsMapCampusInventory: Record<
+      string,
+      {
+        campus: string;
+        modelo: string;
+        cor: string;
+        tamanho: string;
+        quantidade: number;
+      }
+    > = {};
     const statsMapCampusDate: Record<
       string,
       {
@@ -232,8 +241,18 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           statsMapDetalhes[key] = { modelo, cor, tamanho, quantidade: 0 };
         }
         statsMapDetalhes[key].quantidade += it.quantity;
-
         const campus = o.campus || "Unknown";
+        const ciKey = `${campus}|||${modelo}|||${cor}|||${tamanho}`;
+        if (!statsMapCampusInventory[ciKey]) {
+          statsMapCampusInventory[ciKey] = {
+            campus,
+            modelo,
+            cor,
+            tamanho,
+            quantidade: 0,
+          };
+        }
+        statsMapCampusInventory[ciKey].quantidade += it.quantity;
         const dateStr = new Date(o.created_at).toISOString().slice(0, 10);
         const cdKey = `${campus}|||${modelo}|||${dateStr}|||${cor}|||${tamanho}`;
         if (!statsMapCampusDate[cdKey]) {
@@ -250,27 +269,63 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       })
     );
 
-    const statsSheet = Object.values(statsMapDetalhes).sort((a, b) => {
-      if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
-      if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
-      return a.tamanho.localeCompare(b.tamanho);
-    });
+    const statsSheet = Object.values(statsMapDetalhes)
+      .sort((a, b) => {
+        if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
+        if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
+        return a.tamanho.localeCompare(b.tamanho);
+      })
+      .map((r) => ({
+        Modelo: r.modelo,
+        Cor: r.cor,
+        Tamanho: r.tamanho,
+        Quantidade: r.quantidade,
+      }));
 
-    const statsCampusDateSheet = Object.values(statsMapCampusDate).sort((a, b) => {
-      if (a.campus !== b.campus) return a.campus.localeCompare(b.campus);
-      if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
-      if (a.data !== b.data) return a.data.localeCompare(b.data);
-      if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
-      return a.tamanho.localeCompare(b.tamanho);
-    });
+    const statsCampusInventorySheet = Object.values(statsMapCampusInventory)
+      .sort((a, b) => {
+        if (a.campus !== b.campus) return a.campus.localeCompare(b.campus);
+        if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
+        if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
+        return a.tamanho.localeCompare(b.tamanho);
+      })
+      .map((r) => ({
+        Campus: r.campus,
+        Modelo: r.modelo,
+        Cor: r.cor,
+        Tamanho: r.tamanho,
+        Quantidade: r.quantidade,
+      }));
+
+    const statsCampusDateSheet = Object.values(statsMapCampusDate)
+      .sort((a, b) => {
+        if (a.campus !== b.campus) return a.campus.localeCompare(b.campus);
+        if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
+        if (a.data !== b.data) return a.data.localeCompare(b.data);
+        if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
+        return a.tamanho.localeCompare(b.tamanho);
+      })
+      .map((r) => ({
+        Campus: r.campus,
+        Modelo: r.modelo,
+        Data: r.data,
+        Cor: r.cor,
+        Tamanho: r.tamanho,
+        Quantidade: r.quantidade,
+      }));
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ordersSheet), "Encomendas");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(statsSheet), "Detalhes");
     XLSX.utils.book_append_sheet(
       wb,
+      XLSX.utils.json_to_sheet(statsCampusInventorySheet),
+      "InventarioPorCampus"
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
       XLSX.utils.json_to_sheet(statsCampusDateSheet),
-      "DetalhesPorCampus"
+      "InventarioPorCampusPorDia"
     );
     XLSX.writeFile(wb, `encomendas_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };

@@ -359,3 +359,22 @@
     margin-top: 1.5rem;
   }
 }
+
+.notesDetails summary::-webkit-details-marker {
+  display: none;
+}
+.notesDetails summary::marker {
+  content: none;
+}
+
+.notesChevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem;
+}
+
+.notesText {
+  margin-top: 0.5rem;
+  font-size: clamp(0.6875rem, 2vw, 0.8125rem);
+}
