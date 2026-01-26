@@ -197,6 +197,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       Telefone: o.customer_phone,
       Estado: getStatusLabel(o.status),
       "Total (€)": o.total_amount,
+      Notas: o.notes || "",
       Produtos: o.items
         .map((it) => `${it.product_name} ${it.variant_label || ""} x${it.quantity}`)
         .join("; "),
@@ -205,6 +206,18 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     const statsMapDetalhes: Record<
       string,
       { modelo: string; cor: string; tamanho: string; quantidade: number }
+    > = {};
+
+    const statsMapCampusDate: Record<
+      string,
+      {
+        campus: string;
+        modelo: string;
+        data: string;
+        cor: string;
+        tamanho: string;
+        quantidade: number;
+      }
     > = {};
 
     filtered.forEach((o) =>
@@ -219,6 +232,21 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           statsMapDetalhes[key] = { modelo, cor, tamanho, quantidade: 0 };
         }
         statsMapDetalhes[key].quantidade += it.quantity;
+
+        const campus = o.campus || "Unknown";
+        const dateStr = new Date(o.created_at).toISOString().slice(0, 10);
+        const cdKey = `${campus}|||${modelo}|||${dateStr}|||${cor}|||${tamanho}`;
+        if (!statsMapCampusDate[cdKey]) {
+          statsMapCampusDate[cdKey] = {
+            campus,
+            modelo,
+            data: dateStr,
+            cor,
+            tamanho,
+            quantidade: 0,
+          };
+        }
+        statsMapCampusDate[cdKey].quantidade += it.quantity;
       })
     );
 
@@ -228,9 +256,22 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       return a.tamanho.localeCompare(b.tamanho);
     });
 
+    const statsCampusDateSheet = Object.values(statsMapCampusDate).sort((a, b) => {
+      if (a.campus !== b.campus) return a.campus.localeCompare(b.campus);
+      if (a.modelo !== b.modelo) return a.modelo.localeCompare(b.modelo);
+      if (a.data !== b.data) return a.data.localeCompare(b.data);
+      if (a.cor !== b.cor) return a.cor.localeCompare(b.cor);
+      return a.tamanho.localeCompare(b.tamanho);
+    });
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ordersSheet), "Encomendas");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(statsSheet), "Detalhes");
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(statsCampusDateSheet),
+      "DetalhesPorCampus"
+    );
     XLSX.writeFile(wb, `encomendas_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 

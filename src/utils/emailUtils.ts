@@ -172,13 +172,17 @@ export function getOrderStatusUpdateTemplate(
   return `
     <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
       <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Atualização de Encomenda</h2>
+      <h2 style="color: #2863FD; margin-bottom: 1rem;">Atualização do Estado da Encomenda</h2>
       <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
       <p>${message}</p>
-      <p><strong>Encomenda:</strong> #${orderNumber}</p>
-      <p><strong>Estado:</strong> ${statusLabel}</p>
+      <p><strong>Número da encomenda:</strong> #${orderNumber}</p>
+      <p><strong>Estado atual:</strong> ${statusLabel}</p>
 
-      ${status === "ready" ? "<p>Por favor, levanta a tua encomenda no campus indicado durante o horário de funcionamento.</p>" : ""}
+      ${
+        status === "ready"
+          ? `<p>A tua encomenda está pronta para ser levantada no campus selecionado. Consulta as nossas redes sociais para saber os horários de funcionamento!</p>`
+          : ""
+      }
 
       <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
       <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
