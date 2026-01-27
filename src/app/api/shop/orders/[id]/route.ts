@@ -109,7 +109,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           order.order_number,
           order.customer_name,
           status,
-          statusLabel
+          statusLabel,
+          order.campus
         ),
       });
     }

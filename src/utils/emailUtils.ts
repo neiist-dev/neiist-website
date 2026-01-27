@@ -155,7 +155,8 @@ export function getOrderStatusUpdateTemplate(
   orderNumber: string,
   customerName: string,
   status: string,
-  statusLabel: string
+  statusLabel: string,
+  campus?: string
 ): string {
   const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
 
@@ -169,6 +170,19 @@ export function getOrderStatusUpdateTemplate(
   const message =
     statusMessages[status] || `O estado da tua encomenda foi atualizado para: ${statusLabel}`;
 
+  const getCampusLocation = (campus?: string): string => {
+    if (!campus) return "";
+    const campusLower = campus.toLowerCase();
+    if (campusLower === "alameda") {
+      return "Sala NEIIST Alameda (Informática I 3.03)";
+    } else if (campusLower === "tagus") {
+      return "Sala NEIIST Taguspark (1 - 18)";
+    }
+    return "";
+  };
+
+  const campusLocation = getCampusLocation(campus);
+
   return `
     <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
       <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
@@ -179,9 +193,11 @@ export function getOrderStatusUpdateTemplate(
       <p><strong>Estado atual:</strong> ${statusLabel}</p>
 
       ${
-        status === "ready"
-          ? `<p>A tua encomenda está pronta para ser levantada no campus selecionado. Consulta as nossas redes sociais para saber os horários de funcionamento!</p>`
-          : ""
+        status === "ready" && campusLocation
+          ? `<p>A tua encomenda está pronta para ser levantada no <strong>${campusLocation}</strong>. Consulta as nossas redes sociais para saber os horários de funcionamento!</p>`
+          : status === "ready"
+            ? `<p>A tua encomenda está pronta para ser levantada no campus selecionado. Consulta as nossas redes sociais para saber os horários de funcionamento!</p>`
+            : ""
       }
 
       <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />

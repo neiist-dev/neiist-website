@@ -160,7 +160,8 @@ export async function POST(req: NextRequest) {
             order.order_number,
             order.customer_name,
             "paid",
-            statusLabel
+            statusLabel,
+            order.campus
           ),
         });
       } catch {
