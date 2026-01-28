@@ -358,11 +358,11 @@ export default function OrderDetailOverlay({
                         setNotesEditing(true);
                       }
                     }}>
-                    {order.notes ? order.notes : "Sem notas."}
+                    {order.notes ? order.notes : "Adicionar notas"}
                   </div>
                 )
               ) : (
-                <div>{order.notes ? order.notes : "Sem notas."}</div>
+                <div>{order.notes ? order.notes : "Adicionar notas"}</div>
               )}
             </div>
           </details>

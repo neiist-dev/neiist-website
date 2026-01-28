@@ -16,7 +16,7 @@ import * as XLSX from "xlsx";
 import Fuse from "fuse.js";
 import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import FilterDropdown, { FilterState } from "./OrdersFilters";
+import FilterDropdown, { FilterState } from "@/components/shop/OrdersFilters";
 import NewOrderModal from "./NewOrderModal";
 import { useRouter } from "next/navigation";
 import { IoIosAdd } from "react-icons/io";
