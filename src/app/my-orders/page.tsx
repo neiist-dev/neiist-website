@@ -12,7 +12,7 @@ export default async function MyOrdersPage({ searchParams }: PageProps) {
   const { orderId } = await searchParams;
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+  const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : undefined;
 
   const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts()]);
   const myOrders = jwtUser ? allOrders.filter((o) => o.user_istid === jwtUser.istid) : [];
@@ -26,6 +26,7 @@ export default async function MyOrdersPage({ searchParams }: PageProps) {
           orders={myOrders}
           canManage={false}
           basePath="/my-orders"
+          canEditNotes={true}
         />
       )}
     </>

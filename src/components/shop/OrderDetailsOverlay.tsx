@@ -29,6 +29,7 @@ interface OrderDetailOverlayProps {
   orders: Order[];
   canManage?: boolean;
   basePath: string;
+  canEditNotes?: boolean;
 }
 
 export default function OrderDetailOverlay({
@@ -36,6 +37,7 @@ export default function OrderDetailOverlay({
   orders,
   canManage = false,
   basePath,
+  canEditNotes = false,
 }: OrderDetailOverlayProps) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -44,13 +46,34 @@ export default function OrderDetailOverlay({
   const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
 
+  const [notesEditing, setNotesEditing] = useState(false);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
   }, [orderId, orders]);
 
-  const handleClose = useCallback(() => {
+  useEffect(() => {
+    setNotesDraft(order?.notes ?? "");
+  }, [order?.notes]);
+
+  const handleCloseImmediate = useCallback(() => {
     router.push(basePath);
   }, [router, basePath]);
+
+  const attemptClose = useCallback(() => {
+    if (!order) {
+      handleCloseImmediate();
+      return;
+    }
+    const currentNotes = order.notes ?? "";
+    if ((notesDraft ?? "") !== currentNotes && notesEditing) {
+      setShowSaveConfirm(true);
+      return;
+    }
+    handleCloseImmediate();
+  }, [order, notesEditing, notesDraft, handleCloseImmediate]);
 
   const handleStatusChange = async (status: OrderStatus) => {
     if (!order) return;
@@ -70,9 +93,7 @@ export default function OrderDetailOverlay({
   const handleUserCancel = async () => {
     if (!order) return;
     setError(null);
-    const res = await fetch(`/api/shop/orders/${order.id}`, {
-      method: "DELETE",
-    });
+    const res = await fetch(`/api/shop/orders/${order.id}`, { method: "DELETE" });
     if (res.ok) {
       const updated = await res.json();
       setOrder(updated);
@@ -81,20 +102,22 @@ export default function OrderDetailOverlay({
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
+    if (e.target === e.currentTarget) attemptClose();
   };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        handleClose();
+        if (notesEditing) {
+          setShowSaveConfirm(true);
+          return;
+        }
+        handleCloseImmediate();
       }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [handleClose]);
+  }, [handleCloseImmediate, notesEditing]);
 
   if (!order) {
     return (
@@ -115,10 +138,46 @@ export default function OrderDetailOverlay({
   const canCancel = canManage && canTransitionTo(order.status, "cancelled");
   const userCanCancel = !canManage && order.status === "pending";
 
+  const saveNotes = async (): Promise<boolean> => {
+    if (!order) return false;
+    if ((order.notes ?? "") === (notesDraft ?? "")) {
+      setNotesEditing(false);
+      return true;
+    }
+    setError(null);
+    try {
+      const res = await fetch(`/api/shop/orders/${order.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: notesDraft }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setOrder(updated);
+        setNotesEditing(false);
+        router.refresh();
+        return true;
+      } else {
+        const err = await res.json().catch(() => null);
+        setError(err?.error ?? "Erro ao guardar notas.");
+        return false;
+      }
+    } catch (err) {
+      setError("Erro ao guardar notas.");
+      console.error(err);
+      return false;
+    }
+  };
+
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
       <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={handleClose} aria-label="Fechar">
+        <button
+          className={styles.closeButton}
+          onClick={() => {
+            attemptClose();
+          }}
+          aria-label="Fechar">
           <MdClose size={20} />
         </button>
 
@@ -258,7 +317,48 @@ export default function OrderDetailOverlay({
                 {notesOpen ? <FiChevronUp /> : <FiChevronDown />}
               </span>
             </summary>
-            <div className={styles.notesText}>{order.notes ? order.notes : "Sem notas."}</div>
+
+            <div className={styles.notesText}>
+              {canEditNotes ? (
+                notesEditing ? (
+                  <textarea
+                    autoFocus
+                    className={styles.notesInput}
+                    value={notesDraft}
+                    onChange={(e) => setNotesDraft(e.target.value)}
+                    onBlur={() => {
+                      const currentNotes = order.notes ?? "";
+                      if ((notesDraft ?? "") !== currentNotes) setShowSaveConfirm(true);
+                      else setNotesEditing(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const currentNotes = order.notes ?? "";
+                        if ((notesDraft ?? "") !== currentNotes) setShowSaveConfirm(true);
+                        else setNotesEditing(false);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setNotesEditing(true)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setNotesEditing(true);
+                      }
+                    }}>
+                    {order.notes ? order.notes : "Sem notas."}
+                  </div>
+                )
+              ) : (
+                <div>{order.notes ? order.notes : "Sem notas."}</div>
+              )}
+            </div>
           </details>
         </div>
 
@@ -383,6 +483,21 @@ export default function OrderDetailOverlay({
         }}
         onCancel={() => setShowUserCancelConfirm(false)}
       />
+      <ConfirmDialog
+        open={showSaveConfirm}
+        message="As notas foram alteradas. Deseja guardar as alterações?"
+        onConfirm={async () => {
+          setShowSaveConfirm(false);
+          const ok = await saveNotes();
+          if (!ok) setNotesEditing(true);
+        }}
+        onCancel={() => {
+          setShowSaveConfirm(false);
+          setNotesDraft(order.notes ?? "");
+          setNotesEditing(false);
+        }}
+      />
+
       {error && <div className={styles.error}>{error}</div>}
     </div>
   );

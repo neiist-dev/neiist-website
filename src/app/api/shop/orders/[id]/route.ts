@@ -40,18 +40,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([
-    UserRole._ADMIN,
-    UserRole._COORDINATOR,
-    UserRole._SHOP_MANAGER,
-  ]);
+  const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
+  const { user, roles } = userRoles;
 
   const { id } = await params;
   const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-  const updates = await request.json();
+  const allOrders = await getAllOrders();
+  const order = allOrders.find((o) => o.id === orderId);
+  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
+  const updates = await request.json().catch(() => ({}));
   const allowedFields = [
     "status",
     "delivered_at",
@@ -65,6 +66,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const filteredUpdates: Record<string, unknown> = {};
   for (const key of allowedFields) {
     if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
+  }
+
+  if (Object.keys(filteredUpdates).length === 0) {
+    return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
+  }
+
+  const onlyNotes = Object.keys(filteredUpdates).every((key) => key === "notes");
+
+  if (onlyNotes) {
+    const isOwner = user && isOrderOwner(order, user);
+    const isCoordOrAdmin =
+      roles?.some((r) => [UserRole._COORDINATOR, UserRole._ADMIN].includes(r)) ?? false;
+    if (!isOwner && !isCoordOrAdmin) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to edit notes" },
+        { status: 403 }
+      );
+    }
+  } else {
+    const isAdminOrCoordinator =
+      roles?.some((r) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(r)) ?? false;
+    if (!isAdminOrCoordinator) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
   }
 
   const updatedOrder = await updateOrder(orderId, filteredUpdates);

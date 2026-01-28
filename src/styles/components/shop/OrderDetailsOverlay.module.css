@@ -161,6 +161,37 @@
   font-weight: 500;
 }
 
+.notesText {
+  margin-top: 0.5rem;
+  font-size: clamp(0.6875rem, 2vw, 0.8125rem);
+}
+
+.notesChevron {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.2rem;
+  vertical-align: middle;
+}
+
+.notesDetails summary::-webkit-details-marker {
+  display: none;
+}
+.notesDetails summary::marker {
+  content: none;
+}
+
+.notesInput {
+  width: 100%;
+  min-height: 120px;
+  box-sizing: border-box;
+  padding: 8px;
+  font-family: inherit;
+  font-size: inherit;
+  border-radius: 0.375rem;
+  border: none;
+  outline: none;
+}
+
 .actionButtons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
@@ -358,23 +389,4 @@
     width: 100%;
     margin-top: 1.5rem;
   }
-}
-
-.notesDetails summary::-webkit-details-marker {
-  display: none;
-}
-.notesDetails summary::marker {
-  content: none;
-}
-
-.notesChevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0.25rem;
-}
-
-.notesText {
-  margin-top: 0.5rem;
-  font-size: clamp(0.6875rem, 2vw, 0.8125rem);
 }
