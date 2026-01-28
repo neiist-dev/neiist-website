@@ -134,53 +134,52 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     router.refresh();
   };
 
-  // Set pending status for confirmation dialog
   const handleBulkStatusChange = (status: OrderStatus) => {
     if (selectedOrders.size === 0) return;
     setPendingBulkStatus(status);
   };
 
-  // Actual bulk update logic
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
-    const orderIds = Array.from(selectedOrders);
-    let successCount = 0;
-    let failCount = 0;
+    const orderIds = Array.from(selectedOrders)
+      .map((id) => Number(id))
+      .filter((n) => Number.isFinite(n));
+    const concurrency = 5;
+    const failures: number[] = [];
+
+    const worker = async (ids: number[]) => {
+      await Promise.all(
+        ids.map(async (orderId) => {
+          try {
+            const res = await fetch(`/api/shop/orders/${orderId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status }),
+            });
+            if (!res.ok) {
+              failures.push(orderId);
+              console.error(
+                `Failed to update order ${orderId}`,
+                await res.text().catch(() => null)
+              );
+            }
+          } catch (err) {
+            failures.push(orderId);
+            console.error(`Error updating order ${orderId}:`, err);
+          }
+        })
+      );
+    };
 
     try {
-      for (const orderId of orderIds) {
-        try {
-          const res = await fetch(`/api/shop/orders/${orderId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status }),
-          });
-
-          if (res.ok) {
-            successCount++;
-          } else {
-            failCount++;
-            console.error(`Failed to update order ${orderId}`);
-          }
-        } catch (error) {
-          failCount++;
-          console.error(`Error updating order ${orderId}:`, error);
-        }
+      for (let i = 0; i < orderIds.length; i += concurrency) {
+        await worker(orderIds.slice(i, i + concurrency));
       }
       setSelectedOrders(new Set());
       router.refresh();
-      if (failCount === 0) {
-        alert(
-          `${successCount} encomenda${successCount !== 1 ? "s" : ""} atualizada${successCount !== 1 ? "s" : ""} com sucesso!`
-        );
-      } else {
-        alert(
-          `${successCount} encomenda${successCount !== 1 ? "s" : ""} atualizada${successCount !== 1 ? "s" : ""} com sucesso.\n${failCount} encomenda${failCount !== 1 ? "s" : ""} falharam.`
-        );
+      if (failures.length) {
+        console.warn("Some updates failed:", failures);
       }
-    } catch (error) {
-      console.error("Bulk update failed:", error);
-      alert("Erro ao atualizar encomendas");
     } finally {
       setBulkLoading(false);
     }

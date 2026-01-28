@@ -56,6 +56,11 @@ export default function OrderDetailOverlay({
 
   useEffect(() => {
     setNotesDraft(order?.notes ?? "");
+    if (order?.notes && String(order.notes).trim() !== "") {
+      setNotesOpen(true);
+    } else {
+      setNotesOpen(false);
+    }
   }, [order?.notes]);
 
   const handleCloseImmediate = useCallback(() => {
@@ -310,7 +315,8 @@ export default function OrderDetailOverlay({
         <div className={styles.section}>
           <details
             className={styles.notesDetails}
-            onToggle={(e) => setNotesOpen((e.currentTarget as HTMLDetailsElement).open)}>
+            onToggle={(e) => setNotesOpen((e.currentTarget as HTMLDetailsElement).open)}
+            open={notesOpen}>
             <summary className={styles.notesSummary}>
               <span>Notas</span>
               <span className={styles.notesChevron}>

@@ -149,7 +149,10 @@ export default function EventDetails({
   };
 
   const handleSignUp = async () => {
-    if (!currentIstid) return alert("Por favor, faça login para se inscrever.");
+    if (!currentIstid) {
+      // TODO: show toast notification prompting the user to log in
+      return;
+    }
     setIsProcessing(true);
     try {
       const res = await fetch("/api/calendar/sign-up", {
