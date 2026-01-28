@@ -13,7 +13,7 @@
   background: #e8e9ec;
   border-radius: 1.25rem;
   width: 100%;
-  max-width: 36rem;
+  max-width: 44rem;
   overflow-y: auto;
   padding: 1.25rem;
   position: relative;
@@ -274,6 +274,10 @@
   margin-bottom: 1.25rem;
   font-size: 0.9375rem;
   font-weight: 500;
+}
+
+.input[type="text"] + .notes {
+  height: 56px;
 }
 
 @media (max-width: 768px) {

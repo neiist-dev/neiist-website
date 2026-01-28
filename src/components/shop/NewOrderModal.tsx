@@ -34,6 +34,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   const [nif, setNif] = useState("");
   const [phone, setPhone] = useState("");
   const [campus, setCampus] = useState<Campus | "">("");
+  const [notes, setNotes] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -271,6 +272,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
           customer_nif: nif || undefined,
           campus: campus || undefined,
           payment_method: "in-person",
+          notes: notes || undefined,
           items: selectedProducts.map((item) => ({
             product_id: item.product.id,
             variant_id: item.variant.id || undefined,
@@ -506,6 +508,18 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
               placeholder="999333111"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              className={styles.input}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Notas</label>
+            <input
+              type="text"
+              placeholder="Notas"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               className={styles.input}
               disabled={isSubmitting}
             />
