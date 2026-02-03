@@ -191,6 +191,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       Data: new Date(o.created_at).toLocaleString("pt-PT"),
       Nome: o.customer_name,
       Email: o.customer_email,
+      NIF: o.customer_nif || "",
       "IST ID": o.user_istid,
       Campus: o.campus,
       Telefone: o.customer_phone,
