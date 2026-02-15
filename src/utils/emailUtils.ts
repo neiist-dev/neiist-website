@@ -175,7 +175,7 @@ export function getOrderStatusUpdateTemplate(
     const campusLower = campus.toLowerCase();
     if (campusLower === "alameda") {
       return "Sala NEIIST Alameda (Informática I 3.03)";
-    } else if (campusLower === "tagus") {
+    } else if (campusLower === "taguspark") {
       return "Sala NEIIST Taguspark (1 - 18)";
     }
     return "";
