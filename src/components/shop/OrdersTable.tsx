@@ -18,7 +18,6 @@ import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shopUtil
 import { getFirstAndLastName } from "@/utils/userUtils";
 import NewOrderModal from "./NewOrderModal";
 import { useRouter } from "next/navigation";
-import { IoIosAdd } from "react-icons/io";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import MultiSelectFilter from "./MultiSelectFilter";
 import DateFilter from "./DateFilter";
@@ -414,7 +413,6 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
               <TbTableExport />
             </button>
             <button className={styles.newBtn} onClick={() => setShowNewOrderModal(true)}>
-              <IoIosAdd />
               Nova Encomenda
             </button>
           </div>

@@ -261,8 +261,6 @@
 .checkbox.checked svg,
 .checkbox.indeterminate svg {
   color: white;
-  width: 18px;
-  height: 18px;
 }
 
 .indeterminateIcon {
@@ -386,7 +384,7 @@
   }
 }
 
-@media (max-width: 425px) {
+@media (max-width: 525px) {
   .title {
     font-size: 2rem;
   }
