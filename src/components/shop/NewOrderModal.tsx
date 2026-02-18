@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { MdClose, MdSearch } from "react-icons/md";
+import { MdClose, MdSearch, MdChevronRight, MdChevronLeft } from "react-icons/md";
 import Fuse from "fuse.js";
-import CreateNewUserModal from "./CreateNewUserModal";
+import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
 import type { User } from "@/types/user";
 import { Campus, type Product, type ProductVariant } from "@/types/shop";
+import { isColorKey, splitNameHex } from "@/utils/shopUtils";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 interface Props {
@@ -21,12 +22,56 @@ interface SelectedProduct {
   quantity: number;
 }
 
-interface ProductWithVariant {
+interface CascadeState {
   product: Product;
-  variant: ProductVariant;
-  displayName: string;
-  searchTerms: string[];
+  optionKeys: string[];
+  selections: Record<string, string>;
 }
+
+const CAMPUS_OPTIONS = [
+  { id: Campus._Alameda, label: "Alameda" },
+  { id: Campus._Taguspark, label: "Taguspark" },
+];
+
+const displayValue = (key: string, val: string) => {
+  if (!isColorKey(key)) return val;
+  const { name, hex } = splitNameHex(val);
+  return name || hex || val;
+};
+
+const variantLabel = (name: string, options: Record<string, string>) => {
+  const values = Object.entries(options).map(([k, v]) => displayValue(k, v));
+  return values.length ? `${name} - ${values.join(" | ")}` : name;
+};
+
+const getOptionKeys = (product: Product) =>
+  product.variants?.length ? Object.keys(product.variants[0].options) : [];
+
+const getValuesForKey = (product: Product, selections: Record<string, string>): string[] => {
+  const keys = getOptionKeys(product);
+  const nextKey = keys[Object.keys(selections).length];
+  if (!nextKey) return [];
+  return Array.from(
+    new Set(
+      product.variants
+        .filter((v) => Object.entries(selections).every(([k, val]) => v.options[k] === val))
+        .map((v) => v.options[nextKey])
+    )
+  );
+};
+
+const resolveVariant = (
+  product: Product,
+  selections: Record<string, string>
+): ProductVariant | null => {
+  const keys = getOptionKeys(product);
+  if (Object.keys(selections).length < keys.length) return null;
+  return (
+    product.variants.find((v) =>
+      Object.entries(selections).every(([k, val]) => v.options[k] === val)
+    ) ?? null
+  );
+};
 
 export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   const [userSearch, setUserSearch] = useState("");
@@ -40,8 +85,9 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
-  const [userHighlightIndex, setUserHighlightIndex] = useState(0);
-  const [productHighlightIndex, setProductHighlightIndex] = useState(0);
+  const [userHighlight, setUserHighlight] = useState(0);
+  const [productHighlight, setProductHighlight] = useState(0);
+  const [cascade, setCascade] = useState<CascadeState | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [usersLoaded, setUsersLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,94 +99,56 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const productDropdownRef = useRef<HTMLDivElement>(null);
 
-  const formatVariantName = (productName: string, options: Record<string, string>) => {
-    const values = Object.values(options);
-    return values.length > 0 ? `${productName} - ${values.join(" | ")}` : productName;
-  };
+  const uniqueProducts = useMemo(
+    () => Array.from(new Map(products.map((p) => [p.id, p])).values()),
+    [products]
+  );
 
-  const campusOptions = [
-    { id: Campus._Alameda, label: "Alameda" },
-    { id: Campus._Taguspark, label: "Taguspark" },
-  ];
+  const productFuse = useMemo(
+    () =>
+      new Fuse(uniqueProducts, {
+        keys: ["name", "category"],
+        threshold: 0.4,
+        ignoreLocation: true,
+      }),
+    [uniqueProducts]
+  );
 
-  const productVariants = useMemo(() => {
-    const variants: ProductWithVariant[] = [];
+  const filteredProducts = useMemo(
+    () =>
+      (productSearch ? productFuse.search(productSearch).map((r) => r.item) : uniqueProducts).slice(
+        0,
+        15
+      ),
+    [productFuse, productSearch, uniqueProducts]
+  );
 
-    products.forEach((product) => {
-      if (product.variants?.length > 0) {
-        product.variants.forEach((v) => {
-          const displayName = formatVariantName(product.name, v.options);
-          const searchTerms = [
-            product.name.toLowerCase(),
-            ...Object.values(v.options).map((val) => val.toLowerCase()),
-          ];
-
-          variants.push({ product, variant: v, displayName, searchTerms });
-        });
-      } else {
-        variants.push({
-          product,
-          variant: { id: 0, label: "", options: {}, price_modifier: 0, active: true },
-          displayName: product.name,
-          searchTerms: [product.name.toLowerCase()],
-        });
-      }
-    });
-
-    return variants;
-  }, [products]);
-
-  const userFuse = useMemo(() => {
-    if (!allUsers.length) return null;
-    return new Fuse(allUsers, {
-      keys: ["istid", "name", "email"],
-      threshold: 0.3,
-      ignoreLocation: true,
-    });
-  }, [allUsers]);
-
-  const productFuse = useMemo(() => {
-    return new Fuse(productVariants, {
-      keys: [
-        { name: "product.name", weight: 3 },
-        { name: "displayName", weight: 2 },
-        { name: "searchTerms", weight: 2 },
-      ],
-      threshold: 0.4,
-      ignoreLocation: true,
-    });
-  }, [productVariants]);
+  const userFuse = useMemo(
+    () =>
+      allUsers.length
+        ? new Fuse(allUsers, {
+            keys: ["istid", "name", "email"],
+            threshold: 0.3,
+            ignoreLocation: true,
+          })
+        : null,
+    [allUsers]
+  );
 
   const filteredUsers = useMemo(() => {
-    if (!userSearch) return [];
-    if (!userFuse) return [];
-
-    const exactMatch = allUsers.filter((u) =>
-      u.istid.toLowerCase().includes(userSearch.toLowerCase())
-    );
-    if (exactMatch.length) return exactMatch.slice(0, 10);
-
-    return userFuse
-      .search(userSearch)
-      .map((r) => r.item)
-      .slice(0, 10);
+    if (!userSearch || !userFuse) return [];
+    const exact = allUsers.filter((u) => u.istid.toLowerCase().includes(userSearch.toLowerCase()));
+    return (exact.length ? exact : userFuse.search(userSearch).map((r) => r.item)).slice(0, 10);
   }, [userFuse, userSearch, allUsers]);
 
-  const filteredProducts = useMemo(() => {
-    if (!productSearch) return [];
-    return productFuse
-      .search(productSearch)
-      .map((r) => r.item)
-      .slice(0, 15);
-  }, [productFuse, productSearch]);
-
-  const shouldShowCreateUser = useMemo(() => {
-    if (userSearch.length < 3) return false;
-    if (allUsers.some((u) => u.istid.toLowerCase() === userSearch.toLowerCase())) return false;
-    return (
-      /^ist\d+$/i.test(userSearch.trim()) || (filteredUsers.length === 0 && userSearch.length >= 5)
-    );
-  }, [userSearch, allUsers, filteredUsers]);
+  const showCreateUserOption = useMemo(
+    () =>
+      userSearch.length >= 3 &&
+      !allUsers.some((u) => u.istid.toLowerCase() === userSearch.toLowerCase()) &&
+      (/^ist\d+$/i.test(userSearch.trim()) ||
+        (filteredUsers.length === 0 && userSearch.length >= 5)),
+    [userSearch, allUsers, filteredUsers]
+  );
 
   useEffect(() => {
     if (usersLoaded) return;
@@ -154,59 +162,48 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
   }, [usersLoaded]);
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (showCreateUser) {
-        setShowCreateUser(false);
-      } else {
-        onClose();
-      }
+      if (showCreateUser) setShowCreateUser(false);
+      else onClose();
     };
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
+    const onClickOutside = (e: MouseEvent) => {
+      const t = e.target as Node;
       if (
-        userDropdownRef.current &&
-        !userDropdownRef.current.contains(target) &&
-        userInputRef.current &&
-        !userInputRef.current.contains(target)
-      ) {
+        userDropdownRef.current?.contains(t) === false &&
+        userInputRef.current?.contains(t) === false
+      )
         setShowUserDropdown(false);
-      }
       if (
-        productDropdownRef.current &&
-        !productDropdownRef.current.contains(target) &&
-        productInputRef.current &&
-        !productInputRef.current.contains(target)
-      ) {
+        productDropdownRef.current?.contains(t) === false &&
+        productInputRef.current?.contains(t) === false
+      )
         setShowProductDropdown(false);
-      }
     };
-
-    document.addEventListener("keydown", handleEscape);
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onClickOutside);
     return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onClickOutside);
     };
   }, [onClose, showCreateUser]);
 
-  const handleKeyNav = <T,>(
+  const navigate = <T,>(
     e: React.KeyboardEvent,
     items: T[],
-    highlightIdx: number,
+    highlight: number,
     setHighlight: (_i: number) => void,
     onSelect: (_item: T) => void
   ) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlight(Math.min(highlightIdx + 1, items.length - 1));
+      setHighlight(Math.min(highlight + 1, items.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setHighlight(Math.max(highlightIdx - 1, 0));
+      setHighlight(Math.max(highlight - 1, 0));
     } else if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
-      const item = items[highlightIdx];
+      const item = items[highlight];
       if (item !== undefined) onSelect(item);
     } else if (e.key === "Escape") {
       e.preventDefault();
@@ -219,34 +216,62 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
     setShowUserDropdown(false);
   };
 
-  const selectProduct = (option: ProductWithVariant) => {
-    const existingIdx = selectedProducts.findIndex(
-      (p) => p.product.id === option.product.id && p.variant.id === option.variant.id
-    );
-
-    if (existingIdx >= 0) {
-      const updated = [...selectedProducts];
-      updated[existingIdx].quantity++;
-      setSelectedProducts(updated);
-    } else {
-      setSelectedProducts([
-        ...selectedProducts,
-        {
-          product: option.product,
-          variant: { id: option.variant.id, label: option.displayName },
-          quantity: 1,
-        },
-      ]);
-    }
-
+  const addProduct = (product: Product, variant: ProductVariant) => {
+    const label = variantLabel(product.name, variant.options);
+    setSelectedProducts((prev) => {
+      const idx = prev.findIndex((p) => p.product.id === product.id && p.variant.id === variant.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], quantity: next[idx].quantity + 1 };
+        return next;
+      }
+      return [...prev, { product, variant: { id: variant.id, label }, quantity: 1 }];
+    });
     setProductSearch("");
     setShowProductDropdown(false);
     productInputRef.current?.focus();
   };
 
-  const removeProduct = (idx: number) => {
-    setSelectedProducts(selectedProducts.filter((_, i) => i !== idx));
+  const openCascade = (product: Product) => {
+    const keys = getOptionKeys(product);
+    if (!keys.length) {
+      addProduct(product, { id: 0, label: "", options: {}, price_modifier: 0, active: true });
+      return;
+    }
+    setCascade({ product, optionKeys: keys, selections: {} });
+    setProductHighlight(0);
   };
+
+  const selectCascadeValue = (value: string) => {
+    if (!cascade) return;
+    const { product, optionKeys, selections } = cascade;
+    const key = optionKeys[Object.keys(selections).length];
+    const newSelections = { ...selections, [key]: value };
+    const variant = resolveVariant(product, newSelections);
+    if (variant) {
+      addProduct(product, variant);
+      setCascade(null);
+    } else {
+      setCascade({ product, optionKeys, selections: newSelections });
+      setProductHighlight(0);
+    }
+  };
+
+  const cascadeBack = () => {
+    if (!cascade) return;
+    const selectionKeys = Object.keys(cascade.selections);
+    if (!selectionKeys.length) {
+      setCascade(null);
+      return;
+    }
+    const next = { ...cascade.selections };
+    delete next[selectionKeys[selectionKeys.length - 1]];
+    setCascade({ ...cascade, selections: next });
+    setProductHighlight(0);
+  };
+
+  const removeProduct = (idx: number) =>
+    setSelectedProducts((prev) => prev.filter((_, i) => i !== idx));
 
   const handleSubmit = async () => {
     if (!selectedUser || !selectedProducts.length) {
@@ -259,9 +284,8 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
     }
     setIsSubmitting(true);
     setError(null);
-
     try {
-      const response = await fetch("/api/shop/orders", {
+      const res = await fetch("/api/shop/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -273,19 +297,17 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
           campus: campus || undefined,
           payment_method: "in-person",
           notes: notes || undefined,
-          items: selectedProducts.map((item) => ({
-            product_id: item.product.id,
-            variant_id: item.variant.id || undefined,
-            quantity: item.quantity,
+          items: selectedProducts.map(({ product, variant, quantity }) => ({
+            product_id: product.id,
+            variant_id: variant.id || undefined,
+            quantity,
           })),
         }),
       });
-
-      if (!response.ok) {
-        const data = await response.json();
+      if (!res.ok) {
+        const data = await res.json();
         throw new Error(data.error || "Failed to create order");
       }
-
       onSubmit?.();
       onClose();
     } catch (err) {
@@ -295,15 +317,10 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
     }
   };
 
-  const handleConfirm = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowConfirm(true);
-  };
-
-  const handleUserCreated = (newUser: User) => {
-    setAllUsers([...allUsers, newUser]);
-    setSelectedUser(newUser);
-    setUserSearch(`${newUser.istid} - ${newUser.name}`);
+  const handleUserCreated = (user: User) => {
+    setAllUsers((prev) => [...prev, user]);
+    setSelectedUser(user);
+    setUserSearch(`${user.istid} - ${user.name}`);
     setShowCreateUser(false);
   };
 
@@ -328,7 +345,11 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
 
         {error && <div className={styles.error}>{error}</div>}
 
-        <form onSubmit={handleConfirm}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setShowConfirm(true);
+          }}>
           <div className={styles.formGroup}>
             <label>User</label>
             <div className={styles.searchWrapper}>
@@ -336,7 +357,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
               <input
                 ref={userInputRef}
                 type="text"
-                placeholder="Search by istid...."
+                placeholder="Search by istid..."
                 value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
                 onChange={(e) => {
                   if (selectedUser) {
@@ -345,19 +366,16 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
                   } else {
                     setUserSearch(e.target.value);
                     setShowUserDropdown(e.target.value.length > 0);
-                    setUserHighlightIndex(0);
+                    setUserHighlight(0);
                   }
                 }}
                 onKeyDown={(e) =>
-                  handleKeyNav(
+                  navigate(
                     e,
-                    [...filteredUsers, ...(shouldShowCreateUser ? [null] : [])],
-                    userHighlightIndex,
-                    setUserHighlightIndex,
-                    (item) => {
-                      if (item) selectUser(item);
-                      else setShowCreateUser(true);
-                    }
+                    [...filteredUsers, ...(showCreateUserOption ? [null] : [])],
+                    userHighlight,
+                    setUserHighlight,
+                    (item) => (item ? selectUser(item) : setShowCreateUser(true))
                   )
                 }
                 className={styles.input}
@@ -381,19 +399,19 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
                   {filteredUsers.map((user, idx) => (
                     <div
                       key={user.istid}
-                      className={`${styles.dropdownItem} ${idx === userHighlightIndex ? styles.highlighted : ""}`}
+                      className={`${styles.dropdownItem} ${idx === userHighlight ? styles.highlighted : ""}`}
                       onClick={() => selectUser(user)}
-                      onMouseEnter={() => setUserHighlightIndex(idx)}>
+                      onMouseEnter={() => setUserHighlight(idx)}>
                       <div className={styles.dropdownItemTitle}>
                         {user.istid} - {user.name}
                       </div>
                     </div>
                   ))}
-                  {shouldShowCreateUser && (
+                  {showCreateUserOption && (
                     <div
-                      className={`${styles.dropdownItem} ${filteredUsers.length === userHighlightIndex ? styles.highlighted : ""}`}
+                      className={`${styles.dropdownItem} ${filteredUsers.length === userHighlight ? styles.highlighted : ""}`}
                       onClick={() => setShowCreateUser(true)}
-                      onMouseEnter={() => setUserHighlightIndex(filteredUsers.length)}>
+                      onMouseEnter={() => setUserHighlight(filteredUsers.length)}>
                       <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
                       <div className={styles.dropdownItemSubtitle}>
                         Clique para criar novo utilizador
@@ -416,38 +434,106 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
                 value={productSearch}
                 onChange={(e) => {
                   setProductSearch(e.target.value);
-                  setShowProductDropdown(e.target.value.length > 0);
-                  setProductHighlightIndex(0);
+                  setCascade(null);
+                  setShowProductDropdown(true);
+                  setProductHighlight(0);
+                }}
+                onFocus={() => {
+                  setShowProductDropdown(true);
+                  setProductHighlight(0);
                 }}
                 onKeyDown={(e) =>
-                  handleKeyNav(
-                    e,
-                    filteredProducts,
-                    productHighlightIndex,
-                    setProductHighlightIndex,
-                    selectProduct
-                  )
+                  cascade
+                    ? navigate(
+                        e,
+                        getValuesForKey(cascade.product, cascade.selections),
+                        productHighlight,
+                        setProductHighlight,
+                        selectCascadeValue
+                      )
+                    : navigate(
+                        e,
+                        filteredProducts,
+                        productHighlight,
+                        setProductHighlight,
+                        openCascade
+                      )
                 }
                 className={styles.productInput}
                 disabled={isSubmitting}
               />
 
-              {showProductDropdown && productSearch && filteredProducts.length > 0 && (
+              {showProductDropdown && !cascade && filteredProducts.length > 0 && (
                 <div className={styles.dropdown} ref={productDropdownRef}>
-                  {filteredProducts.map((option, idx) => (
+                  {filteredProducts.map((product, idx) => (
                     <div
-                      key={`${option.product.id}-${option.variant.id}`}
-                      className={`${styles.dropdownItem} ${idx === productHighlightIndex ? styles.highlighted : ""}`}
-                      onClick={() => selectProduct(option)}
-                      onMouseEnter={() => setProductHighlightIndex(idx)}>
-                      <div className={styles.dropdownItemTitle}>{option.displayName}</div>
-                      <div className={styles.dropdownItemSubtitle}>
-                        {option.product.price.toFixed(2)}€
+                      key={product.id}
+                      className={`${styles.dropdownItem} ${idx === productHighlight ? styles.highlighted : ""}`}
+                      onClick={() => openCascade(product)}
+                      onMouseEnter={() => setProductHighlight(idx)}>
+                      <div className={styles.dropdownItemTitle}>
+                        {product.name}
+                        {product.variants?.length > 0 && (
+                          <MdChevronRight className={styles.cascadeArrow} />
+                        )}
                       </div>
+                      <div className={styles.dropdownItemSubtitle}>{product.price.toFixed(2)}€</div>
                     </div>
                   ))}
                 </div>
               )}
+
+              {cascade &&
+                (() => {
+                  const currentKeyIdx = Object.keys(cascade.selections).length;
+                  const currentKey = cascade.optionKeys[currentKeyIdx];
+                  const values = getValuesForKey(cascade.product, cascade.selections);
+                  return (
+                    <div className={styles.dropdown} ref={productDropdownRef}>
+                      <div className={styles.cascadeHeader} onClick={cascadeBack}>
+                        <MdChevronLeft size={18} />
+                        <span className={styles.cascadeHeaderText}>
+                          {cascade.product.name}
+                          {Object.entries(cascade.selections).map(([key, val]) => (
+                            <span key={key} className={styles.cascadeCrumb}>
+                              {" "}
+                              › {displayValue(key, val)}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                      <div className={styles.cascadeLevelLabel}>{currentKey}</div>
+                      {values.map((val, idx) => {
+                        const isColor = isColorKey(currentKey);
+                        const { name: colorName, hex } = isColor
+                          ? splitNameHex(val)
+                          : { name: val, hex: "" };
+                        return (
+                          <div
+                            key={val}
+                            className={`${styles.dropdownItem} ${idx === productHighlight ? styles.highlighted : ""}`}
+                            onClick={() => selectCascadeValue(val)}
+                            onMouseEnter={() => setProductHighlight(idx)}>
+                            <div className={styles.dropdownItemTitle}>
+                              <span className={styles.dropdownItemTitleContent}>
+                                {isColor && hex && (
+                                  <span
+                                    className={styles.colorSwatch}
+                                    style={{ background: hex }}
+                                  />
+                                )}
+                                {colorName || val}
+                              </span>
+                              {currentKeyIdx < cascade.optionKeys.length - 1 && (
+                                <MdChevronRight className={styles.cascadeArrow} />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
             </div>
 
             {selectedProducts.length > 0 && (
@@ -480,7 +566,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
                 disabled={isSubmitting}
                 required>
                 <option value="">Selecionar campus</option>
-                {campusOptions.map((opt) => (
+                {CAMPUS_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.id}>
                     {opt.label}
                   </option>
