@@ -2,16 +2,35 @@
   background: var(--background-colour);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   overflow-x: hidden;
 }
 
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4rem 5rem 0rem 5rem;
+  box-sizing: border-box;
+}
+
 .title {
+  color: black;
+  font-size: 2.5rem;
+  text-align: left;
+  line-height: 1.15;
+  font-weight: 700;
+  margin: 0;
+}
+
+.titleSubtitle {
   color: var(--foreground-colour);
-  font-size: clamp(1rem, 4vw, 3rem);
-  margin-top: 4rem;
-  text-align: center;
-  padding: 0 1rem;
+  font-size: 2.8rem;
+  text-align: left;
+  line-height: 1.15;
+  font-weight: 700;
+  margin-top: 2rem;
 }
 
 .primary {
@@ -24,19 +43,12 @@
 
 .tertiary {
   color: var(--tertiary-colour);
+  font-weight: 600;
 }
 
 .quaternary {
   color: var(--quaternary-colour);
-}
-
-.subtitle {
-  margin-top: 0;
-  margin-bottom: 8rem;
-  color: var(--secondary-colour);
-  font-size: 1.25rem;
   font-weight: 600;
-  text-align: center;
 }
 
 .heroImage {
@@ -46,32 +58,247 @@
   overflow: hidden;
 }
 
-.campusImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
 .student {
   position: absolute;
   bottom: 1.7vw;
   left: 50%;
   width: 16%;
-  max-width: clamp(5rem, 14vw, 10rem);
+  max-width: 10rem;
   height: auto;
   z-index: 2;
 }
 
-@media (max-width: 728px) {
+.campusImage {
+  width: 100vw;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.flipped {
+  transform: scaleX(-1);
+}
+
+.jumping {
+  animation: jump-pixel 0.2s steps(2, end) forwards;
+}
+@keyframes jump-pixel {
+  0% {
+    bottom: 2rem;
+  }
+  50% {
+    bottom: 7rem;
+  }
+  100% {
+    bottom: 2rem;
+  }
+}
+
+.terminal {
+  flex-shrink: 0;
+  width: 48%;
+  min-width: 320px;
+  height: 520px;
+  background: #000;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.interactPrompt {
+  position: absolute;
+  left: 47%;
+  transform: translateX(-50%);
+  background: white;
+  color: black;
+  padding: 0.6rem 1rem;
+  border-radius: 0;
+  font-size: 1rem;
+  font-family: monospace;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  pointer-events: none;
+  border: 3px solid black;
+  letter-spacing: 0.02em;
+  text-align: center;
+  font-weight: 600;
+}
+
+.interactKey {
+  background: var(--primary-colour);
+  color: white;
+  border-radius: 0;
+  padding: 0.15rem 0.5rem;
+  font-size: 1.1em;
+  font-weight: bold;
+  box-shadow: none;
+  border: 2px solid black;
+  margin-right: 0.3rem;
+}
+
+.interactText {
+  color: black;
+  font-weight: 600;
+}
+
+.roomPrompt {
+  position: absolute;
+  min-width: 6rem;
+  left: 47%;
+  bottom: 24%;
+  transform: translateX(-50%) scale(0.82);
+  background: white;
+  color: black;
+  padding: 0.8rem 1.4rem 0.8rem 1.4rem;
+  border-radius: 0;
+  font-size: 0.95rem;
+  font-family: monospace;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
+  z-index: 20;
+  border: 4px solid black;
+  text-align: center;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: popRoom 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+.roomSubtitle {
+  font-size: 0.85rem;
+  color: black;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.4rem;
+}
+
+.roomNumber {
+  font-size: 1rem;
+  color: white;
+  background: var(--primary-colour);
+  border-radius: 0;
+  padding: 0.2rem 0.8rem;
+  margin-top: 0;
+  font-weight: 800;
+  border: 3px solid black;
+  box-shadow: none;
+}
+
+@keyframes popRoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(30px);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.08) translateY(0);
+  }
+}
+
+@media (max-width: 1000px) {
+  .titleSubtitle {
+    font-size: 2.2rem;
+  }
+  .student {
+    width: 13%;
+    max-width: 8rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .student {
+    width: 12%;
+    max-width: 7rem;
+  }
+  .topRow {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3rem 4rem 1.5rem 4rem;
+    gap: 1.5rem;
+  }
+  .terminal {
+    width: 100%;
+    min-width: 0;
+    height: 260px;
+  }
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 0.8rem;
+    color: var(--background-colour);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    margin-top: 1.2rem;
+  }
+  .terminal {
+    height: 220px;
+  }
   .student {
     bottom: 2vw;
     width: 10%;
     max-width: 4rem;
   }
+  .interactPrompt {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+  }
+  .roomPrompt {
+    min-width: 4.5rem;
+    padding: 0.4rem 0.7rem 0.4rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+  }
+  .roomNumber {
+    font-size: 0.8rem;
+    padding: 0.08rem 0.4rem;
+    margin-bottom: 0.18rem;
+    border-radius: 4px;
+  }
+  .roomSubtitle {
+    font-size: 0.6rem;
+  }
 }
 
-.flipped {
-  transform: scaleX(-1);
+@media (max-width: 465px) {
+  .title {
+    font-size: 1.15rem;
+  }
+  .titleSubtitle {
+    font-size: 0.95rem;
+    margin-top: 0.8rem;
+  }
+  .terminal {
+    height: 140px;
+  }
+  .interactPrompt {
+    font-size: 0.65rem;
+    padding: 0.22rem 0.45rem;
+    border-radius: 4px;
+  }
+  .roomPrompt {
+    min-width: 3.2rem;
+    padding: 0.22rem 0.45rem 0.22rem 0.45rem;
+    border-radius: 5px;
+    font-size: 0.5rem;
+  }
+  .roomNumber {
+    font-size: 0.55rem;
+    padding: 0.04rem 0.22rem;
+    margin-bottom: 0.09rem;
+    border-radius: 2px;
+  }
+  .roomSubtitle {
+    font-size: 0.38rem;
+  }
 }
