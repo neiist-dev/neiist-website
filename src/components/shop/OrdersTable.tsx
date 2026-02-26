@@ -198,6 +198,21 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     setPendingBulkStatus(status);
   }
 
+  function handleEmailSelected(): void {
+    if (selectedOrders.size === 0) return;
+    const emails = Array.from(selectedOrders)
+      .map((id) => {
+        return (
+          orders.find((o) => String(o.id) === id) || filtered.find((o) => String(o.id) === id)
+        )?.customer_email;
+      })
+      .filter(Boolean) as string[];
+    const unique = [...new Set(emails)];
+    if (unique.length === 0) return;
+    const bcc = encodeURIComponent(unique.join(","));
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&bcc=${bcc}`, "_blank");
+  }
+
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
     const orderIds = Array.from(selectedOrders)
@@ -448,6 +463,13 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
               {selectedOrders.size !== 1 ? "s" : ""}
             </span>
             <div className={styles.bulkButtons}>
+              <button
+                onClick={handleEmailSelected}
+                disabled={bulkLoading}
+                className={styles.bulkBtn}
+                title="Enviar email aos selecionados">
+                {bulkLoading ? "A processar..." : "Enviar Email"}
+              </button>
               <button
                 onClick={() => handleBulkStatusChange("paid")}
                 disabled={bulkLoading}
