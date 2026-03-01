@@ -1791,6 +1791,17 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   updated_at TIMESTAMPTZ,
   status TEXT
 ) AS $$
+DECLARE
+  it JSONB;
+  v_pid INTEGER;
+  v_vid INTEGER;
+  v_qty INTEGER;
+  v_base NUMERIC(10,2);
+  v_unit NUMERIC(10,2);
+  v_total NUMERIC(10,2) := 0;
+  v_pname TEXT;
+  v_v_label TEXT;
+  v_v_opts JSONB;
 BEGIN
   IF p_updates ? 'user_istid' THEN
     UPDATE neiist.orders SET user_istid = NULLIF(p_updates->>'user_istid','') WHERE neiist.orders.id = p_order_id;
@@ -1815,6 +1826,70 @@ BEGIN
   END IF;
   IF p_updates ? 'delivered_by' THEN
     UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE neiist.orders.id = p_order_id;
+  END IF;
+
+  IF p_updates ? 'items' THEN
+    DELETE FROM neiist.order_items WHERE order_id = p_order_id;
+
+    FOR it IN SELECT * FROM jsonb_array_elements(p_updates->'items')
+    LOOP
+      v_pid := (it->>'product_id')::INTEGER;
+      v_vid := NULLIF(it->>'variant_id','')::INTEGER;
+      v_qty := (it->>'quantity')::INTEGER;
+
+      IF v_qty IS NULL OR v_qty <= 0 THEN
+        RAISE EXCEPTION 'Invalid quantity for product_id %', v_pid;
+      END IF;
+
+      SELECT p.name, p.price
+        INTO v_pname, v_base
+      FROM neiist.products p
+      WHERE p.id = v_pid AND p.active = TRUE;
+
+      IF v_pname IS NULL THEN
+        RAISE EXCEPTION 'Product % not found or inactive', v_pid;
+      END IF;
+
+      IF v_vid IS NOT NULL THEN
+        SELECT
+          NULLIF((
+            SELECT string_agg(pvo.option_name || ': ' || pvo.option_value, ' | ' ORDER BY pvo.option_name)
+            FROM neiist.product_variant_options pvo
+            WHERE pvo.variant_id = pv.id
+          ), '') AS label,
+          COALESCE((
+            SELECT jsonb_object_agg(pvo.option_name, pvo.option_value)
+            FROM neiist.product_variant_options pvo
+            WHERE pvo.variant_id = pv.id
+          ), '{}'::jsonb) AS options,
+          pv.price_modifier
+        INTO v_v_label, v_v_opts, v_unit
+        FROM neiist.product_variants pv
+        WHERE pv.id = v_vid AND pv.product_id = v_pid AND pv.active = TRUE;
+
+        IF v_v_label IS NULL AND v_v_opts IS NULL THEN
+          RAISE EXCEPTION 'Variant % for product % not found or inactive', v_vid, v_pid;
+        END IF;
+
+        v_unit := ROUND(v_base + COALESCE(v_unit, 0), 2);
+      ELSE
+        v_v_label := NULL;
+        v_v_opts := NULL;
+        v_unit := ROUND(v_base, 2);
+      END IF;
+
+      v_total := v_total + v_unit * v_qty;
+
+      INSERT INTO neiist.order_items(
+        order_id, product_id, variant_id, product_name, variant_label, variant_options,
+        quantity, unit_price, total_price
+      ) VALUES (
+        p_order_id, v_pid, v_vid, v_pname, v_v_label, v_v_opts,
+        v_qty, v_unit, v_unit * v_qty
+      );
+    END LOOP;
+
+    UPDATE neiist.orders SET total_amount = ROUND(v_total, 2) WHERE neiist.orders.id = p_order_id;
   END IF;
 
   UPDATE neiist.orders SET updated_at = NOW() WHERE neiist.orders.id = p_order_id;

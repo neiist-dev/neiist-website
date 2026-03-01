@@ -6,14 +6,16 @@ import Fuse from "fuse.js";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
 import type { User } from "@/types/user";
-import { Campus, type Product, type ProductVariant } from "@/types/shop";
+import { Campus, type Product, type ProductVariant, type Order } from "@/types/shop";
 import { isColorKey, splitNameHex } from "@/utils/shopUtils";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 interface Props {
   onClose: () => void;
-  onSubmit?: () => void;
+  onSubmit?: (_order?: Order) => void;
   products: Product[];
+  mode?: "create" | "edit";
+  orderToEdit?: Order | null;
 }
 
 interface SelectedProduct {
@@ -73,7 +75,25 @@ const resolveVariant = (
   );
 };
 
-export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
+const buildFallbackUser = (order: Order): User => ({
+  istid: order.user_istid ?? "",
+  name: order.customer_name || "",
+  email: order.customer_email || "",
+  alternativeEmail: null,
+  alternativeEmailVerified: true,
+  phone: order.customer_phone ?? null,
+  photo: "",
+  courses: [],
+  roles: [],
+});
+
+export default function NewOrderModal({
+  onClose,
+  onSubmit,
+  products,
+  mode = "create",
+  orderToEdit = null,
+}: Props) {
   const [userSearch, setUserSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [nif, setNif] = useState("");
@@ -149,6 +169,49 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
         (filteredUsers.length === 0 && userSearch.length >= 5)),
     [userSearch, allUsers, filteredUsers]
   );
+
+  const isEditMode = mode === "edit" && !!orderToEdit;
+
+  useEffect(() => {
+    if (!isEditMode || !orderToEdit) return;
+
+    const fallbackUser = buildFallbackUser(orderToEdit);
+    setSelectedUser(fallbackUser);
+    setUserSearch(
+      fallbackUser.istid ? `${fallbackUser.istid} - ${fallbackUser.name}` : fallbackUser.name
+    );
+
+    setNif(orderToEdit.customer_nif ?? "");
+    setPhone(orderToEdit.customer_phone ?? "");
+    setCampus((orderToEdit.campus as Campus) ?? "");
+    setNotes(orderToEdit.notes ?? "");
+
+    const mapped = orderToEdit.items
+      .map((item) => {
+        const product = uniqueProducts.find((p) => p.id === item.product_id);
+        if (!product) return null;
+
+        const existingVariant = product.variants.find((v) => v.id === item.variant_id);
+        const fallbackOptions = item.variant_options ?? {};
+        const variant = existingVariant ?? {
+          id: item.variant_id ?? 0,
+          label: item.variant_label ?? "",
+          options: fallbackOptions,
+          price_modifier: Number((item.unit_price - product.price).toFixed(2)),
+          active: true,
+        };
+
+        const label = variantLabel(product.name, variant.options ?? {});
+        return {
+          product,
+          variant: { id: variant.id, label: label || product.name },
+          quantity: item.quantity,
+        };
+      })
+      .filter(Boolean) as SelectedProduct[];
+
+    setSelectedProducts(mapped);
+  }, [isEditMode, orderToEdit, uniqueProducts]);
 
   useEffect(() => {
     if (usersLoaded) return;
@@ -274,44 +337,69 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
     setSelectedProducts((prev) => prev.filter((_, i) => i !== idx));
 
   const handleSubmit = async () => {
-    if (!selectedUser || !selectedProducts.length) {
-      setError("Por favor, selecione um utilizador e pelo menos um produto.");
+    if (!selectedProducts.length) {
+      setError("Por favor, selecione pelo menos um produto.");
       return;
     }
-    if (!campus) {
+
+    if (!isEditMode && !campus) {
       setError("Por favor, selecione o campus.");
       return;
     }
+
+    if (!isEditMode && !selectedUser) {
+      setError("Por favor, selecione um utilizador.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
+
     try {
-      const res = await fetch("/api/shop/orders", {
-        method: "POST",
+      const payload = {
+        user_istid: selectedUser?.istid,
+        customer_name: selectedUser?.name,
+        customer_email: selectedUser?.email,
+        customer_phone: phone || undefined,
+        customer_nif: nif || undefined,
+        campus: campus || undefined,
+        payment_method: "in-person",
+        notes: notes || undefined,
+        items: selectedProducts.map(({ product, variant, quantity }) => ({
+          product_id: product.id,
+          variant_id: variant.id || undefined,
+          quantity,
+        })),
+      };
+
+      const endpoint =
+        isEditMode && orderToEdit ? `/api/shop/orders/${orderToEdit.id}` : "/api/shop/orders";
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_istid: selectedUser.istid,
-          customer_name: selectedUser.name,
-          customer_email: selectedUser.email,
-          customer_phone: phone || undefined,
-          customer_nif: nif || undefined,
-          campus: campus || undefined,
-          payment_method: "in-person",
-          notes: notes || undefined,
-          items: selectedProducts.map(({ product, variant, quantity }) => ({
-            product_id: product.id,
-            variant_id: variant.id || undefined,
-            quantity,
-          })),
-        }),
+        body: JSON.stringify(payload),
       });
+
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to create order");
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          data?.error || (isEditMode ? "Failed to update order" : "Failed to create order")
+        );
       }
-      onSubmit?.();
+
+      const savedOrder = (await res.json().catch(() => null)) as Order | null;
+      onSubmit?.(savedOrder ?? undefined);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create order");
+      setError(
+        err instanceof Error
+          ? err.message
+          : isEditMode
+            ? "Failed to update order"
+            : "Failed to create order"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -341,7 +429,7 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
           <MdClose size={24} />
         </button>
 
-        <h2>Nova Encomenda</h2>
+        <h2>{isEditMode ? "Editar Encomenda" : "Nova Encomenda"}</h2>
 
         {error && <div className={styles.error}>{error}</div>}
 
@@ -350,78 +438,80 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
             e.preventDefault();
             setShowConfirm(true);
           }}>
-          <div className={styles.formGroup}>
-            <label>User</label>
-            <div className={styles.searchWrapper}>
-              <MdSearch className={styles.searchIcon} />
-              <input
-                ref={userInputRef}
-                type="text"
-                placeholder="Search by istid..."
-                value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
-                onChange={(e) => {
-                  if (selectedUser) {
-                    setSelectedUser(null);
-                    setUserSearch("");
-                  } else {
-                    setUserSearch(e.target.value);
-                    setShowUserDropdown(e.target.value.length > 0);
-                    setUserHighlight(0);
-                  }
-                }}
-                onKeyDown={(e) =>
-                  navigate(
-                    e,
-                    [...filteredUsers, ...(showCreateUserOption ? [null] : [])],
-                    userHighlight,
-                    setUserHighlight,
-                    (item) => (item ? selectUser(item) : setShowCreateUser(true))
-                  )
-                }
-                className={styles.input}
-                disabled={isSubmitting}
-              />
-              {selectedUser && (
-                <button
-                  className={styles.clearButton}
-                  onClick={() => {
-                    setSelectedUser(null);
-                    setUserSearch("");
-                    userInputRef.current?.focus();
+          {!isEditMode && (
+            <div className={styles.formGroup}>
+              <label>User</label>
+              <div className={styles.searchWrapper}>
+                <MdSearch className={styles.searchIcon} />
+                <input
+                  ref={userInputRef}
+                  type="text"
+                  placeholder="Search by istid..."
+                  value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
+                  onChange={(e) => {
+                    if (selectedUser) {
+                      setSelectedUser(null);
+                      setUserSearch("");
+                    } else {
+                      setUserSearch(e.target.value);
+                      setShowUserDropdown(e.target.value.length > 0);
+                      setUserHighlight(0);
+                    }
                   }}
-                  type="button">
-                  <MdClose size={18} />
-                </button>
-              )}
+                  onKeyDown={(e) =>
+                    navigate(
+                      e,
+                      [...filteredUsers, ...(showCreateUserOption ? [null] : [])],
+                      userHighlight,
+                      setUserHighlight,
+                      (item) => (item ? selectUser(item) : setShowCreateUser(true))
+                    )
+                  }
+                  className={styles.input}
+                  disabled={isSubmitting || isEditMode}
+                />
+                {selectedUser && !isEditMode && (
+                  <button
+                    className={styles.clearButton}
+                    onClick={() => {
+                      setSelectedUser(null);
+                      setUserSearch("");
+                      userInputRef.current?.focus();
+                    }}
+                    type="button">
+                    <MdClose size={18} />
+                  </button>
+                )}
 
-              {showUserDropdown && !selectedUser && userSearch && (
-                <div className={styles.dropdown} ref={userDropdownRef}>
-                  {filteredUsers.map((user, idx) => (
-                    <div
-                      key={user.istid}
-                      className={`${styles.dropdownItem} ${idx === userHighlight ? styles.highlighted : ""}`}
-                      onClick={() => selectUser(user)}
-                      onMouseEnter={() => setUserHighlight(idx)}>
-                      <div className={styles.dropdownItemTitle}>
-                        {user.istid} - {user.name}
+                {showUserDropdown && !selectedUser && userSearch && (
+                  <div className={styles.dropdown} ref={userDropdownRef}>
+                    {filteredUsers.map((user, idx) => (
+                      <div
+                        key={user.istid}
+                        className={`${styles.dropdownItem} ${idx === userHighlight ? styles.highlighted : ""}`}
+                        onClick={() => selectUser(user)}
+                        onMouseEnter={() => setUserHighlight(idx)}>
+                        <div className={styles.dropdownItemTitle}>
+                          {user.istid} - {user.name}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {showCreateUserOption && (
-                    <div
-                      className={`${styles.dropdownItem} ${filteredUsers.length === userHighlight ? styles.highlighted : ""}`}
-                      onClick={() => setShowCreateUser(true)}
-                      onMouseEnter={() => setUserHighlight(filteredUsers.length)}>
-                      <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
-                      <div className={styles.dropdownItemSubtitle}>
-                        Clique para criar novo utilizador
+                    ))}
+                    {showCreateUserOption && !isEditMode && (
+                      <div
+                        className={`${styles.dropdownItem} ${filteredUsers.length === userHighlight ? styles.highlighted : ""}`}
+                        onClick={() => setShowCreateUser(true)}
+                        onMouseEnter={() => setUserHighlight(filteredUsers.length)}>
+                        <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
+                        <div className={styles.dropdownItemSubtitle}>
+                          Clique para criar novo utilizador
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className={styles.formGroup}>
             <label>Produtos</label>
@@ -620,14 +710,24 @@ export default function NewOrderModal({ onClose, onSubmit, products }: Props) {
               Cancelar
             </button>
             <button type="submit" className={styles.buttonSubmit} disabled={isSubmitting}>
-              {isSubmitting ? "A criar..." : "Criar Encomenda"}
+              {isSubmitting
+                ? isEditMode
+                  ? "A guardar..."
+                  : "A criar..."
+                : isEditMode
+                  ? "Guardar Encomenda"
+                  : "Criar Encomenda"}
             </button>
           </div>
         </form>
         {showConfirm && (
           <ConfirmDialog
             open={showConfirm}
-            message="Tem a certeza que deseja criar esta encomenda?"
+            message={
+              isEditMode
+                ? "Tem a certeza que deseja guardar as alterações da encomenda?"
+                : "Tem a certeza que deseja criar esta encomenda?"
+            }
             onConfirm={async () => {
               setShowConfirm(false);
               await handleSubmit();

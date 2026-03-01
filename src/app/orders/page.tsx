@@ -18,7 +18,7 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
     roles.includes(UserRole._ADMIN) ||
     roles.includes(UserRole._SHOP_MANAGER);
 
-  const canEditNotes = roles.includes(UserRole._ADMIN) || roles.includes(UserRole._COORDINATOR);
+  const canEditOrder = roles.includes(UserRole._ADMIN) || roles.includes(UserRole._COORDINATOR);
 
   return (
     <>
@@ -29,7 +29,9 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
           orders={orders}
           canManage={canManage}
           basePath="/orders"
-          canEditNotes={canEditNotes}
+          canEditNotes={canEditOrder}
+          canEditItems={canEditOrder}
+          products={products}
         />
       )}
     </>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrder, setOrderState, getAllOrders } from "@/utils/dbUtils";
+import { updateOrder, setOrderState, getAllOrders, updateUser } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { getStatusLabel } from "@/types/shop";
 import { serverCheckRoles } from "@/utils/permissionUtils";
@@ -44,59 +44,104 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (!userRoles.isAuthorized) return userRoles.error;
   const { user, roles } = userRoles;
 
-  const { id } = await params;
-  const orderId = Number(id);
-  if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+  try {
+    const { id } = await params;
+    const orderId = Number(id);
+    if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-  const allOrders = await getAllOrders();
-  const order = allOrders.find((o) => o.id === orderId);
-  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    const allOrders = await getAllOrders();
+    const order = allOrders.find((o) => o.id === orderId);
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-  const updates = await request.json().catch(() => ({}));
-  const allowedFields = [
-    "status",
-    "delivered_at",
-    "delivered_by",
-    "notes",
-    "payment_reference",
-    "paid_at",
-    "payment_checked_by",
-    "campus",
-  ];
-  const filteredUpdates: Record<string, unknown> = {};
-  for (const key of allowedFields) {
-    if (updates[key] !== undefined) filteredUpdates[key] = updates[key];
-  }
+    const body = await request.json();
 
-  if (Object.keys(filteredUpdates).length === 0) {
-    return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
-  }
+    const allowedFields = [
+      "status",
+      "delivered_at",
+      "delivered_by",
+      "notes",
+      "payment_reference",
+      "paid_at",
+      "payment_checked_by",
+      "campus",
+      "nif",
+      "items",
+    ];
 
-  const onlyNotes = Object.keys(filteredUpdates).every((key) => key === "notes");
-
-  if (onlyNotes) {
-    const isOwner = user && isOrderOwner(order, user);
-    const isCoordOrAdmin =
-      roles?.some((r) => [UserRole._COORDINATOR, UserRole._ADMIN].includes(r)) ?? false;
-    if (!isOwner && !isCoordOrAdmin) {
-      return NextResponse.json(
-        { error: "Insufficient permissions to edit notes" },
-        { status: 403 }
-      );
+    const filteredUpdates: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) filteredUpdates[key] = body[key];
     }
-  } else {
+
+    if (body.customer_nif !== undefined) filteredUpdates.nif = body.customer_nif;
+
+    const phone = body.customer_phone !== undefined ? String(body.customer_phone ?? "") : undefined;
+
+    if (Object.keys(filteredUpdates).length === 0 && phone === undefined) {
+      return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
+    }
+
     const isAdminOrCoordinator =
       roles?.some((r) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(r)) ?? false;
-    if (!isAdminOrCoordinator) {
+
+    const onlyNotes =
+      Object.keys(filteredUpdates).length === 1 &&
+      filteredUpdates.notes !== undefined &&
+      phone === undefined;
+
+    if (onlyNotes) {
+      if (!isOrderOwner(order, user!) && !isAdminOrCoordinator) {
+        return NextResponse.json(
+          { error: "Insufficient permissions to edit notes" },
+          { status: 403 }
+        );
+      }
+    } else if (!isAdminOrCoordinator) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
-  }
 
-  const updatedOrder = await updateOrder(orderId, filteredUpdates);
-  if (!updatedOrder) {
-    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+    if (filteredUpdates.items !== undefined) {
+      if (!Array.isArray(filteredUpdates.items) || filteredUpdates.items.length === 0) {
+        return NextResponse.json({ error: "Items must be a non-empty array" }, { status: 400 });
+      }
+
+      filteredUpdates.items = (filteredUpdates.items as Array<Record<string, unknown>>).map(
+        (item, i) => {
+          const productId = Number(item.product_id);
+          const quantity = Number(item.quantity);
+          const variantId =
+            item.variant_id != null && String(item.variant_id) !== ""
+              ? Number(item.variant_id)
+              : null;
+
+          if (!Number.isInteger(productId) || productId <= 0)
+            throw new Error(`Item ${i + 1}: invalid product_id`);
+          if (!Number.isInteger(quantity) || quantity <= 0)
+            throw new Error(`Item ${i + 1}: invalid quantity`);
+          if (variantId !== null && (!Number.isInteger(variantId) || variantId <= 0))
+            throw new Error(`Item ${i + 1}: invalid variant_id`);
+
+          return { product_id: productId, variant_id: variantId, quantity };
+        }
+      );
+    }
+
+    if (phone !== undefined && order.user_istid) {
+      await updateUser(order.user_istid, { phone: phone || null });
+    }
+
+    const updatedOrder = await updateOrder(orderId, filteredUpdates as Partial<Order>);
+    if (!updatedOrder) {
+      return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+    }
+    return NextResponse.json(updatedOrder);
+  } catch (e) {
+    console.error("Order PUT error:", e);
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Failed to update order" },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(updatedOrder);
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -30,9 +30,7 @@
   cursor: pointer;
   padding: 0.5rem;
   color: var(--light-foreground-colour);
-  transition:
-    transform 0.15s,
-    color 0.15s;
+  transition: all 0.2s ease;
 }
 .closeButton:hover {
   color: var(--foreground-colour);
@@ -94,6 +92,28 @@
 .section {
   font-size: clamp(0.875rem, 3vw, 1rem);
   color: var(--foreground-colour);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editItemsButton {
+  border: none;
+  background: none;
+  color: var(--light-foreground-colour);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  transition: all 0.15s ease;
+}
+
+.editItemsButton:hover {
+  color: var(--primary-colour);
+  transform: scale(1.08);
 }
 
 .infoGrid {
