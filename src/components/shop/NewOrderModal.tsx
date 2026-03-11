@@ -158,29 +158,40 @@ export default function NewOrderModal({
   const filteredUsers = useMemo(() => {
     if (!userSearch.trim()) return [];
 
-    const normalizedQuery = normalizeText(userSearch);
-    const isIstQuery = /^ist\d+$/i.test(userSearch.trim());
+    const rawQuery = userSearch.trim();
+    const normalizedQuery = normalizeText(rawQuery);
+    const istWithPrefix = /^ist\d+$/i.test(rawQuery);
+    const digitsOnly = /^\d{5,10}$/.test(rawQuery);
 
-    if (isIstQuery) {
-      return allUsers.filter((user) => normalizeText(user.istid) === normalizedQuery).slice(0, 10);
+    if (istWithPrefix || digitsOnly) {
+      const digits = digitsOnly ? rawQuery : rawQuery.replace(/[^0-9]/g, "");
+      return allUsers
+        .filter((user) => (user.istid || "").replace(/[^0-9]/g, "") === digits)
+        .slice(0, 10);
     }
 
-    return allUsers
-      .filter((user) => {
-        const normalizedName = normalizeText(user.name);
-        return (
-          normalizedName.startsWith(normalizedQuery) ||
-          normalizedName.includes(` ${normalizedQuery}`)
-        );
+    const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+
+    const matches = allUsers
+      .map((user) => {
+        const name = normalizeText(user.name || "");
+        const nameTokens = name.split(/\s+/).filter(Boolean);
+        for (const qtok of queryTokens) {
+          const found = nameTokens.some((nameToken) => nameToken.startsWith(qtok));
+          if (!found) return null;
+        }
+        return user;
       })
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .slice(0, 10);
+      .filter(Boolean) as User[];
+
+    return matches.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 10);
   }, [userSearch, allUsers]);
 
   const showCreateUserOption = useMemo(
     () =>
       userSearch.length >= 3 &&
       (/^ist\d+$/i.test(userSearch.trim()) ||
+        /^\d{5,10}$/.test(userSearch.trim()) ||
         (filteredUsers.length === 0 && userSearch.length >= 5)) &&
       filteredUsers.length === 0,
     [userSearch, filteredUsers]
