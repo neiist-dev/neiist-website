@@ -16,6 +16,16 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [campus, setCampus] = useState<Campus>(Campus._Alameda);
   const [payment, setPayment] = useState<PaymentMethod>("in-person");
+  const [applePayAvailable] = useState(() => {
+    if (typeof navigator === "undefined") return false;
+
+    const ua = navigator.userAgent || "";
+    const platform = navigator.platform || "";
+    const isAppleByUA = /iPhone|iPad|iPod|Mac/i.test(ua);
+    const isAppleByPlatform = /iPhone|iPad|iPod|Mac/i.test(platform);
+
+    return isAppleByUA || isAppleByPlatform;
+  });
   const [showTaxInfo, setShowTaxInfo] = useState(false);
   const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -115,6 +125,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const paymentOptions = [
     { id: "sumup", label: "Cartão" },
+    ...(applePayAvailable ? ([{ id: "apple-pay", label: "Apple Pay" }] as const) : ([] as const)),
     { id: "in-person", label: "Presencial" },
   ] as const;
 

@@ -47,7 +47,7 @@ export interface dbProductVariant {
   label: string | null;
 }
 
-export type PaymentMethod = "in-person" | "eupago" | "sumup";
+export type PaymentMethod = "in-person" | "eupago" | "sumup" | "apple-pay";
 
 export enum Campus {
   _Alameda = "alameda",

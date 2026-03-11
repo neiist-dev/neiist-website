@@ -49,6 +49,54 @@
   padding: 0;
 }
 
+.applePaySection {
+  padding: 16px 20px 20px;
+}
+
+.applePayDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: #6b7280;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.applePayDivider::before,
+.applePayDivider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: #e5e7eb;
+}
+
+.applePayButton {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: #000;
+  background-image: -webkit-named-image(apple-pay-logo-white);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: 56px 20px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.applePayButton:hover {
+  opacity: 0.92;
+}
+
+.applePayButton:active {
+  transform: translateY(1px);
+}
+
 .loadingOverlay {
   position: absolute;
   top: 0;
@@ -318,6 +366,10 @@
   .widgetOnly {
     max-width: 100%;
     border-radius: 12px;
+  }
+
+  .applePaySection {
+    padding: 14px 14px 16px;
   }
 
   .panel,
