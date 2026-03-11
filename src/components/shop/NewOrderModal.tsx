@@ -87,6 +87,13 @@ const buildFallbackUser = (order: Order): User => ({
   roles: [],
 });
 
+const normalizeText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
 export default function NewOrderModal({
   onClose,
   onSubmit,
@@ -148,43 +155,35 @@ export default function NewOrderModal({
     [productFuse, productSearch, uniqueProducts]
   );
 
-  const userFuse = useMemo(
-    () =>
-      allUsers.length
-        ? new Fuse(allUsers, {
-            keys: [
-              { name: "istid", weight: 4 },
-              { name: "name", weight: 2 },
-            ],
-            threshold: 0.25,
-            ignoreLocation: true,
-            minMatchCharLength: 2,
-            shouldSort: true,
-          })
-        : null,
-    [allUsers]
-  );
-
   const filteredUsers = useMemo(() => {
-    if (!userSearch || !userFuse) return [];
+    if (!userSearch.trim()) return [];
 
-    const istidPrefix = allUsers.filter((user) =>
-      user.istid.toLowerCase().startsWith(userSearch.toLowerCase())
-    );
+    const normalizedQuery = normalizeText(userSearch);
+    const isIstQuery = /^ist\d+$/i.test(userSearch.trim());
 
-    const fuseResults = userFuse.search(userSearch).map((result) => result.item);
+    if (isIstQuery) {
+      return allUsers.filter((user) => normalizeText(user.istid) === normalizedQuery).slice(0, 10);
+    }
 
-    const seen = new Set(istidPrefix.map((user) => user.istid));
-    return [...istidPrefix, ...fuseResults.filter((user) => !seen.has(user.istid))].slice(0, 10);
-  }, [userFuse, userSearch, allUsers]);
+    return allUsers
+      .filter((user) => {
+        const normalizedName = normalizeText(user.name);
+        return (
+          normalizedName.startsWith(normalizedQuery) ||
+          normalizedName.includes(` ${normalizedQuery}`)
+        );
+      })
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, 10);
+  }, [userSearch, allUsers]);
 
   const showCreateUserOption = useMemo(
     () =>
       userSearch.length >= 3 &&
-      !allUsers.some((user) => user.istid.toLowerCase() === userSearch.toLowerCase()) &&
       (/^ist\d+$/i.test(userSearch.trim()) ||
-        (filteredUsers.length === 0 && userSearch.length >= 5)),
-    [userSearch, allUsers, filteredUsers]
+        (filteredUsers.length === 0 && userSearch.length >= 5)) &&
+      filteredUsers.length === 0,
+    [userSearch, filteredUsers]
   );
 
   const isEditMode = mode === "edit" && !!orderToEdit;
