@@ -3,6 +3,7 @@ import { Secular_One } from "next/font/google";
 import NavBar from "@/components/layout/navbar/NavBar";
 import Footer from "@/components/layout/Footer";
 import Cart from "@/components/shop/Cart";
+import { Toaster } from "sonner";
 import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import "@/styles/globals.css";
@@ -43,6 +44,14 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <UserProvider initialUser={user}>
             <NavBar />
             <Cart />
+            <Toaster
+              toastOptions={{
+                style: {
+                  background: "var(--background-colour)",
+                  color: "var(--foreground-colour)",
+                },
+              }}
+            />
             <main>{children}</main>
             <Footer />
           </UserProvider>

@@ -15,6 +15,7 @@ import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
 import { getEventSettings } from "@/types/events";
 import Linkify from "linkify-react";
+import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
 import { UserRole } from "@/types/user";
 import { checkRoles } from "@/types/user";
@@ -203,6 +204,7 @@ export default function EventDetails({
   const handleShare = () => {
     const url = `${window.location.origin}/activities?eventId=${event.id}`;
     navigator.clipboard.writeText(url);
+    toast.success("Link do evento copiado");
   };
 
   return (
