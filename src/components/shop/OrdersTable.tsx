@@ -86,17 +86,18 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     () =>
       new Fuse(orders || [], {
         keys: [
-          "order_number",
-          "created_at",
-          "customer_name",
-          "customer_email",
-          "user_istid",
-          "campus",
-          "items.product_name",
-          "items.variant_label",
+          { name: "order_number", weight: 4 },
+          { name: "user_istid", weight: 4 },
+          { name: "customer_name", weight: 3 },
+          { name: "customer_email", weight: 2 },
+          { name: "items.product_name", weight: 1.5 },
+          { name: "items.variant_label", weight: 0.8 },
+          { name: "campus", weight: 0.3 },
         ],
-        threshold: 0.35,
+        threshold: 0.2,
         ignoreLocation: true,
+        minMatchCharLength: 2,
+        shouldSort: true,
       }),
     [orders]
   );
@@ -129,7 +130,22 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   const filtered = useMemo(() => {
     let list = orders || [];
     if (searchQuery.trim()) {
-      list = fuse.search(searchQuery.trim()).map((searchResult) => searchResult.item);
+      const query = searchQuery.trim().toLowerCase();
+      const identifierMatches = orders.filter(
+        (order) =>
+          order.order_number.toLowerCase().includes(query) ||
+          (order.user_istid?.toLowerCase().includes(query) ?? false) ||
+          (order.customer_email?.toLowerCase().includes(query) ?? false)
+      );
+
+      const fuseResults = fuse.search(searchQuery.trim()).map((result) => result.item);
+
+      if (identifierMatches.length > 0) {
+        const seen = new Set(identifierMatches.map((order) => order.id));
+        list = [...identifierMatches, ...fuseResults.filter((o) => !seen.has(o.id))];
+      } else {
+        list = fuseResults;
+      }
     }
 
     if (filters.statuses.length > 0) {

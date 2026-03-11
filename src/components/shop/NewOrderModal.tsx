@@ -127,19 +127,24 @@ export default function NewOrderModal({
   const productFuse = useMemo(
     () =>
       new Fuse(uniqueProducts, {
-        keys: ["name", "category"],
-        threshold: 0.4,
+        keys: [
+          { name: "name", weight: 3 },
+          { name: "category", weight: 1 },
+        ],
+        threshold: 0.25,
         ignoreLocation: true,
+        minMatchCharLength: 2,
+        shouldSort: true,
       }),
     [uniqueProducts]
   );
 
   const filteredProducts = useMemo(
     () =>
-      (productSearch ? productFuse.search(productSearch).map((r) => r.item) : uniqueProducts).slice(
-        0,
-        15
-      ),
+      (productSearch
+        ? productFuse.search(productSearch).map((result) => result.item)
+        : uniqueProducts
+      ).slice(0, 15),
     [productFuse, productSearch, uniqueProducts]
   );
 
@@ -147,9 +152,14 @@ export default function NewOrderModal({
     () =>
       allUsers.length
         ? new Fuse(allUsers, {
-            keys: ["istid", "name", "email"],
-            threshold: 0.3,
+            keys: [
+              { name: "istid", weight: 4 },
+              { name: "name", weight: 2 },
+            ],
+            threshold: 0.25,
             ignoreLocation: true,
+            minMatchCharLength: 2,
+            shouldSort: true,
           })
         : null,
     [allUsers]
@@ -157,14 +167,21 @@ export default function NewOrderModal({
 
   const filteredUsers = useMemo(() => {
     if (!userSearch || !userFuse) return [];
-    const exact = allUsers.filter((u) => u.istid.toLowerCase().includes(userSearch.toLowerCase()));
-    return (exact.length ? exact : userFuse.search(userSearch).map((r) => r.item)).slice(0, 10);
+
+    const istidPrefix = allUsers.filter((user) =>
+      user.istid.toLowerCase().startsWith(userSearch.toLowerCase())
+    );
+
+    const fuseResults = userFuse.search(userSearch).map((result) => result.item);
+
+    const seen = new Set(istidPrefix.map((user) => user.istid));
+    return [...istidPrefix, ...fuseResults.filter((user) => !seen.has(user.istid))].slice(0, 10);
   }, [userFuse, userSearch, allUsers]);
 
   const showCreateUserOption = useMemo(
     () =>
       userSearch.length >= 3 &&
-      !allUsers.some((u) => u.istid.toLowerCase() === userSearch.toLowerCase()) &&
+      !allUsers.some((user) => user.istid.toLowerCase() === userSearch.toLowerCase()) &&
       (/^ist\d+$/i.test(userSearch.trim()) ||
         (filteredUsers.length === 0 && userSearch.length >= 5)),
     [userSearch, allUsers, filteredUsers]

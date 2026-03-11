@@ -16,19 +16,40 @@ export default function MyOrdersList({ orders, products }: Props) {
   const fuse = useMemo(
     () =>
       new Fuse<Order>(orders ?? [], {
-        keys: ["order_number", "status", "items.product_name", "items.variant_label"],
-        threshold: 0.35,
+        keys: [
+          { name: "order_number", weight: 4 },
+          { name: "status", weight: 3 },
+          { name: "items.product_name", weight: 2 },
+          { name: "items.variant_label", weight: 1 },
+        ],
+        threshold: 0.23,
         ignoreLocation: true,
-        minMatchCharLength: 1,
+        minMatchCharLength: 2,
+        shouldSort: true,
       }),
     [orders]
   );
 
   const filtered = useMemo(() => {
     const list = orders ?? [];
-    const q = query.trim();
-    const results = q.length > 0 ? fuse.search(q).map((r) => r.item) : list;
-    return results.slice().sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    const searchQuery = query.trim();
+    if (!searchQuery) {
+      return list.slice().sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    }
+
+    const queryLower = searchQuery.toLowerCase();
+    const exactMatches = list.filter(
+      (order) =>
+        String(order.order_number).toLowerCase().includes(queryLower) ||
+        String(order.status).toLowerCase().includes(queryLower)
+    );
+
+    const fuseResults = fuse.search(searchQuery).map((r) => r.item);
+
+    const seen = new Set(exactMatches.map((o) => o.id));
+    const combined = [...exactMatches, ...fuseResults.filter((o) => !seen.has(o.id))];
+
+    return combined.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
   }, [orders, query, fuse]);
 
   const selectImage = (order: Order): string | undefined => {

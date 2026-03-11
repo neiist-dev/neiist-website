@@ -156,7 +156,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
         }
         setFlowState("processing");
 
-        const res = await fetch("/api/shop/sumup/apple-pay-process", {
+        const res = await fetch("/api/shop/sumup/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

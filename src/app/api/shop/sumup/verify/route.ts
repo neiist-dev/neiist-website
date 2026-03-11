@@ -5,7 +5,7 @@ import { serverCheckRoles } from "@/utils/permissionUtils";
 import { sendEmail, getOrderStatusUpdateTemplate } from "@/utils/emailUtils";
 import { getStatusLabel } from "@/types/shop";
 import type { Order } from "@/types/shop";
-import { CheckoutData, SumUpClient } from "@/types/sumup";
+import type { ApplePayPaymentToken, CheckoutData, SumUpClient } from "@/types/sumup";
 
 const SUMUP_API_KEY = process.env.SUMUP_API_KEY;
 
@@ -50,14 +50,21 @@ function formatError(err: unknown): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { checkoutId, orderId } = body ?? {};
+    const body = (await req.json()) as {
+      checkoutId?: string;
+      orderId?: number | string;
+      // Present only for Apple Pay — when supplied, the token is submitted to
+      // SumUp before the standard verification step runs.
+      applePayToken?: ApplePayPaymentToken;
+    };
+    const { checkoutId, orderId, applePayToken } = body ?? {};
 
-    if (!checkoutId) {
-      return NextResponse.json({ error: "Missing checkoutId" }, { status: 400 });
+    if (!checkoutId || !orderId) {
+      return NextResponse.json({ error: "Missing checkoutId or orderId" }, { status: 400 });
     }
-    if (!orderId) {
-      return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
+
+    if (!SUMUP_API_KEY) {
+      return NextResponse.json({ error: "Payment service misconfigured" }, { status: 500 });
     }
 
     const auth = await serverCheckRoles([]);
@@ -75,11 +82,34 @@ export async function POST(req: NextRequest) {
     }
 
     if (["paid", "ready", "delivered"].includes(order.status)) {
-      return NextResponse.json({
-        ok: true,
-        message: "Order already paid",
-        alreadyProcessed: true,
+      return NextResponse.json({ ok: true, alreadyProcessed: true });
+    }
+
+    // When an Apple Pay token is supplied, submit it to SumUp before verifying.
+    if (applePayToken) {
+      const processRes = await fetch(`https://api.sumup.com/v0.1/checkouts/${checkoutId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${SUMUP_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          payment_type: "apple_pay",
+          id: checkoutId,
+          amount: Number(order.total_amount),
+          currency: "EUR",
+          apple_pay: { token: applePayToken },
+        }),
       });
+
+      if (!processRes.ok) {
+        const errText = await processRes.text();
+        console.error("SumUp Apple Pay process error:", errText);
+        return NextResponse.json(
+          { error: "Payment processing failed" },
+          { status: processRes.status }
+        );
+      }
     }
 
     const client = createSumUpClient();
@@ -92,23 +122,14 @@ export async function POST(req: NextRequest) {
       checkoutData = await client.checkouts.get(String(checkoutId));
     } catch (err: unknown) {
       return NextResponse.json(
-        {
-          error: "Failed to verify payment with provider",
-          details: formatError(err),
-        },
+        { error: "Failed to verify payment with provider", details: formatError(err) },
         { status: 500 }
       );
     }
 
     const status = getStatus(checkoutData);
-    const paid = isPaidStatus(status);
-
-    if (!paid) {
-      return NextResponse.json({
-        ok: false,
-        message: "Payment not completed",
-        status,
-      });
+    if (!isPaidStatus(status)) {
+      return NextResponse.json({ ok: false, message: "Payment not completed", status });
     }
 
     const checkoutRef =
@@ -120,11 +141,7 @@ export async function POST(req: NextRequest) {
 
     if (checkoutRef && !String(checkoutRef).startsWith(expectedBase)) {
       return NextResponse.json(
-        {
-          error: "Invalid checkout reference",
-          checkoutRef,
-          expectedBase,
-        },
+        { error: "Invalid checkout reference", checkoutRef, expectedBase },
         { status: 400 }
       );
     }
@@ -138,14 +155,10 @@ export async function POST(req: NextRequest) {
         updated_at: paidAt,
         status: "paid",
       });
-
       await setOrderState(Number(orderId), "paid", user?.istid ?? "system");
     } catch (dbErr: unknown) {
       return NextResponse.json(
-        {
-          error: "Failed to update order",
-          details: formatError(dbErr),
-        },
+        { error: "Failed to update order", details: formatError(dbErr) },
         { status: 500 }
       );
     }
@@ -169,17 +182,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      ok: true,
-      checkoutId,
-      status,
-    });
+    return NextResponse.json({ ok: true, checkoutId, status });
   } catch (err: unknown) {
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: formatError(err),
-      },
+      { error: "Internal server error", details: formatError(err) },
       { status: 500 }
     );
   }
