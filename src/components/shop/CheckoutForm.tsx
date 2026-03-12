@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import CheckoutDoneOverlay from "@/components/shop/CheckoutDoneOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
 import { Campus, type CartItem, type PaymentMethod } from "@/types/shop";
@@ -7,30 +8,24 @@ import Image from "next/image";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaChevronDown } from "react-icons/fa";
 import { User } from "@/types/user";
+import type { ApplePayPaymentRequest, ApplePayPaymentToken } from "@/types/sumup";
 
 interface CheckoutFormProps {
   user: User;
 }
 
 export default function CheckoutForm({ user }: CheckoutFormProps) {
+  const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [campus, setCampus] = useState<Campus>(Campus._Alameda);
-  const [payment, setPayment] = useState<PaymentMethod>("in-person");
-  const [applePayAvailable] = useState(() => {
-    if (typeof navigator === "undefined") return false;
-
-    const ua = navigator.userAgent || "";
-    const platform = navigator.platform || "";
-    const isAppleByUA = /iPhone|iPad|iPod|Mac/i.test(ua);
-    const isAppleByPlatform = /iPhone|iPad|iPod|Mac/i.test(platform);
-
-    return isAppleByUA || isAppleByPlatform;
-  });
+  const [payment, setPayment] = useState<PaymentMethod | null>(null);
+  const [applePayAvailable, setApplePayAvailable] = useState(false);
   const [showTaxInfo, setShowTaxInfo] = useState(false);
   const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<number | null>(null);
+  const [submittedPaymentMethod, setSubmittedPaymentMethod] = useState<PaymentMethod | null>(null);
 
   const [phone, setPhone] = useState(user.phone || "");
   const [nif, setNif] = useState("");
@@ -48,6 +43,17 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     load();
     window.addEventListener("cartUpdated", load);
     return () => window.removeEventListener("cartUpdated", load);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.isSecureContext) return;
+    if (typeof window.ApplePaySession === "undefined") return;
+    try {
+      setApplePayAvailable(window.ApplePaySession.canMakePayments());
+    } catch {
+      setApplePayAvailable(false);
+    }
   }, []);
 
   const unitPrice = (item: CartItem) => {
@@ -68,40 +74,191 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     quantity: item.quantity,
   }));
 
-  const handleSubmit = async () => {
+  const createOrder = async (selectedPayment: PaymentMethod, persistOverlay = true) => {
+    const res = await fetch("/api/shop/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_istid: user.istid,
+        customer_name: user.name,
+        customer_email: user.email,
+        items: apiItems,
+        campus,
+        customer_nif: nif || undefined,
+        notes: notes || undefined,
+        payment_method: selectedPayment,
+        payment_reference: undefined,
+        customer_phone: user.phone || phone || undefined,
+      }),
+    });
+
+    const data = (await res.json()) as { id?: number; error?: string };
+    if (!res.ok || !data?.id) {
+      throw new Error(data?.error || "Erro ao submeter encomenda.");
+    }
+
+    if (persistOverlay) {
+      setSubmittedPaymentMethod(selectedPayment);
+      setOrderId(data.id);
+    }
+
+    return data.id;
+  };
+
+  const handleSubmit = async (selectedPayment: PaymentMethod | null = payment) => {
     if (!campus) {
       setError("Por favor, seleciona o campus.");
+      return;
+    }
+    if (selectedPayment !== "sumup" && selectedPayment !== "in-person") {
+      setError("Seleciona um método de pagamento.");
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/shop/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_istid: user.istid,
-          customer_name: user.name,
-          customer_email: user.email,
-          items: apiItems,
-          campus,
-          customer_nif: nif || undefined,
-          notes: notes || undefined,
-          payment_method: payment,
-          payment_reference: undefined,
-          customer_phone: user.phone || phone || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) setError(data.error || "Erro ao submeter encomenda.");
-      else {
-        setOrderId(data.id);
-      }
-    } catch {
-      setError("Erro de rede.");
+      await createOrder(selectedPayment, true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao submeter encomenda.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplePayDirect = () => {
+    if (!campus) {
+      setError("Por favor, seleciona o campus.");
+      return;
+    }
+
+    if (typeof window === "undefined" || !window.isSecureContext) {
+      setError("Apple Pay requer um contexto seguro (HTTPS).");
+      return;
+    }
+
+    if (typeof window.ApplePaySession === "undefined") {
+      setError("Apple Pay não está disponível neste browser.");
+      return;
+    }
+
+    const ApplePaySession = window.ApplePaySession;
+    if (!ApplePaySession.canMakePayments()) {
+      setError("Apple Pay não está disponível neste dispositivo.");
+      return;
+    }
+
+    setError(null);
+
+    let createdOrderId: number | null = null;
+    let checkoutId: string | null = null;
+
+    const request: ApplePayPaymentRequest = {
+      currencyCode: "EUR",
+      countryCode: "PT",
+      merchantCapabilities: ["supports3DS"],
+      supportedNetworks: ["masterCard", "visa"],
+      total: {
+        label: "NEIIST",
+        amount: total.toFixed(2),
+        type: "final",
+      },
+    };
+
+    const session = new ApplePaySession(3, request);
+
+    session.onvalidatemerchant = async (event) => {
+      try {
+        setLoading(true);
+
+        createdOrderId = await createOrder("apple-pay", false);
+
+        const checkoutRes = await fetch("/api/shop/sumup/new", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: createdOrderId,
+            currency: "EUR",
+            checkout_reference: `order-${createdOrderId}`,
+          }),
+        });
+        const checkoutData = (await checkoutRes.json()) as {
+          checkoutId?: string;
+          id?: string;
+          error?: string;
+          message?: string;
+        };
+        if (!checkoutRes.ok) {
+          throw new Error(
+            checkoutData?.error || checkoutData?.message || "Falha ao criar checkout"
+          );
+        }
+
+        checkoutId = checkoutData.checkoutId ?? checkoutData.id ?? null;
+        if (!checkoutId) {
+          throw new Error("Resposta inesperada do serviço de pagamento");
+        }
+
+        const merchantRes = await fetch("/api/shop/sumup/apple-pay-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ checkoutId, validationUrl: event.validationURL }),
+        });
+        if (!merchantRes.ok) {
+          throw new Error("Falha na validação Apple Pay");
+        }
+
+        const merchantSession = (await merchantRes.json()) as unknown;
+        session.completeMerchantValidation(merchantSession);
+      } catch (err) {
+        session.abort();
+        setError(
+          err instanceof Error ? err.message : "Falha na validação Apple Pay. Tenta novamente."
+        );
+        setLoading(false);
+      }
+    };
+
+    session.onpaymentauthorized = async (event) => {
+      try {
+        if (!checkoutId || !createdOrderId) {
+          throw new Error("Dados de pagamento incompletos");
+        }
+
+        const res = await fetch("/api/shop/sumup/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            checkoutId,
+            orderId: createdOrderId,
+            applePayToken: event.payment.token as ApplePayPaymentToken,
+          }),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string };
+
+        if (res.ok && data?.ok) {
+          session.completePayment(ApplePaySession.STATUS_SUCCESS);
+          localStorage.setItem("cart", "[]");
+          window.dispatchEvent(new Event("cartUpdated"));
+          router.push(`/my-orders?orderId=${createdOrderId}`);
+        } else {
+          session.completePayment(ApplePaySession.STATUS_FAILURE);
+          setError(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.");
+        }
+      } catch (err) {
+        session.completePayment(ApplePaySession.STATUS_FAILURE);
+        setError(
+          err instanceof Error ? err.message : "Erro ao processar Apple Pay. Tenta novamente."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    session.oncancel = () => {
+      setLoading(false);
+    };
+
+    session.begin();
   };
 
   if (cart.length === 0 && !orderId) {
@@ -125,9 +282,9 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const paymentOptions = [
     { id: "sumup", label: "Cartão" },
-    ...(applePayAvailable ? ([{ id: "apple-pay", label: "Apple Pay" }] as const) : ([] as const)),
     { id: "in-person", label: "Presencial" },
   ] as const;
+  const selectedStandardPayment = payment === "sumup" || payment === "in-person";
 
   return (
     <div className={styles.container}>
@@ -197,6 +354,11 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                   name="payment"
                   checked={payment === opt.id}
                   onChange={() => setPayment(opt.id as PaymentMethod)}
+                  onClick={() => {
+                    if (payment === opt.id) {
+                      setPayment(null);
+                    }
+                  }}
                   className={styles.radioInput}
                 />
                 <span className={styles.radioLabel}>{opt.label}</span>
@@ -216,9 +378,22 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             rows={4}
           />
         </section>
-        <button className={styles.checkoutButton} onClick={handleSubmit} disabled={loading}>
-          {loading ? "A processar..." : "Finalizar Compra"}
-        </button>
+        {selectedStandardPayment && (
+          <button
+            className={styles.checkoutButton}
+            onClick={() => handleSubmit()}
+            disabled={loading}>
+            {loading ? "A processar..." : "Finalizar Compra"}
+          </button>
+        )}
+
+        {applePayAvailable && payment !== "in-person" && payment !== "sumup" && (
+          <button
+            className={styles.applePayStandaloneButton}
+            onClick={handleApplePayDirect}
+            disabled={loading}
+            aria-label="Pagar com Apple Pay"></button>
+        )}
 
         {error && <div className={styles.errorMessage}>{error}</div>}
       </div>
@@ -344,7 +519,9 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           </div>
         </div>
       </div>
-      {orderId !== null && <CheckoutDoneOverlay orderId={orderId} paymentMethod={payment} />}
+      {orderId !== null && submittedPaymentMethod && (
+        <CheckoutDoneOverlay orderId={orderId} paymentMethod={submittedPaymentMethod} />
+      )}
     </div>
   );
 }

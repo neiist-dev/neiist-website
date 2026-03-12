@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import SumUp from "@sumup/sdk";
 import { getAllOrders } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
-import { formatVariantLabel } from "@/utils/emailUtils";
 import type { Order } from "@/types/shop";
 import { CheckoutPayload, CreateRequestBody, SumUpClient } from "@/types/sumup";
 
@@ -68,33 +67,12 @@ export async function POST(req: NextRequest) {
         attempt === 0 ? "" : `-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const uniqueRef = `${baseRef}${suffix}`;
 
-      let description =
-        order.items
-          ?.map(
-            (item: {
-              product_name?: string;
-              name?: string;
-              quantity?: number;
-              variant_label?: string;
-              variant_options?: unknown;
-            }) => {
-              const name = item.product_name || item.name || "Produto";
-              const qty = item.quantity || 1;
-              const variant = formatVariantLabel(
-                item.variant_label,
-                item.variant_options as Record<string, string> | undefined
-              );
-              return `${qty}x ${name}${variant ? " - " + variant : ""}`;
-            }
-          )
-          .join("\n") || `Encomenda #${order.order_number || orderId}`;
-
       const payload: CheckoutPayload & { customer_id?: string } = {
         amount: amountMajor,
         currency,
         checkout_reference: uniqueRef,
         merchant_code: SUMUP_MERCHANT_CODE,
-        description,
+        description: String(orderId),
       };
       if (RETURN_BASE) {
         payload.return_url = `${RETURN_BASE.replace(/\/$/, "")}/my-orders?orderId=${orderId}`;

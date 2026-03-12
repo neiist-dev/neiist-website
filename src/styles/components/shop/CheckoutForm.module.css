@@ -132,6 +132,26 @@
   filter: brightness(0.9);
 }
 
+.applePayStandaloneButton {
+  width: 100%;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  padding: 0;
+  margin-top: 0.75rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-appearance: -apple-pay-button;
+  appearance: -apple-pay-button;
+  -apple-pay-button-type: buy;
+  -apple-pay-button-style: black;
+  transition: opacity 0.25s ease;
+}
+
+.applePayStandaloneButton:hover {
+  opacity: 0.92;
+}
+
 .rightColumn {
   background: #e9eef9;
   padding: 3.5rem 3rem;

@@ -5,11 +5,11 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import styles from "@/styles/components/shop/CheckoutFormOverlay.module.css";
 import type { PaymentMethod, Order } from "@/types/shop";
 import type {
+  ApplePayPaymentRequest,
+  ApplePayPaymentToken,
   CheckoutData,
   CheckoutResponse,
   SumUpCardInstance,
-  ApplePayPaymentRequest,
-  ApplePayPaymentToken,
 } from "@/types/sumup";
 
 interface Props {
@@ -101,11 +101,8 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
     if (typeof window === "undefined") return;
     if (!window.isSecureContext) return;
     if (typeof window.ApplePaySession === "undefined") return;
-
     try {
-      if (window.ApplePaySession.canMakePayments()) {
-        setApplePayAvailable(true);
-      }
+      setApplePayAvailable(window.ApplePaySession.canMakePayments());
     } catch {
       setApplePayAvailable(false);
     }
@@ -113,6 +110,9 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
 
   const handleApplePay = useCallback(async () => {
     if (!checkoutId || !order) return;
+
+    const ApplePaySession = window.ApplePaySession;
+    if (!ApplePaySession) return;
 
     const request: ApplePayPaymentRequest = {
       currencyCode: "EUR",
@@ -126,7 +126,6 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
       },
     };
 
-    const ApplePaySession = window.ApplePaySession!;
     const session = new ApplePaySession(3, request);
 
     session.onvalidatemerchant = async (event) => {
@@ -144,7 +143,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
         session.abort();
         setError("Falha na validação Apple Pay. Tenta novamente.");
         setFlowState("error");
-        setRetryCount((c) => c + 1);
+        setRetryCount((count) => count + 1);
       }
     };
 
@@ -174,23 +173,24 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
           setError(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.");
           setFlowState("error");
-          setRetryCount((c) => c + 1);
+          setRetryCount((count) => count + 1);
         }
       } catch (err) {
         console.error("Apple Pay processing error:", err);
         session.completePayment(ApplePaySession.STATUS_FAILURE);
         setError("Erro ao processar Apple Pay. Tenta novamente.");
         setFlowState("error");
-        setRetryCount((c) => c + 1);
+        setRetryCount((count) => count + 1);
       }
     };
 
     session.oncancel = () => {
-      // User dismissed the Apple Pay sheet — do nothing, widget stays open
+      if (flowState === "processing") return;
+      setFlowState("widget");
     };
 
     session.begin();
-  }, [checkoutId, orderId, order, safetyTimerRef]);
+  }, [checkoutId, order, orderId, flowState]);
 
   const loadSumUpScript = useCallback(() => {
     return new Promise<void>((resolve, reject) => {
@@ -547,7 +547,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
           <div ref={containerRef} className={styles.widgetContainer}>
             <div id="sumup-card" style={{ width: "100%", height: "100%" }} />
           </div>
-          {applePayAvailable && (
+          {paymentMethod === "sumup" && applePayAvailable && (
             <div className={styles.applePaySection}>
               <div className={styles.applePayDivider}>
                 <span>ou paga com</span>

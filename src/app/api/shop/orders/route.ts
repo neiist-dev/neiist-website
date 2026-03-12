@@ -24,8 +24,14 @@ export async function POST(request: NextRequest) {
   if (!userRoles.isAuthorized) return userRoles.error;
   try {
     const body = await request.json();
+    const validPaymentMethods = new Set(["in-person", "eupago", "sumup", "apple-pay"]);
+
     if (!Array.isArray(body.items) || body.items.length === 0)
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
+
+    if (typeof body.payment_method !== "string" || !validPaymentMethods.has(body.payment_method)) {
+      return NextResponse.json({ error: "Missing or invalid payment_method" }, { status: 400 });
+    }
 
     if (!userRoles.user)
       return NextResponse.json({ error: "User information missing" }, { status: 500 });
@@ -38,7 +44,7 @@ export async function POST(request: NextRequest) {
       customer_nif: body.customer_nif ?? null,
       campus: body.campus ?? null,
       notes: body.notes ?? null,
-      payment_method: body.payment_method ?? "in-person",
+      payment_method: body.payment_method,
       payment_reference: body.payment_reference ?? "",
       items: body.items,
     });
