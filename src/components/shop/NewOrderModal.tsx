@@ -365,16 +365,19 @@ export default function NewOrderModal({
 
   const handleSubmit = async () => {
     if (!selectedProducts.length) {
+      // TODO: (ERROR)
       setError("Por favor, selecione pelo menos um produto.");
       return;
     }
 
     if (!isEditMode && !campus) {
+      // TODO: (ERROR)
       setError("Por favor, selecione o campus.");
       return;
     }
 
     if (!isEditMode && !selectedUser) {
+      // TODO: (ERROR)
       setError("Por favor, selecione um utilizador.");
       return;
     }
@@ -383,6 +386,7 @@ export default function NewOrderModal({
     setError(null);
 
     try {
+      // TODO: (LOADING) show loading toast while the order is being saved.
       const payload = {
         user_istid: selectedUser?.istid,
         customer_name: selectedUser?.name,
@@ -418,8 +422,10 @@ export default function NewOrderModal({
 
       const savedOrder = (await res.json().catch(() => null)) as Order | null;
       onSubmit?.(savedOrder ?? undefined);
+      // TODO: (SUCCESS) show success toast after the order is created or updated.
       onClose();
     } catch (err) {
+      // TODO: (ERROR)
       setError(
         err instanceof Error
           ? err.message
@@ -458,6 +464,7 @@ export default function NewOrderModal({
 
         <h2>{isEditMode ? "Editar Encomenda" : "Nova Encomenda"}</h2>
 
+        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
 
         <form

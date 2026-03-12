@@ -107,11 +107,14 @@ export default function MembershipsSearchList({
         }
         setNewMembership({ userNumber: "", departmentName: "", roleName: "" });
         setRoles([]);
+        // TODO: (SUCCESS) show success toast after the member is added.
       } else {
         const error = await response.json();
+        // TODO: (ERROR)
         setError(error.error || "Erro ao adicionar membro");
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao adicionar membro");
     } finally {
       setAdding(false);
@@ -143,11 +146,14 @@ export default function MembershipsSearchList({
           const data = await refreshed.json();
           setMemberships(Array.isArray(data) ? data : []);
         }
+        // TODO: (SUCCESS) show success toast after the member is removed.
       } else {
         const error = await response.json();
+        // TODO: (ERROR)
         setError(error.error || "Erro ao remover membro");
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao remover membro");
     } finally {
       setPendingRemove(null);
@@ -185,6 +191,9 @@ export default function MembershipsSearchList({
         if (user && user.istid === istid) {
           setUser({ ...user, photo: newPhotoUrl });
         }
+        // TODO: (SUCCESS) show success toast after the member photo is updated.
+      } else {
+        // TODO: (ERROR) show error toast when updating the member photo fails.
       }
       setEditingPhotoIstid(null);
     };
@@ -264,6 +273,7 @@ export default function MembershipsSearchList({
             {adding ? "A adicionar..." : "Adicionar Membro"}
           </button>
         </div>
+        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
       </section>
 

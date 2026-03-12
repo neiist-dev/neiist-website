@@ -42,6 +42,7 @@ export default function AddDepartmentModal({
       );
       if (!depRes.ok) {
         const err = await depRes.json();
+        // TODO: (ERROR)
         setError(err.error || "Erro ao criar departamento");
         setLoading(false);
         return;
@@ -58,14 +59,17 @@ export default function AddDepartmentModal({
         });
         if (!roleRes.ok) {
           const err = await roleRes.json();
+          // TODO: (ERROR)
           setError(err.error || "Erro ao criar cargo");
           setLoading(false);
           return;
         }
       }
       setLoading(false);
+      // TODO: (SUCCESS) show success toast after the department and roles are created.
       window.location.reload();
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao criar departamento ou cargos");
       setLoading(false);
     }
@@ -149,6 +153,7 @@ export default function AddDepartmentModal({
                     ))}
                   </ul>
                 </div>
+                {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
                 {error && <div className={styles.error}>{error}</div>}
                 <div className={styles.actions}>
                   <button className={styles.button} onClick={() => setStep(1)} disabled={loading}>

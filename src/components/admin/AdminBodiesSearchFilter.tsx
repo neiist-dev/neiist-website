@@ -45,6 +45,7 @@ export default function AdminBodiesSearchFilter({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
     });
+    // TODO: (SUCCESS) show success toast after the admin body is deactivated, and an error toast if this request fails.
     window.location.reload();
   };
 

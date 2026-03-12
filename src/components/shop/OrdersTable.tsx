@@ -231,6 +231,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
 
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
+    // TODO: (LOADING) show loading toast while bulk order status updates are running.
     const orderIds = Array.from(selectedOrders)
       .map((id) => Number(id))
       .filter((n) => Number.isFinite(n));
@@ -268,7 +269,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       setSelectedOrders(new Set());
       router.refresh();
       if (failures.length) {
+        // TODO: (WARNING)
         console.warn("Some updates failed:", failures);
+      } else {
+        // TODO: (SUCCESS) show success toast after all selected orders are updated.
       }
     } finally {
       setBulkLoading(false);

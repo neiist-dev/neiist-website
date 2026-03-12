@@ -86,6 +86,9 @@ export default function PhotoTeamMembers({
         if (user && user.istid === istid) {
           setUser({ ...user, photo: newPhotoUrl });
         }
+        // TODO: (SUCCESS) show success toast after the photo is updated.
+      } else {
+        // TODO: (ERROR) show error toast when the photo update fails.
       }
       setEditingPhotoIstid(null);
     };

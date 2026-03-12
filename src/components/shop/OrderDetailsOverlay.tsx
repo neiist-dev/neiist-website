@@ -99,7 +99,11 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-    } else setError("Erro ao atualizar estado.");
+      // TODO: (SUCCESS) show success toast after the order status is updated.
+    } else {
+      // TODO: (ERROR)
+      setError("Erro ao atualizar estado.");
+    }
   };
 
   const handleUserCancel = async () => {
@@ -110,7 +114,11 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-    } else setError("Erro ao cancelar encomenda.");
+      // TODO: (SUCCESS) show success toast after the order is cancelled.
+    } else {
+      // TODO: (ERROR)
+      setError("Erro ao cancelar encomenda.");
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -168,13 +176,16 @@ export default function OrderDetailOverlay({
         setOrder(updated);
         setNotesEditing(false);
         router.refresh();
+        // TODO: (SUCCESS) show success toast after the order notes are saved.
         return true;
       } else {
         const err = await res.json().catch(() => null);
+        // TODO: (ERROR)
         setError(err?.error ?? "Erro ao guardar notas.");
         return false;
       }
     } catch (err) {
+      // TODO: (ERROR)
       setError("Erro ao guardar notas.");
       console.error(err);
       return false;
@@ -527,6 +538,7 @@ export default function OrderDetailOverlay({
             }}
           />
 
+          {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
           {error && <div className={styles.error}>{error}</div>}
         </div>
       )}

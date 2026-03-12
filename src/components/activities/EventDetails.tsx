@@ -123,8 +123,10 @@ export default function EventDetails({
         };
         onUpdate(patchedRaw);
         router.refresh();
+        // TODO: (SUCCESS) show success toast after the event settings are saved.
       }
     } catch (error) {
+      // TODO: (ERROR)
       console.error("Failed to save settings:", error);
     }
   }, [isAdmin, settings, event.id, event.raw, onUpdate, router]);
@@ -151,7 +153,7 @@ export default function EventDetails({
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      // TODO: show toast notification prompting the user to log in
+      // TODO: (WARNING) show toast notification prompting the user to log in
       return;
     }
     setIsProcessing(true);
@@ -173,7 +175,9 @@ export default function EventDetails({
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
+      // TODO: (SUCCESS) show success toast after signing up or unsubscribing from the event.
     } catch (error) {
+      // TODO: (ERROR)
       console.error("Failed to sign up:", error);
     } finally {
       setIsProcessing(false);
@@ -182,6 +186,7 @@ export default function EventDetails({
 
   const handleEmailAttendees = async () => {
     try {
+      // TODO: (LOADING) show loading toast while attendee emails are being prepared.
       const res = await fetch(`/api/calendar/activities?eventId=${event.id}`, {
         credentials: "include",
       });
@@ -196,7 +201,9 @@ export default function EventDetails({
         `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
         "_blank"
       );
+      // TODO: (SUCCESS) show success toast after attendee email draft is opened.
     } catch (error) {
+      // TODO: (ERROR)
       console.error("Error fetching attendees:", error);
     }
   };

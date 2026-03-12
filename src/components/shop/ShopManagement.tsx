@@ -65,12 +65,15 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         });
 
         if (response.ok) {
+          // TODO: (SUCCESS) show success toast after the product is removed.
           window.location.reload();
         } else {
           const error = await response.json();
+          // TODO: (ERROR)
           console.error("Error deleting product:", error);
         }
       } catch (error) {
+        // TODO: (ERROR)
         console.error("Error deleting product:", error);
       }
       setShowConfirm(false);

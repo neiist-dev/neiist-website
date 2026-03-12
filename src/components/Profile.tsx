@@ -110,6 +110,7 @@ export default function ProfileClient({
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Falha ao enviar email de verificação");
         }
+        // TODO: (SUCCESS) show success toast after the verification email request is sent.
       } else {
         const res = await fetch(`/api/user/update/${user.istid}`, {
           method: "PUT",
@@ -129,6 +130,7 @@ export default function ProfileClient({
         setUser(updated);
       }
     } catch (e) {
+      // TODO: (ERROR)
       setError(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
     } finally {
       setPendingChange(null);
@@ -139,6 +141,7 @@ export default function ProfileClient({
     if (calendarData) return calendarData;
     if (!user?.istid) return null;
     try {
+      // TODO: show loading toast while fetching calendar
       const response = await fetch(`/api/calendar/${user.istid}`);
       if (!response.ok) {
         throw new Error("Failed to get calendar data");
@@ -151,6 +154,7 @@ export default function ProfileClient({
       setCalendarData(links);
       return links;
     } catch (e) {
+      // TODO: (ERROR)
       setError(e instanceof Error ? e.message : "Erro ao obter link do calendário.");
       return null;
     }
@@ -189,11 +193,13 @@ export default function ProfileClient({
   const onCvUpload = async (file: File | null) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
+      // TODO: (ERROR)
       setError("Envie apenas ficheiros PDF.");
       return;
     }
     setCvLoading(true);
     try {
+      // TODO: (LOADING) show loading toast while the CV upload is in progress.
       const form = new FormData();
       form.append("file", file);
       form.append("istid", user.istid);
@@ -201,7 +207,9 @@ export default function ProfileClient({
       const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
       if (!res.ok) throw new Error("Falha ao enviar o CV.");
       setHasCV(true);
+      // TODO: (SUCCESS) show success toast after the CV is uploaded.
     } catch (e) {
+      // TODO: (ERROR)
       setError(e instanceof Error ? e.message : "Erro ao enviar o CV.");
     } finally {
       setCvLoading(false);
@@ -214,7 +222,9 @@ export default function ProfileClient({
       const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
       if (!res.ok) throw new Error("Falha ao remover o CV.");
       setHasCV(false);
+      // TODO: (SUCCESS) show success toast after the CV is removed.
     } catch (e) {
+      // TODO: (ERROR)
       setError(e instanceof Error ? e.message : "Erro ao remover o CV.");
     } finally {
       setCvLoading(false);
@@ -236,6 +246,7 @@ export default function ProfileClient({
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
+      // TODO: (ERROR)
       setError(e instanceof Error ? e.message : "Erro ao descarregar o CV.");
     } finally {
       setCvLoading(false);
@@ -460,6 +471,7 @@ export default function ProfileClient({
           </div>
         </div>
       </div>
+      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
       {error && <p className={styles.error}>{error}</p>}
       <ConfirmDialog
         open={showConfirmDialog}

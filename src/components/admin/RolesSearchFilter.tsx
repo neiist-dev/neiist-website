@@ -106,11 +106,14 @@ export default function RolesSearchFilter({
             await fetchRoles(selectedDepartment);
           }
         }
+        // TODO: (SUCCESS) show success toast after the role is added.
       } else {
         const error = await response.json();
+        // TODO: (ERROR)
         setError(error.error || "Erro ao adicionar cargo");
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao adicionar cargo");
     } finally {
       setLoading(false);
@@ -140,11 +143,14 @@ export default function RolesSearchFilter({
         } else {
           await fetchRoles(dept);
         }
+        // TODO: (SUCCESS) show success toast after the role is removed.
       } else {
         const error = await response.json();
+        // TODO: (ERROR)
         setError(error.error || "Erro ao remover cargo");
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao remover cargo");
     } finally {
       setPendingRemove(null);
@@ -323,6 +329,7 @@ export default function RolesSearchFilter({
               {loading ? "A adicionar..." : "Adicionar Cargo"}
             </button>
           </div>
+          {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
           {error && <div className={styles.error}>{error}</div>}
         </form>
       </section>

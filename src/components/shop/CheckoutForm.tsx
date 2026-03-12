@@ -107,10 +107,12 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const handleSubmit = async (selectedPayment: PaymentMethod | null = payment) => {
     if (!campus) {
+      // TODO: (ERROR)
       setError("Por favor, seleciona o campus.");
       return;
     }
     if (selectedPayment !== "sumup" && selectedPayment !== "in-person") {
+      // TODO: (ERROR)
       setError("Seleciona um método de pagamento.");
       return;
     }
@@ -119,6 +121,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     try {
       await createOrder(selectedPayment, true);
     } catch (err) {
+      // TODO: (ERROR)
       setError(err instanceof Error ? err.message : "Erro ao submeter encomenda.");
     } finally {
       setLoading(false);
@@ -127,16 +130,19 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const handleApplePayDirect = () => {
     if (!campus) {
+      // TODO: (ERROR)
       setError("Por favor, seleciona o campus.");
       return;
     }
 
     if (typeof window === "undefined" || !window.isSecureContext) {
+      // TODO: (ERROR)
       setError("Apple Pay requer um contexto seguro (HTTPS).");
       return;
     }
 
     if (typeof window.ApplePaySession === "undefined") {
+      // TODO: (ERROR)
       setError("Apple Pay não está disponível neste browser.");
       return;
     }
@@ -242,10 +248,12 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           router.push(`/my-orders?orderId=${createdOrderId}`);
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
+          // TODO: (ERROR)
           setError(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.");
         }
       } catch (err) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
+        // TODO: (ERROR)
         setError(
           err instanceof Error ? err.message : "Erro ao processar Apple Pay. Tenta novamente."
         );
@@ -395,6 +403,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             aria-label="Pagar com Apple Pay"></button>
         )}
 
+        {/* TODO: remove inline error in favor of toast or test if for this case the inline error on the widget are better.*/}
         {error && <div className={styles.errorMessage}>{error}</div>}
       </div>
 

@@ -114,10 +114,13 @@ export default function CoordinatorTeamManagementSearch({
         await refreshMemberships();
         setSelectedUser("");
         setSelectedRole("");
+        // TODO: (SUCCESS) show success toast after the team member is added.
       } else {
+        // TODO: (ERROR)
         setError("Erro ao adicionar membro.");
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao adicionar membro.");
     } finally {
       setLoading(false);
@@ -146,10 +149,13 @@ export default function CoordinatorTeamManagementSearch({
       });
       if (response.ok) {
         await refreshMemberships();
+        // TODO: (SUCCESS) show success toast after the team member is removed.
       } else {
+        // TODO: (ERROR)
         setError("Erro ao remover membro.");
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao remover membro.");
     } finally {
       setLoading(false);
@@ -218,6 +224,7 @@ export default function CoordinatorTeamManagementSearch({
             Adicionar Membro
           </button>
         </form>
+        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
       </section>
       <section className={styles.section}>

@@ -60,8 +60,10 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
           });
         }
       } catch (e) {
+        // TODO: (SUCCESS) show error toast when automatic order cancellation fails.
         console.error("cancelOrder error", e);
       } finally {
+        // TODO: (ERROR) show info toast explaining that the order was cancelled after payment failure.
         finalizeAndNavigate("/my-orders");
       }
     },
@@ -141,6 +143,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
       } catch (err) {
         console.error("Apple Pay merchant validation error:", err);
         session.abort();
+        // TODO: (ERROR)
         setError("Falha na validação Apple Pay. Tenta novamente.");
         setFlowState("error");
         setRetryCount((count) => count + 1);
@@ -178,6 +181,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
       } catch (err) {
         console.error("Apple Pay processing error:", err);
         session.completePayment(ApplePaySession.STATUS_FAILURE);
+        // TODO: (ERROR)
         setError("Erro ao processar Apple Pay. Tenta novamente.");
         setFlowState("error");
         setRetryCount((count) => count + 1);
@@ -221,6 +225,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
         if (!mounted) return;
         const d = data as Order & { error?: string; payment_reference?: string };
         if (d?.error) {
+          // TODO: (ERROR)
           setError(d.error || "Failed to fetch order");
           setFlowState("error");
         } else {
@@ -232,6 +237,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
       })
       .catch(() => {
         if (mounted) {
+          // TODO: (ERROR)
           setError("Network error fetching order");
           setFlowState("error");
         }
@@ -267,6 +273,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
         } | null;
         if (!mounted) return;
         if (!res.ok) {
+          // TODO: (ERROR)
           setError(data?.error || data?.message || "Falha ao criar checkout SumUp");
           setFlowState("error");
           console.error("create-checkout error:", data);
@@ -276,6 +283,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
             setCheckoutId(String(cid));
           } else {
             console.error("No checkout ID in response:", data);
+            // TODO: (ERROR)
             setError("Resposta inesperada do serviço de pagamento");
             setFlowState("error");
           }
@@ -283,6 +291,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
       } catch (err) {
         console.error("Network error creating checkout:", err);
         if (mounted) {
+          // TODO: (ERROR)
           setError("Erro de rede ao criar checkout.");
           setFlowState("error");
         }
@@ -591,6 +600,7 @@ export default function CheckoutDoneOverlay({ orderId, paymentMethod }: Props) {
         <div className={styles.errorPanel}>
           <h2 className={styles.errorTitle}>Erro no Pagamento</h2>
           <p className={styles.errorMessage}>
+            {/* TODO: remove inline error in favor of toast or test if for this case the inline error on the widget are better.*/}
             {error || "Ocorreu um erro ao processar o pagamento"}
           </p>
           {retryCount < MAX_RETRIES && (

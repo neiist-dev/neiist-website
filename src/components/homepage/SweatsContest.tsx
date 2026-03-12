@@ -14,6 +14,7 @@ export default function SweatsContest() {
 
   const handleButtonClick = () => {
     if (!user) {
+      // TODO: (WARNING) show toast prompting the user to log in before submitting.
       return;
     }
     fileInputRef.current?.click();
@@ -24,6 +25,7 @@ export default function SweatsContest() {
     if (!file) return;
 
     if (file.type !== "application/zip" && file.type !== "application/x-zip-compressed") {
+      // TODO: (ERROR)
       setButtonText("Erro: Apenas ficheiros ZIP");
       setTimeout(() => setButtonText("Submete um design!"), 3000);
       return;
@@ -35,18 +37,22 @@ export default function SweatsContest() {
     formData.append("file", file);
 
     try {
+      // TODO: (LOADING) show loading toast while the design submission is uploading.
       const response = await fetch("/api/user/sweats-contest", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
+        // TODO: (SUCCESS)
         setButtonText("Design submetido");
       } else {
+        // TODO: (ERROR)
         setButtonText("Erro ao submeter");
       }
     } catch (error) {
       setButtonText("Erro ao submeter");
+      // TODO: (ERROR)
       console.error("Upload error:", error);
     } finally {
       setUploading(false);

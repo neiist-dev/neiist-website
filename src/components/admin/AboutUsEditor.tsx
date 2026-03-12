@@ -133,6 +133,7 @@ export default function AboutUsEditor({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ departmentName, roles: newRoles }),
     });
+    // TODO: (SUCCESS) show success toast after the role order is saved, and an error toast if this request fails.
   }
 
   function handleDragEnd(departmentName: string, event: DragEndEvent) {

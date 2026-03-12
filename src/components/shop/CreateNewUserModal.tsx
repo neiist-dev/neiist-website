@@ -42,6 +42,7 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
   const handleSubmit = async () => {
     if (!istId || !name || !email) {
+      // TODO: (ERROR)
       setError("Por favor, preencha todos os campos.");
       return;
     }
@@ -69,9 +70,11 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
       const newUser = await response.json();
       onSubmit?.(newUser);
+      // TODO: (SUCCESS) show success toast after the new user is created.
       onClose();
     } catch (error) {
       console.error("Error creating user:", error);
+      // TODO: (ERROR)
       setError(error instanceof Error ? error.message : "Failed to create user");
     } finally {
       setIsSubmitting(false);
@@ -92,6 +95,7 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
         <h2>Novo Utilizador</h2>
 
+        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleConfirm}>

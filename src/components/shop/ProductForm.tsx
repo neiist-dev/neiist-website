@@ -135,10 +135,12 @@ export default function ProductForm({
         setNewCategory("");
       } else {
         const errorData = await response.json();
+        // TODO: (ERROR)
         setError("Erro ao criar categoria: " + (errorData.message || errorData.error));
       }
     } catch (error) {
       console.error("Category creation error:", error);
+      // TODO: (ERROR)
       setError("Erro ao criar categoria");
     }
   };
@@ -227,10 +229,12 @@ export default function ProductForm({
     setError("");
 
     if (!name.trim()) {
+      // TODO: (ERROR)
       setError("Nome é obrigatório");
       return;
     }
     if (!category) {
+      // TODO: (ERROR)
       setError("Categoria é obrigatória");
       return;
     }
@@ -238,12 +242,14 @@ export default function ProductForm({
       for (const optionType of optionTypes) {
         const val = (variant.options[optionType] || "").trim();
         if (!val) {
+          // TODO: (ERROR)
           setError(`Variante deve ter "${optionType}" preenchido`);
           return;
         }
         if (isColorKey(optionType)) {
           const { hex } = splitNameHex(val);
           if (!hex) {
+            // TODO: (ERROR)
             setError(
               `Opção de cor "${optionType}" precisa de um valor com hex (ex: Verde - #2C4A52)`
             );
@@ -256,6 +262,7 @@ export default function ProductForm({
     setUploading(true);
 
     try {
+      // TODO: (LOADING) show loading toast while the product is being saved and images are uploaded.
       const convertToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -313,12 +320,15 @@ export default function ProductForm({
       });
 
       if (response.ok) {
+        // TODO: (SUCCESS) show success toast after the product is created or updated.
         window.location.href = "/shop/manage";
       } else {
         const errorData = await response.json();
+        // TODO: (ERROR)
         setError("Erro: " + (errorData.message || errorData.error || "Erro desconhecido"));
       }
     } catch {
+      // TODO: (ERROR)
       setError("Erro ao guardar produto");
     } finally {
       setUploading(false);
@@ -333,6 +343,7 @@ export default function ProductForm({
 
       <h1 className={styles.title}>{isEdit ? `Editar ${name}` : "Adicionar Produto"}</h1>
 
+      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
       {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.section}>
