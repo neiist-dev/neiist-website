@@ -106,6 +106,17 @@ collect_admin_istid() {
   fi
 }
 
+# Function to auto-generate JWT secret
+generate_jwt_secret() {
+  if [ -z "${jwt_secret}" ]; then
+    if command -v openssl >/dev/null 2>&1; then
+      jwt_secret=$(openssl rand -hex 32)
+    else
+      jwt_secret=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
+    fi
+  fi
+}
+
 add_dev_admin_to_init_sql
 
 # Create .env file in project root
@@ -120,6 +131,7 @@ if [ -f ".env" ]; then
     collect_base_url
     collect_notion_env
     collect_google_calendar_env
+    generate_jwt_secret
     cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -138,6 +150,7 @@ DATABASE_ID=${database_id}
 # Google Calendar Service Account
 GOOGLE_SERVICE_ACCOUNT_EMAIL=${google_service_account_email}
 GOOGLE_SERVICE_ACCOUNT_KEY=${google_service_account_key}
+JWT_SECRET=${jwt_secret}
 DEV_ISTID=${dev_istid}[ADMIN]
 EOF
     echo ".env file created successfully."
@@ -148,6 +161,7 @@ else
   collect_base_url
   collect_notion_env
   collect_google_calendar_env
+  generate_jwt_secret
   cat > .env << EOF
 FENIX_CLIENT_ID=${fenix_client_id}
 FENIX_CLIENT_SECRET=${fenix_client_secret}
@@ -166,6 +180,7 @@ DATABASE_ID=${database_id}
 # Google Calendar Service Account
 GOOGLE_SERVICE_ACCOUNT_EMAIL=${google_service_account_email}
 GOOGLE_SERVICE_ACCOUNT_KEY=${google_service_account_key}
+JWT_SECRET=${jwt_secret}
 DEV_ISTID=${dev_istid}[ADMIN]
 EOF
   echo ".env file created successfully."
