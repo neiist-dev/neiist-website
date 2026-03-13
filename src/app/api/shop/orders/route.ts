@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllOrders, newOrder, getUser, updateUser } from "@/utils/dbUtils";
+import {
+  getAllOrders,
+  newOrder,
+  getUser,
+  updateUser,
+  mapOrderDbErrorToResponse,
+} from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import { sendEmail, getOrderConfirmationTemplate } from "@/utils/emailUtils";
@@ -80,6 +86,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(order);
   } catch (e) {
+    const mappedError = mapOrderDbErrorToResponse(e);
+    if (mappedError) {
+      return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
+    }
+
     console.error("orders POST error:", e);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }

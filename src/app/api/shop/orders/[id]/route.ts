@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrder, setOrderState, getAllOrders, updateUser } from "@/utils/dbUtils";
+import {
+  updateOrder,
+  setOrderState,
+  getAllOrders,
+  updateUser,
+  mapOrderDbErrorToResponse,
+} from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { getStatusLabel } from "@/types/shop";
 import { serverCheckRoles } from "@/utils/permissionUtils";
@@ -126,16 +132,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    if (phone !== undefined && order.user_istid) {
-      await updateUser(order.user_istid, { phone: phone || null });
-    }
-
     const updatedOrder = await updateOrder(orderId, filteredUpdates as Partial<Order>);
     if (!updatedOrder) {
       return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
     }
+
+    if (phone !== undefined && order.user_istid) {
+      await updateUser(order.user_istid, { phone: phone || null });
+    }
+
     return NextResponse.json(updatedOrder);
   } catch (e) {
+    if (e instanceof Error && e.message.startsWith("Item ")) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+
+    const mappedError = mapOrderDbErrorToResponse(e);
+    if (mappedError) {
+      return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
+    }
+
     console.error("Order PUT error:", e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Failed to update order" },

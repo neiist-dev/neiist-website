@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop";
@@ -7,6 +7,7 @@ import styles from "@/styles/components/shop/ProductDetail.module.css";
 import { FiChevronDown } from "react-icons/fi";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
+import { toast } from "sonner";
 
 interface ProductDetailProps {
   product: Product;
@@ -14,6 +15,14 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
+  const unavailableToastId = `product-detail-unavailable-${product.id}`;
+
+  useEffect(() => {
+    return () => {
+      toast.dismiss(unavailableToastId);
+    };
+  }, [unavailableToastId]);
+
   const optionNames = useMemo(() => {
     const all = new Set<string>();
     product.variants.forEach((v) => Object.keys(v.options || {}).forEach((k) => all.add(k)));
@@ -83,6 +92,21 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const addToCart = () => {
+    if (!canBuy) {
+      if (isDeadlineExpired) {
+        toast.error("O prazo de encomenda deste produto já terminou.", {
+          id: unavailableToastId,
+          duration: Infinity,
+        });
+      } else {
+        toast.error("Este produto já não está disponível para compra.", {
+          id: unavailableToastId,
+          duration: Infinity,
+        });
+      }
+      return;
+    }
+
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
     cart.push({
       product,
@@ -118,11 +142,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setImgIndex(getVariantImageIndex(newVariant));
   };
 
+  const isDeadlineExpired =
+    product.stock_type === "on_demand" &&
+    !!product.order_deadline &&
+    new Date(product.order_deadline) < new Date();
+
   const canBuy =
-    product.variants.length === 0 ||
-    (selectedVariant &&
-      selectedVariant.active &&
-      (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0));
+    !isDeadlineExpired &&
+    (product.variants.length === 0 ||
+      (selectedVariant &&
+        selectedVariant.active &&
+        (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0)));
   const isColorOption = isColorKey(mainOption);
 
   return (
@@ -241,9 +271,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 +
               </button>
             </div>
-            <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
-              Adicionar ao Carrinho
-            </button>
+            <div
+              className={styles.addButtonWrapper}
+              onClick={() => {
+                if (!canBuy) addToCart();
+              }}>
+              <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
+                Adicionar ao Carrinho
+              </button>
+            </div>
           </div>
           <div className={styles.asideDetails}>
             <details className={styles.detailsBlock}>

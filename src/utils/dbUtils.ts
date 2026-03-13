@@ -752,6 +752,43 @@ export const newOrder = async (
   return row ? mapdbOrderToOrder(row) : null;
 };
 
+export function mapOrderDbErrorToResponse(
+  error: unknown
+): { error: string; status: number } | null {
+  const dbError = error as { message?: string; code?: string };
+  const message = dbError?.message ?? "";
+
+  if (message.includes("Order deadline has passed for product")) {
+    return { error: "O prazo de encomenda do produto ja terminou", status: 400 };
+  }
+
+  if (message.includes("Insufficient variant stock")) {
+    return { error: "Stock insuficiente para a variante selecionada", status: 400 };
+  }
+
+  if (message.includes("Insufficient product stock")) {
+    return { error: "Stock insuficiente para o produto selecionado", status: 400 };
+  }
+
+  if (message.includes("Product") && message.includes("not found or inactive")) {
+    return { error: "Produto indisponivel", status: 400 };
+  }
+
+  if (message.includes("Variant") && message.includes("not found or inactive")) {
+    return { error: "Variante indisponivel", status: 400 };
+  }
+
+  if (message.includes("Invalid quantity for product_id")) {
+    return { error: "Quantidade invalida", status: 400 };
+  }
+
+  if (dbError?.code === "P0001") {
+    return { error: "Pedido invalido", status: 400 };
+  }
+
+  return null;
+}
+
 export const getAllOrders = async (): Promise<Order[]> => {
   const { rows } = await db_query<dbOrder>(`SELECT * FROM neiist.get_all_orders()`);
   return rows.map(mapdbOrderToOrder);

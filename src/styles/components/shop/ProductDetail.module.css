@@ -266,6 +266,11 @@
   transition: background 0.2s;
 }
 
+.addButtonWrapper {
+  width: 100%;
+  flex: 1;
+}
+
 .addButton:hover {
   filter: brightness(0.8);
 }
@@ -273,6 +278,7 @@
 .addButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
 .asideDetails {

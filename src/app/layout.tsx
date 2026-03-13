@@ -45,6 +45,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
             <NavBar />
             <Cart />
             <Toaster
+              position="top-right"
+              offset={{ top: "96px", right: "16px", left: "16px" }}
+              mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
               toastOptions={{
                 style: {
                   background: "var(--background-colour)",

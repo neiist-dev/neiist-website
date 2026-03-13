@@ -1559,6 +1559,7 @@ DECLARE
   v_unit NUMERIC(10,2);
   v_total NUMERIC(10,2) := 0;
   v_stock_type neiist.shop_stock_type_enum;
+  v_order_deadline TIMESTAMPTZ;
   v_variant_stock INTEGER;
   v_product_stock INTEGER;
   v_pname TEXT;
@@ -1579,13 +1580,17 @@ BEGIN
       RAISE EXCEPTION 'Invalid quantity for product_id %', v_pid;
     END IF;
 
-    SELECT p.name, p.price, p.stock_type, p.stock_quantity
-      INTO v_pname, v_base, v_stock_type, v_product_stock
+    SELECT p.name, p.price, p.stock_type, p.stock_quantity, p.order_deadline
+      INTO v_pname, v_base, v_stock_type, v_product_stock, v_order_deadline
     FROM neiist.products p
     WHERE p.id = v_pid AND p.active = TRUE;
 
     IF v_pname IS NULL THEN
       RAISE EXCEPTION 'Product % not found or inactive', v_pid;
+    END IF;
+
+    IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+      RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
     END IF;
 
     IF v_vid IS NOT NULL THEN
@@ -1799,6 +1804,10 @@ DECLARE
   v_base NUMERIC(10,2);
   v_unit NUMERIC(10,2);
   v_total NUMERIC(10,2) := 0;
+  v_stock_type neiist.shop_stock_type_enum;
+  v_order_deadline TIMESTAMPTZ;
+  v_variant_stock INTEGER;
+  v_product_stock INTEGER;
   v_pname TEXT;
   v_v_label TEXT;
   v_v_opts JSONB;
@@ -1829,6 +1838,31 @@ BEGIN
   END IF;
 
   IF p_updates ? 'items' THEN
+    -- Restock previous limited-stock items before replacing the order lines.
+    FOR v_pid, v_vid, v_qty IN
+      SELECT oi.product_id, oi.variant_id, oi.quantity
+      FROM neiist.order_items oi
+      WHERE oi.order_id = p_order_id
+    LOOP
+      SELECT p.stock_type
+        INTO v_stock_type
+      FROM neiist.products p
+      WHERE p.id = v_pid FOR UPDATE;
+
+      IF v_stock_type = 'limited' THEN
+        IF v_vid IS NOT NULL THEN
+          UPDATE neiist.product_variants
+          SET stock_quantity = COALESCE(stock_quantity, 0) + v_qty,
+              updated_at = NOW()
+          WHERE product_variants.id = v_vid AND product_variants.product_id = v_pid;
+        ELSE
+          UPDATE neiist.products
+          SET stock_quantity = COALESCE(stock_quantity, 0) + v_qty
+          WHERE products.id = v_pid;
+        END IF;
+      END IF;
+    END LOOP;
+
     DELETE FROM neiist.order_items WHERE order_id = p_order_id;
 
     FOR it IN SELECT * FROM jsonb_array_elements(p_updates->'items')
@@ -1841,8 +1875,8 @@ BEGIN
         RAISE EXCEPTION 'Invalid quantity for product_id %', v_pid;
       END IF;
 
-      SELECT p.name, p.price
-        INTO v_pname, v_base
+      SELECT p.name, p.price, p.stock_type, p.order_deadline
+        INTO v_pname, v_base, v_stock_type, v_order_deadline
       FROM neiist.products p
       WHERE p.id = v_pid AND p.active = TRUE;
 
@@ -1850,7 +1884,17 @@ BEGIN
         RAISE EXCEPTION 'Product % not found or inactive', v_pid;
       END IF;
 
+      IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+        RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+      END IF;
+
       IF v_vid IS NOT NULL THEN
+        -- Lock variant row for stock check
+        PERFORM 1 FROM neiist.product_variants WHERE product_variants.id = v_vid AND product_variants.product_id = v_pid AND product_variants.active = TRUE FOR UPDATE;
+        IF NOT FOUND THEN
+          RAISE EXCEPTION 'Variant % for product % not found or inactive', v_vid, v_pid;
+        END IF;
+
         SELECT
           NULLIF((
             SELECT string_agg(pvo.option_name || ': ' || pvo.option_value, ' | ' ORDER BY pvo.option_name)
@@ -1862,20 +1906,44 @@ BEGIN
             FROM neiist.product_variant_options pvo
             WHERE pvo.variant_id = pv.id
           ), '{}'::jsonb) AS options,
-          pv.price_modifier
-        INTO v_v_label, v_v_opts, v_unit
+          pv.price_modifier,
+          pv.stock_quantity
+        INTO v_v_label, v_v_opts, v_unit, v_variant_stock
         FROM neiist.product_variants pv
-        WHERE pv.id = v_vid AND pv.product_id = v_pid AND pv.active = TRUE;
-
-        IF v_v_label IS NULL AND v_v_opts IS NULL THEN
-          RAISE EXCEPTION 'Variant % for product % not found or inactive', v_vid, v_pid;
-        END IF;
+        WHERE pv.id = v_vid AND pv.product_id = v_pid;
 
         v_unit := ROUND(v_base + COALESCE(v_unit, 0), 2);
+
+        IF v_stock_type = 'limited' THEN
+          IF v_variant_stock IS NULL OR v_variant_stock < v_qty THEN
+            RAISE EXCEPTION 'Insufficient variant stock (product %, variant %, have %, need %)',
+              v_pid, v_vid, COALESCE(v_variant_stock, -1), v_qty;
+          END IF;
+
+          UPDATE neiist.product_variants
+            SET stock_quantity = stock_quantity - v_qty,
+                updated_at = NOW()
+            WHERE product_variants.id = v_vid;
+        END IF;
       ELSE
         v_v_label := NULL;
         v_v_opts := NULL;
         v_unit := ROUND(v_base, 2);
+
+        IF v_stock_type = 'limited' THEN
+          SELECT p.stock_quantity INTO v_product_stock
+          FROM neiist.products p
+          WHERE p.id = v_pid FOR UPDATE;
+
+          IF v_product_stock IS NULL OR v_product_stock < v_qty THEN
+            RAISE EXCEPTION 'Insufficient product stock (product %, have %, need %)',
+              v_pid, COALESCE(v_product_stock, -1), v_qty;
+          END IF;
+
+          UPDATE neiist.products
+          SET stock_quantity = stock_quantity - v_qty
+          WHERE id = v_pid;
+        END IF;
       END IF;
 
       v_total := v_total + v_unit * v_qty;
