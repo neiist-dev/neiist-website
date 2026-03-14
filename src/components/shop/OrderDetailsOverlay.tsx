@@ -432,7 +432,8 @@ export default function OrderDetailOverlay({
                   </button>
                 </div>
                 <p className={styles.timestamp}>
-                  Criada em {new Date(order.created_at).toLocaleString("pt-PT")}
+                  Criada por {order.created_by || "-"} em{" "}
+                  {new Date(order.created_at).toLocaleString("pt-PT")}
                 </p>
                 {order.paid_at && (
                   <p className={styles.timestamp}>

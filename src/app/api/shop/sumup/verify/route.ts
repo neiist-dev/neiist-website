@@ -53,8 +53,6 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as {
       checkoutId?: string;
       orderId?: number | string;
-      // Present only for Apple Pay — when supplied, the token is submitted to
-      // SumUp before the standard verification step runs.
       applePayToken?: ApplePayPaymentToken;
     };
     const { checkoutId, orderId, applePayToken } = body ?? {};
@@ -85,7 +83,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, alreadyProcessed: true });
     }
 
-    // When an Apple Pay token is supplied, submit it to SumUp before verifying.
     if (applePayToken) {
       const processRes = await fetch(`https://api.sumup.com/v0.1/checkouts/${checkoutId}`, {
         method: "PUT",
@@ -147,9 +144,22 @@ export async function POST(req: NextRequest) {
     }
 
     const paidAt = new Date().toISOString();
+    const transactionCode =
+      checkoutData?.transaction_code || checkoutData?.transactions?.[0]?.transaction_code;
+
+    if (!transactionCode) {
+      return NextResponse.json(
+        {
+          error: "Missing transaction code in provider response",
+          details: { checkoutId, status },
+        },
+        { status: 502 }
+      );
+    }
+
     try {
       await updateOrder(Number(orderId), {
-        payment_reference: checkoutId,
+        payment_reference: transactionCode,
         paid_at: paidAt,
         payment_checked_by: user?.istid ?? "system",
         updated_at: paidAt,

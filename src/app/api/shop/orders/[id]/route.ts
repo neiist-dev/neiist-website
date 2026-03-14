@@ -67,6 +67,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       "delivered_by",
       "notes",
       "payment_reference",
+      "created_by",
       "paid_at",
       "payment_checked_by",
       "campus",

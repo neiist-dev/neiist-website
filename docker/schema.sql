@@ -234,7 +234,7 @@ CREATE SEQUENCE neiist.order_sequence;
 CREATE OR REPLACE FUNCTION neiist.generate_order_number()
 RETURNS TEXT AS $$
 BEGIN
-  RETURN 'ORD-' || to_char(NOW(), 'YYYY') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
+  RETURN 'ORD-' || to_char(clock_timestamp(), 'YYYYMMDDHH24MISSUS') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -249,6 +249,7 @@ CREATE TABLE neiist.orders (
   total_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
   payment_method TEXT,
   payment_reference TEXT,
+  created_by TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
@@ -1526,6 +1527,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   p_notes TEXT,
   p_payment_method TEXT,
   p_payment_reference TEXT,
+  p_created_by TEXT,
   p_items JSONB
 ) RETURNS TABLE (
   id INTEGER,
@@ -1541,6 +1543,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
+  created_by TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
@@ -1566,8 +1569,24 @@ DECLARE
   v_v_label TEXT;
   v_v_opts JSONB;
 BEGIN
-  INSERT INTO neiist.orders(user_istid, nif, campus, notes, payment_method, payment_reference)
-  VALUES (p_user_istid, p_nif, p_campus, p_notes, p_payment_method, p_payment_reference)
+  INSERT INTO neiist.orders(
+    user_istid,
+    nif,
+    campus,
+    notes,
+    payment_method,
+    payment_reference,
+    created_by
+  )
+  VALUES (
+    p_user_istid,
+    p_nif,
+    p_campus,
+    p_notes,
+    p_payment_method,
+    p_payment_reference,
+    p_created_by
+  )
   RETURNING orders.id INTO v_order_id;
 
   FOR it IN SELECT * FROM jsonb_array_elements(p_items)
@@ -1688,6 +1707,7 @@ BEGIN
       WHERE oi.order_id = o.id
     ), '[]'::JSONB) AS items,
     o.notes, o.total_amount, o.payment_method, o.payment_reference,
+    o.created_by,
     o.created_at, o.paid_at, o.payment_checked_by, o.delivered_at, o.delivered_by, o.updated_at,
     o.status::TEXT
   FROM neiist.orders o
@@ -1712,6 +1732,7 @@ RETURNS TABLE (
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
+  created_by TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
@@ -1757,6 +1778,7 @@ BEGIN
     o.total_amount,
     o.payment_method,
     o.payment_reference,
+    o.created_by,
     o.created_at,
     o.paid_at,
     o.payment_checked_by,
@@ -1788,6 +1810,7 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
+  created_by TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
@@ -1829,6 +1852,9 @@ BEGIN
   END IF;
   IF p_updates ? 'payment_reference' THEN
     UPDATE neiist.orders SET payment_reference = p_updates->>'payment_reference' WHERE neiist.orders.id = p_order_id;
+  END IF;
+  IF p_updates ? 'created_by' THEN
+    UPDATE neiist.orders SET created_by = NULLIF(p_updates->>'created_by','') WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'payment_checked_by' THEN
     UPDATE neiist.orders SET payment_checked_by = NULLIF(p_updates->>'payment_checked_by','') WHERE neiist.orders.id = p_order_id;
@@ -1977,6 +2003,7 @@ BEGIN
     g.total_amount,
     g.payment_method,
     g.payment_reference,
+    g.created_by,
     g.created_at,
     g.paid_at,
     g.payment_checked_by,
@@ -2008,6 +2035,7 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
+  created_by TEXT,
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
@@ -2041,6 +2069,7 @@ BEGIN
     g.total_amount,
     g.payment_method,
     g.payment_reference,
+    g.created_by,
     g.created_at,
     g.paid_at,
     g.payment_checked_by,

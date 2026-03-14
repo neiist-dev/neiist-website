@@ -68,6 +68,7 @@ export interface Order {
   total_amount: number;
   payment_method?: PaymentMethod;
   payment_reference?: string;
+  created_by?: string;
   created_at: string;
   paid_at?: string;
   payment_checked_by?: string;
@@ -133,6 +134,7 @@ export interface dbOrder {
   total_amount: string | number;
   payment_method: string | null;
   payment_reference: string | null;
+  created_by: string | null;
   created_at: string;
   paid_at: string | null;
   payment_checked_by: string | null;
@@ -262,6 +264,7 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     total_amount: Number(row.total_amount),
     payment_method: (row.payment_method as PaymentMethod) ?? undefined,
     payment_reference: row.payment_reference ?? undefined,
+    created_by: row.created_by ?? undefined,
     created_at: row.created_at,
     paid_at: row.paid_at ?? undefined,
     payment_checked_by: row.payment_checked_by ?? undefined,

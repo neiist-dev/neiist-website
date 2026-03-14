@@ -41,7 +41,15 @@ export interface CheckoutPayment {
   [key: string]: unknown;
 }
 
+export interface CheckoutTransactionSummary {
+  id?: string;
+  transaction_code?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
 export interface CheckoutData {
+  id?: string;
   status?: string;
   state?: string;
   transaction?: CheckoutTransaction;
@@ -49,6 +57,8 @@ export interface CheckoutData {
   checkout_reference?: string;
   checkoutReference?: string;
   checkout?: { reference?: string } | null;
+  transaction_code?: string;
+  transactions?: CheckoutTransactionSummary[];
   [key: string]: unknown;
 }
 

@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
       notes: body.notes ?? null,
       payment_method: body.payment_method,
       payment_reference: body.payment_reference ?? "",
+      created_by: userRoles.user.istid,
       items: body.items,
     });
     if (!order) {
