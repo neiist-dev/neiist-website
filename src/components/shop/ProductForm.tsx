@@ -340,117 +340,58 @@ export default function ProductForm({
       <button type="button" className={styles.backButton} onClick={onBack}>
         <FaArrowLeft /> Voltar
       </button>
-
-      <h1 className={styles.title}>{isEdit ? `Editar ${name}` : "Adicionar Produto"}</h1>
-
-      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-      {error && <div className={styles.error}>{error}</div>}
+      <h1 className={styles.title}>{isEdit ? `Editar Produto` : "Adicionar Novo Produto"}</h1>
 
       <div className={styles.section}>
-        <label className={styles.label}>Imagens</label>
-        <div className={styles.imageArea}>
-          {allImages.length > 0 ? (
-            <div className={styles.imagePreview}>
-              <Image
-                src={allImages[selectedImageIndex]}
-                alt="Product"
-                fill
-                style={{ objectFit: "cover" }}
-              />
-              {allImages.length > 1 && (
-                <div className={styles.imageNav}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))}>
-                    <FaChevronLeft />
-                  </button>
-                  <span>
-                    {selectedImageIndex + 1}/{allImages.length}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedImageIndex(Math.min(allImages.length - 1, selectedImageIndex + 1))
-                    }>
-                    <FaChevronRight />
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className={styles.noImage}>Nenhuma imagem</div>
-          )}
-        </div>
-
-        <label className={styles.button}>
-          <FaUpload /> Upload Imagem
-          <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
-        </label>
-
-        <div className={styles.thumbList}>
-          {allImages.map((img, idx) => (
-            <span key={idx} className={styles.thumbItem}>
-              <Image src={img} alt="" width={32} height={32} className={styles.thumb} />
-              <button
-                type="button"
-                className={styles.thumbBtn}
-                onClick={() => setSelectedImageIndex(idx)}>
-                {idx + 1}
-              </button>
-              <button
-                type="button"
-                className={styles.deleteButton}
-                onClick={() => removeImage(idx)}>
-                <FaTrash />
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className={styles.section}>
-        <input
-          className={styles.field}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Nome do produto"
-          required
-        />
-
-        <div className={styles.row}>
+        <div className={styles.card}>
+          <label className={styles.label}>Basic Information</label>
           <input
             className={styles.field}
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            step="0.01"
-            min="0"
-            placeholder="Preço"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome do produto"
             required
           />
-          <span>€</span>
+
+          <textarea
+            className={styles.field}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Descrição"
+            rows={3}
+          />
+
+          <select
+            className={styles.field}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required>
+            <option value="">Escolha categoria</option>
+            {allCategories.map((cat) => (
+              <option key={cat.id || cat.name} value={cat.name}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+
+          {
+            <div className={styles.row}>
+              <input
+                className={styles.field}
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                step="0.01"
+                min="0"
+                placeholder="Preço"
+                required
+              />
+              <span>€</span>
+            </div>
+          }
         </div>
 
-        <textarea
-          className={styles.field}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descrição"
-          rows={3}
-        />
-
-        <select
-          className={styles.field}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required>
-          <option value="">Escolha categoria</option>
-          {allCategories.map((cat) => (
-            <option key={cat.id || cat.name} value={cat.name}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-
+        {/* 
         <div className={styles.row}>
           <input
             className={styles.field}
@@ -460,229 +401,325 @@ export default function ProductForm({
           />
           <button type="button" className={styles.button} onClick={handleAddCategory}>
             Adicionar
-          </button>
-        </div>
-
-        <select
-          className={styles.field}
-          value={stockType}
-          onChange={(e) => setStockType(e.target.value as "limited" | "on_demand")}>
-          <option value="limited">Stock Limitado</option>
-          <option value="on_demand">Sob Encomenda</option>
-        </select>
-
-        {stockType === "limited" && variants.length === 0 && (
-          <input
-            className={styles.field}
-            type="number"
-            value={stockQuantity}
-            onChange={(e) => setStockQuantity(Number(e.target.value))}
-            placeholder="Quantidade em stock"
-            min="0"
-          />
-        )}
-        <div className={styles.row} style={{ position: "relative" }}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={orderDeadline ? orderDeadline.toLocaleString("pt-PT") : ""}
-            placeholder="Data limite encomenda"
-            readOnly
-            onClick={() => setShowDatePicker(true)}
-            className={styles.field}
-          />
-          {showDatePicker && (
-            <div style={{ position: "absolute", zIndex: 10 }}>
-              <DayPicker
-                mode="single"
-                selected={orderDeadline}
-                onSelect={(date) => {
-                  setOrderDeadline(date ?? undefined);
-                  setShowDatePicker(false);
-                }}
-                weekStartsOn={1}
-                captionLayout="dropdown"
-                navLayout="around"
-              />
-            </div>
-          )}
-        </div>
-        <div>
-          <label className={styles.label}>Tipos de Opção</label>
+          </button>   
+        </div> */}
+        <div className={styles.card}>
+          <label className={styles.label}>Stock Strategy</label>
           <div className={styles.row}>
-            {optionTypes.map((type, idx) => (
-              <div key={idx} style={{ display: "flex", gap: "0.5rem" }}>
+            <select
+              className={styles.field}
+              value={stockType}
+              onChange={(e) => {
+                const value = e.target.value as "limited" | "on_demand";
+                setStockType(value);
+                if (value !== "limited" || variants.length !== 0) {
+                  setStockQuantity(0);
+                }
+              }}>
+              <option value="limited">Stock Limitado</option>
+              <option value="on_demand">Sob Encomenda</option>
+            </select>
+
+            {stockType === "limited" && variants.length === 0 ? (
+              <input
+                className={styles.field}
+                type="number"
+                value={stockQuantity}
+                onChange={(e) => setStockQuantity(Number(e.target.value))}
+                placeholder="Quantidade em stock"
+                min="0"
+                disabled={stockType !== "limited" || variants.length !== 0}
+              />
+            ) : (
+              <div className={styles.row}>
                 <input
                   className={styles.field}
-                  style={{ width: 120 }}
-                  value={type}
-                  onChange={(e) => updateOptionType(idx, e.target.value)}
-                  placeholder={`Opção ${idx + 1}`}
+                  ref={inputRef}
+                  type="text"
+                  value={orderDeadline ? orderDeadline.toLocaleString("pt-PT") : ""}
+                  placeholder="Data limite encomenda"
+                  readOnly
+                  onClick={() => setShowDatePicker(true)}
                 />
-                {optionTypes.length > 1 && (
-                  <button
-                    type="button"
-                    className={styles.deleteButton}
-                    onClick={() => removeOptionType(idx)}>
-                    <FaTrash />
-                  </button>
+                {showDatePicker && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      zIndex: 10,
+                      background: "white",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      borderRadius: 8,
+                      padding: 8,
+                    }}>
+                    <DayPicker
+                      mode="single"
+                      selected={orderDeadline}
+                      onSelect={(date) => {
+                        setOrderDeadline(date ?? undefined);
+                        setShowDatePicker(false);
+                      }}
+                      weekStartsOn={1}
+                      captionLayout="dropdown"
+                      navLayout="around"
+                    />
+                  </div>
                 )}
               </div>
-            ))}
-            <button type="button" className={styles.addButton} onClick={addOptionType}>
-              <FaPlus />
-            </button>
+            )}
           </div>
         </div>
-        <div>
-          <div className={styles.row}>
-            <label className={styles.label}>Variantes</label>
-            <button type="button" className={styles.addButton} onClick={addVariant}>
-              <FaPlus />
-            </button>
-          </div>
 
-          {variants.length === 0 && <div className={styles.noVarients}>Sem variantes</div>}
+        <div className={styles.card}>
+          <div>
+            <label className={styles.label}>Opçãos de Variantes</label>
 
-          {variants.map((variant, i) => (
-            <div
-              key={variant.id ?? `new-${i}`}
-              className={styles.row}
-              style={{ alignItems: "flex-start", gap: "0.5rem" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                {optionTypes.map((type) => {
-                  const raw = variant.options[type] || "";
-                  if (isColorKey(type)) {
-                    const { name: colorName, hex: colorHex } = splitNameHex(raw);
-                    return (
-                      <div
-                        key={type}
-                        style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                        <input
-                          className={styles.field}
-                          style={{ width: 140 }}
-                          value={colorName}
-                          onChange={(e) =>
-                            updateVariantOption(i, type, joinNameHex(e.target.value, colorHex))
-                          }
-                          placeholder={type}
-                          required
-                        />
-                        <div style={{ width: 220, display: "flex", alignItems: "center", gap: 8 }}>
-                          <ColourPicker
-                            value={colorHex || "#000000"}
-                            onChange={(hex) => {
-                              updateVariantOption(i, type, joinNameHex(colorName, hex));
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <input
-                      key={type}
-                      className={styles.field}
-                      style={{ width: 100 }}
-                      value={variant.options[type] || ""}
-                      onChange={(e) => updateVariantOption(i, type, e.target.value)}
-                      placeholder={type}
-                      required
-                    />
-                  );
-                })}
-              </div>
-
-              <input
-                className={styles.field}
-                style={{ width: 80 }}
-                type="number"
-                value={variant.price_modifier}
-                onChange={(e) => updateVariant(i, { price_modifier: Number(e.target.value) })}
-                step="0.01"
-                placeholder="Preço extra"
-              />
-
-              <input
-                className={styles.field}
-                style={{ width: 60 }}
-                type="number"
-                value={variant.stock_quantity}
-                onChange={(e) => updateVariant(i, { stock_quantity: Number(e.target.value) })}
-                min="0"
-                placeholder="Stock"
-              />
-
-              <input
-                type="checkbox"
-                checked={variant.active}
-                onChange={(e) => updateVariant(i, { active: e.target.checked })}
-                style={{ width: 20, height: 20 }}
-              />
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <label className={styles.button} style={{ fontSize: "0.8rem", padding: "0.25rem" }}>
-                  <FaUpload />
+            <div className={styles.row}>
+              {optionTypes.map((type, idx) => (
+                <div key={idx} style={{ display: "flex", gap: "0.5rem" }}>
                   <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handleVariantImageUpload(e, i)}
-                    hidden
+                    className={styles.field}
+                    style={{ width: 120 }}
+                    value={type}
+                    onChange={(e) => updateOptionType(idx, e.target.value)}
+                    placeholder={`Opção ${idx + 1}`}
                   />
-                </label>
-
-                <div className={styles.thumbList}>
-                  {variant.images?.map((img, idx) => (
-                    <span key={`img-${idx}`} className={styles.thumbItem}>
-                      <Image src={img} alt="" width={24} height={24} className={styles.thumb} />
-                      <button
-                        type="button"
-                        className={styles.deleteButton}
-                        onClick={() => {
-                          const newImages =
-                            variant.images?.filter((_, imgIdx) => imgIdx !== idx) || [];
-                          updateVariant(i, { images: newImages });
-                        }}>
-                        <FaTrash />
-                      </button>
-                    </span>
-                  ))}
-                  {variant.newImages.map((upload, idx) => (
-                    <span key={`upload-${idx}`} className={styles.thumbItem}>
-                      <Image
-                        src={upload.preview}
-                        alt=""
-                        width={24}
-                        height={24}
-                        className={styles.thumb}
-                      />
-                      <button
-                        type="button"
-                        className={styles.deleteButton}
-                        onClick={() => {
-                          URL.revokeObjectURL(upload.preview);
-                          const newUploads = variant.newImages.filter(
-                            (_, imgIdx) => imgIdx !== idx
-                          );
-                          updateVariant(i, { newImages: newUploads });
-                        }}>
-                        <FaTrash />
-                      </button>
-                    </span>
-                  ))}
+                  {optionTypes.length > 1 && (
+                    <button
+                      type="button"
+                      className={styles.deleteButton}
+                      onClick={() => removeOptionType(idx)}>
+                      <FaTrash />
+                    </button>
+                  )}
                 </div>
-              </div>
-
-              <button
-                type="button"
-                className={styles.deleteButton}
-                onClick={() => removeVariant(i)}>
-                <FaTrash />
+              ))}
+              <button type="button" className={styles.addButton} onClick={addOptionType}>
+                <FaPlus />
               </button>
             </div>
-          ))}
+          </div>
+          <div>
+            <div className={styles.row}>
+              <label className={styles.label}>Variantes</label>
+              <button type="button" className={styles.addButton} onClick={addVariant}>
+                <FaPlus />
+              </button>
+            </div>
+
+            {variants.length === 0 && <div className={styles.noVarients}>Sem variantes</div>}
+
+            {variants.map((variant, i) => (
+              <div
+                key={variant.id ?? `new-${i}`}
+                className={styles.row}
+                style={{ alignItems: "flex-start", gap: "0.5rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {optionTypes.map((type) => {
+                    const raw = variant.options[type] || "";
+                    if (isColorKey(type)) {
+                      const { name: colorName, hex: colorHex } = splitNameHex(raw);
+                      return (
+                        <div
+                          key={type}
+                          style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                          <input
+                            className={styles.field}
+                            style={{ width: 140 }}
+                            value={colorName}
+                            onChange={(e) =>
+                              updateVariantOption(i, type, joinNameHex(e.target.value, colorHex))
+                            }
+                            placeholder={type}
+                            required
+                          />
+                          <div
+                            style={{ width: 220, display: "flex", alignItems: "center", gap: 8 }}>
+                            <ColourPicker
+                              value={colorHex || "#000000"}
+                              onChange={(hex) => {
+                                updateVariantOption(i, type, joinNameHex(colorName, hex));
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <input
+                        key={type}
+                        className={styles.field}
+                        style={{ width: 100 }}
+                        value={variant.options[type] || ""}
+                        onChange={(e) => updateVariantOption(i, type, e.target.value)}
+                        placeholder={type}
+                        required
+                      />
+                    );
+                  })}
+                </div>
+
+                <input
+                  className={styles.field}
+                  style={{ width: 80 }}
+                  type="number"
+                  value={variant.price_modifier}
+                  onChange={(e) => updateVariant(i, { price_modifier: Number(e.target.value) })}
+                  step="0.01"
+                  placeholder="Preço extra"
+                />
+
+                <input
+                  className={styles.field}
+                  style={{ width: 60 }}
+                  type="number"
+                  value={variant.stock_quantity}
+                  onChange={(e) => updateVariant(i, { stock_quantity: Number(e.target.value) })}
+                  min="0"
+                  placeholder="Stock"
+                />
+
+                <input
+                  type="checkbox"
+                  checked={variant.active}
+                  onChange={(e) => updateVariant(i, { active: e.target.checked })}
+                  style={{ width: 20, height: 20 }}
+                />
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                  <label
+                    className={styles.button}
+                    style={{ fontSize: "0.8rem", padding: "0.25rem" }}>
+                    <FaUpload />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleVariantImageUpload(e, i)}
+                      hidden
+                    />
+                  </label>
+
+                  <div className={styles.thumbList}>
+                    {variant.images?.map((img, idx) => (
+                      <span key={`img-${idx}`} className={styles.thumbItem}>
+                        <Image src={img} alt="" width={24} height={24} className={styles.thumb} />
+                        <button
+                          type="button"
+                          className={styles.deleteButton}
+                          onClick={() => {
+                            const newImages =
+                              variant.images?.filter((_, imgIdx) => imgIdx !== idx) || [];
+                            updateVariant(i, { images: newImages });
+                          }}>
+                          <FaTrash />
+                        </button>
+                      </span>
+                    ))}
+                    {variant.newImages.map((upload, idx) => (
+                      <span key={`upload-${idx}`} className={styles.thumbItem}>
+                        <Image
+                          src={upload.preview}
+                          alt=""
+                          width={24}
+                          height={24}
+                          className={styles.thumb}
+                        />
+                        <button
+                          type="button"
+                          className={styles.deleteButton}
+                          onClick={() => {
+                            URL.revokeObjectURL(upload.preview);
+                            const newUploads = variant.newImages.filter(
+                              (_, imgIdx) => imgIdx !== idx
+                            );
+                            updateVariant(i, { newImages: newUploads });
+                          }}>
+                          <FaTrash />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.deleteButton}
+                  onClick={() => removeVariant(i)}>
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
+      {error && <div className={styles.error}>{error}</div>}
+
+      <div className={styles.section}>
+        <div className={styles.card}>
+          <label className={styles.label}>Imagens</label>
+          <div className={styles.imageArea}>
+            {allImages.length > 0 ? (
+              <div className={styles.imagePreview}>
+                <Image
+                  src={allImages[selectedImageIndex]}
+                  alt="Product"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                {allImages.length > 1 && (
+                  <div className={styles.imageNav}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))}>
+                      <FaChevronLeft />
+                    </button>
+                    <span>
+                      {selectedImageIndex + 1}/{allImages.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedImageIndex(
+                          Math.min(allImages.length - 1, selectedImageIndex + 1)
+                        )
+                      }>
+                      <FaChevronRight />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.noImage}>Nenhuma imagem</div>
+            )}
+          </div>
+
+          <label className={styles.button}>
+            <FaUpload /> Upload Imagem
+            <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
+          </label>
+
+          <div className={styles.thumbList}>
+            {allImages.map((img, idx) => (
+              <span key={idx} className={styles.thumbItem}>
+                <Image src={img} alt="" width={32} height={32} className={styles.thumb} />
+                <button
+                  type="button"
+                  className={styles.thumbBtn}
+                  onClick={() => setSelectedImageIndex(idx)}>
+                  {idx + 1}
+                </button>
+                <button
+                  type="button"
+                  className={styles.deleteButton}
+                  onClick={() => removeImage(idx)}>
+                  <FaTrash />
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
