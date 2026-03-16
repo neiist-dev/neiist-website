@@ -272,6 +272,67 @@ CREATE TABLE neiist.order_items (
   total_price NUMERIC(10,2) NOT NULL
 );
 
+--Triggers
+
+--Resotck Limited stock items on order cancellation
+CREATE OR REPLACE FUNCTION neiist.restock_limited_items_on_order_cancel()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Defensive guard (trigger WHEN already enforces this transition)
+  IF OLD.status = NEW.status OR NEW.status <> 'cancelled' THEN
+    RETURN NEW;
+  END IF;
+
+  -- Restock product variants (limited stock only, items with variant_id)
+  UPDATE neiist.product_variants AS product_variant
+  SET stock_quantity = COALESCE(product_variant.stock_quantity, 0) + variant_restock.quantity_to_restock,
+      updated_at = NOW()
+  FROM (
+    SELECT
+      order_item.product_id AS product_id,
+      order_item.variant_id AS variant_id,
+      SUM(order_item.quantity)::INTEGER AS quantity_to_restock
+    FROM neiist.order_items AS order_item
+    JOIN neiist.products AS product
+      ON product.id = order_item.product_id
+    WHERE order_item.order_id = NEW.id
+      AND order_item.variant_id IS NOT NULL
+      AND product.stock_type = 'limited'
+    GROUP BY order_item.product_id, order_item.variant_id
+  ) AS variant_restock
+  WHERE product_variant.id = variant_restock.variant_id
+    AND product_variant.product_id = variant_restock.product_id;
+
+  -- Restock base products (limited stock only, items without variant_id)
+  UPDATE neiist.products AS product
+  SET stock_quantity = COALESCE(product.stock_quantity, 0) + product_restock.quantity_to_restock
+  FROM (
+    SELECT
+      order_item.product_id AS product_id,
+      SUM(order_item.quantity)::INTEGER AS quantity_to_restock
+    FROM neiist.order_items AS order_item
+    JOIN neiist.products AS product_for_filter
+      ON product_for_filter.id = order_item.product_id
+    WHERE order_item.order_id = NEW.id
+      AND order_item.variant_id IS NULL
+      AND product_for_filter.stock_type = 'limited'
+    GROUP BY order_item.product_id
+  ) AS product_restock
+  WHERE product.id = product_restock.product_id;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_restock_limited_on_cancel
+AFTER UPDATE OF status ON neiist.orders
+FOR EACH ROW
+WHEN (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'cancelled')
+EXECUTE FUNCTION neiist.restock_limited_items_on_order_cancel();
+
 -- FUNCTIONS
 
 -- Get user
