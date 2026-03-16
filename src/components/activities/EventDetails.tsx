@@ -54,7 +54,9 @@ export default function EventDetails({
   const [isProcessing, setIsProcessing] = useState(false);
   const [signedUp, setSignedUp] = useState(isSignedUp);
   const [showIconPicker, setShowIconPicker] = useState(false);
-  const [settings, setSettings] = useState<EventSettings>(() => getEventSettings(event.raw));
+  const [settings, setSettings] = useState<EventSettings>(() =>
+    getEventSettings(event.raw),
+  );
   const hasChanges = useRef(false);
 
   const ICON_REGISTRY: Record<string, IconType> = {
@@ -73,7 +75,8 @@ export default function EventDetails({
     "FaCalendar";
   const EventIcon: IconType = ICON_REGISTRY[resolvedIconName] || FA.FaCalendar;
 
-  const { startDate, endDate, startTime, endTime, isAllDay } = formatEventDateTime(event.raw);
+  const { startDate, endDate, startTime, endTime, isAllDay } =
+    formatEventDateTime(event.raw);
   const subscriberCount = event.raw.subscriberCount ?? 0;
   const maxAttendeesNum = parseInt(settings.maxAttendees) || Infinity;
   const canSignUp = settings.signupEnabled && subscriberCount < maxAttendeesNum;
@@ -87,6 +90,8 @@ export default function EventDetails({
 
   const saveSettings = useCallback(async () => {
     if (!isAdmin || !hasChanges.current) return;
+    const saveToastId = toast.loading("Saving event settings...");
+
     try {
       const res = await fetch("/api/calendar/activities", {
         method: "POST",
@@ -98,13 +103,18 @@ export default function EventDetails({
           signupDeadline: settings.signupDeadline
             ? new Date(settings.signupDeadline).toISOString()
             : null,
-          maxAttendees: settings.maxAttendees ? parseInt(settings.maxAttendees) : null,
+          maxAttendees: settings.maxAttendees
+            ? parseInt(settings.maxAttendees)
+            : null,
           customIcon: settings.customIcon || null,
           description: settings.description || null,
         }),
       });
 
       if (res.status === 401) {
+        toast.warning("Your session expired. Reloading...", {
+          id: saveToastId,
+        });
         window.location.reload();
         return;
       }
@@ -123,11 +133,17 @@ export default function EventDetails({
         };
         onUpdate(patchedRaw);
         router.refresh();
-        // TODO: (SUCCESS) show success toast after the event settings are saved.
+        toast.success("Event settings saved successfully.", {
+          id: saveToastId,
+        });
       }
     } catch (error) {
-      // TODO: (ERROR)
-      console.error("Failed to save settings:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to save event settings.",
+        { id: saveToastId },
+      );
     }
   }, [isAdmin, settings, event.id, event.raw, onUpdate, router]);
 
@@ -137,7 +153,8 @@ export default function EventDetails({
   }, [saveSettings, onClose]);
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => e.key === "Escape" && handleClose();
+    const handleEscape = (e: KeyboardEvent) =>
+      e.key === "Escape" && handleClose();
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
     return () => {
@@ -146,17 +163,23 @@ export default function EventDetails({
     };
   }, [handleClose]);
 
-  const updateSetting = <K extends keyof EventSettings>(key: K, value: EventSettings[K]) => {
+  const updateSetting = <K extends keyof EventSettings>(
+    key: K,
+    value: EventSettings[K],
+  ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
     hasChanges.current = true;
   };
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      // TODO: (WARNING) show toast notification prompting the user to log in
+      toast.warning("Please log in to sign up for this event.");
       return;
     }
     setIsProcessing(true);
+    const signUpToastId = toast.loading(
+      signedUp ? "Cancelling sign-up..." : "Signing up for event...",
+    );
     try {
       const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
@@ -166,6 +189,9 @@ export default function EventDetails({
       });
 
       if (res.status === 401) {
+        toast.warning("Your session expired. Reloading...", {
+          id: signUpToastId,
+        });
         window.location.reload();
         return;
       }
@@ -175,36 +201,52 @@ export default function EventDetails({
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
-      // TODO: (SUCCESS) show success toast after signing up or unsubscribing from the event.
+      toast.success(
+        data.signedUp
+          ? "Signed up successfully."
+          : "Sign-up cancelled successfully.",
+        { id: signUpToastId },
+      );
     } catch (error) {
-      // TODO: (ERROR)
-      console.error("Failed to sign up:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update sign-up.",
+        { id: signUpToastId },
+      );
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleEmailAttendees = async () => {
+    const emailToastId = toast.loading("Preparing attendee email...");
     try {
-      // TODO: (LOADING) show loading toast while attendee emails are being prepared.
       const res = await fetch(`/api/calendar/activities?eventId=${event.id}`, {
         credentials: "include",
       });
       if (res.status === 401) {
+        toast.warning("Your session expired. Reloading...", {
+          id: emailToastId,
+        });
         window.location.reload();
         return;
       }
       if (!res.ok) throw new Error("Failed to fetch attendees");
       const data = await res.json();
-      const emails = (data.subscribers as EventSubscriber[]).map((s) => s.email).join(",");
+      const emails = (data.subscribers as EventSubscriber[])
+        .map((s) => s.email)
+        .join(",");
       window.open(
         `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
-        "_blank"
+        "_blank",
       );
-      // TODO: (SUCCESS) show success toast after attendee email draft is opened.
+      toast.success("Email draft opened successfully.", { id: emailToastId });
     } catch (error) {
-      // TODO: (ERROR)
-      console.error("Error fetching attendees:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch attendee emails.",
+        { id: emailToastId },
+      );
     }
   };
 
@@ -217,9 +259,14 @@ export default function EventDetails({
   return (
     <div
       className={styles.modalOverlay}
-      onClick={(e) => e.target === e.currentTarget && handleClose()}>
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
+    >
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={handleClose} aria-label="Fechar">
+        <button
+          className={styles.closeButton}
+          onClick={handleClose}
+          aria-label="Fechar"
+        >
           <IoClose size={32} />
         </button>
 
@@ -227,14 +274,18 @@ export default function EventDetails({
           <div
             className={styles.eventIcon}
             onClick={isAdmin ? () => setShowIconPicker(true) : undefined}
-            style={{ cursor: isAdmin ? "pointer" : "default" }}>
+            style={{ cursor: isAdmin ? "pointer" : "default" }}
+          >
             <EventIcon size={48} />
           </div>
-          <h2 className={styles.eventTitle}>{event.summary || "Untitled Event"}</h2>
+          <h2 className={styles.eventTitle}>
+            {event.summary || "Untitled Event"}
+          </h2>
           <button
             className={styles.shareButton}
             onClick={handleShare}
-            title="Copiar link do evento">
+            title="Copiar link do evento"
+          >
             <IoShareOutline size={22} />
           </button>
         </div>
@@ -243,7 +294,11 @@ export default function EventDetails({
           <div className={styles.detailRow}>
             <MdAccessTime size={24} />
             {isAllDay ? (
-              <span>{startDate == endDate ? `${startDate}` : `${startDate} → ${endDate}`}</span>
+              <span>
+                {startDate == endDate
+                  ? `${startDate}`
+                  : `${startDate} → ${endDate}`}
+              </span>
             ) : startDate == endDate ? (
               <span>
                 {startDate} | {startTime} - {endTime}
@@ -269,7 +324,8 @@ export default function EventDetails({
                 target: "_blank",
                 rel: "noopener noreferrer",
                 attributes: { className: styles.descriptionLink },
-              }}>
+              }}
+            >
               {settings.description}
             </Linkify>
           </div>
@@ -292,7 +348,9 @@ export default function EventDetails({
               <input
                 type="checkbox"
                 checked={settings.signupEnabled}
-                onChange={(e) => updateSetting("signupEnabled", e.target.checked)}
+                onChange={(e) =>
+                  updateSetting("signupEnabled", e.target.checked)
+                }
                 disabled={isProcessing}
               />
               <span>Permitir inscrições</span>
@@ -305,7 +363,9 @@ export default function EventDetails({
                   <input
                     type="datetime-local"
                     value={settings.signupDeadline}
-                    onChange={(e) => updateSetting("signupDeadline", e.target.value)}
+                    onChange={(e) =>
+                      updateSetting("signupDeadline", e.target.value)
+                    }
                     disabled={isProcessing}
                   />
                 </label>
@@ -316,7 +376,9 @@ export default function EventDetails({
                     type="number"
                     min="1"
                     value={settings.maxAttendees}
-                    onChange={(e) => updateSetting("maxAttendees", e.target.value)}
+                    onChange={(e) =>
+                      updateSetting("maxAttendees", e.target.value)
+                    }
                     placeholder="Sem limite"
                     disabled={isProcessing}
                   />
@@ -336,7 +398,8 @@ export default function EventDetails({
           <button
             className={styles.signUpButton}
             onClick={handleSignUp}
-            disabled={isProcessing || !canSignUp || !currentIstid}>
+            disabled={isProcessing || !canSignUp || !currentIstid}
+          >
             {isProcessing
               ? "A processar..."
               : !currentIstid
