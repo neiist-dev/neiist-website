@@ -537,7 +537,7 @@ export default function ProductForm({
               <option value="on_demand">Sob Encomenda</option>
             </select>
 
-            {stockType === "limited" && variants.length === 0 ? (
+            {stockType === "limited" ? (
               <input
                 className={styles.field}
                 type="number"
@@ -545,21 +545,29 @@ export default function ProductForm({
                 onChange={(e) => setStockQuantity(Number(e.target.value))}
                 placeholder="Quantidade em stock"
                 min="0"
-                disabled={stockType !== "limited" || variants.length !== 0}
+                // disabled={stockType !== "limited" || variants.length !== 0}
               />
             ) : (
-              <div className={styles.row}>
+              <div >
                 <input
                   className={styles.field}
                   ref={inputRef}
                   type="text"
-                  value={orderDeadline ? orderDeadline.toLocaleString("pt-PT") : ""}
+                  value={orderDeadline ? orderDeadline.toLocaleDateString("pt-PT") : ""}
                   placeholder="Data limite encomenda"
                   readOnly
                   onClick={() => setShowDatePicker(true)}
                 />
                 {showDatePicker && (
-                  <div className={styles.datePickerPopup}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      zIndex: 10,
+                      background: "white",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      borderRadius: 8,
+                      padding: 8,
+                    }}>
                     <DayPicker
                       mode="single"
                       selected={orderDeadline}
@@ -577,6 +585,7 @@ export default function ProductForm({
             )}
           </div>
         </div>
+
 
         <div className={styles.card}>
           <div>
