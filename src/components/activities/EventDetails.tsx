@@ -87,6 +87,9 @@ export default function EventDetails({
 
   const saveSettings = useCallback(async () => {
     if (!isAdmin || !hasChanges.current) return;
+    const saveToastId = toast.loading("Saving event settings...", {
+      closeButton: true,
+    });
     try {
       const res = await fetch("/api/calendar/activities", {
         method: "POST",
@@ -123,11 +126,16 @@ export default function EventDetails({
         };
         onUpdate(patchedRaw);
         router.refresh();
-        // TODO: (SUCCESS) show success toast after the event settings are saved.
+        toast.success("Event settings saved successfully.", {
+          id: saveToastId,
+          closeButton: true,
+        });
       }
     } catch (error) {
-      // TODO: (ERROR)
-      console.error("Failed to save settings:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to save event settings.", {
+        id: saveToastId,
+        closeButton: true,
+      });
     }
   }, [isAdmin, settings, event.id, event.raw, onUpdate, router]);
 
@@ -153,10 +161,18 @@ export default function EventDetails({
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      // TODO: (WARNING) show toast notification prompting the user to log in
+      toast.warning("Please log in to sign up for this event.", {
+        closeButton: true,
+      });
       return;
     }
     setIsProcessing(true);
+    const signUpToastId = toast.loading(
+      signedUp ? "Cancelling sign-up..." : "Signing up for event...",
+      {
+        closeButton: true,
+      }
+    );
     try {
       const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
@@ -175,18 +191,25 @@ export default function EventDetails({
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
-      // TODO: (SUCCESS) show success toast after signing up or unsubscribing from the event.
+      toast.success(data.signedUp ? "Signed up successfully." : "Sign-up cancelled successfully.", {
+        id: signUpToastId,
+        closeButton: true,
+      });
     } catch (error) {
-      // TODO: (ERROR)
-      console.error("Failed to sign up:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update sign-up.", {
+        id: signUpToastId,
+        closeButton: true,
+      });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleEmailAttendees = async () => {
+    const emailToastId = toast.loading("Preparing attendee email...", {
+      closeButton: true,
+    });
     try {
-      // TODO: (LOADING) show loading toast while attendee emails are being prepared.
       const res = await fetch(`/api/calendar/activities?eventId=${event.id}`, {
         credentials: "include",
       });
@@ -201,17 +224,24 @@ export default function EventDetails({
         `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
         "_blank"
       );
-      // TODO: (SUCCESS) show success toast after attendee email draft is opened.
+      toast.success("Email draft opened successfully.", {
+        id: emailToastId,
+        closeButton: true,
+      });
     } catch (error) {
-      // TODO: (ERROR)
-      console.error("Error fetching attendees:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to fetch attendee emails.", {
+        id: emailToastId,
+        closeButton: true,
+      });
     }
   };
 
   const handleShare = () => {
     const url = `${window.location.origin}/activities?eventId=${event.id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Link do evento copiado");
+    toast.success("Link do evento copiado", {
+      closeButton: true,
+    });
   };
 
   return (
