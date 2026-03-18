@@ -10,6 +10,7 @@ import {
   FaTrash,
   FaChevronLeft,
   FaChevronRight,
+  FaSave,
 } from "react-icons/fa";
 import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
@@ -68,9 +69,7 @@ export default function ProductForm({
 
   const [variantDefinitions, setVariantDefinitions] = useState<VariantDefinition[]>(() => {
     if (product?.variants?.length) {
-      const types = [
-        ...new Set(product.variants.flatMap((v) => Object.keys(v.options || {}))),
-      ];
+      const types = [...new Set(product.variants.flatMap((v) => Object.keys(v.options || {})))];
       return types.map((type) => {
         const values = [
           ...new Set(
@@ -89,7 +88,7 @@ export default function ProductForm({
   });
 
   // Calculate optionTypes derived from variantDefinitions for rendering the table
-  const optionTypes = variantDefinitions.map((d) => d.name).filter(n => n);
+  const optionTypes = variantDefinitions.map((d) => d.name).filter((n) => n);
 
   const [variants, setVariants] = useState<VariantForm[]>(
     product?.variants?.map((v) => ({
@@ -109,39 +108,32 @@ export default function ProductForm({
   );
 
   const generateVariants = (currentDefinitions: VariantDefinition[]) => {
-    const validDefs = currentDefinitions.filter(
-      (def) => def.name && def.values.length > 0
-    );
+    const validDefs = currentDefinitions.filter((def) => def.name && def.values.length > 0);
 
     if (validDefs.length === 0) {
-        // If no valid definitions, maybe clear variants? 
-        // Or keep them until explicitly deleted? 
-        // Usually if I delete all tags, I expect variants to go away.
-        // Let's decide: if validDefs is empty but we have definitions, clear.
-        if (currentDefinitions.length > 0 && variants.length > 0) {
-             // Only if we actually have some definitions structures but no values
-             // But maybe the user is just clearing to type new ones.
-             // Let's be safe and do nothing or just return.
-             // If the user deleted all values from a definition, we probably should remove those variants.
-        }
-        return;
+      // If no valid definitions, maybe clear variants?
+      // Or keep them until explicitly deleted?
+      // Usually if I delete all tags, I expect variants to go away.
+      // Let's decide: if validDefs is empty but we have definitions, clear.
+      if (currentDefinitions.length > 0 && variants.length > 0) {
+        // Only if we actually have some definitions structures but no values
+        // But maybe the user is just clearing to type new ones.
+        // Let's be safe and do nothing or just return.
+        // If the user deleted all values from a definition, we probably should remove those variants.
+      }
+      return;
     }
 
     // Cartesian product helper
     const cartesian = (sets: string[][]) =>
-      sets.reduce<string[][]>(
-        (acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])),
-        [[]]
-      );
+      sets.reduce<string[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
 
     const names = validDefs.map((def) => def.name);
     const values = validDefs.map((def) => def.values);
     const combinations = cartesian(values);
 
     const newVariants = combinations.map((combination) => {
-      const options = Object.fromEntries(
-        names.map((name, i) => [name, combination[i]])
-      );
+      const options = Object.fromEntries(names.map((name, i) => [name, combination[i]]));
 
       // Check if variant already exists to preserve data (stock, prices, images)
       const existing = variants.find((v) =>
@@ -176,7 +168,7 @@ export default function ProductForm({
   useEffect(() => {
     // Debounce to avoid rapid updates while typing
     const timer = setTimeout(() => {
-        generateVariants(variantDefinitions);
+      generateVariants(variantDefinitions);
     }, 500);
     return () => clearTimeout(timer);
   }, [variantDefinitions]);
@@ -273,18 +265,18 @@ export default function ProductForm({
   const updateVariantDefinitionValues = (index: number, newValues: string[]) => {
     setVariantDefinitions((prev) => {
       const next = prev.map((def, i) => (i === index ? { ...def, values: newValues } : def));
-      
+
       // Auto-regenerate variants if all definitions have at least one value
       // We use a small timeout or useEffect, but here we can just call generation logic directly
       // However, we need the *updated* state. So we'll trigger a side effect or just use 'next'.
       // Better yet: useEffect to watch variantDefinitions? Or just call a helper here.
       // Calling helper here is safer to avoid infinite loops if helper sets state.
-      
+
       // We will perform the regeneration logic immediately with the new definitions
       // But we need to be careful not to spam re-renders or lose work.
       // The request says "automatically as one adds/removes variants".
       // Let's create a throttled or direct cal to regenerate.
-      
+
       return next;
     });
   };
@@ -465,365 +457,383 @@ export default function ProductForm({
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <button type="button" className={styles.backButton} onClick={onBack}>
-        <FaArrowLeft /> Voltar
-      </button>
-      <h1 className={styles.title}>{isEdit ? `Editar Produto` : "Adicionar Novo Produto"}</h1>
-
-      <div className={styles.section}>
-        <div className={styles.card}>
-          <label className={styles.label}>Basic Information</label>
-          <input
-            className={styles.field}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Nome do produto"
-            required
-          />
-
-          <textarea
-            className={styles.field}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Descrição"
-            rows={3}
-          />
-
-          <select
-            className={styles.field}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required>
-            <option value="">Escolha categoria</option>
-            {allCategories.map((cat) => (
-              <option key={cat.id || cat.name} value={cat.name}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-
-          {
-            <div className={styles.row}>
-              <input
-                className={styles.field}
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                step="0.01"
-                min="0"
-                placeholder="Preço"
-                required
-              />
-              <span>€</span>
-            </div>
-          }
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div className={styles.formHeader}>
+          <button type="button" className={styles.backButton} onClick={onBack}>
+            <FaArrowLeft /> Voltar
+          </button>
+          <h1 className={styles.title}>{isEdit ? `Editar Produto` : "Adicionar Novo Produto"}</h1>
+          <button type="submit" className={styles.button} disabled={uploading}>
+            {isEdit ? (
+              <>
+                <FaSave /> {uploading ? "A guardar..." : "Guardar Alterações"}
+              </>
+            ) : (
+              <>
+                <FaPlus /> {uploading ? "A guardar..." : "Criar Produto"}
+              </>
+            )}
+          </button>
         </div>
 
-        <div className={styles.card}>
-          <label className={styles.label}>Stock Strategy</label>
-          <div className={styles.row}>
-            <select
-              className={styles.field}
-              value={stockType}
-              onChange={(e) => {
-                const value = e.target.value as "limited" | "on_demand";
-                setStockType(value);
-                if (value !== "limited" || variants.length !== 0) {
-                  setStockQuantity(0);
-                }
-              }}>
-              <option value="limited">Stock Limitado</option>
-              <option value="on_demand">Sob Encomenda</option>
-            </select>
-
-            {stockType === "limited" ? (
+        <div className={styles.formBody}>
+          <div className={styles.section}>
+            <div className={styles.card}>
+              <label className={styles.label}>Basic Information</label>
               <input
                 className={styles.field}
-                type="number"
-                value={stockQuantity}
-                onChange={(e) => setStockQuantity(Number(e.target.value))}
-                placeholder="Quantidade em stock"
-                min="0"
-                // disabled={stockType !== "limited" || variants.length !== 0}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Nome do produto"
+                required
               />
-            ) : (
-              <div >
-                <input
+
+              <textarea
+                className={styles.field}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Descrição"
+                rows={3}
+              />
+
+              <select
+                className={styles.field}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required>
+                <option value="">Escolha categoria</option>
+                {allCategories.map((cat) => (
+                  <option key={cat.id || cat.name} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              {
+                <div className={styles.row}>
+                  <input
+                    className={styles.field}
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                    step="0.01"
+                    min="0"
+                    placeholder="Preço"
+                    required
+                  />
+                  <span>€</span>
+                </div>
+              }
+            </div>
+
+            <div className={styles.card}>
+              <label className={styles.label}>Stock Strategy</label>
+              <div className={styles.row}>
+                <select
                   className={styles.field}
-                  ref={inputRef}
-                  type="text"
-                  value={orderDeadline ? orderDeadline.toLocaleDateString("pt-PT") : ""}
-                  placeholder="Data limite encomenda"
-                  readOnly
-                  onClick={() => setShowDatePicker(true)}
-                />
-                {showDatePicker && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      zIndex: 10,
-                      background: "white",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                      borderRadius: 8,
-                      padding: 8,
-                    }}>
-                    <DayPicker
-                      mode="single"
-                      selected={orderDeadline}
-                      onSelect={(date) => {
-                        setOrderDeadline(date ?? undefined);
-                        setShowDatePicker(false);
-                      }}
-                      weekStartsOn={1}
-                      captionLayout="dropdown"
-                      navLayout="around"
+                  value={stockType}
+                  onChange={(e) => {
+                    const value = e.target.value as "limited" | "on_demand";
+                    setStockType(value);
+                    if (value !== "limited" || variants.length !== 0) {
+                      setStockQuantity(0);
+                    }
+                  }}>
+                  <option value="limited">Stock Limitado</option>
+                  <option value="on_demand">Sob Encomenda</option>
+                </select>
+
+                {stockType === "limited" ? (
+                  <input
+                    className={styles.field}
+                    type="number"
+                    value={stockQuantity}
+                    onChange={(e) => setStockQuantity(Number(e.target.value))}
+                    placeholder="Quantidade em stock"
+                    min="0"
+                    // disabled={stockType !== "limited" || variants.length !== 0}
+                  />
+                ) : (
+                  <div>
+                    <input
+                      className={styles.field}
+                      ref={inputRef}
+                      type="text"
+                      value={orderDeadline ? orderDeadline.toLocaleDateString("pt-PT") : ""}
+                      placeholder="Data limite encomenda"
+                      readOnly
+                      onClick={() => setShowDatePicker(true)}
                     />
+                    {showDatePicker && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          zIndex: 10,
+                          background: "white",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                          borderRadius: 8,
+                          padding: 8,
+                        }}>
+                        <DayPicker
+                          mode="single"
+                          selected={orderDeadline}
+                          onSelect={(date) => {
+                            setOrderDeadline(date ?? undefined);
+                            setShowDatePicker(false);
+                          }}
+                          weekStartsOn={1}
+                          captionLayout="dropdown"
+                          navLayout="around"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
+            <div className={styles.card}>
+              <div>
+                <label className={styles.label}>Variantes</label>
 
-        <div className={styles.card}>
-          <div>
-            <label className={styles.label}>Variantes</label>
-
-            <div className={styles.variantDefinitionsList}>
-              {variantDefinitions.map((def, idx) => (
-                <div key={def.id} className={styles.row}>
-                  <input
-                    className={`${styles.field} ${styles.variantNameInput}`}
-                    value={def.name}
-                    onChange={(e) => updateVariantDefinitionName(idx, e.target.value)}
-                    placeholder="Nome (ex: Tamanho)"
-                  />
-                  <div className={styles.variantValuesInput}>
-                    <TagInput
-                      value={def.values}
-                      onChange={(tags) => updateVariantDefinitionValues(idx, tags)}
-                      placeholder={
-                        isColorKey(def.name)
-                          ? "Hex (ex: #FF0000) ou selecione"
-                          : "Valores (ex: S, M, L)"
-                      }
-                      isColor={isColorKey(def.name)}
-                    />
+                <div className={styles.variantDefinitionsList}>
+                  {variantDefinitions.map((def, idx) => (
+                    <div key={def.id} className={styles.row}>
+                      <input
+                        className={`${styles.field} ${styles.variantNameInput}`}
+                        value={def.name}
+                        onChange={(e) => updateVariantDefinitionName(idx, e.target.value)}
+                        placeholder="Nome (ex: Tamanho)"
+                      />
+                      <div className={styles.variantValuesInput}>
+                        <TagInput
+                          value={def.values}
+                          onChange={(tags) => updateVariantDefinitionValues(idx, tags)}
+                          placeholder={
+                            isColorKey(def.name)
+                              ? "Hex (ex: #FF0000) ou selecione"
+                              : "Valores (ex: S, M, L)"
+                          }
+                          isColor={isColorKey(def.name)}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className={styles.deleteButton}
+                        onClick={() => removeVariantDefinition(idx)}>
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+                  <div className={styles.addDefButtonWrapper}>
+                    <button type="button" className={styles.button} onClick={addVariantDefinition}>
+                      <FaPlus /> Adicionar Definição
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className={styles.deleteButton}
-                    onClick={() => removeVariantDefinition(idx)}>
-                    <FaTrash />
-                  </button>
                 </div>
-              ))}
-              <div className={styles.addDefButtonWrapper}>
-                <button
-                  type="button"
-                  className={styles.button}
-                  onClick={addVariantDefinition}>
-                  <FaPlus /> Adicionar Definição
-                </button>
               </div>
-            </div>
-          </div>
 
-          <div className={styles.matrixSection}>
-            <div className={styles.row}>
-              <label className={styles.label}>Matriz de Variantes</label>
-            </div>
-
-            {variants.length === 0 && (
-              <div className={styles.noVarients}>Preencha as variantes acima para gerar a tabela.</div>
-            )}
-
-            {variants.length > 0 && (
-              <div className={styles.variantsTable}>
-                {/* Header Header */}
-                <div className={styles.variantsHeader}>
-                   {optionTypes.map(type => (
-                       <div key={type} className={styles.headerCell}>{type}</div>
-                   ))}
-                   <div className={styles.headerCell}>Preço Extra</div>
-                   <div className={styles.headerCell}>Stock</div>
-                   <div className={styles.headerCell}>Ativo</div>
-                   <div className={styles.headerCell}>Imagens</div>
-                   <div className={`${styles.headerCell} ${styles.deleteColumn}`}></div>
+              <div className={styles.matrixSection}>
+                <div className={styles.row}>
+                  <label className={styles.label}>Matriz de Variantes</label>
                 </div>
 
-                {variants.map((variant, i) => (
-                <div
-                    key={variant.id ?? `new-${i}`}
-                    className={styles.variantRow}
-                >
-                    {optionTypes.map((type) => {
-                        const raw = variant.options[type] || "";
-                        if (isColorKey(type)) {
-                        const { name: colorName, hex: colorHex } = splitNameHex(raw);
-                        return (
-                            <div key={type} className={styles.cell}>
-                                <div className={styles.colorCellContent}>
-                                    <div 
-                                        className={styles.colorCircle}
-                                        style={{
-                                            backgroundColor: colorHex, 
-                                        }} 
-                                    />
-                                    <span>{colorHex}</span>
-                                </div>
-                            </div>
-                        );
-                        }
-                        return (
-                            <div key={type} className={styles.cell}>
-                                {variant.options[type] || "-"}
-                            </div>
-                        );
-                    })}
+                {variants.length === 0 && (
+                  <div className={styles.noVarients}>
+                    Preencha as variantes acima para gerar a tabela.
+                  </div>
+                )}
 
-                    <div className={styles.cell}>
-                        <div className={styles.priceCellContent}>
-                         +<input
-                            className={styles.smallInput}
-                            type="number"
-                            value={variant.price_modifier}
-                            onChange={(e) => updateVariant(i, { price_modifier: Number(e.target.value) })}
-                            step="0.01"
-                        />€
+                {variants.length > 0 && (
+                  <div className={styles.variantsTable}>
+                    {/* Header Header */}
+                    <div className={styles.variantsHeader}>
+                      {optionTypes.map((type) => (
+                        <div key={type} className={styles.headerCell}>
+                          {type}
                         </div>
+                      ))}
+                      <div className={styles.headerCell}>Preço Extra</div>
+                      <div className={styles.headerCell}>Stock</div>
+                      <div className={styles.headerCell}>Ativo</div>
+                      <div className={styles.headerCell}>Imagens</div>
+                      <div className={`${styles.headerCell} ${styles.deleteColumn}`}></div>
                     </div>
 
-                    <div className={styles.cell}>
-                        <input
+                    {variants.map((variant, i) => (
+                      <div key={variant.id ?? `new-${i}`} className={styles.variantRow}>
+                        {optionTypes.map((type) => {
+                          const raw = variant.options[type] || "";
+                          if (isColorKey(type)) {
+                            const { name: colorName, hex: colorHex } = splitNameHex(raw);
+                            return (
+                              <div key={type} className={styles.cell}>
+                                <div className={styles.colorCellContent}>
+                                  <div
+                                    className={styles.colorCircle}
+                                    style={{
+                                      backgroundColor: colorHex,
+                                    }}
+                                  />
+                                  <span>{colorHex}</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div key={type} className={styles.cell}>
+                              {variant.options[type] || "-"}
+                            </div>
+                          );
+                        })}
+
+                        <div className={styles.cell}>
+                          <div className={styles.priceCellContent}>
+                            +
+                            <input
+                              className={styles.smallInput}
+                              type="number"
+                              value={variant.price_modifier}
+                              onChange={(e) =>
+                                updateVariant(i, { price_modifier: Number(e.target.value) })
+                              }
+                              step="0.01"
+                            />
+                            €
+                          </div>
+                        </div>
+
+                        <div className={styles.cell}>
+                          <input
                             className={styles.smallInput}
                             type="number"
                             value={variant.stock_quantity}
-                            onChange={(e) => updateVariant(i, { stock_quantity: Number(e.target.value) })}
+                            onChange={(e) =>
+                              updateVariant(i, { stock_quantity: Number(e.target.value) })
+                            }
                             min="0"
-                        />
-                    </div>
+                          />
+                        </div>
 
-                    <div className={styles.cell}>
-                        <input
+                        <div className={styles.cell}>
+                          <input
                             type="checkbox"
                             checked={variant.active}
                             onChange={(e) => updateVariant(i, { active: e.target.checked })}
                             className={styles.activeCheckbox}
-                        />
-                    </div>
+                          />
+                        </div>
 
-                    <div className={styles.cell}>
-                         <div className={styles.imageCellContent}>
+                        <div className={styles.cell}>
+                          <div className={styles.imageCellContent}>
                             <label className={styles.iconButton} title="Upload imagem">
-                                <FaUpload />
-                                <input
+                              <FaUpload />
+                              <input
                                 type="file"
                                 accept="image/*"
                                 multiple
                                 onChange={(e) => handleVariantImageUpload(e, i)}
                                 hidden
-                                />
+                              />
                             </label>
-                            
+
                             {(variant.images.length > 0 || variant.newImages.length > 0) && (
-                                <span className={styles.imageCount}>
-                                    {variant.images.length + variant.newImages.length} img
-                                </span>
+                              <span className={styles.imageCount}>
+                                {variant.images.length + variant.newImages.length} img
+                              </span>
                             )}
-                         </div>
-                    </div>
+                          </div>
+                        </div>
 
-                    <div className={styles.cell}>
-                        <button
-                        type="button"
-                        className={styles.iconDeleteButton}
-                        onClick={() => removeVariant(i)}>
-                        <FaTrash />
-                        </button>
-                    </div>
-                </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-      {error && <div className={styles.error}>{error}</div>}
-
-      <div className={styles.section}>
-        <div className={styles.card}>
-          <label className={styles.label}>Imagens</label>
-          <div className={styles.imageArea}>
-            {allImages.length > 0 ? (
-              <div className={styles.imagePreview}>
-                <Image
-                  src={allImages[selectedImageIndex]}
-                  alt="Product"
-                  fill
-                  className={styles.productImageCover}
-                />
-                {allImages.length > 1 && (
-                  <div className={styles.imageNav}>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))}>
-                      <FaChevronLeft />
-                    </button>
-                    <span>
-                      {selectedImageIndex + 1}/{allImages.length}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedImageIndex(
-                          Math.min(allImages.length - 1, selectedImageIndex + 1)
-                        )
-                      }>
-                      <FaChevronRight />
-                    </button>
+                        <div className={styles.cell}>
+                          <button
+                            type="button"
+                            className={styles.iconDeleteButton}
+                            onClick={() => removeVariant(i)}>
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className={styles.noImage}>Nenhuma imagem</div>
-            )}
+            </div>
           </div>
 
-          <label className={styles.button}>
-            <FaUpload /> Upload Imagem
-            <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
-          </label>
+          {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
+          {error && <div className={styles.error}>{error}</div>}
 
-          <div className={styles.thumbList}>
-            {allImages.map((img, idx) => (
-              <span key={idx} className={styles.thumbItem}>
-                <Image src={img} alt="" width={32} height={32} className={styles.thumb} />
-                <button
-                  type="button"
-                  className={styles.thumbBtn}
-                  onClick={() => setSelectedImageIndex(idx)}>
-                  {idx + 1}
-                </button>
-                <button
-                  type="button"
-                  className={styles.deleteButton}
-                  onClick={() => removeImage(idx)}>
-                  <FaTrash />
-                </button>
-              </span>
-            ))}
+          <div className={styles.section}>
+            <div className={styles.card}>
+              <label className={styles.label}>Imagens</label>
+              <div className={styles.imageArea}>
+                {allImages.length > 0 ? (
+                  <div className={styles.imagePreview}>
+                    <Image
+                      src={allImages[selectedImageIndex]}
+                      alt="Product"
+                      fill
+                      className={styles.productImageCover}
+                    />
+                    {allImages.length > 1 && (
+                      <div className={styles.imageNav}>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedImageIndex(Math.max(0, selectedImageIndex - 1))
+                          }>
+                          <FaChevronLeft />
+                        </button>
+                        <span>
+                          {selectedImageIndex + 1}/{allImages.length}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedImageIndex(
+                              Math.min(allImages.length - 1, selectedImageIndex + 1)
+                            )
+                          }>
+                          <FaChevronRight />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className={styles.noImage}>Nenhuma imagem</div>
+                )}
+              </div>
+
+              <label className={styles.button}>
+                <FaUpload /> Upload Imagem
+                <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
+              </label>
+
+              <div className={styles.thumbList}>
+                {allImages.map((img, idx) => (
+                  <span key={idx} className={styles.thumbItem}>
+                    <Image src={img} alt="" width={32} height={32} className={styles.thumb} />
+                    <button
+                      type="button"
+                      className={styles.thumbBtn}
+                      onClick={() => setSelectedImageIndex(idx)}>
+                      {idx + 1}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.deleteButton}
+                      onClick={() => removeImage(idx)}>
+                      <FaTrash />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      <button type="submit" className={styles.button} disabled={uploading}>
-        {uploading ? "A guardar..." : isEdit ? "Guardar Alterações" : "Criar Produto"}
-      </button>
-    </form>
+      </form>
+    </div>
   );
 }
