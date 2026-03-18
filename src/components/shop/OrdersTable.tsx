@@ -19,6 +19,7 @@ import { getFirstAndLastName } from "@/utils/userUtils";
 import NewOrderModal from "./NewOrderModal";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import InputDialog from "@/components/layout/InputDateDialog";
 import MultiSelectFilter from "./MultiSelectFilter";
 import DateFilter from "./DateFilter";
 import ActiveFilters from "./ActiveFilters";
@@ -71,6 +72,8 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const [pendingBulkStatus, setPendingBulkStatus] = useState<OrderStatus | null>(null);
+  const [showPickupDialog, setShowPickupDialog] = useState(false);
+  const [pickupInput, setPickupInput] = useState<string | null>(null);
 
   const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [productsFilterOpen, setProductsFilterOpen] = useState(false);
@@ -229,6 +232,75 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     window.open(`https://mail.google.com/mail/?view=cm&fs=1&bcc=${bcc}`, "_blank");
   }
 
+  function handleSetPickupDeadline(): void {
+    if (selectedOrders.size === 0) return;
+    setPickupInput("");
+    setShowPickupDialog(true);
+  }
+
+  async function confirmSetPickupDeadline(inputValue: string | null) {
+    setShowPickupDialog(false);
+    // convert local datetime-local value to ISO or null
+    let isoString: string | null = null;
+    if (inputValue && inputValue.trim() !== "") {
+      const dt = new Date(inputValue);
+      if (isNaN(dt.getTime())) {
+        console.error("Invalid date.");
+        return;
+      }
+      isoString = dt.toISOString();
+    }
+
+    setBulkLoading(true);
+    const orderIds = Array.from(selectedOrders)
+      .map((s) => Number(s))
+      .filter((n) => Number.isFinite(n));
+    const concurrency = 5;
+    const failures: number[] = [];
+
+    const worker = async (chunk: number[]) => {
+      await Promise.all(
+        chunk.map(async (orderId) => {
+          try {
+            const body: Record<string, unknown> = { pickup_deadline: isoString };
+            const res = await fetch(`/api/shop/orders/${orderId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            });
+            if (!res.ok) {
+              failures.push(orderId);
+              console.error(
+                `Failed to set pickup deadline for ${orderId}`,
+                await res.text().catch(() => null)
+              );
+            }
+          } catch (err) {
+            failures.push(orderId);
+            console.error(`Error setting pickup deadline for ${orderId}:`, err);
+          }
+        })
+      );
+    };
+
+    try {
+      for (let i = 0; i < orderIds.length; i += concurrency) {
+        await worker(orderIds.slice(i, i + concurrency));
+      }
+      setSelectedOrders(new Set());
+
+      if (failures.length) {
+        // TODO: (WARNING)
+        console.error(`Falha ao atualizar ${failures.length} encomenda(s)`);
+      } else {
+        // TODO: (SUCCESS)
+        router.refresh();
+      }
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
     // TODO: (LOADING) show loading toast while bulk order status updates are running.
@@ -272,7 +344,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         // TODO: (WARNING)
         console.warn("Some updates failed:", failures);
       } else {
-        // TODO: (SUCCESS) show success toast after all selected orders are updated.
+        // TODO: (SUCCESS)
       }
     } finally {
       setBulkLoading(false);
@@ -490,6 +562,20 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                 title="Enviar email aos selecionados">
                 {bulkLoading ? "A processar..." : "Enviar Email"}
               </button>
+              <button
+                onClick={handleSetPickupDeadline}
+                disabled={bulkLoading}
+                className={styles.bulkBtn}
+                title="Definir prazo limite de levantamento">
+                {bulkLoading ? "A processar..." : "Definir prazo para levantamento"}
+              </button>
+              <InputDialog
+                open={showPickupDialog}
+                title={"Prazo limite para levantamento das encomendas"}
+                initialValue={pickupInput ?? ""}
+                onConfirm={(val) => confirmSetPickupDeadline(val)}
+                onCancel={() => setShowPickupDialog(false)}
+              />
               <button
                 onClick={() => handleBulkStatusChange("paid")}
                 disabled={bulkLoading}

@@ -251,6 +251,7 @@ CREATE TABLE neiist.orders (
   payment_reference TEXT,
   created_by TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  pickup_deadline TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
@@ -1599,6 +1600,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   customer_phone TEXT,
   customer_nif TEXT,
   campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
   total_amount NUMERIC(10,2),
@@ -1753,6 +1755,7 @@ BEGIN
     (SELECT c.contact_value FROM neiist.user_contacts c WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone' LIMIT 1) AS customer_phone,
     o.nif AS customer_nif,
      o.campus,
+    o.pickup_deadline,
     COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
         'product_id', oi.product_id,
@@ -1788,6 +1791,7 @@ RETURNS TABLE (
   customer_phone TEXT,
   customer_nif TEXT,
   campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
   total_amount NUMERIC(10,2),
@@ -1818,6 +1822,7 @@ BEGIN
     ) AS customer_phone,
     o.nif AS customer_nif,
     o.campus,
+    o.pickup_deadline,
     (
       SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
@@ -1875,6 +1880,7 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
+  pickup_deadline TIMESTAMPTZ,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
@@ -1919,6 +1925,9 @@ BEGIN
   END IF;
   IF p_updates ? 'payment_checked_by' THEN
     UPDATE neiist.orders SET payment_checked_by = NULLIF(p_updates->>'payment_checked_by','') WHERE neiist.orders.id = p_order_id;
+  END IF;
+  IF p_updates ? 'pickup_deadline' THEN
+    UPDATE neiist.orders SET pickup_deadline = NULLIF(p_updates->>'pickup_deadline','')::timestamptz WHERE neiist.orders.id = p_order_id;
   END IF;
   IF p_updates ? 'delivered_by' THEN
     UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE neiist.orders.id = p_order_id;
@@ -2068,6 +2077,7 @@ BEGIN
     g.created_at,
     g.paid_at,
     g.payment_checked_by,
+    g.pickup_deadline,
     g.delivered_at,
     g.delivered_by,
     g.updated_at,
@@ -2091,6 +2101,7 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   customer_phone TEXT,
   customer_nif TEXT,
   campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
   total_amount NUMERIC(10,2),
@@ -2125,6 +2136,7 @@ BEGIN
     g.customer_phone,
     g.customer_nif,
     g.campus,
+    g.pickup_deadline,
     g.items,
     g.notes,
     g.total_amount,

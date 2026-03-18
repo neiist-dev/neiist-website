@@ -63,6 +63,7 @@ export interface Order {
   customer_phone?: string;
   customer_nif?: string;
   campus?: string;
+  pickup_deadline?: string | null;
   items: OrderItem[];
   notes?: string;
   total_amount: number;
@@ -129,6 +130,7 @@ export interface dbOrder {
   customer_phone: string | null;
   customer_nif: string | null;
   campus: string | null;
+  pickup_deadline: string | null;
   items: dbOrderItem[] | null;
   notes: string | null;
   total_amount: string | number;
@@ -248,6 +250,7 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     customer_phone: row.customer_phone ?? undefined,
     customer_nif: row.customer_nif ?? undefined,
     campus: row.campus ?? undefined,
+    pickup_deadline: row.pickup_deadline ?? undefined,
     items: (row.items ?? []).map(
       (it): OrderItem => ({
         product_id: it.product_id,

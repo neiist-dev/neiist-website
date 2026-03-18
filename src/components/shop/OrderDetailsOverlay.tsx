@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import {
   Order,
@@ -10,7 +10,8 @@ import {
   canTransitionTo,
 } from "@/types/shop";
 import { MdClose } from "react-icons/md";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaExclamationTriangle } from "react-icons/fa";
+import { toast } from "sonner";
 import { FiChevronDown, FiChevronUp, FiEdit2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
@@ -70,6 +71,46 @@ export default function OrderDetailOverlay({
     }
   }, [order?.notes]);
 
+  const deadlineToastShownRef = useRef(false);
+  const isDeadlineNear = (() => {
+    if (!order?.pickup_deadline) return false;
+    try {
+      const dl = new Date(order.pickup_deadline);
+      const now = new Date();
+      const diffDays = (dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays <= 28 && diffDays >= 0;
+    } catch {
+      return false;
+    }
+  })();
+
+  const showDeadlineToast = useCallback(() => {
+    if (!order?.pickup_deadline) return;
+    if (deadlineToastShownRef.current) return;
+    const formatted = new Date(order.pickup_deadline).toLocaleDateString("pt-PT");
+    const toastId = `pickup-deadline-${order.id}`;
+    toast.warning(`Prazo limite de levantamento: ${formatted}`, {
+      id: toastId,
+      duration: Infinity,
+      closeButton: true,
+      dismissible: true,
+      style: {
+        color: "red",
+        border: "2px solid var(--danger-colour, red)",
+      },
+    });
+    deadlineToastShownRef.current = true;
+  }, [order]);
+
+  useEffect(() => {
+    deadlineToastShownRef.current = false;
+  }, [order?.id]);
+
+  useEffect(() => {
+    if (!order) return;
+    if (!canManage && isDeadlineNear) showDeadlineToast();
+  }, [order, canManage, isDeadlineNear, showDeadlineToast]);
+
   const handleCloseImmediate = useCallback(() => {
     router.push(basePath);
   }, [router, basePath]);
@@ -99,7 +140,7 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      // TODO: (SUCCESS) show success toast after the order status is updated.
+      // TODO: (SUCCESS)
     } else {
       // TODO: (ERROR)
       setError("Erro ao atualizar estado.");
@@ -114,7 +155,7 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      // TODO: (SUCCESS) show success toast after the order is cancelled.
+      // TODO: (SUCCESS)
     } else {
       // TODO: (ERROR)
       setError("Erro ao cancelar encomenda.");
@@ -441,6 +482,12 @@ export default function OrderDetailOverlay({
                     {new Date(order.paid_at).toLocaleString("pt-PT")}
                   </p>
                 )}
+                {order.pickup_deadline && (
+                  <p className={styles.timestamp}>
+                    Prazo limite para levantamento em{" "}
+                    {new Date(order.pickup_deadline).toLocaleString("pt-PT")}
+                  </p>
+                )}
                 {order.delivered_at && (
                   <p className={styles.timestamp}>
                     Entregue por {order.delivered_by} em{" "}
@@ -470,10 +517,17 @@ export default function OrderDetailOverlay({
                         Pago
                       </li>
                       <li
-                        className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""}`}
+                        className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""} ${
+                          isDeadlineNear && currentStepIndex >= 2 ? styles.stepAlert : ""
+                        }`}
                         id="step3">
                         <span className={styles.stepIcon}>
-                          {currentStepIndex >= 2 && <FaCheck size={14} />}
+                          {currentStepIndex >= 2 &&
+                            (isDeadlineNear ? (
+                              <FaExclamationTriangle size={14} />
+                            ) : (
+                              <FaCheck size={14} />
+                            ))}
                         </span>
                         Pronto
                       </li>

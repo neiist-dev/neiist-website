@@ -70,6 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       "created_by",
       "paid_at",
       "payment_checked_by",
+      "pickup_deadline",
       "campus",
       "nif",
       "items",

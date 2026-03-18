@@ -50,7 +50,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
               mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
               toastOptions={{
                 style: {
-                  background: "var(--background-colour)",
+                  background: "white",
                   color: "var(--foreground-colour)",
                 },
               }}

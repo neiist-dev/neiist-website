@@ -12,6 +12,16 @@ type Props = { orders: Order[]; products: Product[] };
 
 export default function MyOrdersList({ orders, products }: Props) {
   const [query, setQuery] = useState("");
+  const anyDeadlineNear = useMemo(() => {
+    if (!orders || orders.length === 0) return false;
+    const now = new Date();
+    return orders.some((o) => {
+      if (!o.pickup_deadline) return false;
+      const dl = new Date(o.pickup_deadline);
+      const diffDays = (dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays <= 28 && diffDays >= 0;
+    });
+  }, [orders]);
 
   const fuse = useMemo(
     () =>
@@ -101,6 +111,12 @@ export default function MyOrdersList({ orders, products }: Props) {
         </div>
       </div>
 
+      {anyDeadlineNear && (
+        <div className={styles.deadlineBanner} role="status">
+          Atenção: tens pelo menos uma encomenda com prazo de levantamento próximo.
+        </div>
+      )}
+
       <div className={styles.ordersGrid}>
         {filtered.length > 0 ? (
           filtered.map((order) => {
@@ -118,7 +134,7 @@ export default function MyOrdersList({ orders, products }: Props) {
                 aria-label={`Ver encomenda ${order.order_number}`}>
                 <div className={styles.orderImageWrapper}>
                   <Image
-                    src={img || "/images/neiist_logo.png"}
+                    src={img || "/default_user.png"}
                     alt={productSummary || `Order ${order.order_number}`}
                     width={367}
                     height={485}
