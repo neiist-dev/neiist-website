@@ -6,9 +6,11 @@
   border: 1px solid #d1d5db;
   border-radius: 0.6rem;
   background: #f9fafb;
-  min-height: 2.2rem; 
+  min-height: 2.2rem;
   align-items: center;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   position: relative;
 }
 .container:focus-within {
@@ -95,7 +97,9 @@
   margin-top: 0.5rem;
   background: white;
   border-radius: 1rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 .pickerOverlay :global(div[class*="wrapper"]) {

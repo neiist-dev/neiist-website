@@ -1,6 +1,6 @@
-import React, { useState, KeyboardEvent, FocusEvent, useRef } from 'react';
-import styles from '@/styles/components/TagInput.module.css';
-import ColourPicker from './ColourPicker';
+import React, { useState, KeyboardEvent, FocusEvent, useRef } from "react";
+import styles from "@/styles/components/TagInput.module.css";
+import ColourPicker from "./ColourPicker";
 
 interface TagInputProps {
   value: string[];
@@ -10,7 +10,7 @@ interface TagInputProps {
 }
 
 export default function TagInput({ value, onChange, placeholder, isColor = false }: TagInputProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -19,25 +19,22 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
     if (trimmed && !value.includes(trimmed)) {
       onChange([...value, trimmed]);
     }
-    setInputValue('');
+    setInputValue("");
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addTag(inputValue);
       setShowPicker(false);
-    } else if (e.key === 'Backspace' && !inputValue && value.length > 0) {
+    } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
       onChange(value.slice(0, -1));
     }
   };
 
   const handleContainerBlur = (e: FocusEvent<HTMLDivElement>) => {
     // Check if the new focus target is still within our component (e.g. the color picker)
-    if (
-      e.relatedTarget &&
-      containerRef.current?.contains(e.relatedTarget as Node)
-    ) {
+    if (e.relatedTarget && containerRef.current?.contains(e.relatedTarget as Node)) {
       return;
     }
     // If focus left the component entirely, add the current input as a tag
@@ -52,25 +49,12 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
   };
 
   return (
-    <div
-      className={styles.container}
-      ref={containerRef}
-      onBlur={handleContainerBlur}
-    >
+    <div className={styles.container} ref={containerRef} onBlur={handleContainerBlur}>
       {value.map((tag) => (
         <span key={tag} className={styles.tag}>
-          {isColor && (
-            <span
-              className={styles.colorDot}
-              style={{ backgroundColor: tag }}
-            />
-          )}
+          {isColor && <span className={styles.colorDot} style={{ backgroundColor: tag }} />}
           {tag}
-          <button
-            type="button"
-            className={styles.removeButton}
-            onClick={() => removeTag(tag)}
-          >
+          <button type="button" className={styles.removeButton} onClick={() => removeTag(tag)}>
             &times;
           </button>
         </span>
@@ -83,23 +67,19 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
           onKeyDown={handleKeyDown}
           onFocus={() => isColor && setShowPicker(true)}
           onClick={() => isColor && setShowPicker(true)}
-          placeholder={value.length === 0 ? placeholder : ''}
+          placeholder={value.length === 0 ? placeholder : ""}
         />
       </div>
       {isColor && showPicker && (
         <div
           className={styles.pickerPopover}
           onMouseDown={(e) => {
-            if ((e.target as HTMLElement).tagName !== 'INPUT') {
+            if ((e.target as HTMLElement).tagName !== "INPUT") {
               e.preventDefault();
             }
-          }}
-        >
+          }}>
           <div className={styles.pickerOverlay}>
-            <ColourPicker
-              value={inputValue}
-              onChange={(hex) => setInputValue(hex)}
-            />
+            <ColourPicker value={inputValue} onChange={(hex) => setInputValue(hex)} />
           </div>
         </div>
       )}
