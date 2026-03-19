@@ -302,6 +302,98 @@
   overflow-x: auto;
 }
 
+.streamHeader {
+  display: grid;
+  grid-template-columns: 1fr 150px 150px;
+  gap: 1rem;
+  padding: 0 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.1rem;
+}
+
+.streamRow {
+  display: grid;
+  grid-template-columns: 1fr 150px 150px;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.streamRowInactive .variantName {
+  color: #9ca3af;
+}
+
+.streamRowInactive input[type="text"],
+.streamRowInactive input[type="number"] {
+  opacity: 0.5;
+}
+
+.variantInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.variantName {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.checkboxCustom {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  background-color: #e5e7eb;
+  border-radius: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  color: transparent;
+}
+
+.checkboxActive {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: #111827;
+  cursor: pointer;
+  border-radius: 0.3rem;
+}
+
+.streamInput {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.7rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+  outline: none;
+  background: white;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.streamInput::placeholder {
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.streamInput:focus {
+  border-color: var(--primary-colour);
+}
+
 .variantsHeader {
   display: flex;
   align-items: center;

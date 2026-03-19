@@ -12,6 +12,7 @@ import {
   FaChevronRight,
   FaSave,
 } from "react-icons/fa";
+import { LuCheck } from "react-icons/lu";
 import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 import { splitNameHex, joinNameHex, isColorKey } from "@/utils/shopUtils";
@@ -272,17 +273,6 @@ export default function ProductForm({
   const updateVariantDefinitionValues = (index: number, newValues: string[]) => {
     setVariantDefinitions((prev) => {
       const next = prev.map((def, i) => (i === index ? { ...def, values: newValues } : def));
-
-      // Auto-regenerate variants if all definitions have at least one value
-      // We use a small timeout or useEffect, but here we can just call generation logic directly
-      // However, we need the *updated* state. So we'll trigger a side effect or just use 'next'.
-      // Better yet: useEffect to watch variantDefinitions? Or just call a helper here.
-      // Calling helper here is safer to avoid infinite loops if helper sets state.
-
-      // We will perform the regeneration logic immediately with the new definitions
-      // But we need to be careful not to spam re-renders or lose work.
-      // The request says "automatically as one adds/removes variants".
-      // Let's create a throttled or direct cal to regenerate.
 
       return next;
     });
@@ -674,93 +664,65 @@ export default function ProductForm({
 
                 {variants.length > 0 && (
                   <div className={styles.variantsTable}>
-                    {/* Header Header */}
-                    <div className={styles.variantsHeader}>
-                      {optionTypes.map((type) => (
-                        <div key={type} className={styles.headerCell}>
-                          {type}
-                        </div>
-                      ))}
-                      <div className={styles.headerCell}>Preço Extra</div>
-                      <div className={styles.headerCell}>Stock</div>
-                      <div className={styles.headerCell}>Ativo</div>
-                      <div className={`${styles.headerCell} ${styles.deleteColumn}`}></div>
+                    {/* Stream Header */}
+                    <div className={styles.streamHeader}>
+                      <div>Variant</div>
+                      <div>Price</div>
+                      <div>Stock</div>
                     </div>
 
-                    {variants.map((variant, i) => (
-                      <div key={variant.id ?? `new-${i}`} className={styles.variantRow}>
-                        {optionTypes.map((type) => {
-                          const raw = variant.options[type] || "";
-                          if (isColorKey(type)) {
-                            const { name: colorName, hex: colorHex } = splitNameHex(raw);
-                            return (
-                              <div key={type} className={styles.cell}>
-                                <div className={styles.colorCellContent}>
-                                  <div
-                                    className={styles.colorCircle}
-                                    style={{
-                                      backgroundColor: colorHex,
-                                    }}
-                                  />
-                                  <span>{colorHex}</span>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return (
-                            <div key={type} className={styles.cell}>
-                              {variant.options[type] || "-"}
-                            </div>
-                          );
-                        })}
+                    {variants.map((variant, i) => {
+                      const variantName = optionTypes
+                        .map((type) => variant.options[type])
+                        .filter((val) => val)
+                        .join(" • ");
 
-                        <div className={styles.cell}>
-                          <div className={styles.priceCellContent}>
-                            +
+                      return (
+                        <div
+                          key={variant.id ?? `new-${i}`}
+                          className={`${styles.streamRow} ${
+                            !variant.active ? styles.streamRowInactive : ""
+                          }`}>
+                          <div className={styles.variantInfo}>
+                            <div
+                              className={`${styles.checkboxCustom} ${
+                                variant.active ? styles.checkboxActive : ""
+                              }`}
+                              onClick={() => updateVariant(i, { active: !variant.active })}>
+                              {variant.active && <LuCheck size={16} strokeWidth={3} />}
+                            </div>
+                            <span className={styles.variantName}>{variantName}</span>
+                          </div>
+
+                          <div>
                             <input
-                              className={styles.smallInput}
+                              className={styles.streamInput}
                               type="number"
                               value={variant.price_modifier}
                               onChange={(e) =>
                                 updateVariant(i, { price_modifier: Number(e.target.value) })
                               }
+                              placeholder="Price"
                               step="0.01"
+                              disabled={!variant.active}
                             />
-                            €
+                          </div>
+
+                          <div>
+                            <input
+                              className={styles.streamInput}
+                              type="number"
+                              value={variant.stock_quantity}
+                              onChange={(e) =>
+                                updateVariant(i, { stock_quantity: Number(e.target.value) })
+                              }
+                              placeholder="Value"
+                              disabled={!variant.active}
+                            />
                           </div>
                         </div>
-
-                        <div className={styles.cell}>
-                          <input
-                            className={styles.smallInput}
-                            type="number"
-                            value={variant.stock_quantity}
-                            onChange={(e) =>
-                              updateVariant(i, { stock_quantity: Number(e.target.value) })
-                            }
-                            min="0"
-                          />
-                        </div>
-
-                        <div className={styles.cell}>
-                          <input
-                            type="checkbox"
-                            checked={variant.active}
-                            onChange={(e) => updateVariant(i, { active: e.target.checked })}
-                            className={styles.activeCheckbox}
-                          />
-                        </div>
-
-                        <div className={styles.cell}>
-                          <button
-                            type="button"
-                            className={styles.iconDeleteButton}
-                            onClick={() => removeVariant(i)}>
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
