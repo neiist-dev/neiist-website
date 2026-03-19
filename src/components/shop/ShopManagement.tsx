@@ -9,6 +9,7 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import ProductForm from "@/components/shop/ProductForm";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
+import ColorfulText from "../ColorfulText";
 
 interface ShopManagementProps {
   products: Product[];
@@ -146,7 +147,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       )}
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1>Gestão da Loja</h1>
+          <ColorfulText className={styles.title} text="Gestão da Loja" />
           <div className={styles.headerActions}>
             <Link href="/shop/pos" className={styles.posBtn}>
               Gestão POS
