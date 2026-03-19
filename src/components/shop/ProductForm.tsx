@@ -17,6 +17,7 @@ import styles from "@/styles/components/shop/ProductForm.module.css";
 import { splitNameHex, joinNameHex, isColorKey } from "@/utils/shopUtils";
 import ColourPicker from "@/components/ColourPicker";
 import TagInput from "@/components/TagInput";
+import ColorfulText from "../ColorfulText";
 
 interface ProductFormProps {
   product?: Product | null;
@@ -470,7 +471,11 @@ export default function ProductForm({
           <button type="button" className={styles.backButton} onClick={onBack}>
             <FaArrowLeft /> Voltar
           </button>
-          <h1 className={styles.title}>{isEdit ? `Editar Produto` : "Adicionar Novo Produto"}</h1>
+          <ColorfulText
+            className={styles.title}
+            text={isEdit ? `Editar Produto` : "Adicionar Novo Produto"}
+          />
+
           <button type="submit" className={styles.button} disabled={uploading}>
             {isEdit ? (
               <>
@@ -546,7 +551,8 @@ export default function ProductForm({
                     if (value !== "limited" || variants.length !== 0) {
                       setStockQuantity(0);
                     }
-                  }}>
+                  }}
+                  style={{ flex: 1 }}>
                   <option value="limited">Stock Limitado</option>
                   <option value="on_demand">Sob Encomenda</option>
                 </select>
