@@ -83,8 +83,7 @@ export default function ProductForm({
       });
     }
     return [
-      { id: "1", name: "Cor", values: [] },
-      { id: "2", name: "Tamanho", values: [] },
+      { id: "1", name: "", values: [] },
     ];
   });
 
