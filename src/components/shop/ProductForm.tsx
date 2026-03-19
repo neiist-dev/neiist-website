@@ -456,6 +456,10 @@ export default function ProductForm({
     }
   };
 
+  const totalVariantStock = variants.reduce((sum, v) => sum + (v.active ? Number(v.stock_quantity) || 0 : 0), 0);
+
+  const hasVariants = variants.length > 0;
+
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -548,11 +552,9 @@ export default function ProductForm({
                   <input
                     className={styles.field}
                     type="number"
-                    value={stockQuantity}
+                    value={hasVariants ? totalVariantStock : stockQuantity}
                     onChange={(e) => setStockQuantity(Number(e.target.value))}
-                    placeholder="Quantidade em stock"
-                    min="0"
-                    // disabled={stockType !== "limited" || variants.length !== 0}
+                    disabled={hasVariants}
                   />
                 ) : (
                   <div>
@@ -591,6 +593,11 @@ export default function ProductForm({
                   </div>
                 )}
               </div>
+              {hasVariants && (
+                <div className="styles.row">
+                  <label>Stock is managed by sum of variants.</label>
+                </div>
+              )}
             </div>
 
             <div className={styles.card}>

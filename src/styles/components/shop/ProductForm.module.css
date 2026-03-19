@@ -61,7 +61,15 @@
   background: #f9fafb;
   font-family: inherit;
   box-sizing: border-box;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.field:disabled {
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+  opacity: 0.7;
 }
 
 .field:focus {
