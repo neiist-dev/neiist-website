@@ -61,6 +61,7 @@
   background: #f9fafb;
   font-family: inherit;
   box-sizing: border-box;
+  flex: 1;
   transition:
     border-color 0.2s,
     background-color 0.2s;
@@ -80,6 +81,7 @@
 
 .row {
   display: flex;
+  flex-direction: row;
   gap: 0.7rem;
   margin-bottom: 0.5rem;
   align-items: center;

@@ -456,7 +456,10 @@ export default function ProductForm({
     }
   };
 
-  const totalVariantStock = variants.reduce((sum, v) => sum + (v.active ? Number(v.stock_quantity) || 0 : 0), 0);
+  const totalVariantStock = variants.reduce(
+    (sum, v) => sum + (v.active ? Number(v.stock_quantity) || 0 : 0),
+    0
+  );
 
   const hasVariants = variants.length > 0;
 
@@ -548,53 +551,58 @@ export default function ProductForm({
                   <option value="on_demand">Sob Encomenda</option>
                 </select>
 
-                {stockType === "limited" ? (
-                  <input
-                    className={styles.field}
-                    type="number"
-                    value={hasVariants ? totalVariantStock : stockQuantity}
-                    onChange={(e) => setStockQuantity(Number(e.target.value))}
-                    disabled={hasVariants}
-                  />
-                ) : (
-                  <div>
-                    <input
-                      className={styles.field}
-                      ref={inputRef}
-                      type="text"
-                      value={orderDeadline ? orderDeadline.toLocaleDateString("pt-PT") : ""}
-                      placeholder="Data limite encomenda"
-                      readOnly
-                      onClick={() => setShowDatePicker(true)}
-                    />
-                    {showDatePicker && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          zIndex: 10,
-                          background: "white",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                          borderRadius: 8,
-                          padding: 8,
-                        }}>
-                        <DayPicker
-                          mode="single"
-                          selected={orderDeadline}
-                          onSelect={(date) => {
-                            setOrderDeadline(date ?? undefined);
-                            setShowDatePicker(false);
-                          }}
-                          weekStartsOn={1}
-                          captionLayout="dropdown"
-                          navLayout="around"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div style={{ flex: 1 }}>
+                  {stockType === "limited" ? (
+                    <>
+                      <input
+                        className={styles.field}
+                        type="number"
+                        value={hasVariants ? totalVariantStock : stockQuantity}
+                        onChange={(e) => setStockQuantity(Number(e.target.value))}
+                        disabled={hasVariants}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        className={styles.field}
+                        ref={inputRef}
+                        type="text"
+                        value={orderDeadline ? orderDeadline.toLocaleDateString("pt-PT") : ""}
+                        placeholder="Data limite encomenda"
+                        readOnly
+                        onClick={() => setShowDatePicker(true)}
+                      />
+
+                      {showDatePicker && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            zIndex: 10,
+                            background: "white",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            borderRadius: 8,
+                            padding: 8,
+                          }}>
+                          <DayPicker
+                            mode="single"
+                            selected={orderDeadline}
+                            onSelect={(date) => {
+                              setOrderDeadline(date ?? undefined);
+                              setShowDatePicker(false);
+                            }}
+                            weekStartsOn={1}
+                            captionLayout="dropdown"
+                            navLayout="around"
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-              {hasVariants && (
-                <div className="styles.row">
+              {hasVariants && stockType === "limited" && (
+                <div className={styles.row}>
                   <label>Stock is managed by sum of variants.</label>
                 </div>
               )}
