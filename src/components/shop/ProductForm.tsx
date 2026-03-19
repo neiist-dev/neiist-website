@@ -107,6 +107,13 @@ export default function ProductForm({
     })) || []
   );
 
+  useEffect(() => {
+    const hasAnyValues = variantDefinitions.some((def) => def.values.length > 0);
+    if (!hasAnyValues && variants.length > 0) {
+      setVariants([]);
+    }
+  }, [variantDefinitions, variants.length]);
+
   const generateVariants = (currentDefinitions: VariantDefinition[]) => {
     const validDefs = currentDefinitions.filter((def) => def.name && def.values.length > 0);
 
