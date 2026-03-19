@@ -345,25 +345,21 @@
   display: flex;
   justify-content: flex-end;
 }
+
 .cell:nth-last-child(2),
 .headerCell:nth-last-child(2) {
-  /* Images */
-  flex: 0 0 100px;
-}
-.cell:nth-last-child(3),
-.headerCell:nth-last-child(3) {
   /* Active */
   flex: 0 0 60px;
   display: flex;
   justify-content: center;
 }
-.cell:nth-last-child(4),
-.headerCell:nth-last-child(4) {
+.cell:nth-last-child(3),
+.headerCell:nth-last-child(3) {
   /* Stock */
   flex: 0 0 80px;
 }
-.cell:nth-last-child(5),
-.headerCell:nth-last-child(5) {
+.cell:nth-last-child(4),
+.headerCell:nth-last-child(4) {
   /* Price */
   flex: 0 0 100px;
 }
@@ -452,17 +448,6 @@
   width: 18px;
   height: 18px;
   cursor: pointer;
-}
-
-.imageCellContent {
-  display: flex;
-  gap: 0.25rem;
-  align-items: center;
-}
-
-.imageCount {
-  font-size: 0.8rem;
-  color: #666;
 }
 
 .datePickerPopup {

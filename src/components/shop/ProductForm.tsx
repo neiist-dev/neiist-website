@@ -678,7 +678,6 @@ export default function ProductForm({
                       <div className={styles.headerCell}>Preço Extra</div>
                       <div className={styles.headerCell}>Stock</div>
                       <div className={styles.headerCell}>Ativo</div>
-                      <div className={styles.headerCell}>Imagens</div>
                       <div className={`${styles.headerCell} ${styles.deleteColumn}`}></div>
                     </div>
 
@@ -744,27 +743,6 @@ export default function ProductForm({
                             onChange={(e) => updateVariant(i, { active: e.target.checked })}
                             className={styles.activeCheckbox}
                           />
-                        </div>
-
-                        <div className={styles.cell}>
-                          <div className={styles.imageCellContent}>
-                            <label className={styles.iconButton} title="Upload imagem">
-                              <FaUpload />
-                              <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={(e) => handleVariantImageUpload(e, i)}
-                                hidden
-                              />
-                            </label>
-
-                            {(variant.images.length > 0 || variant.newImages.length > 0) && (
-                              <span className={styles.imageCount}>
-                                {variant.images.length + variant.newImages.length} img
-                              </span>
-                            )}
-                          </div>
                         </div>
 
                         <div className={styles.cell}>
