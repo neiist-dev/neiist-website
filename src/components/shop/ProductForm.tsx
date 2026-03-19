@@ -19,6 +19,8 @@ import { splitNameHex, joinNameHex, isColorKey } from "@/utils/shopUtils";
 import ColourPicker from "@/components/ColourPicker";
 import TagInput from "@/components/TagInput";
 import ColorfulText from "../ColorfulText";
+import ProductImageManager from "./ProductImageManager";
+import { GroupImages, ComboImages, ImageFile } from "@/components/shop/ProductImageManager";
 
 interface ProductFormProps {
   product?: Product | null;
@@ -83,9 +85,7 @@ export default function ProductForm({
         return { id: Math.random().toString(36).substr(2, 9), name: type, values };
       });
     }
-    return [
-      { id: "1", name: "", values: [] },
-    ];
+    return [{ id: "1", name: "", values: [] }];
   });
 
   // Calculate optionTypes derived from variantDefinitions for rendering the table
@@ -380,38 +380,69 @@ export default function ProductForm({
     setUploading(true);
 
     try {
-      // TODO: (LOADING) show loading toast while the product is being saved and images are uploaded.
-      const convertToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
+      const convertToBase64 = (file: File): Promise<string> =>
+        new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve((reader.result as string).split(",")[1]);
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
-      };
 
       const imageUploads = await Promise.all(
-        newImages.map(async ({ file }) => ({
+        newProductImages.map(async ({ file }) => ({
           imageBase64: await convertToBase64(file),
           imageName: file.name,
         }))
       );
 
+      // Group images — serialize new files
+      const groupImageUploads: Record<
+        string,
+        Record<
+          string,
+          {
+            existing: string[];
+            uploads: { imageBase64: string; imageName: string }[];
+          }
+        >
+      > = {};
+
+      for (const [optKey, vals] of Object.entries(groupImages)) {
+        groupImageUploads[optKey] = {};
+        for (const [optVal, slot] of Object.entries(vals)) {
+          groupImageUploads[optKey][optVal] = {
+            existing: slot.existing,
+            uploads: await Promise.all(
+              slot.newFiles.map(async ({ file }) => ({
+                imageBase64: await convertToBase64(file),
+                imageName: file.name,
+              }))
+            ),
+          };
+        }
+      }
+
+      // Combo images — merge into the variants array
       const variantsWithUploads = await Promise.all(
-        variants.map(async (variant) => ({
-          id: variant.id,
-          options: variant.options,
-          price_modifier: variant.price_modifier,
-          stock_quantity: variant.stock_quantity,
-          active: variant.active,
-          images: variant.images,
-          imageUploads: await Promise.all(
-            variant.newImages.map(async ({ file }) => ({
-              imageBase64: await convertToBase64(file),
-              imageName: file.name,
-            }))
-          ),
-        }))
+        variants.map(async (variant, i) => {
+          const vid = variant.id !== undefined ? String(variant.id) : `new-${i}`;
+          const slot = comboImages[vid] ?? { existing: [], newFiles: [] };
+          return {
+            id: variant.id,
+            options: variant.options,
+            price_modifier: variant.price_modifier,
+            stock_quantity: variant.stock_quantity,
+            active: variant.active,
+            images: slot.existing, // existing combo images
+            imageUploads: await Promise.all(
+              // new combo image files
+              slot.newFiles.map(async ({ file }) => ({
+                imageBase64: await convertToBase64(file),
+                imageName: file.name,
+              }))
+            ),
+          };
+        })
       );
 
       const productData = {
@@ -419,12 +450,13 @@ export default function ProductForm({
         name: name.trim(),
         description: description.trim(),
         price: Number(price),
-        category: category,
+        category,
         stock_type: stockType,
         stock_quantity: Number(stockQuantity),
-        images: existingImages,
-        imageUploads,
-        variants: variantsWithUploads,
+        images: existingProductImages,
+        imageUploads, // product-level new images
+        group_image_uploads: groupImageUploads, // option-group images
+        variants: variantsWithUploads, // combo images live inside each variant
         order_deadline: orderDeadline ? orderDeadline.toISOString() : null,
       };
 
@@ -456,6 +488,27 @@ export default function ProductForm({
   const totalVariantStock = variants.reduce(
     (sum, v) => sum + (v.active ? Number(v.stock_quantity) || 0 : 0),
     0
+  );
+
+  // In your component state:
+  const [existingProductImages, setExistingProductImages] = useState<string[]>(
+    product?.images || []
+  );
+  const [newProductImages, setNewProductImages] = useState<ImageFile[]>([]);
+
+  const [groupImages, setGroupImages] = useState<GroupImages>(
+    // Optionally seed from product.group_images if you store them on the server
+    {}
+  );
+
+  const [comboImages, setComboImages] = useState<ComboImages>(
+    // Seed from existing variant images
+    Object.fromEntries(
+      (product?.variants || []).map((v) => [
+        String(v.id),
+        { existing: v.images || [], newFiles: [] },
+      ])
+    )
   );
 
   const hasVariants = variants.length > 0;
@@ -732,7 +785,7 @@ export default function ProductForm({
           {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
           {error && <div className={styles.error}>{error}</div>}
 
-          <div className={styles.section}>
+          {/* <div className={styles.section}>
             <div className={styles.card}>
               <label className={styles.label}>Imagens</label>
               <div className={styles.imageArea}>
@@ -797,6 +850,30 @@ export default function ProductForm({
                   </span>
                 ))}
               </div>
+            </div>
+          </div> */}
+
+          <div className={styles.section}>
+            <div className={styles.card}>
+              <ProductImageManager
+                existingProductImages={existingProductImages}
+                newProductImages={newProductImages}
+                onProductImagesChange={(existing, newFiles) => {
+                  setExistingProductImages(existing);
+                  setNewProductImages(newFiles);
+                }}
+                optionTypes={optionTypes}
+                variants={variants.map((v, i) => ({
+                  id: v.id !== undefined ? String(v.id) : `new-${i}`,
+                  options: v.options,
+                }))}
+                isColorKey={isColorKey}
+                splitNameHex={splitNameHex}
+                groupImages={groupImages}
+                onGroupImagesChange={setGroupImages}
+                comboImages={comboImages}
+                onComboImagesChange={setComboImages}
+              />
             </div>
           </div>
         </div>
