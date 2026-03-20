@@ -15,7 +15,7 @@ interface Role {
 interface UserWithMemberships extends User {
   memberships: Membership[];
 }
-const sanitizedString = (value: string) => 
+const sanitizeString = (value: string) => 
     value.trim()
       .normalize("NFD")
       .replace(/\p{M}/gu, "")
@@ -33,16 +33,16 @@ export default function UsersSearchList({
   
   const filteredUsers = useMemo(() => {
   
-    const sanitizedSearch = sanitizedString(search);
+    const sanitizedSearch = sanitizeString(search);
 
     if (!sanitizedSearch) return users;
 
+    const digits = sanitizedSearch.replace(/[^0-9]/g, "");
     const isIstid = 
       /^ist\d+$/i.test(sanitizedSearch) ||
       /^\d+$/.test(sanitizedSearch);
     
     if (isIstid) {
-      const digits = sanitizedSearch.replace(/[^0-9]/g, "");
       const exact = users.filter(
         (u) => u.istid.replace(/[^0-9]/g, "") === digits
       );
@@ -56,10 +56,14 @@ export default function UsersSearchList({
   
     return users
       .filter(user => {
-        const inputString = sanitizedString(
-          `${user.name} ${user.istid} ${user.istid.replace(/[^0-9]/g, "")} 
-          ${user.email} ${user.courses?.join(" ") ?? ""}
-          ${user.memberships?.map(m => `${m.departmentName} ${m.roleName}`).join(" ")}`
+        const inputString = sanitizeString(
+          `${user.name} ${user.istid} ` +
+          `${user.istid.replace(/[^0-9]/g, "")} ` +
+          `${user.email} ` +
+          `${user.courses?.join(" ") ?? ""} ` +
+          `${user.memberships
+            ?.map((m) => `${m.departmentName} ${m.roleName}`)
+            .join(" ")}`
         );
         const stringTokens = inputString.split(/\s+/).filter(Boolean);
       
