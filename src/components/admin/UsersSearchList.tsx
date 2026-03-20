@@ -15,6 +15,12 @@ interface Role {
 interface UserWithMemberships extends User {
   memberships: Membership[];
 }
+const sanitizedString = (value: string) => 
+    value.trim()
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .replace(/-/g, " ")
+      .toLowerCase();
 
 export default function UsersSearchList({
   users,
@@ -25,49 +31,43 @@ export default function UsersSearchList({
 }) {
   const [search, setSearch] = useState("");
   
-  const sanitizedString = (value: string) => 
-    value.trim()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-      
   const filteredUsers = useMemo(() => {
   
     const sanitizedSearch = sanitizedString(search);
 
-    if (!sanitizedSearch) {
-      return users;
-    }
+    if (!sanitizedSearch) return users;
 
-    const hasPrefix = /^ist\d+$/i.test(sanitizedSearch);
-    const noPrefixDig = /^\d+$/.test(sanitizedSearch);
-
-    if (hasPrefix || noPrefixDig) {
+    const isIstid = 
+      /^ist\d+$/i.test(sanitizedSearch) ||
+      /^\d+$/.test(sanitizedSearch);
+    
+    if (isIstid) {
       const digits = sanitizedSearch.replace(/[^0-9]/g, "");
-      const matches = users.filter((user) => 
-        user.istid.replace(/[^0-9]/g, "") === digits);
-      if (matches.length > 0) {
-        return matches;
-      }
-      return users.filter((user) => user.istid.replace(/[^0-9]/g, "").startsWith(digits));
-    }
-  
+      const exact = users.filter(
+        (u) => u.istid.replace(/[^0-9]/g, "") === digits
+      );
+      return exact.length > 0
+        ? exact
+        : users.filter(
+          (u) => u.istid.replace(/[^0-9]/g, "").startsWith(digits)
+        );
+    } 
     const searchTerms = sanitizedSearch.split(/\s+/).filter(Boolean);
   
     return users
       .filter(user => {
-        const searchableText = sanitizedString(
+        const inputString = sanitizedString(
           `${user.name} ${user.istid} ${user.istid.replace(/[^0-9]/g, "")} 
           ${user.email} ${user.courses?.join(" ") ?? ""}
           ${user.memberships?.map(m => `${m.departmentName} ${m.roleName}`).join(" ")}`
         );
-        const textTokens = searchableText.split(/\s+/).filter(Boolean);
+        const stringTokens = inputString.split(/\s+/).filter(Boolean);
       
         return searchTerms.every(searchTerm => 
-          textTokens.some(token => token.startsWith(searchTerm)));
+          stringTokens.some(token => token.startsWith(searchTerm)));
       })
       .sort((userA, userB) => userA.name.localeCompare(userB.name));
-  }, [users, search]);
+  },[users, search]);
 
   const getAccessLevelForRole = (roleName: string): string => {
     const role = roles.find((role) => role.role_name === roleName);
