@@ -57,7 +57,9 @@ export default function UsersSearchList({
     return users
       .filter(user => {
         const searchableText = sanitizedString(
-          `${user.name} ${user.istid} ${user.istid.replace(/[^0-9]/g, "")} ${user.email} ${user.memberships?.map(m => `${m.departmentName} ${m.roleName}`).join(' ')}`
+          `${user.name} ${user.istid} ${user.istid.replace(/[^0-9]/g, "")} 
+          ${user.email} ${user.courses?.join(" ") ?? ""}
+          ${user.memberships?.map(m => `${m.departmentName} ${m.roleName}`).join(" ")}`
         );
         const textTokens = searchableText.split(/\s+/).filter(Boolean);
       
