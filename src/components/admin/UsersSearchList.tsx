@@ -40,9 +40,9 @@ export default function UsersSearchList({
     }
 
     const hasPrefix = /^ist\d+$/i.test(sanitizedSearch);
-    const digitsOnly = /^\d+$/.test(sanitizedSearch);
+    const noPrefixDig = /^\d+$/.test(sanitizedSearch);
 
-    if (hasPrefix || digitsOnly) {
+    if (hasPrefix || noPrefixDig) {
       const digits = sanitizedSearch.replace(/[^0-9]/g, "");
       const matches = users.filter((user) => 
         user.istid.replace(/[^0-9]/g, "") === digits);
