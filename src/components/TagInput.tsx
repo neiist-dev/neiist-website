@@ -11,7 +11,7 @@ interface TagInputProps {
 
 export default function TagInput({ value, onChange, placeholder, isColor = false }: TagInputProps) {
   const [inputValue, setInputValue] = useState("");
-  const [showPicker, setShowPicker] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const addTag = (tag: string) => {
@@ -26,7 +26,7 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
     if (e.key === "Enter") {
       e.preventDefault();
       addTag(inputValue);
-      setShowPicker(false);
+      setActiveIndex(null);
     } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
       onChange(value.slice(0, -1));
     }
@@ -41,18 +41,41 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
     if (inputValue) {
       addTag(inputValue);
     }
-    setShowPicker(false);
+    setActiveIndex(null);
   };
 
   const removeTag = (tagToRemove: string) => {
     onChange(value.filter((tag) => tag !== tagToRemove));
+    setActiveIndex(null);
+  };
+
+  const handleColorChange = (hex: string) => {
+    if (activeIndex === -1) {
+      setInputValue(hex);
+    } else if (activeIndex !== null) {
+      const newValue = [...value];
+      newValue[activeIndex] = hex;
+      onChange(newValue);
+    }
+  };
+
+  const handleDotClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setActiveIndex(activeIndex === index ? null : index);
   };
 
   return (
     <div className={styles.container} ref={containerRef} onBlur={handleContainerBlur}>
-      {value.map((tag) => (
-        <span key={tag} className={styles.tag}>
-          {isColor && <span className={styles.colorDot} style={{ backgroundColor: tag }} />}
+      {value.map((tag, index) => (
+        <span key={index} className={styles.tag}>
+          {isColor && (
+            <button
+              type="button"
+              className={styles.colorDot}
+              style={{ backgroundColor: tag }}
+              onClick={(e) => handleDotClick(e, index)}
+            />
+          )}
           {tag}
           <button type="button" className={styles.removeButton} onClick={() => removeTag(tag)}>
             &times;
@@ -65,12 +88,17 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => isColor && setShowPicker(true)}
-          onClick={() => isColor && setShowPicker(true)}
+          onFocus={() => isColor && activeIndex !== -1 && setActiveIndex(-1)}
+          onClick={(e) => {
+            if (isColor) {
+              e.stopPropagation();
+              if (activeIndex !== -1) setActiveIndex(-1);
+            }
+          }}
           placeholder={value.length === 0 ? placeholder : ""}
         />
       </div>
-      {isColor && showPicker && (
+      {isColor && activeIndex !== null && (
         <div
           className={styles.pickerPopover}
           onMouseDown={(e) => {
@@ -79,7 +107,17 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
             }
           }}>
           <div className={styles.pickerOverlay}>
-            <ColourPicker value={inputValue} onChange={(hex) => setInputValue(hex)} />
+            <ColourPicker
+              key={activeIndex}
+              value={
+                activeIndex === -1
+                  ? inputValue
+                  : activeIndex !== null && value[activeIndex]
+                    ? value[activeIndex]
+                    : ""
+              }
+              onChange={handleColorChange}
+            />
           </div>
         </div>
       )}
