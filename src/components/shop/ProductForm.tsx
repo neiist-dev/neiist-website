@@ -17,8 +17,8 @@ import {
 import { LuCheck } from "react-icons/lu";
 import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
-import { splitNameHex, isColorKey } from "@/utils/shopUtils";
-import TagInput from "@/components/TagInput";
+import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shopUtils";
+import TagInput, { TagValue } from "@/components/TagInput";
 import ColorfulText from "../ColorfulText";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ interface ProductFormProps {
   categories: Category[];
 }
 
-type VariantDefinition = { id: string; name: string; values: string[] };
+type VariantDefinition = { id: string; name: string; values: TagValue[] };
 type ImageFile = { file: File; preview: string };
 
 // Level 2 — a specific combination (e.g. Red • S)
@@ -334,17 +334,30 @@ export default function ProductForm({
   const [variantDefinitions, setVariantDefinitions] = useState<VariantDefinition[]>(() => {
     if (product?.variants?.length) {
       const types = [...new Set(product.variants.flatMap((v) => Object.keys(v.options || {})))];
-      return types.map((type) => ({
-        id: Math.random().toString(36).substr(2, 9),
-        name: type,
-        values: [
+      return types.map((type) => {
+        const rawValues = [
           ...new Set(
             product.variants
               ?.map((v) => v.options[type])
               .filter((v): v is string => typeof v === "string")
           ),
-        ],
-      }));
+        ];
+
+        // If it's a color, convert "Name - #HEX" strings to objects
+        let values: TagValue[] = rawValues;
+        if (isColorKey(type)) {
+          values = rawValues.map((val) => {
+            const { name, hex } = splitNameHex(val);
+            return hex ? { name: name || val, color: hex } : val;
+          });
+        }
+
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          name: type,
+          values,
+        };
+      });
     }
     return [{ id: "1", name: "", values: [] }];
   });
@@ -402,13 +415,19 @@ export default function ProductForm({
   const generateVariants = useCallback((defs: VariantDefinition[]) => {
     const valid = defs.filter((d) => d.name && d.values.length > 0);
     if (!valid.length) return;
-    const cartesian = (sets: string[][]) =>
-      sets.reduce<string[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
+    const cartesian = (sets: TagValue[][]) =>
+      sets.reduce<TagValue[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
     const names = valid.map((d) => d.name);
     const combos = cartesian(valid.map((d) => d.values));
     setVariants((prev) =>
       combos.map((combo) => {
-        const options = Object.fromEntries(names.map((n, i) => [n, combo[i]]));
+        const options = Object.fromEntries(names.map((n, i) => {
+          const val = combo[i];
+          // Convert objects back to string to save in options
+          const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
+          return [n, strVal];
+        }));
+
         const existing = prev.find((v) =>
           names.every((n) => {
             const ev = v.options[n] || "",
@@ -522,7 +541,7 @@ export default function ProductForm({
     );
   };
 
-  const updateDefValues = (i: number, values: string[]) =>
+  const updateDefValues = (i: number, values: TagValue[]) =>
     setVariantDefinitions((p) => p.map((d, idx) => (idx === i ? { ...d, values } : d)));
 
   const removeDef = (i: number) => {
@@ -547,7 +566,7 @@ export default function ProductForm({
 
       // 0 = hard zero (blocked)
       if (cap === 0 && variant.stock_quantity > 0) {
-        return `Grupo "${displayName(optType, val)}" tem stock 0 — esta combinação está bloqueada`;
+        return `Group "${displayName(optType, val)}" has stock 0 — this combination is blocked`;
       }
 
       if (cap > 0) {
@@ -558,7 +577,7 @@ export default function ProductForm({
         const totalIfSaved = siblingTotal + (Number(variant.stock_quantity) || 0);
 
         if (totalIfSaved > cap) {
-          return `Soma das variantes de "${displayName(optType, val)}" (${totalIfSaved}) excede o stock do grupo (máx. ${cap})`;
+          return `Sum of variants for "${displayName(optType, val)}" (${totalIfSaved}) exceeds group stock (max. ${cap})`;
         }
       }
     }
@@ -691,13 +710,28 @@ export default function ProductForm({
   for (const def of variantDefinitions) {
     if (!def.name || !def.values.length) continue;
     for (const val of def.values) {
-      const raw = isColorKey(def.name) ? splitNameHex(val) : null;
+      // Normalize to string and visualization data
+      let strVal = "";
+      let hex: string | undefined;
+      let label = "";
+
+      if (typeof val === "string") {
+        const raw = isColorKey(def.name) ? splitNameHex(val) : null;
+        strVal = val;
+        hex = raw?.hex;
+        label = raw ? raw.name || raw.hex : val;
+      } else {
+        strVal = joinNameHex(val.name, val.color);
+        hex = val.color;
+        label = val.name;
+      }
+
       groupKeys.push({
-        key: `${def.name}::${val}`,
+        key: `${def.name}::${strVal}`,
         optType: def.name,
-        optVal: val,
-        hex: raw?.hex,
-        label: raw ? raw.name || raw.hex : val,
+        optVal: strVal,
+        hex,
+        label,
       });
     }
   }

@@ -2,9 +2,12 @@ import React, { useState, KeyboardEvent, FocusEvent, useRef } from "react";
 import styles from "@/styles/components/TagInput.module.css";
 import ColourPicker from "./ColourPicker";
 
+// Define the type to support both simple strings and objects with color
+export type TagValue = string | { name: string; color: string };
+
 interface TagInputProps {
-  value: string[];
-  onChange: (tags: string[]) => void;
+  value: TagValue[];
+  onChange: (tags: TagValue[]) => void;
   placeholder?: string;
   isColor?: boolean;
 }
@@ -14,10 +17,22 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Helpers to handle both value types
+  const getTagText = (tag: TagValue) => (typeof tag === "string" ? tag : tag.name);
+  const getTagColor = (tag: TagValue) => (typeof tag === "string" ? tag : tag.color);
+
   const addTag = (tag: string) => {
     const trimmed = tag.trim();
-    if (trimmed && !value.includes(trimmed)) {
-      onChange([...value, trimmed]);
+    // Check duplicates by name
+    const exists = value.some((v) => getTagText(v).toLowerCase() === trimmed.toLowerCase());
+
+    if (trimmed && !exists) {
+      if (isColor) {
+        // Create an object with default black color
+        onChange([...value, { name: trimmed, color: "#000000" }]);
+      } else {
+        onChange([...value, trimmed]);
+      }
     }
     setInputValue("");
   };
@@ -44,17 +59,22 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
     setActiveIndex(null);
   };
 
-  const removeTag = (tagToRemove: string) => {
-    onChange(value.filter((tag) => tag !== tagToRemove));
+  const removeTag = (tagToRemove: TagValue) => {
+    onChange(value.filter((tag) => getTagText(tag) !== getTagText(tagToRemove)));
     setActiveIndex(null);
   };
 
   const handleColorChange = (hex: string) => {
-    if (activeIndex === -1) {
-      setInputValue(hex);
-    } else if (activeIndex !== null) {
+    if (activeIndex !== null && activeIndex !== -1) {
       const newValue = [...value];
-      newValue[activeIndex] = hex;
+      const currentTag = newValue[activeIndex];
+      
+      if (typeof currentTag === "object") {
+        newValue[activeIndex] = { ...currentTag, color: hex };
+      } else {
+        // Fallback for old strings
+        newValue[activeIndex] = hex;
+      }
       onChange(newValue);
     }
   };
@@ -72,11 +92,11 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
             <button
               type="button"
               className={styles.colorDot}
-              style={{ backgroundColor: tag }}
+              style={{ backgroundColor: getTagColor(tag) }}
               onClick={(e) => handleDotClick(e, index)}
             />
           )}
-          {tag}
+          {getTagText(tag)}
           <button type="button" className={styles.removeButton} onClick={() => removeTag(tag)}>
             &times;
           </button>
@@ -88,17 +108,12 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => isColor && activeIndex !== -1 && setActiveIndex(-1)}
-          onClick={(e) => {
-            if (isColor) {
-              e.stopPropagation();
-              if (activeIndex !== -1) setActiveIndex(-1);
-            }
-          }}
+          // Removed Focus/Click events that opened ColourPicker on input
           placeholder={value.length === 0 ? placeholder : ""}
         />
       </div>
-      {isColor && activeIndex !== null && (
+      {/* The Picker only appears if we are editing an existing tag, not the input */}
+      {isColor && activeIndex !== null && activeIndex !== -1 && (
         <div
           className={styles.pickerPopover}
           onMouseDown={(e) => {
@@ -109,13 +124,7 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
           <div className={styles.pickerOverlay}>
             <ColourPicker
               key={activeIndex}
-              value={
-                activeIndex === -1
-                  ? inputValue
-                  : activeIndex !== null && value[activeIndex]
-                    ? value[activeIndex]
-                    : ""
-              }
+              value={getTagColor(value[activeIndex])}
               onChange={handleColorChange}
             />
           </div>
