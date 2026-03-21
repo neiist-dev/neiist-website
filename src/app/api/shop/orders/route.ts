@@ -42,19 +42,25 @@ export async function POST(request: NextRequest) {
     if (!userRoles.user)
       return NextResponse.json({ error: "User information missing" }, { status: 500 });
 
-    const order = await newOrder({
-      user_istid: body.user_istid,
-      customer_name: body.customer_name ?? "",
-      customer_email: body.customer_email ?? null,
-      customer_phone: body.customer_phone ?? null,
-      customer_nif: body.customer_nif ?? null,
-      campus: body.campus ?? null,
-      notes: body.notes ?? null,
-      payment_method: body.payment_method,
-      payment_reference: body.payment_reference ?? "",
-      created_by: userRoles.user.istid,
-      items: body.items,
-    });
+    const stockOverride =
+      (userRoles.roles?.includes(UserRole._ADMIN) ?? false) && body.stock_override === true;
+
+    const order = await newOrder(
+      {
+        user_istid: body.user_istid,
+        customer_name: body.customer_name ?? "",
+        customer_email: body.customer_email ?? null,
+        customer_phone: body.customer_phone ?? null,
+        customer_nif: body.customer_nif ?? null,
+        campus: body.campus ?? null,
+        notes: body.notes ?? null,
+        payment_method: body.payment_method,
+        payment_reference: body.payment_reference ?? "",
+        created_by: userRoles.user.istid,
+        items: body.items,
+      },
+      stockOverride
+    );
     if (!order) {
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }

@@ -730,11 +730,12 @@ export const newOrder = async (
   order: Partial<Order> & {
     user_istid?: string;
     items: Array<{ product_id: number; variant_id?: number; quantity: number }>;
-  }
+  },
+  stockOverride: boolean = false
 ): Promise<Order | null> => {
   const {
     rows: [row],
-  } = await db_query<dbOrder>(`SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7,$8)`, [
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [
     order.user_istid ?? null,
     order.customer_nif ?? null,
     order.campus ?? null,
@@ -749,6 +750,7 @@ export const newOrder = async (
         quantity: i.quantity,
       }))
     ),
+    stockOverride,
   ]);
   return row ? mapdbOrderToOrder(row) : null;
 };
@@ -797,13 +799,15 @@ export const getAllOrders = async (): Promise<Order[]> => {
 
 export const updateOrder = async (
   orderId: number,
-  updates: Partial<Order>
+  updates: Partial<Order>,
+  stockOverride: boolean = false
 ): Promise<Order | null> => {
   const {
     rows: [row],
-  } = await db_query<dbOrder>(`SELECT * FROM neiist.update_order($1,$2)`, [
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.update_order($1,$2,$3)`, [
     orderId,
     JSON.stringify(updates),
+    stockOverride,
   ]);
   return row ? mapdbOrderToOrder(row) : null;
 };

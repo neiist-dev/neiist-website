@@ -1590,7 +1590,8 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   p_payment_method TEXT,
   p_payment_reference TEXT,
   p_created_by TEXT,
-  p_items JSONB
+  p_items JSONB,
+  p_stock_override BOOLEAN DEFAULT FALSE
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -1671,8 +1672,10 @@ BEGIN
       RAISE EXCEPTION 'Product % not found or inactive', v_pid;
     END IF;
 
-    IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
-      RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+    IF NOT p_stock_override THEN
+      IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+        RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+      END IF;
     END IF;
 
     IF v_vid IS NOT NULL THEN
@@ -1701,7 +1704,7 @@ BEGIN
 
       v_unit := ROUND(v_base + COALESCE(v_unit,0), 2);
 
-      IF v_stock_type = 'limited' THEN
+      IF v_stock_type = 'limited' AND NOT p_stock_override THEN
         IF v_variant_stock IS NULL OR v_variant_stock < v_qty THEN
           RAISE EXCEPTION 'Insufficient variant stock (product %, variant %, have %, need %)',
             v_pid, v_vid, COALESCE(v_variant_stock, -1), v_qty;
@@ -1711,13 +1714,15 @@ BEGIN
           SET stock_quantity = stock_quantity - v_qty,
               updated_at = NOW()
           WHERE product_variants.id = v_vid;
+      ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+        NULL;
       END IF;
     ELSE
       v_v_label := NULL;
       v_v_opts := NULL;
       v_unit := ROUND(v_base, 2);
 
-      IF v_stock_type = 'limited' THEN
+      IF v_stock_type = 'limited' AND NOT p_stock_override THEN
         SELECT p.stock_quantity INTO v_product_stock
         FROM neiist.products p
         WHERE p.id = v_pid FOR UPDATE;
@@ -1730,6 +1735,8 @@ BEGIN
         UPDATE neiist.products
         SET stock_quantity = stock_quantity - v_qty
         WHERE id = v_pid;
+      ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+        NULL;
       END IF;
     END IF;
 
@@ -1861,7 +1868,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Update order details
 CREATE OR REPLACE FUNCTION neiist.update_order(
   p_order_id INTEGER,
-  p_updates JSONB
+  p_updates JSONB,
+  p_stock_override BOOLEAN DEFAULT FALSE
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -1945,11 +1953,11 @@ BEGIN
       FROM neiist.products p
       WHERE p.id = v_pid FOR UPDATE;
 
-      IF v_stock_type = 'limited' THEN
+      IF v_stock_type = 'limited' AND NOT p_stock_override THEN
         IF v_vid IS NOT NULL THEN
           UPDATE neiist.product_variants
-          SET stock_quantity = COALESCE(stock_quantity, 0) + v_qty,
-              updated_at = NOW()
+            SET stock_quantity = COALESCE(stock_quantity, 0) + v_qty,
+                updated_at = NOW()
           WHERE product_variants.id = v_vid AND product_variants.product_id = v_pid;
         ELSE
           UPDATE neiist.products
@@ -1980,8 +1988,10 @@ BEGIN
         RAISE EXCEPTION 'Product % not found or inactive', v_pid;
       END IF;
 
-      IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
-        RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+      IF NOT p_stock_override THEN
+        IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+          RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+        END IF;
       END IF;
 
       IF v_vid IS NOT NULL THEN
@@ -2010,7 +2020,7 @@ BEGIN
 
         v_unit := ROUND(v_base + COALESCE(v_unit, 0), 2);
 
-        IF v_stock_type = 'limited' THEN
+        IF v_stock_type = 'limited' AND NOT p_stock_override THEN
           IF v_variant_stock IS NULL OR v_variant_stock < v_qty THEN
             RAISE EXCEPTION 'Insufficient variant stock (product %, variant %, have %, need %)',
               v_pid, v_vid, COALESCE(v_variant_stock, -1), v_qty;
@@ -2020,13 +2030,15 @@ BEGIN
             SET stock_quantity = stock_quantity - v_qty,
                 updated_at = NOW()
             WHERE product_variants.id = v_vid;
+        ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+          NULL;
         END IF;
       ELSE
         v_v_label := NULL;
         v_v_opts := NULL;
         v_unit := ROUND(v_base, 2);
 
-        IF v_stock_type = 'limited' THEN
+        IF v_stock_type = 'limited' AND NOT p_stock_override THEN
           SELECT p.stock_quantity INTO v_product_stock
           FROM neiist.products p
           WHERE p.id = v_pid FOR UPDATE;
@@ -2039,6 +2051,8 @@ BEGIN
           UPDATE neiist.products
           SET stock_quantity = stock_quantity - v_qty
           WHERE id = v_pid;
+        ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+          NULL;
         END IF;
       END IF;
 
