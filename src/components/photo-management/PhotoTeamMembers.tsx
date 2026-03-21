@@ -3,7 +3,6 @@
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import { useUser } from "@/context/UserContext";
-import Fuse from "fuse.js";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
 
 interface Membership {
@@ -24,6 +23,11 @@ interface Department {
   active: boolean;
 }
 
+const normalize = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[-_]/g, " ");
+
+const normalizeIstId = (s: string) => normalize(s).replace(/^ist/, "");
+
 export default function PhotoTeamMembers({
   membersByDepartment,
 }: {
@@ -36,25 +40,35 @@ export default function PhotoTeamMembers({
   const [members, setMembers] = useState(membersByDepartment);
   const { user, setUser } = useUser();
 
-  const fuse = useMemo(() => {
-    const allMembers = Object.values(members).flat();
-    return new Fuse(allMembers, {
-      keys: ["userName", "userNumber", "userEmail"],
-      threshold: 0.4,
-      ignoreLocation: true,
-    });
-  }, [members]);
-
   const filteredMembers = useMemo(() => {
-    if (!search.trim()) return members;
-    const results = fuse.search(search.trim()).map((r) => r.item);
+    const query = search.trim();
+    if (!query) return members;
+
+    const tokens = normalize(query).split(/\s+/);
+
+    if (tokens.length === 0) return members;
+
+    const allMembers = Object.values(members).flat();
+
+    const results = allMembers.filter((m) => {
+      const nameWords = normalize(m.userName).split(/\s+/);
+      const normId = normalizeIstId(m.userNumber);
+
+      return tokens.every(
+        (token) =>
+          nameWords.some((word) => word.startsWith(token)) ||
+          normId.includes(token) ||
+          normId.includes(normalizeIstId(token))
+      );
+    });
+
     const grouped: Record<string, Membership[]> = {};
     Object.entries(members).forEach(([dept, memberships]) => {
-      grouped[dept] = memberships.filter((m) => results.includes(m));
-      if (grouped[dept].length === 0) delete grouped[dept];
+      const filtered = memberships.filter((m) => results.includes(m));
+      if (filtered.length > 0) grouped[dept] = filtered;
     });
     return grouped;
-  }, [search, members, fuse]);
+  }, [search, members]);
 
   const handlePhotoClick = (istid: string) => {
     setEditingPhotoIstid(istid);
@@ -111,7 +125,7 @@ export default function PhotoTeamMembers({
           <input
             className={styles.input}
             type="text"
-            placeholder="Pesquisar por nome, ISTID ou email..."
+            placeholder="Pesquisar por nome ou ISTID..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
