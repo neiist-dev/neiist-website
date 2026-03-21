@@ -908,7 +908,8 @@ export default function ProductForm({
                         value={def.values}
                         onChange={(tags) => updateDefValues(idx, tags)}
                         placeholder={
-                          isColorKey(def.name) ? "Hex (ex: #FF0000)" : "Valores (ex: S, M, L)"
+                          isColorKey(def.name)
+                            ? "Nome da cor (ex: Azul)" : "Valores (ex: S, M, L)"
                         }
                         isColor={isColorKey(def.name)}
                       />
