@@ -1,5 +1,7 @@
+/* ─── Layout ──────────────────────────────────────────────────────── */
+
 .formHeader {
-  margin: 0.5rem 1.5rem 0.5rem 1.5rem;
+  margin: 1rem 2rem 1.5rem;
   display: flex;
   gap: 0.7rem;
   align-items: center;
@@ -7,77 +9,173 @@
 }
 
 .formBody {
-  margin: 0rem 1.5rem 1.5rem 1.5rem;
+  margin: 0 2rem 2.5rem;
   display: grid;
-  gap: 2rem;
+  gap: 2.5rem;
   grid-template-columns: 1fr 1fr;
+  align-items: stretch; /* both columns same height */
 }
 
 .title {
-  grid-column: 1 / -1;
   font-size: 2rem;
 }
 
+/* ─── Section = one big card per column ───────────────────────────── */
+
 .section {
+  background: white;
+  border-radius: 1.2rem;
+  box-shadow:
+    0 4px 24px rgba(40, 99, 253, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 2rem;
   display: flex;
+  height: fit-content;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0;
+  box-sizing: border-box;
 }
 
-.card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow:
-    0 4px 24px rgba(40, 99, 253, 0.1),
-    0 1.5px 4px rgba(0, 0, 0, 0.04);
-  padding: 1.5rem;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
-  box-sizing: border-box;
+/* The scrollable variant list cards inside the left section */
+.scrollCard {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+  padding: 1.6rem 0;
+  min-height: 0; /* allow flex child to shrink */
+  flex: 1; /* take remaining space */
 }
 
-.label {
-  font-weight: 600;
-  color: #374151;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+.scrollCard:first-child {
+  padding-top: 0;
 }
+.scrollCard:last-child {
+  padding-bottom: 0;
+}
+.scrollCard + .scrollCard,
+.card + .scrollCard,
+.scrollCard + .card {
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* The inner list that actually scrolls */
+.vmScrollList {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* subtle scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+  /* padding so focused rings aren't clipped */
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+.vmScrollList::-webkit-scrollbar {
+  width: 4px;
+}
+.vmScrollList::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 99px;
+}
+.vmScrollList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ─── Card — logical group inside a section, divided by a line ──── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.6rem 0;
+}
+
+.card:first-child {
+  padding-top: 0;
+}
+.card:last-child {
+  padding-bottom: 0;
+}
+.card + .card {
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* ─── cardFlat — same as card ─────────────────────────────────────── */
+
+.cardFlat {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.6rem 0;
+}
+
+.cardFlat:first-child {
+  padding-top: 0;
+}
+.cardFlat:last-child {
+  padding-bottom: 0;
+}
+
+.cardFlat + .cardFlat,
+.card + .cardFlat,
+.cardFlat + .card {
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* ─── Labels ──────────────────────────────────────────────────────── */
+
+.label {
+  font-weight: 700;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.subLabel {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* ─── Inputs — no visible border, just a subtle fill ─────────────── */
 
 .field {
   width: 100%;
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 0.6rem;
-  border: 1px solid #d1d5db;
-  font-size: 1rem;
-  background: #f9fafb;
+  border: none;
+  font-size: 0.97rem;
+  background: #f3f4f6;
   font-family: inherit;
   box-sizing: border-box;
+  color: #111827;
   transition:
-    border-color 0.2s,
-    background-color 0.2s;
+    background 0.18s,
+    box-shadow 0.18s;
+  outline: none;
+}
+
+.field::placeholder {
+  color: #9ca3af;
+}
+
+.field:focus {
+  background: #eef0f5;
+  box-shadow: 0 0 0 2px var(--primary-colour, #2863fd);
 }
 
 .field:disabled {
   cursor: not-allowed;
-  background-color: #f5f5f5;
-  opacity: 0.7;
+  opacity: 0.45;
 }
 
-.field:focus {
-  outline: none;
-  border-color: var(--primary-colour);
-  background: #fff;
-}
+/* ─── Row helper ──────────────────────────────────────────────────── */
 
 .row {
   display: flex;
   flex-direction: row;
   gap: 0.7rem;
-  margin-bottom: 0.5rem;
   align-items: center;
 }
 
@@ -87,27 +185,833 @@
   gap: 0.25rem;
   min-width: 9rem;
 }
-.subLabel {
-  font-size: 0.85rem;
-  color: #6b7280;
+
+/* ─── Buttons ─────────────────────────────────────────────────────── */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: none;
+  border-radius: 0.6rem;
   font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.3rem;
+  background: var(--primary-colour, #2863fd);
+  color: #fff;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+  white-space: nowrap;
+}
+
+.button:hover {
+  background: #1741b6;
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.backButton {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.deleteButton {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  transition: background 0.18s;
+  white-space: nowrap;
+}
+
+.deleteButton:hover {
+  background: #fecaca;
 }
 
 .addButton {
   display: inline-flex;
   justify-content: center;
-  padding: 0.25rem 1rem;
-  background: var(--primary-colour);
+  padding: 0.4rem 1rem;
+  background: var(--primary-colour, #2863fd);
   color: #fff;
   border: none;
   border-radius: 0.6rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.18s;
 }
+
 .addButton:hover {
   background: #1741b6;
 }
+
+/* ─── Error ───────────────────────────────────────────────────────── */
+
+.error {
+  color: #dc2626;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 0.6rem 0.9rem;
+  background: #fef2f2;
+  border-radius: 0.5rem;
+}
+
+/* ─── Variants table ──────────────────────────────────────────────── */
+
+.variantDefinitionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.variantNameInput {
+  flex: 0 0 180px;
+}
+
+.variantValuesInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.addDefButtonWrapper {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.3rem;
+}
+
+.matrixSection {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.noVarients {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.variantsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.streamHeader {
+  display: grid;
+  grid-template-columns: 1fr 110px 110px 70px;
+  gap: 1rem;
+  padding: 0 0.25rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.streamRow {
+  display: grid;
+  grid-template-columns: 1fr 110px 110px 70px;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0.5rem;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+/* .streamRow hover removed — rows replaced by vmCard */
+
+.streamRowInactive .variantName {
+  color: #9ca3af;
+}
+
+.streamRowInactive input {
+  opacity: 0.4;
+}
+
+.variantInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.variantName {
+  font-weight: 600;
+  font-size: 0.97rem;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Checkbox */
+.checkboxCustom {
+  width: 1.35rem;
+  height: 1.35rem;
+  min-width: 1.35rem;
+  background: #e5e7eb;
+  border-radius: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s;
+  color: transparent;
+}
+
+.checkboxActive {
+  background: #111827;
+  color: #fff;
+}
+
+/* Inline number inputs inside the table */
+.streamInput {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  background: #f3f4f6;
+  outline: none;
+  transition:
+    background 0.18s,
+    box-shadow 0.18s;
+  box-sizing: border-box;
+}
+
+.streamInput::placeholder {
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.streamInput:focus {
+  background: #eef0f5;
+  box-shadow: 0 0 0 2px var(--primary-colour, #2863fd);
+}
+
+/* ─── Tab bar ─────────────────────────────────────────────────────── */
+
+.tabBar {
+  display: flex;
+  gap: 0.25rem;
+  background: #f3f4f6;
+  border-radius: 0.7rem;
+  padding: 0.25rem;
+}
+
+.tabBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tabBtnActive {
+  background: white;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--primary-colour, #2863fd);
+  color: white;
+  padding: 0 0.25rem;
+}
+
+.tabBadgeNeutral {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+/* ─── vmList — scrollable list inside a tab panel ─────────────────── */
+
+.vmList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  padding-right: 2px; /* prevent scrollbar clipping */
+}
+
+/* ─── vmMetaBadge — price/stock summary in header ─────────────────── */
+
+.vmMetaBadge {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6b7280;
+  background: #f3f4f6;
+  border-radius: 0.4rem;
+  padding: 0.15rem 0.5rem;
+}
+
+/* ─── Stock cap warning ────────────────────────────────────────────── */
+
+.capHint {
+  font-weight: 400;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.fieldWarn {
+  border: 1.5px solid #f59e0b !important;
+  background: #fffbeb !important;
+}
+
+.warnText {
+  font-size: 0.75rem;
+  color: #d97706;
+  font-weight: 500;
+  margin-top: 0.2rem;
+  display: block;
+}
+
+.warnDot {
+  width: 7px;
+  height: 7px;
+  min-width: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  display: inline-block;
+  margin-left: 0.2rem;
+}
+
+/* ─── Variant Manager Cards (right panel) ─────────────────────────── */
+
+.variantManagerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vmCard {
+  border-radius: 0.7rem;
+  border: 1.5px solid #e5e7eb;
+  overflow: hidden;
+  transition: border-color 0.18s;
+}
+
+.vmCard:hover {
+  border-color: #d1d5db;
+}
+
+.vmCardExpanded {
+  border-color: #111827;
+}
+
+.vmCardInactive {
+  opacity: 0.55;
+}
+
+/* Header — always visible, clickable */
+.vmHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  gap: 0.75rem;
+  user-select: none;
+}
+
+.vmHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.vmHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.vmSwatch {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  display: inline-block;
+}
+
+/* Small first-image thumbnail in header */
+.vmThumb {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 0.35rem;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.vmThumbImg {
+  object-fit: cover;
+}
+
+.vmName {
+  font-weight: 600;
+  font-size: 0.97rem;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Expanded body */
+.vmBody {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  background: #fafafa;
+}
+
+.vmFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.vmFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.vmMetaBadge {
+  display: flex;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.vmTypeTag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #f3f4f6;
+  border-radius: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  white-space: nowrap;
+}
+
+.vmOptType {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  font-weight: 500;
+  margin-left: 0.1rem;
+}
+
+/* ─── Hint text ───────────────────────────────────────────────────── */
+
+.hint {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Colour dot in variant row ───────────────────────────────────── */
+
+.colorDot {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  display: inline-block;
+}
+
+/* ─── Variant block (wraps row + expanded panel) ──────────────────── */
+
+.variantBlock {
+  border-radius: 0.6rem;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.variantBlock:hover {
+  background: #f9fafb;
+}
+
+.variantBlockExpanded {
+  background: #f9fafb;
+}
+
+.variantBlockInactive .variantName {
+  color: #9ca3af;
+}
+
+.variantBlockInactive input {
+  opacity: 0.4;
+}
+
+/* make streamRow inside a block fill without extra rounding */
+.variantBlock .streamRow {
+  border-radius: 0.6rem 0.6rem 0 0;
+  margin: 0;
+}
+
+/* ─── Image count cell ────────────────────────────────────────────── */
+
+.imgCountCell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.imgBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 0 0.3rem;
+}
+
+.imgBadgeActive {
+  background: #111827;
+  color: #fff;
+}
+
+.expandIcon {
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+}
+
+/* ─── Expanded variant panel ──────────────────────────────────────── */
+
+.variantExpanded {
+  padding: 1rem 1rem 1rem 3.2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.expandedHint {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ─── Variant inline image grid ───────────────────────────────────── */
+
+.variantImageGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.variantImgSlot {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.variantImgThumb {
+  object-fit: cover;
+}
+
+.variantImgRemove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 3px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.variantImgSlot:hover .variantImgRemove {
+  opacity: 1;
+}
+
+.variantImgAdd {
+  width: 60px;
+  height: 60px;
+  border-radius: 0.5rem;
+  border: 1.5px dashed #d1d5db;
+  background: transparent;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.variantImgAdd:hover {
+  border-color: var(--primary-colour, #2863fd);
+  color: var(--primary-colour, #2863fd);
+}
+
+/* ─── Carousel (product images) ───────────────────────────────────── */
+
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.carouselStage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #f3f4f6;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carouselImg {
+  object-fit: cover;
+}
+
+.carouselEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.carouselNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  z-index: 2;
+}
+
+.carouselNav:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+.carouselNavLeft {
+  left: 0.6rem;
+}
+.carouselNavRight {
+  right: 0.6rem;
+}
+
+.carouselDots {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.35rem;
+  z-index: 2;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.dotActive {
+  background: white;
+}
+
+.carouselRemove {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  z-index: 2;
+  transition: background 0.15s;
+}
+
+.carouselRemove:hover {
+  background: rgba(200, 30, 30, 0.75);
+}
+
+/* Thumbnail strip */
+.thumbStrip {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.thumbBtn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #e5e7eb;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.thumbBtnActive {
+  border-color: var(--primary-colour, #2863fd);
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+.thumbAdd {
+  width: 52px;
+  height: 52px;
+  border-radius: 0.45rem;
+  border: 1.5px dashed #d1d5db;
+  background: transparent;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.thumbAdd:hover {
+  border-color: var(--primary-colour, #2863fd);
+  color: var(--primary-colour, #2863fd);
+}
+
+/* ─── Date picker popup ───────────────────────────────────────────── */
+
+.datePickerPopup {
+  position: absolute;
+  z-index: 10;
+  background: white;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 0.8rem;
+  padding: 8px;
+}
+
+/* ─── Image area (legacy, kept for safety) ────────────────────────── */
 
 .imageArea {
   aspect-ratio: 1/1;
@@ -139,7 +1043,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.65);
   color: #fff;
   border-radius: 2rem;
   padding: 0.3rem 1.2rem;
@@ -158,7 +1062,7 @@
 }
 
 .noImage {
-  color: #888;
+  color: #9ca3af;
   font-style: italic;
 }
 
@@ -185,282 +1089,38 @@
 .thumbBtn {
   background: none;
   border: none;
-  color: var(--primary-colour);
+  color: var(--primary-colour, #2863fd);
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
 }
 
-.backButton {
-  background: white;
-  border: none;
-  border-radius: 1.5rem;
-  padding: 0.5rem 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
+.productImageCover {
+  object-fit: cover;
+}
+
+/* ─── Misc helpers ────────────────────────────────────────────────── */
+
+.colorCellContent {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  max-width: fit-content;
-}
-
-.backButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.12);
-}
-
-.button {
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  border: none;
-  border-radius: 0.6rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.5rem 1.2rem;
-  background: var(--primary-colour);
-  color: #fff;
-  transition:
-    background 0.2s,
-    color 0.2s;
-  text-align: center;
-  display: inline-flex;
-}
-
-.button:hover {
-  background: #1741b6;
-}
-
-.deleteButton {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 0.3rem 0.7rem;
-  border: none;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  transition: background 0.2s;
-}
-
-.deleteButton:hover {
-  background: #fecaca;
-}
-
-.noVarients {
-  font-size: 0.9rem;
-  color: #888;
-  font-style: italic;
-}
-
-.error {
-  color: #d32f2f;
-  font-size: 0.95rem;
-  margin-top: 0.3rem;
-}
-
-@media (max-width: 768px) {
-  .formBody {
-    grid-template-columns: 1fr;
-    padding: 1rem 0.2rem;
-    gap: 1rem;
-    margin: 0.5rem;
-  }
-  .title {
-    font-size: 1.2rem;
-  }
-  .button,
-  .backButton,
-  .deleteButton,
-  .addButton {
-    font-size: 0.98rem;
-    padding: 0.5rem 0.7rem;
-    height: 2.2rem;
-    width: 2.2rem;
-  }
-  .field {
-    font-size: 0.98rem;
-    padding: 0.4rem 0.5rem;
-  }
-  .imageArea {
-    min-height: 140px;
-  }
-  .variantRow {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-}
-
-.variantsTable {
-  display: flex;
-  flex-direction: column;
   gap: 0.5rem;
-  width: 100%;
-  overflow-x: auto;
 }
 
-.streamHeader {
-  display: grid;
-  grid-template-columns: 1fr 150px 150px;
-  gap: 1rem;
-  padding: 0 1rem;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
-  color: #111827;
-  font-size: 1.1rem;
-}
-
-.streamRow {
-  display: grid;
-  grid-template-columns: 1fr 150px 150px;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-}
-
-.streamRowInactive .variantName {
-  color: #9ca3af;
-}
-
-.streamRowInactive input[type="text"],
-.streamRowInactive input[type="number"] {
-  opacity: 0.5;
-}
-
-.variantInfo {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.variantName {
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: #111827;
-}
-
-.checkboxCustom {
-  width: 1.5rem;
-  height: 1.5rem;
-  min-width: 1.5rem;
-  background-color: #e5e7eb;
-  border-radius: 0.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
-  color: transparent;
-}
-
-.checkboxActive {
-  background-color: #111827;
-  color: #ffffff;
-}
-
-.checkbox {
-  width: 1.2rem;
-  height: 1.2rem;
-  accent-color: #111827;
-  cursor: pointer;
-  border-radius: 0.3rem;
-}
-
-.streamInput {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.7rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #6b7280;
-  outline: none;
-  background: white;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-
-.streamInput::placeholder {
-  color: #9ca3af;
-  font-weight: 700;
-}
-
-.streamInput:focus {
-  border-color: var(--primary-colour);
-}
-
-.variantsHeader {
-  display: flex;
-  align-items: center;
-  background: #f3f4f6;
-  padding: 0.8rem 1rem;
-  border-radius: 0.6rem;
-  font-weight: 600;
-  color: #4b5563;
-  font-size: 0.9rem;
-  gap: 1rem;
-}
-
-.variantRow {
-  display: flex;
-  align-items: center;
-  background: white;
-  border: 1px solid #e5e7eb;
-  padding: 0.8rem 1rem;
-  border-radius: 0.6rem;
-  gap: 1rem;
-  transition: box-shadow 0.2s;
-}
-
-.variantRow:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.headerCell,
-.cell {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cell:nth-last-child(1),
-.headerCell:nth-last-child(1) {
-  /* Delete */
-  flex: 0 0 40px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.cell:nth-last-child(2),
-.headerCell:nth-last-child(2) {
-  /* Active */
-  flex: 0 0 60px;
-  display: flex;
-  justify-content: center;
-}
-.cell:nth-last-child(3),
-.headerCell:nth-last-child(3) {
-  /* Stock */
-  flex: 0 0 80px;
-}
-.cell:nth-last-child(4),
-.headerCell:nth-last-child(4) {
-  /* Price */
-  flex: 0 0 100px;
+.colorCircle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .smallInput {
   width: 100%;
   padding: 0.4rem;
-  border: 1px solid #d1d5db;
+  border: none;
   border-radius: 0.4rem;
   font-size: 0.9rem;
+  background: #f3f4f6;
 }
 
 .iconButton {
@@ -468,12 +1128,13 @@
   padding: 0.4rem;
   border-radius: 0.4rem;
   background: #eff6ff;
-  color: var(--primary-colour);
-  border: 1px solid #bfdbfe;
+  color: var(--primary-colour, #2863fd);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .iconButton:hover {
   background: #dbeafe;
 }
@@ -489,44 +1150,73 @@
   align-items: center;
   justify-content: center;
 }
+
 .iconDeleteButton:hover {
   background: #fecaca;
 }
 
-.variantDefinitionsList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.deleteColumn {
+  width: 40px;
 }
 
-.variantNameInput {
-  flex: 0 0 200px;
+.checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: #111827;
+  cursor: pointer;
+  border-radius: 0.3rem;
 }
 
-.variantValuesInput {
-  flex: 1;
-}
-
-.addDefButtonWrapper {
-  display: flex;
-  gap: 1rem;
-}
-
-.matrixSection {
-  margin-top: 2rem;
-}
-
-.colorCellContent {
+.variantsHeader {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  background: #f3f4f6;
+  padding: 0.7rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.85rem;
+  gap: 1rem;
 }
 
-.colorCircle {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid #ddd;
+.variantRow {
+  display: flex;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  gap: 1rem;
+}
+
+.headerCell,
+.cell {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell:nth-last-child(1),
+.headerCell:nth-last-child(1) {
+  flex: 0 0 40px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cell:nth-last-child(2),
+.headerCell:nth-last-child(2) {
+  flex: 0 0 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.cell:nth-last-child(3),
+.headerCell:nth-last-child(3) {
+  flex: 0 0 80px;
+}
+
+.cell:nth-last-child(4),
+.headerCell:nth-last-child(4) {
+  flex: 0 0 100px;
 }
 
 .priceCellContent {
@@ -541,19 +1231,107 @@
   cursor: pointer;
 }
 
-.datePickerPopup {
-  position: absolute;
-  z-index: 10;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  padding: 8px;
+/* ─── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .formBody {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin: 0 1rem 2rem;
+    align-items: start; /* on mobile each card is its own natural height */
+  }
+
+  .formHeader {
+    margin: 0.75rem 1rem 1.25rem;
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  /* on mobile scrollCards just expand naturally */
+  .scrollCard {
+    flex: none;
+  }
+
+  .vmScrollList {
+    max-height: 400px;
+  }
 }
 
-.deleteColumn {
-  width: 40px;
-}
+@media (max-width: 600px) {
+  .formHeader {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem 0.75rem 1rem;
+  }
 
-.productImageCover {
-  object-fit: cover;
+  .formBody {
+    margin: 0 0.75rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .section {
+    padding: 1.25rem;
+    border-radius: 0.9rem;
+  }
+
+  .card,
+  .cardFlat,
+  .scrollCard {
+    padding: 1.2rem 0;
+    gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.35rem;
+    order: -1;
+    width: 100%;
+  }
+
+  .button,
+  .backButton {
+    font-size: 0.88rem;
+    padding: 0.5rem 0.9rem;
+  }
+
+  .field {
+    font-size: 0.93rem;
+    padding: 0.65rem 0.8rem;
+  }
+
+  .streamHeader {
+    grid-template-columns: 1fr 80px 80px 55px;
+    font-size: 0.7rem;
+  }
+
+  .streamRow {
+    grid-template-columns: 1fr 80px 80px 55px;
+  }
+
+  .streamInput {
+    padding: 0.45rem 0.5rem;
+    font-size: 0.88rem;
+  }
+
+  .variantNameInput {
+    flex: 0 0 120px;
+  }
+
+  .variantRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .imageArea {
+    min-height: 180px;
+  }
+
+  .card + .card,
+  .card + .scrollCard,
+  .scrollCard + .card,
+  .scrollCard + .scrollCard {
+    padding-top: 1.5rem;
+  }
 }
