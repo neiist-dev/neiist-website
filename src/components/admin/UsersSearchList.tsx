@@ -17,12 +17,7 @@ interface UserWithMemberships extends User {
 }
 
 const sanitizeString = (value: string) =>
-  value
-    .trim()
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .replace(/[-_]/g, " ")
-    .toLowerCase();
+  value.trim().normalize("NFD").replace(/\p{M}/gu, "").replace(/[-_]/g, " ").toLowerCase();
 
 export default function UsersSearchList({
   users,
@@ -43,18 +38,13 @@ export default function UsersSearchList({
     if (!sanitizedSearch) return sortedUsers;
 
     const digits = sanitizedSearch.replace(/[^0-9]/g, "");
-    const isIstid =
-      /^ist\d+$/i.test(sanitizedSearch) || /^\d+$/.test(sanitizedSearch);
+    const isIstid = /^ist\d+$/i.test(sanitizedSearch) || /^\d+$/.test(sanitizedSearch);
 
     if (isIstid) {
-      const exactMatches = sortedUsers.filter(
-        (u) => u.istid.replace(/[^0-9]/g, "") === digits
-      );
+      const exactMatches = sortedUsers.filter((u) => u.istid.replace(/[^0-9]/g, "") === digits);
       return exactMatches.length > 0
         ? exactMatches
-        : sortedUsers.filter((u) =>
-            u.istid.replace(/[^0-9]/g, "").startsWith(digits)
-          );
+        : sortedUsers.filter((u) => u.istid.replace(/[^0-9]/g, "").startsWith(digits));
     }
     const searchTerms = sanitizedSearch.split(/\s+/).filter(Boolean);
 
@@ -66,9 +56,7 @@ export default function UsersSearchList({
         user.email.toLowerCase(),
         sanitizeString(user.courses?.join(" ") ?? ""),
         sanitizeString(
-          user.memberships
-            ?.map((m) => `${m.departmentName} ${m.roleName}`)
-            .join(" ") ?? ""
+          user.memberships?.map((m) => `${m.departmentName} ${m.roleName}`).join(" ") ?? ""
         ),
       ].join(" ");
 
