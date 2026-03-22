@@ -18,7 +18,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
 
   useEffect(() => {
-    return () => { toast.dismiss(unavailableToastId); };
+    return () => {
+      toast.dismiss(unavailableToastId);
+    };
   }, [unavailableToastId]);
 
   const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
@@ -29,7 +31,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     const result: string[] = [];
     product.variants.forEach((v) => {
       Object.keys(v.options || {}).forEach((k) => {
-        if (!seen.has(k)) { seen.add(k); result.push(k); }
+        if (!seen.has(k)) {
+          seen.add(k);
+          result.push(k);
+        }
       });
     });
     return result;
@@ -51,15 +56,16 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     optionNames.forEach((name, idx) => {
       const priorOptions = optionNames.slice(0, idx);
       const matching = product.variants.filter((v) =>
-        priorOptions.every(
-          (prior) => normalize(v.options?.[prior]) === normalize(selected[prior])
-        )
+        priorOptions.every((prior) => normalize(v.options?.[prior]) === normalize(selected[prior]))
       );
       const seen = new Set<string>();
       const values: string[] = [];
       matching.forEach((v) => {
         const val = normalize(v.options?.[name]);
-        if (val && !seen.has(val)) { seen.add(val); values.push(val); }
+        if (val && !seen.has(val)) {
+          seen.add(val);
+          values.push(val);
+        }
       });
       result[name] = values;
     });
@@ -90,9 +96,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const selectedVariant = useMemo(() => {
     if (optionNames.length === 0) return undefined;
     return product.variants.find((v) =>
-      optionNames.every(
-        (name) => normalize(v.options?.[name]) === normalize(selected[name])
-      )
+      optionNames.every((name) => normalize(v.options?.[name]) === normalize(selected[name]))
     );
   }, [product.variants, optionNames, selected]);
 
@@ -102,17 +106,23 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     const inResult = new Set(result);
     product.variants.forEach((v) => {
       (v.images ?? []).forEach((img) => {
-        if (!inResult.has(img)) { result.push(img); inResult.add(img); }
+        if (!inResult.has(img)) {
+          result.push(img);
+          inResult.add(img);
+        }
       });
     });
     return result;
   }, [product]);
 
-  const getVariantImageIndex = useCallback((variant?: typeof product.variants[0]): number => {
-    if (!variant?.images?.length) return 0;
-    const idx = allImages.indexOf(variant.images[0]);
-    return idx >= 0 ? idx : 0;
-  }, [allImages]);
+  const getVariantImageIndex = useCallback(
+    (variant?: (typeof product.variants)[0]): number => {
+      if (!variant?.images?.length) return 0;
+      const idx = allImages.indexOf(variant.images[0]);
+      return idx >= 0 ? idx : 0;
+    },
+    [allImages]
+  );
 
   const [imgIndex, setImgIndex] = useState(() => getVariantImageIndex(product.variants[0]));
 
@@ -131,9 +141,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     !!product.order_deadline &&
     new Date(product.order_deadline) < new Date();
 
-  const isVariantAvailable = useCallback((v: typeof product.variants[0]) =>
-    v.active && (product.stock_type !== "limited" || (v.stock_quantity ?? 0) > 0),
-  [product.stock_type]);
+  const isVariantAvailable = useCallback(
+    (v: (typeof product.variants)[0]) =>
+      v.active && (product.stock_type !== "limited" || (v.stock_quantity ?? 0) > 0),
+    [product.stock_type]
+  );
 
   const canBuy = useMemo(() => {
     if (isDeadlineExpired) return false;
@@ -149,7 +161,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   }, [product, selectedVariant]);
 
   const [qty, setQty] = useState(1);
-  useEffect(() => { setQty(1); }, [selectedVariant]);
+  useEffect(() => {
+    setQty(1);
+  }, [selectedVariant]);
 
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
@@ -173,7 +187,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   return (
     <div className={styles.container}>
       <div className={styles.breadcrumbs}>
-        <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>Store</span>
+        <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
+          Store
+        </span>
         <span className={styles.breadcrumbSeparator}>››</span>
         <span className={styles.breadcrumbCurrent}>{product.name}</span>
       </div>
@@ -281,7 +297,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           <span className={styles.label}>Quantidade</span>
           <div className={styles.qtyAndButton}>
             <div className={styles.quantity}>
-              <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">-</button>
+              <button
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity">
+                -
+              </button>
               <span>{qty}</span>
               <button
                 onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
@@ -292,7 +312,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
             <div
               className={styles.addButtonWrapper}
-              onClick={() => { if (!canBuy) addToCart(); }}>
+              onClick={() => {
+                if (!canBuy) addToCart();
+              }}>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
                 Adicionar ao Carrinho
               </button>
@@ -311,7 +333,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 <a
                   href="#"
                   className={styles.sizeGuideLink}
-                  onClick={(e) => { e.preventDefault(); setShowSizeGuide(true); }}>
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowSizeGuide(true);
+                  }}>
                   Guia de Tamanhos
                 </a>{" "}
                 para mais detalhes.
