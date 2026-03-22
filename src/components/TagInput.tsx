@@ -68,7 +68,7 @@ export default function TagInput({ value, onChange, placeholder, isColor = false
     if (activeIndex !== null && activeIndex !== -1) {
       const newValue = [...value];
       const currentTag = newValue[activeIndex];
-      
+
       if (typeof currentTag === "object") {
         newValue[activeIndex] = { ...currentTag, color: hex };
       } else {
