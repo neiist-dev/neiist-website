@@ -1,6 +1,43 @@
 .container {
   margin: 0 auto;
   padding: 2rem;
+  min-height: fit-content;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--light-foreground-colour);
+  gap: 1rem;
+  padding: 4rem 0;
+}
+
+.emptyState svg {
+  opacity: 0.2;
+  width: 64px;
+  height: 64px;
+}
+
+.emptyState p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.emptyState span {
+  font-size: 0.9rem;
+  opacity: 0.7;
 }
 
 .header {
@@ -62,12 +99,6 @@
   border: 1px solid #ddd;
   border-radius: 0.5rem;
   background: white;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
 }
 
 .card {
