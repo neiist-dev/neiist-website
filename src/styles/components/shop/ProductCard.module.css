@@ -36,7 +36,6 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: var(--primary-colour);
   font-size: 0.85rem;
   background: var(--background-colour);
 }

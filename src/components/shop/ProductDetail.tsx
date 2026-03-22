@@ -1,10 +1,10 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { FiChevronDown, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
-import { FiChevronDown } from "react-icons/fi";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
 import { toast } from "sonner";
@@ -196,31 +196,36 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       <div className={styles.grid}>
         {/* ── Images ── */}
-        <div className={styles.imageSection}>
-          {allImages.length > 0 && (
-            <Image
-              src={allImages[imgIndex] ?? allImages[0]}
-              alt={product.name}
-              width={600}
-              height={800}
-              className={styles.mainImage}
-              priority
-            />
-          )}
-          {allImages.length > 1 && (
-            <div className={styles.thumbnails}>
-              {allImages.map((src, i) => (
-                <button
-                  key={i}
-                  className={`${styles.thumbnail} ${i === imgIndex ? styles.active : ""}`}
-                  onClick={() => setImgIndex(i)}
-                  aria-label={`View image ${i + 1}`}>
-                  <Image src={src} alt="" width={80} height={80} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+<div className={styles.imageSection}>
+  {allImages.length > 0 ? (
+    <Image
+      src={allImages[imgIndex] ?? allImages[0]}
+      alt={product.name}
+      width={600}
+      height={800}
+      className={styles.mainImage}
+      priority
+    />
+  ) : (
+    <div className={`${styles.mainImage} ${styles.noImage}`}>
+      <FiImage size={64} />
+      <span>Sem Imagem</span>
+    </div>
+  )}
+  {allImages.length > 1 && (
+    <div className={styles.thumbnails}>
+      {allImages.map((src, i) => (
+        <button
+          key={i}
+          className={`${styles.thumbnail} ${i === imgIndex ? styles.active : ""}`}
+          onClick={() => setImgIndex(i)}
+          aria-label={`View image ${i + 1}`}>
+          <Image src={src} alt="" width={80} height={80} />
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
         {/* ── Info ── */}
         <div className={styles.infoSection}>
