@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop";
@@ -18,162 +18,179 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
 
   useEffect(() => {
-    return () => {
-      toast.dismiss(unavailableToastId);
-    };
+    return () => { toast.dismiss(unavailableToastId); };
   }, [unavailableToastId]);
 
-  const optionNames = useMemo(() => {
-    const all = new Set<string>();
-    product.variants.forEach((v) => Object.keys(v.options || {}).forEach((k) => all.add(k)));
-    return Array.from(all);
-  }, [product.variants]);
-
-  const mainOption = optionNames[0] || "";
-  const subOption = optionNames[1] || "";
   const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
 
-  const mainValues = useMemo(() => {
-    const set = new Set<string>();
+  // ── All option type names, in stable insertion order ────────────────────
+  const optionNames = useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
     product.variants.forEach((v) => {
-      const raw = v.options?.[mainOption];
-      if (!raw) return;
-      const cleanValue = normalize(raw);
-      set.add(cleanValue);
+      Object.keys(v.options || {}).forEach((k) => {
+        if (!seen.has(k)) { seen.add(k); result.push(k); }
+      });
     });
-    return Array.from(set);
-  }, [product.variants, mainOption]);
+    return result;
+  }, [product.variants]);
 
-  const [selectedMain, setSelectedMain] = useState(mainValues[0] || "");
-  const subValues = useMemo(() => {
-    const set = new Set<string>();
-    product.variants.forEach((v) => {
-      if (
-        normalize(v.options?.[mainOption]) === normalize(selectedMain) &&
-        v.options?.[subOption]
-      ) {
-        set.add(normalize(v.options[subOption]));
-      }
+  // ── Selected values map: { [optionName]: selectedValue } ────────────────
+  const [selected, setSelected] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    optionNames.forEach((name) => {
+      init[name] = normalize(product.variants[0]?.options?.[name]);
     });
-    return Array.from(set);
-  }, [product.variants, mainOption, subOption, selectedMain]);
+    return init;
+  });
 
-  const [selectedSub, setSelectedSub] = useState(subValues[0] || "");
-  const [qty, setQty] = useState(1);
+  // ── Available values per option, filtered by all prior selections ────────
+  // e.g. sizes available are only those that exist for the selected color
+  const availableValues = useMemo(() => {
+    const result: Record<string, string[]> = {};
+    optionNames.forEach((name, idx) => {
+      const priorOptions = optionNames.slice(0, idx);
+      const matching = product.variants.filter((v) =>
+        priorOptions.every(
+          (prior) => normalize(v.options?.[prior]) === normalize(selected[prior])
+        )
+      );
+      const seen = new Set<string>();
+      const values: string[] = [];
+      matching.forEach((v) => {
+        const val = normalize(v.options?.[name]);
+        if (val && !seen.has(val)) { seen.add(val); values.push(val); }
+      });
+      result[name] = values;
+    });
+    return result;
+  }, [product.variants, optionNames, selected]);
 
+  // When available values change, reset any selection that's no longer in the list
+  useEffect(() => {
+    setSelected((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      optionNames.forEach((name) => {
+        const vals = availableValues[name] ?? [];
+        if (vals.length > 0 && !vals.includes(prev[name])) {
+          next[name] = vals[0];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [availableValues, optionNames]);
+
+  const handleSelect = useCallback((optionName: string, value: string) => {
+    setSelected((prev) => ({ ...prev, [optionName]: value }));
+  }, []);
+
+  // ── Resolve the currently selected variant ───────────────────────────────
+  const selectedVariant = useMemo(() => {
+    if (optionNames.length === 0) return undefined;
+    return product.variants.find((v) =>
+      optionNames.every(
+        (name) => normalize(v.options?.[name]) === normalize(selected[name])
+      )
+    );
+  }, [product.variants, optionNames, selected]);
+
+  // ── Images ───────────────────────────────────────────────────────────────
   const allImages = useMemo(() => {
-    const imgSet = new Set<string>();
-    product.images.forEach((img) => imgSet.add(img));
-    product.variants.forEach((v) => (v.images ?? []).forEach((img) => imgSet.add(img)));
-    return Array.from(imgSet);
+    const result: string[] = [...product.images];
+    const inResult = new Set(result);
+    product.variants.forEach((v) => {
+      (v.images ?? []).forEach((img) => {
+        if (!inResult.has(img)) { result.push(img); inResult.add(img); }
+      });
+    });
+    return result;
   }, [product]);
 
-  const getVariantImageIndex = (variant?: (typeof product.variants)[0]) => {
+  const getVariantImageIndex = useCallback((variant?: typeof product.variants[0]): number => {
     if (!variant?.images?.length) return 0;
-    const firstImg = variant.images[0];
-    const idx = allImages.indexOf(firstImg);
+    const idx = allImages.indexOf(variant.images[0]);
     return idx >= 0 ? idx : 0;
-  };
+  }, [allImages]);
 
-  const [imgIndex, setImgIndex] = useState(0);
+  const [imgIndex, setImgIndex] = useState(() => getVariantImageIndex(product.variants[0]));
 
-  const selectedVariant = useMemo(() => {
-    return product.variants.find((v) => {
-      const mainValue = normalize(v.options?.[mainOption]);
-      const subValue = normalize(v.options?.[subOption]);
-      return mainValue === normalize(selectedMain) && subValue === normalize(selectedSub);
-    });
-  }, [product.variants, mainOption, subOption, selectedMain, selectedSub]);
+  useEffect(() => {
+    setImgIndex(getVariantImageIndex(selectedVariant));
+  }, [selectedVariant, getVariantImageIndex]);
 
+  // ── Price ────────────────────────────────────────────────────────────────
   const price = useMemo(() => {
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
   }, [product.price, selectedVariant]);
 
-  const [showSizeGuide, setShowSizeGuide] = useState(false);
-
-  const addToCart = () => {
-    if (!canBuy) {
-      if (isDeadlineExpired) {
-        toast.error("O prazo de encomenda deste produto já terminou.", {
-          id: unavailableToastId,
-          duration: Infinity,
-        });
-      } else {
-        toast.error("Este produto já não está disponível para compra.", {
-          id: unavailableToastId,
-          duration: Infinity,
-        });
-      }
-      return;
-    }
-
-    const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
-    cart.push({
-      product,
-      variantId: selectedVariant?.id,
-      quantity: qty,
-    });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
-    router.push("/shop");
-  };
-
-  const handleMainChange = (val: string) => {
-    setSelectedMain(val);
-    const newSub = product.variants.find(
-      (v) => normalize(v.options?.[mainOption]) === normalize(val)
-    )?.options?.[subOption];
-    setSelectedSub(normalize(newSub) || "");
-    const newVariant = product.variants.find((v) => {
-      const mainValue = normalize(v.options?.[mainOption]);
-      const subValue = normalize(v.options?.[subOption]);
-      return mainValue === normalize(val) && subValue === normalize(newSub || "");
-    });
-    setImgIndex(getVariantImageIndex(newVariant));
-  };
-
-  const handleSubChange = (val: string) => {
-    setSelectedSub(val);
-    const newVariant = product.variants.find((v) => {
-      const mainValue = normalize(v.options?.[mainOption]);
-      const subValue = normalize(v.options?.[subOption]);
-      return mainValue === normalize(selectedMain) && subValue === normalize(val);
-    });
-    setImgIndex(getVariantImageIndex(newVariant));
-  };
-
+  // ── Stock / availability ─────────────────────────────────────────────────
   const isDeadlineExpired =
     product.stock_type === "on_demand" &&
     !!product.order_deadline &&
     new Date(product.order_deadline) < new Date();
 
-  const canBuy =
-    !isDeadlineExpired &&
-    (product.variants.length === 0 ||
-      (selectedVariant &&
-        selectedVariant.active &&
-        (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0)));
-  const isColorOption = isColorKey(mainOption);
+  const isVariantAvailable = useCallback((v: typeof product.variants[0]) =>
+    v.active && (product.stock_type !== "limited" || (v.stock_quantity ?? 0) > 0),
+  [product.stock_type]);
+
+  const canBuy = useMemo(() => {
+    if (isDeadlineExpired) return false;
+    if (product.variants.length === 0)
+      return product.stock_type !== "limited" || (product.stock_quantity ?? 0) > 0;
+    return !!selectedVariant && isVariantAvailable(selectedVariant);
+  }, [isDeadlineExpired, product, selectedVariant, isVariantAvailable]);
+
+  const maxQty = useMemo(() => {
+    if (product.stock_type !== "limited") return 99;
+    if (product.variants.length === 0) return product.stock_quantity ?? 0;
+    return selectedVariant?.stock_quantity ?? 0;
+  }, [product, selectedVariant]);
+
+  const [qty, setQty] = useState(1);
+  useEffect(() => { setQty(1); }, [selectedVariant]);
+
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
+
+  const addToCart = () => {
+    if (!canBuy) {
+      toast.error(
+        isDeadlineExpired
+          ? "O prazo de encomenda deste produto já terminou."
+          : "Este produto já não está disponível para compra.",
+        { id: unavailableToastId, duration: Infinity }
+      );
+      return;
+    }
+    const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    cart.push({ product, variantId: selectedVariant?.id, quantity: qty });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cartUpdated"));
+    router.push("/shop");
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.breadcrumbs}>
-        <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
-          Store
-        </span>
+        <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>Store</span>
         <span className={styles.breadcrumbSeparator}>››</span>
         <span className={styles.breadcrumbCurrent}>{product.name}</span>
       </div>
+
       <div className={styles.grid}>
+        {/* ── Images ── */}
         <div className={styles.imageSection}>
-          <Image
-            src={allImages[imgIndex]}
-            alt={product.name}
-            width={600}
-            height={800}
-            className={styles.mainImage}
-            priority
-          />
+          {allImages.length > 0 && (
+            <Image
+              src={allImages[imgIndex] ?? allImages[0]}
+              alt={product.name}
+              width={600}
+              height={800}
+              className={styles.mainImage}
+              priority
+            />
+          )}
           {allImages.length > 1 && (
             <div className={styles.thumbnails}>
               {allImages.map((src, i) => (
@@ -188,99 +205,101 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
           )}
         </div>
+
+        {/* ── Info ── */}
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
           <div className={styles.price}>{price.toFixed(2)}€</div>
           <p className={styles.description}>{product.description}</p>
-          {mainOption && (
-            <div>
-              <span className={styles.label}>{mainOption}</span>
-              <div className={isColorOption ? styles.colorOptions : styles.options}>
-                {mainValues.map((val) => {
-                  const color = getColorFromOptions({ [mainOption]: val }, undefined);
-                  const colorHex = color.hex;
-                  const colorName = color.name ?? val;
-                  const isSelected = normalize(selectedMain) === normalize(val);
 
-                  if (isColorOption) {
+          {/* ── Dynamic N-option selectors ── */}
+          {optionNames.map((optionName, idx) => {
+            const isColor = isColorKey(optionName);
+            const values = availableValues[optionName] ?? [];
+            const priorOptions = optionNames.slice(0, idx);
+
+            return (
+              <div key={optionName}>
+                <span className={styles.label}>{optionName}</span>
+                <div className={isColor ? styles.colorOptions : styles.options}>
+                  {values.map((val) => {
+                    const isSelected = normalize(selected[optionName]) === normalize(val);
+
+                    // Available if at least one variant matching all prior options
+                    // + this value is in stock and active
+                    const hasAvailable = product.variants.some((v) => {
+                      const priorMatch = priorOptions.every(
+                        (prior) => normalize(v.options?.[prior]) === normalize(selected[prior])
+                      );
+                      return (
+                        priorMatch &&
+                        normalize(v.options?.[optionName]) === normalize(val) &&
+                        isVariantAvailable(v)
+                      );
+                    });
+
+                    if (isColor) {
+                      const color = getColorFromOptions({ [optionName]: val }, undefined);
+                      return (
+                        <button
+                          key={val}
+                          className={[
+                            styles.option,
+                            isSelected ? styles.selected : "",
+                            !hasAvailable ? styles.unavailable : "",
+                          ].join(" ")}
+                          style={{ backgroundColor: color.hex || undefined }}
+                          onClick={() => handleSelect(optionName, val)}
+                          title={color.name ?? val}
+                          aria-label={color.name ?? val}
+                          aria-pressed={isSelected}
+                        />
+                      );
+                    }
+
                     return (
                       <button
                         key={val}
-                        className={`${styles.option} ${isSelected ? styles.selected : ""}`}
-                        style={{
-                          backgroundColor: colorHex || undefined,
-                        }}
-                        onClick={() => handleMainChange(val)}
-                        title={colorName}
-                        aria-label={colorName}
-                        aria-pressed={isSelected}></button>
+                        className={[
+                          styles.option,
+                          isSelected ? styles.selected : "",
+                          !hasAvailable ? styles.unavailable : "",
+                        ].join(" ")}
+                        onClick={() => handleSelect(optionName, val)}
+                        disabled={!hasAvailable}
+                        aria-label={`Select ${optionName} ${val}`}>
+                        {val}
+                      </button>
                     );
-                  }
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
-                  return (
-                    <button
-                      key={val}
-                      className={`${styles.option} ${isSelected ? styles.selected : ""}`}
-                      onClick={() => handleMainChange(val)}
-                      aria-label={`Select ${val}`}>
-                      {val}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {subOption && (
-            <div>
-              <span className={styles.label}>{subOption}</span>
-              <div className={styles.options}>
-                {subValues.map((val) => (
-                  <button
-                    key={val}
-                    className={`${styles.option} ${selectedSub === val ? styles.selected : ""}`}
-                    onClick={() => handleSubChange(val)}
-                    disabled={
-                      !product.variants.some((v) => {
-                        const mainValue = normalize(v.options?.[mainOption]);
-                        const subValue = normalize(v.options?.[subOption]);
-                        return (
-                          mainValue === normalize(selectedMain) &&
-                          subValue === val &&
-                          v.active &&
-                          (product.stock_type === "on_demand" || (v.stock_quantity ?? 0) > 0)
-                        );
-                      })
-                    }
-                    aria-label={`Select size ${val}`}>
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* ── Quantity + Add to cart ── */}
           <span className={styles.label}>Quantidade</span>
           <div className={styles.qtyAndButton}>
             <div className={styles.quantity}>
-              <button
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                aria-label="Decrease quantity">
-                -
-              </button>
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">-</button>
               <span>{qty}</span>
-              <button onClick={() => setQty((q) => q + 1)} aria-label="Increase quantity">
+              <button
+                onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                disabled={product.stock_type === "limited" && qty >= maxQty}
+                aria-label="Increase quantity">
                 +
               </button>
             </div>
             <div
               className={styles.addButtonWrapper}
-              onClick={() => {
-                if (!canBuy) addToCart();
-              }}>
+              onClick={() => { if (!canBuy) addToCart(); }}>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
                 Adicionar ao Carrinho
               </button>
             </div>
           </div>
+
+          {/* ── Aside details ── */}
           <div className={styles.asideDetails}>
             <details className={styles.detailsBlock}>
               <summary>
@@ -292,10 +311,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 <a
                   href="#"
                   className={styles.sizeGuideLink}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowSizeGuide(true);
-                  }}>
+                  onClick={(e) => { e.preventDefault(); setShowSizeGuide(true); }}>
                   Guia de Tamanhos
                 </a>{" "}
                 para mais detalhes.
