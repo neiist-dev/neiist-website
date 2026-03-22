@@ -93,10 +93,11 @@ function ImageGrid({
           ref={ref}
           type="file"
           accept="image/*"
+          multiple
           hidden
           onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onAdd(f);
+            const files = Array.from(e.target.files ?? []);
+            files.forEach((f) => onAdd(f));
             e.target.value = "";
           }}
         />
@@ -185,13 +186,12 @@ function ImageCarousel({
             ref={ref}
             type="file"
             accept="image/*"
+            multiple
             hidden
             onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) {
-                onAdd(f);
-                setIdx(images.length);
-              }
+              const files = Array.from(e.target.files ?? []);
+              files.forEach((f) => onAdd(f));
+              if (files.length > 0) setIdx(images.length + files.length - 1);
               e.target.value = "";
             }}
           />
@@ -392,30 +392,28 @@ export default function ProductForm({
         }
       }
     }
-// Seed group stock + images from variant totals on load
-for (const [key, slot] of Object.entries(initial)) {
-  const [optType, optVal] = key.split("::");
+    // Seed group stock + images from variant totals on load
+    for (const [key, slot] of Object.entries(initial)) {
+      const [optType, optVal] = key.split("::");
 
-  const matchingVariants = product.variants.filter(
-    (v) => v.options?.[optType] === optVal
-  );
+      const matchingVariants = product.variants.filter((v) => v.options?.[optType] === optVal);
 
-  // Stock: sum of active variants
-  slot.stock_quantity = matchingVariants
-    .filter((v) => v.active !== false)
-    .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
+      // Stock: sum of active variants
+      slot.stock_quantity = matchingVariants
+        .filter((v) => v.active !== false)
+        .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
 
-  // Images: union of all unique image URLs across matching variants
-  const seen = new Set<string>();
-  for (const v of matchingVariants) {
-    for (const img of v.images ?? []) {
-      if (!seen.has(img)) {
-        seen.add(img);
-        slot.existing.push(img);
+      // Images: union of all unique image URLs across matching variants
+      const seen = new Set<string>();
+      for (const v of matchingVariants) {
+        for (const img of v.images ?? []) {
+          if (!seen.has(img)) {
+            seen.add(img);
+            slot.existing.push(img);
+          }
+        }
       }
     }
-  }
-}
     return initial;
   });
 
@@ -564,63 +562,61 @@ for (const [key, slot] of Object.entries(initial)) {
 
   const setSlot = (key: string, slot: GroupSlot) => setGroupImages((p) => ({ ...p, [key]: slot }));
 
-const addGroupImage = (key: string, file: File) => {
-  const [optType, optVal] = key.split("::");
-  const preview = URL.createObjectURL(file);
-  const imageFile: ImageFile = { file, preview };
+  const addGroupImage = (key: string, file: File) => {
+    const [optType, optVal] = key.split("::");
+    const preview = URL.createObjectURL(file);
+    const imageFile: ImageFile = { file, preview };
 
-  // Add to the group slot
-  setGroupImages((prev) => {
-    const s = prev[key] ?? { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
-    return { ...prev, [key]: { ...s, newFiles: [...s.newFiles, imageFile] } };
-  });
+    // Add to the group slot
+    setGroupImages((prev) => {
+      const s = prev[key] ?? { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
+      return { ...prev, [key]: { ...s, newFiles: [...s.newFiles, imageFile] } };
+    });
 
-  // Mirror into every variant combo that includes this option value
-  setVariants((prev) =>
-    prev.map((v) =>
-      v.options[optType] === optVal
-        ? { ...v, newImages: [...v.newImages, imageFile] }
-        : v
-    )
-  );
-};
-
-const removeGroupImage = (key: string, idx: number) => {
-  const [optType, optVal] = key.split("::");
-  const s = getSlot(key);
-
-  if (idx < s.existing.length) {
-    const urlToRemove = s.existing[idx];
-
-    // Remove from group slot
-    setSlot(key, { ...s, existing: s.existing.filter((_, i) => i !== idx) });
-
-    // Remove from all matching variants by URL
+    // Mirror into every variant combo that includes this option value
     setVariants((prev) =>
       prev.map((v) =>
-        v.options[optType] === optVal
-          ? { ...v, existingImages: v.existingImages.filter((u) => u !== urlToRemove) }
-          : v
+        v.options[optType] === optVal ? { ...v, newImages: [...v.newImages, imageFile] } : v
       )
     );
-  } else {
-    const ni = idx - s.existing.length;
-    const fileToRemove = s.newFiles[ni].file;
-    URL.revokeObjectURL(s.newFiles[ni].preview);
+  };
 
-    // Remove from group slot
-    setSlot(key, { ...s, newFiles: s.newFiles.filter((_, i) => i !== ni) });
+  const removeGroupImage = (key: string, idx: number) => {
+    const [optType, optVal] = key.split("::");
+    const s = getSlot(key);
 
-    // Remove from all matching variants by File reference
-    setVariants((prev) =>
-      prev.map((v) =>
-        v.options[optType] === optVal
-          ? { ...v, newImages: v.newImages.filter((f) => f.file !== fileToRemove) }
-          : v
-      )
-    );
-  }
-};
+    if (idx < s.existing.length) {
+      const urlToRemove = s.existing[idx];
+
+      // Remove from group slot
+      setSlot(key, { ...s, existing: s.existing.filter((_, i) => i !== idx) });
+
+      // Remove from all matching variants by URL
+      setVariants((prev) =>
+        prev.map((v) =>
+          v.options[optType] === optVal
+            ? { ...v, existingImages: v.existingImages.filter((u) => u !== urlToRemove) }
+            : v
+        )
+      );
+    } else {
+      const ni = idx - s.existing.length;
+      const fileToRemove = s.newFiles[ni].file;
+      URL.revokeObjectURL(s.newFiles[ni].preview);
+
+      // Remove from group slot
+      setSlot(key, { ...s, newFiles: s.newFiles.filter((_, i) => i !== ni) });
+
+      // Remove from all matching variants by File reference
+      setVariants((prev) =>
+        prev.map((v) =>
+          v.options[optType] === optVal
+            ? { ...v, newImages: v.newImages.filter((f) => f.file !== fileToRemove) }
+            : v
+        )
+      );
+    }
+  };
   // ── Definition helpers ────────────────────────────────────────────────────
   const addDef = () =>
     setVariantDefinitions((p) => [
