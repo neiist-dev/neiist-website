@@ -319,6 +319,7 @@ export default function ProductForm({
   const [orderDeadline, setOrderDeadline] = useState<Date | undefined>(
     product?.order_deadline ? new Date(product.order_deadline) : undefined
   );
+  const [groupOverrides, setGroupOverrides] = useState<Set<string>>(new Set());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const deadlineRef = useRef<HTMLInputElement>(null);
   const [allCategories] = useState<Category[]>(categories);
@@ -385,6 +386,7 @@ export default function ProductForm({
   const [groupImages, setGroupImages] = useState<GroupImages>(() => {
     if (!product?.variants?.length) return {};
     const initial: GroupImages = {};
+
     for (const v of product.variants) {
       for (const [optType, optVal] of Object.entries(v.options || {})) {
         const val =
@@ -395,6 +397,16 @@ export default function ProductForm({
         }
       }
     }
+
+    // Aggregate stock_quantity per group key by summing active variant stocks
+    for (const [key, slot] of Object.entries(initial)) {
+      const [optType, optVal] = key.split("::");
+      const total = product.variants
+        .filter((v) => v.active !== false && v.options?.[optType] === optVal)
+        .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
+      slot.stock_quantity = total;
+    }
+
     return initial;
   });
 
@@ -421,12 +433,14 @@ export default function ProductForm({
     const combos = cartesian(valid.map((d) => d.values));
     setVariants((prev) =>
       combos.map((combo) => {
-        const options = Object.fromEntries(names.map((n, i) => {
-          const val = combo[i];
-          // Convert objects back to string to save in options
-          const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
-          return [n, strVal];
-        }));
+        const options = Object.fromEntries(
+          names.map((n, i) => {
+            const val = combo[i];
+            // Convert objects back to string to save in options
+            const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
+            return [n, strVal];
+          })
+        );
 
         const existing = prev.find((v) =>
           names.every((n) => {
@@ -478,8 +492,37 @@ export default function ProductForm({
   }, [optionTypes, hasVariants, hasGroupKeys, activeTab]);
 
   // ── Variant helpers ───────────────────────────────────────────────────────
-  const updateVariant = (i: number, u: Partial<VariantForm>) =>
-    setVariants((p) => p.map((v, idx) => (idx === i ? { ...v, ...u } : v)));
+  // Replace updateVariant
+  const updateVariant = (i: number, u: Partial<VariantForm>) => {
+    setVariants((prev) => {
+      const updated = prev.map((v, idx) => (idx === i ? { ...v, ...u } : v));
+
+      // If stock changed, auto-sync groups that haven't been manually overridden
+      if ("stock_quantity" in u) {
+        setGroupImages((prevGroups) => {
+          const next = { ...prevGroups };
+          for (const optType of optionTypes) {
+            const optVal = updated[i].options[optType];
+            if (!optVal) continue;
+            const key = `${optType}::${optVal}`;
+            if (groupOverrides.has(key)) continue; // user set this manually, don't touch
+
+            const total = updated
+              .filter((v) => v.active && v.options[optType] === optVal)
+              .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
+
+            next[key] = {
+              ...(next[key] ?? { existing: [], newFiles: [], price_modifier: 0 }),
+              stock_quantity: total,
+            };
+          }
+          return next;
+        });
+      }
+
+      return updated;
+    });
+  };
 
   const addVariantImage = (i: number, file: File) =>
     updateVariant(i, {
@@ -908,8 +951,7 @@ export default function ProductForm({
                         value={def.values}
                         onChange={(tags) => updateDefValues(idx, tags)}
                         placeholder={
-                          isColorKey(def.name)
-                            ? "Nome da cor (ex: Azul)" : "Valores (ex: S, M, L)"
+                          isColorKey(def.name) ? "Nome da cor (ex: Azul)" : "Valores (ex: S, M, L)"
                         }
                         isColor={isColorKey(def.name)}
                       />
@@ -1035,7 +1077,10 @@ export default function ProductForm({
                             price={slot.price_modifier}
                             stock={slot.stock_quantity}
                             onPrice={(v) => setSlot(key, { ...slot, price_modifier: v })}
-                            onStock={(v) => setSlot(key, { ...slot, stock_quantity: v })}
+                            onStock={(v) => {
+                              setGroupOverrides((prev) => new Set(prev).add(key)); // mark as manually set
+                              setSlot(key, { ...slot, stock_quantity: v });
+                            }}
                             isOnDemand={stockType === "on_demand"}
                           />
                           <div>
