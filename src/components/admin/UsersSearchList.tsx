@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { User, UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
-import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/UsersSearchList.module.css";
 
 interface Role {
@@ -17,6 +16,9 @@ interface UserWithMemberships extends User {
   memberships: Membership[];
 }
 
+const sanitizeString = (value: string) =>
+  value.trim().normalize("NFD").replace(/\p{M}/gu, "").replace(/[-_]/g, " ").toLowerCase();
+
 export default function UsersSearchList({
   users,
   roles,
@@ -25,25 +27,49 @@ export default function UsersSearchList({
   roles: Role[];
 }) {
   const [search, setSearch] = useState("");
-  const [usersState] = useState(users);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(usersState, {
-        keys: ["name", "istid", "email"],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [usersState]
+  const sortedUsers = useMemo(
+    () => [...users].sort((a, b) => a.name.localeCompare(b.name, "pt")),
+    [users]
   );
 
   const filteredUsers = useMemo(() => {
-    if (!search.trim()) return usersState;
-    return fuse.search(search.trim()).map((role) => role.item);
-  }, [search, usersState, fuse]);
+    const sanitizedSearch = sanitizeString(search);
+    if (!sanitizedSearch) return sortedUsers;
+
+    const digits = sanitizedSearch.replace(/[^0-9]/g, "");
+    const isIstid = /^ist\d+$/i.test(sanitizedSearch) || /^\d+$/.test(sanitizedSearch);
+
+    if (isIstid) {
+      const exactMatches = sortedUsers.filter((u) => u.istid.replace(/[^0-9]/g, "") === digits);
+      return exactMatches.length > 0
+        ? exactMatches
+        : sortedUsers.filter((u) => u.istid.replace(/[^0-9]/g, "").startsWith(digits));
+    }
+    const searchTerms = sanitizedSearch.split(/\s+/).filter(Boolean);
+
+    return sortedUsers.filter((user) => {
+      const userDataText = [
+        sanitizeString(user.name),
+        sanitizeString(user.istid),
+        user.istid.replace(/[^0-9]/g, ""),
+        user.email.toLowerCase(),
+        sanitizeString(user.courses?.join(" ") ?? ""),
+        sanitizeString(
+          user.memberships?.map((m) => `${m.departmentName} ${m.roleName}`).join(" ") ?? ""
+        ),
+      ].join(" ");
+
+      const userDataTokens = userDataText.split(/\s+/).filter(Boolean);
+
+      return searchTerms.every((searchTerm) =>
+        userDataTokens.some((userDataToken) => userDataToken.startsWith(searchTerm))
+      );
+    });
+  }, [search, sortedUsers]);
 
   const getAccessLevelForRole = (roleName: string): string => {
-    const role = roles.find((role) => role.role_name === roleName);
+    const role = roles.find((r) => r.role_name === roleName);
     return role?.access || UserRole._GUEST;
   };
 
@@ -57,9 +83,9 @@ export default function UsersSearchList({
         className={styles.input}
         style={{ marginBottom: 16, width: "100%" }}
         type="text"
-        placeholder="Pesquisar por nome, ISTID ou email..."
+        placeholder="Pesquisar por nome, ISTID, email, cargo ou departamento..."
         value={search}
-        onChange={(inputEvent) => setSearch(inputEvent.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
       />
 
       {filteredUsers.length === 0 ? (
