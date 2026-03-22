@@ -801,7 +801,7 @@ export default function NewOrderModal({
         {showStockOverrideConfirm && (
           <ConfirmDialog
             open={showStockOverrideConfirm}
-            message={`Tem a certeza que deseja criar a encomenda na mesma?\n${stockOverrideMessage}.`}
+            message={`Tem a certeza que deseja criar a encomenda à mesma?\n"${stockOverrideMessage}."`}
             onConfirm={async () => {
               setShowStockOverrideConfirm(false);
               setStockOverrideMessage(null);
