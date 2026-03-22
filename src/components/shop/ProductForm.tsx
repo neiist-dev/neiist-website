@@ -50,7 +50,7 @@ type GroupSlot = {
   existing: string[];
   newFiles: ImageFile[];
   price_modifier: number;
-  stock_quantity: number; // 0 = no cap
+  stock_quantity: number;
 };
 type GroupImages = Record<string, GroupSlot>;
 
@@ -241,7 +241,7 @@ function VmCard({
   );
 }
 
-// ─── PriceStockFields — shared inline fields ──────────────────────────────────
+// ─── PriceStockFields ─────────────────────────────────────────────────────────
 
 function PriceStockFields({
   price,
@@ -262,12 +262,11 @@ function PriceStockFields({
   isOnDemand?: boolean;
 }) {
   const stockDisabled = disabled || isOnDemand;
-  const priceLabel = "Preço +/-";
 
   return (
     <div className={styles.vmFields}>
       <div className={styles.vmFieldGroup}>
-        <span className={styles.subLabel}>{priceLabel}</span>
+        <span className={styles.subLabel}>Preço +/-</span>
         <div className={styles.row} style={{ gap: "0.35rem" }}>
           <input
             className={styles.field}
@@ -319,7 +318,6 @@ export default function ProductForm({
   const [orderDeadline, setOrderDeadline] = useState<Date | undefined>(
     product?.order_deadline ? new Date(product.order_deadline) : undefined
   );
-  const [groupOverrides, setGroupOverrides] = useState<Set<string>>(new Set());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const deadlineRef = useRef<HTMLInputElement>(null);
   const [allCategories] = useState<Category[]>(categories);
@@ -343,8 +341,6 @@ export default function ProductForm({
               .filter((v): v is string => typeof v === "string")
           ),
         ];
-
-        // If it's a color, convert "Name - #HEX" strings to objects
         let values: TagValue[] = rawValues;
         if (isColorKey(type)) {
           values = rawValues.map((val) => {
@@ -352,7 +348,6 @@ export default function ProductForm({
             return hex ? { name: name || val, color: hex } : val;
           });
         }
-
         return {
           id: Math.random().toString(36).substr(2, 9),
           name: type,
@@ -362,6 +357,7 @@ export default function ProductForm({
     }
     return [{ id: "1", name: "", values: [] }];
   });
+
   const optionTypes = variantDefinitions.map((d) => d.name).filter(Boolean);
 
   // ── Level 2 — variant combos ─────────────────────────────────────────────
@@ -386,7 +382,6 @@ export default function ProductForm({
   const [groupImages, setGroupImages] = useState<GroupImages>(() => {
     if (!product?.variants?.length) return {};
     const initial: GroupImages = {};
-
     for (const v of product.variants) {
       for (const [optType, optVal] of Object.entries(v.options || {})) {
         const val =
@@ -397,8 +392,7 @@ export default function ProductForm({
         }
       }
     }
-
-    // Aggregate stock_quantity per group key by summing active variant stocks
+    // Seed group stock from variant totals on load
     for (const [key, slot] of Object.entries(initial)) {
       const [optType, optVal] = key.split("::");
       const total = product.variants
@@ -406,24 +400,30 @@ export default function ProductForm({
         .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
       slot.stock_quantity = total;
     }
-
     return initial;
   });
 
-  // ── Tab state: which option type is active for L1, and "combos" for L2 ──
-  // Tab values: an optionType name (L1) or "__combos__" (L2)
+  // ── Tracks which group keys the user manually overrode ───────────────────
+  const [groupOverrides, setGroupOverrides] = useState<Set<string>>(new Set());
+
+  // ── Tab state ────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<string>("__combos__");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
-  // ── Auto-generate L2 combinations ────────────────────────────────────────
+  // ── Clear everything when no valid definitions remain ────────────────────
   useEffect(() => {
-    const hasAny = variantDefinitions.some((d) => d.values.length > 0);
-    if (!hasAny && variants.length > 0) setVariants([]);
+    const stillValid = variantDefinitions.filter((d) => d.name && d.values.length > 0);
+    if (stillValid.length === 0 && variants.length > 0) {
+      setVariants([]);
+      setGroupImages({});
+      setGroupOverrides(new Set());
+    }
   }, [variantDefinitions, variants.length]);
 
+  // ── Auto-generate L2 combinations ────────────────────────────────────────
   const generateVariants = useCallback((defs: VariantDefinition[]) => {
     const valid = defs.filter((d) => d.name && d.values.length > 0);
     if (!valid.length) return;
@@ -436,12 +436,10 @@ export default function ProductForm({
         const options = Object.fromEntries(
           names.map((n, i) => {
             const val = combo[i];
-            // Convert objects back to string to save in options
             const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
             return [n, strVal];
           })
         );
-
         const existing = prev.find((v) =>
           names.every((n) => {
             const ev = v.options[n] || "",
@@ -492,37 +490,41 @@ export default function ProductForm({
   }, [optionTypes, hasVariants, hasGroupKeys, activeTab]);
 
   // ── Variant helpers ───────────────────────────────────────────────────────
-  // Replace updateVariant
-  const updateVariant = (i: number, u: Partial<VariantForm>) => {
-    setVariants((prev) => {
-      const updated = prev.map((v, idx) => (idx === i ? { ...v, ...u } : v));
 
-      // If stock changed, auto-sync groups that haven't been manually overridden
-      if ("stock_quantity" in u) {
-        setGroupImages((prevGroups) => {
-          const next = { ...prevGroups };
-          for (const optType of optionTypes) {
-            const optVal = updated[i].options[optType];
-            if (!optVal) continue;
-            const key = `${optType}::${optVal}`;
-            if (groupOverrides.has(key)) continue; // user set this manually, don't touch
+  const updateVariant = useCallback(
+    (i: number, u: Partial<VariantForm>) => {
+      setVariants((prev) => {
+        const updated = prev.map((v, idx) => (idx === i ? { ...v, ...u } : v));
 
-            const total = updated
-              .filter((v) => v.active && v.options[optType] === optVal)
-              .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
+        if ("stock_quantity" in u || "active" in u) {
+          setGroupImages((prevGroups) => {
+            const next = { ...prevGroups };
+            // Use the variant's own keys — avoids stale closure on optionTypes
+            const variantOptionKeys = Object.keys(updated[i]?.options ?? {});
+            for (const optType of variantOptionKeys) {
+              const optVal = updated[i].options[optType];
+              if (!optVal) continue;
+              const key = `${optType}::${optVal}`;
+              if (groupOverrides.has(key)) continue;
 
-            next[key] = {
-              ...(next[key] ?? { existing: [], newFiles: [], price_modifier: 0 }),
-              stock_quantity: total,
-            };
-          }
-          return next;
-        });
-      }
+              const total = updated
+                .filter((v) => v.active && v.options[optType] === optVal)
+                .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
 
-      return updated;
-    });
-  };
+              next[key] = {
+                ...(next[key] ?? { existing: [], newFiles: [], price_modifier: 0 }),
+                stock_quantity: total,
+              };
+            }
+            return next;
+          });
+        }
+
+        return updated;
+      });
+    },
+    [groupOverrides]
+  );
 
   const addVariantImage = (i: number, file: File) =>
     updateVariant(i, {
@@ -589,13 +591,41 @@ export default function ProductForm({
 
   const removeDef = (i: number) => {
     const removed = variantDefinitions[i].name;
-    setVariantDefinitions((p) => p.filter((_, idx) => idx !== i));
-    setVariants((p) =>
-      p.map((v) => ({
+    const remaining = variantDefinitions.filter((_, idx) => idx !== i);
+
+    setVariantDefinitions(remaining);
+
+    // Strip the removed option key from all variant option maps
+    setVariants((prev) =>
+      prev.map((v) => ({
         ...v,
         options: Object.fromEntries(Object.entries(v.options).filter(([k]) => k !== removed)),
       }))
     );
+
+    // If no valid definitions remain, wipe everything immediately
+    const stillValid = remaining.filter((d) => d.name && d.values.length > 0);
+    if (stillValid.length === 0) {
+      setVariants([]);
+      setGroupImages({});
+      setGroupOverrides(new Set());
+    } else {
+      // Only clean up group slots and overrides for the removed option type
+      setGroupImages((prev) => {
+        const next: GroupImages = {};
+        for (const [key, val] of Object.entries(prev)) {
+          if (!key.startsWith(`${removed}::`)) next[key] = val;
+        }
+        return next;
+      });
+      setGroupOverrides((prev) => {
+        const next = new Set(prev);
+        for (const key of Array.from(next)) {
+          if (key.startsWith(`${removed}::`)) next.delete(key);
+        }
+        return next;
+      });
+    }
   };
 
   // ── Stock cap validation ──────────────────────────────────────────────────
@@ -604,10 +634,12 @@ export default function ProductForm({
       const val = variant.options[optType] || "";
       const key = `${optType}::${val}`;
       const groupSlot = groupImages[key];
-      if (!groupSlot) continue;
+
+      // Only validate against the group cap if the user manually overrode it
+      if (!groupSlot || !groupOverrides.has(key)) continue;
+
       const cap = groupSlot.stock_quantity;
 
-      // 0 = hard zero (blocked)
       if (cap === 0 && variant.stock_quantity > 0) {
         return `Group "${displayName(optType, val)}" has stock 0 — this combination is blocked`;
       }
@@ -665,12 +697,14 @@ export default function ProductForm({
           r.onerror = rej;
           r.readAsDataURL(file);
         });
+
       const imageUploads = await Promise.all(
         newProductImages.map(async ({ file }) => ({
           imageBase64: await toB64(file),
           imageName: file.name,
         }))
       );
+
       const groupUploads: Record<
         string,
         {
@@ -693,6 +727,7 @@ export default function ProductForm({
           ),
         };
       }
+
       const variantsOut = await Promise.all(
         variants.map(async (v) => ({
           id: v.id,
@@ -709,6 +744,7 @@ export default function ProductForm({
           ),
         }))
       );
+
       const body = {
         id: product?.id,
         name: name.trim(),
@@ -723,11 +759,13 @@ export default function ProductForm({
         variants: variantsOut,
         order_deadline: orderDeadline?.toISOString() ?? null,
       };
+
       const res = await fetch(isEdit ? `/api/shop/products/${product?.id}` : "/api/shop/products", {
         method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+
       if (res.ok) {
         window.location.href = "/shop/manage";
       } else {
@@ -741,23 +779,26 @@ export default function ProductForm({
     }
   };
 
-  // Tab list: flat "Grupos" (all L1 values) + "Combinações" (L2)
+  // ── Tab list ─────────────────────────────────────────────────────────────
   const tabs = [
     ...(hasGroupKeys ? [{ id: "__groups__", label: "Grupos" }] : []),
     ...(hasVariants ? [{ id: "__combos__", label: "Combinações" }] : []),
   ];
 
   // All L1 group entries flat across all option types
-  const groupKeys: { key: string; optType: string; optVal: string; hex?: string; label: string }[] =
-    [];
+  const groupKeys: {
+    key: string;
+    optType: string;
+    optVal: string;
+    hex?: string;
+    label: string;
+  }[] = [];
   for (const def of variantDefinitions) {
     if (!def.name || !def.values.length) continue;
     for (const val of def.values) {
-      // Normalize to string and visualization data
       let strVal = "";
       let hex: string | undefined;
       let label = "";
-
       if (typeof val === "string") {
         const raw = isColorKey(def.name) ? splitNameHex(val) : null;
         strVal = val;
@@ -768,7 +809,6 @@ export default function ProductForm({
         hex = val.color;
         label = val.name;
       }
-
       groupKeys.push({
         key: `${def.name}::${strVal}`,
         optType: def.name,
@@ -779,6 +819,7 @@ export default function ProductForm({
     }
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -934,7 +975,6 @@ export default function ProductForm({
 
           {/* ══ LEFT — Variant Manager ══ */}
           <div className={styles.section}>
-            {/* Definitions */}
             <div className={styles.card}>
               <label className={styles.label}>Definições de Variantes</label>
               <div className={styles.variantDefinitionsList}>
@@ -972,7 +1012,6 @@ export default function ProductForm({
               </div>
             </div>
 
-            {/* Tabbed level panel — only shown when there are definitions with values */}
             {tabs.length > 0 && (
               <div className={styles.card} style={{ flex: 1, minHeight: 0 }}>
                 {/* Tab bar */}
@@ -1016,7 +1055,7 @@ export default function ProductForm({
                   ))}
                 </div>
 
-                {/* ── L1 tab — all option values flat ── */}
+                {/* ── L1 tab — groups ── */}
                 {activeTab === "__groups__" && (
                   <div className={styles.vmList}>
                     {groupKeys.length === 0 && (
@@ -1056,7 +1095,6 @@ export default function ProductForm({
                                 const variantTotal = variants
                                   .filter((v) => v.active && v.options[optType] === optVal)
                                   .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
-
                                 return slot.price_modifier !== 0 || variantTotal !== 0 ? (
                                   <span className={styles.vmMetaBadge}>
                                     {slot.price_modifier !== 0 && (
@@ -1078,7 +1116,7 @@ export default function ProductForm({
                             stock={slot.stock_quantity}
                             onPrice={(v) => setSlot(key, { ...slot, price_modifier: v })}
                             onStock={(v) => {
-                              setGroupOverrides((prev) => new Set(prev).add(key)); // mark as manually set
+                              setGroupOverrides((prev) => new Set(prev).add(key));
                               setSlot(key, { ...slot, stock_quantity: v });
                             }}
                             isOnDemand={stockType === "on_demand"}
@@ -1106,7 +1144,7 @@ export default function ProductForm({
                   </div>
                 )}
 
-                {/* ── L2 tab content — combinations ── */}
+                {/* ── L2 tab — combinations ── */}
                 {activeTab === "__combos__" && (
                   <div className={styles.vmList}>
                     {variants.length === 0 && (
