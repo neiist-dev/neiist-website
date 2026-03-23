@@ -1732,9 +1732,9 @@ BEGIN
             v_pid, COALESCE(v_product_stock, -1), v_qty;
         END IF;
 
-        UPDATE neiist.products
+        UPDATE neiist.products p
         SET stock_quantity = stock_quantity - v_qty
-        WHERE id = v_pid;
+        WHERE p.id = v_pid;
       ELSIF v_stock_type = 'limited' AND p_stock_override THEN
         NULL;
       END IF;
@@ -2048,9 +2048,9 @@ BEGIN
               v_pid, COALESCE(v_product_stock, -1), v_qty;
           END IF;
 
-          UPDATE neiist.products
+          UPDATE neiist.products p
           SET stock_quantity = stock_quantity - v_qty
-          WHERE id = v_pid;
+          WHERE p.id = v_pid;
         ELSIF v_stock_type = 'limited' AND p_stock_override THEN
           NULL;
         END IF;
