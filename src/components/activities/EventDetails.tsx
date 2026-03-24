@@ -161,11 +161,17 @@ export default function EventDetails({
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      toast.warning("Please log in to sign up for this event.", {
+      toast.warning("Por favor inicie sessão para se inscrever neste evento.", {
         closeButton: true,
       });
       return;
     }
+
+    if (!canSignUp && subscriberCount >= maxAttendeesNum) {
+      toast.error("Número máximo de participantes atingido.", { closeButton: true });
+      return;
+    }
+
     setIsProcessing(true);
     const signUpToastId = toast.loading(
       signedUp ? "Cancelling sign-up..." : "Signing up for event...",
@@ -366,7 +372,7 @@ export default function EventDetails({
           <button
             className={styles.signUpButton}
             onClick={handleSignUp}
-            disabled={isProcessing || !canSignUp || !currentIstid}>
+            disabled={isProcessing || !currentIstid}>
             {isProcessing
               ? "A processar..."
               : !currentIstid
