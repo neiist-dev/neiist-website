@@ -23,6 +23,8 @@ import ColorfulText from "../ColorfulText";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+const NUMBER_MAX_VARIANT = 3;
+
 interface ProductFormProps {
   product?: Product | null;
   isEdit?: boolean;
@@ -1037,14 +1039,14 @@ export default function ProductForm({
                       className={`${styles.field} ${styles.variantNameInput}`}
                       value={def.name}
                       onChange={(e) => updateDefName(idx, e.target.value)}
-                      placeholder="Nome (ex: Tamanho)"
+                      placeholder="Nome (Ex: Cor)"
                     />
                     <div className={styles.variantValuesInput}>
                       <TagInput
                         value={def.values}
                         onChange={(tags) => updateDefValues(idx, tags)}
                         placeholder={
-                          isColorKey(def.name) ? "Nome da cor (ex: Azul)" : "Valores (ex: S, M, L)"
+                          isColorKey(def.name) ? "Valores (ex: S, M, L)" : "Nome da cor (ex: Azul)"
                         }
                         isColor={isColorKey(def.name)}
                       />
@@ -1057,11 +1059,13 @@ export default function ProductForm({
                     </button>
                   </div>
                 ))}
-                <div className={styles.addDefButtonWrapper}>
-                  <button type="button" className={styles.button} onClick={addDef}>
-                    <FaPlus /> Adicionar Definição
-                  </button>
-                </div>
+                {variantDefinitions.length < NUMBER_MAX_VARIANT && (
+                  <div className={styles.addDefButtonWrapper}>
+                    <button type="button" className={styles.button} onClick={addDef}>
+                      <FaPlus /> Adicionar Definição
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
