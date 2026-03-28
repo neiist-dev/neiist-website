@@ -136,9 +136,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       const query = searchQuery.trim().toLowerCase();
       const identifierMatches = orders.filter(
         (order) =>
-          order.order_number.toLowerCase().includes(query) ||
+          (order.customer_name?.toLowerCase().includes(query) ?? false) ||
           (order.user_istid?.toLowerCase().includes(query) ?? false) ||
-          (order.customer_email?.toLowerCase().includes(query) ?? false)
+          (order.customer_email?.toLowerCase().includes(query) ?? false) ||
+          order.order_number.toLowerCase().includes(query)
       );
 
       const fuseResults = fuse.search(searchQuery.trim()).map((result) => result.item);
