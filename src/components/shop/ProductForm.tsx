@@ -67,6 +67,26 @@ function displayName(optType: string, raw: string) {
   return raw;
 }
 
+// Normalize a variant option value to canonical form so all comparisons are consistent
+function normalizeOptVal(optType: string, raw: string): string {
+  if (isColorKey(optType)) {
+    const { name, hex } = splitNameHex(raw);
+    return hex ? joinNameHex(name, hex) : raw;
+  }
+  return raw;
+}
+
+// Match variant option values robustly: for colors, compare by hex; otherwise exact string match.
+// This handles cases where DB-loaded values and form-generated values may have different formats.
+function optValMatches(optType: string, variantVal: string, groupVal: string): boolean {
+  if (isColorKey(optType)) {
+    const { hex: varHex } = splitNameHex(variantVal);
+    const { hex: grpHex } = splitNameHex(groupVal);
+    if (varHex && grpHex) return varHex === grpHex;
+  }
+  return variantVal === groupVal;
+}
+
 // ─── ImageGrid ───────────────────────────────────────────────────────────────
 
 function ImageGrid({
@@ -367,10 +387,10 @@ export default function ProductForm({
     product?.variants?.map((v) => ({
       id: v.id,
       options: Object.fromEntries(
-        Object.entries(v.options || {}).map(([k, val]) => [
-          k,
-          typeof val === "string" ? val.replace(/^["']|["']$/g, "") : val,
-        ])
+        Object.entries(v.options || {}).map(([k, val]) => {
+          const raw = typeof val === "string" ? val.replace(/^["']|["']$/g, "") : String(val);
+          return [k, normalizeOptVal(k, raw)];
+        })
       ),
       price_modifier: v.price_modifier || 0,
       stock_quantity: v.stock_quantity || 0,
@@ -386,9 +406,9 @@ export default function ProductForm({
     const initial: GroupImages = {};
     for (const v of product.variants) {
       for (const [optType, optVal] of Object.entries(v.options || {})) {
-        const val =
+        const raw =
           typeof optVal === "string" ? optVal.replace(/^["']|["']$/g, "") : String(optVal);
-        const key = `${optType}::${val}`;
+        const key = `${optType}::${normalizeOptVal(optType, raw)}`;
         if (!initial[key]) {
           initial[key] = { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
         }
@@ -398,7 +418,14 @@ export default function ProductForm({
     for (const [key, slot] of Object.entries(initial)) {
       const [optType, optVal] = key.split("::");
 
-      const matchingVariants = product.variants.filter((v) => v.options?.[optType] === optVal);
+      // Match variants using normalized comparison so old-format option values still match
+      const matchingVariants = product.variants.filter((v) => {
+        const raw =
+          typeof v.options?.[optType] === "string"
+            ? (v.options![optType] as string).replace(/^["']|["']$/g, "")
+            : "";
+        return normalizeOptVal(optType, raw) === optVal;
+      });
 
       // Stock: sum of active variants
       slot.stock_quantity = matchingVariants
@@ -578,7 +605,9 @@ export default function ProductForm({
     // Mirror into every variant combo that includes this option value
     setVariants((prev) =>
       prev.map((v) =>
-        v.options[optType] === optVal ? { ...v, newImages: [...v.newImages, imageFile] } : v
+        optValMatches(optType, v.options[optType] || "", optVal)
+          ? { ...v, newImages: [...v.newImages, imageFile] }
+          : v
       )
     );
   };
@@ -596,7 +625,7 @@ export default function ProductForm({
       // Remove from all matching variants by URL
       setVariants((prev) =>
         prev.map((v) =>
-          v.options[optType] === optVal
+          optValMatches(optType, v.options[optType] || "", optVal)
             ? { ...v, existingImages: v.existingImages.filter((u) => u !== urlToRemove) }
             : v
         )
@@ -612,7 +641,7 @@ export default function ProductForm({
       // Remove from all matching variants by File reference
       setVariants((prev) =>
         prev.map((v) =>
-          v.options[optType] === optVal
+          optValMatches(optType, v.options[optType] || "", optVal)
             ? { ...v, newImages: v.newImages.filter((f) => f.file !== fileToRemove) }
             : v
         )
@@ -1150,7 +1179,11 @@ export default function ProductForm({
                             <>
                               {(() => {
                                 const variantTotal = variants
-                                  .filter((v) => v.active && v.options[optType] === optVal)
+                                  .filter(
+                                    (v) =>
+                                      v.active &&
+                                      optValMatches(optType, v.options[optType] || "", optVal)
+                                  )
                                   .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
                                 return slot.price_modifier !== 0 || variantTotal !== 0 ? (
                                   <span className={styles.vmMetaBadge}>
@@ -1171,7 +1204,16 @@ export default function ProductForm({
                           <PriceStockFields
                             price={slot.price_modifier}
                             stock={slot.stock_quantity}
-                            onPrice={(v) => setSlot(key, { ...slot, price_modifier: v })}
+                            onPrice={(v) => {
+                              setSlot(key, { ...slot, price_modifier: v });
+                              setVariants((prev) =>
+                                prev.map((variant) =>
+                                  optValMatches(optType, variant.options[optType] || "", optVal)
+                                    ? { ...variant, price_modifier: v }
+                                    : variant
+                                )
+                              );
+                            }}
                             onStock={(v) => {
                               setGroupOverrides((prev) => new Set(prev).add(key));
                               setSlot(key, { ...slot, stock_quantity: v });
