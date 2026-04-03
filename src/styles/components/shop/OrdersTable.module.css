@@ -366,6 +366,10 @@
 }
 
 @media (max-width: 768px) {
+  .container {
+    margin: 0 1rem 2rem;
+  }
+
   .bulkActions {
     flex-direction: column;
     align-items: stretch;
@@ -397,6 +401,55 @@
     max-width: calc(100% - 11.5rem);
     min-width: 0;
   }
+
+  .rightControls {
+    gap: 0.6rem;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table thead th {
+    padding: 0.75rem 0.7rem;
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .table tbody td {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .checkboxCell {
+    height: 44px;
+  }
+
+  .productsCell {
+    max-width: 16rem;
+    line-height: 1.4;
+  }
+
+  .emailCell {
+    display: inline-block;
+    max-width: 11rem;
+    overflow-wrap: anywhere;
+  }
+
+  .statusBadge {
+    min-width: 5rem;
+    padding: 0.32rem 0.6rem;
+    font-size: 0.69rem;
+  }
+
+  .tableFooter {
+    justify-content: flex-start;
+    padding: 0.75rem 1rem 1rem;
+  }
 }
 
 @media (max-width: 525px) {
@@ -416,8 +469,41 @@
   }
 
   .rightControls {
-    justify-content: flex-end;
+    justify-content: space-between;
     width: 100%;
+  }
+
+  .newBtn,
+  .iconBtn {
+    min-height: 42px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .table thead th {
+    font-size: 0.74rem;
+  }
+
+  .table tbody td {
+    font-size: 0.76rem;
+  }
+
+  .productsCell {
+    max-width: 10rem;
+  }
+
+  .emailCell {
+    max-width: 8rem;
+  }
+
+  .statusBadge {
+    min-width: 4.4rem;
+    font-size: 0.65rem;
+    padding: 0.28rem 0.5rem;
   }
 
   .bulkButtons {
@@ -427,5 +513,12 @@
   .bulkBtn,
   .bulkBtnDanger {
     width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .table thead th:nth-child(6),
+  .table tbody td:nth-child(6) {
+    display: none;
   }
 }
