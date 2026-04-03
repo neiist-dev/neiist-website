@@ -724,6 +724,12 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
               </tbody>
             </table>
           </div>
+          <div className={styles.tableFooter}>
+            <span className={styles.ordersCounter}>
+              {filtered.length} encomenda{filtered.length !== 1 ? "s" : ""}{" "}
+              {filtered.length !== 1 ? "visíveis" : "visível"}
+            </span>
+          </div>
         </div>
       </div>
 
