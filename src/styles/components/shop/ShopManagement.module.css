@@ -1,7 +1,7 @@
 .container {
   margin: 0 auto;
   padding: 2rem;
-  min-height: fit-content;
+  min-height: calc(100vh - 6rem);
   display: flex;
   flex-direction: column;
 }
@@ -10,7 +10,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
-  flex: 1;
 }
 
 .emptyState {
