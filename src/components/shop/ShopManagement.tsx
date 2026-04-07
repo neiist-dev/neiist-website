@@ -3,7 +3,8 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaPlus, FaEdit } from "react-icons/fa";
-import { FiTrash2, FiPackage } from "react-icons/fi";
+import { FiTrash2, FiPackage, FiArchive } from "react-icons/fi";
+import { MdOutlineUnarchive } from "react-icons/md";
 import { Product, Category } from "@/types/shop";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import ProductForm from "@/components/shop/ProductForm";
@@ -16,27 +17,37 @@ interface ShopManagementProps {
   categories: Category[];
 }
 
+type ConfirmAction =
+  | { type: "archive"; productId: number }
+  | { type: "restore"; productId: number }
+  | { type: "permanent"; productId: number };
+
 export default function ShopManagement({ products, categories }: ShopManagementProps) {
   const [view, setView] = useState<"list" | "add" | "edit">("list");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showArchived, setShowArchived] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [removingProductId, setRemovingProductId] = useState<number | null>(null);
+  const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
   const [imageIndex, setImageIndex] = useState<{ [productId: number]: number }>({});
+
+  const activeProducts = useMemo(() => products.filter((p) => p.active !== false), [products]);
+  const archivedProducts = useMemo(() => products.filter((p) => p.active === false), [products]);
+  const visibleProducts = showArchived ? archivedProducts : activeProducts;
 
   const fuse = useMemo(
     () =>
-      new Fuse(products, {
+      new Fuse(visibleProducts, {
         keys: ["name", "category", "description"],
         threshold: 0.4,
         ignoreLocation: true,
       }),
-    [products]
+    [visibleProducts]
   );
 
   const filteredProducts = useMemo(() => {
-    let filtered = products;
+    let filtered = visibleProducts;
     if (categoryFilter !== "all") {
       filtered = filtered.filter((p) => p.category === categoryFilter);
     }
@@ -47,36 +58,68 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         .filter((p) => categoryFilter === "all" || p.category === categoryFilter);
     }
     return filtered;
-  }, [products, search, categoryFilter, fuse]);
+  }, [visibleProducts, search, categoryFilter, fuse]);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setView("edit");
   };
 
-  const handleRemove = (productId: number) => {
-    setRemovingProductId(productId);
+  const handleArchive = (productId: number) => {
+    setPendingAction({ type: "archive", productId });
     setShowConfirm(true);
   };
 
-  const confirmRemove = async () => {
-    if (removingProductId !== null) {
-      try {
-        const response = await fetch(`/api/shop/products/${removingProductId}`, {
+  const handleRestore = (productId: number) => {
+    setPendingAction({ type: "restore", productId });
+    setShowConfirm(true);
+  };
+
+  const handlePermanentDelete = (productId: number) => {
+    setPendingAction({ type: "permanent", productId });
+    setShowConfirm(true);
+  };
+
+  const confirmMessages: Record<ConfirmAction["type"], string> = {
+    archive: "Tem a certeza que deseja arquivar este produto?",
+    restore: "Tem a certeza que deseja restaurar este produto?",
+    permanent:
+      "Tem a certeza que deseja eliminar definitivamente este produto? Esta ação não pode ser desfeita.",
+  };
+
+  const confirmAction = async () => {
+    if (!pendingAction) return;
+    const { type, productId } = pendingAction;
+
+    try {
+      let response: Response;
+
+      if (type === "archive") {
+        response = await fetch(`/api/shop/products/${productId}`, { method: "DELETE" });
+      } else if (type === "restore") {
+        response = await fetch(`/api/shop/products/${productId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ active: true }),
+        });
+      } else {
+        response = await fetch(`/api/shop/products/${productId}?permanent=true`, {
           method: "DELETE",
         });
-        if (response.ok) {
-          window.location.reload();
-        } else {
-          const error = await response.json();
-          console.error("Error deleting product:", error);
-        }
-      } catch (error) {
-        console.error("Error deleting product:", error);
       }
-      setShowConfirm(false);
-      setRemovingProductId(null);
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        console.error("Error performing action:", error);
+      }
+    } catch (error) {
+      console.error("Error performing action:", error);
     }
+
+    setShowConfirm(false);
+    setPendingAction(null);
   };
 
   const getStockDisplay = (product: Product) => {
@@ -117,14 +160,14 @@ export default function ShopManagement({ products, categories }: ShopManagementP
 
   return (
     <>
-      {showConfirm && (
+      {showConfirm && pendingAction && (
         <ConfirmDialog
           open={showConfirm}
-          message="Tem a certeza que deseja remover este produto?"
-          onConfirm={confirmRemove}
+          message={confirmMessages[pendingAction.type]}
+          onConfirm={confirmAction}
           onCancel={() => {
             setShowConfirm(false);
-            setRemovingProductId(null);
+            setPendingAction(null);
           }}
         />
       )}
@@ -140,7 +183,6 @@ export default function ShopManagement({ products, categories }: ShopManagementP
             </button>
           </div>
         </div>
-
         <div className={styles.filters}>
           <input
             type="text"
@@ -156,6 +198,19 @@ export default function ShopManagement({ products, categories }: ShopManagementP
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className={`${styles.archiveToggle} ${showArchived ? styles.archiveToggleActive : ""}`}
+            onClick={() => {
+              setShowArchived((v) => !v);
+              setCategoryFilter("all");
+              setSearch("");
+            }}>
+            <FiArchive />
+            {showArchived
+              ? "Ver ativos"
+              : `Arquivados${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
+          </button>
         </div>
 
         {filteredProducts.length === 0 ? (
@@ -165,6 +220,11 @@ export default function ShopManagement({ products, categories }: ShopManagementP
               <>
                 <p>Nenhum produto encontrado</p>
                 <span>Tenta ajustar os filtros ou a pesquisa</span>
+              </>
+            ) : showArchived ? (
+              <>
+                <p>Sem produtos arquivados</p>
+                <span>Produtos arquivados aparecerão aqui</span>
               </>
             ) : (
               <>
@@ -176,7 +236,9 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         ) : (
           <div className={styles.grid}>
             {filteredProducts.map((product) => (
-              <div key={product.id} className={styles.card}>
+              <div
+                key={product.id}
+                className={`${styles.card} ${product.active === false ? styles.cardArchived : ""}`}>
                 <div className={styles.imageContainer}>
                   {product.images && product.images.length > 0 ? (
                     <Image
@@ -191,6 +253,9 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                   <div className={`${styles.stockBadge} ${styles[getStockStatus(product)]}`}>
                     {getStockDisplay(product)}
                   </div>
+                  {product.active === false && (
+                    <div className={styles.archivedBadge}>Arquivado</div>
+                  )}
                 </div>
                 <div className={styles.thumbnails}>
                   {product.images &&
@@ -225,12 +290,34 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                     </span>
                   </div>
                   <div className={styles.actions}>
-                    <button onClick={() => handleEdit(product)}>
-                      <FaEdit /> Editar
-                    </button>
-                    <button onClick={() => handleRemove(product.id)}>
-                      <FiTrash2 /> Remover
-                    </button>
+                    {product.active !== false ? (
+                      <>
+                        <button type="button" onClick={() => handleEdit(product)}>
+                          <FaEdit /> Editar
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.archiveBtn}
+                          onClick={() => handleArchive(product.id)}>
+                          <FiArchive /> Arquivar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.restoreBtn}
+                          onClick={() => handleRestore(product.id)}>
+                          <MdOutlineUnarchive /> Restaurar
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.deleteBtn}
+                          onClick={() => handlePermanentDelete(product.id)}>
+                          <FiTrash2 /> Eliminar
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

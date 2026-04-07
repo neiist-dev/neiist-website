@@ -282,6 +282,75 @@
   color: #d32f2f;
 }
 
+.archiveToggle {
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1.25rem;
+  border: 1.5px solid #ddd;
+  border-radius: 0.5rem;
+  background: white;
+  color: var(--light-foreground-colour);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+
+.archiveToggle:hover {
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}
+
+.archiveToggleActive {
+  border-color: var(--primary-colour);
+  background: var(--primary-colour);
+  color: white;
+}
+
+.archiveToggleActive:hover {
+  background: var(--primary-colour);
+  color: white;
+  opacity: 0.9;
+}
+
+.cardArchived {
+  opacity: 0.75;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.archivedBadge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  letter-spacing: 0.03em;
+}
+
+.archiveBtn {
+  background: rgba(123, 123, 139, 0.12) !important;
+  color: var(--light-foreground-colour) !important;
+}
+
+.restoreBtn {
+  background: var(--light-secondary-colour) !important;
+  color: var(--secondary-colour) !important;
+}
+
+.deleteBtn {
+  background: #ffe6e6 !important;
+  color: #d32f2f !important;
+}
+
 @media (max-width: 768px) {
   .header {
     flex-direction: column;

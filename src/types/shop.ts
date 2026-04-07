@@ -8,6 +8,7 @@ export interface Product {
   stock_type: "limited" | "on_demand";
   stock_quantity?: number;
   order_deadline?: string;
+  active?: boolean;
   variants: ProductVariant[];
 }
 
@@ -21,6 +22,7 @@ export interface dbProduct {
   stock_type: string;
   stock_quantity: number | null;
   order_deadline: string | null;
+  active: boolean | null;
   variants: dbProductVariant[] | null;
 }
 
@@ -252,6 +254,7 @@ export function mapdbProductToProduct(row: dbProduct): Product {
     stock_type: row.stock_type as Product["stock_type"],
     stock_quantity: row.stock_quantity ?? undefined,
     order_deadline: row.order_deadline ?? undefined,
+    active: row.active ?? true,
     variants: (row.variants ?? []).map(
       (v): ProductVariant => ({
         id: v.id,

@@ -1581,6 +1581,75 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Get all products including archived ones (admin view)
+CREATE OR REPLACE FUNCTION neiist.get_all_products_including_archived()
+RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  price NUMERIC(10,2),
+  images TEXT[],
+  category TEXT,
+  stock_type TEXT,
+  stock_quantity INTEGER,
+  order_deadline TIMESTAMPTZ,
+  active BOOLEAN,
+  variants JSONB
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    p.id, p.name, p.description, p.price, p.images,
+    c.name AS category,
+    p.stock_type::TEXT, p.stock_quantity, p.order_deadline,
+    p.active,
+    COALESCE((
+      SELECT jsonb_agg(
+        jsonb_build_object(
+          'id', v.id,
+          'sku', v.sku,
+          'images', v.images,
+          'price_modifier', v.price_modifier,
+          'stock_quantity', v.stock_quantity,
+          'active', v.active,
+          'options', COALESCE((
+              SELECT jsonb_object_agg(vo.option_name, vo.option_value)
+              FROM neiist.product_variant_options vo
+              WHERE vo.variant_id = v.id
+            ), '{}'::jsonb),
+          'label', NULLIF((
+              SELECT string_agg(vo.option_name || ': ' || vo.option_value, ' | ' ORDER BY vo.option_name)
+              FROM neiist.product_variant_options vo
+              WHERE vo.variant_id = v.id
+            ), '')
+        )
+        ORDER BY v.id
+      )
+      FROM neiist.product_variants v
+      WHERE v.product_id = p.id
+    ), '[]'::JSONB) AS variants
+  FROM neiist.products p
+  LEFT JOIN neiist.categories c ON c.id = p.category_id
+  ORDER BY p.active DESC, p.id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Permanently delete a product and all its variants (hard delete)
+CREATE OR REPLACE FUNCTION neiist.delete_product(p_product_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  DELETE FROM neiist.products WHERE id = p_product_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Permanently delete a single product variant (hard delete)
+CREATE OR REPLACE FUNCTION neiist.delete_product_variant(p_variant_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  DELETE FROM neiist.product_variants WHERE id = p_variant_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- New order created
 CREATE OR REPLACE FUNCTION neiist.new_order(
   p_user_istid VARCHAR(10),

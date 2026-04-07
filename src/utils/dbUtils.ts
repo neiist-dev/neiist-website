@@ -674,6 +674,33 @@ export const getAllProducts = async (): Promise<Product[]> => {
   return rows.map(mapdbProductToProduct);
 };
 
+export const getAllProductsAdmin = async (): Promise<Product[]> => {
+  const { rows } = await db_query<dbProduct>(
+    `SELECT * FROM neiist.get_all_products_including_archived()`
+  );
+  return rows.map(mapdbProductToProduct);
+};
+
+export const deleteProduct = async (productId: number): Promise<boolean> => {
+  try {
+    await db_query(`SELECT neiist.delete_product($1)`, [productId]);
+    return true;
+  } catch (error) {
+    console.error("Error permanently deleting product:", error);
+    return false;
+  }
+};
+
+export const deleteProductVariant = async (variantId: number): Promise<boolean> => {
+  try {
+    await db_query(`SELECT neiist.delete_product_variant($1)`, [variantId]);
+    return true;
+  } catch (error) {
+    console.error("Error permanently deleting product variant:", error);
+    return false;
+  }
+};
+
 export const getProduct = async (productId: number): Promise<Product | null> => {
   const {
     rows: [row],
