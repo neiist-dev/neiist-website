@@ -797,6 +797,20 @@ export const getAllOrders = async (): Promise<Order[]> => {
   return rows.map(mapdbOrderToOrder);
 };
 
+export const getOrderById = async (orderId: number): Promise<Order | null> => {
+  const {
+    rows: [row],
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order($1, NULL)`, [orderId]);
+  return row ? mapdbOrderToOrder(row) : null;
+};
+
+export const getOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
+  const {
+    rows: [row],
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order($1, NULL)`, [orderNumber]);
+  return row ? mapdbOrderToOrder(row) : null;
+};
+
 export const updateOrder = async (
   orderId: number,
   updates: Partial<Order>,

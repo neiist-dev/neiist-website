@@ -27,6 +27,28 @@
   cursor: pointer;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.posBtn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  border: 1px solid #d1d5db;
+}
+
+.posBtn {
+  background: #f8fafc;
+  color: #1f2937;
+}
+
 .filters {
   display: flex;
   gap: 1rem;
@@ -230,6 +252,24 @@
 }
 
 @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .posBtn,
+  .addBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .filters {
     flex-direction: column;
   }
