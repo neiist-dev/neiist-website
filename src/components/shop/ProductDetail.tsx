@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { FiChevronDown, FiImage, FiEdit2 } from "react-icons/fi";
+import { FiChevronDown, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
@@ -11,10 +11,9 @@ import { toast } from "sonner";
 
 interface ProductDetailProps {
   product: Product;
-  fromEdit?: boolean;
 }
 
-export default function ProductDetail({ product, fromEdit }: ProductDetailProps) {
+export default function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
 
@@ -193,14 +192,6 @@ export default function ProductDetail({ product, fromEdit }: ProductDetailProps)
         </span>
         <span className={styles.breadcrumbSeparator}>››</span>
         <span className={styles.breadcrumbCurrent}>{product.name}</span>
-        {fromEdit && (
-          <button
-            type="button"
-            className={styles.backToEditButton}
-            onClick={() => router.push(`/shop/manage?edit=${product.id}`)}>
-            <FiEdit2 size={13} /> Voltar a Editar
-          </button>
-        )}
       </div>
 
       <div className={styles.grid}>

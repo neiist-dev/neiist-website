@@ -1,6 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaPlus, FaEdit } from "react-icons/fa";
@@ -24,21 +23,8 @@ type ConfirmAction =
   | { type: "permanent"; productId: number };
 
 export default function ShopManagement({ products, categories }: ShopManagementProps) {
-  const searchParams = useSearchParams();
   const [view, setView] = useState<"list" | "add" | "edit">("list");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    const editId = searchParams.get("edit");
-    if (editId) {
-      const product = products.find((p) => p.id === Number(editId));
-      if (product) {
-        setEditingProduct(product);
-        setView("edit");
-      }
-    }
-  }, [searchParams, products]);
-  const [localProducts, setLocalProducts] = useState<Product[]>(products);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
@@ -46,14 +32,8 @@ export default function ShopManagement({ products, categories }: ShopManagementP
   const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
   const [imageIndex, setImageIndex] = useState<{ [productId: number]: number }>({});
 
-  const activeProducts = useMemo(
-    () => localProducts.filter((p) => p.active !== false),
-    [localProducts]
-  );
-  const archivedProducts = useMemo(
-    () => localProducts.filter((p) => p.active === false),
-    [localProducts]
-  );
+  const activeProducts = useMemo(() => products.filter((p) => p.active !== false), [products]);
+  const archivedProducts = useMemo(() => products.filter((p) => p.active === false), [products]);
   const visibleProducts = showArchived ? archivedProducts : activeProducts;
 
   const fuse = useMemo(
@@ -129,17 +109,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       }
 
       if (response.ok) {
-        if (type === "permanent") {
-          setLocalProducts((prev) => prev.filter((p) => p.id !== productId));
-        } else if (type === "archive") {
-          setLocalProducts((prev) =>
-            prev.map((p) => (p.id === productId ? { ...p, active: false } : p))
-          );
-        } else if (type === "restore") {
-          setLocalProducts((prev) =>
-            prev.map((p) => (p.id === productId ? { ...p, active: true } : p))
-          );
-        }
+        window.location.reload();
       } else {
         const error = await response.json();
         console.error("Error performing action:", error);

@@ -2,10 +2,10 @@
 
 .formHeader {
   margin: 1rem 2rem 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   gap: 0.7rem;
   align-items: center;
+  justify-content: space-between;
 }
 
 .formBody {
@@ -228,42 +228,12 @@
   align-items: center;
   gap: 0.5rem;
   color: #374151;
-  justify-self: start;
   transition:
     background 0.18s,
     transform 0.12s;
 }
 
 .backButton:hover {
-  background: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-.formHeaderActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.6rem;
-}
-
-.previewButton {
-  background: #f3f4f6;
-  border: none;
-  border-radius: 0.6rem;
-  padding: 0.6rem 1.2rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #374151;
-  transition:
-    background 0.18s,
-    transform 0.12s;
-}
-
-.previewButton:hover {
   background: #e5e7eb;
   transform: translateY(-1px);
 }
@@ -609,7 +579,6 @@
   padding: 0.75rem 1rem;
   cursor: pointer;
   gap: 0.75rem;
-  -webkit-user-select: none;
   user-select: none;
 }
 
