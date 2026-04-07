@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { FaPlus, FaEdit } from "react-icons/fa";
@@ -111,11 +112,11 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       if (response.ok) {
         window.location.reload();
       } else {
-        const error = await response.json();
-        console.error("Error performing action:", error);
+        const data = await response.json();
+        toast.error(data?.error ?? "Ocorreu um erro. Tenta novamente.");
       }
-    } catch (error) {
-      console.error("Error performing action:", error);
+    } catch {
+      toast.error("Ocorreu um erro. Tenta novamente.");
     }
 
     setShowConfirm(false);
