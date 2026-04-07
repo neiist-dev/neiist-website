@@ -19,9 +19,7 @@ import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shopUtils";
 import TagInput, { TagValue } from "@/components/TagInput";
-import ColorfulText from "../ColorfulText";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+import ColorfulText from "@/components/ColorfulText";
 
 const NUMBER_MAX_VARIANT = 3;
 
@@ -35,7 +33,6 @@ interface ProductFormProps {
 type VariantDefinition = { id: string; name: string; values: TagValue[] };
 type ImageFile = { file: File; preview: string };
 
-// Level 2 — a specific combination (e.g. Red • S)
 type VariantForm = {
   id?: number;
   options: { [k: string]: string };
@@ -46,8 +43,6 @@ type VariantForm = {
   newImages: ImageFile[];
 };
 
-// Level 1 — a single option value (e.g. Red, or S)
-// key = "OptionType::OptionValue"
 type GroupSlot = {
   existing: string[];
   newFiles: ImageFile[];
@@ -55,8 +50,6 @@ type GroupSlot = {
   stock_quantity: number;
 };
 type GroupImages = Record<string, GroupSlot>;
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function slotImgs(slot: GroupSlot) {
   return [...slot.existing, ...slot.newFiles.map((f) => f.preview)];
@@ -67,7 +60,6 @@ function displayName(optType: string, raw: string) {
   return raw;
 }
 
-// Normalize a variant option value to canonical form so all comparisons are consistent
 function normalizeOptVal(optType: string, raw: string): string {
   if (isColorKey(optType)) {
     const { name, hex } = splitNameHex(raw);
@@ -76,8 +68,6 @@ function normalizeOptVal(optType: string, raw: string): string {
   return raw;
 }
 
-// Match variant option values robustly: for colors, compare by hex; otherwise exact string match.
-// This handles cases where DB-loaded values and form-generated values may have different formats.
 function optValMatches(optType: string, variantVal: string, groupVal: string): boolean {
   if (isColorKey(optType)) {
     const { hex: varHex } = splitNameHex(variantVal);
@@ -86,8 +76,6 @@ function optValMatches(optType: string, variantVal: string, groupVal: string): b
   }
   return variantVal === groupVal;
 }
-
-// ─── ImageGrid ───────────────────────────────────────────────────────────────
 
 function ImageGrid({
   images,
@@ -127,8 +115,6 @@ function ImageGrid({
     </div>
   );
 }
-
-// ─── ImageCarousel ───────────────────────────────────────────────────────────
 
 function ImageCarousel({
   images,
@@ -223,8 +209,6 @@ function ImageCarousel({
   );
 }
 
-// ─── VmCard — shared expandable card ─────────────────────────────────────────
-
 function VmCard({
   isOpen,
   isInactive,
@@ -262,8 +246,6 @@ function VmCard({
     </div>
   );
 }
-
-// ─── PriceStockFields ─────────────────────────────────────────────────────────
 
 function PriceStockFields({
   price,
@@ -322,15 +304,12 @@ function PriceStockFields({
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
 export default function ProductForm({
   product,
   isEdit = false,
   onBack,
   categories,
 }: ProductFormProps) {
-  // ── Core fields ──────────────────────────────────────────────────────────
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price || 0);
@@ -344,14 +323,12 @@ export default function ProductForm({
   const deadlineRef = useRef<HTMLInputElement>(null);
   const [allCategories] = useState<Category[]>(categories);
 
-  // ── Product images ───────────────────────────────────────────────────────
   const [existingProductImages, setExistingProductImages] = useState<string[]>(
     product?.images || []
   );
   const [newProductImages, setNewProductImages] = useState<ImageFile[]>([]);
   const allProductImages = [...existingProductImages, ...newProductImages.map((f) => f.preview)];
 
-  // ── Variant definitions ──────────────────────────────────────────────────
   const [variantDefinitions, setVariantDefinitions] = useState<VariantDefinition[]>(() => {
     if (product?.variants?.length) {
       const types = [...new Set(product.variants.flatMap((v) => Object.keys(v.options || {})))];
@@ -382,7 +359,6 @@ export default function ProductForm({
 
   const optionTypes = variantDefinitions.map((d) => d.name).filter(Boolean);
 
-  // ── Level 2 — variant combos ─────────────────────────────────────────────
   const [variants, setVariants] = useState<VariantForm[]>(
     product?.variants?.map((v) => ({
       id: v.id,
@@ -400,7 +376,6 @@ export default function ProductForm({
     })) || []
   );
 
-  // ── Level 1 — group slots ────────────────────────────────────────────────
   const [groupImages, setGroupImages] = useState<GroupImages>(() => {
     if (!product?.variants?.length) return {};
     const initial: GroupImages = {};
@@ -414,11 +389,9 @@ export default function ProductForm({
         }
       }
     }
-    // Seed group stock + images from variant totals on load
     for (const [key, slot] of Object.entries(initial)) {
       const [optType, optVal] = key.split("::");
 
-      // Match variants using normalized comparison so old-format option values still match
       const matchingVariants = product.variants.filter((v) => {
         const raw =
           typeof v.options?.[optType] === "string"
@@ -427,12 +400,10 @@ export default function ProductForm({
         return normalizeOptVal(optType, raw) === optVal;
       });
 
-      // Stock: sum of active variants
       slot.stock_quantity = matchingVariants
         .filter((v) => v.active !== false)
         .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
 
-      // Images: union of all unique image URLs across matching variants
       const seen = new Set<string>();
       for (const v of matchingVariants) {
         for (const img of v.images ?? []) {
@@ -446,17 +417,14 @@ export default function ProductForm({
     return initial;
   });
 
-  // ── Tracks which group keys the user manually overrode ───────────────────
   const [groupOverrides, setGroupOverrides] = useState<Set<string>>(new Set());
 
-  // ── Tab state ────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<string>("__combos__");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
-  // ── Clear everything when no valid definitions remain ────────────────────
   useEffect(() => {
     const stillValid = variantDefinitions.filter((d) => d.name && d.values.length > 0);
     if (stillValid.length === 0 && variants.length > 0) {
@@ -466,7 +434,6 @@ export default function ProductForm({
     }
   }, [variantDefinitions, variants.length]);
 
-  // ── Auto-generate L2 combinations ────────────────────────────────────────
   const generateVariants = useCallback((defs: VariantDefinition[]) => {
     const valid = defs.filter((d) => d.name && d.values.length > 0);
     if (!valid.length) return;
@@ -521,7 +488,6 @@ export default function ProductForm({
   const hasVariants = variants.length > 0;
   const hasGroupKeys = variantDefinitions.some((d) => d.name && d.values.length > 0);
 
-  // Reset active tab if it no longer exists
   useEffect(() => {
     const validTabs = [
       ...(hasGroupKeys ? ["__groups__"] : []),
@@ -532,8 +498,6 @@ export default function ProductForm({
     }
   }, [optionTypes, hasVariants, hasGroupKeys, activeTab]);
 
-  // ── Variant helpers ───────────────────────────────────────────────────────
-
   const updateVariant = useCallback(
     (i: number, u: Partial<VariantForm>) => {
       setVariants((prev) => {
@@ -542,7 +506,6 @@ export default function ProductForm({
         if ("stock_quantity" in u || "active" in u) {
           setGroupImages((prevGroups) => {
             const next = { ...prevGroups };
-            // Use the variant's own keys — avoids stale closure on optionTypes
             const variantOptionKeys = Object.keys(updated[i]?.options ?? {});
             for (const optType of variantOptionKeys) {
               const optVal = updated[i].options[optType];
@@ -585,7 +548,6 @@ export default function ProductForm({
     }
   };
 
-  // ── Group helpers ─────────────────────────────────────────────────────────
   const getSlot = (key: string): GroupSlot =>
     groupImages[key] ?? { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
 
@@ -596,13 +558,11 @@ export default function ProductForm({
     const preview = URL.createObjectURL(file);
     const imageFile: ImageFile = { file, preview };
 
-    // Add to the group slot
     setGroupImages((prev) => {
       const s = prev[key] ?? { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
       return { ...prev, [key]: { ...s, newFiles: [...s.newFiles, imageFile] } };
     });
 
-    // Mirror into every variant combo that includes this option value
     setVariants((prev) =>
       prev.map((v) =>
         optValMatches(optType, v.options[optType] || "", optVal)
@@ -619,10 +579,7 @@ export default function ProductForm({
     if (idx < s.existing.length) {
       const urlToRemove = s.existing[idx];
 
-      // Remove from group slot
       setSlot(key, { ...s, existing: s.existing.filter((_, i) => i !== idx) });
-
-      // Remove from all matching variants by URL
       setVariants((prev) =>
         prev.map((v) =>
           optValMatches(optType, v.options[optType] || "", optVal)
@@ -635,10 +592,8 @@ export default function ProductForm({
       const fileToRemove = s.newFiles[ni].file;
       URL.revokeObjectURL(s.newFiles[ni].preview);
 
-      // Remove from group slot
       setSlot(key, { ...s, newFiles: s.newFiles.filter((_, i) => i !== ni) });
 
-      // Remove from all matching variants by File reference
       setVariants((prev) =>
         prev.map((v) =>
           optValMatches(optType, v.options[optType] || "", optVal)
@@ -648,7 +603,7 @@ export default function ProductForm({
       );
     }
   };
-  // ── Definition helpers ────────────────────────────────────────────────────
+
   const addDef = () =>
     setVariantDefinitions((p) => [
       ...p,
@@ -679,7 +634,6 @@ export default function ProductForm({
 
     setVariantDefinitions(remaining);
 
-    // Strip the removed option key from all variant option maps
     setVariants((prev) =>
       prev.map((v) => ({
         ...v,
@@ -687,14 +641,12 @@ export default function ProductForm({
       }))
     );
 
-    // If no valid definitions remain, wipe everything immediately
     const stillValid = remaining.filter((d) => d.name && d.values.length > 0);
     if (stillValid.length === 0) {
       setVariants([]);
       setGroupImages({});
       setGroupOverrides(new Set());
     } else {
-      // Only clean up group slots and overrides for the removed option type
       setGroupImages((prev) => {
         const next: GroupImages = {};
         for (const [key, val] of Object.entries(prev)) {
@@ -712,14 +664,12 @@ export default function ProductForm({
     }
   };
 
-  // ── Stock cap validation ──────────────────────────────────────────────────
   function stockWarningFor(variant: VariantForm): string | undefined {
     for (const optType of optionTypes) {
       const val = variant.options[optType] || "";
       const key = `${optType}::${val}`;
       const groupSlot = groupImages[key];
 
-      // Only validate against the group cap if the user manually overrode it
       if (!groupSlot || !groupOverrides.has(key)) continue;
 
       const cap = groupSlot.stock_quantity;
@@ -743,7 +693,6 @@ export default function ProductForm({
     return undefined;
   }
 
-  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -863,13 +812,11 @@ export default function ProductForm({
     }
   };
 
-  // ── Tab list ─────────────────────────────────────────────────────────────
   const tabs = [
     ...(hasGroupKeys ? [{ id: "__groups__", label: "Grupos" }] : []),
     ...(hasVariants ? [{ id: "__combos__", label: "Combinações" }] : []),
   ];
 
-  // All L1 group entries flat across all option types
   const groupKeys: {
     key: string;
     optType: string;
@@ -903,7 +850,6 @@ export default function ProductForm({
     }
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -929,7 +875,6 @@ export default function ProductForm({
         </div>
 
         <div className={styles.formBody}>
-          {/* ══ RIGHT — Product info + images ══ */}
           <div className={styles.section}>
             <div className={styles.card}>
               <label className={styles.label}>Informação Básica</label>
@@ -1057,7 +1002,6 @@ export default function ProductForm({
             </div>
           </div>
 
-          {/* ══ LEFT — Variant Manager ══ */}
           <div className={styles.section}>
             <div className={styles.card}>
               <label className={styles.label}>Definições de Variantes</label>
@@ -1100,7 +1044,6 @@ export default function ProductForm({
 
             {tabs.length > 0 && (
               <div className={styles.card} style={{ flex: 1, minHeight: 0 }}>
-                {/* Tab bar */}
                 <div className={styles.tabBar}>
                   {tabs.map((tab) => (
                     <button
@@ -1141,7 +1084,6 @@ export default function ProductForm({
                   ))}
                 </div>
 
-                {/* ── L1 tab — groups ── */}
                 {activeTab === "__groups__" && (
                   <div className={styles.vmList}>
                     {groupKeys.length === 0 && (
@@ -1243,7 +1185,6 @@ export default function ProductForm({
                   </div>
                 )}
 
-                {/* ── L2 tab — combinations ── */}
                 {activeTab === "__combos__" && (
                   <div className={styles.vmList}>
                     {variants.length === 0 && (
