@@ -9,6 +9,9 @@
   margin-bottom: 2.5rem;
   font-weight: 600;
   font-size: 0.938rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .breadcrumbLink {
@@ -27,6 +30,29 @@
 
 .breadcrumbCurrent {
   color: #3f3f3f;
+}
+
+.backToEditButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+}
+
+.backToEditButton:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
 }
 
 .grid {

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import {
@@ -13,6 +14,7 @@ import {
   FaUpload,
   FaChevronLeft,
   FaChevronRight,
+  FaEye,
 } from "react-icons/fa";
 import { LuCheck } from "react-icons/lu";
 import { Product, Category } from "@/types/shop";
@@ -330,6 +332,7 @@ export default function ProductForm({
   onBack,
   categories,
 }: ProductFormProps) {
+  const router = useRouter();
   // ── Core fields ──────────────────────────────────────────────────────────
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
@@ -915,17 +918,27 @@ export default function ProductForm({
             className={styles.title}
             text={isEdit ? "Editar Produto" : "Adicionar Novo Produto"}
           />
-          <button type="submit" className={styles.button} disabled={uploading}>
-            {isEdit ? (
-              <>
-                <FaSave /> {uploading ? "A guardar..." : "Guardar Alterações"}
-              </>
-            ) : (
-              <>
-                <FaPlus /> {uploading ? "A guardar..." : "Criar Produto"}
-              </>
+          <div className={styles.formHeaderActions}>
+            {isEdit && product?.id && (
+              <button
+                type="button"
+                className={styles.previewButton}
+                onClick={() => router.push(`/shop/${product.id}?from=edit`)}>
+                <FaEye /> Pré-visualizar
+              </button>
             )}
-          </button>
+            <button type="submit" className={styles.button} disabled={uploading}>
+              {isEdit ? (
+                <>
+                  <FaSave /> {uploading ? "A guardar..." : "Guardar Alterações"}
+                </>
+              ) : (
+                <>
+                  <FaPlus /> {uploading ? "A guardar..." : "Criar Produto"}
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className={styles.formBody}>
