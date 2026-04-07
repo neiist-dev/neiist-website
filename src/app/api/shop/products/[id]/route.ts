@@ -7,6 +7,7 @@ import {
   addProductVariant,
   deleteProduct,
   deleteProductVariant,
+  mapDeleteProductDbErrorToResponse,
 } from "@/utils/dbUtils";
 import path from "path";
 import fs from "fs/promises";
@@ -114,6 +115,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       product: updatedProduct,
     });
   } catch (error) {
+    const mapped = mapDeleteProductDbErrorToResponse(error);
+    if (mapped) return NextResponse.json({ error: mapped.error }, { status: mapped.status });
     console.error("Error updating product:", error);
     return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
@@ -132,13 +135,7 @@ export async function DELETE(
     const permanent = request.nextUrl.searchParams.get("permanent") === "true";
 
     if (permanent) {
-      const ok = await deleteProduct(productId);
-      if (!ok) {
-        return NextResponse.json(
-          { error: "Product not found or could not be deleted" },
-          { status: 404 }
-        );
-      }
+      await deleteProduct(productId);
       return NextResponse.json({ message: "Product permanently deleted" });
     }
 
@@ -148,6 +145,8 @@ export async function DELETE(
     }
     return NextResponse.json({ message: "Product archived successfully" });
   } catch (error) {
+    const mapped = mapDeleteProductDbErrorToResponse(error);
+    if (mapped) return NextResponse.json({ error: mapped.error }, { status: mapped.status });
     console.error("Error deleting product:", error);
     return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
   }

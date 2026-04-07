@@ -1639,6 +1639,10 @@ CREATE OR REPLACE FUNCTION neiist.delete_product(p_product_id INTEGER)
 RETURNS VOID AS $$
 BEGIN
   DELETE FROM neiist.products WHERE id = p_product_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product % not found', p_product_id;
+  END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1647,6 +1651,10 @@ CREATE OR REPLACE FUNCTION neiist.delete_product_variant(p_variant_id INTEGER)
 RETURNS VOID AS $$
 BEGIN
   DELETE FROM neiist.product_variants WHERE id = p_variant_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Variant % not found', p_variant_id;
+  END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
