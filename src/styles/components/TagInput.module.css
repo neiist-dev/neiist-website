@@ -13,11 +13,6 @@
     background 0.2s;
   position: relative;
 }
-.container:focus-within {
-  border-color: var(--primary-colour, #2863fd);
-  background: #fff;
-  outline: none;
-}
 
 .tag {
   background-color: #e5e7eb;
