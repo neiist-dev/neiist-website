@@ -15,6 +15,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { LuCheck } from "react-icons/lu";
+import { toast } from "sonner";
 import { Product, Category } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shopUtils";
@@ -423,7 +424,6 @@ export default function ProductForm({
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const stillValid = variantDefinitions.filter((d) => d.name && d.values.length > 0);
@@ -695,29 +695,28 @@ export default function ProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     if (!name.trim()) {
-      setError("Nome é obrigatório");
+      toast.error("Nome é obrigatório");
       return;
     }
     if (!category) {
-      setError("Categoria é obrigatória");
+      toast.error("Categoria é obrigatória");
       return;
     }
     for (const v of variants) {
       for (const t of optionTypes) {
         if (!(v.options[t] || "").trim()) {
-          setError(`Variante deve ter "${t}" preenchido`);
+          toast.error(`Variante deve ter "${t}" preenchido`);
           return;
         }
         if (isColorKey(t) && !splitNameHex(v.options[t] || "").hex) {
-          setError(`Cor "${t}" precisa de hex`);
+          toast.error(`Cor "${t}" precisa de hex`);
           return;
         }
       }
       const warn = stockWarningFor(v);
       if (warn) {
-        setError(warn);
+        toast.error(warn);
         return;
       }
     }
@@ -803,10 +802,10 @@ export default function ProductForm({
         window.location.href = "/shop/manage";
       } else {
         const err = await res.json();
-        setError("Erro: " + (err.message || err.error || "Erro desconhecido"));
+        toast.error("Erro: " + (err.message || err.error || "Erro desconhecido"));
       }
     } catch {
-      setError("Erro ao guardar produto");
+      toast.error("Erro ao guardar produto");
     } finally {
       setUploading(false);
     }
@@ -1301,8 +1300,6 @@ export default function ProductForm({
               </div>
             )}
           </div>
-
-          {error && <div className={styles.error}>{error}</div>}
         </div>
       </form>
     </div>
