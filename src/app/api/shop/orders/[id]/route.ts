@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   updateOrder,
   setOrderState,
-  getAllOrders,
   updateUser,
   mapOrderDbErrorToResponse,
+  getOrderById,
 } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
-import { getStatusLabel } from "@/types/shop";
+import { getStatusLabel, PAYMENT_METHODS } from "@/types/shop";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { User } from "@/types/user";
 import type { Order } from "@/types/shop";
-import { getOrderStatusUpdateTemplate, sendEmail } from "@/utils/emailUtils";
+import {
+  getOrderPaidTemplate,
+  getOrderPendingTemplate,
+  getOrderStatusUpdateTemplate,
+  sendEmail,
+} from "@/utils/emailUtils";
 
 function isShopManagerOrAbove(roles: UserRole[]) {
   return (
@@ -28,19 +33,18 @@ function isOrderOwner(order: Order, user: User) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
+
   const { user, roles } = userRoles;
 
   const { id } = await params;
   const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-  const allOrders = await getAllOrders();
-  const order = allOrders.find((o) => o.id === orderId);
+  const order = await getOrderById(orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-  if (!isOrderOwner(order, user!) && !isShopManagerOrAbove(roles ?? [])) {
+  if (!isOrderOwner(order, user!) && !isShopManagerOrAbove(roles ?? []))
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-  }
 
   return NextResponse.json(order);
 }
@@ -48,6 +52,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
+
   const { user, roles } = userRoles;
 
   try {
@@ -55,14 +60,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const orderId = Number(id);
     if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-    const allOrders = await getAllOrders();
-    const order = allOrders.find((o) => o.id === orderId);
+    const order = await getOrderById(orderId);
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
     const body = await request.json();
 
     const allowedFields = [
       "status",
+      "payment_method",
       "delivered_at",
       "delivered_by",
       "notes",
@@ -85,26 +90,43 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const phone = body.customer_phone !== undefined ? String(body.customer_phone ?? "") : undefined;
 
-    if (Object.keys(filteredUpdates).length === 0 && phone === undefined) {
+    if (Object.keys(filteredUpdates).length === 0 && phone === undefined)
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
-    }
 
-    const isAdminOrCoordinator =
-      roles?.some((r) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(r)) ?? false;
+    const isShopOps = isShopManagerOrAbove(roles ?? []);
 
     const onlyNotes =
       Object.keys(filteredUpdates).length === 1 &&
       filteredUpdates.notes !== undefined &&
       phone === undefined;
+    const onlyInPersonSwitch =
+      Object.keys(filteredUpdates).length === 1 &&
+      filteredUpdates.payment_method === "in-person" &&
+      phone === undefined;
 
     if (onlyNotes) {
-      if (!isOrderOwner(order, user!) && !isAdminOrCoordinator) {
+      if (!isOrderOwner(order, user!) && !isShopOps) {
         return NextResponse.json(
           { error: "Insufficient permissions to edit notes" },
           { status: 403 }
         );
       }
-    } else if (!isAdminOrCoordinator) {
+    } else if (onlyInPersonSwitch) {
+      if (!isOrderOwner(order, user!) && !isShopOps) {
+        return NextResponse.json(
+          { error: "Insufficient permissions to switch payment method" },
+          { status: 403 }
+        );
+      }
+
+      if (order.status !== "pending")
+        return NextResponse.json(
+          { error: "Payment method can only be changed while order is pending" },
+          { status: 400 }
+        );
+
+      filteredUpdates.payment_reference = "";
+    } else if (!isShopOps) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
@@ -124,8 +146,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
           if (!Number.isInteger(productId) || productId <= 0)
             throw new Error(`Item ${i + 1}: invalid product_id`);
+
           if (!Number.isInteger(quantity) || quantity <= 0)
             throw new Error(`Item ${i + 1}: invalid quantity`);
+
           if (variantId !== null && (!Number.isInteger(variantId) || variantId <= 0))
             throw new Error(`Item ${i + 1}: invalid variant_id`);
 
@@ -134,29 +158,51 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    const updatedOrder = await updateOrder(orderId, filteredUpdates as Partial<Order>);
-    if (!updatedOrder) {
-      return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+    if (filteredUpdates.payment_method !== undefined) {
+      const method = String(filteredUpdates.payment_method);
+      if (!Object.prototype.hasOwnProperty.call(PAYMENT_METHODS, method))
+        return NextResponse.json({ error: "Invalid payment_method" }, { status: 400 });
     }
 
-    if (phone !== undefined && order.user_istid) {
+    const updatedOrder = await updateOrder(orderId, filteredUpdates as Partial<Order>);
+    if (!updatedOrder)
+      return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
+
+    if (phone !== undefined && order.user_istid)
       await updateUser(order.user_istid, { phone: phone || null });
+
+    if (onlyInPersonSwitch && updatedOrder.customer_email) {
+      try {
+        await sendEmail({
+          to: updatedOrder.customer_email,
+          subject: `Encomenda ${updatedOrder.order_number} - Pendente`,
+          html: getOrderPendingTemplate(
+            updatedOrder.order_number,
+            updatedOrder.customer_name,
+            updatedOrder.items,
+            Number(updatedOrder.total_amount),
+            updatedOrder.campus ?? undefined,
+            "in-person",
+            updatedOrder.pickup_deadline ?? null
+          ),
+        });
+      } catch (emailErr) {
+        console.warn("Failed to send pending email after in-person fallback", emailErr);
+      }
     }
 
     return NextResponse.json(updatedOrder);
-  } catch (e) {
-    if (e instanceof Error && e.message.startsWith("Item ")) {
-      return NextResponse.json({ error: e.message }, { status: 400 });
-    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Item "))
+      return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const mappedError = mapOrderDbErrorToResponse(e);
-    if (mappedError) {
+    const mappedError = mapOrderDbErrorToResponse(error);
+    if (mappedError)
       return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
-    }
 
-    console.error("Order PUT error:", e);
+    console.error("Order PUT error:", error);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Failed to update order" },
+      { error: error instanceof Error ? error.message : "Failed to update order" },
       { status: 500 }
     );
   }
@@ -175,39 +221,44 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { status } = body;
     const { id } = await params;
     const orderId = parseInt(id, 10);
+    if (!status) return NextResponse.json({ error: "No status provided" }, { status: 400 });
 
-    if (!status) {
-      return NextResponse.json({ error: "No status provided" }, { status: 400 });
-    }
+    const order = await getOrderById(orderId);
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-    const allOrders = await getAllOrders();
-    const order = allOrders.find((o) => o.id === orderId);
-
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
     await setOrderState(orderId, status, userRoles.user?.istid ?? "system");
 
-    if (order.customer_email) {
+    const updatedOrder = await getOrderById(orderId);
+
+    if (updatedOrder?.customer_email) {
       const statusLabel = getStatusLabel(status);
+      const isPaid = status === "paid";
       await sendEmail({
-        to: order.customer_email,
-        subject: `Encomenda #${order.order_number} - ${statusLabel}`,
-        html: getOrderStatusUpdateTemplate(
-          order.order_number,
-          order.customer_name,
-          status,
-          statusLabel,
-          order.campus
-        ),
+        to: updatedOrder.customer_email,
+        subject: `Encomenda ${updatedOrder.order_number} - ${statusLabel}`,
+        html: isPaid
+          ? getOrderPaidTemplate(
+              updatedOrder.order_number,
+              updatedOrder.customer_name,
+              updatedOrder.items,
+              Number(updatedOrder.total_amount),
+              updatedOrder.campus,
+              updatedOrder.payment_method,
+              updatedOrder.payment_reference
+            )
+          : getOrderStatusUpdateTemplate(
+              updatedOrder.order_number,
+              updatedOrder.customer_name,
+              status,
+              statusLabel,
+              updatedOrder.campus
+            ),
       });
     }
-    const updatedOrders = await getAllOrders();
-    const updatedOrder = updatedOrders.find((o) => o.id === orderId);
 
     return NextResponse.json(updatedOrder);
-  } catch (e) {
-    console.error("Order update error:", e);
+  } catch (error) {
+    console.error("Order update error:", error);
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }
@@ -218,15 +269,16 @@ export async function DELETE(
 ) {
   const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
+
   const { user, roles } = userRoles;
 
   const { id } = await params;
   const orderId = Number(id);
   if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
 
-  const allOrders = await getAllOrders();
-  const order = allOrders.find((o) => o.id === orderId);
+  const order = await getOrderById(orderId);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
   if (
     !isOrderOwner(order, user!) &&
     !roles?.some((r) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(r))
@@ -235,8 +287,7 @@ export async function DELETE(
   }
 
   const updatedOrder = await setOrderState(orderId, "cancelled", user!.istid);
-  if (!updatedOrder) {
-    return NextResponse.json({ error: "Failed to cancel order" }, { status: 500 });
-  }
+  if (!updatedOrder) return NextResponse.json({ error: "Failed to cancel order" }, { status: 500 });
+
   return NextResponse.json(updatedOrder);
 }

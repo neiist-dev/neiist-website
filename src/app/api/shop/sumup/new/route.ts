@@ -1,117 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
-import SumUp from "@sumup/sdk";
-import { getAllOrders } from "@/utils/dbUtils";
+import { getOrderById, updateOrder } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
-import type { Order } from "@/types/shop";
-import { CheckoutPayload, CreateRequestBody, SumUpClient } from "@/types/sumup";
+import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/utils/sumupUtils";
+import type {
+  CreateCheckoutResponse,
+  CreateCheckoutRequestBody,
+  SumUpCheckoutPayload,
+} from "@/types/sumup";
 
-const SUMUP_API_KEY = process.env.SUMUP_API_KEY;
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
-const RETURN_BASE = process.env.NEXT_PUBLIC_BASE_URL;
-const SDK_RETRIES = 3;
-
-function createSumUpClient(): SumUpClient | null {
-  if (!SUMUP_API_KEY) return null;
-  return new SumUp({ apiKey: SUMUP_API_KEY }) as SumUpClient;
-}
-
-function extractStatus(err: unknown): number | null {
-  if (!err || typeof err !== "object") return null;
-  const e = err as Record<string, unknown>;
-  if (typeof e.status === "number") return e.status;
-  const resp = e.response as Record<string, unknown> | undefined;
-  if (resp && typeof resp.status === "number") return resp.status;
-  return null;
-}
+const CHECKOUT_TTL_MINUTES = 15;
 
 export async function POST(req: NextRequest) {
+  const auth = await serverCheckRoles([]);
+  if (!auth.isAuthorized) return auth.error;
+
+  let orderId: number;
   try {
-    const body = (await req.json()) as CreateRequestBody;
-    const { orderId, currency = "EUR", checkout_reference } = body ?? {};
-    if (!orderId) {
-      return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
-    }
+    const body = (await req.json()) as CreateCheckoutRequestBody;
+    orderId = Number(body?.orderId);
 
-    const auth = await serverCheckRoles([]);
-    if (!auth.isAuthorized) return auth.error;
-
-    const orders = (await getAllOrders()) as Order[];
-    const order = orders.find((o) => o.id === Number(orderId));
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-
-    if (order.user_istid && auth.user && order.user_istid !== auth.user.istid) {
-      return NextResponse.json({ error: "Not order owner" }, { status: 403 });
-    }
-
-    const amountMajor = Number(order.total_amount ?? 0);
-    if (amountMajor <= 0) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
-    }
-
-    if (!SUMUP_MERCHANT_CODE) {
-      return NextResponse.json(
-        { error: "Payment service misconfigured: missing SUMUP_MERCHANT_CODE" },
-        { status: 500 }
-      );
-    }
-
-    const client = createSumUpClient();
-    if (!client)
-      return NextResponse.json({ error: "Payment service unavailable" }, { status: 503 });
-
-    const baseRef = checkout_reference ?? `order-${orderId}`;
-    let lastError: unknown = null;
-
-    for (let attempt = 0; attempt < SDK_RETRIES; attempt++) {
-      const suffix =
-        attempt === 0 ? "" : `-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const uniqueRef = `${baseRef}${suffix}`;
-
-      const payload: CheckoutPayload & { customer_id?: string } = {
-        amount: amountMajor,
-        currency,
-        checkout_reference: uniqueRef,
-        merchant_code: SUMUP_MERCHANT_CODE,
-        description: String(orderId),
-      };
-      if (RETURN_BASE) {
-        payload.return_url = `${RETURN_BASE.replace(/\/$/, "")}/my-orders?orderId=${orderId}`;
-      }
-
-      try {
-        const res = await client.checkouts.create(payload);
-        const checkoutId = res?.id ?? res?.data?.id ?? null;
-        const hosted_url = res?.hosted_url ?? res?.redirect_url ?? null;
-
-        if (!checkoutId) {
-          const details = res ?? null;
-          return NextResponse.json(
-            { error: "Invalid response from payment service", details },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json({
-          checkoutId,
-          hosted_url,
-          checkout_reference: uniqueRef,
-          raw: res,
-        });
-      } catch (err: unknown) {
-        lastError = err;
-        const status = extractStatus(err);
-        if (status === 409) {
-          continue;
-        }
-        break;
-      }
-    }
-
-    return NextResponse.json(
-      { error: "Failed to create payment session", lastError },
-      { status: 500 }
-    );
+    if (!orderId || orderId <= 0) return sumupErrorResponse("Missing or invalid orderId", 400);
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return sumupErrorResponse("Invalid request body", 400);
+  }
+
+  const credentialError = validateSumUpCredentials();
+  if (credentialError) return credentialError;
+
+  const client = getSumUpClient();
+
+  const order = await getOrderById(orderId);
+  if (!order) return sumupErrorResponse("Order not found", 404);
+
+  if (order.user_istid && auth.user && order.user_istid !== auth.user.istid)
+    return sumupErrorResponse("Not order owner", 403);
+
+  const amount = Math.round(Number(order.total_amount) * 100) / 100;
+  if (amount <= 0) return sumupErrorResponse("Invalid order amount", 400);
+
+  const checkoutReference = order.order_number;
+  const validUntil = new Date(Date.now() + CHECKOUT_TTL_MINUTES * 60_000).toISOString();
+  const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shop/sumup/callback?orderId=${orderId}`;
+
+  const payload: SumUpCheckoutPayload = {
+    merchant_code: SUMUP_MERCHANT_CODE!,
+    amount,
+    currency: "EUR" as const,
+    checkout_reference: checkoutReference,
+    description: order.order_number,
+    valid_until: validUntil,
+    return_url: returnUrl,
+  };
+
+  try {
+    const checkout = await client.checkouts.create(payload);
+    const checkoutId = checkout.id;
+
+    if (!checkoutId) return sumupErrorResponse("Unexpected response from payment service", 502);
+
+    await updateOrder(orderId, {
+      payment_reference: checkoutId,
+      updated_at: new Date().toISOString(),
+    }).catch((error) => console.warn("Failed to persist checkoutId on order:", error));
+
+    const response: CreateCheckoutResponse = { checkoutId };
+    return NextResponse.json(response);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("DUPLICATED_CHECKOUT")) {
+      const latestOrder = await getOrderById(orderId);
+      const latestCheckoutId =
+        typeof latestOrder?.payment_reference === "string"
+          ? latestOrder.payment_reference.trim()
+          : "";
+
+      if (latestCheckoutId) {
+        return NextResponse.json({ checkoutId: latestCheckoutId } satisfies CreateCheckoutResponse);
+      }
+    }
+
+    console.error("Failed to create SumUp checkout", {
+      orderId,
+      message,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return sumupErrorResponse("Failed to create payment session", 500);
   }
 }

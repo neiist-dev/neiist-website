@@ -17,6 +17,7 @@ import Fuse from "fuse.js";
 import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import NewOrderModal from "./NewOrderModal";
+import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import InputDialog from "@/components/layout/InputDateDialog";
@@ -74,6 +75,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   const [pendingBulkStatus, setPendingBulkStatus] = useState<OrderStatus | null>(null);
   const [showPickupDialog, setShowPickupDialog] = useState(false);
   const [pickupInput, setPickupInput] = useState<string | null>(null);
+  const [newOrderPosPayment, setNewOrderPosPayment] = useState<Order | null>(null);
 
   const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [productsFilterOpen, setProductsFilterOpen] = useState(false);
@@ -208,8 +210,12 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     router.push(`/orders?orderId=${orderId}`);
   }
 
-  function handleNewOrderSubmit(): void {
+  function handleNewOrderSubmit(order?: Order): void {
     setShowNewOrderModal(false);
+    if (order?.id) {
+      setNewOrderPosPayment(order);
+      return;
+    }
     router.refresh();
   }
 
@@ -359,11 +365,12 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       Nome: o.customer_name,
       Email: o.customer_email,
       NIF: o.customer_nif || "",
-      "Payment Method": o.payment_method,
       "IST ID": o.user_istid,
       Campus: o.campus,
       Telefone: o.customer_phone,
       Estado: getStatusLabel(o.status),
+      "Método de pagamento": o.payment_method,
+      "Referencia SumUp": o.payment_reference,
       "Total (€)": o.total_amount,
       Notas: o.notes || "",
       Produtos: o.items
@@ -790,6 +797,19 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           onClose={() => setShowNewOrderModal(false)}
           onSubmit={handleNewOrderSubmit}
           products={products}
+        />
+      )}
+
+      {newOrderPosPayment && (
+        <PosPaymentOverlay
+          open={!!newOrderPosPayment}
+          order={newOrderPosPayment}
+          reopenOrderUrl={`/orders?orderId=${newOrderPosPayment.id}`}
+          onCloseAction={() => setNewOrderPosPayment(null)}
+          onOrderUpdatedAction={() => {
+            setNewOrderPosPayment(null);
+            router.refresh();
+          }}
         />
       )}
 

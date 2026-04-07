@@ -69,6 +69,7 @@ const resolveVariant = (
 ): ProductVariant | null => {
   const keys = getOptionKeys(product);
   if (Object.keys(selections).length < keys.length) return null;
+
   return (
     product.variants.find((v) =>
       Object.entries(selections).every(([k, val]) => v.options[k] === val)
@@ -387,7 +388,6 @@ export default function NewOrderModal({
       customer_phone: phone || undefined,
       customer_nif: nif || undefined,
       campus: campus || undefined,
-      payment_method: "in-person",
       notes: notes || undefined,
       stock_override: stockOverride,
       items: selectedProducts.map(({ product, variant, quantity }) => ({
@@ -439,7 +439,6 @@ export default function NewOrderModal({
       setError("Por favor, selecione um utilizador.");
       return;
     }
-
     setIsSubmitting(true);
     setError(null);
 
@@ -459,8 +458,8 @@ export default function NewOrderModal({
         return;
       }
 
-      onSubmit?.(orderResponse.order ?? undefined);
-      // TODO: (SUCCESS)
+      const nextOrder = orderResponse.order ?? undefined;
+      onSubmit?.(nextOrder);
       onClose();
     } finally {
       setIsSubmitting(false);

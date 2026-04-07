@@ -7,8 +7,9 @@ import {
   mapOrderDbErrorToResponse,
 } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
+import { PAYMENT_METHODS, PENDING_PAYMENT_METHODS, type PaymentMethod } from "@/types/shop";
 import { serverCheckRoles } from "@/utils/permissionUtils";
-import { sendEmail, getOrderConfirmationTemplate } from "@/utils/emailUtils";
+import { sendEmail, getOrderPendingTemplate } from "@/utils/emailUtils";
 
 export async function GET() {
   const userRoles = await serverCheckRoles([
@@ -16,7 +17,9 @@ export async function GET() {
     UserRole._COORDINATOR,
     UserRole._ADMIN,
   ]);
+
   if (!userRoles.isAuthorized) return userRoles.error;
+
   try {
     const orders = await getAllOrders();
     return NextResponse.json(orders);
@@ -28,16 +31,18 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
+
   try {
     const body = await request.json();
-    const validPaymentMethods = new Set(["in-person", "eupago", "sumup", "apple-pay"]);
+    const validPaymentMethods = new Set(Object.keys(PAYMENT_METHODS));
 
     if (!Array.isArray(body.items) || body.items.length === 0)
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
 
-    if (typeof body.payment_method !== "string" || !validPaymentMethods.has(body.payment_method)) {
-      return NextResponse.json({ error: "Missing or invalid payment_method" }, { status: 400 });
-    }
+    const paymentMethod: PaymentMethod =
+      typeof body.payment_method === "string" && validPaymentMethods.has(body.payment_method)
+        ? (body.payment_method as PaymentMethod)
+        : "in-person";
 
     if (!userRoles.user)
       return NextResponse.json({ error: "User information missing" }, { status: 500 });
@@ -54,36 +59,41 @@ export async function POST(request: NextRequest) {
         customer_nif: body.customer_nif ?? null,
         campus: body.campus ?? null,
         notes: body.notes ?? null,
-        payment_method: body.payment_method,
+        payment_method: paymentMethod,
         payment_reference: body.payment_reference ?? "",
         created_by: userRoles.user.istid,
         items: body.items,
       },
       stockOverride
     );
-    if (!order) {
-      return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
-    }
+    if (!order) return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
 
     if (body.customer_phone && body.user_istid) {
       const user = await getUser(body.user_istid);
-      if (user && user.phone !== body.customer_phone) {
+      if (user && user.phone !== body.customer_phone)
         await updateUser(body.user_istid, { phone: body.customer_phone });
-      }
     }
 
-    if (order.customer_email) {
+    const hasExplicitPaymentMethod =
+      typeof body.payment_method === "string" && validPaymentMethods.has(body.payment_method);
+
+    if (
+      hasExplicitPaymentMethod &&
+      order.customer_email &&
+      PENDING_PAYMENT_METHODS.has(paymentMethod)
+    ) {
       try {
         await sendEmail({
           to: order.customer_email,
-          subject: `Encomenda #${order.order_number} Pendente`,
-          html: getOrderConfirmationTemplate(
+          subject: `Encomenda ${order.order_number} - Pendente`,
+          html: getOrderPendingTemplate(
             order.order_number,
             order.customer_name,
             order.items,
             order.total_amount,
             order.campus ?? undefined,
-            order.payment_method ?? undefined
+            order.payment_method ?? undefined,
+            order.pickup_deadline ?? null
           ),
         });
       } catch (emailErr) {
@@ -92,13 +102,12 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(order);
-  } catch (e) {
-    const mappedError = mapOrderDbErrorToResponse(e);
-    if (mappedError) {
+  } catch (error) {
+    const mappedError = mapOrderDbErrorToResponse(error);
+    if (mappedError)
       return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
-    }
 
-    console.error("orders POST error:", e);
+    console.error("orders POST error:", error);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }

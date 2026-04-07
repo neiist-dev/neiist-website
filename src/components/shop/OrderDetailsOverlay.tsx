@@ -5,6 +5,7 @@ import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import {
   Order,
   OrderStatus,
+  getPaymentLabel,
   getStatusLabel,
   getStatusCssClass,
   canTransitionTo,
@@ -17,6 +18,7 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
+import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import type { Product } from "@/types/shop";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
@@ -57,6 +59,7 @@ export default function OrderDetailOverlay({
   const [notesDraft, setNotesDraft] = useState("");
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showEditOrderModal, setShowEditOrderModal] = useState(false);
+  const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
 
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
@@ -168,7 +171,7 @@ export default function OrderDetailOverlay({
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !showEditOrderModal) {
+      if (e.key === "Escape" && !showEditOrderModal && !showPaymentOverlay) {
         if (notesEditing) {
           setShowSaveConfirm(true);
           return;
@@ -178,7 +181,7 @@ export default function OrderDetailOverlay({
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [handleCloseImmediate, notesEditing, showEditOrderModal]);
+  }, [handleCloseImmediate, notesEditing, showEditOrderModal, showPaymentOverlay]);
 
   if (!order) {
     return (
@@ -255,11 +258,9 @@ export default function OrderDetailOverlay({
             </div>
 
             <div className={styles.orderNumber}>
-              #{order.order_number}
+              {order.order_number}
               <FaArrowRightLong />
-              {order.payment_method
-                ? order.payment_method.charAt(0).toUpperCase() + order.payment_method.slice(1)
-                : ""}
+              {order.payment_method ? getPaymentLabel(order.payment_method) : ""}
             </div>
 
             <div className={styles.infoGrid}>
@@ -449,9 +450,9 @@ export default function OrderDetailOverlay({
                 <div className={styles.actionButtons}>
                   <button
                     className={styles.buttonOutline}
-                    onClick={() => setPendingStatus("paid")}
+                    onClick={() => setShowPaymentOverlay(true)}
                     disabled={!canSetPaid}>
-                    Marcar como Pago
+                    Pagar
                   </button>
                   <button
                     className={styles.buttonPrimary}
@@ -607,6 +608,20 @@ export default function OrderDetailOverlay({
           onSubmit={(updatedOrder) => {
             if (updatedOrder) setOrder(updatedOrder);
             setShowEditOrderModal(false);
+            router.refresh();
+          }}
+        />
+      )}
+
+      {showPaymentOverlay && (
+        <PosPaymentOverlay
+          open={showPaymentOverlay}
+          order={order}
+          reopenOrderUrl={`${basePath}?orderId=${order.id}`}
+          onCloseAction={() => setShowPaymentOverlay(false)}
+          onOrderUpdatedAction={(updatedOrder) => {
+            setOrder(updatedOrder);
+            setShowPaymentOverlay(false);
             router.refresh();
           }}
         />
