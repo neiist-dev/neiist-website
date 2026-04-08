@@ -322,6 +322,7 @@ export default function ProductForm({
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const deadlineRef = useRef<HTMLInputElement>(null);
+  const datePickerRef = useRef<HTMLDivElement>(null);
   const [allCategories] = useState<Category[]>(categories);
 
   const [existingProductImages, setExistingProductImages] = useState<string[]>(
@@ -487,6 +488,22 @@ export default function ProductForm({
   );
   const hasVariants = variants.length > 0;
   const hasGroupKeys = variantDefinitions.some((d) => d.name && d.values.length > 0);
+
+  useEffect(() => {
+    if (!showDatePicker) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(e.target as Node) &&
+        deadlineRef.current &&
+        !deadlineRef.current.contains(e.target as Node)
+      ) {
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showDatePicker]);
 
   useEffect(() => {
     const validTabs = [
@@ -954,7 +971,7 @@ export default function ProductForm({
                         onClick={() => setShowDatePicker(true)}
                       />
                       {showDatePicker && (
-                        <div className={styles.datePickerPopup}>
+                        <div ref={datePickerRef} className={styles.datePickerPopup}>
                           <DayPicker
                             mode="single"
                             selected={orderDeadline}
