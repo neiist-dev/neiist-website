@@ -145,8 +145,38 @@
         },
         "team_manager": {
             "title": "Gestão de Equipas"
+        },
+        "teams_filter": {
+            "section_title": "Equipas Existentes",
+            "search_placeholder": "Pesquisar equipa...",
+            "active": "Ativos",
+            "show_inactive": "Mostrar Inativos",
+            "empty": "Nenhuma equipa encontrada.",
+            "inactive_badge": "Inativo",
+            "deactivate_title": "Desativar equipa",
+            "deactivate": "Desativar"
+        },
+        "users_manager": {
+            "title": "Visualização de Utilizadores"
+        },
+        "users_filter": {
+            "search_placeholder": "Pesquisar por nome, ISTID, email, cargo ou departamento...",
+            "empty": "Nenhum utilizador encontrado.",
+            "email": "Email",
+            "phone": "Telefone",
+            "courses": "Cursos",
+            "teams_bodies": "Equipas/Órgãos",
+            "photo_alt": "Foto de {name}"
+        },
+
+    "homepage": {
+        "activities": {
+            "title": "Atividades",
+            "empty": "Sem atividades disponíveis."
         }
-        
+
+    }
+
     
     }
 }
