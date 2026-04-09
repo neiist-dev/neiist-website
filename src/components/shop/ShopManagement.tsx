@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { Product, Category } from "@/types/shop";
@@ -146,9 +147,14 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       <div className={styles.container}>
         <div className={styles.header}>
           <h1>Gestão da Loja</h1>
-          <button className={styles.addBtn} onClick={() => setView("add")}>
-            <FaPlus /> Adicionar Produto
-          </button>
+          <div className={styles.headerActions}>
+            <Link href="/shop/pos" className={styles.posBtn}>
+              Gestão POS
+            </Link>
+            <button className={styles.addBtn} onClick={() => setView("add")}>
+              <FaPlus /> Adicionar Produto
+            </button>
+          </div>
         </div>
 
         <div className={styles.filters}>

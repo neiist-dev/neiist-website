@@ -77,7 +77,7 @@ CREATE TABLE neiist.user_contacts (
 );
 
 -- Ensure only one preferred contact per user
-CREATE UNIQUE INDEX idx_user_preferred_contact 
+CREATE UNIQUE INDEX idx_user_preferred_contact
 ON neiist.user_contacts (user_istid, is_preferred)
 WHERE is_preferred = TRUE;
 
@@ -142,9 +142,9 @@ CREATE TABLE IF NOT EXISTS neiist.department_role_order (
 );
 
 -- Ensure perfomance to calculate the access level of a user
-CREATE INDEX idx_membership_active ON neiist.membership (user_istid, to_date) 
+CREATE INDEX idx_membership_active ON neiist.membership (user_istid, to_date)
 WHERE to_date IS NULL;
-CREATE INDEX idx_membership_to_date ON neiist.membership (to_date) 
+CREATE INDEX idx_membership_to_date ON neiist.membership (to_date)
 WHERE to_date IS NOT NULL;
 
 -- ACTIVITIES EVENTS TABLE
@@ -234,7 +234,7 @@ CREATE SEQUENCE neiist.order_sequence;
 CREATE OR REPLACE FUNCTION neiist.generate_order_number()
 RETURNS TEXT AS $$
 BEGIN
-  RETURN 'ORD-' || to_char(clock_timestamp(), 'YYYYMMDDHH24MISSUS') || LPAD(nextval('neiist.order_sequence')::TEXT, 6, '0');
+  RETURN to_char(clock_timestamp(), 'YYYYMMDD') || to_char(nextval('neiist.order_sequence'), 'FM999999');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -251,6 +251,7 @@ CREATE TABLE neiist.orders (
   payment_reference TEXT,
   created_by TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  pickup_deadline TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
   delivered_at TIMESTAMPTZ,
@@ -354,7 +355,7 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
     u.istid,
     u.name,
     u.email,
@@ -369,18 +370,18 @@ BEGIN
     u.linkedin
   FROM neiist.users u
   LEFT JOIN (
-    SELECT 
+    SELECT
       m.user_istid,
       array_agg(DISTINCT vdr.access::TEXT) AS access_array
     FROM neiist.membership m
     JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
-    WHERE m.user_istid = u_istid 
+    WHERE m.user_istid = u_istid
       AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
       AND vdr.active = TRUE
     GROUP BY m.user_istid
   ) derived_access ON u.istid = derived_access.user_istid
   LEFT JOIN (
-    SELECT 
+    SELECT
       m.user_istid,
       array_agg(DISTINCT m.department_name) AS team_array
     FROM neiist.membership m
@@ -501,7 +502,7 @@ BEGIN
 
   UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
   UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name 
+  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name
     AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -531,7 +532,7 @@ BEGIN
 
   UPDATE neiist.departments SET active = FALSE WHERE name = u_name;
   UPDATE neiist.valid_department_roles SET active = FALSE WHERE department_name = u_name;
-  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name 
+  UPDATE neiist.membership SET to_date = CURRENT_DATE WHERE department_name = u_name
     AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -565,7 +566,7 @@ BEGIN
 
   UPDATE neiist.valid_department_roles SET active = FALSE
     WHERE department_name = u_department_name AND role_name = u_role_name;
-  UPDATE neiist.membership SET to_date = CURRENT_DATE 
+  UPDATE neiist.membership SET to_date = CURRENT_DATE
     WHERE department_name = u_department_name AND role_name = u_role_name
       AND (to_date IS NULL OR to_date > CURRENT_DATE);
 END;
@@ -594,7 +595,7 @@ CREATE OR REPLACE FUNCTION neiist.remove_team_member(
   u_role_name VARCHAR(40)
 ) RETURNS VOID AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.membership WHERE user_istid = u_user_istid    
+  IF NOT EXISTS (SELECT 1 FROM neiist.membership WHERE user_istid = u_user_istid
     AND department_name = u_department_name AND role_name = u_role_name AND (to_date IS NULL OR to_date > CURRENT_DATE)) THEN
     RAISE EXCEPTION 'O utilizador "%" não tem uma participação ativa como "%" no departamento "%".', u_user_istid, u_role_name, u_department_name;
   END IF;
@@ -673,7 +674,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
     u.istid,
     u.name,
     u.email,
@@ -686,7 +687,7 @@ BEGIN
     u.linkedin
   FROM neiist.users u
   LEFT JOIN (
-    SELECT 
+    SELECT
       m.user_istid,
       array_agg(DISTINCT vdr.access::TEXT) as access_array
     FROM neiist.membership m
@@ -696,15 +697,15 @@ BEGIN
     GROUP BY m.user_istid
   ) derived_access ON u.istid = derived_access.user_istid
   LEFT JOIN (
-    SELECT 
+    SELECT
       m.user_istid,
       array_agg(DISTINCT m.department_name) as teams_array
     FROM neiist.membership m
     WHERE m.to_date IS NULL OR m.to_date > CURRENT_DATE
     GROUP BY m.user_istid
   ) user_teams ON u.istid = user_teams.user_istid
-  ORDER BY 
-    CASE 
+  ORDER BY
+    CASE
       WHEN 'admin' = ANY(COALESCE(derived_access.access_array, ARRAY[]::TEXT[])) THEN 1
       WHEN 'coordinator' = ANY(COALESCE(derived_access.access_array, ARRAY[]::TEXT[])) THEN 2
       WHEN 'member' = ANY(COALESCE(derived_access.access_array, ARRAY[]::TEXT[])) THEN 3
@@ -800,7 +801,7 @@ CREATE OR REPLACE FUNCTION neiist.update_user_photo(
   p_photo_data TEXT
 ) RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  UPDATE neiist.users 
+  UPDATE neiist.users
   SET photo_path = p_photo_data
   WHERE istid = p_istid;
 
@@ -936,7 +937,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
     m.user_istid,
     u.name as user_name,
     m.department_name,
@@ -944,7 +945,7 @@ BEGIN
     m.role_name,
     m.from_date,
     m.to_date,
-    CASE 
+    CASE
       WHEN m.to_date IS NULL OR m.to_date > CURRENT_DATE THEN TRUE
       ELSE FALSE
     END as active
@@ -1076,19 +1077,19 @@ RETURNS TABLE (
   subscriber_count BIGINT
 ) AS $$
 BEGIN
-  RETURN QUERY 
-  SELECT 
-    e.id, 
-    e.title, 
-    e.description, 
-    e.url, 
-    e.location, 
-    e.type, 
-    e.teams, 
-    e.attendees, 
-    e.start, 
-    e."end", 
-    e.all_day, 
+  RETURN QUERY
+  SELECT
+    e.id,
+    e.title,
+    e.description,
+    e.url,
+    e.location,
+    e.type,
+    e.teams,
+    e.attendees,
+    e.start,
+    e."end",
+    e.all_day,
     e.last_edited_time,
     e.signup_enabled,
     e.signup_deadline,
@@ -1102,7 +1103,7 @@ BEGIN
   FROM neiist.activities e
   LEFT JOIN neiist.activities_sign_up es ON e.id = es.event_id
   WHERE e.start IS NOT NULL
-  GROUP BY e.id, e.title, e.description, e.url, e.location, e.type, 
+  GROUP BY e.id, e.title, e.description, e.url, e.location, e.type,
            e.teams, e.attendees, e.start, e."end", e.all_day, e.last_edited_time,
            e.signup_enabled, e.signup_deadline, e.max_attendees, e.custom_icon
   ORDER BY e.start ASC;
@@ -1120,7 +1121,7 @@ CREATE OR REPLACE FUNCTION neiist.update_activity_properties(
 ) RETURNS VOID AS $$
 BEGIN
   UPDATE neiist.activities
-  SET 
+  SET
     signup_enabled = p_signup_enabled,
     signup_deadline = p_signup_deadline,
     max_attendees = p_max_attendees,
@@ -1141,12 +1142,12 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
+  SELECT
     u.istid,
     u.name,
     COALESCE(
-      CASE 
-        WHEN uc.is_preferred = TRUE AND uc.contact_type = 'alt_email' 
+      CASE
+        WHEN uc.is_preferred = TRUE AND uc.contact_type = 'alt_email'
         THEN uc.contact_value
         ELSE u.email
       END,
@@ -1155,8 +1156,8 @@ BEGIN
     es.signed_up_at as signed_up_at
   FROM neiist.activities_sign_up es
   JOIN neiist.users u ON es.user_istid = u.istid
-  LEFT JOIN neiist.user_contacts uc ON u.istid = uc.user_istid 
-    AND uc.contact_type = 'alt_email' 
+  LEFT JOIN neiist.user_contacts uc ON u.istid = uc.user_istid
+    AND uc.contact_type = 'alt_email'
     AND uc.is_preferred = TRUE
   WHERE es.event_id = p_event_id
   ORDER BY es.signed_up_at ASC;
@@ -1185,8 +1186,8 @@ BEGIN
   IF v_clean_name IS NULL OR LENGTH(v_clean_name) = 0 THEN
     RETURN;
   END IF;
-  SELECT c.id INTO v_category_id 
-  FROM neiist.categories c 
+  SELECT c.id INTO v_category_id
+  FROM neiist.categories c
   WHERE LOWER(c.name) = LOWER(v_clean_name);
   IF v_category_id IS NULL THEN
     INSERT INTO neiist.categories (name)
@@ -1589,7 +1590,8 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   p_payment_method TEXT,
   p_payment_reference TEXT,
   p_created_by TEXT,
-  p_items JSONB
+  p_items JSONB,
+  p_stock_override BOOLEAN DEFAULT FALSE
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -1599,6 +1601,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   customer_phone TEXT,
   customer_nif TEXT,
   campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
   total_amount NUMERIC(10,2),
@@ -1669,8 +1672,10 @@ BEGIN
       RAISE EXCEPTION 'Product % not found or inactive', v_pid;
     END IF;
 
-    IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
-      RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+    IF NOT p_stock_override THEN
+      IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+        RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+      END IF;
     END IF;
 
     IF v_vid IS NOT NULL THEN
@@ -1699,7 +1704,7 @@ BEGIN
 
       v_unit := ROUND(v_base + COALESCE(v_unit,0), 2);
 
-      IF v_stock_type = 'limited' THEN
+      IF v_stock_type = 'limited' AND NOT p_stock_override THEN
         IF v_variant_stock IS NULL OR v_variant_stock < v_qty THEN
           RAISE EXCEPTION 'Insufficient variant stock (product %, variant %, have %, need %)',
             v_pid, v_vid, COALESCE(v_variant_stock, -1), v_qty;
@@ -1709,13 +1714,15 @@ BEGIN
           SET stock_quantity = stock_quantity - v_qty,
               updated_at = NOW()
           WHERE product_variants.id = v_vid;
+      ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+        NULL;
       END IF;
     ELSE
       v_v_label := NULL;
       v_v_opts := NULL;
       v_unit := ROUND(v_base, 2);
 
-      IF v_stock_type = 'limited' THEN
+      IF v_stock_type = 'limited' AND NOT p_stock_override THEN
         SELECT p.stock_quantity INTO v_product_stock
         FROM neiist.products p
         WHERE p.id = v_pid FOR UPDATE;
@@ -1725,9 +1732,11 @@ BEGIN
             v_pid, COALESCE(v_product_stock, -1), v_qty;
         END IF;
 
-        UPDATE neiist.products
+        UPDATE neiist.products p
         SET stock_quantity = stock_quantity - v_qty
-        WHERE id = v_pid;
+        WHERE p.id = v_pid;
+      ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+        NULL;
       END IF;
     END IF;
 
@@ -1753,6 +1762,7 @@ BEGIN
     (SELECT c.contact_value FROM neiist.user_contacts c WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone' LIMIT 1) AS customer_phone,
     o.nif AS customer_nif,
      o.campus,
+    o.pickup_deadline,
     COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
         'product_id', oi.product_id,
@@ -1777,6 +1787,100 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Get an order by ID or order_number
+CREATE OR REPLACE FUNCTION neiist.get_order(
+  p_order_id INT DEFAULT NULL,
+  p_order_number TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+  id INT,
+  order_number TEXT,
+  customer_name TEXT,
+  user_istid VARCHAR(10),
+  customer_email TEXT,
+  customer_phone TEXT,
+  customer_nif TEXT,
+  campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
+  items JSONB,
+  notes TEXT,
+  total_amount NUMERIC(10,2),
+  payment_method TEXT,
+  payment_reference TEXT,
+  created_by TEXT,
+  created_at TIMESTAMPTZ,
+  paid_at TIMESTAMPTZ,
+  payment_checked_by TEXT,
+  delivered_at TIMESTAMPTZ,
+  delivered_by TEXT,
+  updated_at TIMESTAMPTZ,
+  status neiist.shop_order_status_enum
+) AS $$
+BEGIN
+  IF (p_order_id IS NULL AND p_order_number IS NULL) THEN
+    RAISE EXCEPTION 'Provide order_id or order_number';
+  END IF;
+
+  IF (p_order_id IS NOT NULL AND p_order_number IS NOT NULL) THEN
+    RAISE EXCEPTION 'Provide only one of order_id or order_number';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    o.id,
+    o.order_number,
+    COALESCE(u.name, '') AS customer_name,
+    o.user_istid,
+    u.email AS customer_email,
+    (
+      SELECT c.contact_value
+      FROM neiist.user_contacts c
+      WHERE c.user_istid = o.user_istid
+        AND c.contact_type = 'phone'
+      LIMIT 1
+    ) AS customer_phone,
+    o.nif AS customer_nif,
+    o.campus,
+    o.pickup_deadline,
+    (
+      SELECT COALESCE(jsonb_agg(
+        jsonb_build_object(
+          'product_id', oi.product_id,
+          'product_name', oi.product_name,
+          'variant_id', oi.variant_id,
+          'variant_label', oi.variant_label,
+          'variant_options', oi.variant_options,
+          'quantity', oi.quantity,
+          'unit_price', oi.unit_price,
+          'total_price', oi.total_price
+        )
+        ORDER BY oi.id
+      ), '[]'::jsonb)
+      FROM neiist.order_items oi
+      WHERE oi.order_id = o.id
+    ) AS items,
+    o.notes,
+    o.total_amount,
+    o.payment_method,
+    o.payment_reference,
+    o.created_by,
+    o.created_at,
+    o.paid_at,
+    o.payment_checked_by,
+    o.delivered_at,
+    o.delivered_by,
+    o.updated_at,
+    o.status
+  FROM neiist.orders o
+  LEFT JOIN neiist.users u ON u.istid = o.user_istid
+  WHERE
+    (p_order_id IS NOT NULL AND o.id = p_order_id)
+    OR
+    (p_order_number IS NOT NULL AND o.order_number = p_order_number)
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Get all orders data
 CREATE OR REPLACE FUNCTION neiist.get_all_orders()
 RETURNS TABLE (
@@ -1788,6 +1892,7 @@ RETURNS TABLE (
   customer_phone TEXT,
   customer_nif TEXT,
   campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
   total_amount NUMERIC(10,2),
@@ -1818,6 +1923,7 @@ BEGIN
     ) AS customer_phone,
     o.nif AS customer_nif,
     o.campus,
+    o.pickup_deadline,
     (
       SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
@@ -1856,7 +1962,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Update order details
 CREATE OR REPLACE FUNCTION neiist.update_order(
   p_order_id INTEGER,
-  p_updates JSONB
+  p_updates JSONB,
+  p_stock_override BOOLEAN DEFAULT FALSE
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -1875,6 +1982,7 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   created_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ,
   payment_checked_by TEXT,
+  pickup_deadline TIMESTAMPTZ,
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
@@ -1920,6 +2028,9 @@ BEGIN
   IF p_updates ? 'payment_checked_by' THEN
     UPDATE neiist.orders SET payment_checked_by = NULLIF(p_updates->>'payment_checked_by','') WHERE neiist.orders.id = p_order_id;
   END IF;
+  IF p_updates ? 'pickup_deadline' THEN
+    UPDATE neiist.orders SET pickup_deadline = NULLIF(p_updates->>'pickup_deadline','')::timestamptz WHERE neiist.orders.id = p_order_id;
+  END IF;
   IF p_updates ? 'delivered_by' THEN
     UPDATE neiist.orders SET delivered_by = NULLIF(p_updates->>'delivered_by','') WHERE neiist.orders.id = p_order_id;
   END IF;
@@ -1936,11 +2047,11 @@ BEGIN
       FROM neiist.products p
       WHERE p.id = v_pid FOR UPDATE;
 
-      IF v_stock_type = 'limited' THEN
+      IF v_stock_type = 'limited' AND NOT p_stock_override THEN
         IF v_vid IS NOT NULL THEN
           UPDATE neiist.product_variants
-          SET stock_quantity = COALESCE(stock_quantity, 0) + v_qty,
-              updated_at = NOW()
+            SET stock_quantity = COALESCE(stock_quantity, 0) + v_qty,
+                updated_at = NOW()
           WHERE product_variants.id = v_vid AND product_variants.product_id = v_pid;
         ELSE
           UPDATE neiist.products
@@ -1971,8 +2082,10 @@ BEGIN
         RAISE EXCEPTION 'Product % not found or inactive', v_pid;
       END IF;
 
-      IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
-        RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+      IF NOT p_stock_override THEN
+        IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+          RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
+        END IF;
       END IF;
 
       IF v_vid IS NOT NULL THEN
@@ -2001,7 +2114,7 @@ BEGIN
 
         v_unit := ROUND(v_base + COALESCE(v_unit, 0), 2);
 
-        IF v_stock_type = 'limited' THEN
+        IF v_stock_type = 'limited' AND NOT p_stock_override THEN
           IF v_variant_stock IS NULL OR v_variant_stock < v_qty THEN
             RAISE EXCEPTION 'Insufficient variant stock (product %, variant %, have %, need %)',
               v_pid, v_vid, COALESCE(v_variant_stock, -1), v_qty;
@@ -2011,13 +2124,15 @@ BEGIN
             SET stock_quantity = stock_quantity - v_qty,
                 updated_at = NOW()
             WHERE product_variants.id = v_vid;
+        ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+          NULL;
         END IF;
       ELSE
         v_v_label := NULL;
         v_v_opts := NULL;
         v_unit := ROUND(v_base, 2);
 
-        IF v_stock_type = 'limited' THEN
+        IF v_stock_type = 'limited' AND NOT p_stock_override THEN
           SELECT p.stock_quantity INTO v_product_stock
           FROM neiist.products p
           WHERE p.id = v_pid FOR UPDATE;
@@ -2027,9 +2142,11 @@ BEGIN
               v_pid, COALESCE(v_product_stock, -1), v_qty;
           END IF;
 
-          UPDATE neiist.products
+          UPDATE neiist.products p
           SET stock_quantity = stock_quantity - v_qty
-          WHERE id = v_pid;
+          WHERE p.id = v_pid;
+        ELSIF v_stock_type = 'limited' AND p_stock_override THEN
+          NULL;
         END IF;
       END IF;
 
@@ -2068,6 +2185,7 @@ BEGIN
     g.created_at,
     g.paid_at,
     g.payment_checked_by,
+    g.pickup_deadline,
     g.delivered_at,
     g.delivered_by,
     g.updated_at,
@@ -2091,6 +2209,7 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   customer_phone TEXT,
   customer_nif TEXT,
   campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
   total_amount NUMERIC(10,2),
@@ -2125,6 +2244,7 @@ BEGIN
     g.customer_phone,
     g.customer_nif,
     g.campus,
+    g.pickup_deadline,
     g.items,
     g.notes,
     g.total_amount,

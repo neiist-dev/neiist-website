@@ -5,10 +5,11 @@ import { MdClose, MdSearch, MdChevronRight, MdChevronLeft } from "react-icons/md
 import Fuse from "fuse.js";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
-import type { User } from "@/types/user";
+import { checkRoles, UserRole, type User } from "@/types/user";
 import { Campus, type Product, type ProductVariant, type Order } from "@/types/shop";
 import { isColorKey, splitNameHex } from "@/utils/shopUtils";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import { useUser } from "@/context/UserContext";
 
 interface Props {
   onClose: () => void;
@@ -68,6 +69,7 @@ const resolveVariant = (
 ): ProductVariant | null => {
   const keys = getOptionKeys(product);
   if (Object.keys(selections).length < keys.length) return null;
+
   return (
     product.variants.find((v) =>
       Object.entries(selections).every(([k, val]) => v.options[k] === val)
@@ -120,6 +122,16 @@ export default function NewOrderModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const { user } = useUser();
+  const isAdmin = checkRoles(user, [UserRole._ADMIN]);
+  const STOCK_OVERRIDE_ERRORS = [
+    "O prazo de encomenda do produto ja terminou",
+    "Stock insuficiente para a variante selecionada",
+    "Stock insuficiente para o produto selecionado",
+  ];
+  const [showStockOverrideConfirm, setShowStockOverrideConfirm] = useState(false);
+  const [stockOverrideMessage, setStockOverrideMessage] = useState<string | null>(null);
 
   const userInputRef = useRef<HTMLInputElement>(null);
   const productInputRef = useRef<HTMLInputElement>(null);
@@ -363,76 +375,92 @@ export default function NewOrderModal({
   const removeProduct = (idx: number) =>
     setSelectedProducts((prev) => prev.filter((_, i) => i !== idx));
 
-  const handleSubmit = async () => {
+  type SubmitResult =
+    | { status: "success"; order: Order | null }
+    | { status: "stock_override"; message: string }
+    | { status: "error"; message: string };
+
+  const submitOrder = async (stockOverride = false): Promise<SubmitResult> => {
+    const payload = {
+      user_istid: selectedUser?.istid,
+      customer_name: selectedUser?.name,
+      customer_email: selectedUser?.email,
+      customer_phone: phone || undefined,
+      customer_nif: nif || undefined,
+      campus: campus || undefined,
+      notes: notes || undefined,
+      stock_override: stockOverride,
+      items: selectedProducts.map(({ product, variant, quantity }) => ({
+        product_id: product.id,
+        variant_id: variant.id || undefined,
+        quantity,
+      })),
+    };
+
+    const endpoint =
+      isEditMode && orderToEdit ? `/api/shop/orders/${orderToEdit.id}` : "/api/shop/orders";
+    const method = isEditMode ? "PUT" : "POST";
+
+    const res = await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      const errorMessage =
+        data?.error || (isEditMode ? "Failed to update order" : "Failed to create order");
+
+      if (!stockOverride && isAdmin && STOCK_OVERRIDE_ERRORS.includes(errorMessage)) {
+        return { status: "stock_override", message: errorMessage };
+      }
+
+      return { status: "error", message: errorMessage };
+    }
+
+    const order = (await res.json().catch(() => null)) as Order | null;
+    return { status: "success", order };
+  };
+
+  const handleSubmit = async (stockOverride = false) => {
     if (!selectedProducts.length) {
       // TODO: (ERROR)
       setError("Por favor, selecione pelo menos um produto.");
       return;
     }
-
     if (!isEditMode && !campus) {
       // TODO: (ERROR)
       setError("Por favor, selecione o campus.");
       return;
     }
-
     if (!isEditMode && !selectedUser) {
       // TODO: (ERROR)
       setError("Por favor, selecione um utilizador.");
       return;
     }
-
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // TODO: (LOADING) show loading toast while the order is being saved.
-      const payload = {
-        user_istid: selectedUser?.istid,
-        customer_name: selectedUser?.name,
-        customer_email: selectedUser?.email,
-        customer_phone: phone || undefined,
-        customer_nif: nif || undefined,
-        campus: campus || undefined,
-        payment_method: "in-person",
-        notes: notes || undefined,
-        items: selectedProducts.map(({ product, variant, quantity }) => ({
-          product_id: product.id,
-          variant_id: variant.id || undefined,
-          quantity,
-        })),
-      };
+      //TODO: (LOADING)
+      const orderResponse = await submitOrder(stockOverride);
 
-      const endpoint =
-        isEditMode && orderToEdit ? `/api/shop/orders/${orderToEdit.id}` : "/api/shop/orders";
-      const method = isEditMode ? "PUT" : "POST";
-
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(
-          data?.error || (isEditMode ? "Failed to update order" : "Failed to create order")
-        );
+      if (orderResponse.status === "stock_override") {
+        setStockOverrideMessage(orderResponse.message);
+        setShowStockOverrideConfirm(true);
+        return;
       }
 
-      const savedOrder = (await res.json().catch(() => null)) as Order | null;
-      onSubmit?.(savedOrder ?? undefined);
-      // TODO: (SUCCESS) show success toast after the order is created or updated.
+      if (orderResponse.status === "error") {
+        // TODO: (ERROR)
+        setError(orderResponse.message);
+        return;
+      }
+
+      const nextOrder = orderResponse.order ?? undefined;
+      onSubmit?.(nextOrder);
       onClose();
-    } catch (err) {
-      // TODO: (ERROR)
-      setError(
-        err instanceof Error
-          ? err.message
-          : isEditMode
-            ? "Failed to update order"
-            : "Failed to create order"
-      );
     } finally {
       setIsSubmitting(false);
     }
@@ -767,6 +795,21 @@ export default function NewOrderModal({
               await handleSubmit();
             }}
             onCancel={() => setShowConfirm(false)}
+          />
+        )}
+        {showStockOverrideConfirm && (
+          <ConfirmDialog
+            open={showStockOverrideConfirm}
+            message={`Tem a certeza que deseja criar a encomenda à mesma?\n"${stockOverrideMessage}."`}
+            onConfirm={async () => {
+              setShowStockOverrideConfirm(false);
+              setStockOverrideMessage(null);
+              await handleSubmit(true);
+            }}
+            onCancel={() => {
+              setShowStockOverrideConfirm(false);
+              setStockOverrideMessage(null);
+            }}
           />
         )}
       </div>

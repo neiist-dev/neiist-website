@@ -1,5 +1,11 @@
 # neiist
 
+## 1.6.1
+
+### Patch Changes
+
+- Implemented a token-based search logic in PhotoTeamMembers
+
 ## 1.6.0
 
 ### Minor Changes

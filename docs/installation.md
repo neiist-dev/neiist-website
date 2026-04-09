@@ -31,7 +31,7 @@ This guide will help you get a local copy up and running follow these simple ste
 
 ## Steps
 
-1. Create a [fenix application](https://fenix.tecnico.ulisboa.pt/personal/external-applications/#/applications) with a redirect url of `http://localhost:3000/api/auth/callback` and a scope of `Informações`.
+1. Create a [fenix application](https://fenix.tecnico.ulisboa.pt/personal/external-applications/#/applications) with a redirect url of `http://localhost:3000/api/auth/callback` and a scope of `[v2] Pessoal (Leitura)`.
 2. Fork the repository [neiist-website](https://github.com/neiist-dev/neiist-website.git).
 3. Clone your fork.
    ```sh

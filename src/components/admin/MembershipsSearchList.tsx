@@ -6,13 +6,19 @@ import { User } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { useUser } from "@/context/UserContext";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
 
 interface Department {
   name: string;
   active: boolean;
 }
+
+const normalizeText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
 export default function MembershipsSearchList({
   memberships: initialMemberships,
@@ -44,28 +50,45 @@ export default function MembershipsSearchList({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user, setUser } = useUser();
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(memberships, {
-        keys: ["userName", "userNumber", "userEmail", "departmentName", "roleName"],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [memberships]
-  );
-
   const filteredMemberships = useMemo(() => {
-    let filtered = memberships;
-    if (showInactive) {
-      filtered = filtered.filter((membership) => !membership.isActive);
-    } else {
-      filtered = filtered.filter((membership) => membership.isActive);
+    const base = memberships.filter((membership) =>
+      showInactive ? !membership.isActive : membership.isActive
+    );
+
+    const rawQuery = search.trim();
+    if (!rawQuery) return base;
+
+    const normalizedQuery = normalizeText(rawQuery);
+
+    const istWithPrefix = /^ist\d+$/i.test(rawQuery);
+    const digitsOnly = /^\d{5,10}$/.test(rawQuery);
+
+    if (istWithPrefix || digitsOnly) {
+      const digits = rawQuery.replace(/[^0-9]/g, "");
+
+      const exact = base.filter(
+        (membership) => (membership.userNumber || "").replace(/[^0-9]/g, "") === digits
+      );
+      if (exact.length > 0) return exact;
+
+      return base.filter((membership) =>
+        (membership.userNumber || "").replace(/[^0-9]/g, "").startsWith(digits)
+      );
     }
-    if (search.trim()) {
-      return fuse.search(search.trim()).map((r) => r.item);
-    }
-    return filtered;
-  }, [memberships, search, showInactive, fuse]);
+
+    const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+
+    return base
+      .filter((membership) => {
+        const searchableText = normalizeText(
+          `${membership.userName} ${membership.userEmail} ${membership.departmentName} ${membership.roleName}`
+        );
+        const textTokens = searchableText.split(/\s+/).filter(Boolean);
+
+        return queryTokens.every((qToken) => textTokens.some((token) => token.startsWith(qToken)));
+      })
+      .sort((a, b) => a.userName.localeCompare(b.userName));
+  }, [memberships, search, showInactive]);
 
   const handleDepartmentChange = async (departmentName: string) => {
     setNewMembership({ ...newMembership, departmentName, roleName: "" });

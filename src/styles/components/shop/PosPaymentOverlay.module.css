@@ -1,0 +1,114 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  width: 100%;
+  max-width: 32rem;
+  background: #f3f4f6;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.closeButton {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.title {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  color: #111827;
+}
+
+.label {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.92rem;
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.secondaryButton {
+  border: 1px solid #d1d5db;
+  border-radius: 0.6rem;
+  background: #fff;
+  color: #111827;
+  padding: 0.5rem 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.actions {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.cancelButton,
+.confirmButton {
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.65rem 0.95rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background: #fff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.confirmButton {
+  background: var(--primary-colour);
+  color: #fff;
+}
+
+.error {
+  margin-bottom: 0.75rem;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.meta {
+  margin: 0.75rem 0 0;
+  color: #6b7280;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}

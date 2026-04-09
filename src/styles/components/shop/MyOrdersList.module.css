@@ -16,6 +16,14 @@
   margin-bottom: 1.2rem;
 }
 
+.deadlineBanner {
+  background: var(--secondary-colour);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
 .primary {
   color: var(--primary-colour);
 }

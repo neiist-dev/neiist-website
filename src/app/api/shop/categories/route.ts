@@ -9,14 +9,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const { name } = await request.json();
-    if (!name || !name.trim()) {
+    if (!name || !name.trim())
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
-    }
 
     const category = await addCategory(name.trim());
-    if (!category) {
+    if (!category)
       return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
-    }
 
     return NextResponse.json(
       {

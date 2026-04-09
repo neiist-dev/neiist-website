@@ -18,6 +18,7 @@
 }
 .message {
   margin-bottom: 1.5rem;
+  white-space: pre-line;
 }
 .actions {
   display: flex;

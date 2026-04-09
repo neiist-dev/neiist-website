@@ -372,6 +372,16 @@
   border: 2px solid var(--primary-colour);
 }
 
+.step0.stepAlert .stepIcon {
+  background: red;
+  color: white;
+  border: 2px solid red;
+}
+
+.step0.stepAlert {
+  color: red !important;
+}
+
 .step0.active {
   color: var(--primary-colour);
 }

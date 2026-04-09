@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "@/styles/components/layout/ConfirmDialog.module.css";
 
 export default function ConfirmDialog({

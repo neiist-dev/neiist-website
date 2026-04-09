@@ -1,78 +1,133 @@
-export interface SumUpClient {
-  checkouts: {
-    create(_payload: CheckoutPayload): Promise<CheckoutResponse>;
-    get(_checkoutId: string): Promise<CheckoutData>;
+export interface SumUpCheckout {
+  id?: string;
+  status?: "PENDING" | "FAILED" | "PAID" | "EXPIRED" | null;
+  transaction_code?: string;
+  transactions?: Array<{
+    transaction_code?: string;
+    status?: string;
+  }>;
+  [key: string]: unknown;
+}
+
+export interface SumUpCheckoutPayload {
+  merchant_code: string;
+  amount: number;
+  currency: "EUR";
+  checkout_reference: string;
+  description: string;
+  valid_until: string;
+  return_url: string;
+}
+
+export interface SumUpTransaction {
+  status?: string;
+  transaction_code?: string;
+  [key: string]: unknown;
+}
+
+export interface SumUpReaderStatus {
+  id: string;
+  name: string;
+  status: string;
+  device?: {
+    model: string;
+    identifier: string;
+  };
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+export interface SumUpReaderCheckoutResponse {
+  data?: {
+    client_transaction_id?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface SumUpReaderCheckoutPayload {
+  description: string;
+  total_amount: {
+    currency: "EUR";
+    minor_unit: number;
+    value: number;
   };
 }
 
-export interface CreateRequestBody {
+export interface SumUpReadersListResponse {
+  items?: SumUpReaderStatus[];
+  [key: string]: unknown;
+}
+
+export interface CreateCheckoutRequestBody {
   orderId?: number | string;
-  amount?: number | string;
-  currency?: string;
-  checkout_reference?: string;
 }
 
-export interface CheckoutPayload {
-  amount: number;
-  currency: string;
-  checkout_reference: string;
-  merchant_code: string;
-  return_url?: string;
-  description?: string;
+export interface CreateCheckoutResponse {
+  checkoutId?: string;
+  error?: string;
 }
 
-export interface CheckoutResponse {
-  id?: string;
-  data?: { id?: string };
-  hosted_url?: string;
-  redirect_url?: string;
-  [key: string]: unknown;
+export interface VerifyCheckoutRequestBody {
+  checkoutId?: string;
+  orderId?: number | string;
+  applePayToken?: ApplePayPaymentToken;
 }
 
-export interface CheckoutTransaction {
+export interface VerifyCheckoutResponse {
+  ok?: boolean;
+  pending?: boolean;
+  failed?: boolean;
+  alreadyProcessed?: boolean;
   status?: string;
-  state?: string;
+  transactionCode?: string;
+  error?: string;
+}
+
+export type SumUpCardResponseType =
+  | "sent"
+  | "invalid"
+  | "auth-screen"
+  | "error"
+  | "success"
+  | "fail";
+
+export interface SumUpCardSentBody {
+  last_4_digits?: string;
+  card_type?: string;
   [key: string]: unknown;
 }
 
-export interface CheckoutPayment {
-  status?: string;
-  state?: string;
+export interface SumUpCardErrorBody {
+  message?: string;
+  error_code?: string;
   [key: string]: unknown;
 }
 
-export interface CheckoutTransactionSummary {
-  id?: string;
-  transaction_code?: string;
-  status?: string;
-  [key: string]: unknown;
-}
-
-export interface CheckoutData {
-  id?: string;
-  status?: string;
-  state?: string;
-  transaction?: CheckoutTransaction;
-  payment?: CheckoutPayment;
-  checkout_reference?: string;
-  checkoutReference?: string;
-  checkout?: { reference?: string } | null;
-  transaction_code?: string;
-  transactions?: CheckoutTransactionSummary[];
-  [key: string]: unknown;
-}
+export type SumUpCardResponseBody =
+  | SumUpCardSentBody
+  | SumUpCardErrorBody
+  | Record<string, unknown>;
 
 export interface SumUpCardMountOptions {
   checkoutId: string;
-  container: string;
+  id?: string;
+  container?: string;
   showFooter?: boolean;
-  onResponse?: (
-    _type: string,
-    _body: CheckoutData | CheckoutResponse | Record<string, unknown>
-  ) => void;
+  showSubmitButton?: boolean;
+  showEmail?: boolean;
+  email?: string;
+  amount?: string;
+  currency?: string;
+  locale?: string;
+  onResponse?: (_type: SumUpCardResponseType, _body: SumUpCardResponseBody) => void;
+  onLoad?: () => void;
 }
 
 export interface SumUpCardInstance {
+  submit?: () => void;
+  update?: (_opts: Partial<SumUpCardMountOptions>) => void;
   unmount?: () => void;
 }
 
@@ -127,6 +182,19 @@ export interface ApplePaySessionConstructor {
   readonly STATUS_SUCCESS: number;
   readonly STATUS_FAILURE: number;
 }
+
+export interface ApiErrorResponse {
+  error?: string;
+}
+
+export type SumUpReader = {
+  id: string;
+  name: string;
+  status: string;
+  device: { model: string; identifier: string };
+  created_at?: string;
+  updated_at?: string;
+};
 
 declare global {
   interface Window {

@@ -47,7 +47,34 @@ export interface dbProductVariant {
   label: string | null;
 }
 
-export type PaymentMethod = "in-person" | "eupago" | "sumup" | "apple-pay";
+export const PAYMENT_METHODS = {
+  cash: { label: "Cash" },
+  "sumup-tpa": { label: "SumUp TPA" },
+  sumup: { label: "SumUp Card Online" },
+  "apple-pay": { label: "SumUp Apple Pay" },
+  "in-person": { label: "Em pessoa" },
+  other: { label: "Outro" },
+} as const;
+
+export type PaymentMethod = keyof typeof PAYMENT_METHODS;
+
+export function getPaymentLabel(method: PaymentMethod) {
+  return PAYMENT_METHODS[method].label;
+}
+
+export const PENDING_PAYMENT_METHODS: ReadonlySet<PaymentMethod> = new Set([
+  "in-person",
+  "cash",
+  "other",
+]);
+
+export const POS_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = ["cash", "other", "sumup-tpa"];
+
+export const ONLINE_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = [
+  "in-person",
+  "sumup",
+  "apple-pay",
+];
 
 export enum Campus {
   _Alameda = "alameda",
@@ -63,6 +90,7 @@ export interface Order {
   customer_phone?: string;
   customer_nif?: string;
   campus?: string;
+  pickup_deadline?: string | null;
   items: OrderItem[];
   notes?: string;
   total_amount: number;
@@ -129,6 +157,7 @@ export interface dbOrder {
   customer_phone: string | null;
   customer_nif: string | null;
   campus: string | null;
+  pickup_deadline: string | null;
   items: dbOrderItem[] | null;
   notes: string | null;
   total_amount: string | number;
@@ -248,6 +277,7 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     customer_phone: row.customer_phone ?? undefined,
     customer_nif: row.customer_nif ?? undefined,
     campus: row.campus ?? undefined,
+    pickup_deadline: row.pickup_deadline ?? undefined,
     items: (row.items ?? []).map(
       (it): OrderItem => ({
         product_id: it.product_id,

@@ -1,0 +1,73 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.dialog {
+  background: var(--background-colour);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 2.5rem;
+  width: 100%;
+  max-width: 28rem;
+  box-sizing: border-box;
+}
+
+.title {
+  margin-bottom: 0.5rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--foreground-colour);
+}
+
+.input {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--background-colour-hover);
+  font-family: inherit;
+  cursor: text;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.confirm {
+  background: var(--primary-colour);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.cancel {
+  background: transparent;
+  border: 1px solid var(--background-colour-hover);
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}

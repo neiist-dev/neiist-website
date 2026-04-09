@@ -1,21 +1,24 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import {
   Order,
   OrderStatus,
+  getPaymentLabel,
   getStatusLabel,
   getStatusCssClass,
   canTransitionTo,
 } from "@/types/shop";
 import { MdClose } from "react-icons/md";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaExclamationTriangle } from "react-icons/fa";
+import { toast } from "sonner";
 import { FiChevronDown, FiChevronUp, FiEdit2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
+import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import type { Product } from "@/types/shop";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
@@ -56,6 +59,7 @@ export default function OrderDetailOverlay({
   const [notesDraft, setNotesDraft] = useState("");
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showEditOrderModal, setShowEditOrderModal] = useState(false);
+  const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
 
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
@@ -69,6 +73,46 @@ export default function OrderDetailOverlay({
       setNotesOpen(false);
     }
   }, [order?.notes]);
+
+  const deadlineToastShownRef = useRef(false);
+  const isDeadlineNear = (() => {
+    if (!order?.pickup_deadline) return false;
+    try {
+      const dl = new Date(order.pickup_deadline);
+      const now = new Date();
+      const diffDays = (dl.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays <= 28 && diffDays >= 0;
+    } catch {
+      return false;
+    }
+  })();
+
+  const showDeadlineToast = useCallback(() => {
+    if (!order?.pickup_deadline) return;
+    if (deadlineToastShownRef.current) return;
+    const formatted = new Date(order.pickup_deadline).toLocaleDateString("pt-PT");
+    const toastId = `pickup-deadline-${order.id}`;
+    toast.warning(`Prazo limite de levantamento: ${formatted}`, {
+      id: toastId,
+      duration: Infinity,
+      closeButton: true,
+      dismissible: true,
+      style: {
+        color: "red",
+        border: "2px solid var(--danger-colour, red)",
+      },
+    });
+    deadlineToastShownRef.current = true;
+  }, [order]);
+
+  useEffect(() => {
+    deadlineToastShownRef.current = false;
+  }, [order?.id]);
+
+  useEffect(() => {
+    if (!order) return;
+    if (!canManage && isDeadlineNear) showDeadlineToast();
+  }, [order, canManage, isDeadlineNear, showDeadlineToast]);
 
   const handleCloseImmediate = useCallback(() => {
     router.push(basePath);
@@ -99,7 +143,7 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      // TODO: (SUCCESS) show success toast after the order status is updated.
+      // TODO: (SUCCESS)
     } else {
       // TODO: (ERROR)
       setError("Erro ao atualizar estado.");
@@ -114,7 +158,7 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      // TODO: (SUCCESS) show success toast after the order is cancelled.
+      // TODO: (SUCCESS)
     } else {
       // TODO: (ERROR)
       setError("Erro ao cancelar encomenda.");
@@ -127,7 +171,7 @@ export default function OrderDetailOverlay({
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !showEditOrderModal) {
+      if (e.key === "Escape" && !showEditOrderModal && !showPaymentOverlay) {
         if (notesEditing) {
           setShowSaveConfirm(true);
           return;
@@ -137,7 +181,7 @@ export default function OrderDetailOverlay({
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [handleCloseImmediate, notesEditing, showEditOrderModal]);
+  }, [handleCloseImmediate, notesEditing, showEditOrderModal, showPaymentOverlay]);
 
   if (!order) {
     return (
@@ -214,11 +258,9 @@ export default function OrderDetailOverlay({
             </div>
 
             <div className={styles.orderNumber}>
-              #{order.order_number}
+              {order.order_number}
               <FaArrowRightLong />
-              {order.payment_method
-                ? order.payment_method.charAt(0).toUpperCase() + order.payment_method.slice(1)
-                : ""}
+              {order.payment_method ? getPaymentLabel(order.payment_method) : ""}
             </div>
 
             <div className={styles.infoGrid}>
@@ -408,9 +450,9 @@ export default function OrderDetailOverlay({
                 <div className={styles.actionButtons}>
                   <button
                     className={styles.buttonOutline}
-                    onClick={() => setPendingStatus("paid")}
+                    onClick={() => setShowPaymentOverlay(true)}
                     disabled={!canSetPaid}>
-                    Marcar como Pago
+                    Pagar
                   </button>
                   <button
                     className={styles.buttonPrimary}
@@ -439,6 +481,12 @@ export default function OrderDetailOverlay({
                   <p className={styles.timestamp}>
                     Pagamento verificado por {order.payment_checked_by} em{" "}
                     {new Date(order.paid_at).toLocaleString("pt-PT")}
+                  </p>
+                )}
+                {order.pickup_deadline && (
+                  <p className={styles.timestamp}>
+                    Prazo limite para levantamento em{" "}
+                    {new Date(order.pickup_deadline).toLocaleString("pt-PT")}
                   </p>
                 )}
                 {order.delivered_at && (
@@ -470,10 +518,17 @@ export default function OrderDetailOverlay({
                         Pago
                       </li>
                       <li
-                        className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""}`}
+                        className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""} ${
+                          isDeadlineNear && currentStepIndex >= 2 ? styles.stepAlert : ""
+                        }`}
                         id="step3">
                         <span className={styles.stepIcon}>
-                          {currentStepIndex >= 2 && <FaCheck size={14} />}
+                          {currentStepIndex >= 2 &&
+                            (isDeadlineNear ? (
+                              <FaExclamationTriangle size={14} />
+                            ) : (
+                              <FaCheck size={14} />
+                            ))}
                         </span>
                         Pronto
                       </li>
@@ -553,6 +608,20 @@ export default function OrderDetailOverlay({
           onSubmit={(updatedOrder) => {
             if (updatedOrder) setOrder(updatedOrder);
             setShowEditOrderModal(false);
+            router.refresh();
+          }}
+        />
+      )}
+
+      {showPaymentOverlay && (
+        <PosPaymentOverlay
+          open={showPaymentOverlay}
+          order={order}
+          reopenOrderUrl={`${basePath}?orderId=${order.id}`}
+          onCloseAction={() => setShowPaymentOverlay(false)}
+          onOrderUpdatedAction={(updatedOrder) => {
+            setOrder(updatedOrder);
+            setShowPaymentOverlay(false);
             router.refresh();
           }}
         />

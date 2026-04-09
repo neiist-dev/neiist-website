@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import CheckoutDoneOverlay from "@/components/shop/CheckoutDoneOverlay";
+import ShopCheckoutOverlay from "@/components/shop/ShopCheckoutOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
 import { Campus, type CartItem, type PaymentMethod } from "@/types/shop";
 import Image from "next/image";
@@ -93,9 +93,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     });
 
     const data = (await res.json()) as { id?: number; error?: string };
-    if (!res.ok || !data?.id) {
-      throw new Error(data?.error || "Erro ao submeter encomenda.");
-    }
+    if (!res.ok || !data?.id) throw new Error(data?.error || "Erro ao submeter encomenda.");
 
     if (persistOverlay) {
       setSubmittedPaymentMethod(selectedPayment);
@@ -193,32 +191,27 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           error?: string;
           message?: string;
         };
-        if (!checkoutRes.ok) {
+        if (!checkoutRes.ok)
           throw new Error(
             checkoutData?.error || checkoutData?.message || "Falha ao criar checkout"
           );
-        }
 
         checkoutId = checkoutData.checkoutId ?? checkoutData.id ?? null;
-        if (!checkoutId) {
-          throw new Error("Resposta inesperada do serviço de pagamento");
-        }
+        if (!checkoutId) throw new Error("Resposta inesperada do serviço de pagamento");
 
         const merchantRes = await fetch("/api/shop/sumup/apple-pay-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ checkoutId, validationUrl: event.validationURL }),
         });
-        if (!merchantRes.ok) {
-          throw new Error("Falha na validação Apple Pay");
-        }
+        if (!merchantRes.ok) throw new Error("Falha na validação Apple Pay");
 
         const merchantSession = (await merchantRes.json()) as unknown;
         session.completeMerchantValidation(merchantSession);
-      } catch (err) {
+      } catch (error) {
         session.abort();
         setError(
-          err instanceof Error ? err.message : "Falha na validação Apple Pay. Tenta novamente."
+          error instanceof Error ? error.message : "Falha na validação Apple Pay. Tenta novamente."
         );
         setLoading(false);
       }
@@ -226,9 +219,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
     session.onpaymentauthorized = async (event) => {
       try {
-        if (!checkoutId || !createdOrderId) {
-          throw new Error("Dados de pagamento incompletos");
-        }
+        if (!checkoutId || !createdOrderId) throw new Error("Dados de pagamento incompletos");
 
         const res = await fetch("/api/shop/sumup/verify", {
           method: "POST",
@@ -251,11 +242,11 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           // TODO: (ERROR)
           setError(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.");
         }
-      } catch (err) {
+      } catch (error) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
         // TODO: (ERROR)
         setError(
-          err instanceof Error ? err.message : "Erro ao processar Apple Pay. Tenta novamente."
+          error instanceof Error ? error.message : "Erro ao processar Apple Pay. Tenta novamente."
         );
       } finally {
         setLoading(false);
@@ -529,7 +520,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         </div>
       </div>
       {orderId !== null && submittedPaymentMethod && (
-        <CheckoutDoneOverlay orderId={orderId} paymentMethod={submittedPaymentMethod} />
+        <ShopCheckoutOverlay orderId={orderId} paymentMethod={submittedPaymentMethod} />
       )}
     </div>
   );

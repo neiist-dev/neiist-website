@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Metadata } from "next";
 import { Secular_One } from "next/font/google";
 import NavBar from "@/components/layout/navbar/NavBar";
 import Footer from "@/components/layout/Footer";
@@ -8,6 +9,7 @@ import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
+import "@/lib/autoCancelScheduler";
 
 const secularOne = Secular_One({
   subsets: ["latin"],
@@ -16,7 +18,7 @@ const secularOne = Secular_One({
   display: "swap",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "NEIIST",
   description: "Núcleo Estudantil de Informática do Instituto Superior Técnico",
 };
@@ -50,7 +52,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
               mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
               toastOptions={{
                 style: {
-                  background: "var(--background-colour)",
+                  background: "white",
                   color: "var(--foreground-colour)",
                 },
               }}
