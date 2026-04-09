@@ -1,0 +1,152 @@
+{   
+    "about_us": {
+        "hero": {
+            "title_1": "Qu",
+            "title_2": "em ",
+            "title_3": "So",
+            "title_4": "mos?",
+            "teams_title": "As Nossas Equipas",
+            "team_aria_label": "Equipa",
+            "close_aria_label": "Fechar"
+        },
+        "join_us": {
+            "title": "Junta-te a Nós!",
+            "description": "O nosso recrutamento acontece duas vezes por ano, no inicio de cada semestre. O recrutamento consiste de uma ronda de entrevistas, e para algumas equipas um pequeno desafio relacionado com o trabalho da equipa espesífica. Conta-mos contigo!",
+            "apply": "Candidata-te"
+        }
+    },
+
+    "activities": {
+        "calendar": {
+            "today": "Hoje"
+        },
+        "event_details": {
+            "close": "Fechar",
+            "untitled": "Evento sem título",
+            "share_title": "Copiar link do evento",
+            "share_success": "Link do evento copiado",
+            "description_label": "Descrição do evento",
+            "description_placeholder": "Adicionar descrição...",
+            "allow_signups": "Permitir inscrições",
+            "signup_deadline": "Data limite para inscrições",
+            "max_attendees": "Número máximo de participantes",
+            "max_attendees_placeholder": "Sem limite",
+            "subscribers": "Inscritos",
+            "processing": "A processar...",
+            "login_to_signup": "Por favor inicie sessão para se inscrever",
+            "cancel_signup": "Cancelar inscrição",
+            "signup": "Inscrever",
+            "email_attendees": "Enviar email para todos os inscritos.",
+            "max_reached": "Número máximo de participantes atingido.",
+            "login_warning": "Por favor inicie sessão para se inscrever neste evento."
+        },
+        "icon_picker": {
+            "search_placeholder": "Procurar ícone..."
+        }
+    },
+
+    "admin": {
+        "about_us_editor": {
+            "title": "Pré-visualização da página Sobre Nós",
+            "no_members": "Sem membro"
+        },
+        "add_department": {
+            "add_team_btn": "Adicionar Nova Equipa",
+            "add_body_btn": "Adicionar Novo Órgão",
+            "new_team_title": "Nova Equipa",
+            "new_body_title": "Novo Órgão Administrativo",
+            "team_name_placeholder": "Nome da equipa",
+            "body_name_placeholder": "Nome do órgão",
+            "team_desc_placeholder": "Descrição da equipa",
+            "next": "Próximo",
+            "add_roles_title": "Adicionar Cargos",
+            "remove": "Remover",
+            "back": "Voltar",
+            "creating": "A criar...",
+            "create_dept": "Criar Departamento",
+            "role_name_placeholder": "Nome do Cargo",
+            "add_role_btn": "Adicionar Cargo",
+            "error_create_dept": "Erro ao criar departamento",
+            "error_create_role": "Erro ao criar cargo",
+            "error_generic": "Erro ao criar departamento ou cargos",
+            "access_guest": "Normal",
+            "access_member": "Membro",
+            "access_coordinator": "Coordenador",
+            "access_admin": "Administrador"
+        },
+        "admin_bodies_manager": {
+            "title": "Gestão dos Órgãos Administrativos"
+        },
+        "admin_bodies_filter": {
+            "section_title": "Órgãos Administrativos Existentes",
+            "search_placeholder": "Pesquisar órgão administrativo...",
+            "active": "Ativos",
+            "show_inactive": "Mostrar Inativos",
+            "empty": "Nenhum órgão administrativo encontrado.",
+            "inactive_badge": "Inativo",
+            "deactivate_title": "Desativar órgão",
+            "deactivate": "Desativar"
+        },
+        "membership_manager": {
+            "title": "Gestão de Membros"
+        },
+        "membership_list": {
+            "add_title": "Adicionar Novo Membro",
+            "select_user": "Selecione um utilizador",
+            "select_department": "Selecione um departamento",
+            "select_role": "Selecione um cargo",
+            "adding": "A adicionar...",
+            "add_btn": "Adicionar Membro",
+            "error_add": "Erro ao adicionar membro",
+            "error_remove": "Erro ao remover membro",
+            "existing_title": "Membros Existentes",
+            "search_placeholder": "Pesquisar por nome, ISTID, email, departamento ou cargo...",
+            "active": "Ativos",
+            "show_inactive": "Mostrar Inativos",
+            "empty": "Nenhum membro encontrado.",
+            "department": "Departamento",
+            "role": "Cargo",
+            "email": "Email",
+            "since": "Desde",
+            "until": "Até",
+            "status_active": "Ativo",
+            "status_inactive": "Inativo",
+            "remove": "Remover",
+            "change_photo": "Clique para alterar a foto",
+            "change_photo_inactive": "Só pode alterar fotos de membros ativos",
+            "confirm_remove": "Tem a certeza que quer remover este membro?"
+        },
+        "roles_manager": {
+            "title": "Gestão de Cargos"
+        },
+        "roles_filter": {
+            "existing_title": "Cargos Existentes",
+            "all": "Todos",
+            "search_placeholder": "Pesquisar cargo, nível de acesso ou departamento...",
+            "active": "Ativos",
+            "show_inactive": "Mostrar Inativos",
+            "empty_all": "Nenhum cargo encontrado.",
+            "empty_select": "Selecione um departamento para ver os cargos.",
+            "status_active": "Ativo",
+            "status_inactive": "Inativo",
+            "remove": "Remover",
+            "add_title": "Adicionar Novo Cargo",
+            "role_name_placeholder": "Nome do Cargo",
+            "adding": "A adicionar...",
+            "add_btn": "Adicionar Cargo",
+            "error_add": "Erro ao adicionar cargo",
+            "error_remove": "Erro ao remover cargo",
+            "access_guest": "Normal",
+            "access_member": "Membro",
+            "access_shop_manager": "Gestor de Loja",
+            "access_coordinator": "Coordenador",
+            "access_admin": "Administrador",
+            "confirm_remove": "Tem a certeza que quer remover o cargo \"{role}\" do departamento \"{department}\"?"
+        },
+        "team_manager": {
+            "title": "Gestão de Equipas"
+        }
+        
+    
+    }
+}
