@@ -1,5 +1,87 @@
 # neiist
 
+## 1.9.0
+
+### Minor Changes
+
+- Shop and product management overhaul:
+  - Reworked product create/edit into dedicated flows/pages with reusable management cards
+  - Added dynamic variant definitions with automatic Cartesian-product variant matrix generation
+  - Introduced TagInput + ColourPicker integration with named color variants support
+  - Improved ProductForm structure/styling and responsive behavior
+  - Added product archiving/deletion flow and improved shop management empty states
+
+## 1.8.2
+
+### Patch Changes
+
+- Replaced ProductForm validation error state with toast notifications
+- Enhanced dbUtils delete functions with improved error handling and mapping
+- Added toast notifications for ShopManagement action errors
+
+## 1.8.1
+
+### Patch Changes
+
+- Improved ProductDetail variant selection logic and stock handling
+- Added no-image placeholder support for ProductCard and ProductDetail image sections
+- Improved ProductForm calculations and variant definitions UX limits
+
+## 1.8.0
+
+### Minor Changes
+
+- Added SumUp readers management and POS payment flow (send payment to physical TPA)
+- Added Apple Pay integration with SumUp
+
+## 1.7.2
+
+### Patch Changes
+
+- Added Next.js cron job to auto-cancel pending orders after 72h and send email notifications
+- Added explicit message when event capacity is reached
+
+## 1.7.1
+
+### Patch Changes
+
+- Added pickup_deadline to orders across SQL, dbUtils, and UI/UX
+- Admin can override stock or order deadline when adding orders to the database
+
+## 1.7.0
+
+### Minor Changes
+
+- Added SQL trigger to restock limited stock items on order cancellation
+- Added created_by property to orders table
+- Fixed SumUp UUID and transaction code persistence to the database
+- Enforced stock and order deadline rules in SQL with custom exceptions
+- Updated API routes and frontend behavior to reflect SQL enforcement changes
+
+## 1.6.5
+
+### Patch Changes
+
+- Admins and coordinators can edit existing orders (campus, items, phone number, and NIF)
+
+## 1.6.4
+
+### Patch Changes
+
+- Added email sending to selected users
+
+## 1.6.3
+
+### Patch Changes
+
+- Added new filters UI/UX with per-column filtering and dedicated mobile filter UI
+
+## 1.6.2
+
+### Patch Changes
+
+- Added flyout dropdown menu for choosing the product variant
+
 ## 1.6.1
 
 ### Patch Changes

@@ -263,8 +263,8 @@ CREATE TABLE neiist.orders (
 CREATE TABLE neiist.order_items (
   id SERIAL PRIMARY KEY,
   order_id INTEGER NOT NULL REFERENCES neiist.orders(id) ON DELETE CASCADE,
-  product_id INTEGER NOT NULL REFERENCES neiist.products(id),
-  variant_id INTEGER REFERENCES neiist.product_variants(id),
+  product_id INTEGER REFERENCES neiist.products(id) ON DELETE SET NULL,
+  variant_id INTEGER REFERENCES neiist.product_variants(id) ON DELETE SET NULL,
   product_name TEXT NOT NULL,
   variant_label TEXT,
   variant_options JSONB,
@@ -272,6 +272,9 @@ CREATE TABLE neiist.order_items (
   unit_price NUMERIC(10,2) NOT NULL,
   total_price NUMERIC(10,2) NOT NULL
 );
+
+-- Index for better search performance of products on orders
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON neiist.order_items(product_id);
 
 --Triggers
 
@@ -333,6 +336,30 @@ AFTER UPDATE OF status ON neiist.orders
 FOR EACH ROW
 WHEN (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'cancelled')
 EXECUTE FUNCTION neiist.restock_limited_items_on_order_cancel();
+
+-- Update the name of products on orders
+CREATE OR REPLACE FUNCTION neiist.update_order_item_product_name_on_product_rename()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF NEW.name IS DISTINCT FROM OLD.name THEN
+    UPDATE neiist.order_items oi
+    SET product_name = NEW.name
+    WHERE oi.product_id = NEW.id
+      AND oi.product_name = OLD.name;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_update_order_item_product_name_on_product_rename
+AFTER UPDATE OF name ON neiist.products
+FOR EACH ROW
+WHEN (OLD.name IS DISTINCT FROM NEW.name)
+EXECUTE FUNCTION neiist.update_order_item_product_name_on_product_rename();
 
 -- FUNCTIONS
 
