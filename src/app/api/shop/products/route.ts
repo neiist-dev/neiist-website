@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
       images: finalImages,
       category: body.category,
       stock_type: body.stock_type,
-      stock_quantity: body.stock_quantity,
-      order_deadline: body.order_deadline,
+      stock_quantity: body.stock_quantity ?? null,
+      order_deadline: body.order_deadline ?? null,
       active: true,
     });
 

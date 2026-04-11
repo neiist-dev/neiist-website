@@ -1,0 +1,181 @@
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.triggerWrap {
+  position: relative;
+  width: 100%;
+}
+
+.label {
+  color: #374151;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.trigger {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  padding: 0.75rem 40px 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  font-size: 0.95rem;
+  color: #111827;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.trigger:focus,
+.triggerOpen {
+  border-color: var(--primary-colour);
+  box-shadow: 0 0 0 1px var(--primary-colour);
+}
+
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chevronButton {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.chevronButton:disabled {
+  cursor: not-allowed;
+}
+
+.chevron {
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+  animation: dropdownIn 0.1s ease;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.optionList {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.empty {
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  color: #9ca3af;
+  font-family: inherit;
+  text-align: center;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.optionActive {
+  background: #f3f4f6;
+}
+
+.optionSelected {
+  color: var(--primary-colour);
+}
+
+.optionIcon {
+  width: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.noTags {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: white;
+  font-size: 0.75rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.badgeRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.badgeRemove:hover {
+  color: #374151;
+}

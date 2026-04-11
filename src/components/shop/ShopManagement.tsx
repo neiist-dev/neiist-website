@@ -1,14 +1,13 @@
 "use client";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import Image from "next/image";
-import Link from "next/link";
-import { FaPlus, FaEdit } from "react-icons/fa";
-import { FiTrash2, FiPackage, FiArchive } from "react-icons/fi";
-import { MdOutlineUnarchive } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import { FaPlus } from "react-icons/fa";
+import { FiPackage, FiArchive } from "react-icons/fi";
 import { Product, Category } from "@/types/shop";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import ProductForm from "@/components/shop/ProductForm";
+import { PiContactlessPayment } from "react-icons/pi";
+import ProductManagementCard from "./ProductManagementCard";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 import ColorfulText from "../ColorfulText";
@@ -24,14 +23,12 @@ type ConfirmAction =
   | { type: "permanent"; productId: number };
 
 export default function ShopManagement({ products, categories }: ShopManagementProps) {
-  const [view, setView] = useState<"list" | "add" | "edit">("list");
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
-  const [imageIndex, setImageIndex] = useState<{ [productId: number]: number }>({});
 
   const activeProducts = useMemo(() => products.filter((p) => p.active !== false), [products]);
   const archivedProducts = useMemo(() => products.filter((p) => p.active === false), [products]);
@@ -61,9 +58,8 @@ export default function ShopManagement({ products, categories }: ShopManagementP
     return filtered;
   }, [visibleProducts, search, categoryFilter, fuse]);
 
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setView("edit");
+  const handleEdit = (productId: number) => {
+    router.push(`/shop/manage/${productId}/edit`);
   };
 
   const handleArchive = (productId: number) => {
@@ -123,41 +119,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
     setPendingAction(null);
   };
 
-  const getStockDisplay = (product: Product) => {
-    if (product.stock_type === "on_demand") return "Sob Encomenda";
-    const totalStock =
-      product.variants?.length > 0
-        ? product.variants.reduce((sum, v) => sum + (v.stock_quantity || 0), 0)
-        : product.stock_quantity || 0;
-    return `${totalStock} em stock`;
-  };
-
-  const getStockStatus = (product: Product) => {
-    if (product.stock_type === "on_demand") return "on-demand";
-    const totalStock =
-      product.variants?.length > 0
-        ? product.variants.reduce((sum, v) => sum + (v.stock_quantity || 0), 0)
-        : product.stock_quantity || 0;
-    if (totalStock === 0) return "out-of-stock";
-    if (totalStock <= 5) return "low-stock";
-    return "in-stock";
-  };
-
   const isFiltering = search.trim() !== "" || categoryFilter !== "all";
-
-  if (view === "add" || view === "edit") {
-    return (
-      <ProductForm
-        product={editingProduct}
-        isEdit={view === "edit"}
-        onBack={() => {
-          setView("list");
-          setEditingProduct(null);
-        }}
-        categories={categories}
-      />
-    );
-  }
 
   return (
     <>
@@ -175,15 +137,11 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       <div className={styles.container}>
         <div className={styles.header}>
           <ColorfulText className={styles.title} text="Gestão da Loja" />
-          <div className={styles.headerActions}>
-            <Link href="/shop/pos" className={styles.posBtn}>
-              Gestão POS
-            </Link>
-            <button className={styles.addBtn} onClick={() => setView("add")}>
-              <FaPlus /> Adicionar Produto
-            </button>
-          </div>
+          <button className={styles.addBtn} onClick={() => router.push("/shop/manage/new")}>
+            <FaPlus /> Adicionar Produto
+          </button>
         </div>
+
         <div className={styles.filters}>
           <input
             type="text"
@@ -212,6 +170,9 @@ export default function ShopManagement({ products, categories }: ShopManagementP
               ? "Ver ativos"
               : `Arquivados${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
           </button>
+          <button className={styles.addBtn} onClick={() => router.push("/shop/pos")}>
+            <PiContactlessPayment /> Gestão POS
+          </button>
         </div>
 
         {filteredProducts.length === 0 ? (
@@ -237,91 +198,14 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         ) : (
           <div className={styles.grid}>
             {filteredProducts.map((product) => (
-              <div
+              <ProductManagementCard
                 key={product.id}
-                className={`${styles.card} ${product.active === false ? styles.cardArchived : ""}`}>
-                <div className={styles.imageContainer}>
-                  {product.images && product.images.length > 0 ? (
-                    <Image
-                      src={product.images[imageIndex[product.id] || 0] || "/placeholder.jpg"}
-                      alt={product.name}
-                      width={140}
-                      height={140}
-                    />
-                  ) : (
-                    <div className={styles.placeholder}>Nenhuma imagem</div>
-                  )}
-                  <div className={`${styles.stockBadge} ${styles[getStockStatus(product)]}`}>
-                    {getStockDisplay(product)}
-                  </div>
-                  {product.active === false && (
-                    <div className={styles.archivedBadge}>Arquivado</div>
-                  )}
-                </div>
-                <div className={styles.thumbnails}>
-                  {product.images &&
-                    product.images.length > 1 &&
-                    product.images.map((img, idx) => (
-                      <button
-                        key={img + idx}
-                        className={`${styles.thumbBtn} ${(imageIndex[product.id] || 0) === idx ? styles.activeThumb : ""}`}
-                        onClick={() => setImageIndex((prev) => ({ ...prev, [product.id]: idx }))}
-                        tabIndex={-1}
-                        aria-label={`Ver imagem ${idx + 1}`}
-                        type="button">
-                        <Image
-                          src={img}
-                          alt=""
-                          width={28}
-                          height={28}
-                          className={styles.thumbImg}
-                          draggable={false}
-                        />
-                      </button>
-                    ))}
-                </div>
-                <div className={styles.cardContent}>
-                  <h3>{product.name}</h3>
-                  <p>{product.description}</p>
-                  <div className={styles.price}>{product.price}€</div>
-                  <div className={styles.productMeta}>
-                    <span className={styles.category}>{product.category}</span>
-                    <span className={styles.stockType}>
-                      {product.stock_type === "limited" ? "Limitado" : "Sob Encomenda"}
-                    </span>
-                  </div>
-                  <div className={styles.actions}>
-                    {product.active !== false ? (
-                      <>
-                        <button type="button" onClick={() => handleEdit(product)}>
-                          <FaEdit /> Editar
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.archiveBtn}
-                          onClick={() => handleArchive(product.id)}>
-                          <FiArchive /> Arquivar
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          className={styles.restoreBtn}
-                          onClick={() => handleRestore(product.id)}>
-                          <MdOutlineUnarchive /> Restaurar
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.deleteBtn}
-                          onClick={() => handlePermanentDelete(product.id)}>
-                          <FiTrash2 /> Eliminar
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
+                product={product}
+                onEdit={handleEdit}
+                onArchive={handleArchive}
+                onRestore={handleRestore}
+                onPermanentDelete={handlePermanentDelete}
+              />
             ))}
           </div>
         )}

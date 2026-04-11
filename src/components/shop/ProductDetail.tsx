@@ -25,7 +25,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
   const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
 
-  // ── All option type names, in stable insertion order ────────────────────
   const optionNames = useMemo(() => {
     const seen = new Set<string>();
     const result: string[] = [];
@@ -40,7 +39,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return result;
   }, [product.variants]);
 
-  // ── Selected values map: { [optionName]: selectedValue } ────────────────
   const [selected, setSelected] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     optionNames.forEach((name) => {
@@ -49,8 +47,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return init;
   });
 
-  // ── Available values per option, filtered by all prior selections ────────
-  // e.g. sizes available are only those that exist for the selected color
   const availableValues = useMemo(() => {
     const result: Record<string, string[]> = {};
     optionNames.forEach((name, idx) => {
@@ -72,7 +68,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return result;
   }, [product.variants, optionNames, selected]);
 
-  // When available values change, reset any selection that's no longer in the list
   useEffect(() => {
     setSelected((prev) => {
       const next = { ...prev };
@@ -92,7 +87,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setSelected((prev) => ({ ...prev, [optionName]: value }));
   }, []);
 
-  // ── Resolve the currently selected variant ───────────────────────────────
   const selectedVariant = useMemo(() => {
     if (optionNames.length === 0) return undefined;
     return product.variants.find((v) =>
@@ -100,7 +94,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     );
   }, [product.variants, optionNames, selected]);
 
-  // ── Images ───────────────────────────────────────────────────────────────
   const allImages = useMemo(() => {
     const result: string[] = [...product.images];
     const inResult = new Set(result);
@@ -121,7 +114,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       const idx = allImages.indexOf(variant.images[0]);
       return idx >= 0 ? idx : 0;
     },
-    [allImages]
+    [allImages, product]
   );
 
   const [imgIndex, setImgIndex] = useState(() => getVariantImageIndex(product.variants[0]));
@@ -130,12 +123,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setImgIndex(getVariantImageIndex(selectedVariant));
   }, [selectedVariant, getVariantImageIndex]);
 
-  // ── Price ────────────────────────────────────────────────────────────────
   const price = useMemo(() => {
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
   }, [product.price, selectedVariant]);
 
-  // ── Stock / availability ─────────────────────────────────────────────────
   const isDeadlineExpired =
     product.stock_type === "on_demand" &&
     !!product.order_deadline &&
@@ -144,7 +135,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const isVariantAvailable = useCallback(
     (v: (typeof product.variants)[0]) =>
       v.active && (product.stock_type !== "limited" || (v.stock_quantity ?? 0) > 0),
-    [product.stock_type]
+    [product]
   );
 
   const canBuy = useMemo(() => {
@@ -195,7 +186,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       </div>
 
       <div className={styles.grid}>
-        {/* ── Images ── */}
         <div className={styles.imageSection}>
           {allImages.length > 0 ? (
             <Image
@@ -227,27 +217,21 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           )}
         </div>
 
-        {/* ── Info ── */}
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
           <div className={styles.price}>{price.toFixed(2)}€</div>
           <p className={styles.description}>{product.description}</p>
 
-          {/* ── Dynamic N-option selectors ── */}
           {optionNames.map((optionName, idx) => {
             const isColor = isColorKey(optionName);
             const values = availableValues[optionName] ?? [];
             const priorOptions = optionNames.slice(0, idx);
-
             return (
               <div key={optionName}>
                 <span className={styles.label}>{optionName}</span>
                 <div className={isColor ? styles.colorOptions : styles.options}>
                   {values.map((val) => {
                     const isSelected = normalize(selected[optionName]) === normalize(val);
-
-                    // Available if at least one variant matching all prior options
-                    // + this value is in stock and active
                     const hasAvailable = product.variants.some((v) => {
                       const priorMatch = priorOptions.every(
                         (prior) => normalize(v.options?.[prior]) === normalize(selected[prior])
@@ -298,7 +282,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             );
           })}
 
-          {/* ── Quantity + Add to cart ── */}
           <span className={styles.label}>Quantidade</span>
           <div className={styles.qtyAndButton}>
             <div className={styles.quantity}>
@@ -326,7 +309,6 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
           </div>
 
-          {/* ── Aside details ── */}
           <div className={styles.asideDetails}>
             <details className={styles.detailsBlock}>
               <summary>

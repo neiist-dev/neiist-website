@@ -1,42 +1,41 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, type ReactNode } from "react";
 import Image from "next/image";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import {
   FaArrowLeft,
+  FaChevronDown,
   FaPlus,
   FaSave,
   FaTrash,
-  FaChevronDown,
-  FaChevronUp,
-  FaUpload,
-  FaChevronLeft,
-  FaChevronRight,
+  FaTag,
+  FaAlignLeft,
+  FaFolder,
+  FaEuroSign,
+  FaBox,
+  FaImages,
+  FaSlidersH,
+  FaLayerGroup,
+  FaCalendarAlt,
 } from "react-icons/fa";
-import { LuCheck } from "react-icons/lu";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Product, Category } from "@/types/shop";
+import { Product, Category, ProductVariant } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shopUtils";
-import TagInput, { TagValue } from "@/components/TagInput";
+import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOptionsEditor";
+import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import ColorfulText from "@/components/ColorfulText";
+import ToggleSwitch from "@/components/ToggleSwitch";
 
-const NUMBER_MAX_VARIANT = 3;
-
-interface ProductFormProps {
-  product?: Product | null;
-  isEdit?: boolean;
-  onBack: () => void;
-  categories: Category[];
-}
-
-type VariantDefinition = { id: string; name: string; values: TagValue[] };
 type ImageFile = { file: File; preview: string };
-
+type VariantDefinition = { id: string; name: string; values: variantValue[] };
+type GroupSlot = { existing: string[]; newFiles: ImageFile[]; price_modifier: number };
+type GroupImages = Record<string, GroupSlot>;
 type VariantForm = {
   id?: number;
-  options: { [k: string]: string };
+  options: Record<string, string>;
   price_modifier: number;
   stock_quantity: number;
   active: boolean;
@@ -44,163 +43,79 @@ type VariantForm = {
   newImages: ImageFile[];
 };
 
-type GroupSlot = {
-  existing: string[];
-  newFiles: ImageFile[];
-  price_modifier: number;
-  stock_quantity: number;
+type ProductFormProps = {
+  product?: Product;
+  isEdit?: boolean;
+  onBackAction?: () => void;
+  backHref?: string;
+  categories: Category[];
 };
-type GroupImages = Record<string, GroupSlot>;
 
-function slotImgs(slot: GroupSlot) {
-  return [...slot.existing, ...slot.newFiles.map((f) => f.preview)];
-}
+const MAX_VARIANTS = 3;
 
-function displayName(optType: string, raw: string) {
-  if (isColorKey(optType)) return splitNameHex(raw).name || raw;
-  return raw;
-}
+const emptyGroupSlot = (): GroupSlot => ({ existing: [], newFiles: [], price_modifier: 0 });
 
-function normalizeOptVal(optType: string, raw: string): string {
-  if (isColorKey(optType)) {
-    const { name, hex } = splitNameHex(raw);
-    return hex ? joinNameHex(name, hex) : raw;
-  }
-  return raw;
-}
+const slotImages = (slot: GroupSlot) => [...slot.existing, ...slot.newFiles.map((f) => f.preview)];
 
-function optValMatches(optType: string, variantVal: string, groupVal: string): boolean {
-  if (isColorKey(optType)) {
-    const { hex: varHex } = splitNameHex(variantVal);
-    const { hex: grpHex } = splitNameHex(groupVal);
-    if (varHex && grpHex) return varHex === grpHex;
-  }
-  return variantVal === groupVal;
-}
+const normalizeOptVal = (type: string, raw: string) => {
+  if (!isColorKey(type)) return raw;
+  const { name, hex } = splitNameHex(raw);
+  return hex ? joinNameHex(name, hex) : raw;
+};
+
+const optValMatches = (type: string, varVal: string, grpVal: string) =>
+  isColorKey(type) ? splitNameHex(varVal).hex === splitNameHex(grpVal).hex : varVal === grpVal;
+
+const toBase64 = (file: File): Promise<string> =>
+  new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res((reader.result as string).split(",")[1]);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+
+const toImageUpload = async (file: File) => ({
+  imageBase64: await toBase64(file),
+  imageName: file.name,
+});
+
+const cartesian = <T,>(sets: T[][]): T[][] =>
+  sets.reduce<T[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
 
 function ImageGrid({
   images,
   onAdd,
   onRemove,
+  hint,
 }: {
   images: string[];
-  onAdd: (_file: File) => void;
-  onRemove: (_i: number) => void;
+  onAdd: (..._args: [file: File]) => void;
+  onRemove: (..._args: [index: number]) => void;
+  hint?: string;
 }) {
-  const ref = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className={styles.variantImageGrid}>
-      {images.map((src, i) => (
-        <div key={i} className={styles.variantImgSlot}>
-          <Image src={src} alt="" fill className={styles.variantImgThumb} />
-          <button type="button" className={styles.variantImgRemove} onClick={() => onRemove(i)}>
-            <FaTrash size={8} />
-          </button>
-        </div>
-      ))}
-      <button type="button" className={styles.variantImgAdd} onClick={() => ref.current?.click()}>
-        <FaPlus size={12} />
-        <input
-          ref={ref}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []);
-            files.forEach((f) => onAdd(f));
-            e.target.value = "";
-          }}
-        />
-      </button>
-    </div>
-  );
-}
-
-function ImageCarousel({
-  images,
-  onAdd,
-  onRemove,
-}: {
-  images: string[];
-  onAdd: (_file: File) => void;
-  onRemove: (_i: number) => void;
-}) {
-  const [idx, setIdx] = useState(0);
-  const ref = useRef<HTMLInputElement>(null);
-  const safe = Math.min(idx, Math.max(0, images.length - 1));
-
-  return (
-    <div className={styles.carousel}>
-      <div className={styles.carouselStage}>
-        {images.length > 0 ? (
-          <>
-            <Image key={safe} src={images[safe]} alt="" fill className={styles.carouselImg} />
-            {images.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className={`${styles.carouselNav} ${styles.carouselNavLeft}`}
-                  onClick={() => setIdx((p) => Math.max(0, p - 1))}>
-                  <FaChevronLeft size={12} />
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.carouselNav} ${styles.carouselNavRight}`}
-                  onClick={() => setIdx((p) => Math.min(images.length - 1, p + 1))}>
-                  <FaChevronRight size={12} />
-                </button>
-                <div className={styles.carouselDots}>
-                  {images.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className={`${styles.dot} ${i === safe ? styles.dotActive : ""}`}
-                      onClick={() => setIdx(i)}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-            <button
-              type="button"
-              className={styles.carouselRemove}
-              onClick={() => {
-                onRemove(safe);
-                setIdx(Math.max(0, safe - 1));
-              }}>
-              <FaTrash size={11} /> Remover
-            </button>
-          </>
-        ) : (
-          <div className={styles.carouselEmpty}>
-            <FaUpload size={22} style={{ opacity: 0.3 }} />
-            <span>Sem imagens</span>
-          </div>
-        )}
-      </div>
-      <div className={styles.thumbStrip}>
+    <div className={styles.imgEditor}>
+      {hint && <span className={styles.subLabel}>{hint}</span>}
+      <div className={styles.imgGrid}>
         {images.map((src, i) => (
-          <button
-            key={i}
-            type="button"
-            className={`${styles.thumbBtn} ${i === safe ? styles.thumbBtnActive : ""}`}
-            onClick={() => setIdx(i)}>
-            <Image src={src} alt="" fill className={styles.thumbImg} />
-          </button>
+          <div key={i} className={styles.imgSlot}>
+            <Image src={src} alt="" fill className={styles.imgThumb} />
+            <button type="button" className={styles.imgRemove} onClick={() => onRemove(i)}>
+              <FaTrash size={10} />
+            </button>
+          </div>
         ))}
-        <button type="button" className={styles.thumbAdd} onClick={() => ref.current?.click()}>
-          <FaUpload size={12} />
+        <button type="button" className={styles.imgAdd} onClick={() => inputRef.current?.click()}>
+          <FaPlus size={14} />
           <input
-            ref={ref}
+            ref={inputRef}
             type="file"
             accept="image/*"
             multiple
             hidden
             onChange={(e) => {
-              const files = Array.from(e.target.files ?? []);
-              files.forEach((f) => onAdd(f));
-              if (files.length > 0) setIdx(images.length + files.length - 1);
+              Array.from(e.target.files ?? []).forEach(onAdd);
               e.target.value = "";
             }}
           />
@@ -210,97 +125,92 @@ function ImageCarousel({
   );
 }
 
-function VmCard({
-  isOpen,
-  isInactive,
-  onToggle,
-  left,
-  right,
+function Field({
+  label,
+  icon,
+  iconAlignTop,
   children,
 }: {
-  isOpen: boolean;
-  isInactive?: boolean;
-  onToggle: () => void;
-  left: React.ReactNode;
-  right?: React.ReactNode;
-  children?: React.ReactNode;
+  label: string;
+  icon: ReactNode;
+  iconAlignTop?: boolean;
+  children: ReactNode;
 }) {
   return (
-    <div
-      className={[
-        styles.vmCard,
-        isOpen && styles.vmCardExpanded,
-        isInactive && styles.vmCardInactive,
-      ]
-        .filter(Boolean)
-        .join(" ")}>
-      <div className={styles.vmHeader} onClick={onToggle}>
-        <div className={styles.vmHeaderLeft}>{left}</div>
-        <div className={styles.vmHeaderRight}>
-          {right}
-          <span className={styles.expandIcon}>
-            {isOpen ? <FaChevronUp size={11} /> : <FaChevronDown size={11} />}
-          </span>
-        </div>
+    <div className={styles.fieldWrap}>
+      <label className={`${styles.label} ${styles.basicLabel}`}>{label}</label>
+      <div className={styles.inputRow}>
+        <span className={`${styles.inputIcon} ${iconAlignTop ? styles.alignTopIcon : ""}`}>
+          {icon}
+        </span>
+        <div className={styles.inputControl}>{children}</div>
       </div>
-      {isOpen && <div className={styles.vmBody}>{children}</div>}
     </div>
   );
 }
 
-function PriceStockFields({
-  price,
-  stock,
-  onPrice,
-  onStock,
-  disabled,
-  stockWarning,
-  isOnDemand,
-}: {
-  price: number;
-  stock: number;
-  onPrice: (_v: number) => void;
-  onStock: (_v: number) => void;
-  disabled?: boolean;
-  stockWarning?: string;
-  basePrice?: number;
-  isOnDemand?: boolean;
-}) {
-  const stockDisabled = disabled || isOnDemand;
-
+function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <div className={styles.vmFields}>
-      <div className={styles.vmFieldGroup}>
-        <span className={styles.subLabel}>Preço +/-</span>
-        <div className={styles.row} style={{ gap: "0.35rem" }}>
-          <input
-            className={styles.field}
-            type="number"
-            value={price}
-            onChange={(e) => onPrice(Number(e.target.value))}
-            placeholder="0.00"
-            step="0.01"
-            disabled={disabled}
-          />
-          <span style={{ color: "#9ca3af", fontSize: "0.9rem" }}>€</span>
+    <div className={styles.sectionTitle}>
+      <span className={styles.sectionTitleIcon}>{icon}</span>
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function ItemCard({
+  isOpen,
+  onToggle,
+  isActive = true,
+  onActiveToggle,
+  title,
+  subtitle,
+  hex,
+  typeTag,
+  meta,
+  badge,
+  children,
+}: {
+  isOpen: boolean;
+  onToggle: () => void;
+  isActive?: boolean;
+  onActiveToggle?: () => void;
+  title: string;
+  subtitle?: string | null;
+  hex?: string;
+  typeTag?: string | null;
+  meta?: string | null;
+  badge: number;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`${styles.itemCard} ${!isActive ? styles.itemCardInactive : ""}`}>
+      <div className={styles.itemHeader} onClick={onToggle}>
+        <div className={styles.itemHeaderLeft}>
+          {onActiveToggle && (
+            <input
+              type="checkbox"
+              checked={isActive}
+              className={styles.checkbox}
+              onClick={(e) => e.stopPropagation()}
+              onChange={onActiveToggle}
+            />
+          )}
+          {hex ? (
+            <span className={styles.swatch} style={{ background: hex }} />
+          ) : typeTag ? (
+            <span className={styles.typeTag}>{typeTag}</span>
+          ) : null}
+          <span className={styles.itemTitle}>{title}</span>
+          {subtitle && <span className={styles.itemSubtitle}>{subtitle}</span>}
+        </div>
+        <div className={styles.itemHeaderRight}>
+          {meta && <span className={styles.itemMeta}>{meta}</span>}
+          {badge > 0 && <span className={styles.badge}>{badge}</span>}
+          <FaChevronDown className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`} />
         </div>
       </div>
-      <div className={styles.vmFieldGroup}>
-        <span className={styles.subLabel}>
-          Stock {stock === 0 ? <span className={styles.capHint}>(bloqueado)</span> : ""}
-          {isOnDemand && <span className={styles.capHint}> (sob encomenda)</span>}
-        </span>
-        <input
-          className={[styles.field, stockWarning ? styles.fieldWarn : ""].join(" ")}
-          type="number"
-          value={stock}
-          onChange={(e) => onStock(Number(e.target.value))}
-          placeholder="0 = sem limite"
-          disabled={stockDisabled}
-          min={0}
-        />
-        {stockWarning && <span className={styles.warnText}>{stockWarning}</span>}
-      </div>
+      <div className={`${styles.itemBody} ${!isOpen ? styles.itemBodyClosed : ""}`}>{children}</div>
     </div>
   );
 }
@@ -308,675 +218,425 @@ function PriceStockFields({
 export default function ProductForm({
   product,
   isEdit = false,
-  onBack,
+  onBackAction,
+  backHref = "/shop/manage",
   categories,
 }: ProductFormProps) {
-  const [name, setName] = useState(product?.name || "");
-  const [description, setDescription] = useState(product?.description || "");
-  const [price, setPrice] = useState(product?.price || 0);
-  const [category, setCategory] = useState(product?.category || "");
-  const [stockType, setStockType] = useState(product?.stock_type || "limited");
-  const [stockQuantity, setStockQuantity] = useState(product?.stock_quantity || 0);
-  const [orderDeadline, setOrderDeadline] = useState<Date | undefined>(
-    product?.order_deadline ? new Date(product.order_deadline) : undefined
-  );
+  const router = useRouter();
+  const [form, setForm] = useState({
+    name: product?.name ?? "",
+    description: product?.description ?? "",
+    price: product?.price ?? 0,
+    category: product?.category ?? "",
+    stock_type: product?.stock_type ?? "limited",
+    stock_quantity: product?.stock_quantity ?? 0,
+    order_deadline: product?.order_deadline ? new Date(product.order_deadline) : undefined,
+  });
+  const updateForm = (updates: Partial<typeof form>) => setForm((p) => ({ ...p, ...updates }));
+
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const deadlineRef = useRef<HTMLInputElement>(null);
+  const [allCategories, setAllCategories] = useState<Category[]>(categories);
+  const [uploading, setUploading] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
-  const [allCategories] = useState<Category[]>(categories);
-
-  const [existingProductImages, setExistingProductImages] = useState<string[]>(
-    product?.images || []
+  const initialVariantIdsRef = useRef<Set<number>>(
+    new Set(product?.variants?.map((v) => v.id) ?? [])
   );
-  const [newProductImages, setNewProductImages] = useState<ImageFile[]>([]);
-  const allProductImages = [...existingProductImages, ...newProductImages.map((f) => f.preview)];
 
-  const [variantDefinitions, setVariantDefinitions] = useState<VariantDefinition[]>(() => {
-    if (product?.variants?.length) {
-      const types = [...new Set(product.variants.flatMap((v) => Object.keys(v.options || {})))];
-      return types.map((type) => {
-        const rawValues = [
-          ...new Set(
-            product.variants
-              ?.map((v) => v.options[type])
-              .filter((v): v is string => typeof v === "string")
-          ),
-        ];
-        let values: TagValue[] = rawValues;
-        if (isColorKey(type)) {
-          values = rawValues.map((val) => {
-            const { name, hex } = splitNameHex(val);
-            return hex ? { name: name || val, color: hex } : val;
-          });
-        }
-        return {
-          id: Math.random().toString(36).substr(2, 9),
-          name: type,
-          values,
-        };
-      });
-    }
-    return [{ id: "1", name: "", values: [] }];
+  const [productImages, setProductImages] = useState<{ existing: string[]; new: ImageFile[] }>({
+    existing: product?.images ?? [],
+    new: [],
   });
 
-  const optionTypes = variantDefinitions.map((d) => d.name).filter(Boolean);
+  const [variantDefinitions, setVariantDefinitions] = useState<VariantDefinition[]>(() => {
+    if (!product?.variants?.length) return [{ id: "1", name: "", values: [] }];
+    const types = [
+      ...new Set(product.variants.flatMap((v: ProductVariant) => Object.keys(v.options ?? {}))),
+    ];
+    return types.map((type: string): VariantDefinition => {
+      const rawValues = [
+        ...new Set(product.variants!.map((v: ProductVariant) => String(v.options?.[type] ?? ""))),
+      ];
+      const values: variantValue[] = isColorKey(type)
+        ? rawValues.map((val) => {
+            const { name, hex } = splitNameHex(val);
+            return hex ? { name: name || val, color: hex } : val;
+          })
+        : rawValues;
+      return { id: Math.random().toString(36).slice(2), name: type, values };
+    });
+  });
 
   const [variants, setVariants] = useState<VariantForm[]>(
-    product?.variants?.map((v) => ({
+    product?.variants?.map((v: ProductVariant) => ({
       id: v.id,
       options: Object.fromEntries(
-        Object.entries(v.options || {}).map(([k, val]) => {
-          const raw = typeof val === "string" ? val.replace(/^["']|["']$/g, "") : String(val);
-          return [k, normalizeOptVal(k, raw)];
-        })
+        Object.entries(v.options ?? {}).map(([k, val]) => [
+          k,
+          normalizeOptVal(k, String(val).replace(/['"]/g, "")),
+        ])
       ),
-      price_modifier: v.price_modifier || 0,
-      stock_quantity: v.stock_quantity || 0,
+      price_modifier: v.price_modifier ?? 0,
+      stock_quantity: v.stock_quantity ?? 0,
       active: v.active !== false,
-      existingImages: v.images || [],
+      existingImages: v.images ?? [],
       newImages: [],
-    })) || []
+    })) ?? []
   );
 
   const [groupImages, setGroupImages] = useState<GroupImages>(() => {
     if (!product?.variants?.length) return {};
     const initial: GroupImages = {};
-    for (const v of product.variants) {
-      for (const [optType, optVal] of Object.entries(v.options || {})) {
-        const raw =
-          typeof optVal === "string" ? optVal.replace(/^["']|["']$/g, "") : String(optVal);
-        const key = `${optType}::${normalizeOptVal(optType, raw)}`;
-        if (!initial[key]) {
-          initial[key] = { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
-        }
-      }
-    }
-    for (const [key, slot] of Object.entries(initial)) {
+    product.variants.forEach((v: ProductVariant) =>
+      Object.entries(v.options ?? {}).forEach(([t, val]) => {
+        const key = `${t}::${normalizeOptVal(t, String(val).replace(/['"]/g, ""))}`;
+        if (!initial[key]) initial[key] = emptyGroupSlot();
+      })
+    );
+    Object.entries(initial).forEach(([key, slot]) => {
       const [optType, optVal] = key.split("::");
-
-      const matchingVariants = product.variants.filter((v) => {
-        const raw =
-          typeof v.options?.[optType] === "string"
-            ? (v.options![optType] as string).replace(/^["']|["']$/g, "")
-            : "";
-        return normalizeOptVal(optType, raw) === optVal;
-      });
-
-      slot.stock_quantity = matchingVariants
-        .filter((v) => v.active !== false)
-        .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
-
       const seen = new Set<string>();
-      for (const v of matchingVariants) {
-        for (const img of v.images ?? []) {
-          if (!seen.has(img)) {
-            seen.add(img);
-            slot.existing.push(img);
-          }
-        }
-      }
-    }
+      product
+        .variants!.filter(
+          (v: ProductVariant) =>
+            normalizeOptVal(optType, String(v.options?.[optType] ?? "")) === optVal
+        )
+        .forEach((v: ProductVariant) =>
+          v.images?.forEach((img: string) => {
+            if (!seen.has(img)) {
+              seen.add(img);
+              slot.existing.push(img);
+            }
+          })
+        );
+    });
     return initial;
   });
 
-  const [groupOverrides, setGroupOverrides] = useState<Set<string>>(new Set());
-
-  const [activeTab, setActiveTab] = useState<string>("__combos__");
+  const [activeTab, setActiveTab] = useState<"__groups__" | "__combos__">("__groups__");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [showSecondaryGroups, setShowSecondaryGroups] = useState(false);
 
-  const [uploading, setUploading] = useState(false);
-
-  useEffect(() => {
-    const stillValid = variantDefinitions.filter((d) => d.name && d.values.length > 0);
-    if (stillValid.length === 0 && variants.length > 0) {
-      setVariants([]);
-      setGroupImages({});
-      setGroupOverrides(new Set());
-    }
-  }, [variantDefinitions, variants.length]);
-
-  const generateVariants = useCallback((defs: VariantDefinition[]) => {
-    const valid = defs.filter((d) => d.name && d.values.length > 0);
-    if (!valid.length) return;
-    const cartesian = (sets: TagValue[][]) =>
-      sets.reduce<TagValue[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
-    const names = valid.map((d) => d.name);
-    const combos = cartesian(valid.map((d) => d.values));
-    setVariants((prev) =>
-      combos.map((combo) => {
-        const options = Object.fromEntries(
-          names.map((n, i) => {
-            const val = combo[i];
-            const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
-            return [n, strVal];
-          })
-        );
-        const existing = prev.find((v) =>
-          names.every((n) => {
-            const ev = v.options[n] || "",
-              nv = options[n];
-            if (isColorKey(n)) {
-              const { hex: eh } = splitNameHex(ev);
-              const { hex: nh } = splitNameHex(nv);
-              if (eh && nh && eh === nh) return true;
-            }
-            return ev === nv;
-          })
-        );
-        return (
-          existing ?? {
-            options,
-            price_modifier: 0,
-            stock_quantity: 0,
-            active: true,
-            existingImages: [],
-            newImages: [],
-          }
-        );
-      })
-    );
-  }, []);
-
-  useEffect(() => {
-    const t = setTimeout(() => generateVariants(variantDefinitions), 500);
-    return () => clearTimeout(t);
-  }, [variantDefinitions, generateVariants]);
-
+  const categoryOptions = useMemo(() => allCategories.map((c) => c.name).sort(), [allCategories]);
+  const optionTypes = variantDefinitions.map((d) => d.name).filter(Boolean);
+  const hasVariants = variants.length > 0;
   const totalVariantStock = variants.reduce(
-    (sum, v) => sum + (v.active ? Number(v.stock_quantity) || 0 : 0),
+    (acc, v) => acc + (v.active ? Number(v.stock_quantity) : 0),
     0
   );
-  const hasVariants = variants.length > 0;
-  const hasGroupKeys = variantDefinitions.some((d) => d.name && d.values.length > 0);
+  const allGlobalImages = [...productImages.existing, ...productImages.new.map((f) => f.preview)];
+  const hasAnyVariantSpecificImage =
+    variants.some((v) => v.existingImages.length > 0 || v.newImages.length > 0) ||
+    Object.values(groupImages).some((s) => s.existing.length > 0 || s.newFiles.length > 0);
 
-  useEffect(() => {
-    if (!showDatePicker) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        datePickerRef.current &&
-        !datePickerRef.current.contains(e.target as Node) &&
-        deadlineRef.current &&
-        !deadlineRef.current.contains(e.target as Node)
-      ) {
-        setShowDatePicker(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showDatePicker]);
-
-  useEffect(() => {
-    const validTabs = [
-      ...(hasGroupKeys ? ["__groups__"] : []),
-      ...(hasVariants ? ["__combos__"] : []),
-    ];
-    if (!validTabs.includes(activeTab) && validTabs.length > 0) {
-      setActiveTab(validTabs[0]);
-    }
-  }, [optionTypes, hasVariants, hasGroupKeys, activeTab]);
-
-  const updateVariant = useCallback(
-    (i: number, u: Partial<VariantForm>) => {
-      setVariants((prev) => {
-        const updated = prev.map((v, idx) => (idx === i ? { ...v, ...u } : v));
-
-        if ("stock_quantity" in u || "active" in u) {
-          setGroupImages((prevGroups) => {
-            const next = { ...prevGroups };
-            const variantOptionKeys = Object.keys(updated[i]?.options ?? {});
-            for (const optType of variantOptionKeys) {
-              const optVal = updated[i].options[optType];
-              if (!optVal) continue;
-              const key = `${optType}::${optVal}`;
-              if (groupOverrides.has(key)) continue;
-
-              const total = updated
-                .filter((v) => v.active && v.options[optType] === optVal)
-                .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
-
-              next[key] = {
-                ...(next[key] ?? { existing: [], newFiles: [], price_modifier: 0 }),
-                stock_quantity: total,
-              };
-            }
-            return next;
-          });
-        }
-
-        return updated;
-      });
-    },
-    [groupOverrides]
+  const groupKeys = useMemo(
+    () =>
+      variantDefinitions.flatMap((def) => {
+        if (!def.name) return [];
+        return def.values.map((val) => {
+          const isStr = typeof val === "string";
+          const strVal = isStr ? val : joinNameHex(val.name, val.color);
+          const raw = isColorKey(def.name) && isStr ? splitNameHex(val) : null;
+          return {
+            key: `${def.name}::${strVal}`,
+            type: def.name,
+            val: strVal,
+            hex: raw?.hex ?? (!isStr ? val.color : undefined),
+            label: raw?.name ?? raw?.hex ?? (!isStr ? val.name : val),
+          };
+        });
+      }),
+    [variantDefinitions]
   );
 
-  const addVariantImage = (i: number, file: File) =>
-    updateVariant(i, {
-      newImages: [...variants[i].newImages, { file, preview: URL.createObjectURL(file) }],
-    });
+  const primaryGroupType = variantDefinitions[0]?.name?.trim() ?? groupKeys[0]?.type ?? "";
+  const visibleGroups = showSecondaryGroups
+    ? groupKeys
+    : groupKeys.filter((g) => g.type === primaryGroupType);
+  const secondaryGroupsCount = groupKeys.filter((g) => g.type !== primaryGroupType).length;
 
-  const removeVariantImage = (vi: number, ii: number) => {
-    const v = variants[vi];
-    if (ii < v.existingImages.length) {
-      updateVariant(vi, { existingImages: v.existingImages.filter((_, i) => i !== ii) });
-    } else {
-      const ni = ii - v.existingImages.length;
-      URL.revokeObjectURL(v.newImages[ni].preview);
-      updateVariant(vi, { newImages: v.newImages.filter((_, i) => i !== ni) });
-    }
-  };
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node))
+        setShowDatePicker(false);
+    };
+    if (showDatePicker) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showDatePicker]);
 
-  const getSlot = (key: string): GroupSlot =>
-    groupImages[key] ?? { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
-
-  const setSlot = (key: string, slot: GroupSlot) => setGroupImages((p) => ({ ...p, [key]: slot }));
-
-  const addGroupImage = (key: string, file: File) => {
-    const [optType, optVal] = key.split("::");
-    const preview = URL.createObjectURL(file);
-    const imageFile: ImageFile = { file, preview };
-
-    setGroupImages((prev) => {
-      const s = prev[key] ?? { existing: [], newFiles: [], price_modifier: 0, stock_quantity: 0 };
-      return { ...prev, [key]: { ...s, newFiles: [...s.newFiles, imageFile] } };
-    });
-
-    setVariants((prev) =>
-      prev.map((v) =>
-        optValMatches(optType, v.options[optType] || "", optVal)
-          ? { ...v, newImages: [...v.newImages, imageFile] }
-          : v
-      )
-    );
-  };
-
-  const removeGroupImage = (key: string, idx: number) => {
-    const [optType, optVal] = key.split("::");
-    const s = getSlot(key);
-
-    if (idx < s.existing.length) {
-      const urlToRemove = s.existing[idx];
-
-      setSlot(key, { ...s, existing: s.existing.filter((_, i) => i !== idx) });
-      setVariants((prev) =>
-        prev.map((v) =>
-          optValMatches(optType, v.options[optType] || "", optVal)
-            ? { ...v, existingImages: v.existingImages.filter((u) => u !== urlToRemove) }
-            : v
-        )
-      );
-    } else {
-      const ni = idx - s.existing.length;
-      const fileToRemove = s.newFiles[ni].file;
-      URL.revokeObjectURL(s.newFiles[ni].preview);
-
-      setSlot(key, { ...s, newFiles: s.newFiles.filter((_, i) => i !== ni) });
-
-      setVariants((prev) =>
-        prev.map((v) =>
-          optValMatches(optType, v.options[optType] || "", optVal)
-            ? { ...v, newImages: v.newImages.filter((f) => f.file !== fileToRemove) }
-            : v
-        )
-      );
-    }
-  };
-
-  const addDef = () =>
-    setVariantDefinitions((p) => [
-      ...p,
-      { id: Math.random().toString(36).substr(2, 9), name: "", values: [] },
-    ]);
-
-  const updateDefName = (i: number, newName: string) => {
-    const old = variantDefinitions[i].name;
-    setVariantDefinitions((p) => p.map((d, idx) => (idx === i ? { ...d, name: newName } : d)));
-    setVariants((p) =>
-      p.map((v) => {
-        const opts = { ...v.options };
-        if (old in opts && newName !== old) {
-          opts[newName] = opts[old];
-          delete opts[old];
-        }
-        return { ...v, options: opts };
-      })
-    );
-  };
-
-  const updateDefValues = (i: number, values: TagValue[]) =>
-    setVariantDefinitions((p) => p.map((d, idx) => (idx === i ? { ...d, values } : d)));
-
-  const removeDef = (i: number) => {
-    const removed = variantDefinitions[i].name;
-    const remaining = variantDefinitions.filter((_, idx) => idx !== i);
-
-    setVariantDefinitions(remaining);
-
-    setVariants((prev) =>
-      prev.map((v) => ({
-        ...v,
-        options: Object.fromEntries(Object.entries(v.options).filter(([k]) => k !== removed)),
-      }))
-    );
-
-    const stillValid = remaining.filter((d) => d.name && d.values.length > 0);
-    if (stillValid.length === 0) {
-      setVariants([]);
-      setGroupImages({});
-      setGroupOverrides(new Set());
-    } else {
-      setGroupImages((prev) => {
-        const next: GroupImages = {};
-        for (const [key, val] of Object.entries(prev)) {
-          if (!key.startsWith(`${removed}::`)) next[key] = val;
-        }
-        return next;
-      });
-      setGroupOverrides((prev) => {
-        const next = new Set(prev);
-        for (const key of Array.from(next)) {
-          if (key.startsWith(`${removed}::`)) next.delete(key);
-        }
-        return next;
-      });
-    }
-  };
-
-  function stockWarningFor(variant: VariantForm): string | undefined {
-    for (const optType of optionTypes) {
-      const val = variant.options[optType] || "";
-      const key = `${optType}::${val}`;
-      const groupSlot = groupImages[key];
-
-      if (!groupSlot || !groupOverrides.has(key)) continue;
-
-      const cap = groupSlot.stock_quantity;
-
-      if (cap === 0 && variant.stock_quantity > 0) {
-        return `Group "${displayName(optType, val)}" has stock 0 — this combination is blocked`;
+  // Auto-generate variant combinations from definitions
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const valid = variantDefinitions.filter((d) => d.name && d.values.length > 0);
+      if (!valid.length) {
+        setVariants([]);
+        setGroupImages({});
+        return;
       }
 
-      if (cap > 0) {
-        const siblingTotal = variants
-          .filter((v) => v.active && v !== variant && v.options[optType] === val)
-          .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
+      const names = valid.map((d) => d.name);
+      setVariants((prev) =>
+        cartesian(valid.map((d) => d.values)).map((combo) => {
+          const opts = Object.fromEntries(
+            names.map((n, i) => {
+              const val = combo[i];
+              return [n, typeof val === "string" ? val : joinNameHex(val.name, val.color)];
+            })
+          );
+          return (
+            prev.find((v) => names.every((n) => optValMatches(n, v.options[n] ?? "", opts[n]))) ?? {
+              options: opts,
+              price_modifier: 0,
+              stock_quantity: 0,
+              active: true,
+              existingImages: [],
+              newImages: [],
+            }
+          );
+        })
+      );
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [variantDefinitions]);
 
-        const totalIfSaved = siblingTotal + (Number(variant.stock_quantity) || 0);
+  useEffect(() => {
+    const validTabs: Array<"__groups__" | "__combos__"> = [
+      ...(groupKeys.length ? ["__groups__" as const] : []),
+      ...(hasVariants ? ["__combos__" as const] : []),
+    ];
+    if (validTabs.length && !validTabs.includes(activeTab)) setActiveTab(validTabs[0]);
+  }, [groupKeys.length, hasVariants, activeTab]);
 
-        if (totalIfSaved > cap) {
-          return `Sum of variants for "${displayName(optType, val)}" (${totalIfSaved}) exceeds group stock (max. ${cap})`;
-        }
+  const handleCategoryCreate = async (name: string) => {
+    try {
+      const res = await fetch("/api/shop/categories", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.category?.name) {
+        setAllCategories((p) => [...p, data.category]);
+        updateForm({ category: data.category.name });
       }
+    } catch {
+      toast.error("Erro ao criar categoria.");
     }
-    return undefined;
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      toast.error("Nome é obrigatório");
-      return;
-    }
-    if (!category) {
-      toast.error("Categoria é obrigatória");
-      return;
-    }
-    for (const v of variants) {
-      for (const t of optionTypes) {
-        if (!(v.options[t] || "").trim()) {
-          toast.error(`Variante deve ter "${t}" preenchido`);
-          return;
-        }
-        if (isColorKey(t) && !splitNameHex(v.options[t] || "").hex) {
-          toast.error(`Cor "${t}" precisa de hex`);
-          return;
-        }
-      }
-      const warn = stockWarningFor(v);
-      if (warn) {
-        toast.error(warn);
-        return;
-      }
-    }
+    if (!form.name.trim() || !form.category)
+      return toast.error("Nome e Categoria são obrigatórios.");
     setUploading(true);
     try {
-      const toB64 = (file: File) =>
-        new Promise<string>((res, rej) => {
-          const r = new FileReader();
-          r.onload = () => res((r.result as string).split(",")[1]);
-          r.onerror = rej;
-          r.readAsDataURL(file);
-        });
-
-      const imageUploads = await Promise.all(
-        newProductImages.map(async ({ file }) => ({
-          imageBase64: await toB64(file),
-          imageName: file.name,
-        }))
+      const currentVariantIds = new Set(
+        variants.map((v) => v.id).filter((id): id is number => typeof id === "number")
+      );
+      const variantsToDelete = Array.from(initialVariantIdsRef.current).filter(
+        (id) => !currentVariantIds.has(id)
       );
 
-      const groupUploads: Record<
-        string,
-        {
-          existing: string[];
-          uploads: { imageBase64: string; imageName: string }[];
-          price_modifier: number;
-          stock_quantity: number;
-        }
-      > = {};
-      for (const [key, slot] of Object.entries(groupImages)) {
-        groupUploads[key] = {
-          existing: slot.existing,
-          price_modifier: slot.price_modifier,
-          stock_quantity: slot.stock_quantity,
-          uploads: await Promise.all(
-            slot.newFiles.map(async ({ file }) => ({
-              imageBase64: await toB64(file),
-              imageName: file.name,
-            }))
-          ),
-        };
-      }
-
-      const variantsOut = await Promise.all(
-        variants.map(async (v) => ({
-          id: v.id,
-          options: v.options,
-          price_modifier: v.price_modifier,
-          stock_quantity: v.stock_quantity,
-          active: v.active,
-          images: v.existingImages,
-          imageUploads: await Promise.all(
-            v.newImages.map(async ({ file }) => ({
-              imageBase64: await toB64(file),
-              imageName: file.name,
-            }))
-          ),
-        }))
-      );
-
-      const body = {
+      const payload = {
         id: product?.id,
-        name: name.trim(),
-        description: description.trim(),
-        price: Number(price),
-        category,
-        stock_type: stockType,
-        stock_quantity: Number(stockQuantity),
-        images: existingProductImages,
-        imageUploads,
-        group_image_uploads: groupUploads,
-        variants: variantsOut,
-        order_deadline: orderDeadline?.toISOString() ?? null,
+        ...form,
+        images: productImages.existing,
+        imageUploads: await Promise.all(productImages.new.map((f) => toImageUpload(f.file))),
+        group_image_uploads: Object.fromEntries(
+          await Promise.all(
+            Object.entries(groupImages).map(async ([k, v]) => [
+              k,
+              {
+                existing: v.existing,
+                price_modifier: v.price_modifier,
+                uploads: await Promise.all(v.newFiles.map((f) => toImageUpload(f.file))),
+              },
+            ])
+          )
+        ),
+        variants: await Promise.all(
+          variants.map(async (v) => ({
+            id: v.id,
+            options: v.options,
+            price_modifier: v.price_modifier,
+            stock_quantity: v.stock_quantity,
+            active: v.active,
+            images: v.existingImages,
+            imageUploads: await Promise.all(v.newImages.map((f) => toImageUpload(f.file))),
+          }))
+        ),
+        variantsToDelete,
+        order_deadline: form.order_deadline?.toISOString() ?? null,
       };
 
       const res = await fetch(isEdit ? `/api/shop/products/${product?.id}` : "/api/shop/products", {
         method: isEdit ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       });
-
-      if (res.ok) {
-        window.location.href = "/shop/manage";
-      } else {
-        const err = await res.json();
-        toast.error("Erro: " + (err.message || err.error || "Erro desconhecido"));
-      }
-    } catch {
-      toast.error("Erro ao guardar produto");
+      if (res.ok) router.replace(backHref);
+      else throw new Error((await res.json()).error);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao guardar.");
     } finally {
       setUploading(false);
     }
   };
 
-  const tabs = [
-    ...(hasGroupKeys ? [{ id: "__groups__", label: "Grupos" }] : []),
-    ...(hasVariants ? [{ id: "__combos__", label: "Combinações" }] : []),
-  ];
+  const addGroupImage = (g: (typeof groupKeys)[0], slot: GroupSlot, file: File) => {
+    const img: ImageFile = { file, preview: URL.createObjectURL(file) };
+    setGroupImages((p) => ({ ...p, [g.key]: { ...slot, newFiles: [...slot.newFiles, img] } }));
+    setVariants((p) =>
+      p.map((v) =>
+        optValMatches(g.type, v.options[g.type] ?? "", g.val)
+          ? { ...v, newImages: [...v.newImages, img] }
+          : v
+      )
+    );
+  };
 
-  const groupKeys: {
-    key: string;
-    optType: string;
-    optVal: string;
-    hex?: string;
-    label: string;
-  }[] = [];
-  for (const def of variantDefinitions) {
-    if (!def.name || !def.values.length) continue;
-    for (const val of def.values) {
-      let strVal = "";
-      let hex: string | undefined;
-      let label = "";
-      if (typeof val === "string") {
-        const raw = isColorKey(def.name) ? splitNameHex(val) : null;
-        strVal = val;
-        hex = raw?.hex;
-        label = raw ? raw.name || raw.hex : val;
-      } else {
-        strVal = joinNameHex(val.name, val.color);
-        hex = val.color;
-        label = val.name;
-      }
-      groupKeys.push({
-        key: `${def.name}::${strVal}`,
-        optType: def.name,
-        optVal: strVal,
-        hex,
-        label,
-      });
-    }
-  }
+  const removeGroupImage = (g: (typeof groupKeys)[0], slot: GroupSlot, i: number) => {
+    const isExisting = i < slot.existing.length;
+    setGroupImages((p) => ({
+      ...p,
+      [g.key]: isExisting
+        ? { ...slot, existing: slot.existing.filter((_, idx) => idx !== i) }
+        : { ...slot, newFiles: slot.newFiles.filter((_, idx) => idx !== i - slot.existing.length) },
+    }));
+    setVariants((p) =>
+      p.map((v) => {
+        if (!optValMatches(g.type, v.options[g.type] ?? "", g.val)) return v;
+        return isExisting
+          ? { ...v, existingImages: v.existingImages.filter((img) => img !== slot.existing[i]) }
+          : { ...v, newImages: v.newImages.filter((_, k) => k !== i - slot.existing.length) };
+      })
+    );
+  };
+
+  const showGlobalImages =
+    !hasVariants || allGlobalImages.length > 0 || !hasAnyVariantSpecificImage;
 
   return (
-    <div>
+    <div className={styles.container}>
       <form onSubmit={handleSubmit}>
-        <div className={styles.formHeader}>
-          <button type="button" className={styles.backButton} onClick={onBack}>
+        <div className={styles.header}>
+          <button
+            type="button"
+            className={styles.btnSecondary}
+            onClick={onBackAction ?? (() => router.push(backHref))}>
             <FaArrowLeft /> Voltar
           </button>
           <ColorfulText
             className={styles.title}
-            text={isEdit ? "Editar Produto" : "Adicionar Novo Produto"}
+            text={isEdit ? "Editar Produto" : "Novo Produto"}
           />
-          <button type="submit" className={styles.button} disabled={uploading}>
-            {isEdit ? (
-              <>
-                <FaSave /> {uploading ? "A guardar..." : "Guardar Alterações"}
-              </>
-            ) : (
-              <>
-                <FaPlus /> {uploading ? "A guardar..." : "Criar Produto"}
-              </>
-            )}
+          <button type="submit" className={styles.btnPrimary} disabled={uploading}>
+            {isEdit ? <FaSave /> : <FaPlus />}
+            {uploading ? "A guardar..." : isEdit ? "Guardar Alterações" : "Criar Produto"}
           </button>
         </div>
 
-        <div className={styles.formBody}>
-          <div className={styles.section}>
-            <div className={styles.card}>
-              <label className={styles.label}>Informação Básica</label>
-              <input
-                className={styles.field}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nome do produto"
-                required
-              />
-              <textarea
-                className={styles.field}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descrição"
-                rows={3}
-              />
-              <select
-                className={styles.field}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required>
-                <option value="">Escolha categoria</option>
-                {allCategories.map((cat) => (
-                  <option key={cat.id || cat.name} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              <div className={styles.row}>
+        <div className={styles.grid}>
+          <div className={styles.sectionCol}>
+            <div className={styles.stackBlock}>
+              <Field label="Nome do Produto" icon={<FaTag />}>
+                <input
+                  className={styles.field}
+                  value={form.name}
+                  onChange={(e) => updateForm({ name: e.target.value })}
+                  placeholder="Ex: T-Shirt Clássica"
+                  required
+                />
+              </Field>
+
+              <Field label="Descrição" icon={<FaAlignLeft />} iconAlignTop>
+                <textarea
+                  className={styles.field}
+                  value={form.description}
+                  onChange={(e) => updateForm({ description: e.target.value })}
+                  placeholder="Detalhes do produto..."
+                  rows={3}
+                />
+              </Field>
+
+              <Field label="Categoria" icon={<FaFolder />}>
+                <MultiSelectDropdown
+                  availableItems={categoryOptions}
+                  selectedItems={form.category ? [form.category] : []}
+                  onChange={(items) => updateForm({ category: items[0] ?? "" })}
+                  onItemCreate={handleCategoryCreate}
+                  placeholder={form.category || "Escolha ou cria categoria"}
+                  multiSelect={false}
+                />
+              </Field>
+
+              <Field label="Preço Base" icon={<FaEuroSign />}>
                 <input
                   className={styles.field}
                   type="number"
-                  value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
+                  value={form.price}
+                  onChange={(e) => updateForm({ price: Number(e.target.value) })}
                   step="0.01"
                   min="0"
-                  placeholder="Preço base"
                   required
                 />
-                <span>€</span>
-              </div>
+              </Field>
             </div>
 
-            <div className={styles.card}>
-              <label className={styles.label}>Stock</label>
-              <div className={styles.row}>
-                <select
-                  className={styles.field}
-                  value={stockType}
-                  onChange={(e) => {
-                    const v = e.target.value as "limited" | "on_demand";
-                    setStockType(v);
-                    if (v !== "limited" || variants.length !== 0) setStockQuantity(0);
+            <div className={styles.stackBlock}>
+              <SectionTitle icon={<FaBox />}>Stock</SectionTitle>
+
+              <Field label="Tipo de Stock" icon={<FaLayerGroup />}>
+                <MultiSelectDropdown
+                  availableItems={["Stock Limitado", "Sob Encomenda"]}
+                  selectedItems={[
+                    form.stock_type === "on_demand" ? "Sob Encomenda" : "Stock Limitado",
+                  ]}
+                  onChange={([item]) => {
+                    const stock_type = item === "Sob Encomenda" ? "on_demand" : "limited";
+                    updateForm({
+                      stock_type,
+                      ...(stock_type === "limited" && !hasVariants ? { stock_quantity: 0 } : {}),
+                    });
                   }}
-                  style={{ flex: 1 }}>
-                  <option value="limited">Stock Limitado</option>
-                  <option value="on_demand">Sob Encomenda</option>
-                </select>
-                <div style={{ flex: 1 }}>
-                  {stockType === "limited" ? (
+                  placeholder={form.stock_type === "on_demand" ? "Sob Encomenda" : "Stock Limitado"}
+                  multiSelect={false}
+                  disabled={uploading}
+                />
+              </Field>
+
+              {form.stock_type === "limited" ? (
+                <Field label="Quantidade Total" icon={<FaBox />}>
+                  <input
+                    className={styles.field}
+                    type="number"
+                    value={hasVariants ? totalVariantStock : form.stock_quantity}
+                    onChange={(e) => updateForm({ stock_quantity: Number(e.target.value) })}
+                    disabled={hasVariants}
+                  />
+                  {hasVariants && <p className={styles.hint}>Gerido pela soma das variantes.</p>}
+                </Field>
+              ) : (
+                <Field label="Data Limite (Opcional)" icon={<FaCalendarAlt />}>
+                  <div className={styles.datePickerWrap} ref={datePickerRef}>
                     <input
                       className={styles.field}
-                      type="number"
-                      value={hasVariants ? totalVariantStock : stockQuantity}
-                      onChange={(e) => setStockQuantity(Number(e.target.value))}
-                      disabled={hasVariants}
+                      type="text"
+                      value={form.order_deadline?.toLocaleDateString("pt-PT") ?? ""}
+                      placeholder="Selecione uma data"
+                      readOnly
+                      onClick={() => setShowDatePicker((p) => !p)}
                     />
-                  ) : (
-                    <>
-                      <input
-                        className={styles.field}
-                        ref={deadlineRef}
-                        type="text"
-                        value={orderDeadline ? orderDeadline.toLocaleDateString("pt-PT") : ""}
-                        placeholder="Data limite encomenda"
-                        readOnly
-                        onClick={() => setShowDatePicker(true)}
-                      />
-                      {showDatePicker && (
-                        <div ref={datePickerRef} className={styles.datePickerPopup}>
+                    {showDatePicker && (
+                      <div
+                        className={styles.datePickerPopup}
+                        onClick={(e) => {
+                          if (e.target === e.currentTarget) setShowDatePicker(false);
+                        }}>
+                        <div className={styles.datePickerPanel}>
                           <DayPicker
                             mode="single"
-                            selected={orderDeadline}
+                            selected={form.order_deadline}
                             onSelect={(d) => {
-                              setOrderDeadline(d ?? undefined);
+                              updateForm({ order_deadline: d });
                               setShowDatePicker(false);
                             }}
                             weekStartsOn={1}
@@ -984,336 +644,271 @@ export default function ProductForm({
                             navLayout="around"
                           />
                         </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-              {hasVariants && stockType === "limited" && (
-                <p className={styles.hint}>Stock gerido pela soma das variantes.</p>
+                      </div>
+                    )}
+                  </div>
+                </Field>
               )}
-            </div>
-
-            <div className={styles.card}>
-              <label className={styles.label}>Imagens do Produto</label>
-              <p className={styles.hint}>
-                Galeria principal — usada quando a variante não tem imagens próprias.
-              </p>
-              <ImageCarousel
-                images={allProductImages}
-                onAdd={(file) => {
-                  const preview = URL.createObjectURL(file);
-                  setNewProductImages((prev) => [...prev, { file, preview }]);
-                }}
-                onRemove={(index) => {
-                  if (index < existingProductImages.length) {
-                    setExistingProductImages((prev) => prev.filter((_, i) => i !== index));
-                  } else {
-                    const ni = index - existingProductImages.length;
-                    URL.revokeObjectURL(newProductImages[ni].preview);
-                    setNewProductImages((prev) => prev.filter((_, i) => i !== ni));
-                  }
-                }}
-              />
             </div>
           </div>
 
-          <div className={styles.section}>
-            <div className={styles.card}>
-              <label className={styles.label}>Definições de Variantes</label>
-              <div className={styles.variantDefinitionsList}>
+          <div className={styles.sectionCol}>
+            <div className={styles.stackBlock}>
+              <SectionTitle icon={<FaSlidersH />}>Variantes</SectionTitle>
+
+              <div className={styles.col}>
                 {variantDefinitions.map((def, idx) => (
-                  <div key={def.id} className={styles.row}>
+                  <div key={def.id} className={styles.variantDefRow}>
                     <input
-                      className={`${styles.field} ${styles.variantNameInput}`}
+                      className={styles.field}
                       value={def.name}
-                      onChange={(e) => updateDefName(idx, e.target.value)}
+                      onChange={(e) =>
+                        setVariantDefinitions((p) =>
+                          p.map((d, i) => (i === idx ? { ...d, name: e.target.value } : d))
+                        )
+                      }
                       placeholder="Nome (Ex: Cor)"
                     />
-                    <div className={styles.variantValuesInput}>
-                      <TagInput
+                    <div className={styles.variantEditorWrap}>
+                      <VariantOptionsEditor
                         value={def.values}
-                        onChange={(tags) => updateDefValues(idx, tags)}
+                        onChange={(v) =>
+                          setVariantDefinitions((p) =>
+                            p.map((d, i) => (i === idx ? { ...d, values: v } : d))
+                          )
+                        }
                         placeholder={
-                          isColorKey(def.name) ? "Valores (ex: S, M, L)" : "Nome da cor (ex: Azul)"
+                          isColorKey(def.name) ? "Nome da cor (ex: Azul)" : "Valores (ex: S, M, L)"
                         }
                         isColor={isColorKey(def.name)}
                       />
                     </div>
                     <button
                       type="button"
-                      className={styles.deleteButton}
-                      onClick={() => removeDef(idx)}>
+                      className={styles.btnDanger}
+                      onClick={() => setVariantDefinitions((p) => p.filter((_, i) => i !== idx))}>
                       <FaTrash />
                     </button>
                   </div>
                 ))}
-                {variantDefinitions.length < NUMBER_MAX_VARIANT && (
-                  <div className={styles.addDefButtonWrapper}>
-                    <button type="button" className={styles.button} onClick={addDef}>
-                      <FaPlus /> Adicionar Definição
-                    </button>
-                  </div>
+                {variantDefinitions.length < MAX_VARIANTS && (
+                  <button
+                    type="button"
+                    className={`${styles.btnPrimary} ${styles.addVariantButton}`}
+                    onClick={() =>
+                      setVariantDefinitions((p) => [
+                        ...p,
+                        { id: Math.random().toString(), name: "", values: [] },
+                      ])
+                    }>
+                    <FaPlus size={12} /> Adicionar
+                  </button>
                 )}
               </div>
-            </div>
 
-            {tabs.length > 0 && (
-              <div className={styles.card} style={{ flex: 1, minHeight: 0 }}>
-                <div className={styles.tabBar}>
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ""}`}
-                      onClick={() => {
-                        setActiveTab(tab.id);
-                        setExpandedKey(null);
-                      }}>
-                      {tab.label}
-                      {tab.id === "__groups__" &&
-                        (() => {
-                          const filled = groupKeys.filter(({ key }) => {
-                            const s = groupImages[key];
-                            return (
-                              s &&
-                              (s.price_modifier !== 0 ||
-                                s.stock_quantity !== 0 ||
-                                s.existing.length > 0 ||
-                                s.newFiles.length > 0)
-                            );
-                          }).length;
-                          return filled > 0 ? (
-                            <span className={styles.tabBadge}>{filled}</span>
-                          ) : null;
-                        })()}
-                      {tab.id === "__combos__" &&
-                        (() => {
-                          const active = variants.filter((v) => v.active).length;
-                          return (
-                            <span className={`${styles.tabBadge} ${styles.tabBadgeNeutral}`}>
-                              {active}
-                            </span>
-                          );
-                        })()}
-                    </button>
-                  ))}
-                </div>
-
-                {activeTab === "__groups__" && (
-                  <div className={styles.vmList}>
-                    {groupKeys.length === 0 && (
-                      <p className={styles.noVarients}>
-                        Adiciona valores às definições para configurar grupos.
-                      </p>
+              {(hasVariants || groupKeys.length > 0) && (
+                <div className={styles.tabsBlock}>
+                  <div className={styles.tabBar}>
+                    {groupKeys.length > 0 && (
+                      <button
+                        type="button"
+                        className={`${styles.tabButton} ${activeTab === "__groups__" ? styles.activeTab : ""}`}
+                        onClick={() => setActiveTab("__groups__")}>
+                        Grupos
+                      </button>
                     )}
-                    {groupKeys.map(({ key, optType, optVal, hex, label }) => {
-                      const slot = getSlot(key);
-                      const imgs = slotImgs(slot);
-                      const isOpen = expandedKey === key;
-
-                      return (
-                        <VmCard
-                          key={key}
-                          isOpen={isOpen}
-                          onToggle={() => setExpandedKey(isOpen ? null : key)}
-                          left={
-                            <>
-                              {hex ? (
-                                <span className={styles.vmSwatch} style={{ background: hex }} />
-                              ) : (
-                                <span className={styles.vmTypeTag}>{optType[0].toUpperCase()}</span>
-                              )}
-                              {imgs.length > 0 && (
-                                <div className={styles.vmThumb}>
-                                  <Image src={imgs[0]} alt="" fill className={styles.vmThumbImg} />
-                                </div>
-                              )}
-                              <span className={styles.vmName}>{label}</span>
-                              <span className={styles.vmOptType}>{optType}</span>
-                            </>
-                          }
-                          right={
-                            <>
-                              {(() => {
-                                const variantTotal = variants
-                                  .filter(
-                                    (v) =>
-                                      v.active &&
-                                      optValMatches(optType, v.options[optType] || "", optVal)
-                                  )
-                                  .reduce((sum, v) => sum + (Number(v.stock_quantity) || 0), 0);
-                                return slot.price_modifier !== 0 || variantTotal !== 0 ? (
-                                  <span className={styles.vmMetaBadge}>
-                                    {slot.price_modifier !== 0 && (
-                                      <span>{(price + slot.price_modifier).toFixed(2)}€</span>
-                                    )}
-                                    {variantTotal !== 0 && <span>{variantTotal}un</span>}
-                                  </span>
-                                ) : null;
-                              })()}
-                              {imgs.length > 0 && (
-                                <span className={`${styles.imgBadge} ${styles.imgBadgeActive}`}>
-                                  {imgs.length}
-                                </span>
-                              )}
-                            </>
-                          }>
-                          <PriceStockFields
-                            price={slot.price_modifier}
-                            stock={slot.stock_quantity}
-                            onPrice={(v) => {
-                              setSlot(key, { ...slot, price_modifier: v });
-                              setVariants((prev) =>
-                                prev.map((variant) =>
-                                  optValMatches(optType, variant.options[optType] || "", optVal)
-                                    ? { ...variant, price_modifier: v }
-                                    : variant
-                                )
-                              );
-                            }}
-                            onStock={(v) => {
-                              setGroupOverrides((prev) => new Set(prev).add(key));
-                              setSlot(key, { ...slot, stock_quantity: v });
-                            }}
-                            isOnDemand={stockType === "on_demand"}
-                          />
-                          <div>
-                            <span
-                              className={styles.subLabel}
-                              style={{ display: "block", marginBottom: "0.5rem" }}>
-                              Imagens
-                            </span>
-                            <ImageGrid
-                              images={imgs}
-                              onAdd={(f) => addGroupImage(key, f)}
-                              onRemove={(i) => removeGroupImage(key, i)}
-                            />
-                            {imgs.length === 0 && (
-                              <p className={styles.hint} style={{ marginTop: "0.4rem" }}>
-                                Sem imagens — serão usadas as imagens do produto.
-                              </p>
-                            )}
-                          </div>
-                        </VmCard>
-                      );
-                    })}
+                    {hasVariants && (
+                      <button
+                        type="button"
+                        className={`${styles.tabButton} ${activeTab === "__combos__" ? styles.activeTab : ""}`}
+                        onClick={() => setActiveTab("__combos__")}>
+                        Combinações{" "}
+                        <span className={styles.badge}>
+                          {variants.filter((v) => v.active).length}
+                        </span>
+                      </button>
+                    )}
                   </div>
-                )}
 
-                {activeTab === "__combos__" && (
-                  <div className={styles.vmList}>
-                    {variants.length === 0 && (
-                      <p className={styles.noVarients}>
-                        Preencha as definições para gerar combinações.
-                      </p>
-                    )}
-                    {variants.map((variant, i) => {
-                      const vid = variant.id !== undefined ? String(variant.id) : `new-${i}`;
-                      const isOpen = expandedKey === vid;
-                      const allImgs = [
-                        ...variant.existingImages,
-                        ...variant.newImages.map((f) => f.preview),
-                      ];
-                      const colorKey = optionTypes.find(isColorKey);
-                      const colorRaw = colorKey
-                        ? splitNameHex(variant.options[colorKey] || "")
-                        : null;
-                      const label = optionTypes
-                        .map((t) => displayName(t, variant.options[t] || ""))
-                        .filter(Boolean)
-                        .join(" • ");
-                      const warn = stockWarningFor(variant);
-
-                      return (
-                        <VmCard
-                          key={vid}
-                          isOpen={isOpen}
-                          isInactive={!variant.active}
-                          onToggle={() => setExpandedKey(isOpen ? null : vid)}
-                          left={
-                            <>
-                              <div
-                                className={`${styles.checkboxCustom} ${variant.active ? styles.checkboxActive : ""}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateVariant(i, { active: !variant.active });
-                                }}>
-                                {variant.active && <LuCheck size={13} strokeWidth={3} />}
-                              </div>
-                              {colorRaw?.hex && (
-                                <span
-                                  className={styles.vmSwatch}
-                                  style={{ background: colorRaw.hex }}
-                                />
-                              )}
-                              {allImgs.length > 0 && (
-                                <div className={styles.vmThumb}>
-                                  <Image
-                                    src={allImgs[0]}
-                                    alt=""
-                                    fill
-                                    className={styles.vmThumbImg}
+                  <div className={styles.col}>
+                    {activeTab === "__groups__" && (
+                      <>
+                        {groupKeys.length > 0 && secondaryGroupsCount > 0 && (
+                          <div className={styles.inputRow}>
+                            <span className={styles.hint}>
+                              Mostrar grupos secundários ({secondaryGroupsCount})
+                            </span>
+                            <ToggleSwitch
+                              checked={showSecondaryGroups}
+                              onChange={setShowSecondaryGroups}
+                              aria-label="Mostrar grupos secundários"
+                            />
+                          </div>
+                        )}
+                        {visibleGroups.map((g) => {
+                          const slot = groupImages[g.key] ?? emptyGroupSlot();
+                          return (
+                            <ItemCard
+                              key={g.key}
+                              isOpen={expandedKey === g.key}
+                              onToggle={() => setExpandedKey((p) => (p === g.key ? null : g.key))}
+                              title={g.label}
+                              typeTag={!g.hex ? g.type[0].toUpperCase() : null}
+                              hex={g.hex}
+                              meta={
+                                slot.price_modifier
+                                  ? `${(form.price + slot.price_modifier).toFixed(2)}€`
+                                  : null
+                              }
+                              badge={slotImages(slot).length}>
+                              <div className={styles.row}>
+                                <div className={styles.fieldWrap}>
+                                  <span className={styles.subLabel}>Preço +/- (€)</span>
+                                  <input
+                                    className={styles.field}
+                                    type="number"
+                                    step="0.01"
+                                    value={slot.price_modifier}
+                                    onChange={(e) => {
+                                      const val = Number(e.target.value);
+                                      setGroupImages((p) => ({
+                                        ...p,
+                                        [g.key]: { ...slot, price_modifier: val },
+                                      }));
+                                      setVariants((p) =>
+                                        p.map((v) =>
+                                          optValMatches(g.type, v.options[g.type] ?? "", g.val)
+                                            ? { ...v, price_modifier: val }
+                                            : v
+                                        )
+                                      );
+                                    }}
                                   />
                                 </div>
-                              )}
-                              <span className={styles.vmName}>{label}</span>
-                              {warn && <span className={styles.warnDot} title={warn} />}
-                            </>
-                          }
-                          right={
-                            <>
-                              {(variant.price_modifier !== 0 || variant.stock_quantity !== 0) && (
-                                <span className={styles.vmMetaBadge}>
-                                  {variant.price_modifier !== 0 && (
-                                    <span>{(price + variant.price_modifier).toFixed(2)}€</span>
-                                  )}
-                                  {variant.stock_quantity !== 0 && (
-                                    <span>{variant.stock_quantity}un</span>
-                                  )}
-                                </span>
-                              )}
-                              {allImgs.length > 0 && (
-                                <span className={`${styles.imgBadge} ${styles.imgBadgeActive}`}>
-                                  {allImgs.length}
-                                </span>
-                              )}
-                            </>
-                          }>
-                          <PriceStockFields
-                            price={variant.price_modifier}
-                            stock={variant.stock_quantity}
-                            onPrice={(v) => updateVariant(i, { price_modifier: v })}
-                            onStock={(v) => updateVariant(i, { stock_quantity: v })}
-                            disabled={!variant.active}
-                            stockWarning={warn}
-                            isOnDemand={stockType === "on_demand"}
-                          />
-                          <div>
-                            <span
-                              className={styles.subLabel}
-                              style={{ display: "block", marginBottom: "0.5rem" }}>
-                              Imagens{" "}
-                              <span style={{ fontWeight: 400, color: "#9ca3af" }}>
-                                (substituem as imagens do produto)
-                              </span>
-                            </span>
+                              </div>
+                              <ImageGrid
+                                hint="Imagens da Variante"
+                                images={slotImages(slot)}
+                                onAdd={(f) => addGroupImage(g, slot, f)}
+                                onRemove={(i) => removeGroupImage(g, slot, i)}
+                              />
+                            </ItemCard>
+                          );
+                        })}
+                      </>
+                    )}
+                    {activeTab === "__combos__" &&
+                      variants.map((v, i) => {
+                        const vId = v.id ? String(v.id) : `new-${i}`;
+                        const imgs = [...v.existingImages, ...v.newImages.map((f) => f.preview)];
+                        const colKey = optionTypes.find(isColorKey);
+                        const updateVariant = (updates: Partial<VariantForm>) =>
+                          setVariants((p) =>
+                            p.map((vr, idx) => (idx === i ? { ...vr, ...updates } : vr))
+                          );
+
+                        return (
+                          <ItemCard
+                            key={vId}
+                            isOpen={expandedKey === vId}
+                            onToggle={() => setExpandedKey((p) => (p === vId ? null : vId))}
+                            isActive={v.active}
+                            onActiveToggle={() => updateVariant({ active: !v.active })}
+                            title={optionTypes
+                              .map((t) =>
+                                isColorKey(t)
+                                  ? splitNameHex(v.options[t]).name || v.options[t]
+                                  : v.options[t]
+                              )
+                              .join(" • ")}
+                            hex={colKey ? splitNameHex(v.options[colKey]).hex : undefined}
+                            badge={imgs.length}
+                            meta={
+                              v.price_modifier || v.stock_quantity
+                                ? `${v.price_modifier ? (form.price + v.price_modifier).toFixed(2) + "€ " : ""}${v.stock_quantity ? v.stock_quantity + "un" : ""}`
+                                : null
+                            }>
+                            <div className={styles.row}>
+                              <div className={styles.fieldWrap}>
+                                <span className={styles.subLabel}>Preço +/- (€)</span>
+                                <input
+                                  className={styles.field}
+                                  type="number"
+                                  step="0.01"
+                                  value={v.price_modifier}
+                                  onChange={(e) =>
+                                    updateVariant({ price_modifier: Number(e.target.value) })
+                                  }
+                                  disabled={!v.active}
+                                />
+                              </div>
+                              <div className={styles.fieldWrap}>
+                                <span className={styles.subLabel}>Stock (un)</span>
+                                <input
+                                  className={styles.field}
+                                  type="number"
+                                  value={v.stock_quantity}
+                                  onChange={(e) =>
+                                    updateVariant({ stock_quantity: Number(e.target.value) })
+                                  }
+                                  disabled={!v.active || form.stock_type === "on_demand"}
+                                />
+                              </div>
+                            </div>
                             <ImageGrid
-                              images={allImgs}
-                              onAdd={(f) => addVariantImage(i, f)}
-                              onRemove={(ii) => removeVariantImage(i, ii)}
+                              hint="Imagens Específicas"
+                              images={imgs}
+                              onAdd={(f) =>
+                                updateVariant({
+                                  newImages: [
+                                    ...v.newImages,
+                                    { file: f, preview: URL.createObjectURL(f) },
+                                  ],
+                                })
+                              }
+                              onRemove={(idx) =>
+                                idx < v.existingImages.length
+                                  ? updateVariant({
+                                      existingImages: v.existingImages.filter((_, k) => k !== idx),
+                                    })
+                                  : updateVariant({
+                                      newImages: v.newImages.filter(
+                                        (_, k) => k !== idx - v.existingImages.length
+                                      ),
+                                    })
+                              }
                             />
-                            {allImgs.length === 0 && (
-                              <p className={styles.hint} style={{ marginTop: "0.4rem" }}>
-                                Sem imagens — serão usadas as imagens do produto.
-                              </p>
-                            )}
-                          </div>
-                        </VmCard>
-                      );
-                    })}
+                          </ItemCard>
+                        );
+                      })}
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+
+            {showGlobalImages && (
+              <div className={styles.stackBlock}>
+                <SectionTitle icon={<FaImages />}>Imagens</SectionTitle>
+                <ImageGrid
+                  images={allGlobalImages}
+                  onAdd={(f) =>
+                    setProductImages((p) => ({
+                      ...p,
+                      new: [...p.new, { file: f, preview: URL.createObjectURL(f) }],
+                    }))
+                  }
+                  onRemove={(i) =>
+                    i < productImages.existing.length
+                      ? setProductImages((p) => ({
+                          ...p,
+                          existing: p.existing.filter((_, idx) => idx !== i),
+                        }))
+                      : setProductImages((p) => ({
+                          ...p,
+                          new: p.new.filter((_, idx) => idx !== i - p.existing.length),
+                        }))
+                  }
+                />
               </div>
             )}
           </div>
