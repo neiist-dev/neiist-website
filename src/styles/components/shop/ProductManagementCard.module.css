@@ -1,0 +1,163 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: white;
+  transition: transform 0.15s ease;
+}
+
+.card:hover {
+  transform: scale(1.01);
+}
+
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  background: var(--background-colour);
+}
+
+.placeholder {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  color: var(--light-foreground-colour);
+}
+
+.badge,
+.archivedBadge {
+  position: absolute;
+  top: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 10rem;
+  font-size: 0.75rem;
+}
+
+.badge {
+  right: 0.75rem;
+  color: white;
+}
+
+.archivedBadge {
+  left: 0.75rem;
+  background: rgb(0 0 0 / 60%);
+  color: white;
+}
+
+.on-demand {
+  background: var(--primary-colour);
+}
+
+.in-stock {
+  background: var(--secondary-colour);
+}
+
+.out-of-stock {
+  background: var(--light-foreground-colour);
+}
+
+.thumbnails {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  overflow-x: auto;
+}
+
+.thumbBtn {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 0.6rem;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.activeThumb {
+  border-color: var(--primary-colour);
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.25rem;
+}
+
+.header h3 {
+  margin: 0 0 0.25rem;
+  color: var(--primary-colour);
+}
+
+.header p {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+}
+
+.price {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  color: var(--secondary-colour);
+}
+
+.tagCategory {
+  align-self: flex-start;
+  margin-bottom: 1.5rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.6rem;
+  background: var(--light-secondary-colour);
+  color: var(--secondary-colour);
+  font-size: 0.7rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.actions button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: 0;
+  border-radius: 0.6rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  opacity: 0.85;
+}
+
+.btnPrimary {
+  background: var(--primary-colour);
+  color: white;
+}
+
+.btnSecondary {
+  background: var(--background-colour-hover);
+  color: var(--light-foreground-colour);
+}
+
+.btnRestore {
+  background: var(--light-secondary-colour);
+  color: var(--secondary-colour);
+}
+
+.btnDanger {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+@media (max-width: 640px) {
+  .actions {
+    flex-direction: column;
+  }
+}

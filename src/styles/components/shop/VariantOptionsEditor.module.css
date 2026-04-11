@@ -1,0 +1,76 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  min-height: 2.2rem;
+  align-items: center;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  position: relative;
+}
+
+.container:focus-within {
+  border-color: var(--primary-colour);
+  box-shadow: 0 0 0 1px var(--primary-colour);
+}
+
+.tag {
+  background: var(--background-colour);
+  color: #374151;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.removeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.removeButton:hover {
+  color: #ef4444;
+}
+
+.input {
+  flex: 1;
+  min-width: 8px;
+  border: none;
+  background: transparent;
+  padding: 0.1rem;
+  outline: none;
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0;
+  cursor: pointer;
+}
+
+.pickerPopover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 1rem;
+}

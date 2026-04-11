@@ -5,6 +5,9 @@ import {
   updateProductVariant,
   getProduct,
   addProductVariant,
+  deleteProduct,
+  deleteProductVariant,
+  mapDeleteProductDbErrorToResponse,
 } from "@/utils/dbUtils";
 import path from "path";
 import fs from "fs/promises";
@@ -64,8 +67,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       stock_type: body.stock_type,
       stock_quantity: body.stock_quantity,
       order_deadline: body.order_deadline,
-      active: true,
+      active: body.active ?? true,
     });
+
+    if (Array.isArray(body.variantsToDelete) && body.variantsToDelete.length > 0) {
+      for (const variantId of body.variantsToDelete) {
+        await deleteProductVariant(Number(variantId));
+      }
+    }
 
     if (Array.isArray(body.variants) && body.variants.length > 0) {
       for (const variant of body.variants) {
@@ -106,6 +115,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       product: updatedProduct,
     });
   } catch (error) {
+    const mapped = mapDeleteProductDbErrorToResponse(error);
+    if (mapped) return NextResponse.json({ error: mapped.error }, { status: mapped.status });
     console.error("Error updating product:", error);
     return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
@@ -121,16 +132,47 @@ export async function DELETE(
   try {
     const { id } = await params;
     const productId = Number(id);
-    const deletedProduct = await updateProduct(productId, { active: false });
+    const permanent = request.nextUrl.searchParams.get("permanent") === "true";
 
-    if (!deletedProduct) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    if (permanent) {
+      await deleteProduct(productId);
+      return NextResponse.json({ message: "Product permanently deleted" });
     }
 
-    return NextResponse.json({ message: "Product deleted successfully" });
+    const archivedProduct = await updateProduct(productId, { active: false });
+    if (!archivedProduct) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+    return NextResponse.json({ message: "Product archived successfully" });
   } catch (error) {
+    const mapped = mapDeleteProductDbErrorToResponse(error);
+    if (mapped) return NextResponse.json({ error: mapped.error }, { status: mapped.status });
     console.error("Error deleting product:", error);
     return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
+  if (!userRoles.isAuthorized) return userRoles.error;
+
+  try {
+    const { id } = await params;
+    const productId = Number(id);
+    const body = await request.json();
+
+    if (typeof body.active !== "boolean") {
+      return NextResponse.json({ error: "Missing or invalid 'active' field" }, { status: 400 });
+    }
+
+    const updated = await updateProduct(productId, { active: body.active });
+    if (!updated) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+    return NextResponse.json({ message: "Product updated", product: updated });
+  } catch (error) {
+    console.error("Error patching product:", error);
+    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
 }
 

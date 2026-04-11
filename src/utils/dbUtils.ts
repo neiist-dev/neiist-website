@@ -674,6 +674,21 @@ export const getAllProducts = async (): Promise<Product[]> => {
   return rows.map(mapdbProductToProduct);
 };
 
+export const getAllProductsAdmin = async (): Promise<Product[]> => {
+  const { rows } = await db_query<dbProduct>(
+    `SELECT * FROM neiist.get_all_products_including_archived()`
+  );
+  return rows.map(mapdbProductToProduct);
+};
+
+export const deleteProduct = async (productId: number): Promise<void> => {
+  await db_query(`SELECT neiist.delete_product($1)`, [productId]);
+};
+
+export const deleteProductVariant = async (variantId: number): Promise<void> => {
+  await db_query(`SELECT neiist.delete_product_variant($1)`, [variantId]);
+};
+
 export const getProduct = async (productId: number): Promise<Product | null> => {
   const {
     rows: [row],
@@ -787,6 +802,23 @@ export function mapOrderDbErrorToResponse(
 
   if (dbError?.code === "P0001") {
     return { error: "Pedido invalido", status: 400 };
+  }
+
+  return null;
+}
+
+export function mapDeleteProductDbErrorToResponse(
+  error: unknown
+): { error: string; status: number } | null {
+  const dbError = error as { message?: string; code?: string };
+  const message = dbError?.message ?? "";
+
+  if (message.includes("Product") && message.includes("not found")) {
+    return { error: "Produto não encontrado", status: 404 };
+  }
+
+  if (message.includes("Variant") && message.includes("not found")) {
+    return { error: "Variante não encontrada", status: 404 };
   }
 
   return null;

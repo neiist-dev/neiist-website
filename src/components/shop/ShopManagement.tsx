@@ -1,160 +1,145 @@
 "use client";
 import { useState, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { FaPlus, FaEdit } from "react-icons/fa";
-import { FiTrash2 } from "react-icons/fi";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { FaPlus } from "react-icons/fa";
+import { FiPackage, FiArchive } from "react-icons/fi";
 import { Product, Category } from "@/types/shop";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import ProductForm from "@/components/shop/ProductForm";
+import { PiContactlessPayment } from "react-icons/pi";
+import ProductManagementCard from "./ProductManagementCard";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
+import ColorfulText from "../ColorfulText";
 
 interface ShopManagementProps {
   products: Product[];
   categories: Category[];
 }
 
+type ConfirmAction =
+  | { type: "archive"; productId: number }
+  | { type: "restore"; productId: number }
+  | { type: "permanent"; productId: number };
+
 export default function ShopManagement({ products, categories }: ShopManagementProps) {
-  const [view, setView] = useState<"list" | "add" | "edit">("list");
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showArchived, setShowArchived] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [removingProductId, setRemovingProductId] = useState<number | null>(null);
-  const [imageIndex, setImageIndex] = useState<{ [productId: number]: number }>({});
+  const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
+
+  const activeProducts = useMemo(() => products.filter((p) => p.active !== false), [products]);
+  const archivedProducts = useMemo(() => products.filter((p) => p.active === false), [products]);
+  const visibleProducts = showArchived ? archivedProducts : activeProducts;
 
   const fuse = useMemo(
     () =>
-      new Fuse(products, {
+      new Fuse(visibleProducts, {
         keys: ["name", "category", "description"],
         threshold: 0.4,
         ignoreLocation: true,
       }),
-    [products]
+    [visibleProducts]
   );
 
   const filteredProducts = useMemo(() => {
-    let filtered = products;
+    let filtered = visibleProducts;
     if (categoryFilter !== "all") {
-      filtered = filtered.filter((products) => products.category === categoryFilter);
+      filtered = filtered.filter((p) => p.category === categoryFilter);
     }
     if (search.trim()) {
       return fuse
         .search(search.trim())
         .map((r) => r.item)
-        .filter((products) => categoryFilter === "all" || products.category === categoryFilter);
+        .filter((p) => categoryFilter === "all" || p.category === categoryFilter);
     }
     return filtered;
-  }, [products, search, categoryFilter, fuse]);
+  }, [visibleProducts, search, categoryFilter, fuse]);
 
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setView("edit");
+  const handleEdit = (productId: number) => {
+    router.push(`/shop/manage/${productId}/edit`);
   };
 
-  const handleRemove = (productId: number) => {
-    setRemovingProductId(productId);
+  const handleArchive = (productId: number) => {
+    setPendingAction({ type: "archive", productId });
     setShowConfirm(true);
   };
 
-  const confirmRemove = async () => {
-    if (removingProductId !== null) {
-      try {
-        const response = await fetch(`/api/shop/products/${removingProductId}`, {
+  const handleRestore = (productId: number) => {
+    setPendingAction({ type: "restore", productId });
+    setShowConfirm(true);
+  };
+
+  const handlePermanentDelete = (productId: number) => {
+    setPendingAction({ type: "permanent", productId });
+    setShowConfirm(true);
+  };
+
+  const confirmMessages: Record<ConfirmAction["type"], string> = {
+    archive: "Tem a certeza que deseja arquivar este produto?",
+    restore: "Tem a certeza que deseja restaurar este produto?",
+    permanent:
+      "Tem a certeza que deseja eliminar definitivamente este produto? Esta ação não pode ser desfeita.",
+  };
+
+  const confirmAction = async () => {
+    if (!pendingAction) return;
+    const { type, productId } = pendingAction;
+
+    try {
+      let response: Response;
+
+      if (type === "archive") {
+        response = await fetch(`/api/shop/products/${productId}`, { method: "DELETE" });
+      } else if (type === "restore") {
+        response = await fetch(`/api/shop/products/${productId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ active: true }),
+        });
+      } else {
+        response = await fetch(`/api/shop/products/${productId}?permanent=true`, {
           method: "DELETE",
         });
-
-        if (response.ok) {
-          // TODO: (SUCCESS) show success toast after the product is removed.
-          window.location.reload();
-        } else {
-          const error = await response.json();
-          // TODO: (ERROR)
-          console.error("Error deleting product:", error);
-        }
-      } catch (error) {
-        // TODO: (ERROR)
-        console.error("Error deleting product:", error);
       }
-      setShowConfirm(false);
-      setRemovingProductId(null);
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        toast.error(data?.error ?? "Ocorreu um erro. Tenta novamente.");
+      }
+    } catch {
+      toast.error("Ocorreu um erro. Tenta novamente.");
     }
+
+    setShowConfirm(false);
+    setPendingAction(null);
   };
 
-  const getStockDisplay = (product: Product) => {
-    if (product.stock_type === "on_demand") {
-      return "Sob Encomenda";
-    }
-    let totalStock = 0;
-    if (product.variants && product.variants.length > 0) {
-      totalStock = product.variants.reduce(
-        (sum, variant) => sum + (variant.stock_quantity || 0),
-        0
-      );
-    } else {
-      totalStock = product.stock_quantity || 0;
-    }
-
-    return `${totalStock} em stock`;
-  };
-
-  const getStockStatus = (product: Product) => {
-    if (product.stock_type === "on_demand") {
-      return "on-demand";
-    }
-    let totalStock = 0;
-    if (product.variants && product.variants.length > 0) {
-      totalStock = product.variants.reduce(
-        (sum, variant) => sum + (variant.stock_quantity || 0),
-        0
-      );
-    } else {
-      totalStock = product.stock_quantity || 0;
-    }
-    if (totalStock === 0) return "out-of-stock";
-    if (totalStock <= 5) return "low-stock";
-    return "in-stock";
-  };
-
-  if (view === "add" || view === "edit") {
-    return (
-      <ProductForm
-        product={editingProduct}
-        isEdit={view === "edit"}
-        onBack={() => {
-          setView("list");
-          setEditingProduct(null);
-        }}
-        categories={categories}
-      />
-    );
-  }
+  const isFiltering = search.trim() !== "" || categoryFilter !== "all";
 
   return (
     <>
-      {showConfirm && (
+      {showConfirm && pendingAction && (
         <ConfirmDialog
           open={showConfirm}
-          message="Tem a certeza que deseja remover este produto?"
-          onConfirm={confirmRemove}
+          message={confirmMessages[pendingAction.type]}
+          onConfirm={confirmAction}
           onCancel={() => {
             setShowConfirm(false);
-            setRemovingProductId(null);
+            setPendingAction(null);
           }}
         />
       )}
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1>Gestão da Loja</h1>
-          <div className={styles.headerActions}>
-            <Link href="/shop/pos" className={styles.posBtn}>
-              Gestão POS
-            </Link>
-            <button className={styles.addBtn} onClick={() => setView("add")}>
-              <FaPlus /> Adicionar Produto
-            </button>
-          </div>
+          <ColorfulText className={styles.title} text="Gestão da Loja" />
+          <button className={styles.addBtn} onClick={() => router.push("/shop/manage/new")}>
+            <FaPlus /> Adicionar Produto
+          </button>
         </div>
 
         <div className={styles.filters}>
@@ -172,77 +157,58 @@ export default function ShopManagement({ products, categories }: ShopManagementP
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className={`${styles.archiveToggle} ${showArchived ? styles.archiveToggleActive : ""}`}
+            onClick={() => {
+              setShowArchived((v) => !v);
+              setCategoryFilter("all");
+              setSearch("");
+            }}>
+            <FiArchive />
+            {showArchived
+              ? "Ver ativos"
+              : `Arquivados${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
+          </button>
+          <button className={styles.addBtn} onClick={() => router.push("/shop/pos")}>
+            <PiContactlessPayment /> Gestão POS
+          </button>
         </div>
 
-        <div className={styles.grid}>
-          {filteredProducts.map((product) => (
-            <div key={product.id} className={styles.card}>
-              <div className={styles.imageContainer}>
-                {product.images && product.images.length > 0 ? (
-                  <Image
-                    src={product.images[imageIndex[product.id] || 0] || "/placeholder.jpg"}
-                    alt={product.name}
-                    width={140}
-                    height={140}
-                  />
-                ) : (
-                  <div className={styles.placeholder}>Nenhuma imagem</div>
-                )}
-                <div className={`${styles.stockBadge} ${styles[getStockStatus(product)]}`}>
-                  {getStockDisplay(product)}
-                </div>
-              </div>
-              <div className={styles.thumbnails}>
-                {product.images &&
-                  product.images.length > 1 &&
-                  product.images.map((img, idx) => (
-                    <button
-                      key={img + idx}
-                      className={`${styles.thumbBtn} ${(imageIndex[product.id] || 0) === idx ? styles.activeThumb : ""}`}
-                      onClick={() =>
-                        setImageIndex((prev) => ({
-                          ...prev,
-                          [product.id]: idx,
-                        }))
-                      }
-                      tabIndex={-1}
-                      aria-label={`Ver imagem ${idx + 1}`}
-                      type="button">
-                      <Image
-                        src={img}
-                        alt=""
-                        width={28}
-                        height={28}
-                        className={styles.thumbImg}
-                        draggable={false}
-                      />
-                    </button>
-                  ))}
-              </div>
-              <div className={styles.cardContent}>
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
-                <div className={styles.price}>{product.price}€</div>
-
-                <div className={styles.productMeta}>
-                  <span className={styles.category}>{product.category}</span>
-                  <span className={styles.stockType}>
-                    {product.stock_type === "limited" ? "Limitado" : "Sob Encomenda"}
-                  </span>
-                </div>
-
-                <div className={styles.actions}>
-                  <button onClick={() => handleEdit(product)}>
-                    <FaEdit /> Editar
-                  </button>
-                  <button onClick={() => handleRemove(product.id)}>
-                    <FiTrash2 /> Remover
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {filteredProducts.length === 0 ? (
+          <div className={styles.emptyState}>
+            <FiPackage size={64} />
+            {isFiltering ? (
+              <>
+                <p>Nenhum produto encontrado</p>
+                <span>Tenta ajustar os filtros ou a pesquisa</span>
+              </>
+            ) : showArchived ? (
+              <>
+                <p>Sem produtos arquivados</p>
+                <span>Produtos arquivados aparecerão aqui</span>
+              </>
+            ) : (
+              <>
+                <p>Ainda não há produtos</p>
+                <span>Clica em "Adicionar Produto" para começar</span>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {filteredProducts.map((product) => (
+              <ProductManagementCard
+                key={product.id}
+                product={product}
+                onEdit={handleEdit}
+                onArchive={handleArchive}
+                onRestore={handleRestore}
+                onPermanentDelete={handlePermanentDelete}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

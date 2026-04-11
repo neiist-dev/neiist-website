@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
       images: finalImages,
       category: body.category,
       stock_type: body.stock_type,
-      stock_quantity: body.stock_quantity,
-      order_deadline: body.order_deadline,
+      stock_quantity: body.stock_quantity ?? null,
+      order_deadline: body.order_deadline ?? null,
       active: true,
     });
 
@@ -64,23 +64,55 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
     }
 
-    if (Array.isArray(body.variants) && body.variants.length > 0) {
-      for (const variant of body.variants) {
-        let variantImages: string[] = variant.images || [];
-        if (Array.isArray(variant.imageUploads) && variant.imageUploads.length > 0) {
-          const uploadedVariantImages = await uploadImages(variant.imageUploads);
-          variantImages = [...variantImages, ...uploadedVariantImages];
+    // Build a map of group images: "optType::optVal" -> string[]
+    const groupImagePaths: Record<string, string[]> = {};
+    if (body.group_image_uploads && typeof body.group_image_uploads === "object") {
+      for (const [key, groupData] of Object.entries(
+        body.group_image_uploads as Record<
+          string,
+          {
+            existing: string[];
+            uploads: Array<{ imageBase64: string; imageName: string }>;
+            price_modifier: number;
+            stock_quantity: number;
+          }
+        >
+      )) {
+        let paths: string[] = groupData.existing || [];
+        if (Array.isArray(groupData.uploads) && groupData.uploads.length > 0) {
+          const uploaded = await uploadImages(groupData.uploads);
+          paths = [...paths, ...uploaded];
         }
-
-        await addProductVariant(newProduct.id, {
-          sku: variant.sku,
-          images: variantImages,
-          price_modifier: variant.price_modifier ?? 0,
-          stock_quantity: variant.stock_quantity,
-          active: variant.active ?? true,
-          options: variant.options ?? {},
-        });
+        groupImagePaths[key] = paths;
       }
+    }
+
+    for (const variant of body.variants) {
+      let variantImages: string[] = variant.images || [];
+      if (Array.isArray(variant.imageUploads) && variant.imageUploads.length > 0) {
+        const uploadedVariantImages = await uploadImages(variant.imageUploads);
+        variantImages = [...variantImages, ...uploadedVariantImages];
+      }
+
+      // Apply group images to variants that have no images of their own
+      if (variantImages.length === 0) {
+        for (const [optType, optVal] of Object.entries(variant.options || {})) {
+          const key = `${optType}::${optVal}`;
+          if (groupImagePaths[key]?.length > 0) {
+            variantImages = groupImagePaths[key];
+            break; // use first matching group's images
+          }
+        }
+      }
+
+      await addProductVariant(newProduct.id, {
+        sku: variant.sku,
+        images: variantImages,
+        price_modifier: variant.price_modifier ?? 0,
+        stock_quantity: variant.stock_quantity,
+        active: variant.active ?? true,
+        options: variant.options ?? {},
+      });
     }
 
     const fullProduct = await getProduct(newProduct.id);
