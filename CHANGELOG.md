@@ -1,5 +1,12 @@
 # neiist
 
+## 1.9.1
+
+### Patch Changes
+
+- Display sumup transaction id on the orders table and enable search for it.
+- On bulk email send it now asks for the correct google account to use.
+
 ## 1.9.0
 
 ### Minor Changes

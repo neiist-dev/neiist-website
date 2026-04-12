@@ -141,6 +141,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           (order.customer_name?.toLowerCase().includes(query) ?? false) ||
           (order.user_istid?.toLowerCase().includes(query) ?? false) ||
           (order.customer_email?.toLowerCase().includes(query) ?? false) ||
+          (order.payment_reference?.toLocaleLowerCase().includes(query) ?? false) ||
           order.order_number.toLowerCase().includes(query)
       );
 
@@ -236,7 +237,12 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     const unique = [...new Set(emails)];
     if (unique.length === 0) return;
     const bcc = encodeURIComponent(unique.join(","));
-    window.open(`https://mail.google.com/mail/?view=cm&fs=1&bcc=${bcc}`, "_blank");
+    window.open(
+      `https://accounts.google.com/AccountChooser?continue=${encodeURIComponent(
+        `https://mail.google.com/mail/?view=cm&fs=1&bcc=${bcc}`
+      )}`,
+      "_blank"
+    );
   }
 
   function handleSetPickupDeadline(): void {
@@ -691,7 +697,9 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                         {selectedOrders.has(String(order.id)) && <FiCheck size={16} />}
                       </div>
                     </td>
-                    <td>{order.order_number}</td>
+                    <td>
+                      {order.payment_reference ? order.payment_reference : order.order_number}
+                    </td>
                     <td>{new Date(order.created_at).toLocaleDateString("pt-PT")}</td>
                     <td>{getFirstAndLastName(order.customer_name)}</td>
                     <td className={styles.campusCell}>

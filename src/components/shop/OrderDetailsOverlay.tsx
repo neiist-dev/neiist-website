@@ -258,7 +258,7 @@ export default function OrderDetailOverlay({
             </div>
 
             <div className={styles.orderNumber}>
-              {order.order_number}
+              {order.payment_reference ? order.payment_reference : order.order_number}
               <FaArrowRightLong />
               {order.payment_method ? getPaymentLabel(order.payment_method) : ""}
             </div>
