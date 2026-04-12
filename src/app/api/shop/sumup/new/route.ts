@@ -7,6 +7,7 @@ import type {
   CreateCheckoutRequestBody,
   SumUpCheckoutPayload,
 } from "@/types/sumup";
+import { formatVariantLabel } from "@/utils/emailUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 const CHECKOUT_TTL_MINUTES = 15;
@@ -39,16 +40,35 @@ export async function POST(req: NextRequest) {
   const amount = Math.round(Number(order.total_amount) * 100) / 100;
   if (amount <= 0) return sumupErrorResponse("Invalid order amount", 400);
 
-  const checkoutReference = order.order_number;
   const validUntil = new Date(Date.now() + CHECKOUT_TTL_MINUTES * 60_000).toISOString();
   const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shop/sumup/callback?orderId=${orderId}`;
+  let description =
+    order.items
+      ?.map(
+        (item: {
+          product_name?: string;
+          name?: string;
+          quantity?: number;
+          variant_label?: string;
+          variant_options?: unknown;
+        }) => {
+          const name = item.product_name || item.name || "Produto";
+          const qty = item.quantity || 1;
+          const variant = formatVariantLabel(
+            item.variant_label,
+            item.variant_options as Record<string, string> | undefined
+          );
+          return `${qty}x ${name}${variant ? " - " + variant : ""}`;
+        }
+      )
+      .join("\n") || `Encomenda ${order.order_number || orderId}`;
 
   const payload: SumUpCheckoutPayload = {
     merchant_code: SUMUP_MERCHANT_CODE!,
     amount,
     currency: "EUR" as const,
-    checkout_reference: checkoutReference,
-    description: order.order_number,
+    checkout_reference: order.order_number,
+    description,
     valid_until: validUntil,
     return_url: returnUrl,
   };
