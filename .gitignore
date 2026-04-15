@@ -19,8 +19,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Data
+data/
+
 # Environment Variables
 .env
+.venv
 
 # TypeScript
 *.tsbuildinfo
