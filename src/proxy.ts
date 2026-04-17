@@ -4,6 +4,7 @@ import { hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./utils/authUtils";
 import { rateLimit } from "@/utils/security/rateLimitUtils";
 import { CSP } from "@/utils/security/cspUtils";
+import { getRateLimitRule } from "@/lib/rateLimitRules";
 
 const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
@@ -11,31 +12,6 @@ const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management"];
 const adminRoutes = ["/users-management", "/departments-management", "/shop/manage"];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
-
-interface RateLimitRule {
-  limit: number;
-  windowMs: number;
-  useUser?: boolean;
-}
-
-function getRateLimitRule(pathname: string): RateLimitRule | null {
-  if (pathname === "/api/auth/login" || pathname === "/api/auth/callback") {
-    return { limit: 5, windowMs: 15 * 60_000 };
-  }
-  if (pathname === "/api/auth/refresh") {
-    return { limit: 10, windowMs: 60_000 };
-  }
-  if (pathname.startsWith("/api/user/verify-email/")) {
-    return { limit: 3, windowMs: 15 * 60_000 };
-  }
-  if (pathname.startsWith("/api/admin/")) {
-    return { limit: 30, windowMs: 60_000, useUser: true };
-  }
-  if (pathname.startsWith("/api/")) {
-    return { limit: 60, windowMs: 60_000 };
-  }
-  return null;
-}
 
 function getIp(request: NextRequest): string {
   return (
