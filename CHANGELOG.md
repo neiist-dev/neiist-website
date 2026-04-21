@@ -1,5 +1,17 @@
 # neiist
 
+## 1.10.0
+
+### Minor Changes
+
+- Added support for Special Categories to the shop.
+- Implemented category-driven overrides for some flows on the shop experience:
+  - POS-style checkout with no user/email requirements (To be used in Churrascos via the future mobile app)
+  - Activity auto-registration on successful purchase
+  - Select custom email dispatching
+  - Different order status for special categories
+- Special categories are excluded from default storefront queries but remain accessible in management interfaces.
+
 ## 1.9.1
 
 ### Patch Changes

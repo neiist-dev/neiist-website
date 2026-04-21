@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const categories = await getAllCategories();
+    const categories = await getAllCategories(true);
     return NextResponse.json({ categories });
   } catch (error) {
     console.error("Error fetching categories:", error);

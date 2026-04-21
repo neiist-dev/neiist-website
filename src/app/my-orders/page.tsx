@@ -14,7 +14,7 @@ export default async function MyOrdersPage({ searchParams }: PageProps) {
   const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : undefined;
 
-  const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts()]);
+  const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
   const myOrders = jwtUser ? allOrders.filter((o) => o.user_istid === jwtUser.istid) : [];
 
   return (

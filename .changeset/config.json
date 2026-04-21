@@ -6,7 +6,7 @@
   "fixed": [],
   "linked": [],
   "access": "restricted",
-  "baseBranch": "next-js",
+  "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": []
 }

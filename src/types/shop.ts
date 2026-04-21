@@ -78,6 +78,152 @@ export const ONLINE_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = [
   "apple-pay",
 ];
 
+export const SPECIAL_CATEGORIES = ["Churrasco", "Jantar de Curso"] as const;
+
+export type OrderKind = "normal" | "churrasco" | "jantar_de_curso";
+export type OrderSource = "dinner" | "pos" | "mobile-pos" | "other";
+export type OrderEmailTemplateType = "pending" | "paid" | "cancelled_auto" | "status_update";
+export type OrderEmailTemplateKey = "default" | "jantar_pending" | "jantar_paid";
+
+interface SpecialOrderConfig {
+  allowedSources: readonly OrderSource[];
+  paymentMethods: readonly PaymentMethod[];
+  paymentMethodsBySource?: Partial<Record<OrderSource, readonly PaymentMethod[]>>;
+  customerEmailsEnabled?: boolean;
+  emailTemplates?: Partial<
+    Record<OrderEmailTemplateType, Exclude<OrderEmailTemplateKey, "default">>
+  >;
+  requiresUserAssignment?: boolean;
+  activityId?: string;
+  autoCancelEnabled?: boolean;
+}
+
+export interface OrderKindRules {
+  allowedSources: readonly OrderSource[];
+  paymentMethods: readonly PaymentMethod[];
+  customerEmailsEnabled: boolean;
+  requiresUserAssignment: boolean;
+  activityId?: string;
+  autoCancelEnabled: boolean;
+  emailTemplates: Record<OrderEmailTemplateType, OrderEmailTemplateKey>;
+}
+
+export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialOrderConfig> = {
+  churrasco: {
+    allowedSources: ["mobile-pos"],
+    paymentMethods: ["cash", "sumup-tpa", "other"],
+    customerEmailsEnabled: false,
+    requiresUserAssignment: false,
+    autoCancelEnabled: false,
+  },
+  jantar_de_curso: {
+    allowedSources: ["dinner", "pos"],
+    paymentMethods: ["in-person", "cash", "other"],
+    paymentMethodsBySource: {
+      dinner: ["in-person"],
+      pos: ["cash", "other"],
+    },
+    emailTemplates: {
+      pending: "jantar_pending",
+      paid: "jantar_paid",
+    },
+    activityId: process.env.NEXT_PUBLIC_JANTAR_DE_CURSO_ACTIVITY_ID || undefined,
+  },
+};
+
+const ORDER_KIND_BY_CATEGORY: Record<string, Exclude<OrderKind, "normal">> = {
+  churrasco: "churrasco",
+  "jantar de curso": "jantar_de_curso",
+};
+
+const DEFAULT_ORDER_RULES: Omit<OrderKindRules, "paymentMethods"> = {
+  allowedSources: ["dinner", "pos", "mobile-pos", "other"],
+  customerEmailsEnabled: true,
+  requiresUserAssignment: true,
+  autoCancelEnabled: true,
+  emailTemplates: {
+    pending: "default",
+    paid: "default",
+    cancelled_auto: "default",
+    status_update: "default",
+  },
+};
+
+function getOrderKindFromName(productName?: string | null): OrderKind {
+  const normalizedName = productName?.trim().toLowerCase() ?? "";
+  if (normalizedName.includes("churrasco")) return "churrasco";
+
+  if (normalizedName.includes("jantar de curso")) return "jantar_de_curso";
+  return "normal";
+}
+
+export function isSpecialCategory(category?: string | null): boolean {
+  return getOrderKindFromCategory(category) !== "normal";
+}
+
+export function isChurrascoCategory(category?: string | null): boolean {
+  return getOrderKindFromCategory(category) === "churrasco";
+}
+
+export function isJantarDeCursoCategory(category?: string | null): boolean {
+  return getOrderKindFromCategory(category) === "jantar_de_curso";
+}
+
+export function getOrderKindFromCategory(category?: string | null): OrderKind {
+  const normalizedCategory = category?.trim().toLowerCase() ?? "";
+  return ORDER_KIND_BY_CATEGORY[normalizedCategory] ?? "normal";
+}
+
+export function getOrderKindRules(
+  orderKind: OrderKind,
+  source: OrderSource = "other"
+): OrderKindRules {
+  const specialConfig = orderKind === "normal" ? undefined : SPECIAL_ORDER_CONFIG[orderKind];
+
+  const defaultPaymentMethods: readonly PaymentMethod[] = ["sumup", "in-person"];
+  const paymentMethods =
+    specialConfig?.paymentMethodsBySource?.[source] ??
+    specialConfig?.paymentMethods ??
+    defaultPaymentMethods;
+
+  return {
+    allowedSources: specialConfig?.allowedSources ?? DEFAULT_ORDER_RULES.allowedSources,
+    paymentMethods,
+    customerEmailsEnabled:
+      specialConfig?.customerEmailsEnabled ?? DEFAULT_ORDER_RULES.customerEmailsEnabled,
+    requiresUserAssignment:
+      specialConfig?.requiresUserAssignment ?? DEFAULT_ORDER_RULES.requiresUserAssignment,
+    activityId: specialConfig?.activityId,
+    autoCancelEnabled: specialConfig?.autoCancelEnabled ?? DEFAULT_ORDER_RULES.autoCancelEnabled,
+    emailTemplates: {
+      ...DEFAULT_ORDER_RULES.emailTemplates,
+      ...specialConfig?.emailTemplates,
+    },
+  };
+}
+
+export function getOrderKindFromItems(
+  items: Array<{ product_name?: string | null; category?: string | null }> = []
+): { orderKind: OrderKind; isMixedInvalid: boolean } {
+  const detectedKinds = new Set<OrderKind>(
+    items.map((item) => {
+      const categoryKind = getOrderKindFromCategory(item.category);
+      return categoryKind === "normal" ? getOrderKindFromName(item.product_name) : categoryKind;
+    })
+  );
+
+  const specialKinds = [...detectedKinds].filter(
+    (kind): kind is Exclude<OrderKind, "normal"> => kind !== "normal"
+  );
+
+  if (specialKinds.length === 0) return { orderKind: "normal", isMixedInvalid: false };
+
+  if (specialKinds.length > 1 || detectedKinds.has("normal"))
+    return { orderKind: specialKinds[0], isMixedInvalid: true };
+
+  return { orderKind: specialKinds[0], isMixedInvalid: false };
+}
+
 export enum Campus {
   _Alameda = "alameda",
   _Taguspark = "taguspark",

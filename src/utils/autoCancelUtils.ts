@@ -1,6 +1,6 @@
 import { getAllOrders, setOrderState } from "@/utils/dbUtils";
-import { getOrderAutoCancelledTemplate, sendEmail } from "@/utils/emailUtils";
-import { getStatusLabel, type Order } from "@/types/shop";
+import { getAutoCancelledOrderEmailTemplate, sendEmail } from "@/utils/emailUtils";
+import { getOrderKindRules, getStatusLabel, getOrderKindFromItems, type Order } from "@/types/shop";
 
 const AUTO_CANCEL_MS = 72 * 60 * 60 * 1000;
 
@@ -15,9 +15,12 @@ export async function autoCancelPendingOrders() {
   const now = Date.now();
 
   const allOrders = (await getAllOrders()) as Order[];
-  const candidates = allOrders.filter(
-    (order) => order.status === "pending" && isOlderThanThreshold(order, now)
-  );
+  const candidates = allOrders.filter((order) => {
+    if (order.status !== "pending" || !isOlderThanThreshold(order, now)) return false;
+
+    const { orderKind } = getOrderKindFromItems(order.items);
+    return getOrderKindRules(orderKind).autoCancelEnabled;
+  });
 
   const cancelledOrderIds: number[] = [];
   const failedOrderIds: number[] = [];
@@ -32,12 +35,16 @@ export async function autoCancelPendingOrders() {
 
       cancelledOrderIds.push(order.id);
 
-      if (order.customer_email) {
+      const { orderKind } = getOrderKindFromItems(order.items);
+      const orderRules = getOrderKindRules(orderKind);
+
+      if (order.customer_email && orderRules.customerEmailsEnabled) {
         try {
           await sendEmail({
             to: order.customer_email,
             subject: `Encomenda ${order.order_number} - ${getStatusLabel("cancelled")}`,
-            html: getOrderAutoCancelledTemplate(
+            html: getAutoCancelledOrderEmailTemplate(
+              orderKind,
               order.order_number,
               order.customer_name,
               order.campus

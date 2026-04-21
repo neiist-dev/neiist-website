@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { MdClose } from "react-icons/md";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import type { Order, PaymentMethod } from "@/types/shop";
+import { Order, PaymentMethod, getOrderKindRules, getOrderKindFromItems } from "@/types/shop";
 import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import styles from "@/styles/components/shop/PosPaymentOverlay.module.css";
@@ -74,6 +74,13 @@ export default function PosPaymentOverlay({
     [readers, selectedReaderId, initialReaderName]
   );
 
+  const { orderKind } = useMemo(() => getOrderKindFromItems(order.items), [order.items]);
+
+  const availablePaymentMethods = useMemo(
+    () => getOrderKindRules(orderKind, "pos").paymentMethods,
+    [orderKind]
+  );
+
   useEffect(() => {
     if (!open || paymentMethod !== "sumup-tpa") return;
 
@@ -108,16 +115,21 @@ export default function PosPaymentOverlay({
     if (!open) return;
 
     autoStartedRef.current = false;
-    setPaymentMethod(initialPaymentMethod ?? "cash");
+    const defaultMethod = availablePaymentMethods[0] ?? "cash";
+    const preferredMethod =
+      initialPaymentMethod && availablePaymentMethods.includes(initialPaymentMethod)
+        ? initialPaymentMethod
+        : defaultMethod;
+
+    setPaymentMethod(preferredMethod);
     setSelectedReaderId(initialReaderId ?? "");
     setError(null);
     setStatusMessage("");
     setFlowState("form");
     setCompletedOrder(null);
     setShowConfirmDialog(false);
-  }, [open, initialPaymentMethod, initialReaderId]);
+  }, [open, initialPaymentMethod, initialReaderId, availablePaymentMethods]);
 
-  // Reset selectedReaderId when payment method changes to sumup-tpa
   useEffect(() => {
     if (!open) return;
 
@@ -436,9 +448,11 @@ export default function PosPaymentOverlay({
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
             disabled={isSubmitting || lockPaymentMethod}>
-            <option value="cash">{methodLabel("cash")}</option>
-            <option value="other">{methodLabel("other")}</option>
-            <option value="sumup-tpa">{methodLabel("sumup-tpa")}</option>
+            {availablePaymentMethods.map((method) => (
+              <option key={method} value={method}>
+                {methodLabel(method)}
+              </option>
+            ))}
           </select>
         </label>
 

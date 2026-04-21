@@ -6,7 +6,14 @@ import { rateLimit } from "@/utils/security/rateLimitUtils";
 import { CSP } from "@/utils/security/cspUtils";
 import { getRateLimitRule } from "@/lib/rateLimitRules";
 
-const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
+const publicRoutes = [
+  "/home",
+  "/about-us",
+  "/email-confirmation",
+  "/shop",
+  "/activities",
+  "/dinner",
+];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
 const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management"];

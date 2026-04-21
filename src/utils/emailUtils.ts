@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { OrderKind, getOrderKindRules } from "@/types/shop";
 import { getColorFromOptions } from "./shopUtils";
 
 interface EmailOptions {
@@ -67,7 +68,7 @@ function formatCampus(campus?: string): string {
   return campus.charAt(0).toUpperCase() + campus.slice(1);
 }
 
-function getCampusPickupLocation(campus?: string): string {
+function getCampusLocation(campus?: string): string {
   if (!campus) return "uma banca NEIIST";
 
   const campusLower = campus.toLowerCase();
@@ -169,8 +170,8 @@ export function getOrderPendingTemplate(
   const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
 
   const paymentText: Record<string, string> = {
-    "in-person": `Presencial numa banca NEIIST (${getCampusPickupLocation(campus)}).`,
-    cash: `Numerário numa banca NEIIST (${getCampusPickupLocation(campus)}).`,
+    "in-person": `Presencial numa banca NEIIST (${getCampusLocation(campus)}).`,
+    cash: `Numerário numa banca NEIIST (${getCampusLocation(campus)}).`,
     other: "Transferência/MB Way (aguarda validação manual pela equipa da loja).",
     "sumup-tpa": "Cartao no terminal SumUp POS (confirmacao no dispositivo).",
     sumup: "Cartão online via SumUp",
@@ -185,7 +186,7 @@ export function getOrderPendingTemplate(
       <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
       <p>A tua encomenda <strong>#${orderNumber}</strong> foi registada e encontra-se <strong>pendente</strong>.</p>
       <p><strong>Atenção:</strong> a encomenda só fica confirmada depois do pagamento.</p>
-      <p><strong>Onde pagar:</strong> ${paymentText[paymentMethod || ""] || `Banca NEIIST (${getCampusPickupLocation(campus)})`}</p>
+      <p><strong>Onde pagar:</strong> ${paymentText[paymentMethod || ""] || `Banca NEIIST (${getCampusLocation(campus)})`}</p>
       <p><strong>Prazo limite de pagamento:</strong> ${deadlineText}. Se não for paga até esta data, a encomenda é automaticamente cancelada.</p>
 
       ${renderItemsTable(items, total)}
@@ -208,7 +209,7 @@ export function getOrderPaidTemplate(
 ): string {
   const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
 
-  const presencialText = `Presencial numa banca do NEIIST ou na ${getCampusPickupLocation(campus)}.`;
+  const presencialText = `Presencial numa banca do NEIIST ou na ${getCampusLocation(campus)}.`;
   const paymentMethodLabels: Record<string, string> = {
     "in-person": presencialText,
     cash: presencialText,
@@ -242,6 +243,66 @@ export function getOrderPaidTemplate(
   `;
 }
 
+export function getJantarDeCursoPendingTemplate(
+  orderNumber: string,
+  customerName: string,
+  items: OrderEmailItem[],
+  total: number,
+  campus?: string,
+  pickupDeadline?: string | null
+): string {
+  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
+  const deadlineText = formatDeadline(pickupDeadline);
+  // TODO: implement dynamic MBWay number allocation from a configured pool. (Ask for identificarition on mbway their istid)
+
+  return `
+    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
+      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
+      <h2 style="color: #2863FD; margin-bottom: 1rem;">Jantar de Curso - Encomenda Pendente</h2>
+      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
+      <p>A tua reserva para o <strong>Jantar de Curso</strong> (#${orderNumber}) foi registada com sucesso.</p>
+      <p><strong>Pagamento:</strong> presencial na sala do NEIIST (${getCampusLocation(campus)}).</p>
+      <p>Deve ser feito numa banca NEIIST, o pagamento irá ser confirmado por um membro da equipa.</p>
+      <p><strong>Prazo limite:</strong> ${deadlineText}. Após esse prazo a reserva pode ser cancelada automaticamente.</p>
+
+      ${renderItemsTable(items, total)}
+
+      ${campus ? `<p><strong>Campus selecionado:</strong> ${formatCampus(campus)}</p>` : ""}
+      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
+      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
+    </div>
+  `;
+}
+
+export function getJantarDeCursoPaidTemplate(
+  orderNumber: string,
+  customerName: string,
+  items: OrderEmailItem[],
+  total: number,
+  campus?: string,
+  paymentReference?: string
+): string {
+  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
+
+  return `
+    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
+      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
+      <h2 style="color: #2863FD; margin-bottom: 1rem;">Jantar de Curso - Pagamento Confirmado</h2>
+      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
+      <p>Recebemos o teu pagamento para a reserva <strong>#${orderNumber}</strong> do Jantar de Curso.</p>
+
+      ${renderItemsTable(items, total)}
+
+      ${campus ? `<p><strong>Campus selecionado:</strong> ${formatCampus(campus)}</p>` : ""}
+      ${paymentReference ? `<p><strong>Referência de pagamento:</strong> ${paymentReference}</p>` : ""}
+      <p style="margin-top: 1.25rem;">A tua inscrição será validada automaticamente após confirmação final do pagamento.</p>
+
+      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
+      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
+    </div>
+  `;
+}
+
 export function getOrderStatusUpdateTemplate(
   orderNumber: string,
   customerName: string,
@@ -261,7 +322,7 @@ export function getOrderStatusUpdateTemplate(
   const message =
     statusMessages[status] || `O estado da tua encomenda foi atualizado para: ${statusLabel}`;
 
-  const campusLocation = getCampusPickupLocation(campus);
+  const campusLocation = getCampusLocation(campus);
 
   return `
     <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
@@ -305,4 +366,92 @@ export function getOrderAutoCancelledTemplate(
       <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
     </div>
   `;
+}
+
+export function getPendingOrderEmailTemplate(
+  orderKind: OrderKind,
+  orderNumber: string,
+  customerName: string,
+  items: OrderEmailItem[],
+  total: number,
+  campus?: string,
+  paymentMethod?: string,
+  pickupDeadline?: string | null
+): string {
+  const templateKey = getOrderKindRules(orderKind).emailTemplates.pending;
+
+  if (templateKey === "jantar_pending") {
+    return getJantarDeCursoPendingTemplate(
+      orderNumber,
+      customerName,
+      items,
+      total,
+      campus,
+      pickupDeadline
+    );
+  }
+
+  return getOrderPendingTemplate(
+    orderNumber,
+    customerName,
+    items,
+    total,
+    campus,
+    paymentMethod,
+    pickupDeadline
+  );
+}
+
+export function getPaidOrderEmailTemplate(
+  orderKind: OrderKind,
+  orderNumber: string,
+  customerName: string,
+  items: OrderEmailItem[],
+  total: number,
+  campus?: string,
+  paymentMethod?: string,
+  paymentReference?: string
+): string {
+  const templateKey = getOrderKindRules(orderKind).emailTemplates.paid;
+
+  if (templateKey === "jantar_paid") {
+    return getJantarDeCursoPaidTemplate(
+      orderNumber,
+      customerName,
+      items,
+      total,
+      campus,
+      paymentReference
+    );
+  }
+
+  return getOrderPaidTemplate(
+    orderNumber,
+    customerName,
+    items,
+    total,
+    campus,
+    paymentMethod,
+    paymentReference
+  );
+}
+
+export function getAutoCancelledOrderEmailTemplate(
+  _orderKind: OrderKind,
+  orderNumber: string,
+  customerName: string,
+  campus?: string
+): string {
+  return getOrderAutoCancelledTemplate(orderNumber, customerName, campus);
+}
+
+export function getStatusUpdateOrderEmailTemplate(
+  _orderKind: OrderKind,
+  orderNumber: string,
+  customerName: string,
+  status: string,
+  statusLabel: string,
+  campus?: string
+): string {
+  return getOrderStatusUpdateTemplate(orderNumber, customerName, status, statusLabel, campus);
 }

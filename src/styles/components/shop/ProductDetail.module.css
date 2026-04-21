@@ -264,6 +264,14 @@
   text-align: center;
 }
 
+.quantityDisabled {
+  opacity: 0.6;
+}
+
+.quantityDisabled button {
+  cursor: not-allowed;
+}
+
 .addButton {
   background: var(--primary-colour);
   height: 3rem;

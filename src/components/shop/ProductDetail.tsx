@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { FiChevronDown, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
-import { Product, CartItem } from "@/types/shop";
+import { Product, CartItem, isJantarDeCursoCategory } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
@@ -15,6 +15,7 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
+  const isJantarDeCurso = isJantarDeCursoCategory(product.category);
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
 
   useEffect(() => {
@@ -169,6 +170,16 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       return;
     }
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    if (isJantarDeCurso) {
+      localStorage.setItem(
+        "cart",
+        JSON.stringify([{ product, variantId: selectedVariant?.id, quantity: 1 }])
+      );
+      window.dispatchEvent(new Event("cartUpdated"));
+      router.push("/shop/checkout?source=dinner");
+      return;
+    }
+
     cart.push({ product, variantId: selectedVariant?.id, quantity: qty });
     localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event("cartUpdated"));
@@ -284,17 +295,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           <span className={styles.label}>Quantidade</span>
           <div className={styles.qtyAndButton}>
-            <div className={styles.quantity}>
-              <button
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                aria-label="Decrease quantity">
+            <div className={`${styles.quantity} ${isJantarDeCurso ? styles.quantityDisabled : ""}`}>
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={isJantarDeCurso}>
                 -
               </button>
               <span>{qty}</span>
               <button
                 onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                disabled={product.stock_type === "limited" && qty >= maxQty}
-                aria-label="Increase quantity">
+                disabled={isJantarDeCurso || (product.stock_type === "limited" && qty >= maxQty)}>
                 +
               </button>
             </div>
@@ -304,7 +312,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 if (!canBuy) addToCart();
               }}>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
-                Adicionar ao Carrinho
+                {isJantarDeCurso ? "Comprar já" : "Adicionar ao Carrinho"}
               </button>
             </div>
           </div>

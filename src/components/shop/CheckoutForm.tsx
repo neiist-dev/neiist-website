@@ -3,7 +3,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ShopCheckoutOverlay from "@/components/shop/ShopCheckoutOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
-import { Campus, type CartItem, type PaymentMethod } from "@/types/shop";
+import {
+  Campus,
+  getPaymentLabel,
+  type CartItem,
+  type PaymentMethod,
+  type OrderSource,
+  getOrderKindRules,
+  getOrderKindFromItems,
+} from "@/types/shop";
 import Image from "next/image";
 import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
 import { FaChevronDown } from "react-icons/fa";
@@ -12,9 +20,10 @@ import type { ApplePayPaymentRequest, ApplePayPaymentToken } from "@/types/sumup
 
 interface CheckoutFormProps {
   user: User;
+  source?: OrderSource;
 }
 
-export default function CheckoutForm({ user }: CheckoutFormProps) {
+export default function CheckoutForm({ user, source = "other" }: CheckoutFormProps) {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [campus, setCampus] = useState<Campus>(Campus._Alameda);
@@ -67,6 +76,10 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   const total = cart.reduce((sum, item) => sum + unitPrice(item) * item.quantity, 0);
   const subtotal = total / 1.23; // Price without IVA
   const taxes = total - subtotal; // IVA amount (23% of subtotal)
+  const { orderKind: checkoutOrderKind, isMixedInvalid } = getOrderKindFromItems(
+    cart.map((item) => item.product)
+  );
+  const allowedPaymentMethods = getOrderKindRules(checkoutOrderKind, source).paymentMethods;
 
   const apiItems = cart.map((item) => ({
     product_id: item.product.id,
@@ -89,6 +102,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         payment_method: selectedPayment,
         payment_reference: undefined,
         customer_phone: user.phone || phone || undefined,
+        order_source: checkoutOrderKind === "normal" ? "other" : source,
       }),
     });
 
@@ -105,12 +119,16 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const handleSubmit = async (selectedPayment: PaymentMethod | null = payment) => {
     if (!campus) {
-      // TODO: (ERROR)
       setError("Por favor, seleciona o campus.");
       return;
     }
-    if (selectedPayment !== "sumup" && selectedPayment !== "in-person") {
-      // TODO: (ERROR)
+
+    if (isMixedInvalid) {
+      setError("Este pedido nao pode misturar categorias especiais com outras categorias.");
+      return;
+    }
+
+    if (!selectedPayment || !allowedPaymentMethods.includes(selectedPayment)) {
       setError("Seleciona um método de pagamento.");
       return;
     }
@@ -119,7 +137,6 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     try {
       await createOrder(selectedPayment, true);
     } catch (err) {
-      // TODO: (ERROR)
       setError(err instanceof Error ? err.message : "Erro ao submeter encomenda.");
     } finally {
       setLoading(false);
@@ -128,19 +145,16 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const handleApplePayDirect = () => {
     if (!campus) {
-      // TODO: (ERROR)
       setError("Por favor, seleciona o campus.");
       return;
     }
 
     if (typeof window === "undefined" || !window.isSecureContext) {
-      // TODO: (ERROR)
       setError("Apple Pay requer um contexto seguro (HTTPS).");
       return;
     }
 
     if (typeof window.ApplePaySession === "undefined") {
-      // TODO: (ERROR)
       setError("Apple Pay não está disponível neste browser.");
       return;
     }
@@ -239,12 +253,10 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           router.push(`/my-orders?orderId=${createdOrderId}`);
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
-          // TODO: (ERROR)
           setError(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.");
         }
       } catch (error) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
-        // TODO: (ERROR)
         setError(
           error instanceof Error ? error.message : "Erro ao processar Apple Pay. Tenta novamente."
         );
@@ -279,11 +291,11 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     { id: Campus._Taguspark, label: "Taguspark" },
   ] as const;
 
-  const paymentOptions = [
-    { id: "sumup", label: "Cartão" },
-    { id: "in-person", label: "Presencial" },
-  ] as const;
-  const selectedStandardPayment = payment === "sumup" || payment === "in-person";
+  const paymentOptions = allowedPaymentMethods.map((method) => ({
+    id: method,
+    label: getPaymentLabel(method),
+  }));
+  const selectedStandardPayment = payment ? allowedPaymentMethods.includes(payment) : false;
 
   return (
     <div className={styles.container}>
@@ -364,6 +376,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
               </label>
             ))}
           </div>
+          {/*//FIX: Add a Confirm Dialog to inform user of the mbway method that will be on the email*/}
         </section>
 
         <div className={styles.divider} />

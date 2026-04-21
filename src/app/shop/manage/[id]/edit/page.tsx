@@ -10,7 +10,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     redirect("/shop/manage");
   }
 
-  const [product, categories] = await Promise.all([getProduct(productId), getAllCategories()]);
+  const [product, categories] = await Promise.all([getProduct(productId), getAllCategories(true)]);
 
   if (!product) {
     redirect("/shop/manage");

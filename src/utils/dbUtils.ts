@@ -14,6 +14,8 @@ import {
   Category,
   dbCategory,
   mapdbCategoryToCategory,
+  isSpecialCategory,
+  SPECIAL_CATEGORIES,
 } from "@/types/shop";
 import {
   CalendarEvent,
@@ -669,9 +671,12 @@ export const addProductVariant = async (
   return row ? mapdbProductToProduct(row) : null;
 };
 
-export const getAllProducts = async (): Promise<Product[]> => {
+export const getAllProducts = async (includeSpecial: boolean = false): Promise<Product[]> => {
   const { rows } = await db_query<dbProduct>(`SELECT * FROM neiist.get_all_products()`);
-  return rows.map(mapdbProductToProduct);
+  const products = rows.map(mapdbProductToProduct);
+  return includeSpecial
+    ? products
+    : products.filter((product) => !isSpecialCategory(product.category));
 };
 
 export const getAllProductsAdmin = async (): Promise<Product[]> => {
@@ -873,10 +878,11 @@ export const setOrderState = async (
   return row ? mapdbOrderToOrder(row) : null;
 };
 
-export const getAllCategories = async (): Promise<Category[]> => {
+export const getAllCategories = async (includeSpecial: boolean = false): Promise<Category[]> => {
+  await Promise.all(SPECIAL_CATEGORIES.map((categoryName) => addCategory(categoryName)));
   try {
     const { rows } = await db_query<Category>("SELECT * FROM neiist.get_all_categories()");
-    return rows;
+    return includeSpecial ? rows : rows.filter((category) => !isSpecialCategory(category.name));
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];

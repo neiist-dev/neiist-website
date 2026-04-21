@@ -3,8 +3,14 @@ import { getUserFromJWT } from "@/utils/authUtils";
 import { getUser } from "@/utils/dbUtils";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { OrderSource } from "@/types/shop";
 
-export default async function CheckoutPage() {
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ source?: string }>;
+}) {
+  const { source } = await searchParams;
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = getUserFromJWT(sessionToken)!;
@@ -14,5 +20,7 @@ export default async function CheckoutPage() {
     redirect("/login?redirect=/shop/checkout");
   }
 
-  return <CheckoutForm user={user} />;
+  const checkoutSource: OrderSource = source === "dinner" ? "dinner" : "other";
+
+  return <CheckoutForm user={user} source={checkoutSource} />;
 }

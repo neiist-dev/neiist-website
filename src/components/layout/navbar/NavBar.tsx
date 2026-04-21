@@ -17,6 +17,7 @@ const navLinks = [
   { name: "Atividades", href: "/activities" },
   /*{ name: "Blog", href: "/blog" },*/
   { name: "Loja", href: "/shop" },
+  { name: "Jantar de Curso", href: "/dinner" },
 ];
 
 export default function NavBar() {

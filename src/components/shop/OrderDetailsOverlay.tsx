@@ -5,6 +5,7 @@ import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import {
   Order,
   OrderStatus,
+  getOrderKindFromItems,
   getPaymentLabel,
   getStatusLabel,
   getStatusCssClass,
@@ -195,6 +196,9 @@ export default function OrderDetailOverlay({
 
   const steps = ["pending", "paid", "ready", "delivered"];
   const currentStepIndex = Math.max(0, steps.indexOf(order.status));
+  const { orderKind } = getOrderKindFromItems(order.items);
+  const isSpecialOrder = orderKind !== "normal";
+  const specialOrderConfirmed = ["paid", "ready", "delivered"].includes(order.status);
 
   const canSetPaid = canManage && canTransitionTo(order.status, "paid");
   const canSetReady = canManage && canTransitionTo(order.status, "ready");
@@ -500,47 +504,66 @@ export default function OrderDetailOverlay({
               <>
                 {order.status !== "cancelled" && (
                   <div className={styles.progressContainer}>
-                    <ul className={styles.progressbar}>
-                      <li
-                        className={`${styles.step0} ${currentStepIndex >= 0 ? styles.active : ""}`}
-                        id="step1">
-                        <span className={styles.stepIcon}>
-                          {currentStepIndex >= 0 && <FaCheck size={14} />}
-                        </span>
-                        Pendente
-                      </li>
-                      <li
-                        className={`${styles.step0} ${currentStepIndex >= 1 ? styles.active : ""}`}
-                        id="step2">
-                        <span className={styles.stepIcon}>
-                          {currentStepIndex >= 1 && <FaCheck size={14} />}
-                        </span>
-                        Pago
-                      </li>
-                      <li
-                        className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""} ${
-                          isDeadlineNear && currentStepIndex >= 2 ? styles.stepAlert : ""
-                        }`}
-                        id="step3">
-                        <span className={styles.stepIcon}>
-                          {currentStepIndex >= 2 &&
-                            (isDeadlineNear ? (
-                              <FaExclamationTriangle size={14} />
-                            ) : (
-                              <FaCheck size={14} />
-                            ))}
-                        </span>
-                        Pronto
-                      </li>
-                      <li
-                        className={`${styles.step0} ${currentStepIndex >= 3 ? styles.active : ""}`}
-                        id="step4">
-                        <span className={styles.stepIcon}>
-                          {currentStepIndex >= 3 && <FaCheck size={14} />}
-                        </span>
-                        Entregue
-                      </li>
-                    </ul>
+                    {isSpecialOrder ? (
+                      <ul className={styles.progressbar}>
+                        <li className={`${styles.step0} ${styles.active}`} id="step1">
+                          <span className={styles.stepIcon}>
+                            <FaCheck size={14} />
+                          </span>
+                          Pendente
+                        </li>
+                        <li
+                          className={`${styles.step0} ${specialOrderConfirmed ? styles.active : ""}`}
+                          id="step2">
+                          <span className={styles.stepIcon}>
+                            {specialOrderConfirmed && <FaCheck size={14} />}
+                          </span>
+                          Confirmado
+                        </li>
+                      </ul>
+                    ) : (
+                      <ul className={styles.progressbar}>
+                        <li
+                          className={`${styles.step0} ${currentStepIndex >= 0 ? styles.active : ""}`}
+                          id="step1">
+                          <span className={styles.stepIcon}>
+                            {currentStepIndex >= 0 && <FaCheck size={14} />}
+                          </span>
+                          Pendente
+                        </li>
+                        <li
+                          className={`${styles.step0} ${currentStepIndex >= 1 ? styles.active : ""}`}
+                          id="step2">
+                          <span className={styles.stepIcon}>
+                            {currentStepIndex >= 1 && <FaCheck size={14} />}
+                          </span>
+                          Pago
+                        </li>
+                        <li
+                          className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""} ${
+                            isDeadlineNear && currentStepIndex >= 2 ? styles.stepAlert : ""
+                          }`}
+                          id="step3">
+                          <span className={styles.stepIcon}>
+                            {currentStepIndex >= 2 &&
+                              (isDeadlineNear ? (
+                                <FaExclamationTriangle size={14} />
+                              ) : (
+                                <FaCheck size={14} />
+                              ))}
+                          </span>
+                          Pronto
+                        </li>
+                        <li
+                          className={`${styles.step0} ${currentStepIndex >= 3 ? styles.active : ""}`}
+                          id="step4">
+                          <span className={styles.stepIcon}>
+                            {currentStepIndex >= 3 && <FaCheck size={14} />}
+                          </span>
+                          Entregue
+                        </li>
+                      </ul>
+                    )}
                   </div>
                 )}
                 <div className={styles.footer}>

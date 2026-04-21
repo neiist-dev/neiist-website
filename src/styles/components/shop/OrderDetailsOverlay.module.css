@@ -337,6 +337,16 @@
   width: 100%;
 }
 
+.progressbar:has(.step0:nth-child(1).active):has(
+    .step0:nth-child(2):last-child:not(.active)
+  )::after {
+  width: 50%;
+}
+
+.progressbar:has(.step0:nth-child(2):last-child.active)::after {
+  width: 100%;
+}
+
 .step0 {
   font-size: clamp(0.625rem, 2vw, 0.75rem);
   flex: 1;
