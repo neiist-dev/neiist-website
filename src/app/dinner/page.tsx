@@ -3,6 +3,7 @@ import { getAllProducts, getAllOrders } from "@/utils/dbUtils";
 import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/DinnerPage.module.css";
+import FullScreenWrapper from "@/components/FullScreenWrapper";
 
 export default async function DinnerPage() {
   const userRoles = await serverCheckRoles([]);
@@ -31,12 +32,14 @@ export default async function DinnerPage() {
 
     if (hasJantarOrder) {
       return (
-        <div className={styles.signedUpScreen}>
-          <div className={styles.signedUpContent}>
-            <h1>Espera pelo jantar para descobrires todas as surpresas!</h1>
-            <p>Até breve!</p>
+        <FullScreenWrapper>
+          <div className={styles.signedUpScreen}>
+            <div className={styles.signedUpContent}>
+              <h1>Espera pelo jantar para descobrires todas as surpresas!</h1>
+              <p>Até breve!</p>
+            </div>
           </div>
-        </div>
+        </FullScreenWrapper>
       );
     }
   }
