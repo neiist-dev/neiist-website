@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllProducts, getAllOrders } from "@/utils/dbUtils";
-import { getOrderKindRules, isJantarDeCursoCategory } from "@/types/shop";
+import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/DinnerPage.module.css";
 
@@ -19,29 +19,25 @@ export default async function DinnerPage() {
   }
 
   if (userRoles.isAuthorized && userRoles.user) {
-    const orderRules = getOrderKindRules("jantar_de_curso");
+    const allOrders = await getAllOrders();
+    const userOrders = allOrders.filter((order) => order.user_istid === userRoles.user?.istid);
+    const hasJantarOrder = userOrders.some(
+      (order) =>
+        order.status === "paid" &&
+        order.items.some((item) =>
+          isJantarDeCursoCategory(productById.get(item.product_id)?.category)
+        )
+    );
 
-    if (orderRules.activityId) {
-      const allOrders = await getAllOrders();
-      const userOrders = allOrders.filter((order) => order.user_istid === userRoles.user?.istid);
-      const hasJantarOrder = userOrders.some(
-        (order) =>
-          order.status === "paid" &&
-          order.items.some((item) =>
-            isJantarDeCursoCategory(productById.get(item.product_id)?.category)
-          )
-      );
-
-      if (hasJantarOrder) {
-        return (
-          <div className={styles.signedUpScreen}>
-            <div className={styles.signedUpContent}>
-              <h1>Espera pelo jantar para descobrires todas as surpresas!</h1>
-              <p>Até breve!</p>
-            </div>
+    if (hasJantarOrder) {
+      return (
+        <div className={styles.signedUpScreen}>
+          <div className={styles.signedUpContent}>
+            <h1>Espera pelo jantar para descobrires todas as surpresas!</h1>
+            <p>Até breve!</p>
           </div>
-        );
-      }
+        </div>
+      );
     }
   }
 

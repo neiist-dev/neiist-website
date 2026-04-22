@@ -2,7 +2,7 @@
 
 import styles from "@/styles/components/shop/ActiveFilters.module.css";
 import { FiX } from "react-icons/fi";
-import { OrderStatus } from "@/types/shop";
+import { OrderStatus } from "@/types/shop/orderStatus";
 
 interface ActiveFiltersProps {
   dateRange: { start: Date | null; end: Date | null };

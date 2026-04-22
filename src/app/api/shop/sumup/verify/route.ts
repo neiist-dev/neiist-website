@@ -8,7 +8,7 @@ import {
   formatSumUpError,
 } from "@/utils/sumupUtils";
 import type { ApplePayPaymentToken, VerifyCheckoutRequestBody, SumUpCheckout } from "@/types/sumup";
-import { finalizePaidOrder } from "@/utils/sumupOrderFinalization";
+import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 
 export async function POST(req: NextRequest) {
   const auth = await serverCheckRoles([]);

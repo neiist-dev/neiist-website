@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "@/styles/components/shop/MobileFiltersDrawer.module.css";
 import { FiCheck, FiX } from "react-icons/fi";
-import { OrderStatus } from "@/types/shop";
+import { OrderStatus } from "@/types/shop/orderStatus";
 
 interface FilterState {
   dateRange: { start: Date | null; end: Date | null };

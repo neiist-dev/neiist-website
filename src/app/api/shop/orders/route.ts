@@ -8,16 +8,11 @@ import {
   getProduct,
 } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
-import {
-  PAYMENT_METHODS,
-  PENDING_PAYMENT_METHODS,
-  type PaymentMethod,
-  type OrderSource,
-  getOrderKindRules,
-  getOrderKindFromItems,
-  OrderItem,
-  Product,
-} from "@/types/shop";
+import { PAYMENT_METHODS, PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
+import { OrderSource } from "@/types/shop/orderKind";
+import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import { OrderItem } from "@/types/shop/order";
+import { Product } from "@/types/shop/product";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import { sendEmail, getPendingOrderEmailTemplate } from "@/utils/emailUtils";
 

@@ -5,9 +5,9 @@ import { useCartPopup } from "@/context/ShopContext";
 import Image from "next/image";
 import { FiTrash2 } from "react-icons/fi";
 import { Squash } from "hamburger-react";
-import { CartItem } from "@/types/shop";
+import { CartItem } from "@/types/shop/product";
 import styles from "@/styles/components/shop/Cart.module.css";
-import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
 
 export default function Cart() {
   const { isOpen, closeCart } = useCartPopup();

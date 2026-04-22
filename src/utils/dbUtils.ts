@@ -3,20 +3,16 @@ import { Membership, dbMembership, mapdbMembershipToMembership } from "@/types/m
 import { User, mapRoleToUserRole, mapdbUserToUser } from "@/types/user";
 import {
   Product,
-  dbProduct,
   ProductVariant,
-  mapdbProductToProduct,
+  dbProduct,
   dbProductVariant,
-  Order,
-  dbOrder,
-  mapdbOrderToOrder,
-  OrderStatus,
-  Category,
-  dbCategory,
-  mapdbCategoryToCategory,
-  isSpecialCategory,
-  SPECIAL_CATEGORIES,
-} from "@/types/shop";
+  mapdbProductToProduct,
+} from "@/types/shop/product";
+import { Order, dbOrder, mapdbOrderToOrder } from "@/types/shop/order";
+import { OrderStatus } from "@/types/shop/orderStatus";
+import { Category, dbCategory, mapdbCategoryToCategory } from "@/types/shop/category";
+import { isSpecialCategory } from "@/utils/shop/orderKindUtils";
+import { SPECIAL_CATEGORIES } from "@/types/shop/orderKind";
 import {
   CalendarEvent,
   EventSubscriber,

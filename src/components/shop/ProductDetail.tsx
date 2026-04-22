@@ -3,9 +3,10 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { FiChevronDown, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
-import { Product, CartItem, isJantarDeCursoCategory } from "@/types/shop";
+import { Product, CartItem } from "@/types/shop/product";
+import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
-import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
 import { toast } from "sonner";
 

@@ -21,6 +21,7 @@ yarn-error.log*
 
 # Data
 data/
+public/products
 
 # Environment Variables
 .env

@@ -1,6 +1,18 @@
 import { getOrderById, updateOrder, setOrderState, signUpToEvent } from "@/utils/dbUtils";
 import { getPaidOrderEmailTemplate, sendEmail } from "@/utils/emailUtils";
-import { getOrderKindRules, getStatusLabel, getOrderKindFromItems } from "@/types/shop";
+import { Order } from "@/types/shop/order";
+import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
+import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
+import { getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+
+const AFTER_PURCHASE_ACTIONS = {
+  register_jantar_de_curso: async (order: Order) => {
+    const activityId = process.env.NEXT_PUBLIC_JANTAR_DE_CURSO_ACTIVITY_ID;
+    if (!activityId || !order.user_istid) return;
+
+    await signUpToEvent(activityId, order.user_istid);
+  },
+} as const;
 
 export type FinalizePaidOrderResult =
   | { success: true; alreadyProcessed?: boolean }
@@ -35,16 +47,15 @@ export async function finalizePaidOrder({
     return { success: false, error: "Failed to update payment reference", statusCode: 500 };
 
   const { orderKind } = getOrderKindFromItems(statusUpdate.items);
-  const orderRules = getOrderKindRules(orderKind);
-  const activityId = orderRules.activityId;
+  const orderRules = getOrderKindRules(orderKind, "other");
+  const afterPurchaseActionKey = orderRules.afterPurchaseActionKey;
 
-  if (activityId && statusUpdate.user_istid) {
+  if (afterPurchaseActionKey) {
     try {
-      await signUpToEvent(activityId, statusUpdate.user_istid);
+      await AFTER_PURCHASE_ACTIONS[afterPurchaseActionKey](statusUpdate);
     } catch (error) {
-      console.warn("Failed to auto sign-up user in configured activity", {
+      console.warn("Failed to perform after purchase action", {
         orderId,
-        activityId,
         error,
       });
     }

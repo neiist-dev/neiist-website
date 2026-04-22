@@ -5,7 +5,8 @@ import { FaCheck } from "react-icons/fa";
 import { useEffect, useRef, useCallback, useState } from "react";
 import styles from "@/styles/components/shop/ShopCheckoutOverlay.module.css";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
-import type { PaymentMethod, Order } from "@/types/shop";
+import { Order } from "@/types/shop/order";
+import { PaymentMethod } from "@/types/shop/payment";
 import type {
   SumUpCardInstance,
   SumUpCardMountOptions,

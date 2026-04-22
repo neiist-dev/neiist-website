@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/MyOrdersList.module.css";
-import { Order, Product } from "@/types/shop";
-import { getCompactProductsSummary } from "@/utils/shopUtils";
+import { Order } from "@/types/shop/order";
+import { Product } from "@/types/shop/product";
+import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 
 type Props = { orders: Order[]; products: Product[] };
 

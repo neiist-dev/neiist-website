@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { FiImage } from "react-icons/fi";
-import { Product } from "@/types/shop";
+import { Product } from "@/types/shop/product";
 import styles from "@/styles/components/shop/ProductCard.module.css";
 
 export default function ProductCard({ product }: { product: Product }) {

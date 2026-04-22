@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
-import { OrderKind, getOrderKindRules } from "@/types/shop";
-import { getColorFromOptions } from "./shopUtils";
+import { OrderKind } from "@/types/shop/orderKind";
+import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
+import { getColorFromOptions } from "@/utils/shop/shopUtils";
 
 interface EmailOptions {
   to: string;

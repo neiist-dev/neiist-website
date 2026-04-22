@@ -6,16 +6,14 @@ import Fuse from "fuse.js";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
 import { checkRoles, UserRole, type User } from "@/types/user";
+import { Order, Campus } from "@/types/shop/order";
+import { Product, ProductVariant } from "@/types/shop/product";
 import {
-  Campus,
-  type Product,
-  type ProductVariant,
-  type Order,
   getOrderKindFromItems,
   getOrderKindFromCategory,
   getOrderKindRules,
-} from "@/types/shop";
-import { isColorKey, splitNameHex } from "@/utils/shopUtils";
+} from "@/utils/shop/orderKindUtils";
+import { isColorKey, splitNameHex } from "@/utils/shop/shopUtils";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { useUser } from "@/context/UserContext";
 

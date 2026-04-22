@@ -2,19 +2,15 @@
 
 import { useMemo, useRef, useState } from "react";
 import styles from "@/styles/components/shop/OrdersTable.module.css";
-import {
-  Order,
-  getStatusLabel,
-  getStatusCssClass,
-  ORDER_STATUS_CONFIG,
-  Product,
-  OrderStatus,
-} from "@/types/shop";
+import { Order } from "@/types/shop/order";
+import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
+import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types/shop/orderStatus";
+import { Product } from "@/types/shop/product";
 import { FiSearch, FiCheck } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
 import * as XLSX from "xlsx";
 import Fuse from "fuse.js";
-import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shopUtils";
+import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";

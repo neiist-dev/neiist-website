@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { autoCancelPendingOrders } from "@/utils/autoCancelUtils";
+import { autoCancelPendingOrders } from "@/utils/shop/autoCancelUtils";
 
 // Global guard to only schedule once per process.
 declare global {

@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { CartItem } from "@/types/shop";
+import { CartItem } from "@/types/shop/product";
 
 const ShopContext = createContext({
   isOpen: false,

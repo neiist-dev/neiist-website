@@ -21,9 +21,10 @@ import {
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Product, Category, ProductVariant } from "@/types/shop";
+import { Product, ProductVariant } from "@/types/shop/product";
+import { Category } from "@/types/shop/category";
 import styles from "@/styles/components/shop/ProductForm.module.css";
-import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shopUtils";
+import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shop/shopUtils";
 import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOptionsEditor";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import ColorfulText from "@/components/ColorfulText";

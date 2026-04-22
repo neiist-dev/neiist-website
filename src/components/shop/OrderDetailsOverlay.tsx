@@ -1,26 +1,22 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, type CSSProperties } from "react";
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
-import {
-  Order,
-  OrderStatus,
-  getOrderKindFromItems,
-  getPaymentLabel,
-  getStatusLabel,
-  getStatusCssClass,
-  canTransitionTo,
-} from "@/types/shop";
+import { Order } from "@/types/shop/order";
+import { OrderStatus } from "@/types/shop/orderStatus";
+import { getOrderProgressSteps, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import { getPaymentLabel } from "@/types/shop/payment";
+import { getStatusLabel, getStatusCssClass, canTransitionTo } from "@/utils/shop/orderStatusUtils";
+import { Product } from "@/types/shop/product";
 import { MdClose } from "react-icons/md";
 import { FaCheck, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "sonner";
 import { FiChevronDown, FiChevronUp, FiEdit2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
-import type { Product } from "@/types/shop";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
   if (label) return label;
@@ -194,11 +190,18 @@ export default function OrderDetailOverlay({
     );
   }
 
-  const steps = ["pending", "paid", "ready", "delivered"];
-  const currentStepIndex = Math.max(0, steps.indexOf(order.status));
   const { orderKind } = getOrderKindFromItems(order.items);
-  const isSpecialOrder = orderKind !== "normal";
-  const specialOrderConfirmed = ["paid", "ready", "delivered"].includes(order.status);
+  const progressSteps = getOrderProgressSteps(orderKind);
+  const activeStepIndex = progressSteps.findLastIndex((step) =>
+    step.activeStatuses.includes(order.status)
+  );
+  const progressWidth =
+    progressSteps.length > 0 && activeStepIndex >= 0
+      ? `${((activeStepIndex + 1) / progressSteps.length) * 100}%`
+      : "0%";
+  const progressBarStyle: CSSProperties = {
+    "--progress-width": progressWidth,
+  } as CSSProperties;
 
   const canSetPaid = canManage && canTransitionTo(order.status, "paid");
   const canSetReady = canManage && canTransitionTo(order.status, "ready");
@@ -504,66 +507,29 @@ export default function OrderDetailOverlay({
               <>
                 {order.status !== "cancelled" && (
                   <div className={styles.progressContainer}>
-                    {isSpecialOrder ? (
-                      <ul className={styles.progressbar}>
-                        <li className={`${styles.step0} ${styles.active}`} id="step1">
-                          <span className={styles.stepIcon}>
-                            <FaCheck size={14} />
-                          </span>
-                          Pendente
-                        </li>
-                        <li
-                          className={`${styles.step0} ${specialOrderConfirmed ? styles.active : ""}`}
-                          id="step2">
-                          <span className={styles.stepIcon}>
-                            {specialOrderConfirmed && <FaCheck size={14} />}
-                          </span>
-                          Confirmado
-                        </li>
-                      </ul>
-                    ) : (
-                      <ul className={styles.progressbar}>
-                        <li
-                          className={`${styles.step0} ${currentStepIndex >= 0 ? styles.active : ""}`}
-                          id="step1">
-                          <span className={styles.stepIcon}>
-                            {currentStepIndex >= 0 && <FaCheck size={14} />}
-                          </span>
-                          Pendente
-                        </li>
-                        <li
-                          className={`${styles.step0} ${currentStepIndex >= 1 ? styles.active : ""}`}
-                          id="step2">
-                          <span className={styles.stepIcon}>
-                            {currentStepIndex >= 1 && <FaCheck size={14} />}
-                          </span>
-                          Pago
-                        </li>
-                        <li
-                          className={`${styles.step0} ${currentStepIndex >= 2 ? styles.active : ""} ${
-                            isDeadlineNear && currentStepIndex >= 2 ? styles.stepAlert : ""
-                          }`}
-                          id="step3">
-                          <span className={styles.stepIcon}>
-                            {currentStepIndex >= 2 &&
-                              (isDeadlineNear ? (
-                                <FaExclamationTriangle size={14} />
-                              ) : (
-                                <FaCheck size={14} />
-                              ))}
-                          </span>
-                          Pronto
-                        </li>
-                        <li
-                          className={`${styles.step0} ${currentStepIndex >= 3 ? styles.active : ""}`}
-                          id="step4">
-                          <span className={styles.stepIcon}>
-                            {currentStepIndex >= 3 && <FaCheck size={14} />}
-                          </span>
-                          Entregue
-                        </li>
-                      </ul>
-                    )}
+                    <ul className={styles.progressbar} style={progressBarStyle}>
+                      {progressSteps.map((step, index) => {
+                        const isStepActive = step.activeStatuses.includes(order.status);
+                        const isStepAlert = step.key === "ready" && isDeadlineNear && isStepActive;
+
+                        return (
+                          <li
+                            key={step.key}
+                            className={`${styles.step0} ${isStepActive ? styles.active : ""} ${isStepAlert ? styles.stepAlert : ""}`}
+                            id={`step${index + 1}`}>
+                            <span className={styles.stepIcon}>
+                              {isStepActive &&
+                                (isStepAlert ? (
+                                  <FaExclamationTriangle size={14} />
+                                ) : (
+                                  <FaCheck size={14} />
+                                ))}
+                            </span>
+                            {step.label}
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 )}
                 <div className={styles.footer}>

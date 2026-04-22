@@ -1,4 +1,5 @@
-import { Product, Order, OrderItem } from "@/types/shop";
+import { Product } from "@/types/shop/product";
+import { Order, OrderItem } from "@/types/shop/order";
 
 export function getFeaturedAndTopProducts(products: Product[], orders: Order[]) {
   const salesCount: Record<number, number> = {};

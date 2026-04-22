@@ -3,17 +3,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ShopCheckoutOverlay from "@/components/shop/ShopCheckoutOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
-import {
-  Campus,
-  getPaymentLabel,
-  type CartItem,
-  type PaymentMethod,
-  type OrderSource,
-  getOrderKindRules,
-  getOrderKindFromItems,
-} from "@/types/shop";
+
+import { Campus } from "@/types/shop/order";
+import { getPaymentLabel, PaymentMethod } from "@/types/shop/payment";
+import { CartItem } from "@/types/shop/product";
+import { OrderSource } from "@/types/shop/orderKind";
+import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import Image from "next/image";
-import { getColorFromOptions, isColorKey } from "@/utils/shopUtils";
+import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
 import { FaChevronDown } from "react-icons/fa";
 import { User } from "@/types/user";
 import type { ApplePayPaymentRequest, ApplePayPaymentToken } from "@/types/sumup";

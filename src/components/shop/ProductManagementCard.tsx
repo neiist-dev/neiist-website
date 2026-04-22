@@ -5,7 +5,7 @@ import Image from "next/image";
 import { FaEdit } from "react-icons/fa";
 import { FiArchive, FiImage, FiTrash2 } from "react-icons/fi";
 import { MdOutlineUnarchive } from "react-icons/md";
-import { Product } from "@/types/shop";
+import { Product } from "@/types/shop/product";
 import styles from "@/styles/components/shop/ProductManagementCard.module.css";
 
 interface Props {

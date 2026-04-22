@@ -7,15 +7,12 @@ import {
   getOrderById,
 } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
-import {
-  getOrderKindRules,
-  getStatusLabel,
-  PAYMENT_METHODS,
-  getOrderKindFromItems,
-} from "@/types/shop";
+import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
+import { PAYMENT_METHODS } from "@/types/shop/payment";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { User } from "@/types/user";
-import type { Order } from "@/types/shop";
+import { Order } from "@/types/shop/order";
 import {
   getPaidOrderEmailTemplate,
   getPendingOrderEmailTemplate,

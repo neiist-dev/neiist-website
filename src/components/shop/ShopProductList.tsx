@@ -1,6 +1,7 @@
 "use client";
 import styles from "@/styles/components/shop/ShopProductList.module.css";
-import { Product, Category } from "@/types/shop";
+import { Product } from "@/types/shop/product";
+import { Category } from "@/types/shop/category";
 import ProductCard from "@/components/shop/ProductCard";
 
 export default function ShopProductList({

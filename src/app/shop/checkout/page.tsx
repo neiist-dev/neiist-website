@@ -3,7 +3,7 @@ import { getUserFromJWT } from "@/utils/authUtils";
 import { getUser } from "@/utils/dbUtils";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { OrderSource } from "@/types/shop";
+import { OrderSource } from "@/types/shop/orderKind";
 
 export default async function CheckoutPage({
   searchParams,
