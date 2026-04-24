@@ -4,7 +4,13 @@ import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/DinnerPage.module.css";
 import FullScreenWrapper from "@/components/FullScreenWrapper";
-
+import InfoListItem from "@/components/jantar-de-curso/InfoListItem";
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaClock,
+  FaPiggyBank
+} from "react-icons/fa";
 export default async function DinnerPage() {
   const userRoles = await serverCheckRoles([]);
   const products = await getAllProducts(true);
@@ -46,9 +52,39 @@ export default async function DinnerPage() {
 
   return (
     <div className={styles.container}>
-      <Link href={`/shop/${jantarProduct.id}`} className={styles.button}>
-        Ver Jantar de Curso
-      </Link>
+      <div className={styles.contentWrapper}>  
+        <div className={styles.leftColumn}>
+          <h1 className={styles.mainTitle}>
+            Jantar de Curso
+          </h1>
+          <p className={styles.saveTheDateText}>SAVE THE DATE</p>
+          <hr className={styles.separator} />
+        
+          <ul className={styles.infoList}>
+            <InfoListItem icon={<FaMapMarkerAlt />} label="Local" value="[Local]" />
+            <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
+            <InfoListItem icon={<FaClock />} label="Hora" value="[Hora]" />
+            <InfoListItem icon={<FaPiggyBank />} label="Preço" value="[Preço]€" />
+          </ul>
+
+          <p className={styles.description}>
+            Junta-te a nós para um jantar inesquecível!
+          </p>
+
+          <Link href={`/shop/${jantarProduct.id}`} className={styles.button}>
+            Ver Jantar de Curso
+          </Link>
+        </div>
+      
+        <div className={styles.rightColumn}>
+          <img 
+            src="/Penguin.png" 
+            alt="Poster do Jantar de Curso" 
+            className={styles.image} 
+          />
+        </div>
+
+      </div>
     </div>
   );
 }
