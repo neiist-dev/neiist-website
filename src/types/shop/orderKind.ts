@@ -54,7 +54,7 @@ export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialO
     paymentMethods: ["in-person", "mbway", "cash", "other"],
     paymentMethodsBySource: {
       dinner: ["in-person", "mbway"],
-      pos: ["cash", "other"],
+      pos: ["cash", "other", "mbway"],
     },
     emailTemplates: {
       pending: "jantar_pending",
