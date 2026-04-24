@@ -9,6 +9,7 @@
   font-size: 1.125rem;
   font-weight: 600;
   text-decoration: none;
+  text-align: center;
   color: white;
   background-color: #1f2937;
   border: none;
@@ -41,4 +42,102 @@
   font-size: 1.25rem;
   margin: 0;
   opacity: 0.95;
+}
+
+.mainTitle {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.saveTheDateText {
+  text-align: center;
+  font-size: 1.25rem;
+  margin: 1rem 0;
+  letter-spacing: 2px;
+}
+
+.separator {
+  border: none; 
+  height: 3px; 
+  background-color: rgb(234, 179, 8);
+  opacity: 0.6; 
+  margin: 0;
+} 
+
+.infoList {
+  list-style: none;
+  padding: 0;
+  margin: 2rem auto;
+  max-width: 400px;
+}
+
+.icon {
+  margin-right: 1rem;
+  font-size: 1.5rem;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  padding: 1rem 0;
+  border-bottom: 2px dashed rgb(234, 179, 8);
+}
+
+.infoList {
+  margin: 1rem auto;
+}
+
+.infoItem:nth-child(1) .icon {
+  color: #ef4444; 
+}
+
+.infoItem:nth-child(2) .icon {
+  color: #3b82f6; 
+}
+
+.infoItem:nth-child(3) .icon {
+  color: #eab308; 
+}
+
+.infoItem:last-child {
+  border-bottom: none;
+}
+
+.infoValue {
+  margin-left: 1rem;
+}
+
+.description {
+  max-width: 400px;
+  margin: 0.5rem auto 2rem auto;
+  text-align: center; 
+}
+
+.contentWrapper {
+  display: flex;
+  align-items: center; 
+  max-width: 1200px;
+  margin: -2rem auto;
+  gap: 4rem; 
+}
+
+.leftColumn {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+}
+
+.rightColumn {
+  flex: 1; 
+  display: flex;
+  justify-content: center;
+}
+
+.image {
+  max-width: 90%;
+  height: auto;
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15)); /* Adiciona sombra ao contorno do copo */
 }

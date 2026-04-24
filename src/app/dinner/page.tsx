@@ -5,12 +5,19 @@ import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/DinnerPage.module.css";
 import FullScreenWrapper from "@/components/FullScreenWrapper";
 import InfoListItem from "@/components/jantar-de-curso/InfoListItem";
+import penguinImg from "@/assets/events/DinnerPenguin.png";
 import {
   FaMapMarkerAlt,
   FaCalendarAlt,
   FaClock,
-  FaPiggyBank
 } from "react-icons/fa";
+import localFont from "next/font/local";
+
+const handelsonTwo = localFont({
+  src: "../../assets/fonts/handelson-two.otf",
+  display: "swap",
+});
+
 export default async function DinnerPage() {
   const userRoles = await serverCheckRoles([]);
   const products = await getAllProducts(true);
@@ -54,13 +61,13 @@ export default async function DinnerPage() {
     <div className={styles.container}>
       <div className={styles.contentWrapper}>  
         <div className={styles.leftColumn}>
-          <h1 className={styles.mainTitle}>
+          <h1 className={`${styles.mainTitle} ${handelsonTwo.className}`}>
             Jantar de Curso
           </h1>
-          <p className={styles.saveTheDateText}>SAVE THE DATE</p>
+          <p className={`${styles.saveTheDateText} ${handelsonTwo.className}`}>SAVE THE DATE</p>
           <hr className={styles.separator} />
         
-          <ul className={styles.infoList}>
+          <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
             <InfoListItem icon={<FaMapMarkerAlt />} label="Local" value="[Local]" />
             <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
             <InfoListItem icon={<FaClock />} label="Hora" value="[Hora]" />
@@ -77,7 +84,7 @@ export default async function DinnerPage() {
       
         <div className={styles.rightColumn}>
           <img 
-            src="/Penguin.png" 
+            src={penguinImg.src} 
             alt="Poster do Jantar de Curso" 
             className={styles.image} 
           />
