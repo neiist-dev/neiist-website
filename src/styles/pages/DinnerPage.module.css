@@ -5,8 +5,8 @@
 
 .button {
   display: inline-block;
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
+  padding: 1.25rem 2.5rem;
+  font-size: 1.5rem;
   font-weight: 600;
   text-decoration: none;
   text-align: center;
@@ -16,6 +16,12 @@
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  background-color: #1d4ed8;
+  box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
 }
 
 .signedUpScreen {
@@ -46,16 +52,17 @@
 
 .mainTitle {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: 4rem;
   margin-top: 0;
   margin-bottom: 1rem;
 }
 
 .saveTheDateText {
   text-align: center;
-  font-size: 1.25rem;
-  margin: 1rem 0;
-  letter-spacing: 2px;
+  font-size: 2rem;
+  margin: 1.5rem 0;
+  letter-spacing: 4px;
+  font-size: 1.7rem;
 }
 
 .separator {
@@ -70,19 +77,19 @@
   list-style: none;
   padding: 0;
   margin: 2rem auto;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .icon {
-  margin-right: 1rem;
+  margin-right: 1.5rem;
   font-size: 1.5rem;
 }
 
 .infoItem {
   display: flex;
   align-items: center;
-  font-size: 1.25rem;
-  padding: 1rem 0;
+  font-size: 1.75rem;
+  padding: 1.25rem 0;
   border-bottom: 2px dashed rgb(234, 179, 8);
 }
 
@@ -111,9 +118,10 @@
 }
 
 .description {
-  max-width: 400px;
-  margin: 0.5rem auto 2rem auto;
+  max-width: 550px;
+  margin: 1rem auto 2.5rem auto;
   text-align: center; 
+  font-size: 1.1rem;                                                                                                                              
 }
 
 .contentWrapper {
@@ -139,5 +147,6 @@
 .image {
   max-width: 90%;
   height: auto;
+  transform: translateY(-3rem); /* Sobe a imagem */
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15)); /* Adiciona sombra ao contorno do copo */
 }
