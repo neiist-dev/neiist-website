@@ -373,7 +373,6 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
               </label>
             ))}
           </div>
-          {/*//FIX: Add a Confirm Dialog to inform user of the mbway method that will be on the email*/}
         </section>
 
         <div className={styles.divider} />
@@ -396,13 +395,16 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
           </button>
         )}
 
-        {applePayAvailable && payment !== "in-person" && payment !== "sumup" && (
-          <button
-            className={styles.applePayStandaloneButton}
-            onClick={handleApplePayDirect}
-            disabled={loading}
-            aria-label="Pagar com Apple Pay"></button>
-        )}
+        {applePayAvailable &&
+          payment !== "in-person" &&
+          payment !== "mbway" &&
+          payment !== "sumup" && (
+            <button
+              className={styles.applePayStandaloneButton}
+              onClick={handleApplePayDirect}
+              disabled={loading}
+              aria-label="Pagar com Apple Pay"></button>
+          )}
 
         {/* TODO: remove inline error in favor of toast or test if for this case the inline error on the widget are better.*/}
         {error && <div className={styles.errorMessage}>{error}</div>}

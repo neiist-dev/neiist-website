@@ -1,5 +1,13 @@
 # neiist
 
+## 1.10.1
+
+### Patch Changes
+
+- Added MBWay as a payment method in checkout flows where it is allowed by order-kind rules.
+- Updated the Jantar de Curso pending email to include MBWay payment instructions and the assigned number.
+- Added deterministic MBWay number allocation from a configured pool, with each configured number weighted for up to 30 allocations.
+
 ## 1.10.0
 
 ### Minor Changes

@@ -51,9 +51,9 @@ export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialO
   },
   jantar_de_curso: {
     allowedSources: ["dinner", "pos"],
-    paymentMethods: ["in-person", "cash", "other"],
+    paymentMethods: ["in-person", "mbway", "cash", "other"],
     paymentMethodsBySource: {
-      dinner: ["in-person"],
+      dinner: ["in-person", "mbway"],
       pos: ["cash", "other"],
     },
     emailTemplates: {

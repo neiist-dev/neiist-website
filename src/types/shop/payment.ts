@@ -4,6 +4,7 @@ export const PAYMENT_METHODS = {
   sumup: { label: "SumUp Card Online" },
   "apple-pay": { label: "SumUp Apple Pay" },
   "in-person": { label: "Em pessoa" },
+  mbway: { label: "MBWay" },
   other: { label: "Outro" },
 } as const;
 
@@ -15,6 +16,7 @@ export function getPaymentLabel(method: PaymentMethod) {
 
 export const PENDING_PAYMENT_METHODS: ReadonlySet<PaymentMethod> = new Set([
   "in-person",
+  "mbway",
   "cash",
   "other",
 ]);
@@ -23,6 +25,7 @@ export const POS_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = ["cash", "other
 
 export const ONLINE_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = [
   "in-person",
+  "mbway",
   "sumup",
   "apple-pay",
 ];

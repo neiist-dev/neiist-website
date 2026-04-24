@@ -37,6 +37,7 @@ function methodLabel(method: PaymentMethod): string {
     sumup: "SumUp Online",
     "apple-pay": "Apple Pay",
     "in-person": "Presencial",
+    mbway: "MBWay",
   };
   return labels[method];
 }
@@ -321,12 +322,12 @@ export default function PosPaymentOverlay({
       if (paymentMethod === "cash") {
         await updateOrderFields({ payment_method: "cash", payment_reference: "" });
         updated = await markOrderAsPaid();
-      } else if (paymentMethod === "other") {
+      } else if (paymentMethod === "other" || paymentMethod === "mbway") {
         if (!paymentReference.trim())
           throw new Error("Preenche a referência de pagamento (IBAN / MB Way Pessoal).");
 
         await updateOrderFields({
-          payment_method: "other",
+          payment_method: paymentMethod,
           payment_reference: paymentReference.trim(),
         });
         updated = await markOrderAsPaid();
@@ -395,7 +396,8 @@ export default function PosPaymentOverlay({
 
   if (!open) return null;
 
-  const paymentNeedsConfirmation = paymentMethod === "cash" || paymentMethod === "other";
+  const paymentNeedsConfirmation =
+    paymentMethod === "cash" || paymentMethod === "other" || paymentMethod === "mbway";
   const confirmationMessage =
     paymentMethod === "cash"
       ? "Confirmas que recebeste o pagamento em dinheiro e está correto?"
@@ -458,7 +460,7 @@ export default function PosPaymentOverlay({
           </select>
         </label>
 
-        {paymentMethod === "other" ? (
+        {paymentMethod === "other" || paymentMethod === "mbway" ? (
           <label className={styles.label}>
             Referência de pagamento
             <input

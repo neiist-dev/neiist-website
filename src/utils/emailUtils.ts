@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { OrderKind } from "@/types/shop/orderKind";
 import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
 import { getColorFromOptions } from "@/utils/shop/shopUtils";
+import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 
 interface EmailOptions {
   to: string;
@@ -250,11 +251,28 @@ export function getJantarDeCursoPendingTemplate(
   items: OrderEmailItem[],
   total: number,
   campus?: string,
-  pickupDeadline?: string | null
+  pickupDeadline?: string | null,
+  paymentMethod?: string
 ): string {
   const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
   const deadlineText = formatDeadline(pickupDeadline);
-  // TODO: implement dynamic MBWay number allocation from a configured pool. (Ask for identificarition on mbway their istid)
+  const mbwayNumber = getMbWayNumberForOrder(orderNumber);
+  const isMbWay = paymentMethod === "mbway";
+  const paymentInfo = isMbWay
+    ? mbwayNumber
+      ? `
+      <p><strong>Pagamento MB Way:</strong> envia <strong>€${total.toFixed(2)}</strong> para o número <strong>${mbwayNumber}</strong>.</p>
+      <p><strong>Instruções:</strong> na descrição da transferência indica <strong>#${orderNumber}</strong> para conseguirmos associar o pagamento à tua reserva.</p>
+      <p>Após o envio, a confirmação é feita por um membro da equipa e receberás um novo email.</p>
+    `
+      : `
+      <p><strong>Pagamento MB Way:</strong> pedido selecionado, mas não foi possível atribuir número automático.</p>
+      <p>Por favor responde a este email ou contacta a equipa NEIIST para receber o número MB Way de pagamento.</p>
+    `
+    : `
+      <p><strong>Pagamento:</strong> presencial na sala do NEIIST (${getCampusLocation(campus)}).</p>
+      <p>Deve ser feito dentro de um prazo de 72 horas após o pedido.</p>
+    `;
 
   return `
     <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
@@ -262,8 +280,7 @@ export function getJantarDeCursoPendingTemplate(
       <h2 style="color: #2863FD; margin-bottom: 1rem;">Jantar de Curso - Encomenda Pendente</h2>
       <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
       <p>A tua reserva para o <strong>Jantar de Curso</strong> (#${orderNumber}) foi registada com sucesso.</p>
-      <p><strong>Pagamento:</strong> presencial na sala do NEIIST (${getCampusLocation(campus)}).</p>
-      <p>Deve ser feito numa banca NEIIST, o pagamento irá ser confirmado por um membro da equipa.</p>
+      ${paymentInfo}
       <p><strong>Prazo limite:</strong> ${deadlineText}. Após esse prazo a reserva pode ser cancelada automaticamente.</p>
 
       ${renderItemsTable(items, total)}
@@ -388,7 +405,8 @@ export function getPendingOrderEmailTemplate(
       items,
       total,
       campus,
-      pickupDeadline
+      pickupDeadline,
+      paymentMethod
     );
   }
 

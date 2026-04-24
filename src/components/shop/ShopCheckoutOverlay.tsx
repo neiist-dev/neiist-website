@@ -36,7 +36,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
   const router = useRouter();
-  const isInPerson = paymentMethod === "in-person";
+  const isInPerson = paymentMethod === "in-person" || paymentMethod === "mbway";
   const isOnlinePayment = paymentMethod === "sumup" || paymentMethod === "apple-pay";
 
   const [flowState, setFlowState] = useState<FlowState>("loading");
