@@ -64,7 +64,6 @@ export default async function DinnerPage() {
             <InfoListItem icon={<FaMapMarkerAlt />} label="Local" value="[Local]" />
             <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
             <InfoListItem icon={<FaClock />} label="Hora" value="[Hora]" />
-            <InfoListItem icon={<FaPiggyBank />} label="Preço" value="[Preço]€" />
           </ul>
 
           <p className={styles.description}>
