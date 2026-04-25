@@ -61,23 +61,24 @@ export default async function DinnerPage() {
     <div className={styles.container}>
       <div className={styles.contentWrapper}>  
         <div className={styles.leftColumn}>
-          <h1 className={`${styles.mainTitle} ${handelsonTwo.className}`}>
-            Jantar de Curso
-          </h1>
+        <h1 className={`${styles.mainTitle} ${handelsonTwo.className}`}>
+          <span className={styles.jantar}>JANTAR</span>
+            <span className={styles.de}>de</span>
+          <span className={styles.curso}>CURSO</span>
+        </h1>
           <p className={`${styles.saveTheDateText} ${handelsonTwo.className}`}>SAVE THE DATE</p>
-          <hr className={styles.separator} />
         
           <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
             <InfoListItem icon={<FaMapMarkerAlt />} label="Local" value="[Local]" />
             <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
-            <InfoListItem icon={<FaClock />} label="Hora" value="[Hora]" />
+            <InfoListItem icon={<FaClock />} label="Hora" value="20h00" />
           </ul>
 
-          <p className={styles.description}>
-            Junta-te a nós para um jantar inesquecível!
+          <p className={`${styles.description} ${handelsonTwo.className}`}>
+          Junta-te a nós para um jantar inesquecível!
           </p>
 
-          <Link href={`/shop/${jantarProduct.id}`} className={styles.button}>
+          <Link href={`/shop/${jantarProduct.id}`} className={`${styles.button} ${handelsonTwo.className}`}>
             Ver Jantar de Curso
           </Link>
         </div>

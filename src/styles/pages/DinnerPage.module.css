@@ -1,17 +1,17 @@
 .container {
   min-height: 100vh;
-  padding: 2rem;
+  /*padding: 2rem;*/ 
 }
 
 .button {
   display: inline-block;
   padding: 1.25rem 2.5rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 600;
   text-decoration: none;
   text-align: center;
   color: white;
-  background-color: #1f2937;
+  background-color: #6b8ddd;
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -20,7 +20,7 @@
 
 .button:hover {
   transform: translateY(-2px);
-  background-color: #1d4ed8;
+  background-color: #4d77da;
   box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
 }
 
@@ -51,27 +51,40 @@
 }
 
 .mainTitle {
+  letter-spacing: 2px;
+  color: #d01531;
+  white-space: nowrap;
   text-align: center;
-  font-size: 4rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
+}
+
+.jantar {
+  display: inline-block;
+  font-size: clamp(3rem, 8vw, 7rem);
+  transform: rotate(-7deg) translateX(-10px);
+}
+
+.de {
+  display: inline-block;
+  font-size: clamp(2rem, 8vw, 4rem);
+  transform: rotate(-7deg) translateY(-1.5rem);
+  margin-left: 1.5rem;
+}
+
+.curso {
+  display: block;
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  margin-top: -1.5rem;
+  transform: rotate(-7deg) translateX(20px);
 }
 
 .saveTheDateText {
   text-align: center;
   font-size: 2rem;
-  margin: 1.5rem 0;
-  letter-spacing: 4px;
-  font-size: 1.7rem;
+  margin-top: -2rem;
+  font-size: 3.5rem;
+  color: #6b8ddd;
+  transform: rotate(-3deg);
 }
-
-.separator {
-  border: none; 
-  height: 3px; 
-  background-color: rgb(234, 179, 8);
-  opacity: 0.6; 
-  margin: 0;
-} 
 
 .infoList {
   list-style: none;
@@ -81,32 +94,45 @@
 }
 
 .icon {
-  margin-right: 1.5rem;
-  font-size: 1.5rem;
+  margin-right: 2rem;
+  font-size: 2rem;
 }
 
 .infoItem {
   display: flex;
   align-items: center;
-  font-size: 1.75rem;
+  font-size: 2rem;
   padding: 1.25rem 0;
-  border-bottom: 2px dashed rgb(234, 179, 8);
+  border-bottom: 2px dashed #e6b148;
 }
 
 .infoList {
   margin: 1rem auto;
+  margin-top: -4rem;
 }
 
 .infoItem:nth-child(1) .icon {
-  color: #ef4444; 
+  color: #d01531; 
+}
+
+.infoItem:nth-child(1) .infoValue {
+  color: #d01531; 
 }
 
 .infoItem:nth-child(2) .icon {
-  color: #3b82f6; 
+  color: #6b8ddd; 
+}
+
+.infoItem:nth-child(2) .infoValue {
+  color: #6b8ddd; 
 }
 
 .infoItem:nth-child(3) .icon {
-  color: #eab308; 
+  color: #e6b148; 
+}
+
+.infoItem:nth-child(3) .infoValue {
+  color: #e6b148; 
 }
 
 .infoItem:last-child {
@@ -114,22 +140,24 @@
 }
 
 .infoValue {
-  margin-left: 1rem;
+  margin-left: 3rem;
+  word-spacing: 0.5rem;
+  letter-spacing: 1px;
 }
 
 .description {
   max-width: 550px;
-  margin: 1rem auto 2.5rem auto;
+  margin-top: -1rem;
   text-align: center; 
-  font-size: 1.1rem;                                                                                                                              
+  font-size: 1.8rem;                                                                                                                            
 }
 
 .contentWrapper {
   display: flex;
   align-items: center; 
   max-width: 1200px;
-  margin: -2rem auto;
-  gap: 4rem; 
+  margin: 1.5rem auto;
+  gap: 4rem;
 }
 
 .leftColumn {
@@ -145,8 +173,85 @@
 }
 
 .image {
-  max-width: 90%;
+  max-width: 120%;
   height: auto;
-  transform: translateY(-3rem); /* Sobe a imagem */
-  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15)); /* Adiciona sombra ao contorno do copo */
+  transform: translateY(2rem);
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+    overflow-x: hidden;
+  }
+
+  .contentWrapper {
+    flex-direction: column;
+    gap: 2rem;
+    margin: 0 auto;
+  }
+
+  .leftColumn {
+    align-items: center;
+  }
+
+  .rightColumn {
+    order: 1;
+  }
+
+  .image {
+    max-width: 65%;
+    transform: none;
+  }
+
+  .mainTitle {
+    text-align: center;
+    line-height: 0.8;
+  }
+  
+  .jantar {
+    font-size: 3.5rem;
+  }
+
+  .curso {
+    font-size: 4rem;
+    transform: rotate(-6deg) translateX(0) translateY(0);
+  }
+
+  .de {
+    font-size: 1.5rem;
+    transform: rotate(-6deg) translateY(-0.5rem);
+  }
+
+  .infoList {
+    max-width: 100%;
+    margin: 1.5rem 0;
+  }
+
+  .infoItem {
+    font-size: 1.2rem;
+    padding: 0.8rem 0;
+    justify-content: center;
+  }
+
+  .icon {
+    font-size: 1.2rem;
+    margin-right: 0.8rem;
+  }
+
+  .infoValue {
+    margin-left: 0.5rem;
+  }
+
+  .description {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .button {
+    width: 100%;
+    max-width: 220px;
+    font-size: 1.2rem;
+    padding: 1rem;
+  }
 }
