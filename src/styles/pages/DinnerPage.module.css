@@ -1,19 +1,17 @@
 .container {
   min-height: 100vh;
-  /*padding: 2rem;*/ 
-  
+  padding: 2rem;
 }
 
 .button {
-  display: inline-block;
-  padding: 1.25rem 2.5rem;
+  padding: 1rem 3.5rem;
+  margin: 1rem auto;
   font-size: 2rem;
-  font-weight: 600;
-  text-decoration: none;
-  text-align: center;
+  /*text-decoration: none;
+  text-align: center;*/
   color: white;
   background-color: #6b8ddd;
-  border: none;
+  /*border: none;*/
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -54,8 +52,8 @@
 .mainTitle {
   letter-spacing: 2px;
   color: #d01531;
-  white-space: nowrap;
   text-align: center;
+  margin-bottom: auto;
 }
 
 .jantar {
@@ -77,15 +75,6 @@
   margin-top: -1.5rem;
   transform: rotate(-7deg) translateX(20px);
 }
-/*
-.saveTheDateText {
-  text-align: center;
-  font-size: 2rem;
-  margin-top: -2rem;
-  font-size: 3.5rem;
-  color: #6b8ddd;
-  transform: rotate(-3deg);
-}*/
 
 .infoList {
   list-style: none;
@@ -105,11 +94,6 @@
   font-size: 2rem;
   padding: 1.25rem 0;
   border-bottom: 2px dashed #e6b148;
-}
-
-.infoList {
-  margin: 1rem auto;
-  margin-top: -4rem;
 }
 
 .infoItem:nth-child(1) .icon {
@@ -157,7 +141,7 @@
   display: flex;
   align-items: center; 
   max-width: 1200px;
-  margin: 1.5rem auto;
+  margin: 2.5rem auto;
   gap: 4rem;
 }
 

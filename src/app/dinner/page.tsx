@@ -66,7 +66,6 @@ export default async function DinnerPage() {
             <span className={styles.de}>de</span>
           <span className={styles.curso}>CURSO</span>
         </h1>
-          {/*<p className={`${styles.saveTheDateText} ${handelsonTwo.className}`}>SAVE THE DATE</p>*/}
         
           <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
             <InfoListItem icon={<FaMapMarkerAlt />} label="Local" value="MADSpot" />
@@ -79,7 +78,7 @@ export default async function DinnerPage() {
           </p>
 
           <Link href={`/shop/${jantarProduct.id}`} className={`${styles.button} ${handelsonTwo.className}`}>
-            {/*Ver Jantar de Curso*/} Saber mais
+            Saber mais
           </Link>
         </div>
       
