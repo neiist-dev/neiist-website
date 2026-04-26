@@ -1,6 +1,7 @@
 .container {
   min-height: 100vh;
   /*padding: 2rem;*/ 
+  
 }
 
 .button {
@@ -76,7 +77,7 @@
   margin-top: -1.5rem;
   transform: rotate(-7deg) translateX(20px);
 }
-
+/*
 .saveTheDateText {
   text-align: center;
   font-size: 2rem;
@@ -84,7 +85,7 @@
   font-size: 3.5rem;
   color: #6b8ddd;
   transform: rotate(-3deg);
-}
+}*/
 
 .infoList {
   list-style: none;
@@ -182,7 +183,7 @@
 @media (max-width: 768px) {
   .container {
     padding: 1.5rem 1rem;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
   }
 
   .contentWrapper {
@@ -191,6 +192,20 @@
     margin: 0 auto;
   }
 
+  .image {
+    max-width: 65%;
+    transform: none;
+  }
+
+  .infoList {
+    max-width: 100%;
+  }
+
+  .infoItem {
+    padding: 0.5rem -2rem;
+  }
+
+/*
   .leftColumn {
     align-items: center;
   }
@@ -199,10 +214,7 @@
     order: 1;
   }
 
-  .image {
-    max-width: 65%;
-    transform: none;
-  }
+  
 
   .mainTitle {
     text-align: center;
@@ -213,15 +225,16 @@
     font-size: 3.5rem;
   }
 
+  .de {
+    font-size: 1.5rem;
+    transform: rotate(-6deg) translateY(-0.5rem);
+  }
+
   .curso {
     font-size: 4rem;
     transform: rotate(-6deg) translateX(0) translateY(0);
   }
 
-  .de {
-    font-size: 1.5rem;
-    transform: rotate(-6deg) translateY(-0.5rem);
-  }
 
   .infoList {
     max-width: 100%;
@@ -246,12 +259,6 @@
   .description {
     font-size: 1rem;
     padding: 0 1rem;
-  }
+  }*/
 
-  .button {
-    width: 100%;
-    max-width: 220px;
-    font-size: 1.2rem;
-    padding: 1rem;
-  }
 }
