@@ -58,20 +58,20 @@
 
 .jantar {
   display: inline-block;
-  font-size: clamp(3rem, 8vw, 7rem);
+  font-size: clamp(4.5rem, 8vw, 7rem);
   transform: rotate(-7deg) translateX(-10px);
 }
 
 .de {
   display: inline-block;
-  font-size: clamp(2rem, 8vw, 4rem);
+  font-size: clamp(3.5rem, 8vw, 4rem);
   transform: rotate(-7deg) translateY(-1.5rem);
   margin-left: 1.5rem;
 }
 
 .curso {
   display: block;
-  font-size: clamp(3.5rem, 9vw, 8rem);
+  font-size: clamp(5rem, 9vw, 8rem);
   margin-top: -1.5rem;
   transform: rotate(-7deg) translateX(20px);
 }
@@ -91,8 +91,8 @@
 .infoItem {
   display: flex;
   align-items: center;
-  font-size: 2rem;
-  padding: 1.25rem 0;
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  padding: clamp(0.8rem, 2vw, 1.25rem) 0;
   border-bottom: 2px dashed #e6b148;
 }
 
@@ -125,16 +125,16 @@
 }
 
 .infoValue {
-  margin-left: 3rem;
-  word-spacing: 0.5rem;
+  margin-left: clamp(2rem, 3vw, 3rem);
+  word-spacing: clamp(0.1rem, 0.5vw, 0.5rem);
   letter-spacing: 1px;
 }
 
 .description {
-  max-width: 550px;
-  margin-top: -1rem;
-  text-align: center; 
-  font-size: 1.8rem;                                                                                                                            
+  max-width: clamp(400px, 90%, 550px);
+  margin-top: clamp(-1rem, -1vw, -1rem);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  text-align: center;                                                                                                                           
 }
 
 .contentWrapper {
@@ -167,7 +167,7 @@
 @media (max-width: 768px) {
   .container {
     padding: 1.5rem 1rem;
-    /*overflow-x: hidden;*/
+    overflow-x: hidden;
   }
 
   .contentWrapper {
@@ -181,68 +181,8 @@
     transform: none;
   }
 
-  .infoList {
-    max-width: 100%;
-  }
-
   .infoItem {
-    padding: 0.5rem -2rem;
+    padding: 0.5rem 0rem;
   }
-
-/*
-  .leftColumn {
-    align-items: center;
-  }
-
-  .rightColumn {
-    order: 1;
-  }
-
-  
-
-  .mainTitle {
-    text-align: center;
-    line-height: 0.8;
-  }
-  
-  .jantar {
-    font-size: 3.5rem;
-  }
-
-  .de {
-    font-size: 1.5rem;
-    transform: rotate(-6deg) translateY(-0.5rem);
-  }
-
-  .curso {
-    font-size: 4rem;
-    transform: rotate(-6deg) translateX(0) translateY(0);
-  }
-
-
-  .infoList {
-    max-width: 100%;
-    margin: 1.5rem 0;
-  }
-
-  .infoItem {
-    font-size: 1.2rem;
-    padding: 0.8rem 0;
-    justify-content: center;
-  }
-
-  .icon {
-    font-size: 1.2rem;
-    margin-right: 0.8rem;
-  }
-
-  .infoValue {
-    margin-left: 0.5rem;
-  }
-
-  .description {
-    font-size: 1rem;
-    padding: 0 1rem;
-  }*/
 
 }
