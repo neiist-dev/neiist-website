@@ -7,11 +7,8 @@
   padding: 1rem 3.5rem;
   margin: 1rem auto;
   font-size: 2rem;
-  /*text-decoration: none;
-  text-align: center;*/
   color: white;
   background-color: #6b8ddd;
-  /*border: none;*/
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -177,12 +174,20 @@
   }
 
   .image {
-    max-width: 65%;
+    max-width: 85%;
     transform: none;
+    opacity: 0.75;
   }
 
   .infoItem {
     padding: 0.5rem 0rem;
   }
 
+  .description {
+    display: none;
+  }
+
+  .button {
+    margin-top: auto;
+  }
 }
