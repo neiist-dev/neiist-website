@@ -7,7 +7,6 @@ import styles from "@/styles/components/shop/CheckoutForm.module.css";
 import { Campus } from "@/types/shop/order";
 import { getPaymentLabel, PaymentMethod } from "@/types/shop/payment";
 import { CartItem } from "@/types/shop/product";
-import { OrderSource } from "@/types/shop/orderKind";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import Image from "next/image";
 import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
@@ -17,10 +16,9 @@ import type { ApplePayPaymentRequest, ApplePayPaymentToken } from "@/types/sumup
 
 interface CheckoutFormProps {
   user: User;
-  source?: OrderSource;
 }
 
-export default function CheckoutForm({ user, source = "other" }: CheckoutFormProps) {
+export default function CheckoutForm({ user }: CheckoutFormProps) {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [campus, setCampus] = useState<Campus>(Campus._Alameda);
@@ -76,7 +74,9 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
   const { orderKind: checkoutOrderKind, isMixedInvalid } = getOrderKindFromItems(
     cart.map((item) => item.product)
   );
-  const allowedPaymentMethods = getOrderKindRules(checkoutOrderKind, source).paymentMethods;
+  const isSpecialOrderKind = checkoutOrderKind !== "normal";
+  const orderRules = getOrderKindRules(checkoutOrderKind);
+  const allowedPaymentMethods = orderRules.paymentMethods;
 
   const apiItems = cart.map((item) => ({
     product_id: item.product.id,
@@ -99,7 +99,7 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
         payment_method: selectedPayment,
         payment_reference: undefined,
         customer_phone: user.phone || phone || undefined,
-        order_source: checkoutOrderKind === "normal" ? "other" : source,
+        order_source: orderRules.allowedSources[0] ?? "other",
       }),
     });
 
@@ -315,22 +315,26 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
                 />
               </div>
             </div>
-            <div className={styles.formGroup}>
-              <label>NIF (Opcional)</label>
-              <input
-                type="text"
-                value={nif}
-                onChange={(e) => setNif(e.target.value)}
-                placeholder="123456789"
-                className={styles.input}
-              />
-            </div>
+            {!isSpecialOrderKind && (
+              <div className={styles.formGroup}>
+                <label>NIF (Opcional)</label>
+                <input
+                  type="text"
+                  value={nif}
+                  onChange={(e) => setNif(e.target.value)}
+                  placeholder="123456789"
+                  className={styles.input}
+                />
+              </div>
+            )}
           </div>
         </section>
 
         <div className={styles.divider} />
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>2. Local de Entrega</h2>
+          <h2 className={styles.sectionTitle}>
+            {isSpecialOrderKind ? "2. Campus" : "2. Local de Entrega"}
+          </h2>
 
           <div className={styles.radioGroup}>
             {pickupOptions.map((opt) => (
@@ -478,15 +482,19 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
           </div>
 
           <div className={styles.pricingSummary}>
-            <div className={styles.priceLine}>
-              <span>Subtotal</span>
-              <span>€{subtotal.toFixed(2)}</span>
-            </div>
-            <div className={styles.priceLine}>
-              <span>IVA (23%)</span>
-              <span>€{taxes.toFixed(2)}</span>
-            </div>
-            <div className={styles.priceDivider} />
+            {!isSpecialOrderKind && (
+              <>
+                <div className={styles.priceLine}>
+                  <span>Subtotal</span>
+                  <span>€{subtotal.toFixed(2)}</span>
+                </div>
+                <div className={styles.priceLine}>
+                  <span>IVA (23%)</span>
+                  <span>€{taxes.toFixed(2)}</span>
+                </div>
+                <div className={styles.priceDivider} />
+              </>
+            )}
             <div className={styles.totalLine}>
               <span>Total</span>
               <span>€{total.toFixed(2)}</span>
@@ -513,19 +521,23 @@ export default function CheckoutForm({ user, source = "other" }: CheckoutFormPro
               )}
             </div>
             <div className={styles.expandSection}>
-              <button
-                className={styles.expandButton}
-                onClick={() => setShowDeliveryInfo((v) => !v)}
-                aria-expanded={showDeliveryInfo}>
-                <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
-                <FaChevronDown
-                  className={`${styles.expandIcon} ${showDeliveryInfo ? styles.expanded : ""}`}
-                />
-              </button>
-              {showDeliveryInfo && (
-                <div className={styles.expandContent}>
-                  O prazo de entrega pode variar conforme o local de levantamento escolhido.
-                </div>
+              {!isSpecialOrderKind && (
+                <>
+                  <button
+                    className={styles.expandButton}
+                    onClick={() => setShowDeliveryInfo((v) => !v)}
+                    aria-expanded={showDeliveryInfo}>
+                    <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
+                    <FaChevronDown
+                      className={`${styles.expandIcon} ${showDeliveryInfo ? styles.expanded : ""}`}
+                    />
+                  </button>
+                  {showDeliveryInfo && (
+                    <div className={styles.expandContent}>
+                      O prazo de entrega pode variar conforme o local de levantamento escolhido.
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

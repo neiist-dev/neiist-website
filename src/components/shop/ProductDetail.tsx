@@ -177,7 +177,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         JSON.stringify([{ product, variantId: selectedVariant?.id, quantity: 1 }])
       );
       window.dispatchEvent(new Event("cartUpdated"));
-      router.push("/shop/checkout?source=dinner");
+      router.push("/shop/checkout");
       return;
     }
 
@@ -318,38 +318,40 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
           </div>
 
-          <div className={styles.asideDetails}>
-            <details className={styles.detailsBlock}>
-              <summary>
-                <span>Guia de Tamanhos</span>
-                <FiChevronDown className={styles.detailIcon} aria-hidden />
-              </summary>
-              <p>
-                Vê o nosso{" "}
-                <a
-                  href="#"
-                  className={styles.sizeGuideLink}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowSizeGuide(true);
-                  }}>
-                  Guia de Tamanhos
-                </a>{" "}
-                para mais detalhes.
-              </p>
-            </details>
-            <SizeGuideOverlay open={showSizeGuide} onClose={() => setShowSizeGuide(false)} />
-            <details className={styles.detailsBlock}>
-              <summary>
-                <span>Prazos de Entrega</span>
-                <FiChevronDown className={styles.detailIcon} aria-hidden />
-              </summary>
-              <p>
-                Encomenda até 25 de Dezembro para receberes entre 20 e 25 de Janeiro. Pedidos após
-                esta data terão um tempo de espera superior.
-              </p>
-            </details>
-          </div>
+          {!isJantarDeCurso && (
+            <div className={styles.asideDetails}>
+              <details className={styles.detailsBlock}>
+                <summary>
+                  <span>Guia de Tamanhos</span>
+                  <FiChevronDown className={styles.detailIcon} aria-hidden />
+                </summary>
+                <p>
+                  Vê o nosso{" "}
+                  <a
+                    href="#"
+                    className={styles.sizeGuideLink}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowSizeGuide(true);
+                    }}>
+                    Guia de Tamanhos
+                  </a>{" "}
+                  para mais detalhes.
+                </p>
+              </details>
+              <SizeGuideOverlay open={showSizeGuide} onClose={() => setShowSizeGuide(false)} />
+              <details className={styles.detailsBlock}>
+                <summary>
+                  <span>Prazos de Entrega</span>
+                  <FiChevronDown className={styles.detailIcon} aria-hidden />
+                </summary>
+                <p>
+                  Encomenda até 25 de Dezembro para receberes entre 20 e 25 de Janeiro. Pedidos após
+                  esta data terão um tempo de espera superior.
+                </p>
+              </details>
+            </div>
+          )}
         </div>
       </div>
     </div>
