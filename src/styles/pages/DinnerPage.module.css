@@ -46,6 +46,10 @@
   opacity: 0.95;
 }
 
+.highlight {
+  color: #6b8ddd;
+}
+
 .mainTitle {
   letter-spacing: 2px;
   color: #d01531;
@@ -161,6 +165,64 @@
   filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
 }
 
+/*---- Waiting Page ----*/
+.signedUpMessage {
+  max-width: clamp(400px, 90%, 550px);
+  margin-top: clamp(-0.4rem, -0.4vw, -0.4rem);
+  margin-bottom: clamp(-1rem, -1vw, -1rem);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  text-align: center;   
+}
+
+.countdown {
+  padding: 1rem 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  border: 2px solid #6b8ddd;
+  border-radius: 0.5rem;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.countdownItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.countdownValue {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: #6b8ddd;
+}
+
+.countdownLabel {
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  color: #6b8ddd;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.countdownDot {
+  color: #6b8ddd;
+  font-size: 1.5rem;
+  margin: 0 0.5rem;
+}
+
+.unlockTimeMessage {
+  max-width: clamp(400px, 90%, 550px);
+  margin-top: clamp(-1rem, -1vw, -1rem);
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+  text-align: center;    
+}
+
+.highlight {
+  color: #6b8ddd;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1.5rem 1rem;
@@ -189,5 +251,44 @@
 
   .button {
     margin-top: auto;
+  }
+
+  /*----Waiting Page----*/
+
+  .countdown {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid #6b8ddd;
+    border-radius: 0.5rem;
+  }
+
+  .countdownItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0rem;
+  }
+
+  .countdownValue {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: #6b8ddd;
+  }
+
+  .countdownLabel {
+    font-size: clamp(0.7rem, 2vw, 1rem);
+  }
+
+  .countdownDot {
+    color: #6b8ddd;
+    font-size: 1.5rem;
+    margin: 0 0.5rem;
+  }
+
+  .unlockTimeMessage {
+    max-width: clamp(400px, 90%, 550px);
+    margin-top: clamp(-1rem, -1vw, -1rem);
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    text-align: center;    
   }
 }
