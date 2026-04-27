@@ -176,9 +176,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
             setError("Não foi possível confirmar o pagamento após autorização bancária.");
           }
         } else {
-          setError(
-            "O pagamento está pendente há demasiado tempo. Se já foste cobrado, contacta-nos."
-          );
+          setError("O pagamento está pendente há demasiado tempo. Se foi cobrado, contacta-nos.");
         }
 
         setFlowState("error");
@@ -547,11 +545,19 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           </h2>
           <p className={styles.muted}>
             {isInPerson ? (
-              <>
-                A tua encomenda foi registada.
-                <br />
-                Paga presencialmente na banca.
-              </>
+              paymentMethod === "mbway" ? (
+                <>
+                  A tua encomenda foi registada.
+                  <br />
+                  Paga por MBWay de acordo com as instruções no email para concluir a compra.
+                </>
+              ) : (
+                <>
+                  A tua encomenda foi registada.
+                  <br />
+                  Paga presencialmente na banca.
+                </>
+              )
             ) : (
               <>
                 Obrigado pela tua encomenda.
