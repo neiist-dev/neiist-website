@@ -135,7 +135,7 @@
   max-width: clamp(400px, 90%, 550px);
   margin-top: clamp(-1rem, -1vw, -1rem);
   font-size: clamp(1.3rem, 3vw, 1.8rem);
-  text-align: center;                                                                                                                           
+  text-align: center;
 }
 
 .contentWrapper {
@@ -159,10 +159,10 @@
 }
 
 .image {
-  max-width: 120%;
+  max-width: 100%;
   height: auto;
   transform: translateY(2rem);
-  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 10px 20px var(--background-colour));
 }
 
 /*---- Waiting Page ----*/
@@ -216,11 +216,7 @@
   max-width: clamp(400px, 90%, 550px);
   margin-top: clamp(-1rem, -1vw, -1rem);
   font-size: clamp(1.3rem, 3vw, 1.6rem);
-  text-align: center;    
-}
-
-.highlight {
-  color: #6b8ddd;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
@@ -238,7 +234,6 @@
   .image {
     max-width: 85%;
     transform: none;
-    opacity: 0.75;
   }
 
   .infoItem {
@@ -289,6 +284,6 @@
     max-width: clamp(400px, 90%, 550px);
     margin-top: clamp(-1rem, -1vw, -1rem);
     font-size: clamp(1.2rem, 3vw, 1.6rem);
-    text-align: center;    
+    text-align: center;
   }
 }

@@ -1,10 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getAllProducts, getAllOrders } from "@/utils/dbUtils";
 import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/DinnerPage.module.css";
 import FullScreenWrapper from "@/components/FullScreenWrapper";
-import InfoListItem from "@/components/jantar-de-curso/InfoListItem";
+import InfoListItem from "@/components/dinner/InfoListItem";
 import penguinImg from "@/assets/events/DinnerPenguin.png";
 import {
   FaMapMarkerAlt,
@@ -12,7 +13,7 @@ import {
   FaClock,
 } from "react-icons/fa";
 import localFont from "next/font/local";
-import Countdown from "@/components/jantar-de-curso/Countdown";
+import Countdown from "@/components/dinner/Countdown";
 
 const handelsonTwo = localFont({
   src: "../../assets/fonts/handelson-two.otf",
@@ -58,7 +59,7 @@ export default async function DinnerPage() {
                   <span className={styles.de}>de</span>
                 <span className={styles.curso}>CURSO</span>
               </h1>
-              
+
               <p className={`${styles.signedUpMessage} ${handelsonTwo.className}`}>
                 O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua espera.
               </p>
@@ -68,7 +69,7 @@ export default async function DinnerPage() {
                 <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
                 <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
               </ul>
-            
+
               {!isUnlocked ? (
                 <div className={styles.lockedSection}>
                   <p className={`${styles.unlockTimeMessage} ${handelsonTwo.className}`}>
@@ -85,12 +86,13 @@ export default async function DinnerPage() {
                 </div>
               )}
             </div>
-            
+
             <div className={styles.rightColumn}>
-              <img 
-                src={penguinImg.src} 
-                alt="Poster do Jantar de Curso" 
-                className={styles.image} 
+              <Image
+                src={penguinImg}
+                alt="Poster do Jantar de Curso"
+                className={styles.image}
+                priority
               />
             </div>
 
@@ -110,7 +112,7 @@ export default async function DinnerPage() {
             <span className={styles.de}>de</span>
           <span className={styles.curso}>CURSO</span>
         </h1>
-        
+
           <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
             <InfoListItem icon={<FaMapMarkerAlt />} label="Local" value="MADSpot" />
             <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
@@ -125,12 +127,13 @@ export default async function DinnerPage() {
             Saber mais
           </Link>
         </div>
-      
+
         <div className={styles.rightColumn}>
-          <img 
-            src={penguinImg.src} 
-            alt="Poster do Jantar de Curso" 
-            className={styles.image} 
+          <Image
+            src={penguinImg}
+            alt="Poster do Jantar de Curso"
+            className={styles.image}
+            priority
           />
         </div>
 

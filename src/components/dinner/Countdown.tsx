@@ -18,7 +18,6 @@ type TimeLeft = {
 };
 
 const targetDate = new Date("2026-05-21T20:00:00");
-const unlockDate = new Date("2026-05-21T20:00:00+01:00");
 
 function getTimeLeft(): TimeLeft {
   const total = targetDate.getTime() - new Date().getTime();
