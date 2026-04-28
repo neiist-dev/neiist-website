@@ -6,7 +6,16 @@ import student from "@/assets/homepage/student.png";
 import styles from "@/styles/components/homepage/Hero.module.css";
 import { useEffect, useState, useRef } from "react";
 
-export default function Hero() {
+interface HeroProps {
+  dict: {
+    campus_alt: string;
+    student_alt: string;
+    title_prefix: string;
+    title_letters: string[];
+    title_suffix: string;
+  };
+}
+export default function Hero({ dict }: HeroProps) {
   const [studentMovementPosition, setStudentMovementPosition] = useState(50);
   const [isStudentFlipped, setStudentFlipped] = useState(false);
   const campusRef = useRef<HTMLDivElement>(null);
@@ -54,20 +63,20 @@ export default function Hero() {
   return (
     <section className={styles.hero}>
       <h1 className={styles.title}>
-        Núcleo Estudantil de
-        <span className={styles.primary}> In</span>
-        <span className={styles.secondary}>for</span>
-        <span className={styles.tertiary}>mát</span>
-        <span className={styles.quaternary}>ica </span>
-        do Instituto Superior Técnico
+        {dict.title_prefix}
+        <span className={styles.primary}>{dict.title_letters[0]}</span>
+        <span className={styles.secondary}>{dict.title_letters[1]}</span>
+        <span className={styles.tertiary}>{dict.title_letters[2]}</span>
+        <span className={styles.quaternary}>{dict.title_letters[3]}</span>
+        {dict.title_suffix}
       </h1>
       <div ref={campusRef} className={styles.heroImage}>
-        <Image src={hero} alt="IST Campus" className={styles.campusImage} />
+        <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} />
         {showStudent && (
           <Image
             ref={studentRef}
             src={student}
-            alt="Student"
+            alt={dict.student_alt}
             className={styles.student + (isStudentFlipped ? " " + styles.flipped : "")}
             style={{ left: `${studentMovementPosition}%` }}
             preload

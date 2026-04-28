@@ -13,9 +13,77 @@ import styles from "@/styles/components/shop/ShopManagement.module.css";
 interface ShopManagementProps {
   products: Product[];
   categories: Category[];
+  locale: string;
+  dict: {
+    shop_management: {
+      title: string;
+      pos_link: string;
+      add_product: string;
+      search_placeholder: string;
+      all_categories: string;
+      no_image: string;
+      view_image: string;
+      limited: string;
+      on_demand: string;
+      in_stock: string;
+      edit: string;
+      remove: string;
+      confirm_remove: string;
+    };
+    confirm_dialog: {
+      confirm: string;
+      cancel: string;
+    };
+    categories: {
+      [key: string]: string;
+    };
+    shop: {
+      product_form: {
+        unknown_error: string;
+        edit: string;
+        add_product: string;
+        back_button: string;
+        images_label: string;
+        no_image: string;
+        upload_image_label: string;
+        product_name_placeholder: string;
+        product_price_placeholder: string;
+        product_description_placeholder: string;
+        choose_categories: string;
+        new_category_placeholder: string;
+        add_category_button: string;
+        limited_stock: string;
+        on_demand_stock: string;
+        product_quantity_placeholder: string;
+        limit_date_placeholder: string;
+        option_types: string;
+        option_placeholder: string;
+        variants_label: string;
+        no_variants: string;
+        extra_price: string;
+        stock_placeholder: string;
+        upload: string;
+        saving: string;
+        save_changes: string;
+        create_product: string;
+        error_create_category: string;
+        error_create_category2: string;
+        error_name_missing: string;
+        error_category_missing: string;
+        error_variant1: string;
+        error_variant2: string;
+        error_color1: string;
+        error_color2: string;
+        error_saving_product: string;
+        error: string;
+        default_option_color: string;
+        default_option_size: string;
+      };
+    };
+  }
 }
 
-export default function ShopManagement({ products, categories }: ShopManagementProps) {
+export default function ShopManagement({ products, categories, dict, locale }: ShopManagementProps) {
   const [view, setView] = useState<"list" | "add" | "edit">("list");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
@@ -84,7 +152,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
 
   const getStockDisplay = (product: Product) => {
     if (product.stock_type === "on_demand") {
-      return "Sob Encomenda";
+      return dict.shop_management.on_demand;
     }
     let totalStock = 0;
     if (product.variants && product.variants.length > 0) {
@@ -96,7 +164,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       totalStock = product.stock_quantity || 0;
     }
 
-    return `${totalStock} em stock`;
+    return dict.shop_management.in_stock.replace("{count}", String(totalStock));
   };
 
   const getStockStatus = (product: Product) => {
@@ -127,6 +195,8 @@ export default function ShopManagement({ products, categories }: ShopManagementP
           setEditingProduct(null);
         }}
         categories={categories}
+        dict={dict.shop.product_form}
+        locale={locale}
       />
     );
   }
@@ -136,23 +206,24 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       {showConfirm && (
         <ConfirmDialog
           open={showConfirm}
-          message="Tem a certeza que deseja remover este produto?"
+          message={dict.shop_management.confirm_remove}
           onConfirm={confirmRemove}
           onCancel={() => {
             setShowConfirm(false);
             setRemovingProductId(null);
           }}
+          dict={dict.confirm_dialog}
         />
       )}
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1>Gestão da Loja</h1>
+          <h1>{dict.shop_management.title}</h1>
           <div className={styles.headerActions}>
             <Link href="/shop/pos" className={styles.posBtn}>
-              Gestão POS
+              {dict.shop_management.pos_link}
             </Link>
             <button className={styles.addBtn} onClick={() => setView("add")}>
-              <FaPlus /> Adicionar Produto
+              <FaPlus /> {dict.shop_management.add_product}
             </button>
           </div>
         </div>
@@ -160,15 +231,15 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         <div className={styles.filters}>
           <input
             type="text"
-            placeholder="Pesquisar produto..."
+            placeholder={dict.shop_management.search_placeholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="all">Todas categorias</option>
+            <option value="all">{dict.shop_management.all_categories}</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.name}>
-                {cat.name}
+                {cat.name in dict.categories ? dict.categories[cat.name] : cat.name}
               </option>
             ))}
           </select>
@@ -186,7 +257,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                     height={140}
                   />
                 ) : (
-                  <div className={styles.placeholder}>Nenhuma imagem</div>
+                  <div className={styles.placeholder}>{dict.shop_management.no_image}</div>
                 )}
                 <div className={`${styles.stockBadge} ${styles[getStockStatus(product)]}`}>
                   {getStockDisplay(product)}
@@ -206,7 +277,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                         }))
                       }
                       tabIndex={-1}
-                      aria-label={`Ver imagem ${idx + 1}`}
+                      aria-label={dict.shop_management.view_image.replace("{idx}", String(idx + 1))}
                       type="button">
                       <Image
                         src={img}
@@ -225,18 +296,20 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                 <div className={styles.price}>{product.price}€</div>
 
                 <div className={styles.productMeta}>
-                  <span className={styles.category}>{product.category}</span>
+                  <span className={styles.category}>
+                    {product.category && product.category in dict.categories ? dict.categories[product.category] : product.category}
+                  </span>
                   <span className={styles.stockType}>
-                    {product.stock_type === "limited" ? "Limitado" : "Sob Encomenda"}
+                    {product.stock_type === "limited" ? dict.shop_management.limited : dict.shop_management.on_demand}
                   </span>
                 </div>
 
                 <div className={styles.actions}>
                   <button onClick={() => handleEdit(product)}>
-                    <FaEdit /> Editar
+                    <FaEdit /> {dict.shop_management.edit}
                   </button>
                   <button onClick={() => handleRemove(product.id)}>
-                    <FiTrash2 /> Remover
+                    <FiTrash2 /> {dict.shop_management.remove}
                   </button>
                 </div>
               </div>

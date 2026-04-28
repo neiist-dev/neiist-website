@@ -22,9 +22,20 @@ const sanitizeString = (value: string) =>
 export default function UsersSearchList({
   users,
   roles,
+  dict,
 }: {
   users: UserWithMemberships[];
   roles: Role[];
+  dict: {
+    title: string;
+    search_placeholder: string;
+    empty: string;
+    photo_alt: string;
+    email_label: string;
+    phone_label: string;
+    courses_label: string;
+    teams_label: string;
+  };
 }) {
   const [search, setSearch] = useState("");
 
@@ -83,13 +94,13 @@ export default function UsersSearchList({
         className={styles.input}
         style={{ marginBottom: 16, width: "100%" }}
         type="text"
-        placeholder="Pesquisar por nome, ISTID, email, cargo ou departamento..."
+        placeholder={dict.search_placeholder}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
       {filteredUsers.length === 0 ? (
-        <p className={styles.emptyMessage}>Nenhum utilizador encontrado.</p>
+        <p className={styles.emptyMessage}>{dict.empty}</p>
       ) : (
         <div className={styles.itemsList}>
           {filteredUsers.map((user) => (
@@ -98,7 +109,7 @@ export default function UsersSearchList({
                 src={user.photo}
                 height={200}
                 width={200}
-                alt={`Foto de ${user.name}`}
+                alt={`${dict.photo_alt} ${user.name}`}
                 className={styles.userPhoto}
               />
               <div className={styles.itemContent}>
@@ -106,21 +117,21 @@ export default function UsersSearchList({
                   {user.name} <span className={styles.istid}>({user.istid})</span>
                 </h4>
                 <p className={styles.hideOnMobile}>
-                  <strong>Email:</strong> {user.email}
+                  <strong>{dict.email_label}:</strong> {user.email}
                 </p>
                 {user.phone && (
                   <p className={styles.hideOnMobile}>
-                    <strong>Telefone:</strong> {user.phone}
+                    <strong>{dict.phone_label}:</strong> {user.phone}
                   </p>
                 )}
                 {user.courses?.length > 0 && (
                   <p className={styles.hideOnMobile}>
-                    <strong>Cursos:</strong> {user.courses.join(", ")}
+                    <strong>{dict.courses_label}:</strong> {user.courses.join(", ")}
                   </p>
                 )}
                 {user.memberships?.length > 0 && (
                   <>
-                    <strong>Equipas/Órgãos:</strong>
+                    <strong>{dict.teams_label}:</strong>
                     <ul className={styles.membershipsList}>
                       {user.memberships.map((membership, id) => {
                         const accessLevel = getAccessLevelForRole(membership.roleName);

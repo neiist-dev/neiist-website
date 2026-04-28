@@ -10,12 +10,35 @@ interface CreateNewUserModalProps {
   onClose: () => void;
   onSubmit?: (_user: User) => void;
   initialIstId?: string;
+  dict: {
+    title: string;
+    ist_id_label: string;
+    ist_id_placeholder: string;
+    name_label: string;
+    name_placeholder: string;
+    email_label: string;
+    email_placeholder: string;
+    cancel: string;
+    submitting: string;
+    submit: string;
+    confirm_message_1: string;
+    confirm_message_2: string;
+    error_required: string;
+    error_create: string;
+  };
+  confirm_dialog: {
+    title: string;
+    confirm: string;
+    cancel: string;
+  };
 }
 
 const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
   onClose,
   onSubmit,
   initialIstId = "",
+  dict,
+  confirm_dialog
 }) => {
   const [istId, setIstId] = useState(initialIstId);
   const [name, setName] = useState("");
@@ -43,7 +66,7 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
   const handleSubmit = async () => {
     if (!istId || !name || !email) {
       // TODO: (ERROR)
-      setError("Por favor, preencha todos os campos.");
+      setError(dict.error_required);
       return;
     }
 
@@ -65,7 +88,7 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create user");
+        throw new Error(errorData.error || dict.error_create);
       }
 
       const newUser = await response.json();
@@ -75,7 +98,7 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
     } catch (error) {
       console.error("Error creating user:", error);
       // TODO: (ERROR)
-      setError(error instanceof Error ? error.message : "Failed to create user");
+      setError(error instanceof Error ? error.message : dict.error_create);
     } finally {
       setIsSubmitting(false);
     }
@@ -93,17 +116,17 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
           <MdClose size={20} />
         </button>
 
-        <h2>Novo Utilizador</h2>
+        <h2>{dict.title}</h2>
 
         {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleConfirm}>
           <div className={styles.formGroup}>
-            <label>IST ID</label>
+            <label>{dict.ist_id_label}</label>
             <input
               type="text"
-              placeholder="ist1119999"
+              placeholder={dict.ist_id_placeholder}
               value={istId}
               onChange={(e) => setIstId(e.target.value)}
               className={styles.input}
@@ -113,10 +136,10 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
           </div>
 
           <div className={styles.formGroup}>
-            <label>Nome</label>
+            <label>{dict.name_label}</label>
             <input
               type="text"
-              placeholder="John Doe"
+              placeholder={dict.name_placeholder}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={styles.input}
@@ -125,10 +148,10 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
           </div>
 
           <div className={styles.formGroup}>
-            <label>Email</label>
+            <label>{dict.email_label}</label>
             <input
               type="email"
-              placeholder="john.doe@tecnico.ulisboa.pt"
+              placeholder={dict.email_placeholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
@@ -142,22 +165,23 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
               onClick={onClose}
               disabled={isSubmitting}
               type="button">
-              Cancelar
+              {dict.cancel}
             </button>
             <button className={styles.buttonSubmit} disabled={isSubmitting} type="submit">
-              {isSubmitting ? "A criar..." : "Guardar"}
+              {isSubmitting ? dict.submitting : dict.submit}
             </button>
           </div>
         </form>
         {showConfirm && (
           <ConfirmDialog
             open={showConfirm}
-            message={`Tem a certeza que deseja criar o utilizador ${name}?`}
+            message={`${dict.confirm_message_1} ${name} ${dict.confirm_message_2}`}
             onConfirm={async () => {
               setShowConfirm(false);
               await handleSubmit();
             }}
             onCancel={() => setShowConfirm(false)}
+            dict={confirm_dialog}
           />
         )}
       </div>

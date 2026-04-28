@@ -5,7 +5,38 @@ import styles from "@/styles/components/shop/SumUpReadersManagement.module.css";
 import { SumUpReader } from "@/types/sumup";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
-export default function SumUpReadersManagement() {
+interface SumUpReadersManagementProps {
+  dict: {
+    sumup_readers: {
+      pairing_code_label: string;
+      pairing_code_placeholder: string;
+      reader_name_label: string;
+      reader_name_placeholder: string;
+      add_button: string;
+      loading: string;
+      no_readers: string;
+      remove_button: string;
+      added_success1: string;
+      added_success2: string;
+      removed_success: string;
+      pairing_code_required: string;
+      table_id: string;
+      table_name: string;
+      table_status: string;
+      table_model: string;
+      table_actions: string;
+      fetch_error: string;
+      create_error: string;
+      delete_error: string;
+    };
+    confirm_dialog: {
+      title: string;
+      confirm: string;
+      cancel: string;
+    };
+  };
+}
+export default function SumUpReadersManagement( {dict}: SumUpReadersManagementProps) {
   const [readers, setReaders] = useState<SumUpReader[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +53,7 @@ export default function SumUpReadersManagement() {
     try {
       const res = await fetch("/api/shop/sumup/readers");
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to fetch readers");
+      if (!res.ok) throw new Error(data?.error || dict.sumup_readers.fetch_error);
 
       setReaders(data.readers || []);
     } catch (error) {
@@ -42,7 +73,7 @@ export default function SumUpReadersManagement() {
     setActionMessage(null);
 
     if (!form.pairing_code.trim() || !form.name.trim()) {
-      setError("Pairing code and name are required.");
+      setError(dict.sumup_readers.pairing_code_required);
       return;
     }
 
@@ -55,9 +86,9 @@ export default function SumUpReadersManagement() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to create reader");
+      if (!res.ok) throw new Error(data?.error || dict.sumup_readers.create_error);
 
-      setActionMessage(`Leitor "${data.reader?.name || form.name}" adicionado com sucesso.`);
+      setActionMessage(`${dict.sumup_readers.added_success1} "${data.reader?.name || form.name}" ${dict.sumup_readers.added_success2}`);
       setForm({ pairing_code: "", name: "" });
       fetchReaders();
     } catch (error) {
@@ -81,9 +112,9 @@ export default function SumUpReadersManagement() {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data?.error || "Falha ao remover leitor");
+        throw new Error(data?.error || dict.sumup_readers.delete_error);
       }
-      setActionMessage("Leitor removido com sucesso.");
+      setActionMessage(dict.sumup_readers.removed_success);
       void fetchReaders({ silent: true });
     } catch (error) {
       setReaders(previousReaders);
@@ -105,27 +136,27 @@ export default function SumUpReadersManagement() {
       <form onSubmit={createReader} className={styles.readersForm}>
         <div className={styles.readersFormGrid}>
           <label>
-            Código de Emparelhamento:
+            {dict.sumup_readers.pairing_code_label}
             <input
               type="text"
               value={form.pairing_code}
               onChange={(e) => setForm((prev) => ({ ...prev, pairing_code: e.target.value }))}
-              placeholder="Ex: ABCD1234"
+              placeholder={dict.sumup_readers.pairing_code_placeholder}
               required
             />
           </label>
           <label>
-            Nome do Leitor:
+            {dict.sumup_readers.reader_name_label}
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="Ex: POS do Bar"
+              placeholder={dict.sumup_readers.reader_name_placeholder}
               required
             />
           </label>
           <button type="submit" className={styles.primaryButton}>
-            Adicionar Leitor
+            {dict.sumup_readers.add_button}
           </button>
         </div>
       </form>
@@ -134,24 +165,24 @@ export default function SumUpReadersManagement() {
       {error && <div className={styles.errorMessage}>{error}</div>}
 
       {loading ? (
-        <div className={styles.loadingText}>A carregar leitores...</div>
+        <div className={styles.loadingText}>{dict.sumup_readers.loading}</div>
       ) : (
         <div className={styles.readersTableWrapper}>
           <table className={styles.readersTable}>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Estado</th>
-                <th>Modelo</th>
-                <th>Ações</th>
+                <th>{dict.sumup_readers.table_id}</th>
+                <th>{dict.sumup_readers.table_name}</th>
+                <th>{dict.sumup_readers.table_status}</th>
+                <th>{dict.sumup_readers.table_model}</th>
+                <th>{dict.sumup_readers.table_actions}</th>
               </tr>
             </thead>
             <tbody>
               {readers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className={styles.readersNoData}>
-                    Nenhum leitor disponível.
+                    {dict.sumup_readers.no_readers}
                   </td>
                 </tr>
               ) : (
@@ -168,7 +199,7 @@ export default function SumUpReadersManagement() {
                         onClick={() => handleRemoveReader(reader)}
                         disabled={deleteReader?.id === reader.id}>
                         <FiTrash2 />
-                        Remover
+                        {dict.sumup_readers.remove_button}
                       </button>
                     </td>
                   </tr>
@@ -181,12 +212,13 @@ export default function SumUpReadersManagement() {
       {showConfirm && (
         <ConfirmDialog
           open={showConfirm}
-          message={`Tem a certeza que deseja remover o leitor ${deleteReader?.name}`}
+          message={`${dict.confirm_dialog.title} ${deleteReader?.name}`}
           onConfirm={() => removeReader()}
           onCancel={() => {
             setShowConfirm(false);
             setdeleteReader(null);
           }}
+          dict = {dict.confirm_dialog}
         />
       )}
     </div>

@@ -11,9 +11,10 @@ import { toast } from "sonner";
 
 interface ProductDetailProps {
   product: Product;
+  dict?: any;
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
+export default function ProductDetail({ product, dict }: ProductDetailProps) {
   const router = useRouter();
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
 
@@ -159,10 +160,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     <div className={styles.container}>
       <div className={styles.breadcrumbs}>
         <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
-          Store
+          {dict?.breadcrumbs?.shop}
         </span>
         <span className={styles.breadcrumbSeparator}>››</span>
-        <span className={styles.breadcrumbCurrent}>{product.name}</span>
+        <span className={styles.breadcrumbCurrent}>{dict?.products?.[product.name]?.title ?? product.name}</span>
       </div>
       <div className={styles.grid}>
         <div className={styles.imageSection}>
@@ -189,9 +190,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           )}
         </div>
         <div className={styles.infoSection}>
-          <h1 className={styles.title}>{product.name}</h1>
+          <h1 className={styles.title}>{dict?.products?.[product.name]?.title ?? product.name}</h1>
           <div className={styles.price}>{price.toFixed(2)}€</div>
-          <p className={styles.description}>{product.description}</p>
+          <p className={styles.description}>{dict?.products?.[product.name]?.description ?? product.description}</p>
           {mainOption && (
             <div>
               <span className={styles.label}>{mainOption}</span>
@@ -258,7 +259,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               </div>
             </div>
           )}
-          <span className={styles.label}>Quantidade</span>
+            <span className={styles.label}>{dict?.labels?.quantity}</span>
           <div className={styles.qtyAndButton}>
             <div className={styles.quantity}>
               <button
@@ -276,9 +277,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               onClick={() => {
                 if (!canBuy) addToCart();
               }}>
-              <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
-                Adicionar ao Carrinho
-              </button>
+                <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
+                {dict?.buttons?.add_to_cart}
+                </button>
             </div>
           </div>
           <div className={styles.asideDetails}>

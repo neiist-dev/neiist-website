@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import { hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./utils/authUtils";
+import { locales, defaultLocale } from "@/lib/i18n-config";
 
 const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
 const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
@@ -45,28 +46,53 @@ export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const accessToken = req.cookies.get("access_token")?.value;
   const isAuthenticated = !!accessToken;
+  let response: NextResponse | undefined;
 
   if (!isAuthenticated && protectedRoutes.some((r) => path.startsWith(r))) {
     if (path !== "/api/auth/login") {
-      return NextResponse.redirect(new URL("/api/auth/login", req.url));
+      response = NextResponse.redirect(new URL("/api/auth/login", req.url));
     }
-    return NextResponse.next();
   }
 
-  if (isAuthenticated) {
+  if (!response && isAuthenticated) {
     const sessionToken = req.cookies.get("session")?.value;
     const jwtUser = getUserFromJWT(sessionToken);
     const roles = jwtUser?.roles || [UserRole._GUEST];
 
     if (!canAccess(path, roles)) {
       if (path !== "/unauthorized") {
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
+        response = NextResponse.redirect(new URL("/unauthorized", req.url));
       }
-      return NextResponse.next();
     }
   }
 
-  return NextResponse.next();
+  response = response || NextResponse.next();
+
+  const cookieLocale = req.cookies.get("locale")?.value;
+
+  if (!cookieLocale || !(locales as readonly string[]).includes(cookieLocale)) {
+    const acceptLanguage = req.headers.get("accept-language");
+    let bestLocale = defaultLocale;
+
+    if (acceptLanguage) {
+      const parsedLocales = acceptLanguage
+        .split(",")
+        .map((l) => {
+          const [locale, q] = l.split(";q=");
+          return { locale: locale.trim().split("-")[0], q: q ? parseFloat(q) : 1 };
+        })
+        .sort((a, b) => b.q - a.q);
+
+      const match = parsedLocales.find((l) => (locales as readonly string[]).includes(l.locale));
+      if (match) {
+        bestLocale = match.locale;
+      }
+    }
+
+    response.cookies.set("locale", bestLocale, { path: "/", maxAge: 31536000 });
+  }
+
+  return response;
 }
 
 export const config = {

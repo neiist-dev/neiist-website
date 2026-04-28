@@ -6,10 +6,25 @@ import { useUser } from "@/context/UserContext";
 import styles from "@/styles/components/homepage/SweatsContest.module.css";
 import backgroundImage from "@/assets/background.png";
 
-export default function SweatsContest() {
+export default function SweatsContest({ dict }: { 
+  dict: {
+    title: string;
+    description_start: string;
+    description_consult: string;
+    description_link: string;
+    description_end: string;
+    button: string;
+    uploading: string;
+    submitted: string;
+    login_warning: string;
+    errors: { 
+      zip_only: string; 
+      upload: string };
+  }
+}) {
   const { user } = useUser();
   const [uploading, setUploading] = useState(false);
-  const [buttonText, setButtonText] = useState("Submete um design!");
+  const [buttonText, setButtonText] = useState(dict.button);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -26,8 +41,8 @@ export default function SweatsContest() {
 
     if (file.type !== "application/zip" && file.type !== "application/x-zip-compressed") {
       // TODO: (ERROR)
-      setButtonText("Erro: Apenas ficheiros ZIP");
-      setTimeout(() => setButtonText("Submete um design!"), 3000);
+      setButtonText(dict.errors.zip_only);
+      setTimeout(() => setButtonText(dict.button), 3000);
       return;
     }
 
@@ -45,13 +60,13 @@ export default function SweatsContest() {
 
       if (response.ok) {
         // TODO: (SUCCESS)
-        setButtonText("Design submetido");
+        setButtonText(dict.submitted);
       } else {
         // TODO: (ERROR)
-        setButtonText("Erro ao submeter");
+        setButtonText(dict.errors.upload);
       }
     } catch (error) {
-      setButtonText("Erro ao submeter");
+      setButtonText(dict.errors.upload);
       // TODO: (ERROR)
       console.error("Upload error:", error);
     } finally {
@@ -64,19 +79,19 @@ export default function SweatsContest() {
 
   return (
     <div className={styles.container} style={{ backgroundImage: `url(${backgroundImage.src})` }}>
-      <h3 className={styles.title}>Concurso de Design de Sweats</h3>
+      <h3 className={styles.title}>{dict.title}</h3>
       <p className={styles.descprition}>
-        Queres criar a próxima sweat especial de EIC?
+        {dict.description_start}
         <br />
-        Consulta{" "}
+        {dict.description_consult}{" "}
         <Link
           className={styles.link}
           href="/regulamento_sweats_concurso.pdf"
           target="_blank"
           rel="noopener noreferrer">
-          aqui
+          {dict.description_link}
         </Link>{" "}
-        o regulamento, submete o teu design e habilita-te a ganhar uma sweat!
+        {dict.description_end}
       </p>
       <input
         ref={fileInputRef}
@@ -89,9 +104,9 @@ export default function SweatsContest() {
         onClick={handleButtonClick}
         disabled={uploading || !user}
         className={`${styles.apply} ${!user || uploading ? styles.disabled : ""}`}>
-        {uploading ? "A submeter..." : buttonText}
+        {uploading ? dict.uploading : buttonText}
       </button>
-      {!user && <p className={styles.loginWarning}>Por favor faça login para submeter um design</p>}
+      {!user && <p className={styles.loginWarning}>{dict.login_warning}</p>}
     </div>
   );
 }

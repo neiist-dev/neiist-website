@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Product } from "@/types/shop";
 import styles from "@/styles/components/shop/ProductCard.module.css";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, dict }: { product: Product; dict?: any }) {
   const [imageIndex] = useState(0);
 
   return (
@@ -20,7 +20,7 @@ export default function ProductCard({ product }: { product: Product }) {
         />
       </div>
       <div className={styles.info}>
-        <h3 className={styles.name}>{product.name}</h3>
+        <h3 className={styles.name}>{dict?.products?.[product.name]?.title ?? product.name}</h3>
       </div>
       <div className={styles.price}>{product.price}€</div>
     </Link>

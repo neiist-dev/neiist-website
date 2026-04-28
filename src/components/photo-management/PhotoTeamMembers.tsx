@@ -23,6 +23,16 @@ interface Department {
   active: boolean;
 }
 
+interface PhotoTeamMembersProps {
+  membersByDepartment: Record<string, Membership[]>;
+  dict: {
+    search_placeholder: string;
+    empty: string;
+    change_photo_title: string;
+  };
+}
+
+
 const normalize = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[-_]/g, " ");
 
@@ -30,10 +40,9 @@ const normalizeIstId = (s: string) => normalize(s).replace(/^ist/, "");
 
 export default function PhotoTeamMembers({
   membersByDepartment,
-}: {
-  membersByDepartment: Record<string, Membership[]>;
-  departments: Department[];
-}) {
+  dict,
+}: PhotoTeamMembersProps) {
+
   const [search, setSearch] = useState("");
   const [editingPhotoIstid, setEditingPhotoIstid] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -125,13 +134,13 @@ export default function PhotoTeamMembers({
           <input
             className={styles.input}
             type="text"
-            placeholder="Pesquisar por nome ou ISTID..."
+            placeholder={dict.search_placeholder}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
         {Object.keys(filteredMembers).length === 0 ? (
-          <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
+          <div className={styles.emptyMessage}>{dict.empty}</div>
         ) : (
           Object.entries(filteredMembers).map(([dept, memberships]) => (
             <div key={dept}>
@@ -148,7 +157,7 @@ export default function PhotoTeamMembers({
                         height={180}
                         style={{ cursor: "pointer" }}
                         onClick={() => handlePhotoClick(membership.userNumber)}
-                        title="Clique para alterar a foto"
+                        title={dict.change_photo_title}
                       />
                     </div>
                     <div className={styles.memberInfo}>

@@ -15,17 +15,26 @@ interface ActiveFiltersProps {
   onRemoveStatus: (_status: string) => void;
   onClearAll: () => void;
   getStatusLabel: (_status: OrderStatus) => string;
+  dict: {
+    label: string;
+    clear_all: string;
+    from: string;
+    until: string;
+    remove_date_range: string;
+    remove_filter: string;
+  };
+  locale: string;
 }
 
-function formatDate(date: Date | null): string {
+function formatDate(date: Date | null, locale: string): string {
   if (!date) return "";
-  return date.toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return date.toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-function formatDateRange(start: Date | null, end: Date | null): string {
-  if (start && end) return `${formatDate(start)} - ${formatDate(end)}`;
-  if (start) return `From ${formatDate(start)}`;
-  if (end) return `Until ${formatDate(end)}`;
+function formatDateRange(start: Date | null, end: Date | null, from: string, until: string, locale: string): string {
+  if (start && end) return `${formatDate(start, locale)} - ${formatDate(end, locale)}`;
+  if (start) return `${from} ${formatDate(start, locale)}`;
+  if (end) return `${until} ${formatDate(end, locale)}`;
   return "";
 }
 
@@ -40,6 +49,8 @@ export default function ActiveFilters({
   onRemoveStatus,
   onClearAll,
   getStatusLabel,
+  dict,
+  locale,
 }: ActiveFiltersProps) {
   const hasActiveFilters =
     !!(dateRange.start || dateRange.end) ||
@@ -51,16 +62,16 @@ export default function ActiveFilters({
 
   return (
     <div className={styles.container}>
-      <span className={styles.label}>Active Filters:</span>
+      <span className={styles.label}>{dict.label}</span>
       <div className={styles.tags}>
         {(dateRange.start || dateRange.end) && (
           <span className={styles.tag}>
-            {formatDateRange(dateRange.start, dateRange.end)}
+            {formatDateRange(dateRange.start, dateRange.end, dict.from, dict.until, locale)}
             <button
               type="button"
               className={styles.removeBtn}
               onClick={onRemoveDateRange}
-              aria-label="remove date range">
+              aria-label={dict.remove_date_range}>
               <FiX size={14} />
             </button>
           </span>
@@ -73,7 +84,7 @@ export default function ActiveFilters({
               type="button"
               className={styles.removeBtn}
               onClick={() => onRemoveProduct(product)}
-              aria-label={`remove ${product}`}>
+              aria-label={`${dict.remove_filter} ${product}`}>
               <FiX size={14} />
             </button>
           </span>
@@ -86,7 +97,7 @@ export default function ActiveFilters({
               type="button"
               className={styles.removeBtn}
               onClick={() => onRemoveCampus(campus)}
-              aria-label={`remove ${campus}`}>
+              aria-label={`${dict.remove_filter} ${campus}`}>
               <FiX size={14} />
             </button>
           </span>
@@ -99,14 +110,14 @@ export default function ActiveFilters({
               type="button"
               className={styles.removeBtn}
               onClick={() => onRemoveStatus(status)}
-              aria-label={`remove ${status}`}>
+              aria-label={`${dict.remove_filter} ${status}`}>
               <FiX size={14} />
             </button>
           </span>
         ))}
 
         <button type="button" className={styles.clearBtn} onClick={onClearAll}>
-          Clear All
+          {dict.clear_all}
         </button>
       </div>
     </div>

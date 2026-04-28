@@ -10,7 +10,15 @@ import { Team } from "@/types/memberships";
 interface HeroProps {
   teams: Team[];
   teamImage: string | StaticImageData;
-  teamsTitle?: string;
+  heroDict: {
+    teams_title: string;
+    description: string;
+    title_segments: string[];
+    title: string;
+    team_label: string;
+    close_label: string;
+    team_image_alt: string;
+  };
   description?: string;
 }
 const iconMap: Record<string, React.ElementType> = {
@@ -20,9 +28,15 @@ const iconMap: Record<string, React.ElementType> = {
 export default function Hero({
   teams,
   teamImage,
-  teamsTitle = "As Nossas Equipas",
+  heroDict,
   description,
 }: HeroProps) {
+  const titleClasses = [
+    styles.primary,
+    styles.secondary,
+    styles.tertiary,
+    styles.quaternary,
+  ];
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setSelectedTeam(null);
@@ -41,13 +55,18 @@ export default function Hero({
         <div className={styles.intro}>
           <div className={styles.title}>
             <p>
-              <span className={styles.primary}>Qu</span>
-              <span className={styles.secondary}>em </span>
-              <span className={styles.tertiary}>So</span>
-              <span className={styles.quaternary}>mos?</span>
+                {Array.isArray(heroDict.title_segments) && heroDict.title_segments.length > 0 ? (
+                  heroDict.title_segments.map((seg, i) => (
+                    <span key={i} className={titleClasses[i] ?? undefined}>
+                      {seg}
+                    </span>
+                  ))
+                ) : heroDict?.title ? (
+                  <span className={styles.primary}>{heroDict.title}</span>
+                ) : null}
             </p>
           </div>
-          <p className={styles.description}>{description}</p>
+          <p className={styles.description}>{description ?? heroDict.description}</p>
         </div>
         <div className={styles.blobs}>
           <svg
@@ -73,25 +92,25 @@ export default function Hero({
             />
           </svg>
 
-          <Image alt="NEIIST Team" className={styles.teamImage} src={teamImage} />
+          <Image alt={heroDict.team_image_alt} className={styles.teamImage} src={teamImage} />
         </div>
       </div>
 
       <div className={styles.teamsSection}>
-        <h2 className={styles.teamsTitle}>{teamsTitle}</h2>
+        <h2 className={styles.teamsTitle}>{heroDict.teams_title}</h2>
         <div className={styles.teamsGrid}>
           {teams.map((team) => {
             const Icon = iconMap[team.icon] || FiUsers;
             return (
-              <div
+                <div
                 key={team.name}
                 className={styles.teamBox}
                 tabIndex={0}
-                aria-label={`Equipa ${team.name}`}
+                aria-label={`${heroDict.team_label} ${team.name}`}
                 onClick={() => setSelectedTeam(team)}
                 role="button">
                 <Icon className={styles.icon} />
-                <h3 className={styles.teamName}>{team.name}</h3>
+                <h3 className={styles.teamName}>{(team as any).displayName ?? team.name}</h3>
               </div>
             );
           })}
@@ -104,7 +123,7 @@ export default function Hero({
             <button
               className={styles.close}
               onClick={() => setSelectedTeam(null)}
-              aria-label="Fechar">
+              aria-label={heroDict.close_label}>
               <Squash
                 toggled={true}
                 toggle={() => setSelectedTeam(null)}

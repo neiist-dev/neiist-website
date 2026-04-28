@@ -29,6 +29,15 @@ const localizer = dateFnsLocalizer({
 interface CalendarProps {
   events: CalendarEvent[];
   signedUpEventIds: string[];
+  dict: {
+    toolbar:{
+    today: string;
+    previous_month: string;
+    next_month: string;
+    };
+    details: any;
+  }
+  locale: string;
 }
 
 interface ReactBigCalendarEvent {
@@ -82,22 +91,24 @@ function mapToBigCalendarEvent(event: NormalizedCalendarEvent) {
 function CustomToolbar({
   label,
   onNavigate,
+  dict,
 }: {
   label: string;
   onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
+  dict: Record<string, string>;
 }) {
   const [month, year] = label.split(" ");
 
   return (
     <div className={styles.header}>
       <button className={styles.todayButton} onClick={() => onNavigate("TODAY")}>
-        Hoje
+        {dict.today}
       </button>
       <div className={styles.navigationButtons}>
-        <button onClick={() => onNavigate("PREV")} aria-label="Previous Month">
+        <button onClick={() => onNavigate("PREV")} aria-label={dict.previous_month}>
           <FiChevronLeft />
         </button>
-        <button onClick={() => onNavigate("NEXT")} aria-label="Next Month">
+        <button onClick={() => onNavigate("NEXT")} aria-label={dict.next_month}>
           <FiChevronRight />
         </button>
       </div>
@@ -112,6 +123,8 @@ export default function Calendar({
   events,
   signedUpEventIds,
   initialSelectedEventId,
+  dict,
+  locale,
 }: CalendarProps & { initialSelectedEventId?: string }) {
   const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
   const [signUps, setSignUps] = useState<Set<string>>(new Set(signedUpEventIds));
@@ -149,7 +162,7 @@ export default function Calendar({
     toolbar: (props: {
       label: string;
       onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
-    }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} />,
+    }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} dict={dict.toolbar} />,
     event: IconEventsCard,
   };
 
@@ -215,6 +228,7 @@ export default function Calendar({
           onUpdate={(updatedEvent?: CalendarEvent) =>
             handleEventUpdate(updatedEvent ?? selectedEvent!.raw)
           }
+          dict={dict}
         />
       )}
     </>

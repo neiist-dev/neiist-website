@@ -1,58 +1,702 @@
 {   
-    "about_us": {
-        "hero": {
-            "title_1": "Qu",
-            "title_2": "em ",
-            "title_3": "So",
-            "title_4": "mos?",
-            "teams_title": "As Nossas Equipas",
-            "team_aria_label": "Equipa",
-            "close_aria_label": "Fechar"
+    "navbar": {
+        "about_us": "Sobre Nós",
+        "activities": "Atividades",
+        "shop": "Loja",
+        "menu": {
+            "profile": "Perfil",
+            "my_orders": "As Minhas Encomendas",
+            "manage_orders": "Gerir Encomendas",
+            "manage_team": "Gerir Equipa",
+            "manage_photos": "Gerir Fotos Membros",
+            "manage_shop": "Gerir Loja",
+            "manage_users": "Gerir Membros e Utilizadores",
+            "manage_departments": "Gerir Departamentos",
+            "logout": "Sair",
+            "user_photo_alt": "Foto do utilizador"
+        }
+    },
+
+    "layout_navbar": {
+        "button": "Login",
+        "theme_toggle_light": "Mudar para Modo Claro",
+        "theme_toggle_dark": "Mudar para Modo Escuro"
+    },
+
+    "sumup_readers": {
+        "pairing_code_label": "Código de Emparelhamento:",
+        "pairing_code_placeholder": "Ex: ABCD1234",
+        "reader_name_label": "Nome do Leitor",
+        "reader_name_placeholder": "Ex: POS do Bar",
+        "add_button": "Adicionar Leitor",
+        "loading": "A carregar leitores...",
+        "no_readers": "Nenhum leitor disponível.",
+        "remove_button": "Remover",
+        "added_success1": "Leitor ",
+        "added_success2":  "adicionado com sucesso.",
+        "removed_success": "Leitor removido com sucesso.",
+        "pairing_code_required": "Código de emparelhamento e nome são obrigatórios.",
+        "table_id": "ID",
+        "table_name": "Nome",
+        "table_status": "Estado",
+        "table_model": "Modelo",
+        "table_actions": "Ações",
+        "fetch_error": "Falha ao obter leitores",
+        "create_error": "Falha ao criar leitor",
+        "delete_error": "Falha ao remover leitor"
+    },
+
+    "shop_pos": {
+        "title_1": "Gestão",
+        "title_2": "de TPA",
+        "title_3": "s Sum",
+        "title_4": "Up"
+    },
+
+    "orders_table": {
+        "title_1": "En",
+        "title_2": "com",
+        "title_3": "end",
+        "title_4": "as",
+        "search_placeholder": "Procurar...",
+        "export_button": "Exportar",
+        "new_order_button": "Nova Encomenda",
+        "filters_title": "Filtros",
+        "send_email_selected": "Enviar email aos selecionados",
+        "send_email": "Enviar Email",
+        "set_pickup_deadline_title": "Definir prazo limite de levantamento",
+        "set_pickup_deadline": "Definir prazo para levantamento",
+        "processing": "A processar...",
+        "mark_paid": "Marcar como Pago",
+        "mark_ready": "Marcar como Pronto",
+        "mark_delivered": "Marcar como Entregue",
+        "cancel_orders": "Cancelar Encomendas",
+        "order_singular": "encomenda",
+        "order_plural": "encomendas",
+        "selected_singular": "selecionada",
+        "selected_plural": "selecionadas",
+        "bulk_confirm_1": "Tem a certeza que deseja alterar o estado de",
+        "bulk_confirm_2": "encomenda",
+        "bulk_confirm_3": "para",
+        "bulk_confirm_4": "?",
+        "unknown_campus": "Desconhecido",
+        "export_filename": "encomendas",
+        "no_orders": "Nenhuma encomenda encontrada.",
+        "pickup_dialog_title": "Prazo limite para levantamento das encomendas",
+        "col_number": "Número",
+        "col_date": "Data",
+        "col_name": "Nome",
+        "col_campus": "Campus",
+        "col_email": "Email",
+        "col_products": "Produtos",
+        "col_total": "Total",
+        "col_status": "Estado",
+        "filter_products": "Produtos",
+        "filter_campus": "Campus",
+        "filter_status": "Estado",
+        "export_number": "Número",
+        "export_date": "Data",
+        "export_name": "Nome",
+        "export_email": "Email",
+        "export_nif": "NIF",
+        "export_ist_id": "IST ID",
+        "export_campus": "Campus",
+        "export_phone": "Telefone",
+        "export_status": "Estado",
+        "export_payment_method": "Método de pagamento",
+        "export_payment_reference": "Referencia SumUp",
+        "export_total": "Total (€)",
+        "export_notes": "Notas",
+        "export_products": "Produtos",
+        "export_sheet_orders": "Encomendas",
+        "export_sheet_details": "Detalhes",
+        "export_sheet_campus_inventory": "InventarioPorCampus",
+        "export_sheet_campus_date": "InventarioPorCampusPorDia",
+        "export_col_model": "Modelo",
+        "export_col_color": "Cor",
+        "export_col_size": "Tamanho",
+        "export_col_quantity": "Quantidade"
+    },
+
+    "confirm_dialog": {
+        "title": "Tem a certeza que deseja remover o leitor ",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+    },
+
+    "input_date_dialog": {
+        "hint": "Para remover o prazo, deixar vazio.",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+    },
+
+    "photo_team_members": {
+        "page_title": "Gestão de Fotos dos Membros",
+        "search_placeholder": "Procurar por nome ou ISTID...",
+        "empty": "Nenhum membro encontrado.",
+        "change_photo_title": "Clique para mudar a foto"
+    },
+
+    "active_filters": {
+        "label": "Filtros Ativos:",
+        "clear_all": "Limpar Tudo",
+        "from": "De",
+        "until": "Até",
+        "remove_date_range": "remover intervalo de datas",
+        "remove_filter": "remover"
+    },
+
+    "cart": {
+        "close_label": "Fechar Carrinho",
+        "title": "Carrinho",
+        "empty": "O teu carrinho está vazio.",
+        "total": "Total:",
+        "checkout": "Continuar Para Pagamento"
+    },
+
+    "checkout_form": {
+        "empty_cart": "O teu carrinho está vazio.",
+        "section_personal": "1. Informação Pessoal",
+        "phone_label": "Número de Telefone",
+        "phone_placeholder": "+351 999 888 777",
+        "nif_label": "NIF (Opcional)",
+        "nif_placeholder": "123456789",
+        "section_delivery": "2. Local de Entrega",
+        "section_payment": "3. Método de Pagamento",
+        "section_notes": "Notas (Opcional)",
+        "notes_placeholder": "Adicione notas sobre o seu pedido...",
+        "processing": "A processar...",
+        "submit": "Concluir Compra",
+        "apple_pay_label": "Pagar com Apple Pay",
+        "summary_title": "Resumo do Pedido",
+        "subtotal": "Subtotal",
+        "iva": "IVA (23%)",
+        "total": "Total",
+        "tax_info": "Taxas incluídas. Envio calculado no checkout.",
+        "tax_info_detail": "As taxas são calculadas automaticamente com base na sua localização.",
+        "delivery_estimate": "Entrega estimada: 15-20 dias úteis",
+        "delivery_detail": "O tempo de entrega pode variar dependendo da localização de levantamento escolhida.",
+        "campus_alameda": "Alameda",
+        "campus_taguspark": "Taguspark",
+        "payment_card": "Cartão",
+        "payment_in_person": "Em pessoa",
+        "error_no_campus": "Por favor, seleciona o campus.",
+        "error_no_payment": "Por favor, seleciona o método de pagamento.",
+        "error_submit": "Erro ao submeter o pedido.",
+        "error_apple_pay_context": "Apple Pay requere contexto seguro (HTTPS).",
+        "error_apple_pay_unavailable": "Apple Pay não está disponível neste browser.",
+        "error_apple_pay_device": "Apple Pay não está disponível neste dispositivo.",
+        "error_apple_pay_failed": "Falha na validação Apple Pay. Por favor, tanta novamente.",
+        "error_apple_pay_processing": "Erro ao processar o Apple Pay. Por favor, tenta novamente.",
+        "error_payment_incomplete": "Dados de pagamento incompletos.",
+        "error_checkout_create": "Falha ao criar checkout.",
+        "error_checkout_unexpected": "Resposta inesperada do serviço de pagamento.",
+        "error_applepay_validation": "Falha na validação Apple Pay."
+    },
+
+    "hero": {
+        "campus_alt": "Campus do IST",
+        "student_alt": "Estudante",
+        "title_prefix": "Núcleo Estudantil de",
+        "title_letters": [" In", "for", "mát", "ica "],
+        "title_suffix": "do Instituto Superior Técnico"
+    },
+    
+    "sinfo": {
+        "title": "Secção Autónoma",
+        "button": "Visita a SINFO",
+        "description": "A SINFO é um evento anual organizado exclusivamente por estudantes que se esforçam para tornar o evento mais interessante e inovador a cada edição. Todos os participantes têm o direito de experimentar alguns dos gadgets e tecnologias mais inovadoras do mercado para além de lhes ser apresentado uma visão geral do cenário de TI pelas melhores empresas do país. Para além disto tudo, todos os dias são realizados workshops nos temas mais requisitados e recentes, permitindo a todos os participantes que melhorem as suas skills técnicas e não-técnicas.",
+        "objective": "O principal objetivo da SINFO é permitir que todos os estudantes e os participantes em geral possam interagir e estar mais próximos de pessoas ou empresas influentes e interessantes no ramo das Tecnologias de Informação e Engenharia Informática."
+    },
+
+    "sweats_contest": {
+        "title": "Concurso de Design de Sweats",
+        "description_start": "Queres criar a próxima sweat especial de EIC?",
+        "description_link": "aqui",
+        "description_end": "o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
+        "button": "Submete um design!",
+        "uploading": "A submeter...",
+        "submitted": "Design submetido",
+        "login_warning": "Por favor faça login para submeter um design",
+        "errors": {
+            "zip_only": "Erro: Apenas ficheiros ZIP",
+            "upload": "Erro ao submeter"
+        }
+    },
+
+    "shop": {
+        "title": "Loja",
+        "title_letters": ["L","o","j","a"],
+        "subtitle": "Os produtos que representam o teu curso!",
+        "not_found": "Produto não encontrado",
+        "breadcrumbs": { "shop": "Loja" },
+        "labels": { "quantity": "Quantidade" },
+        "buttons": { "add_to_cart": "Adicionar ao Carrinho" },
+        "products": {
+            "Sweats EIC": {
+                "title": "Sweats EIC",
+                "description": "A sweatshirt oficial do teu curso."
+            }
         },
+        "product_form": {
+            "unknown_error": "Erro desconhecido",
+            "edit": "Editar",
+            "add_product": "Adicionar Produto",
+            "back_button": "Voltar",
+            "images_label": "Imagens",
+            "no_image": "Nenhuma imagem",
+            "upload_image_label": "Carregar Imagem",
+            "product_name_placeholder": "Nome do produto",
+            "product_price_placeholder": "Preço",
+            "product_description_placeholder": "Descrição",
+            "choose_categories": "Escolha Categoria",
+            "new_category_placeholder": "Nova categoria",
+            "add_category_button": "Adicionar",
+            "limited_stock": "Stock Limitado",
+            "on_demand_stock": "Sob Encomenda",
+            "product_quantity_placeholder": "Quantidade em stock",
+            "limit_date_placeholder": "Data limite encomenda",
+            "option_types": "Tipos de Opção",
+            "option_placeholder": "Opção",
+            "variants_label": "Variantes",
+            "no_variants": "Sem variantes",
+            "extra_price": "Preço Extra",
+            "stock_placeholder": "Stock",
+            "upload": "upload-",
+            "saving": "A guardar...",
+            "save_changes": "Guardar alterações",
+            "create_product": "Criar produto",
+            "error_create_category": "Erro ao criar categoria: ",
+            "error_create_category2": "Erro ao criar categoria ",
+            "error_name_missing": "Nome é obrigatório",
+            "error_category_missing": "Categoria é obrigatória",
+            "error_variant1": "Variante deve ter ",
+            "error_variant2": " preenchido",
+            "error_color1": "Opção de cor ",
+            "error_color2": " precisa de um valor com hex (ex: Verde - #2C4A52)",
+            "error_saving_product": "Erro ao guardar produto",
+            "error": "Erro",
+            "default_option_color": "Cor",
+            "default_option_size": "Tamanho"
+        },
+        "categories": {
+            "Vestuário": "Vestuário"
+        }
+    },
+
+    "users_management_page": {
+        "title": "Gestão de Pessoas",
+        "tab_users": "Utilizadores",
+        "tab_memberships": "Membros"
+    },
+
+    "activities": {
+        "title_letters": ["Ati","vi","da","des"],
+        "title": "Atividades",
+        "no_events": "Nenhuma atividade disponível.",
+        "prev_label": "Anterior",
+        "next_label": "Próximo",
+        "toolbar": { 
+            "today": "Hoje",
+            "prev_month": "Mês Anterior",
+            "next_month": "Próximo Mês"
+        },
+
+        "details": {
+            "close": "Fechar",
+            "errors": {
+                "save_settings": "Erro ao guardar as configurações do evento.",
+                "sign_up": "Erro ao inscrever.",
+                "update_signup": "Erro ao atualizar inscrição.",
+                "fetch_attendees": "Erro ao obter inscritos.",
+                "fetch_emails": "Erro ao obter emails dos inscritos."
+            },
+            "saving_settings": "A gravar configurações do evento...",
+            "settings_saved": "Configurações do evento guardadas com sucesso.",
+            "cancelling_signup": "A cancelar inscrição...",
+            "signing_up": "A inscrever no evento...",
+            "signed_up": "Inscrição efetuada com sucesso.",
+            "signup_cancelled": "Inscrição cancelada com sucesso.",
+            "preparing_email": "A preparar o email dos inscritos...",
+            "email_opened": "Rascunho de email aberto com sucesso.",
+            "link_copied": "Link copiado",
+            "untitled_event": "Evento sem título",
+            "share_title": "Copiar link do evento",
+            "labels": {
+                "description": "Descrição do evento",
+                "allow_signups": "Permitir inscrições",
+                "signup_deadline": "Data limite para inscrições",
+                "max_attendees": "Número máximo de participantes",
+                "subscribers": "Inscritos"
+            },
+            "placeholders": { 
+                "description": "Adicionar descrição...", 
+                "no_limit": "Sem limite" 
+            },
+            "processing": "A processar...",
+            "please_login": "Por favor inicie sessão para se inscrever",
+            "buttons": { 
+                "cancel_signup": "Cancelar inscrição", 
+                "sign_up": "Inscrever-se", 
+                "email_attendees": "Enviar email para inscritos" 
+            },
+            "icon_picker":{
+                "title": "Escolher Ícone",
+                "search_placeholder": "Procurar ícone...",
+                "close_label": "✕"
+            }
+        },
+
+        "events": {
+            "aoc": {
+                "title": "Advent of Code",
+                "description": "O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!"
+            },
+            "esports": {
+                "title": "E-Sports Tournament",
+                "description": "Gostas de jogar? Que coincidência, este evento foi mesmo feito a pensar em ti! Reúne uma equipa e vem passar o dia connosco a jogar, comer e beber... e quem sabe ganhar um prémio ou outro!"
+            },
+            "sweats": {
+                "title": "Sweats EIC",
+                "description": "E o que achas de teres uma sweat com o nome do teu curso? Não te esqueças, o NEIIST dá-te a oportunidade de teres a sweat do melhor curso!"
+            },
+            "layout": {
+                "title": "Concurso de Layout de Sweats",
+                "description": "O Concurso de Layout de Sweats é a tua oportunidade de criar o layout oficial para a edição especial de cada ano. Se és estudante de EIC do IST podes submeter até 3 designs originais. Se ganhares a votação online, ganhas a sweat!"
+            },
+            "churras": {
+                "title": "Churrasco EIC",
+                "description": "Mesmo que fosse uma semana de projetos ou exames, haveria sempre tempo para um convívio com amigos!"
+            },
+            "jantar_curso": {
+                "title": "Jantar de Curso",
+                "description": "Muito stressado com o Técnico? Nós também, junta-te aos teus colegas no melhor jantar de curso! A cerveja já está a tua espera…"
+            },
+            "ltal": {
+                "title": "Let's Talk about LEIC",
+                "description": "Acabaste de chegar ao curso e sentes-te perdido? Vem aprender connosco todos os truques para sobreviveres! Com este evento, junto dos alunos mais velhos, vais compreender como funciona LEIC e as suas disciplinas."
+            },
+            "qtsm": {
+                "title": "(Quase) Tudo Sobre MEIC",
+                "description": "Vais entrar em MEIC? Se estás indeciso sobre quais áreas ou cadeiras escolher, vem assistir a estas sessões! Irão explicar-te tudo o que precisas saber sobre a estrutura do mestrado, o currículo, as diferentes áreas de especialização, a tese e muito mais."
+            },
+            "python": {
+                "title": "Workshop de Python",
+                "description": "Estás preocupado com o projeto de FP ou queres aprender mais sobre Python? Vem a este workshop onde vamos falar das principais bases da programação e ensinar-te os primeiros passos essenciais para o mundo informático!"
+            },
+            "assembly": {
+                "title": "Workshop Assembly",
+                "description": "Não sabes o que quer dizer MOV, ADD, CMP? Não sabes o que são registos e flags? Então junta-te a nós neste workshop onde te ensinamos as bases de Assembly que irão ser fundamentais em IAC!"
+            },
+            "c": {
+                "title": "Workshop C",
+                "description": "Queres finalmente perceber o que é alocação de memória, o que são ponteiros, como funciona a pilha e muito mais? Junta-te a nós neste workshop e tira todas as tuas dúvidas!"
+            },
+            "hashcode": {
+                "title": "Hash Code",
+                "description": "Junta-te a nós na competição de código desenvolvida pela Google na qual o NEIIST organiza uma Hub onde todos os alunos do técnico são bem-vindos a integrar e participar."
+            },
+            "lip": {
+                "title": "Linux Install Party",
+                "description": "Vem instalar o Linux no teu PC, junto a alunos com experiência na área e na instalação dos vários flavors que o Linux tem para oferecer!"
+            }
+    
+        }
+    },
+
+    "partnerships": {
+        "title": "Parcerias"
+    },
+
+    "footer": {
+        "title_neiist": "NEIIST",
+        "mission_description": "Um grupo de estudantes motivados para ajudar todo e qualquer aluno de Engenharia Informática e Computadores, realizando atividades e apoio social.",
+        "about_title": "Sobre o Núcleo",
+        "team_link": "Equipa",
+        "estatutos_link": "Estatutos",
+        "address": "Av. Rovisco Pais 1, 1049-001 Lisboa",
+        "courses_title": "Cursos de EIC",
+        "contacts_title": "Contactos",
+        "powered_by": "Powered by:",
+        "copyright": "© 2025 NEIIST. Todos os direitos reservados."
+    },
+
+    "about_us_page": {
+        "hero": {
+            "title_segments": ["Qu","em ","So","mos?"],
+            "description": "A equipa do NEIIST é composta por {count} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.",
+            "teams_title": "As Nossas Equipas",
+            "team_label": "Equipa",
+            "close_label": "Fechar",
+            "team_image_alt": "Equipa NEIIST",
+            "teams_names": {
+                "Direção": "Direção",
+                "Conselho Fiscal": "Conselho Fiscal",
+                "Mesa da Assembleia Geral": "Mesa da Assembleia Geral",
+                "Contacto": "Contacto",
+                "Controlo & Qualidade": "Controlo & Qualidade",
+                "Dev-Team": "Dev-Team",
+                "Divulgação": "Divulgação",
+                "Fotografia": "Fotografia",
+                "Organização de Eventos": "Organização de Eventos",
+                "Visuais": "Visuais"
+            },
+
+            "team_descriptions": {
+                "Contacto": "Trata da comunicação e contacto com estudantes e parceiros.",
+                "Controlo & Qualidade": "Garante os padrões de qualidade e revê processos.",
+                "Dev-Team": "Desenvolve e mantém a infraestrutura técnica do NEIIST.",
+                "Divulgação": "Promove eventos e atividades do NEIIST nos canais apropriados.",
+                "Fotografia": "Regista fotografias dos eventos e gere a biblioteca de imagens.",
+                "Organização de Eventos": "Planeia e executa eventos do NEIIST e a logística associada.",
+                "Visuais": "Cria elementos visuais e materiais de branding para o NEIIST."
+            },
+
+            "roles_names": {
+                "Presidente": "Presidente",
+                "Vice-Presidente": "Vice-Presidente",
+                "Secretário": "Secretário",
+                "Tesoureiro": "Tesoureiro",
+                "Coordenador": "Coordenador",
+                "Membro": "Membro",
+                "Colaborador": "Colaborador"
+            }
+        },
+
         "join_us": {
             "title": "Junta-te a Nós!",
             "description": "O nosso recrutamento acontece duas vezes por ano, no inicio de cada semestre. O recrutamento consiste de uma ronda de entrevistas, e para algumas equipas um pequeno desafio relacionado com o trabalho da equipa espesífica. Conta-mos contigo!",
             "apply": "Candidata-te"
+        },
+
+        "member_card": {
+            "github_label": "GitHub",
+            "linkedin_label": "LinkedIn",
+            "photo_alt": "foto"
+        },
+
+        "year_selector": {
+            "nav_label": "Seletor de Ano Académico",
+            "prev_label": "Ano anterior",
+            "next_label": "Próximo ano"
+        },
+        "editor": {
+            "title": "Pré-visualização da Página Sobre nós",
+            "no_member": "Sem membro",
+            "photo_alt": "foto"
         }
     },
 
-    "activities": {
-        "calendar": {
-            "today": "Hoje"
+    "profile": {
+        "title_letters": ["Pe","r","fi","l"],
+        "photo_alt": "Foto de perfil",
+        "github_label": "GitHub",
+        "github_placeholder": "Username no GitHub",
+        "linkedin_label": "LinkedIn",
+        "linkedin_placeholder": "Username no LinkedIn",
+        "confirm_remove_field": "Deseja remover o método de contacto {field}?",
+        "confirm_change_field": "Deseja guardar a alteração de {field} para \"{value}\"?",
+        "errors": {
+            "verify_email": "Falha ao enviar email de verificação",
+            "update": "Falha ao atualizar",
+            "update_profile": "Erro ao atualizar perfil.",
+            "fetch_calendar": "Failed to get calendar data",
+            "get_calendar_link": "Erro ao obter link do calendário.",
+            "pdf_only": "Envie apenas ficheiros PDF.",
+            "cv_upload": "Falha ao enviar o CV.",
+            "cv_upload_error": "Erro ao enviar o CV.",
+            "cv_remove": "Falha ao remover o CV.",
+            "cv_remove_error": "Erro ao remover o CV.",
+            "cv_not_found": "CV não encontrado.",
+            "cv_download": "Erro ao descarregar o CV."
         },
-        "event_details": {
-            "close": "Fechar",
-            "untitled": "Evento sem título",
-            "share_title": "Copiar link do evento",
-            "share_success": "Link do evento copiado",
-            "description_label": "Descrição do evento",
-            "description_placeholder": "Adicionar descrição...",
-            "allow_signups": "Permitir inscrições",
-            "signup_deadline": "Data limite para inscrições",
-            "max_attendees": "Número máximo de participantes",
-            "max_attendees_placeholder": "Sem limite",
-            "subscribers": "Inscritos",
-            "processing": "A processar...",
-            "login_to_signup": "Por favor inicie sessão para se inscrever",
-            "cancel_signup": "Cancelar inscrição",
-            "signup": "Inscrever",
-            "email_attendees": "Enviar email para todos os inscritos.",
-            "max_reached": "Número máximo de participantes atingido.",
-            "login_warning": "Por favor inicie sessão para se inscrever neste evento."
+        "fields": {
+            "alternativeEmail": "Email Alternativo",
+            "phone": "Telefone",
+            "preferredContactMethod": "Método de Contacto Preferido",
+            "github": "GitHub",
+            "linkedin": "LinkedIn"
         },
-        "icon_picker": {
-            "search_placeholder": "Procurar ícone..."
+        "values": {
+            "preferredContactMethod": {
+                "email": "Email Principal",
+                "alternativeEmail": "Email Alternativo",
+                "phone": "Telémovel"
+            }
+        },
+        "labels": {
+            "alternativeEmail": "Email Alternativo",
+            "unverified": "(por verificar)",
+            "phone": "Número de Telémovel",
+            "preferredContactMethod": "Método de Contacto Preferencial",
+            "loading": "A carregar..."
+        },
+        "placeholders": {
+            "alternativeEmail": "email@exemplo.com",
+            "phone": "+351 xxx xxx xxx",
+            "cvUpload": "Clica para fazer o upload do teu CV (apenas PDF)"
+        },
+        "sections": {
+            "calendar": "Calendário",
+            "calendarDescription": "Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!",
+            "cvbank": "CV Bank",
+            "cvbankTooltip": "Explicação sobre o CV-Bank."
+        },
+        "buttons": {
+            "view_calendar": "Ver Calendário",
+            "open_in_google": "Abrir no Google Calendar",
+            "download_cv": "Descarregar o CV",
+            "remove_cv": "Remover o CV"
         }
+    },
+    
+    "roles_names": {
+        "Presidente": "Presidente",
+        "Vice-Presidente": "Vice-Presidente",
+        "Secretário": "Secretário",
+        "Tesoureiro": "Tesoureiro",
+        "Coordenador": "Coordenador",
+        "Membro": "Membro",
+        "Colaborador": "Colaborador"
+    },
+    
+    "create_user_modal": {
+            "title": "Novo Utilizador",
+            "ist_id_label": "IST ID",
+            "ist_id_placeholder": "ist1119999",
+            "name_label": "Nome",
+            "name_placeholder": "John Doe",
+            "email_label": "Email",
+            "email_placeholder": "john.doe@tecnico.ulisboa.pt",
+            "cancel": "Cancelar",
+            "submitting": "A criar...",
+            "submit": "Guardar",
+            "confirm_message_1": "Tem a certeza que deseja criar o utilizador",
+            "confirm_message_2": "?",
+            "error_required": "Por favor, preencha todos os campos.",
+            "error_create": "Falha ao criar utilizador"
+    },
+
+    "new_order_modal": {
+        "title_create": "Nova Encomenda",
+        "title_edit": "Editar Encomenda",
+        "user_label": "User",
+        "user_placeholder": "Procurar por istid...",
+        "user_not_found": "Utilizador não encontrado",
+        "user_create_new": "Clique para criar novo utilizador",
+        "products_label": "Produtos",
+        "products_placeholder": "Adicionar produtos...",
+        "campus_label": "Campus",
+        "campus_placeholder": "Selecionar campus",
+        "campus_alameda": "Alameda",
+        "campus_taguspark": "Taguspark",
+        "nif_label": "NIF (opcional)",
+        "nif_placeholder": "123456789",
+        "phone_label": "Telemóvel (opcional)",
+        "phone_placeholder": "999333111",
+        "notes_label": "Notas",
+        "notes_placeholder": "Notas",
+        "cancel": "Cancelar",
+        "submitting_create": "A criar...",
+        "submitting_edit": "A guardar...",
+        "submit_create": "Criar Encomenda",
+        "submit_edit": "Guardar Encomenda",
+        "confirm_create": "Tem a certeza que deseja criar esta encomenda?",
+        "confirm_edit": "Tem a certeza que deseja guardar as alterações da encomenda?",
+        "confirm_stock_override": "Tem a certeza que deseja criar a encomenda à mesma?",
+        "error_no_products": "Por favor, selecione pelo menos um produto.",
+        "error_no_campus": "Por favor, selecione o campus.",
+        "error_no_user": "Por favor, selecione um utilizador.",
+        "error_create": "Falha ao criar encomenda",
+        "error_update": "Falha ao atualizar encomenda"
+    },
+
+    "date_filter": {
+        "title": "Data",
+        "until": "Até data",
+        "range": "Intervalo",
+        "days": ["D", "S", "T", "Q", "Q", "S", "S"]
+    },
+
+    "mobile_filters_drawer": {
+        "title": "Filtros",
+        "close_label": "Close filters",
+        "date_section": "Data",
+        "until": "Até data",
+        "range": "Intervalo",
+        "days": ["D", "S", "T", "Q", "Q", "S", "S"],
+        "products_section": "Produtos",
+        "campus_section": "Campus",
+        "status_section": "Estado",
+        "clear_all": "Limpar Tudo",
+        "apply": "Aplicar"
+    },
+    
+    "departments_management": { 
+        "teams": "Equipas",
+        "title": "Gestão de Departamentos",
+        "teams_management": "Gestão de Equipas",
+        "bodies_management": "Gestão dos Órgãos Administrativos",
+        "edit_about_us": "Editar Página Sobre Nós"
     },
 
     "admin": {
-        "about_us_editor": {
-            "title": "Pré-visualização da página Sobre Nós",
-            "no_members": "Sem membro"
+        "users_management":{
+            "title": "Visualização de Utilizadores",
+            "search_placeholder": "Pesquisar por nome, ISTID, email, cargo ou departamento...",
+            "empty": "Nenhum utilizador encontrado.",
+            "photo_alt": "Foto de",
+            "email_label": "Email",
+            "phone_label": "Telefone",
+            "courses_label": "Cursos",
+            "teams_label": "Equipas/Órgãos"
         },
-        "add_department": {
-            "add_team_btn": "Adicionar Nova Equipa",
-            "add_body_btn": "Adicionar Novo Órgão",
+
+        "teams_management": {
+            "title": "Gestão de Equipas",
+            "section_title": "Equipas Existentes",
+            "search_placeholder": "Pesquisar equipa...",
+            "active": "Ativos",
+            "show_inactive": "Mostrar Inativos",
+            "empty": "Nenhuma equipa encontrada.",
+            "inactive_badge": "Inativo",
+            "deactivate_title": "Desativar equipa",
+            "deactivate": "Desativar"
+        },
+
+        "roles_management": {
+            "title": "Gestão de Cargos",
+            "existing_roles_title": "Cargos Existentes",
+            "all": "Todos",
+            "search_placeholder": "Pesquisar cargo, nível de acesso ou departamento...",
+            "active": "Ativos",
+            "show_inactive": "Mostrar Inativos",
+            "empty_all": "Nenhum cargo encontrado.",
+            "empty_select": "Selecione um departamento para ver os cargos.",
+            "active_badge": "Ativo",
+            "inactive_badge": "Inativo",
+            "remove": "Remover",
+            "add_role_title": "Adicionar Novo Cargo",
+            "role_name_placeholder": "Nome do Cargo",
+            "adding": "A adicionar...",
+            "add_role": "Adicionar Cargo",
+            "confirm_remove": "Tem a certeza que quer remover o cargo \"{role}\" do departamento \"{department}\"?",
+            "access": {
+                "guest": "Normal",
+                "member": "Membro",
+                "shop_manager": "Gestor de Loja",
+                "coordinator": "Coordenador",
+                "admin": "Administrador"
+            },
+            "errors": {
+                "add_role": "Erro ao adicionar cargo",
+                "remove_role": "Erro ao remover cargo"
+            }
+        },
+
+        "add_department_modal": {
+            "add_team_button": "Adicionar Nova Equipa",
+            "add_body_button": "Adicionar Novo Órgão",
             "new_team_title": "Nova Equipa",
             "new_body_title": "Novo Órgão Administrativo",
             "team_name_placeholder": "Nome da equipa",
@@ -63,21 +707,26 @@
             "remove": "Remover",
             "back": "Voltar",
             "creating": "A criar...",
-            "create_dept": "Criar Departamento",
-            "role_name_placeholder": "Nome do Cargo",
-            "add_role_btn": "Adicionar Cargo",
-            "error_create_dept": "Erro ao criar departamento",
-            "error_create_role": "Erro ao criar cargo",
-            "error_generic": "Erro ao criar departamento ou cargos",
-            "access_guest": "Normal",
-            "access_member": "Membro",
-            "access_coordinator": "Coordenador",
-            "access_admin": "Administrador"
+            "create_department": "Criar Departamento",
+            "errors": {
+                "create_department": "Erro ao criar departamento",
+                "create_role": "Erro ao criar cargo",
+                "create_department_or_roles": "Erro ao criar departamento ou cargos"
+            },
+            "role_form": {
+                "role_name_placeholder": "Nome do Cargo",
+                "add_role": "Adicionar Cargo",
+                "access": {
+                    "guest": "Normal",
+                    "member": "Membro",
+                    "coordinator": "Coordenador",
+                    "admin": "Administrador"
+                }
+            }
         },
-        "admin_bodies_manager": {
-            "title": "Gestão dos Órgãos Administrativos"
-        },
-        "admin_bodies_filter": {
+
+        "bodies_management": {
+            "title": "Gestão dos Órgãos Administrativos",
             "section_title": "Órgãos Administrativos Existentes",
             "search_placeholder": "Pesquisar órgão administrativo...",
             "active": "Ativos",
@@ -87,96 +736,169 @@
             "deactivate_title": "Desativar órgão",
             "deactivate": "Desativar"
         },
-        "membership_manager": {
-            "title": "Gestão de Membros"
-        },
-        "membership_list": {
-            "add_title": "Adicionar Novo Membro",
+
+        "memberships_management": {
+            "title": "Gestão de Membros",
+            "add_member_title": "Adicionar Novo Membro",
             "select_user": "Selecione um utilizador",
             "select_department": "Selecione um departamento",
             "select_role": "Selecione um cargo",
             "adding": "A adicionar...",
-            "add_btn": "Adicionar Membro",
-            "error_add": "Erro ao adicionar membro",
-            "error_remove": "Erro ao remover membro",
-            "existing_title": "Membros Existentes",
+            "add_member": "Adicionar Membro",
+            "existing_members_title": "Membros Existentes",
             "search_placeholder": "Pesquisar por nome, ISTID, email, departamento ou cargo...",
             "active": "Ativos",
             "show_inactive": "Mostrar Inativos",
             "empty": "Nenhum membro encontrado.",
-            "department": "Departamento",
-            "role": "Cargo",
-            "email": "Email",
-            "since": "Desde",
-            "until": "Até",
-            "status_active": "Ativo",
-            "status_inactive": "Inativo",
-            "remove": "Remover",
             "change_photo": "Clique para alterar a foto",
             "change_photo_inactive": "Só pode alterar fotos de membros ativos",
-            "confirm_remove": "Tem a certeza que quer remover este membro?"
-        },
-        "roles_manager": {
-            "title": "Gestão de Cargos"
-        },
-        "roles_filter": {
-            "existing_title": "Cargos Existentes",
-            "all": "Todos",
-            "search_placeholder": "Pesquisar cargo, nível de acesso ou departamento...",
-            "active": "Ativos",
-            "show_inactive": "Mostrar Inativos",
-            "empty_all": "Nenhum cargo encontrado.",
-            "empty_select": "Selecione um departamento para ver os cargos.",
-            "status_active": "Ativo",
-            "status_inactive": "Inativo",
-            "remove": "Remover",
-            "add_title": "Adicionar Novo Cargo",
-            "role_name_placeholder": "Nome do Cargo",
-            "adding": "A adicionar...",
-            "add_btn": "Adicionar Cargo",
-            "error_add": "Erro ao adicionar cargo",
-            "error_remove": "Erro ao remover cargo",
-            "access_guest": "Normal",
-            "access_member": "Membro",
-            "access_shop_manager": "Gestor de Loja",
-            "access_coordinator": "Coordenador",
-            "access_admin": "Administrador",
-            "confirm_remove": "Tem a certeza que quer remover o cargo \"{role}\" do departamento \"{department}\"?"
-        },
-        "team_manager": {
-            "title": "Gestão de Equipas"
-        },
-        "teams_filter": {
-            "section_title": "Equipas Existentes",
-            "search_placeholder": "Pesquisar equipa...",
-            "active": "Ativos",
-            "show_inactive": "Mostrar Inativos",
-            "empty": "Nenhuma equipa encontrada.",
+            "department_label": "Departamento",
+            "role_label": "Cargo:",
+            "email_label": "Email:",
+            "since_label": "Desde:",
+            "until_label": "Até:",
+            "active_badge": "Ativo",
             "inactive_badge": "Inativo",
-            "deactivate_title": "Desativar equipa",
-            "deactivate": "Desativar"
-        },
-        "users_manager": {
-            "title": "Visualização de Utilizadores"
-        },
-        "users_filter": {
-            "search_placeholder": "Pesquisar por nome, ISTID, email, cargo ou departamento...",
-            "empty": "Nenhum utilizador encontrado.",
-            "email": "Email",
-            "phone": "Telefone",
-            "courses": "Cursos",
-            "teams_bodies": "Equipas/Órgãos",
-            "photo_alt": "Foto de {name}"
-        },
-
-    "homepage": {
-        "activities": {
-            "title": "Atividades",
-            "empty": "Sem atividades disponíveis."
+            "remove": "Remover",
+            "confirm_remove": "Tem a certeza que quer remover este membro?",
+            "errors": {
+                "add_member": "Erro ao adicionar membro",
+                "remove_member": "Erro ao remover membro"
+            }
         }
-
-    }
-
+    },
     
+    "shop_management": {
+        "title": "Gestão da Loja",
+        "pos_link": "Gestão POS",
+        "add_product": "Adicionar Produto",
+        "search_placeholder": "Pesquisar produto...",
+        "all_categories": "Todas categorias",
+        "no_image": "Nenhuma imagem",
+        "view_image": "Ver imagem {idx}",
+        "limited": "Limitado",
+        "on_demand": "Sob Encomenda",
+        "in_stock": "{count} em stock",
+        "edit": "Editar",
+        "remove": "Remover",
+        "confirm_remove": "Tem a certeza que deseja remover este produto?"
+    },
+
+    "order_details": {
+        "close_label": "Fechar",
+        "order_title": "Encomenda",
+        "not_found": "Encomenda não encontrada.",
+        "col_name": "Nome",
+        "col_ist_id": "IST ID",
+        "col_campus": "Campus",
+        "col_email": "Email",
+        "col_phone": "Telefone",
+        "items_title": "Itens da Encomenda",
+        "edit_items_label": "Editar itens da encomenda",
+        "col_product": "Produto",
+        "col_variant": "Variante",
+        "col_qty": "Qtd",
+        "col_price": "Preço",
+        "col_total": "Total",
+        "add_notes": "Adicionar notas",
+        "total_label": "Total: {amount}€",
+        "notes_title": "Notas",
+        "status_title": "Estado",
+        "pay_btn": "Pagar",
+        "mark_ready": "Marcar como Pronto",
+        "mark_delivered": "Marcar como Entregue",
+        "cancel_order": "Cancelar Encomenda",
+        "created_by": "Criada por {by} em {date}",
+        "payment_verified_by": "Pagamento verificado por {by} em {date}",
+        "pickup_deadline": "Prazo limite para levantamento em {date}",
+        "delivered_by": "Entregue por {by} em {date}",
+        "step_pending": "Pendente",
+        "step_paid": "Pago",
+        "step_ready": "Pronto",
+        "step_delivered": "Entregue",
+        "confirm_cancel": "Tem a certeza que quer cancelar esta encomenda?",
+        "confirm_status": "Tem a certeza que quer marcar como {status}?",
+        "confirm_save_notes": "As notas foram alteradas. Deseja guardar as alterações?",
+        "error_update_status": "Erro ao atualizar estado.",
+        "error_cancel": "Erro ao cancelar encomenda.",
+        "error_save_notes": "Erro ao guardar notas.",
+        "pickup_toast": "Prazo limite de levantamento: {date}"
+    },
+
+    "pos_payment": {
+        "close_label": "Fechar",
+        "title": "Pagar Encomenda {number}",
+        "method_label": "Método de pagamento",
+        "method_cash": "Dinheiro",
+        "method_other": "Outro",
+        "method_sumup_tpa": "SumUp TPA",
+        "method_sumup": "SumUp Online",
+        "method_apple_pay": "Apple Pay",
+        "method_in_person": "Presencial",
+        "reference_label": "Referência de pagamento",
+        "reference_placeholder": "IBAN / MB Way / tx id",
+        "reader_label": "Leitor SumUp",
+        "loading_readers": "A carregar leitores…",
+        "select_reader": "Seleciona um leitor",
+        "cancel": "Cancelar",
+        "confirm_btn": "Confirmar {method}",
+        "success_title": "Encomenda Registada!",
+        "processing_terminal_title": "A processar no terminal",
+        "processing_payment_title": "A processar pagamento",
+        "success_subtitle": "A tua encomenda foi registada. Pagamento confirmado com sucesso.",
+        "awaiting_subtitle": "A aguardar confirmação...",
+        "view_orders": "Ver Encomendas",
+        "error_load_readers": "Falha ao carregar leitores",
+        "error_update_order": "Falha ao atualizar encomenda",
+        "error_mark_paid": "Falha ao marcar encomenda como paga",
+        "awaiting_terminal": "A aguardar confirmação do terminal...",
+        "select_reader_error": "Seleciona um leitor SumUp para continuar.",
+        "starting_payment": "A iniciar pagamento no terminal...",
+        "checkout_started": "Checkout já iniciado no terminal. A aguardar confirmação...",
+        "payment_initiated_toast": "Pagamento iniciado no terminal. A confirmação pode demorar alguns segundos.",
+        "failed_terminal": "Falha ao iniciar no terminal.",
+        "payment_sent": "Pagamento enviado para o terminal. A aguardar confirmação...",
+        "processing_payment": "A processar pagamento...",
+        "fill_reference": "Preenche a referência de pagamento (IBAN / MB Way Pessoal).",
+        "payment_confirmed": "Pagamento confirmado com sucesso.",
+        "error_payment": "Falha ao processar pagamento.",
+        "confirm_cash": "Confirmas que recebeste o pagamento em dinheiro e está correto?",
+        "confirm_reference": "Confirmas que recebeste o pagamento da referência \"{reference}\" e está correto?"
+    },
+
+    "coordinator_management": {
+        "title": "Gestão da Equipa",
+        "add_member_title": "Adicionar Novo Membro",
+        "select_user": "Selecione um utilizador",
+        "select_role": "Selecione um cargo",
+        "add_member": "Adicionar Membro",
+        "existing_members_title": "Membros Existentes",
+        "empty": "Nenhum membro encontrado.",
+        "active_badge": "Ativo",
+        "since_label": "Desde: {date}",
+        "remove": "Remover",
+        "confirm_remove": "Tem a certeza que quer remover este membro?",
+        "errors": {
+            "fetch_members": "Erro ao atualizar membros.",
+            "add_member": "Erro ao adicionar membro.",
+            "remove_member": "Erro ao remover membro."
+        }
+    },
+
+    "my_orders": {
+        "title_letters": ["As mi", "nhas en", "come", "ndas"],
+        "search_placeholder": "Procurar número, produto, estado ou data...",
+        "search_aria_label": "Pesquisar encomendas",
+        "deadline_banner": "Atenção: tens pelo menos uma encomenda com prazo de levantamento próximo.",
+        "delivered_on": "Entregue em {date}",
+        "order_aria_label": "Ver encomenda {number}",
+        "empty": "Nenhuma encomenda encontrada.",
+        "status": {
+            "pending": "Pendente",
+            "paid": "Pago",
+            "ready": "Pronto",
+            "delivered": "Entregue",
+            "cancelled": "Cancelado"
+        }
     }
 }

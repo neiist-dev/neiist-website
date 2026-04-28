@@ -21,6 +21,48 @@ interface ProductFormProps {
   isEdit?: boolean;
   onBack: () => void;
   categories: Category[];
+  locale: string;
+  dict: {
+    unknown_error: string;
+    edit: string;
+    add_product: string;
+    back_button: string;
+    images_label: string;
+    no_image: string;
+    upload_image_label: string;
+    product_name_placeholder: string;
+    product_price_placeholder: string;
+    product_description_placeholder: string;
+    choose_categories: string;
+    new_category_placeholder: string;
+    add_category_button: string;
+    limited_stock: string;
+    on_demand_stock: string;
+    product_quantity_placeholder: string;
+    limit_date_placeholder: string;
+    option_types: string;
+    option_placeholder: string;
+    variants_label: string;
+    no_variants: string;
+    extra_price: string;
+    stock_placeholder: string;
+    upload: string;
+    saving: string;
+    save_changes: string;
+    create_product: string;
+    error_create_category: string;
+    error_create_category2: string;
+    error_name_missing: string;
+    error_category_missing: string;
+    error_variant1: string;
+    error_variant2: string;
+    error_color1: string;
+    error_color2: string;
+    error_saving_product: string;
+    error: string;
+    default_option_color: string;
+    default_option_size: string;
+  };
 }
 
 type VariantForm = {
@@ -38,6 +80,8 @@ export default function ProductForm({
   isEdit = false,
   onBack,
   categories,
+  dict,
+  locale
 }: ProductFormProps) {
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
@@ -62,7 +106,7 @@ export default function ProductForm({
   const [optionTypes, setOptionTypes] = useState<string[]>(
     product?.variants?.length
       ? [...new Set(product.variants.flatMap((v) => Object.keys(v.options || {})))]
-      : ["Cor", "Tamanho"]
+      : [dict.default_option_color, dict.default_option_size]
   );
 
   const [variants, setVariants] = useState<VariantForm[]>(
@@ -136,12 +180,12 @@ export default function ProductForm({
       } else {
         const errorData = await response.json();
         // TODO: (ERROR)
-        setError("Erro ao criar categoria: " + (errorData.message || errorData.error));
+        setError(dict.error_create_category + (errorData.message || errorData.error));
       }
     } catch (error) {
       console.error("Category creation error:", error);
       // TODO: (ERROR)
-      setError("Erro ao criar categoria");
+      setError(dict.error_create_category2);
     }
   };
 
@@ -230,12 +274,12 @@ export default function ProductForm({
 
     if (!name.trim()) {
       // TODO: (ERROR)
-      setError("Nome é obrigatório");
+      setError(dict.error_name_missing);
       return;
     }
     if (!category) {
       // TODO: (ERROR)
-      setError("Categoria é obrigatória");
+      setError(dict.error_category_missing);
       return;
     }
     for (const variant of variants) {
@@ -243,7 +287,7 @@ export default function ProductForm({
         const val = (variant.options[optionType] || "").trim();
         if (!val) {
           // TODO: (ERROR)
-          setError(`Variante deve ter "${optionType}" preenchido`);
+          setError(`${dict.error_variant1} "${optionType}" ${dict.error_variant2}`);
           return;
         }
         if (isColorKey(optionType)) {
@@ -251,7 +295,7 @@ export default function ProductForm({
           if (!hex) {
             // TODO: (ERROR)
             setError(
-              `Opção de cor "${optionType}" precisa de um valor com hex (ex: Verde - #2C4A52)`
+              `${dict.error_color1} "${optionType}" ${dict.error_color2}`
             );
             return;
           }
@@ -325,11 +369,11 @@ export default function ProductForm({
       } else {
         const errorData = await response.json();
         // TODO: (ERROR)
-        setError("Erro: " + (errorData.message || errorData.error || "Erro desconhecido"));
+        setError(dict.error + (errorData.message || errorData.error || dict.unknown_error));
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao guardar produto");
+      setError(dict.error_saving_product);
     } finally {
       setUploading(false);
     }
@@ -338,16 +382,16 @@ export default function ProductForm({
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <button type="button" className={styles.backButton} onClick={onBack}>
-        <FaArrowLeft /> Voltar
+        <FaArrowLeft /> {dict.back_button}
       </button>
 
-      <h1 className={styles.title}>{isEdit ? `Editar ${name}` : "Adicionar Produto"}</h1>
+      <h1 className={styles.title}>{isEdit ? `${dict.edit} ${name}` : dict.add_product}</h1>
 
       {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
       {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.section}>
-        <label className={styles.label}>Imagens</label>
+        <label className={styles.label}>{dict.images_label}</label>
         <div className={styles.imageArea}>
           {allImages.length > 0 ? (
             <div className={styles.imagePreview}>
@@ -378,12 +422,12 @@ export default function ProductForm({
               )}
             </div>
           ) : (
-            <div className={styles.noImage}>Nenhuma imagem</div>
+            <div className={styles.noImage}>{dict.no_image}</div>
           )}
         </div>
 
         <label className={styles.button}>
-          <FaUpload /> Upload Imagem
+          <FaUpload /> {dict.upload_image_label}
           <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
         </label>
 
@@ -412,7 +456,7 @@ export default function ProductForm({
           className={styles.field}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nome do produto"
+          placeholder={dict.product_name_placeholder}
           required
         />
 
@@ -424,7 +468,7 @@ export default function ProductForm({
             onChange={(e) => setPrice(Number(e.target.value))}
             step="0.01"
             min="0"
-            placeholder="Preço"
+            placeholder={dict.product_price_placeholder}
             required
           />
           <span>€</span>
@@ -434,7 +478,7 @@ export default function ProductForm({
           className={styles.field}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descrição"
+          placeholder={dict.product_description_placeholder}
           rows={3}
         />
 
@@ -443,7 +487,7 @@ export default function ProductForm({
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required>
-          <option value="">Escolha categoria</option>
+          <option value="">{dict.choose_categories}</option>
           {allCategories.map((cat) => (
             <option key={cat.id || cat.name} value={cat.name}>
               {cat.name}
@@ -456,10 +500,10 @@ export default function ProductForm({
             className={styles.field}
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            placeholder="Nova categoria"
+            placeholder={dict.new_category_placeholder}
           />
           <button type="button" className={styles.button} onClick={handleAddCategory}>
-            Adicionar
+            {dict.add_category_button}
           </button>
         </div>
 
@@ -467,8 +511,8 @@ export default function ProductForm({
           className={styles.field}
           value={stockType}
           onChange={(e) => setStockType(e.target.value as "limited" | "on_demand")}>
-          <option value="limited">Stock Limitado</option>
-          <option value="on_demand">Sob Encomenda</option>
+          <option value="limited">{dict.limited_stock}</option>
+          <option value="on_demand">{dict.on_demand_stock}</option>
         </select>
 
         {stockType === "limited" && variants.length === 0 && (
@@ -477,7 +521,7 @@ export default function ProductForm({
             type="number"
             value={stockQuantity}
             onChange={(e) => setStockQuantity(Number(e.target.value))}
-            placeholder="Quantidade em stock"
+            placeholder={dict.product_quantity_placeholder}
             min="0"
           />
         )}
@@ -485,8 +529,8 @@ export default function ProductForm({
           <input
             ref={inputRef}
             type="text"
-            value={orderDeadline ? orderDeadline.toLocaleString("pt-PT") : ""}
-            placeholder="Data limite encomenda"
+            value={orderDeadline ? orderDeadline.toLocaleString(locale) : ""}
+            placeholder={dict.limit_date_placeholder}
             readOnly
             onClick={() => setShowDatePicker(true)}
             className={styles.field}
@@ -508,7 +552,7 @@ export default function ProductForm({
           )}
         </div>
         <div>
-          <label className={styles.label}>Tipos de Opção</label>
+          <label className={styles.label}>{dict.option_types}</label>
           <div className={styles.row}>
             {optionTypes.map((type, idx) => (
               <div key={idx} style={{ display: "flex", gap: "0.5rem" }}>
@@ -517,7 +561,7 @@ export default function ProductForm({
                   style={{ width: 120 }}
                   value={type}
                   onChange={(e) => updateOptionType(idx, e.target.value)}
-                  placeholder={`Opção ${idx + 1}`}
+                  placeholder={`${dict.option_placeholder} ${idx + 1}`}
                 />
                 {optionTypes.length > 1 && (
                   <button
@@ -536,13 +580,13 @@ export default function ProductForm({
         </div>
         <div>
           <div className={styles.row}>
-            <label className={styles.label}>Variantes</label>
+            <label className={styles.label}>{dict.variants_label}</label>
             <button type="button" className={styles.addButton} onClick={addVariant}>
               <FaPlus />
             </button>
           </div>
 
-          {variants.length === 0 && <div className={styles.noVarients}>Sem variantes</div>}
+          {variants.length === 0 && <div className={styles.noVarients}>{dict.no_variants}</div>}
 
           {variants.map((variant, i) => (
             <div
@@ -601,7 +645,7 @@ export default function ProductForm({
                 value={variant.price_modifier}
                 onChange={(e) => updateVariant(i, { price_modifier: Number(e.target.value) })}
                 step="0.01"
-                placeholder="Preço extra"
+                placeholder={dict.extra_price}
               />
 
               <input
@@ -611,7 +655,7 @@ export default function ProductForm({
                 value={variant.stock_quantity}
                 onChange={(e) => updateVariant(i, { stock_quantity: Number(e.target.value) })}
                 min="0"
-                placeholder="Stock"
+                placeholder={dict.stock_placeholder}
               />
 
               <input
@@ -650,7 +694,7 @@ export default function ProductForm({
                     </span>
                   ))}
                   {variant.newImages.map((upload, idx) => (
-                    <span key={`upload-${idx}`} className={styles.thumbItem}>
+                    <span key={`${dict.upload} ${idx}`} className={styles.thumbItem}>
                       <Image
                         src={upload.preview}
                         alt=""
@@ -687,7 +731,7 @@ export default function ProductForm({
       </div>
 
       <button type="submit" className={styles.button} disabled={uploading}>
-        {uploading ? "A guardar..." : isEdit ? "Guardar Alterações" : "Criar Produto"}
+        {uploading ? dict.saving : isEdit ? dict.save_changes : dict.create_product}
       </button>
     </form>
   );

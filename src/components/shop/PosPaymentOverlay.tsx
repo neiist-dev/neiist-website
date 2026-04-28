@@ -10,6 +10,47 @@ import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import styles from "@/styles/components/shop/PosPaymentOverlay.module.css";
 
+export interface PosPaymentDict {
+  close_label: string;
+  title: string;
+  method_label: string;
+  method_cash: string;
+  method_other: string;
+  method_sumup_tpa: string;
+  method_sumup: string;
+  method_apple_pay: string;
+  method_in_person: string;
+  reference_label: string;
+  reference_placeholder: string;
+  reader_label: string;
+  loading_readers: string;
+  select_reader: string;
+  cancel: string;
+  confirm_btn: string;
+  success_title: string;
+  processing_terminal_title: string;
+  processing_payment_title: string;
+  success_subtitle: string;
+  awaiting_subtitle: string;
+  view_orders: string;
+  error_load_readers: string;
+  error_update_order: string;
+  error_mark_paid: string;
+  awaiting_terminal: string;
+  select_reader_error: string;
+  starting_payment: string;
+  checkout_started: string;
+  payment_initiated_toast: string;
+  failed_terminal: string;
+  payment_sent: string;
+  processing_payment: string;
+  fill_reference: string;
+  payment_confirmed: string;
+  error_payment: string;
+  confirm_cash: string;
+  confirm_reference: string;
+}
+
 type Props = {
   open: boolean;
   order: Order;
@@ -21,23 +62,15 @@ type Props = {
   initialReaderId?: string;
   initialReaderName?: string;
   reopenOrderUrl?: string;
+  dict: {
+    pos_payment: PosPaymentDict;
+    confirm_dialog: { confirm: string; cancel: string };
+  };
 };
 
 type FlowState = "form" | "processing" | "success";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function methodLabel(method: PaymentMethod): string {
-  const labels: Record<PaymentMethod, string> = {
-    cash: "Dinheiro",
-    other: "Outro",
-    "sumup-tpa": "SumUp TPA",
-    sumup: "SumUp Online",
-    "apple-pay": "Apple Pay",
-    "in-person": "Presencial",
-  };
-  return labels[method];
-}
 
 export default function PosPaymentOverlay({
   open,
@@ -50,8 +83,10 @@ export default function PosPaymentOverlay({
   initialReaderId,
   initialReaderName,
   reopenOrderUrl,
+  dict,
 }: Props) {
   const router = useRouter();
+  const d = dict.pos_payment;
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(initialPaymentMethod ?? "cash");
   const [paymentReference, setPaymentReference] = useState("");
   const [readers, setReaders] = useState<SumUpReader[]>([]);
@@ -65,6 +100,18 @@ export default function PosPaymentOverlay({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const autoStartedRef = useRef(false);
   const confirmInFlightRef = useRef(false);
+
+  const methodLabel = (method: PaymentMethod): string => {
+    const labels: Record<PaymentMethod, string> = {
+      cash: d.method_cash,
+      other: d.method_other,
+      "sumup-tpa": d.method_sumup_tpa,
+      sumup: d.method_sumup,
+      "apple-pay": d.method_apple_pay,
+      "in-person": d.method_in_person,
+    };
+    return labels[method];
+  };
 
   const selectedReaderName = useMemo(
     () =>
@@ -100,9 +147,9 @@ export default function PosPaymentOverlay({
           setSelectedReaderId("");
         }
       })
-      .catch((error) => setError(error.message || "Falha ao carregar leitores"))
+      .catch((error) => setError(error.message || d.error_load_readers))
       .finally(() => setReadersLoading(false));
-  }, [open, paymentMethod, initialReaderId]);
+  }, [open, paymentMethod, initialReaderId, d.error_load_readers]);
 
   useEffect(() => {
     if (!open) return;
@@ -145,12 +192,12 @@ export default function PosPaymentOverlay({
       const data = (await res.json().catch(() => null)) as { error?: string } | Order | null;
       if (!res.ok || !data || !("id" in data))
         throw new Error(
-          (data as { error?: string } | null)?.error || "Falha ao atualizar encomenda"
+          (data as { error?: string } | null)?.error || d.error_update_order
         );
 
       return data;
     },
-    [order.id]
+    [order.id, d.error_update_order]
   );
 
   const markOrderAsPaid = useCallback(async (): Promise<Order> => {
@@ -163,11 +210,11 @@ export default function PosPaymentOverlay({
     const data = (await res.json().catch(() => null)) as { error?: string } | Order | null;
     if (!res.ok || !data || !("id" in data))
       throw new Error(
-        (data as { error?: string } | null)?.error || "Falha ao marcar encomenda como paga"
+        (data as { error?: string } | null)?.error || d.error_mark_paid
       );
 
     return data;
-  }, [order.id]);
+  }, [order.id, d.error_mark_paid]);
 
   const pollReaderTransactionPaid = useCallback(
     async (
@@ -197,7 +244,7 @@ export default function PosPaymentOverlay({
         setStatusMessage(
           txData?.status
             ? `Leitor ${selectedReaderName}: ${String(txData.status).toLowerCase()}`
-            : "A aguardar confirmação do terminal..."
+            : d.awaiting_terminal
         );
 
         await sleep(2500);
@@ -205,13 +252,13 @@ export default function PosPaymentOverlay({
 
       return { paid: false, transactionCode: null };
     },
-    [refreshOrder, selectedReaderName]
+    [refreshOrder, selectedReaderName, d.awaiting_terminal]
   );
 
   const runTpaFlow = useCallback(async (): Promise<Order | null> => {
-    if (!selectedReaderId) throw new Error("Seleciona um leitor SumUp para continuar.");
+    if (!selectedReaderId) throw new Error(d.select_reader_error);
 
-    setStatusMessage("A iniciar pagamento no terminal...");
+    setStatusMessage(d.starting_payment);
 
     const createRes = await fetch(
       `/api/shop/sumup/readers/${encodeURIComponent(selectedReaderId)}/checkout`,
@@ -237,7 +284,7 @@ export default function PosPaymentOverlay({
             : "";
 
         if (existingClientTransactionId) {
-          setStatusMessage("Checkout já iniciado no terminal. A aguardar confirmação...");
+          setStatusMessage(d.checkout_started);
           const pollResult = await pollReaderTransactionPaid(existingClientTransactionId);
 
           if (pollResult.paid) {
@@ -254,16 +301,16 @@ export default function PosPaymentOverlay({
             payment_method: "sumup-tpa",
             payment_reference: existingClientTransactionId,
           });
-          toast.info("Pagamento iniciado no terminal. A confirmação pode demorar alguns segundos.");
+          toast.info(d.payment_initiated_toast);
           return pending;
         }
       }
 
-      const apiError = createData?.error || "Falha ao iniciar no terminal.";
+      const apiError = createData?.error || d.failed_terminal;
       throw new Error(apiError);
     }
 
-    setStatusMessage("Pagamento enviado para o terminal. A aguardar confirmação...");
+    setStatusMessage(d.payment_sent);
     const pollResult = await pollReaderTransactionPaid(createData.clientTransactionId);
 
     if (pollResult.paid) {
@@ -280,7 +327,7 @@ export default function PosPaymentOverlay({
       payment_method: "sumup-tpa",
       payment_reference: createData.clientTransactionId,
     });
-    toast.info("Pagamento iniciado no terminal. A confirmação pode demorar alguns segundos.");
+    toast.info(d.payment_initiated_toast);
     return pending;
   }, [
     selectedReaderId,
@@ -289,6 +336,7 @@ export default function PosPaymentOverlay({
     pollReaderTransactionPaid,
     updateOrderFields,
     markOrderAsPaid,
+    d,
   ]);
 
   const handleConfirm = useCallback(async () => {
@@ -298,7 +346,7 @@ export default function PosPaymentOverlay({
     setError(null);
     setIsSubmitting(true);
     setFlowState("processing");
-    setStatusMessage("A processar pagamento...");
+    setStatusMessage(d.processing_payment);
     let succeeded = false;
 
     try {
@@ -309,7 +357,7 @@ export default function PosPaymentOverlay({
         updated = await markOrderAsPaid();
       } else if (paymentMethod === "other") {
         if (!paymentReference.trim())
-          throw new Error("Preenche a referência de pagamento (IBAN / MB Way Pessoal).");
+          throw new Error(d.fill_reference);
 
         await updateOrderFields({
           payment_method: "other",
@@ -323,7 +371,7 @@ export default function PosPaymentOverlay({
       if (updated) {
         if (["paid", "ready", "delivered"].includes(updated.status)) {
           setCompletedOrder(updated);
-          setStatusMessage("Pagamento confirmado com sucesso.");
+          setStatusMessage(d.payment_confirmed);
           setFlowState("success");
           succeeded = true;
         } else {
@@ -334,7 +382,7 @@ export default function PosPaymentOverlay({
         setFlowState("form");
       }
     } catch (error) {
-      setError((error as Error).message || "Falha ao processar pagamento.");
+      setError((error as Error).message || d.error_payment);
       setFlowState("form");
     } finally {
       setIsSubmitting(false);
@@ -349,6 +397,7 @@ export default function PosPaymentOverlay({
     runTpaFlow,
     onOrderUpdatedAction,
     onCloseAction,
+    d,
   ]);
 
   useEffect(() => {
@@ -384,8 +433,8 @@ export default function PosPaymentOverlay({
   const paymentNeedsConfirmation = paymentMethod === "cash" || paymentMethod === "other";
   const confirmationMessage =
     paymentMethod === "cash"
-      ? "Confirmas que recebeste o pagamento em dinheiro e está correto?"
-      : `Confirmas que recebeste o pagamento da referência "${paymentReference.trim() || "-"}" e está correto?`;
+      ? d.confirm_cash
+      : d.confirm_reference.replace("{reference}", paymentReference.trim() || "-");
 
   if (flowState === "processing" || flowState === "success") {
     return (
@@ -394,18 +443,18 @@ export default function PosPaymentOverlay({
           flowState={flowState === "success" ? "success" : "processing"}
           title={
             flowState === "success"
-              ? "Encomenda Registada!"
+              ? d.success_title
               : paymentMethod === "sumup-tpa"
-                ? "A processar no terminal"
-                : "A processar pagamento"
+                ? d.processing_terminal_title
+                : d.processing_payment_title
           }
           subtitle={
             flowState === "success"
-              ? "A tua encomenda foi registada. Pagamento confirmado com sucesso."
-              : statusMessage || "A aguardar confirmação..."
+              ? d.success_subtitle
+              : statusMessage || d.awaiting_subtitle
           }
           size={flowState === "success" ? 56 : 48}
-          actionLabel={flowState === "success" ? "Ver Encomendas" : undefined}
+          actionLabel={flowState === "success" ? d.view_orders : undefined}
           onAction={flowState === "success" ? finalizeSuccess : undefined}
         />
       </div>
@@ -421,16 +470,16 @@ export default function PosPaymentOverlay({
           className={styles.closeButton}
           type="button"
           onClick={onCloseAction}
-          aria-label="Fechar">
+          aria-label={d.close_label}>
           <MdClose size={20} />
         </button>
 
-        <h3 className={styles.title}>Pagar Encomenda {order.order_number}</h3>
+        <h3 className={styles.title}>{d.title.replace("{number}", order.order_number)}</h3>
 
         {error ? <div className={styles.error}>{error}</div> : null}
 
         <label className={styles.label}>
-          Método de pagamento
+          {d.method_label}
           <select
             className={styles.input}
             value={paymentMethod}
@@ -444,11 +493,11 @@ export default function PosPaymentOverlay({
 
         {paymentMethod === "other" ? (
           <label className={styles.label}>
-            Referência de pagamento
+            {d.reference_label}
             <input
               className={styles.input}
               type="text"
-              placeholder="IBAN / MB Way / tx id"
+              placeholder={d.reference_placeholder}
               value={paymentReference}
               onChange={(e) => setPaymentReference(e.target.value)}
               disabled={isSubmitting}
@@ -459,10 +508,10 @@ export default function PosPaymentOverlay({
         {paymentMethod === "sumup-tpa" ? (
           <>
             <label className={styles.label} htmlFor="sumup-reader-select">
-              Leitor SumUp
+              {d.reader_label}
               {readersLoading ? (
                 <span style={{ fontSize: "0.95em", color: "#6b7280", marginLeft: 8 }}>
-                  A carregar leitores…
+                  {d.loading_readers}
                 </span>
               ) : null}
             </label>
@@ -472,7 +521,7 @@ export default function PosPaymentOverlay({
               value={selectedReaderId}
               onChange={(e) => setSelectedReaderId(e.target.value)}
               disabled={readersLoading || isSubmitting}>
-              <option value="">Seleciona um leitor</option>
+              <option value="">{d.select_reader}</option>
               {readers.map((reader: SumUpReader) => (
                 <option key={reader.id} value={reader.id}>
                   {reader.name || reader.id}
@@ -488,7 +537,7 @@ export default function PosPaymentOverlay({
             className={styles.cancelButton}
             onClick={onCloseAction}
             disabled={isSubmitting}>
-            Cancelar
+            {d.cancel}
           </button>
           <button
             type="button"
@@ -502,7 +551,7 @@ export default function PosPaymentOverlay({
               void handleConfirm();
             }}
             disabled={isSubmitting}>
-            Confirmar {methodLabel(paymentMethod)}
+            {d.confirm_btn.replace("{method}", methodLabel(paymentMethod))}
           </button>
         </div>
       </div>
@@ -515,6 +564,7 @@ export default function PosPaymentOverlay({
           void handleConfirm();
         }}
         onCancel={() => setShowConfirmDialog(false)}
+        dict={dict.confirm_dialog}
       />
     </div>
   );

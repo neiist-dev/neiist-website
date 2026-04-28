@@ -23,102 +23,103 @@ import assembly from "@/assets/events/assembly.jpg";
 import hashcode from "@/assets/events/hashcode.jpg";
 import lip from "@/assets/events/lip.jpg";
 
-const Events: Event[] = [
-  {
-    id: "1",
-    title: "Advent of Code",
-    description:
-      "O Advent Of Code é um evento que lança desafios diários de programação, desde o dia 1 de dezembro até ao Natal. Estes desafios podem ser resolvidos na linguagem de programação que preferires! Quem obtiver mais pontos no final do evento, ganha!",
-    image: aoc,
-  },
-  {
-    id: "2",
-    title: "Torneio de E-Sports",
-    description:
-      "Gostas de jogar? Que coincidência, este evento foi mesmo feito a pensar em ti! Reúne uma equipa e vem passar o dia connosco a jogar, comer e beber... e quem sabe ganhar um prémio ou outro!",
-    image: esports,
-  },
-  {
-    id: "3",
-    title: "Sweats EIC",
-    description:
-      "E o que achas de teres uma sweat com o nome do teu curso? Não te esqueças, o NEIIST dá-te a oportunidade de teres a sweat do melhor curso!",
-    image: sweats,
-  },
-  {
-    id: "4",
-    title: "Concurso de Layout de Sweats",
-    description:
-      "O Concurso de Layout de Sweats é a tua oportunidade de criar o layout oficial para a edição especial de cada ano. Se és estudante de EIC do IST podes submeter até 3 designs originais. Se ganhares a votação online, ganhas a sweat!",
-    image: layout,
-  },
-  {
-    id: "5",
-    title: "Churrasco EIC",
-    description:
-      "Mesmo que fosse uma semana de projetos ou exames, haveria sempre tempo para um convívio com amigos!",
-    image: churras,
-  },
-  {
-    id: "6",
-    title: "Jantar de Curso",
-    description:
-      "Muito stressado com o Técnico? Nós também, junta-te aos teus colegas no melhor jantar de curso!  A cerveja já está a tua espera…",
-    image: jantar_curso,
-  },
-  {
-    id: "7",
-    title: "Let's Talk about LEIC",
-    description:
-      "Acabaste de chegar ao curso e sentes-te perdido? Vem aprender connosco todos os truques para sobreviveres! Com este evento, junto dos alunos mais velhos, vais compreender como funciona LEIC e as suas disciplinas.",
-    image: ltal,
-  },
-  {
-    id: "8",
-    title: "(Quase) Tudo Sobre MEIC",
-    description:
-      "Vais entrar em MEIC? Se estás indeciso sobre quais áreas ou cadeiras escolher, vem assistir a estas sessões! Irão explicar-te tudo o que precisas saber sobre a estrutura do mestrado, o currículo, as diferentes áreas de especialização, a tese e muito mais.",
-    image: qtsm,
-  },
-  {
-    id: "9",
-    title: "Workshop de Python",
-    description:
-      "Estás preocupado com o projeto de FP ou queres aprender mais sobre Python? Vem a este workshop onde vamos falar das principais bases da programação e ensinar-te os primeiros passos essenciais para o mundo informático!",
-    image: python,
-  },
-  {
-    id: "10",
-    title: "Workshop Assembly",
-    description:
-      "Não sabes o que quer dizer MOV, ADD, CMP? Não sabes o que são registos e flags? Então junta-te a nós neste workshop onde te ensinamos as bases de Assembly que irão ser fundamentais em IAC!",
-    image: assembly,
-  },
-  {
-    id: "11",
-    title: "Workshop C",
-    description:
-      "Queres finalmente perceber o que é alocação de memória, o que são ponteiros, como funciona a pilha e muito mais? Junta-te a nós neste workshop e tira todas as tuas dúvidas!",
-    image: c,
-  },
-  {
-    id: "12",
-    title: "Hash Code",
-    description:
-      "Junta-te a nós na competição de código desenvolvida pela Google na qual o NEIIST organiza uma Hub onde todos os alunos do técnico são bem-vindos a integrar e participar.",
-    image: hashcode,
-  },
-  {
-    id: "13",
-    title: "Linux Install Party",
-    description:
-      "Vem instalar o Linux no teu PC, junto a alunos com experiência na área e na instalação dos vários flavors que o Linux tem para oferecer!",
-    image: lip,
-  },
-];
+interface ActivitiesProps {
+  dict: {
+    title: string;
+    no_events: string;
+    prev_label: string;
+    next_label: string;
+    events: {
+      [key : string]: {
+        title: string;
+        description: string;
+      };
+    };
+  };
+}
 
-function Activities() {
-  const [events] = useState<Event[]>(Events);
+function Activities({ dict }: ActivitiesProps) {
+  const events: Event[] = [
+    {
+      id: "1",
+      title: dict.events.aoc.title,
+      description: dict.events.aoc.description,
+      image: aoc,
+    },
+    {
+      id: "2",
+      title: dict.events.esports.title,
+      description: dict.events.esports.description,
+      image: esports,
+    },
+    {
+      id: "3",
+      title: dict.events.sweats.title,
+      description: dict.events.sweats.description,
+      image: sweats,
+    },
+    {
+      id: "4",
+      title: dict.events.layout.title,
+      description: dict.events.layout.description,
+      image: layout,
+    },
+    {
+      id: "5",
+      title: dict.events.churras.title,
+      description: dict.events.churras.description,
+      image: churras,
+    },
+    {
+      id: "6",
+      title: dict.events.jantar_curso.title,
+      description: dict.events.jantar_curso.description,
+      image: jantar_curso,
+    },
+    {
+      id: "7",
+      title: dict.events.ltal.title,
+      description: dict.events.ltal.description,
+      image: ltal,
+    },
+    {
+      id: "8",
+      title: dict.events.qtsm.title,
+      description: dict.events.qtsm.description,
+      image: qtsm,
+    },
+    {
+      id: "9",
+      title: dict.events.python.title,
+      description: dict.events.python.description,
+      image: python,
+    },
+    {
+      id: "10",
+      title: dict.events.assembly.title,
+      description: dict.events.assembly.description,
+      image: assembly,
+    },
+    {
+      id: "11",
+      title: dict.events.c.title,
+      description: dict.events.c.description,
+      image: c,
+    },
+    {
+      id: "12",
+      title: dict.events.hashcode.title,
+      description: dict.events.hashcode.description,
+      image: hashcode,
+    },
+    {
+      id: "13",
+      title: dict.events.lip.title,
+      description: dict.events.lip.description,
+      image: lip,
+    }
+  ];
+
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [showArrows, setShowArrows] = useState(false);
 
@@ -132,12 +133,13 @@ function Activities() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+
   return (
     <div className={styles.activities}>
-      <h1>Atividades</h1>
+      <h1>{dict.title}</h1>
       <div className={styles.container}>
         {events.length === 0 ? (
-          <div className={styles.noEvents}>Sem atividades disponíveis.</div>
+          <div className={styles.noEvents}>{dict.no_events}</div>
         ) : (
           <>
             {showArrows && (
@@ -145,13 +147,13 @@ function Activities() {
                 <button
                   className={`${styles.arrow} ${styles.left}`}
                   onClick={() => swiperInstance?.slidePrev()}
-                  aria-label="Previous">
+                  aria-label={dict.prev_label}>
                   <IoIosArrowBack size={40} />
                 </button>
                 <button
                   className={`${styles.arrow} ${styles.right}`}
                   onClick={() => swiperInstance?.slideNext()}
-                  aria-label="Next">
+                  aria-label={dict.next_label}>
                   <IoIosArrowForward size={40} />
                 </button>
               </>

@@ -7,11 +7,44 @@ interface Role {
   access: "guest" | "member" | "coordinator" | "admin";
 }
 
+interface AddDepartmentModalProps {
+  departmentType: "team" | "admin_body";
+  dict: {
+    add_team_button: string;
+    add_body_button: string;
+    new_team_title: string;
+    new_body_title: string;
+    team_name_placeholder: string;
+    body_name_placeholder: string;
+    team_desc_placeholder: string;
+    next: string;
+    add_roles_title: string;
+    remove: string;
+    back: string;
+    creating: string;
+    create_department: string;
+    errors: {
+      create_department: string;
+      create_role: string;
+      create_department_or_roles: string;
+    };
+    role_form: {
+      role_name_placeholder: string;
+      add_role: string;
+      access: {
+        guest: string;
+        member: string;
+        coordinator: string;
+        admin: string;
+      };
+    };
+  };
+}
+
 export default function AddDepartmentModal({
   departmentType,
-}: {
-  departmentType: "team" | "admin_body";
-}) {
+  dict
+}: AddDepartmentModalProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [deptName, setDeptName] = useState("");
@@ -43,7 +76,7 @@ export default function AddDepartmentModal({
       if (!depRes.ok) {
         const err = await depRes.json();
         // TODO: (ERROR)
-        setError(err.error || "Erro ao criar departamento");
+        setError(err.error || dict.errors.create_department);
         setLoading(false);
         return;
       }
@@ -60,7 +93,7 @@ export default function AddDepartmentModal({
         if (!roleRes.ok) {
           const err = await roleRes.json();
           // TODO: (ERROR)
-          setError(err.error || "Erro ao criar cargo");
+          setError(err.error || dict.errors.create_role);
           setLoading(false);
           return;
         }
@@ -70,7 +103,7 @@ export default function AddDepartmentModal({
       window.location.reload();
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao criar departamento ou cargos");
+      setError(dict.errors.create_department_or_roles);
       setLoading(false);
     }
   };
@@ -78,7 +111,7 @@ export default function AddDepartmentModal({
   return (
     <>
       <button className={styles.button} onClick={() => setOpen(true)}>
-        {departmentType === "team" ? "Adicionar Nova Equipa" : "Adicionar Novo Órgão"}
+        {departmentType === "team" ? dict.add_team_button : dict.add_body_button}
       </button>
       {open && (
         <div className={styles.overlay}>
@@ -88,7 +121,7 @@ export default function AddDepartmentModal({
             </button>
             {step === 1 && (
               <>
-                <h2>{departmentType === "team" ? "Nova Equipa" : "Novo Órgão Administrativo"}</h2>
+                <h2>{departmentType === "team" ? dict.new_team_title : dict.new_body_title}</h2>
                 <form
                   className={styles.form}
                   onSubmit={(e) => {
@@ -97,7 +130,7 @@ export default function AddDepartmentModal({
                   }}>
                   <input
                     type="text"
-                    placeholder={departmentType === "team" ? "Nome da equipa" : "Nome do órgão"}
+                    placeholder={departmentType === "team" ? dict.team_name_placeholder : dict.body_name_placeholder}
                     value={deptName}
                     onChange={(e) => setDeptName(e.target.value)}
                     required
@@ -106,7 +139,7 @@ export default function AddDepartmentModal({
                   />
                   {departmentType === "team" && (
                     <textarea
-                      placeholder="Descrição da equipa"
+                      placeholder={dict.team_desc_placeholder}
                       value={deptDesc}
                       onChange={(e) => setDeptDesc(e.target.value)}
                       required
@@ -118,7 +151,7 @@ export default function AddDepartmentModal({
                     type="submit"
                     className={styles.button}
                     disabled={!deptName.trim() || (departmentType === "team" && !deptDesc.trim())}>
-                    Próximo
+                    {dict.next}
                   </button>
                 </form>
               </>
@@ -134,8 +167,8 @@ export default function AddDepartmentModal({
                   )}
                 </div>
                 <div className={styles.rolesSection}>
-                  <h4>Adicionar Cargos</h4>
-                  <RoleCreationForm onAdd={addRole} disabled={loading} />
+                  <h4>{dict.add_roles_title}</h4>
+                  <RoleCreationForm onAdd={addRole} disabled={loading} dict={dict.role_form} />
                   <ul className={styles.rolesList}>
                     {roles.map((role, idx) => (
                       <li key={role.roleName + idx}>
@@ -147,7 +180,7 @@ export default function AddDepartmentModal({
                           onClick={() => removeRole(role.roleName)}
                           disabled={loading}
                           className={styles.removeBtn}>
-                          Remover
+                          {dict.remove}
                         </button>
                       </li>
                     ))}
@@ -157,13 +190,13 @@ export default function AddDepartmentModal({
                 {error && <div className={styles.error}>{error}</div>}
                 <div className={styles.actions}>
                   <button className={styles.button} onClick={() => setStep(1)} disabled={loading}>
-                    Voltar
+                    {dict.back}
                   </button>
                   <button
                     className={styles.button}
                     onClick={handleCreate}
                     disabled={loading || roles.length === 0}>
-                    {loading ? "A criar..." : "Criar Departamento"}
+                    {loading ? dict.creating : dict.create_department}
                   </button>
                 </div>
               </>
@@ -178,9 +211,20 @@ export default function AddDepartmentModal({
 function RoleCreationForm({
   onAdd,
   disabled,
+  dict,
 }: {
   onAdd: (_role: Role) => void;
   disabled: boolean;
+  dict: {
+    role_name_placeholder: string;
+    add_role: string;
+    access: { 
+      guest: string; 
+      member: string; 
+      coordinator: string; 
+      admin: string 
+    };
+  };
 }) {
   const [role, setRole] = useState<Role>({ roleName: "", access: "member" });
 
@@ -196,7 +240,7 @@ function RoleCreationForm({
       <div className={styles.roleFormRow}>
         <input
           type="text"
-          placeholder="Nome do Cargo"
+          placeholder={dict.role_name_placeholder}
           value={role.roleName}
           onChange={(e) => setRole((prev) => ({ ...prev, roleName: e.target.value }))}
           required
@@ -210,10 +254,10 @@ function RoleCreationForm({
           }
           disabled={disabled}
           className={styles.input}>
-          <option value="guest">Normal</option>
-          <option value="member">Membro</option>
-          <option value="coordinator">Coordenador</option>
-          <option value="admin">Administrador</option>
+          <option value="guest">{dict.access.guest}</option>
+          <option value="member">{dict.access.member}</option>
+          <option value="coordinator">{dict.access.coordinator}</option>
+          <option value="admin">{dict.access.admin}</option>
         </select>
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
@@ -221,7 +265,7 @@ function RoleCreationForm({
           type="submit"
           className={styles.button}
           disabled={disabled || !role.roleName.trim()}>
-          Adicionar Cargo
+          {dict.add_role}
         </button>
       </div>
     </form>

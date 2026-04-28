@@ -1,12 +1,15 @@
 import { getAllDepartments, getAllMemberships, getAllUsers } from "@/utils/dbUtils";
 import AboutUsEditor from "@/components/admin/AboutUsEditor";
 import { Membership } from "@/types/memberships";
+import { getLocale, getDictionary} from "@/lib/i18n";
 
 export default async function AboutUsManager({
   searchParams,
 }: {
   searchParams?: { year?: string };
 }) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
   const departments = await getAllDepartments();
   const memberships: Membership[] = await getAllMemberships();
   const users = await getAllUsers();
@@ -49,6 +52,10 @@ export default async function AboutUsManager({
       memberships={memberships}
       users={users}
       selectedYear={selectedYear}
+      dict={{
+        ...dict.about_us_page.year_selector, 
+        ...dict.about_us_page.editor
+      }}
     />
   );
 }

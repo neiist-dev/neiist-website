@@ -5,11 +5,17 @@ export default function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
+  dict,
 }: {
   open: boolean;
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  dict: {
+    confirm: string;
+    cancel: string;
+  }
+
 }) {
   if (!open) return null;
   return (
@@ -18,10 +24,10 @@ export default function ConfirmDialog({
         <div className={styles.message}>{message}</div>
         <div className={styles.actions}>
           <button className={styles.confirm} onClick={onConfirm}>
-            Sim
+            {dict.confirm}
           </button>
           <button className={styles.cancel} onClick={onCancel}>
-            Cancelar
+            {dict.cancel}
           </button>
         </div>
       </div>

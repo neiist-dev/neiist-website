@@ -13,6 +13,18 @@ import { getFirstAndLastName } from "@/utils/userUtils";
 interface UserMenuProps {
   userData: User;
   logout: () => void;
+  dict: {
+    profile: string;
+    my_orders: string;
+    manage_orders: string;
+    manage_team: string;
+    manage_photos: string;
+    manage_shop: string;
+    manage_users: string;
+    manage_departments: string;
+    logout: string;
+    user_photo_alt: string;
+  };
 }
 
 interface MenuPage {
@@ -24,7 +36,7 @@ interface MenuPage {
   coordinatorOnly?: boolean;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
+const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict }) => {
   const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +78,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
   const menuPages: MenuPage[] = [
     {
       href: "/profile",
-      label: "Profile",
+      label: dict.profile,
       icon: GoPerson,
       roles: [
         UserRole._GUEST,
@@ -78,7 +90,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
     },
     {
       href: "/my-orders",
-      label: "As Minhas Encomendas",
+      label: dict.my_orders,
       icon: LuPackage,
       roles: [
         UserRole._GUEST,
@@ -90,13 +102,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
     },
     {
       href: "/orders",
-      label: "Gerir Encomendas",
+      label: dict.manage_orders,
       icon: LuFileText,
       roles: [UserRole._SHOP_MANAGER, UserRole._COORDINATOR, UserRole._ADMIN],
     },
     {
       href: "/team-management",
-      label: "Gerir Equipa",
+      label: dict.manage_team,
       icon: GoPeople,
       roles: [UserRole._COORDINATOR],
       coordinatorOnly: true,
@@ -105,7 +117,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       ? [
           {
             href: "/photo-management",
-            label: "Gerir Fotos Membros",
+            label: dict.manage_photos,
             icon: FiCamera,
             roles: [UserRole._COORDINATOR],
             coordinatorOnly: true,
@@ -114,21 +126,21 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
       : []),
     {
       href: "/shop/manage",
-      label: "Gerir Loja",
+      label: dict.manage_shop,
       icon: LuShoppingBag,
       roles: [UserRole._ADMIN],
       adminOnly: true,
     },
     {
       href: "/users-management",
-      label: "Gerir Membros e Utilizadores",
+      label: dict.manage_users,
       icon: GoPeople,
       roles: [UserRole._ADMIN],
       adminOnly: true,
     },
     {
       href: "/departments-management",
-      label: "Gerir Departamentos",
+      label: dict.manage_departments,
       icon: GoOrganization,
       roles: [UserRole._ADMIN],
       adminOnly: true,
@@ -150,7 +162,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
     <div className={styles.userMenuContainer} ref={menuRef} onClick={toggleMenu}>
       <Image
         src={userData.photo}
-        alt="User photo"
+        alt={dict.user_photo_alt}
         width={40}
         height={40}
         className={styles.userPhoto}
@@ -176,7 +188,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout }) => {
           <div className={styles.divider} />
           <UserMenuItem
             href="#"
-            label="Log out"
+            label={dict.logout}
             icon={GoSignOut}
             onClick={handleLogout}
             className={styles.logoutButton}

@@ -21,6 +21,20 @@ interface MobileFiltersDrawerProps {
   availableCampuses: string[];
   availableStatuses: string[];
   getStatusLabel: (_status: OrderStatus) => string;
+  dict: {
+    title: string;
+    close_label: string;
+    date_section: string;
+    until: string;
+    range: string;
+    days: string[];
+    products_section: string;
+    campus_section: string;
+    status_section: string;
+    clear_all: string;
+    apply: string;
+  };
+  locale: string;
 }
 
 function getMonthDays(date: Date): (Date | null)[] {

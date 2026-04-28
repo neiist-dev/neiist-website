@@ -11,8 +11,19 @@ interface AdminBody {
 
 export default function AdminBodiesSearchFilter({
   initialAdminBodies,
+  dict,
 }: {
   initialAdminBodies: AdminBody[];
+  dict: {
+    section_title: string;
+    search_placeholder: string;
+    active: string;
+    show_inactive: string;
+    empty: string;
+    inactive_badge: string;
+    deactivate_title: string;
+    deactivate: string;
+  };
 }) {
   const [adminBodies] = useState<AdminBody[]>(initialAdminBodies);
   const [search, setSearch] = useState("");
@@ -51,12 +62,12 @@ export default function AdminBodiesSearchFilter({
 
   return (
     <>
-      <div className={styles.sectionTitle}>Órgãos Administrativos Existentes</div>
+      <div className={styles.sectionTitle}>{dict.section_title}</div>
       <div className={styles.searchBar}>
         <input
           className={styles.input}
           type="text"
-          placeholder="Pesquisar órgão administrativo..."
+          placeholder={dict.search_placeholder}
           value={search}
           onChange={(inputEvent) => setSearch(inputEvent.target.value)}
         />
@@ -64,32 +75,32 @@ export default function AdminBodiesSearchFilter({
           className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
           onClick={() => setShowInactive(false)}
           type="button">
-          Ativos
+          {dict.active}
         </button>
         <button
           className={`${styles.filterBtn} ${showInactive ? styles.active : ""}`}
           onClick={() => setShowInactive(true)}
           type="button">
-          Mostrar Inativos
+          {dict.show_inactive}
         </button>
       </div>
       <div className={styles.listSection}>
         {filteredAdminBodies.length === 0 ? (
-          <div className={styles.emptyMessage}>Nenhum órgão administrativo encontrado.</div>
+          <div className={styles.emptyMessage}>{dict.empty}</div>
         ) : (
           <div className={styles.list}>
             {filteredAdminBodies.map((body) => (
               <div key={body.name} className={styles.item}>
                 <div className={styles.itemContent}>
                   <div className={styles.itemName}>{body.name}</div>
-                  {body.active === false && <span className={styles.badge}>Inativo</span>}
+                  {body.active === false && <span className={styles.badge}>{dict.inactive_badge}</span>}
                 </div>
                 <button
                   onClick={() => removeAdminBody(body.name)}
                   className={styles.deleteButton}
-                  title="Desativar órgão"
+                  title={dict.deactivate_title}
                   type="button">
-                  Desativar
+                  {dict.deactivate}
                 </button>
               </div>
             ))}

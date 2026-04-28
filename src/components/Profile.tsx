@@ -27,9 +27,11 @@ type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "gith
 export default function ProfileClient({
   initialUser,
   initialHasCV,
+  dict,
 }: {
   initialUser: User;
   initialHasCV: boolean;
+  dict?: any;
 }) {
   const [user, setUser] = useState<User>(initialUser);
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
@@ -108,7 +110,7 @@ export default function ProfileClient({
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Falha ao enviar email de verificação");
+          throw new Error(data.error || dict?.errors?.verify_email);
         }
         // TODO: (SUCCESS) show success toast after the verification email request is sent.
       } else {
@@ -120,7 +122,7 @@ export default function ProfileClient({
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Falha ao atualizar");
+          throw new Error(data.error || dict?.errors?.update);
         }
       }
 
@@ -131,7 +133,7 @@ export default function ProfileClient({
       }
     } catch (e) {
       // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
+      setError(e instanceof Error ? e.message : dict?.errors?.update_profile);
     } finally {
       setPendingChange(null);
     }
@@ -144,7 +146,7 @@ export default function ProfileClient({
       // TODO: show loading toast while fetching calendar
       const response = await fetch(`/api/calendar/${user.istid}`);
       if (!response.ok) {
-        throw new Error("Failed to get calendar data");
+        throw new Error(dict?.errors?.fetch_calendar);
       }
       const data = await response.json();
       const links = {
@@ -155,7 +157,7 @@ export default function ProfileClient({
       return links;
     } catch (e) {
       // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao obter link do calendário.");
+      setError(e instanceof Error ? e.message : dict?.errors?.get_calendar_link);
       return null;
     }
   };
@@ -194,7 +196,7 @@ export default function ProfileClient({
     if (!file) return;
     if (file.type !== "application/pdf") {
       // TODO: (ERROR)
-      setError("Envie apenas ficheiros PDF.");
+      setError(dict?.errors?.pdf_only);
       return;
     }
     setCvLoading(true);
@@ -205,12 +207,12 @@ export default function ProfileClient({
       form.append("istid", user.istid);
 
       const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
-      if (!res.ok) throw new Error("Falha ao enviar o CV.");
+      if (!res.ok) throw new Error(dict?.errors?.cv_upload);
       setHasCV(true);
       // TODO: (SUCCESS) show success toast after the CV is uploaded.
     } catch (e) {
       // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao enviar o CV.");
+      setError(e instanceof Error ? e.message : dict?.errors?.cv_upload_error);
     } finally {
       setCvLoading(false);
     }
@@ -220,12 +222,12 @@ export default function ProfileClient({
     setCvLoading(true);
     try {
       const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
-      if (!res.ok) throw new Error("Falha ao remover o CV.");
+      if (!res.ok) throw new Error(dict?.errors?.cv_remove);
       setHasCV(false);
       // TODO: (SUCCESS) show success toast after the CV is removed.
     } catch (e) {
       // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao remover o CV.");
+      setError(e instanceof Error ? e.message : dict?.errors?.cv_remove_error);
     } finally {
       setCvLoading(false);
     }
@@ -235,7 +237,7 @@ export default function ProfileClient({
     setCvLoading(true);
     try {
       const res = await fetch("/api/user/cv-bank?download");
-      if (!res.ok) throw new Error("CV não encontrado.");
+      if (!res.ok) throw new Error(dict?.errors?.cv_not_found);
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -247,7 +249,7 @@ export default function ProfileClient({
       window.URL.revokeObjectURL(url);
     } catch (e) {
       // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao descarregar o CV.");
+      setError(e instanceof Error ? e.message : dict?.errors?.cv_download);
     } finally {
       setCvLoading(false);
     }
@@ -256,15 +258,15 @@ export default function ProfileClient({
   const getFieldDisplayName = (field: FieldName) => {
     switch (field) {
       case "alternativeEmail":
-        return "Email Alternativo";
+        return dict?.fields?.alternativeEmail;
       case "phone":
-        return "Telefone";
+        return dict?.fields?.phone;
       case "preferredContactMethod":
-        return "Contacto Preferido";
+        return dict?.fields?.preferredContactMethod;
       case "github":
-        return "GitHub";
+        return dict?.fields?.github;
       case "linkedin":
-        return "LinkedIn";
+        return dict?.fields?.linkedin;
     }
   };
 
@@ -273,9 +275,9 @@ export default function ProfileClient({
       return (
         (
           {
-            email: "Email Principal",
-            alternativeEmail: "Email Alternativo",
-            phone: "Telefone",
+            email: dict?.values?.preferredContactMethod?.email,
+            alternativeEmail: dict?.values?.preferredContactMethod?.alternativeEmail,
+            phone: dict?.values?.preferredContactMethod?.phone,
           } as Record<string, string>
         )[value] || value
       );
@@ -286,17 +288,17 @@ export default function ProfileClient({
   return (
     <>
       <h1 className={styles.title}>
-        <span className={styles.primary}> Pe</span>
-        <span className={styles.secondary}>r</span>
-        <span className={styles.tertiary}>fi</span>
-        <span className={styles.quaternary}>l</span>
+        <span className={styles.primary}>{dict?.title_letters?.[0]}</span>
+        <span className={styles.secondary}>{dict?.title_letters?.[1]}</span>
+        <span className={styles.tertiary}>{dict?.title_letters?.[2]}</span>
+        <span className={styles.quaternary}>{dict?.title_letters?.[3]}</span>
       </h1>
       <div className={styles.container}>
         <div className={styles.left}>
           <div className={styles.details}>
             <Image
               src={user?.photo || "/default-profile.png"}
-              alt="Profile photo"
+              alt={dict?.photo_alt}
               width={180}
               height={180}
               className={styles.photo}
@@ -309,30 +311,30 @@ export default function ProfileClient({
           </div>
           <div className={styles.contactInfo}>
             <div>
-              <div className={styles.contactLabel}>Email Alternativo</div>
+              <div className={styles.contactLabel}>{dict?.labels?.alternativeEmail}</div>
               <div className={styles.contactField}>
                 <FiMail className={styles.icon} />
                 <input
                   type="email"
                   className={styles.contactInput}
-                  placeholder="email@exemplo.com"
+                  placeholder={dict?.placeholders?.alternativeEmail}
                   value={altEmailDraft}
                   onChange={(e) => setAltEmailDraft(e.target.value)}
                   onBlur={() => handleBlur("alternativeEmail", altEmailDraft)}
                 />
                 {user?.alternativeEmail && !user?.alternativeEmailVerified && (
-                  <span>(por verificar)</span>
+                  <span>{dict?.labels?.unverified}</span>
                 )}
               </div>
             </div>
             <div>
-              <div className={styles.contactLabel}>Número de Telémovel</div>
+              <div className={styles.contactLabel}>{dict?.labels?.phone}</div>
               <div className={styles.contactField}>
                 <FiPhone className={styles.icon} />
                 <input
                   type="tel"
                   className={styles.contactInput}
-                  placeholder="+351 xxx xxx xxx"
+                  placeholder={dict?.placeholders?.phone}
                   value={phoneDraft}
                   onChange={(e) => setPhoneDraft(e.target.value)}
                   onBlur={() => handleBlur("phone", phoneDraft)}
@@ -340,31 +342,31 @@ export default function ProfileClient({
               </div>
             </div>
             <div>
-              <div className={styles.contactLabel}>Método de Contacto Preferencial</div>
+              <div className={styles.contactLabel}>{dict?.labels?.preferredContactMethod}</div>
               <div className={styles.contactField}>
                 <RiContactsBook3Line className={styles.icon} />
                 <select
                   className={styles.contactSelect}
                   value={preferredDraft}
                   onChange={(e) => handlePreferredChange(e.target.value)}>
-                  <option value="email">Email Principal</option>
+                  <option value="email">{dict?.values?.preferredContactMethod?.email}</option>
                   {(altEmailDraft || user?.alternativeEmail) && (
-                    <option value="alternativeEmail">Email Alternativo</option>
+                    <option value="alternativeEmail">{dict?.values?.preferredContactMethod?.alternativeEmail}</option>
                   )}
-                  {(phoneDraft || user?.phone) && <option value="phone">Telémovel</option>}
+                  {(phoneDraft || user?.phone) && <option value="phone">{dict?.values?.preferredContactMethod?.phone}</option>}
                 </select>
               </div>
             </div>
             {isMember && (
               <>
                 <div>
-                  <div className={styles.contactLabel}>GitHub</div>
+                  <div className={styles.contactLabel}>{dict?.github_label}</div>
                   <div className={styles.contactField}>
                     <FiGithub className={styles.icon} />
                     <input
                       type="text"
                       className={styles.contactInput}
-                      placeholder="GitHub username"
+                      placeholder={dict?.github_placeholder}
                       value={githubDraft}
                       onChange={(e) => setGithubDraft(e.target.value)}
                       onBlur={() => handleBlur("github", githubDraft)}
@@ -372,13 +374,13 @@ export default function ProfileClient({
                   </div>
                 </div>
                 <div>
-                  <div className={styles.contactLabel}>LinkedIn</div>
+                  <div className={styles.contactLabel}>{dict?.linkedin_label}</div>
                   <div className={styles.contactField}>
                     <FiLinkedin className={styles.icon} />
                     <input
                       type="text"
                       className={styles.contactInput}
-                      placeholder="LinkedIn username"
+                      placeholder={dict?.linkedin_placeholder}
                       value={linkedinDraft}
                       onChange={(e) => setLinkedinDraft(e.target.value)}
                       onBlur={() => handleBlur("linkedin", linkedinDraft)}
@@ -395,11 +397,9 @@ export default function ProfileClient({
               <div className={styles.schedule}>
                 <div className={styles.sectionTitle}>
                   <FiCalendar className={styles.icon} />
-                  <span>Calendário</span>
+                  <span>{dict?.sections?.calendar}</span>
                 </div>
-                <p className={styles.infoText}>
-                  Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!
-                </p>
+                <p className={styles.infoText}>{dict?.sections?.calendarDescription}</p>
                 <div className={styles.actionButtons}>
                   <a
                     className={styles.button}
@@ -412,7 +412,7 @@ export default function ProfileClient({
                       cursor: calendarLoading ? "not-allowed" : "pointer",
                       opacity: calendarLoading ? 0.6 : 1,
                     }}>
-                    <LuCalendarDays /> {calendarLoading ? "A carregar..." : "Ver Calendário"}
+                    <LuCalendarDays /> {calendarLoading ? dict?.labels?.loading: dict?.buttons?.view_calendar}
                   </a>
                   <a
                     className={styles.filledButton}
@@ -426,19 +426,19 @@ export default function ProfileClient({
                       opacity: calendarLoading ? 0.6 : 1,
                     }}>
                     <IoOpenOutline />{" "}
-                    {calendarLoading ? "A carregar..." : "Abrir no Google Calendar"}
+                    {calendarLoading ? dict?.labels?.loading : dict?.buttons?.open_in_google}
                   </a>
                 </div>
               </div>
             </>
           )}
           <div className={styles.cvbank}>
-            <div className={styles.sectionTitle}>
+                <div className={styles.sectionTitle}>
               <FiUpload className={styles.icon} />
-              <span>CV Bank</span>
+              <span>{dict?.sections?.cvbank}</span>
               <div className={styles.infoBubbleWrapper}>
                 <FiInfo className={styles.infoBubble} />
-                <div className={styles.tooltip}>Explicação sobre o CV-Bank.</div>
+                <div className={styles.tooltip}>{dict?.sections?.cvbankTooltip}</div>
               </div>
             </div>
             {!hasCV ? (
@@ -446,7 +446,7 @@ export default function ProfileClient({
                 <label className={styles.cvUpload} htmlFor="cv-input">
                   <div>
                     <FiUpload className={styles.cvUploadIcon} />
-                    <p>Click to upload your CV (PDF only)</p>
+                    <p>{dict?.placeholders?.cvUpload}</p>
                   </div>
                 </label>
                 <input
@@ -459,12 +459,12 @@ export default function ProfileClient({
                 />
               </>
             ) : (
-              <div className={styles.actionButtons}>
+                <div className={styles.actionButtons}>
                 <button className={styles.button} onClick={onCvDownload} disabled={cvLoading}>
-                  <FiDownload /> Descarregar o CV
+                  <FiDownload /> {dict?.buttons?.download_cv}
                 </button>
                 <button className={styles.button} onClick={onCvRemove} disabled={cvLoading}>
-                  <FiTrash2 /> Remover o CV
+                  <FiTrash2 /> {dict?.buttons?.remove_cv}
                 </button>
               </div>
             )}
@@ -478,11 +478,10 @@ export default function ProfileClient({
         message={
           pendingChange
             ? pendingChange.value === ""
-              ? `Deseja remover o método de contacto ${getFieldDisplayName(pendingChange.field)}?`
-              : `Deseja guardar a alteração de ${getFieldDisplayName(pendingChange.field)} para "${getValueDisplayName(
-                  pendingChange.field,
-                  pendingChange.value
-                )}"?`
+              ? (dict?.confirm_remove_field || "").replace("{field}", getFieldDisplayName(pendingChange.field) || "")
+              : (dict?.confirm_change_field || "")
+                  .replace("{field}", getFieldDisplayName(pendingChange.field) || "")
+                  .replace("{value}", getValueDisplayName(pendingChange.field, pendingChange.value))
             : ""
         }
         onConfirm={handleConfirmChange}
@@ -490,6 +489,7 @@ export default function ProfileClient({
           setShowConfirmDialog(false);
           setPendingChange(null);
         }}
+        dict={dict?.confirm_dialog}
       />
     </>
   );

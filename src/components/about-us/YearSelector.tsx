@@ -6,6 +6,11 @@ interface YearSelectorProps {
   years: string[];
   selectedYear: string;
   visible?: number;
+  dict:{
+    nav_label: string;
+    prev_label: string;
+    next_label: string;
+  }
 }
 
 function formatYearDisplay(year: string) {
@@ -18,7 +23,7 @@ function formatYearDisplay(year: string) {
   return { mainYear: year, subYear };
 }
 
-export default function YearSelector({ years, selectedYear, visible = 5 }: YearSelectorProps) {
+export default function YearSelector({ years, selectedYear, visible = 5, dict }: YearSelectorProps) {
   const total = years.length;
   const v = Math.max(1, Math.min(visible, 5));
   const idx = Math.max(0, years.indexOf(selectedYear));
@@ -37,10 +42,10 @@ export default function YearSelector({ years, selectedYear, visible = 5 }: YearS
   const hrefFor = (year: string) => ({ query: { year } });
 
   return (
-    <nav className={styles.container} aria-label="Academic year selector">
+    <nav className={styles.container} aria-label={dict.nav_label}>
       <Link
         href={prevYear ? hrefFor(prevYear) : "#"}
-        aria-label="Previous year"
+        aria-label={dict.prev_label}
         aria-disabled={!canPrev}
         tabIndex={canPrev ? 0 : -1}
         className={`${styles.arrowButton} ${!canPrev ? styles.disabled : ""}`}>
@@ -68,7 +73,7 @@ export default function YearSelector({ years, selectedYear, visible = 5 }: YearS
 
       <Link
         href={nextYear ? hrefFor(nextYear) : "#"}
-        aria-label="Next year"
+        aria-label={dict.next_label}
         aria-disabled={!canNext}
         tabIndex={canNext ? 0 : -1}
         className={`${styles.arrowButton} ${!canNext ? styles.disabled : ""}`}>

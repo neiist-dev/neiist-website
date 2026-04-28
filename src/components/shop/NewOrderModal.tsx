@@ -17,6 +17,62 @@ interface Props {
   products: Product[];
   mode?: "create" | "edit";
   orderToEdit?: Order | null;
+  dict: {
+    new_order_modal: {
+      title_create: string;
+      title_edit: string;
+      user_label: string;
+      user_placeholder: string;
+      user_not_found: string;
+      user_create_new: string;
+      products_label: string;
+      products_placeholder: string;
+      campus_label: string;
+      campus_placeholder: string;
+      campus_alameda: string;
+      campus_taguspark: string;
+      nif_label: string;
+      nif_placeholder: string;
+      phone_label: string;
+      phone_placeholder: string;
+      notes_label: string;
+      notes_placeholder: string;
+      cancel: string;
+      submitting_create: string;
+      submitting_edit: string;
+      submit_create: string;
+      submit_edit: string;
+      confirm_create: string;
+      confirm_edit: string;
+      confirm_stock_override: string;
+      error_no_products: string;
+      error_no_campus: string;
+      error_no_user: string;
+      error_create: string;
+      error_update: string;
+    };
+    create_user_modal: {
+      title: string;
+      ist_id_label: string;
+      ist_id_placeholder: string;
+      name_label: string;
+      name_placeholder: string;
+      email_label: string;
+      email_placeholder: string;
+      cancel: string;
+      submitting: string;
+      submit: string;
+      confirm_message_1: string;
+      confirm_message_2: string;
+      error_required: string;
+      error_create: string;
+    };
+    confirm_dialog: {
+      title: string;
+      confirm: string;
+      cancel: string;
+    };
+  };
 }
 
 interface SelectedProduct {
@@ -102,6 +158,7 @@ export default function NewOrderModal({
   products,
   mode = "create",
   orderToEdit = null,
+  dict,
 }: Props) {
   const [userSearch, setUserSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
@@ -479,6 +536,8 @@ export default function NewOrderModal({
         onClose={() => setShowCreateUser(false)}
         onSubmit={handleUserCreated}
         initialIstId={userSearch}
+        dict={dict.create_user_modal}
+        confirm_dialog={dict.confirm_dialog}
       />
     );
   }
@@ -490,7 +549,7 @@ export default function NewOrderModal({
           <MdClose size={24} />
         </button>
 
-        <h2>{isEditMode ? "Editar Encomenda" : "Nova Encomenda"}</h2>
+        <h2>{isEditMode ? dict.new_order_modal.title_edit : dict.new_order_modal.title_create}</h2>
 
         {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
@@ -502,13 +561,13 @@ export default function NewOrderModal({
           }}>
           {!isEditMode && (
             <div className={styles.formGroup}>
-              <label>User</label>
+              <label>{dict.new_order_modal.user_label}</label>
               <div className={styles.searchWrapper}>
                 <MdSearch className={styles.searchIcon} />
                 <input
                   ref={userInputRef}
                   type="text"
-                  placeholder="Search by istid..."
+                  placeholder={dict.new_order_modal.user_placeholder}
                   value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
                   onChange={(e) => {
                     if (selectedUser) {
@@ -563,9 +622,9 @@ export default function NewOrderModal({
                         className={`${styles.dropdownItem} ${filteredUsers.length === userHighlight ? styles.highlighted : ""}`}
                         onClick={() => setShowCreateUser(true)}
                         onMouseEnter={() => setUserHighlight(filteredUsers.length)}>
-                        <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
+                        <div className={styles.dropdownItemTitle}>{dict.new_order_modal.user_not_found}</div>
                         <div className={styles.dropdownItemSubtitle}>
-                          Clique para criar novo utilizador
+                          {dict.new_order_modal.user_create_new}
                         </div>
                       </div>
                     )}
@@ -576,13 +635,13 @@ export default function NewOrderModal({
           )}
 
           <div className={styles.formGroup}>
-            <label>Produtos</label>
+            <label>{dict.new_order_modal.products_label}</label>
             <div className={styles.searchWrapper}>
               <MdSearch className={styles.searchIcon} />
               <input
                 ref={productInputRef}
                 type="text"
-                placeholder="Adicionar produtos..."
+                placeholder={dict.new_order_modal.products_placeholder}
                 value={productSearch}
                 onChange={(e) => {
                   setProductSearch(e.target.value);
@@ -710,14 +769,14 @@ export default function NewOrderModal({
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Campus</label>
+              <label>{dict.new_order_modal.campus_label}</label>
               <select
                 value={campus}
                 onChange={(e) => setCampus(e.target.value as Campus)}
                 className={styles.input}
                 disabled={isSubmitting}
                 required>
-                <option value="">Selecionar campus</option>
+                <option value="">{dict.new_order_modal.campus_placeholder}</option>
                 {CAMPUS_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.id}>
                     {opt.label}
@@ -727,10 +786,10 @@ export default function NewOrderModal({
             </div>
 
             <div className={styles.formGroup}>
-              <label>NIF (opcional)</label>
+              <label>{dict.new_order_modal.nif_label}</label>
               <input
                 type="text"
-                placeholder="123456789"
+                placeholder={dict.new_order_modal.nif_placeholder}
                 value={nif}
                 onChange={(e) => setNif(e.target.value)}
                 className={styles.input}
@@ -740,10 +799,10 @@ export default function NewOrderModal({
           </div>
 
           <div className={styles.formGroup}>
-            <label>Telemóvel (opcional)</label>
+            <label>{dict.new_order_modal.phone_label}</label>
             <input
               type="text"
-              placeholder="999333111"
+              placeholder={dict.new_order_modal.phone_placeholder}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className={styles.input}
@@ -752,10 +811,10 @@ export default function NewOrderModal({
           </div>
 
           <div className={styles.formGroup}>
-            <label>Notas</label>
+            <label>{dict.new_order_modal.notes_label}</label>
             <input
               type="text"
-              placeholder="Notas"
+              placeholder={dict.new_order_modal.notes_placeholder}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className={styles.input}
@@ -769,16 +828,16 @@ export default function NewOrderModal({
               className={styles.buttonCancel}
               onClick={onClose}
               disabled={isSubmitting}>
-              Cancelar
+              {dict.new_order_modal.cancel}
             </button>
             <button type="submit" className={styles.buttonSubmit} disabled={isSubmitting}>
               {isSubmitting
                 ? isEditMode
-                  ? "A guardar..."
-                  : "A criar..."
+                  ? dict.new_order_modal.submitting_edit
+                  : dict.new_order_modal.submitting_create
                 : isEditMode
-                  ? "Guardar Encomenda"
-                  : "Criar Encomenda"}
+                  ? dict.new_order_modal.submit_edit
+                  : dict.new_order_modal.submit_create}
             </button>
           </div>
         </form>
@@ -787,20 +846,21 @@ export default function NewOrderModal({
             open={showConfirm}
             message={
               isEditMode
-                ? "Tem a certeza que deseja guardar as alterações da encomenda?"
-                : "Tem a certeza que deseja criar esta encomenda?"
+                ? dict.new_order_modal.confirm_edit
+                : dict.new_order_modal.confirm_create
             }
             onConfirm={async () => {
               setShowConfirm(false);
               await handleSubmit();
             }}
             onCancel={() => setShowConfirm(false)}
+            dict={dict.confirm_dialog}
           />
         )}
         {showStockOverrideConfirm && (
           <ConfirmDialog
             open={showStockOverrideConfirm}
-            message={`Tem a certeza que deseja criar a encomenda à mesma?\n"${stockOverrideMessage}."`}
+            message={`${dict.new_order_modal.confirm_stock_override}\n"${stockOverrideMessage}".`}
             onConfirm={async () => {
               setShowStockOverrideConfirm(false);
               setStockOverrideMessage(null);
@@ -810,6 +870,7 @@ export default function NewOrderModal({
               setShowStockOverrideConfirm(false);
               setStockOverrideMessage(null);
             }}
+            dict={dict.confirm_dialog}
           />
         )}
       </div>

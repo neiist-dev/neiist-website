@@ -4,12 +4,15 @@ import styles from "@/styles/components/layout/navbar/LoginButton.module.css";
 
 interface LoginButtonProps {
   onClick?: () => void;
+  dict: { 
+    button: string;
+  }; 
 }
 
-const LoginButton: React.FC<LoginButtonProps> = ({ onClick }) => {
+const LoginButton: React.FC<LoginButtonProps> = ({ onClick, dict }) => {
   return (
     <button onClick={onClick} className={styles.loginButton}>
-      Login <LuLogIn className={styles.loginIcon} />
+      {dict.button} <LuLogIn className={styles.loginIcon} />
     </button>
   );
 };

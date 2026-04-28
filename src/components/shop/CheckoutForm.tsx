@@ -12,9 +12,49 @@ import type { ApplePayPaymentRequest, ApplePayPaymentToken } from "@/types/sumup
 
 interface CheckoutFormProps {
   user: User;
+  dict: {
+    empty_cart: string;
+    section_personal: string;
+    phone_label: string;
+    phone_placeholder: string;
+    nif_label: string;
+    nif_placeholder: string;
+    section_delivery: string;
+    section_payment: string;
+    section_notes: string;
+    notes_placeholder: string;
+    processing: string;
+    submit: string;
+    apple_pay_label: string;
+    summary_title: string;
+    subtotal: string;
+    iva: string;
+    total: string;
+    tax_info: string;
+    tax_info_detail: string;
+    delivery_estimate: string;
+    delivery_detail: string;
+    campus_alameda: string;
+    campus_taguspark: string;
+    payment_card: string;
+    payment_in_person: string;
+    error_no_campus: string;
+    error_no_payment: string;
+    error_submit: string;
+    error_apple_pay_context: string;
+    error_apple_pay_unavailable: string;
+    error_apple_pay_device: string;
+    error_apple_pay_failed: string;
+    error_apple_pay_processing: string;
+    error_checkout_create: string;
+    error_checkout_unexpected: string;
+    error_applepay_validation: string;
+    error_payment_incomplete: string;
+
+  };
 }
 
-export default function CheckoutForm({ user }: CheckoutFormProps) {
+export default function CheckoutForm({ user, dict }: CheckoutFormProps) {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [campus, setCampus] = useState<Campus>(Campus._Alameda);
@@ -93,7 +133,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     });
 
     const data = (await res.json()) as { id?: number; error?: string };
-    if (!res.ok || !data?.id) throw new Error(data?.error || "Erro ao submeter encomenda.");
+    if (!res.ok || !data?.id) throw new Error(data?.error || dict.error_submit);
 
     if (persistOverlay) {
       setSubmittedPaymentMethod(selectedPayment);
@@ -106,12 +146,12 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   const handleSubmit = async (selectedPayment: PaymentMethod | null = payment) => {
     if (!campus) {
       // TODO: (ERROR)
-      setError("Por favor, seleciona o campus.");
+      setError(dict.error_no_campus);
       return;
     }
     if (selectedPayment !== "sumup" && selectedPayment !== "in-person") {
       // TODO: (ERROR)
-      setError("Seleciona um método de pagamento.");
+      setError(dict.error_no_payment);
       return;
     }
     setLoading(true);
@@ -120,7 +160,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       await createOrder(selectedPayment, true);
     } catch (err) {
       // TODO: (ERROR)
-      setError(err instanceof Error ? err.message : "Erro ao submeter encomenda.");
+      setError(err instanceof Error ? err.message : dict.error_submit);
     } finally {
       setLoading(false);
     }
@@ -129,25 +169,25 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   const handleApplePayDirect = () => {
     if (!campus) {
       // TODO: (ERROR)
-      setError("Por favor, seleciona o campus.");
+      setError(dict.error_no_campus);
       return;
     }
 
     if (typeof window === "undefined" || !window.isSecureContext) {
       // TODO: (ERROR)
-      setError("Apple Pay requer um contexto seguro (HTTPS).");
+      setError(dict.error_apple_pay_context);
       return;
     }
 
     if (typeof window.ApplePaySession === "undefined") {
       // TODO: (ERROR)
-      setError("Apple Pay não está disponível neste browser.");
+      setError(dict.error_apple_pay_unavailable);
       return;
     }
 
     const ApplePaySession = window.ApplePaySession;
     if (!ApplePaySession.canMakePayments()) {
-      setError("Apple Pay não está disponível neste dispositivo.");
+      setError(dict.error_apple_pay_device);
       return;
     }
 
@@ -193,25 +233,25 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         };
         if (!checkoutRes.ok)
           throw new Error(
-            checkoutData?.error || checkoutData?.message || "Falha ao criar checkout"
+            checkoutData?.error || checkoutData?.message || dict.error_checkout_create
           );
 
         checkoutId = checkoutData.checkoutId ?? checkoutData.id ?? null;
-        if (!checkoutId) throw new Error("Resposta inesperada do serviço de pagamento");
+        if (!checkoutId) throw new Error(dict.error_checkout_unexpected);
 
         const merchantRes = await fetch("/api/shop/sumup/apple-pay-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ checkoutId, validationUrl: event.validationURL }),
         });
-        if (!merchantRes.ok) throw new Error("Falha na validação Apple Pay");
+        if (!merchantRes.ok) throw new Error(dict.error_applepay_validation);
 
         const merchantSession = (await merchantRes.json()) as unknown;
         session.completeMerchantValidation(merchantSession);
       } catch (error) {
         session.abort();
         setError(
-          error instanceof Error ? error.message : "Falha na validação Apple Pay. Tenta novamente."
+          error instanceof Error ? error.message : dict.error_apple_pay_failed
         );
         setLoading(false);
       }
@@ -219,7 +259,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
     session.onpaymentauthorized = async (event) => {
       try {
-        if (!checkoutId || !createdOrderId) throw new Error("Dados de pagamento incompletos");
+        if (!checkoutId || !createdOrderId) throw new Error(dict.error_payment_incomplete);
 
         const res = await fetch("/api/shop/sumup/verify", {
           method: "POST",
@@ -240,13 +280,13 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
           // TODO: (ERROR)
-          setError(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.");
+          setError(data?.error || dict.error_apple_pay_failed);
         }
       } catch (error) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
         // TODO: (ERROR)
         setError(
-          error instanceof Error ? error.message : "Erro ao processar Apple Pay. Tenta novamente."
+          error instanceof Error ? error.message : dict.error_apple_pay_processing
         );
       } finally {
         setLoading(false);
@@ -269,19 +309,19 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           alignItems: "center",
           justifyContent: "center",
         }}>
-        <p>O teu carrinho está vazio.</p>
+        <p>{dict.empty_cart}</p>
       </div>
     );
   }
 
   const pickupOptions = [
-    { id: Campus._Alameda, label: "Alameda" },
-    { id: Campus._Taguspark, label: "Taguspark" },
+    { id: Campus._Alameda, label: dict.campus_alameda },
+    { id: Campus._Taguspark, label: dict.campus_taguspark },
   ] as const;
 
   const paymentOptions = [
-    { id: "sumup", label: "Cartão" },
-    { id: "in-person", label: "Presencial" },
+    { id: "sumup", label: dict.payment_card },
+    { id: "in-person", label: dict.payment_in_person },
   ] as const;
   const selectedStandardPayment = payment === "sumup" || payment === "in-person";
 
@@ -290,29 +330,29 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       <div className={styles.leftColumn}>
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>1. Informações Pessoais</h2>
+            <h2 className={styles.sectionTitle}>{dict.section_personal}</h2>
           </div>
 
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label>Número de Telefone</label>
+              <label>{dict.phone_label}</label>
               <div className={styles.inputWithIcon}>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+351 999 888 777"
+                  placeholder={dict.phone_placeholder}
                   className={styles.input}
                 />
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label>NIF (Opcional)</label>
+              <label>{dict.nif_label}</label>
               <input
                 type="text"
                 value={nif}
                 onChange={(e) => setNif(e.target.value)}
-                placeholder="123456789"
+                placeholder={dict.nif_placeholder}
                 className={styles.input}
               />
             </div>
@@ -321,7 +361,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
         <div className={styles.divider} />
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>2. Local de Entrega</h2>
+          <h2 className={styles.sectionTitle}>{dict.section_delivery}</h2>
 
           <div className={styles.radioGroup}>
             {pickupOptions.map((opt) => (
@@ -343,7 +383,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         <div className={styles.divider} />
 
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>3. Método de Pagamento</h2>
+          <h2 className={styles.sectionTitle}>{dict.section_payment}</h2>
 
           <div className={styles.radioGroup}>
             {paymentOptions.map((opt) => (
@@ -368,12 +408,12 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
         <div className={styles.divider} />
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Notas (Opcional)</h2>
+          <h2 className={styles.sectionTitle}>{dict.section_notes}</h2>
           <textarea
             className={styles.textarea}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Adicione notas sobre a sua encomenda..."
+            placeholder={dict.notes_placeholder}
             rows={4}
           />
         </section>
@@ -382,7 +422,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             className={styles.checkoutButton}
             onClick={() => handleSubmit()}
             disabled={loading}>
-            {loading ? "A processar..." : "Finalizar Compra"}
+            {loading ? dict.processing : dict.submit}
           </button>
         )}
 
@@ -391,7 +431,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             className={styles.applePayStandaloneButton}
             onClick={handleApplePayDirect}
             disabled={loading}
-            aria-label="Pagar com Apple Pay"></button>
+            aria-label={dict.apple_pay_label}></button>
         )}
 
         {/* TODO: remove inline error in favor of toast or test if for this case the inline error on the widget are better.*/}
@@ -400,7 +440,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
       <div className={styles.rightColumn}>
         <div className={styles.summarySticky}>
-          <h2 className={styles.summaryTitle}>Resumo da Encomenda</h2>
+          <h2 className={styles.summaryTitle}>{dict.summary_title}</h2>
           <div className={styles.cartItems}>
             {cart.map((item, idx) => {
               const variantObj =
@@ -467,16 +507,16 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
           <div className={styles.pricingSummary}>
             <div className={styles.priceLine}>
-              <span>Subtotal</span>
+              <span>{dict.subtotal}</span>
               <span>€{subtotal.toFixed(2)}</span>
             </div>
             <div className={styles.priceLine}>
-              <span>IVA (23%)</span>
+              <span>{dict.iva}</span>
               <span>€{taxes.toFixed(2)}</span>
             </div>
             <div className={styles.priceDivider} />
             <div className={styles.totalLine}>
-              <span>Total</span>
+              <span>{dict.total}</span>
               <span>€{total.toFixed(2)}</span>
             </div>
           </div>
@@ -488,7 +528,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                 onClick={() => setShowTaxInfo((v) => !v)}
                 aria-expanded={showTaxInfo}>
                 <span className={styles.expandText}>
-                  Taxas incluídas. Entrega calculada no checkout.
+                  {dict.tax_info}
                 </span>
                 <FaChevronDown
                   className={`${styles.expandIcon} ${showTaxInfo ? styles.expanded : ""}`}
@@ -496,7 +536,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
               </button>
               {showTaxInfo && (
                 <div className={styles.expandContent}>
-                  As taxas são calculadas automaticamente com base na sua localização.
+                  {dict.tax_info_detail}
                 </div>
               )}
             </div>
@@ -505,14 +545,14 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                 className={styles.expandButton}
                 onClick={() => setShowDeliveryInfo((v) => !v)}
                 aria-expanded={showDeliveryInfo}>
-                <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
+                <span className={styles.expandText}>{dict.delivery_estimate}</span>
                 <FaChevronDown
                   className={`${styles.expandIcon} ${showDeliveryInfo ? styles.expanded : ""}`}
                 />
               </button>
               {showDeliveryInfo && (
                 <div className={styles.expandContent}>
-                  O prazo de entrega pode variar conforme o local de levantamento escolhido.
+                  {dict.delivery_detail}
                 </div>
               )}
             </div>

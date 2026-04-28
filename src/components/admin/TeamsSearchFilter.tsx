@@ -10,7 +10,20 @@ interface Team {
   active?: boolean;
 }
 
-export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team[] }) {
+export default function TeamsSearchFilter({ initialTeams, dict }: { 
+  initialTeams: Team[] 
+  dict: {
+    title: string;
+    section_title: string;
+    search_placeholder: string;
+    active: string;
+    show_inactive: string;
+    empty: string;
+    inactive_badge: string;
+    deactivate_title: string;
+    deactivate: string;
+  };
+}) {
   const [teams] = useState<Team[]>(initialTeams);
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
@@ -51,12 +64,12 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
 
   return (
     <>
-      <div className={styles.sectionTitle}>Equipas Existentes</div>
+      <div className={styles.sectionTitle}>{dict.section_title}</div>
       <div className={styles.searchBar}>
         <input
           className={styles.input}
           type="text"
-          placeholder="Pesquisar equipa..."
+          placeholder={dict.search_placeholder}
           value={search}
           onChange={(inputEvent) => setSearch(inputEvent.target.value)}
         />
@@ -64,17 +77,17 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
           className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
           onClick={() => setShowInactive(false)}
           type="button">
-          Ativos
+          {dict.active}
         </button>
         <button
           className={`${styles.filterBtn} ${showInactive ? styles.active : ""}`}
           onClick={() => setShowInactive(true)}
           type="button">
-          Mostrar Inativos
+          {dict.show_inactive}
         </button>
       </div>
       {filteredTeams.length === 0 ? (
-        <div className={styles.emptyMessage}>Nenhuma equipa encontrada.</div>
+        <div className={styles.emptyMessage}>{dict.empty}</div>
       ) : (
         <div className={styles.list}>
           {filteredTeams.map((team) => (
@@ -84,14 +97,14 @@ export default function TeamsSearchFilter({ initialTeams }: { initialTeams: Team
                 {team.description && (
                   <div className={styles.itemDescription}>{team.description}</div>
                 )}
-                {team.active === false && <span className={styles.badge}>Inativo</span>}
+                {team.active === false && <span className={styles.badge}>{dict.inactive_badge}</span>}
               </div>
               <button
                 onClick={() => removeTeam(team.name)}
                 className={styles.deleteBtn}
-                title="Desativar equipa"
+                title={dict.deactivate_title}
                 type="button">
-                Desativar
+                {dict.deactivate}
               </button>
             </div>
           ))}
