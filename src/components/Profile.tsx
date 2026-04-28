@@ -52,6 +52,8 @@ export default function ProfileClient({
     webViewLink: string;
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
   const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
@@ -228,6 +230,23 @@ export default function ProfileClient({
       setError(e instanceof Error ? e.message : "Erro ao remover o CV.");
     } finally {
       setCvLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setShowDeleteConfirmDialog(false);
+    setDeleteLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/user/delete", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Erro ao apagar dados.");
+      }
+      window.location.href = "/";
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao apagar dados pessoais.");
+      setDeleteLoading(false);
     }
   };
 
@@ -469,6 +488,15 @@ export default function ProfileClient({
               </div>
             )}
           </div>
+          <div>
+            <button
+              type="button"
+              className={styles.dangerButton}
+              onClick={() => setShowDeleteConfirmDialog(true)}
+              disabled={deleteLoading}>
+              <FiTrash2 /> {deleteLoading ? "A apagar..." : "Apagar Dados"}
+            </button>
+          </div>
         </div>
       </div>
       {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
@@ -490,6 +518,12 @@ export default function ProfileClient({
           setShowConfirmDialog(false);
           setPendingChange(null);
         }}
+      />
+      <ConfirmDialog
+        open={showDeleteConfirmDialog}
+        message="Tens a certeza que queres apagar os teus dados pessoais? Esta ação é irreversível e terminará a tua sessão."
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setShowDeleteConfirmDialog(false)}
       />
     </>
   );
