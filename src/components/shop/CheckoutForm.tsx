@@ -5,6 +5,7 @@ import ShopCheckoutOverlay from "@/components/shop/ShopCheckoutOverlay";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
 
 import { Campus } from "@/types/shop/order";
+import { OrderSource } from "@/types/shop/orderKind";
 import { getPaymentLabel, PaymentMethod } from "@/types/shop/payment";
 import { CartItem } from "@/types/shop/product";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
@@ -75,7 +76,8 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     cart.map((item) => item.product)
   );
   const isSpecialOrderKind = checkoutOrderKind !== "normal";
-  const orderRules = getOrderKindRules(checkoutOrderKind);
+  const checkoutSource: OrderSource = checkoutOrderKind === "jantar_de_curso" ? "dinner" : "other";
+  const orderRules = getOrderKindRules(checkoutOrderKind, checkoutSource);
   const allowedPaymentMethods = orderRules.paymentMethods;
 
   const apiItems = cart.map((item) => ({
@@ -99,7 +101,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         payment_method: selectedPayment,
         payment_reference: undefined,
         customer_phone: user.phone || phone || undefined,
-        order_source: orderRules.allowedSources[0] ?? "other",
+        order_source: checkoutSource,
       }),
     });
 

@@ -49,22 +49,22 @@ export default function Countdown() {
   return (
     <div className={`${styles.countdown} ${handelsonTwo.className}`}>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.days).padStart(2, '0')}</span>
+        <span className={styles.countdownValue}>{String(timeLeft.days).padStart(2, "0")}</span>
         <span className={styles.countdownLabel}>dias</span>
       </div>
       <span className={styles.countdownDot}>•</span>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.hours).padStart(2, '0')}</span>
+        <span className={styles.countdownValue}>{String(timeLeft.hours).padStart(2, "0")}</span>
         <span className={styles.countdownLabel}>horas</span>
       </div>
       <span className={styles.countdownDot}>•</span>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.minutes).padStart(2, '0')}</span>
+        <span className={styles.countdownValue}>{String(timeLeft.minutes).padStart(2, "0")}</span>
         <span className={styles.countdownLabel}>minutos</span>
       </div>
       <span className={styles.countdownDot}>•</span>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.seconds).padStart(2, '0')}</span>
+        <span className={styles.countdownValue}>{String(timeLeft.seconds).padStart(2, "0")}</span>
         <span className={styles.countdownLabel}>segundos</span>
       </div>
     </div>

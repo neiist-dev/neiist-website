@@ -14,10 +14,15 @@ const publicRoutes = [
   "/activities",
   "/dinner",
 ];
-const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout"];
+const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout", "/voting"];
 const memberRoutes = ["/orders"];
 const coordRoutes = ["/team-management", "/photo-management"];
-const adminRoutes = ["/users-management", "/departments-management", "/shop/manage"];
+const adminRoutes = [
+  "/users-management",
+  "/departments-management",
+  "/shop/manage",
+  "/voting/admin",
+];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
 function getIp(request: NextRequest): string {
