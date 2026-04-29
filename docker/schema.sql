@@ -763,13 +763,13 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
 BEGIN
   -- Update users table fields
   IF p_updates ? 'name' THEN
-    UPDATE neiist.users SET name = p_updates->>'name' WHERE istid = p_istid;
+    UPDATE neiist.users SET name = p_updates->>'name' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'email' THEN
-    UPDATE neiist.users SET email = p_updates->>'email' WHERE istid = p_istid;
+    UPDATE neiist.users SET email = p_updates->>'email' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'photo' THEN
-    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE istid = p_istid;
+    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'github' THEN
     UPDATE neiist.users SET github = p_updates->>'github' WHERE neiist.users.istid = p_istid;

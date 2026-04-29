@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
-import { getUser, createUser, getEmailVerificationByUser } from "@/utils/dbUtils";
+import { getUser, createUser, updateUser, getEmailVerificationByUser } from "@/utils/dbUtils";
 import { signUserJWT } from "@/utils/authUtils";
 
 type FenixRegistration = {
@@ -55,6 +55,9 @@ export async function GET() {
     if (!user) {
       user = await createUser({ istid, name, email, phone, courses });
       if (!user) return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+    } else if (user.email?.endsWith("@deleted.neiist")) {
+      user = await updateUser(istid, { name, email });
+      if (!user) return NextResponse.json({ error: "Failed to restore user" }, { status: 500 });
     }
 
     if ((!user?.photo || !user.photo.includes("?custom")) && info.photo?.data) {
