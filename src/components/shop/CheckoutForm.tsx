@@ -294,7 +294,10 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     id: method,
     label: getPaymentLabel(method),
   }));
-  const selectedStandardPayment = payment ? allowedPaymentMethods.includes(payment) : false;
+  const isSelectedPaymentAllowed = payment !== null && allowedPaymentMethods.includes(payment);
+  const hasSelectedPayMethod = payment !== null && payment !== "apple-pay";
+  const isApplePayAllowed = applePayAvailable && allowedPaymentMethods.includes("apple-pay");
+  const showApplePay = isApplePayAllowed && !hasSelectedPayMethod;
 
   return (
     <div className={styles.container}>
@@ -392,7 +395,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             rows={4}
           />
         </section>
-        {selectedStandardPayment && (
+        {isSelectedPaymentAllowed && (
           <button
             className={styles.checkoutButton}
             onClick={() => handleSubmit()}
@@ -401,16 +404,13 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           </button>
         )}
 
-        {applePayAvailable &&
-          payment !== "in-person" &&
-          payment !== "mbway" &&
-          payment !== "sumup" && (
-            <button
-              className={styles.applePayStandaloneButton}
-              onClick={handleApplePayDirect}
-              disabled={loading}
-              aria-label="Pagar com Apple Pay"></button>
-          )}
+        {showApplePay && (
+          <button
+            className={styles.applePayStandaloneButton}
+            onClick={handleApplePayDirect}
+            disabled={loading}
+            aria-label="Pagar com Apple Pay"></button>
+        )}
 
         {/* TODO: remove inline error in favor of toast or test if for this case the inline error on the widget are better.*/}
         {error && <div className={styles.errorMessage}>{error}</div>}
