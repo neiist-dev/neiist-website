@@ -48,13 +48,32 @@ const displayValue = (key: string, val: string) => {
   return name || hex || val;
 };
 
+const normalizeOptionValue = (value?: string) => (value ? value.replace(/["'\\]/g, "").trim() : "");
+
 const variantLabel = (name: string, options: Record<string, string>) => {
   const values = Object.entries(options).map(([k, v]) => displayValue(k, v));
   return values.length ? `${name} - ${values.join(" | ")}` : name;
 };
 
-const getOptionKeys = (product: Product) =>
-  product.variants?.length ? Object.keys(product.variants[0].options) : [];
+const getOptionKeys = (product: Product) => {
+  const keys: string[] = [];
+  const seen = new Set<string>();
+
+  product.variants.forEach((variant) => {
+    Object.keys(variant.options ?? {}).forEach((key) => {
+      if (seen.has(key)) return;
+      seen.add(key);
+      keys.push(key);
+    });
+  });
+
+  return keys;
+};
+
+const matchesSelections = (variant: ProductVariant, selections: Record<string, string>) =>
+  Object.entries(selections).every(
+    ([key, value]) => normalizeOptionValue(variant.options?.[key]) === normalizeOptionValue(value)
+  );
 
 const getValuesForKey = (product: Product, selections: Record<string, string>): string[] => {
   const keys = getOptionKeys(product);
@@ -63,7 +82,7 @@ const getValuesForKey = (product: Product, selections: Record<string, string>): 
   return Array.from(
     new Set(
       product.variants
-        .filter((v) => Object.entries(selections).every(([k, val]) => v.options[k] === val))
+        .filter((variant) => matchesSelections(variant, selections))
         .map((v) => v.options[nextKey])
     )
   );
@@ -76,11 +95,7 @@ const resolveVariant = (
   const keys = getOptionKeys(product);
   if (Object.keys(selections).length < keys.length) return null;
 
-  return (
-    product.variants.find((v) =>
-      Object.entries(selections).every(([k, val]) => v.options[k] === val)
-    ) ?? null
-  );
+  return product.variants.find((variant) => matchesSelections(variant, selections)) ?? null;
 };
 
 const buildFallbackUser = (order: Order): User => ({
@@ -346,6 +361,13 @@ export default function NewOrderModal({
     setShowUserDropdown(false);
   };
 
+  const closeProductPicker = () => {
+    setProductSearch("");
+    setShowProductDropdown(false);
+    setCascade(null);
+    setProductHighlight(0);
+  };
+
   const addProduct = (product: Product, variant: ProductVariant) => {
     const label = variantLabel(product.name, variant.options);
     setSelectedProducts((prev) => {
@@ -357,9 +379,7 @@ export default function NewOrderModal({
       }
       return [...prev, { product, variant: { id: variant.id, label }, quantity: 1 }];
     });
-    setProductSearch("");
-    setShowProductDropdown(false);
-    productInputRef.current?.focus();
+    closeProductPicker();
   };
 
   const openCascade = (product: Product) => {
@@ -380,7 +400,6 @@ export default function NewOrderModal({
     const variant = resolveVariant(product, newSelections);
     if (variant) {
       addProduct(product, variant);
-      setCascade(null);
     } else {
       setCascade({ product, optionKeys, selections: newSelections });
       setProductHighlight(0);
@@ -698,7 +717,7 @@ export default function NewOrderModal({
                           : { name: val, hex: "" };
                         return (
                           <div
-                            key={val}
+                            key={`${currentKeyIdx}-${idx}-${val}`}
                             className={`${styles.dropdownItem} ${idx === productHighlight ? styles.highlighted : ""}`}
                             onClick={() => selectCascadeValue(val)}
                             onMouseEnter={() => setProductHighlight(idx)}>
