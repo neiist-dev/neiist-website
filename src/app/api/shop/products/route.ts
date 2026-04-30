@@ -23,11 +23,24 @@ async function uploadImages(
   const uploadedPaths: string[] = [];
 
   for (const upload of imageUploads) {
-    const buffer = Buffer.from(upload.imageBase64, "base64");
+    if (!upload || typeof upload.imageBase64 !== "string" || upload.imageBase64.trim() === "") {
+      continue;
+    }
+
+    // Accept both raw base64 and data URLs like: data:image/png;base64,...
+    const rawBase64 = upload.imageBase64.includes(",")
+      ? (upload.imageBase64.split(",").pop() ?? "")
+      : upload.imageBase64;
+    const base64 = rawBase64.trim();
+    if (!base64) {
+      continue;
+    }
+
+    const buffer = Buffer.from(base64, "base64");
     if (!isImage(buffer)) {
       throw new Error("Only image uploads are allowed");
     }
-    const imageName = path.basename(upload.imageName);
+    const imageName = path.basename(upload.imageName || `product-${Date.now()}.png`);
     const filePath = path.join(uploadDir, imageName);
     await fs.writeFile(filePath, buffer);
     uploadedPaths.push(`/products/${imageName}`);
