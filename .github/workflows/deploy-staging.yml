@@ -13,7 +13,7 @@ jobs:
       url: https://staging.neiist.rnl.tecnico.ulisboa.pt
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup SSH
@@ -21,7 +21,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Upload Deployment script
+      - name: Upload Deployment Script
         run: |
           scp -o StrictHostKeyChecking=no scripts/deploy_staging.sh \
               ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/deploy_staging.sh
