@@ -1,7 +1,12 @@
 name: Deploy Production
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
@@ -11,7 +16,7 @@ jobs:
       url: https://neiist.tecnico.ulisboa.pt
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup SSH
