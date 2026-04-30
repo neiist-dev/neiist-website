@@ -375,26 +375,43 @@ export default function ProductForm({
       }
 
       const names = valid.map((d) => d.name);
-      setVariants((prev) =>
-        cartesian(valid.map((d) => d.values)).map((combo) => {
-          const opts = Object.fromEntries(
-            names.map((n, i) => {
-              const val = combo[i];
-              return [n, typeof val === "string" ? val : joinNameHex(val.name, val.color)];
-            })
+      const newCombos = cartesian(valid.map((d) => d.values)).map((combo) => {
+        const opts = Object.fromEntries(
+          names.map((n, i) => {
+            const val = combo[i];
+            return [n, typeof val === "string" ? val : joinNameHex(val.name, val.color)];
+          })
+        );
+        return opts;
+      });
+
+      setVariants((prev) => {
+        const matchedExisting: VariantForm[] = [];
+        const matchedCombos = new Set<string>();
+
+        prev.forEach((v) => {
+          const isStillValid = names.every((n) =>
+            optValMatches(n, v.options[n] ?? "", v.options[n] ?? "")
           );
-          return (
-            prev.find((v) => names.every((n) => optValMatches(n, v.options[n] ?? "", opts[n]))) ?? {
-              options: opts,
-              price_modifier: 0,
-              stock_quantity: 0,
-              active: true,
-              existingImages: [],
-              newImages: [],
-            }
-          );
-        })
-      );
+          if (isStillValid) {
+            matchedExisting.push(v);
+            matchedCombos.add(JSON.stringify(v.options));
+          }
+        });
+
+        const newVariants = newCombos
+          .filter((opts) => !matchedCombos.has(JSON.stringify(opts)))
+          .map((opts) => ({
+            options: opts,
+            price_modifier: 0,
+            stock_quantity: 0,
+            active: true,
+            existingImages: [],
+            newImages: [],
+          }));
+
+        return [...matchedExisting, ...newVariants];
+      });
     }, 500);
     return () => clearTimeout(timer);
   }, [variantDefinitions]);

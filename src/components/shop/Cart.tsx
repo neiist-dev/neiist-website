@@ -8,6 +8,7 @@ import { Squash } from "hamburger-react";
 import { CartItem } from "@/types/shop/product";
 import styles from "@/styles/components/shop/Cart.module.css";
 import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
+import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 
 export default function Cart() {
   const { isOpen, closeCart } = useCartPopup();
@@ -98,6 +99,13 @@ export default function Cart() {
                 variantObj?.options ?? undefined,
                 variantObj?.label ?? undefined
               );
+
+              const isJantarDeCurso = isJantarDeCursoCategory(item.product.category);
+              const maxQty = (() => {
+                if (item.product.stock_type !== "limited") return 99;
+                if (item.product.variants.length === 0) return item.product.stock_quantity ?? 0;
+                return variantObj?.stock_quantity ?? 0;
+              })();
               return (
                 <div key={idx} className={styles.item}>
                   <div className={styles.imageWrapper}>
@@ -144,7 +152,14 @@ export default function Cart() {
                       <div className={styles.quantityBox}>
                         <button onClick={() => handleQuantity(idx, -1)}>-</button>
                         <span>{item.quantity}</span>
-                        <button onClick={() => handleQuantity(idx, 1)}>+</button>
+                        <button
+                          onClick={() => handleQuantity(idx, 1)}
+                          disabled={
+                            isJantarDeCurso ||
+                            (item.product.stock_type === "limited" && item.quantity >= maxQty)
+                          }>
+                          +
+                        </button>
                       </div>
                     </div>
                   </div>
