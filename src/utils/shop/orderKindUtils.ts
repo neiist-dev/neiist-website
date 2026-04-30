@@ -5,7 +5,7 @@ import {
   type OrderKindRules,
   type OrderProgressStep,
 } from "@/types/shop/orderKind";
-import type { PaymentMethod } from "@/types/shop/payment";
+import { POS_PAYMENT_METHODS, type PaymentMethod } from "@/types/shop/payment";
 import { ORDER_STATUS_CONFIG, type OrderStatus } from "@/types/shop/orderStatus";
 
 const ORDER_KIND_BY_CATEGORY: Record<string, Exclude<OrderKind, "normal">> = {
@@ -57,7 +57,8 @@ export function getOrderKindRules(
 ): OrderKindRules {
   const specialConfig = orderKind === "normal" ? undefined : SPECIAL_ORDER_CONFIG[orderKind];
 
-  const defaultPaymentMethods: readonly PaymentMethod[] = ["sumup", "in-person"];
+  const defaultPaymentMethods: readonly PaymentMethod[] =
+    source === "pos" || source === "mobile-pos" ? POS_PAYMENT_METHODS : ["sumup", "in-person"];
   const paymentMethods =
     specialConfig?.paymentMethodsBySource?.[source] ??
     specialConfig?.paymentMethods ??
