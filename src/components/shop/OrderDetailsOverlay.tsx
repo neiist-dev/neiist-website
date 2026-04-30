@@ -26,6 +26,15 @@ function formatVariant(options?: Record<string, string>, label?: string) {
     .join(", ");
 }
 
+function getPaymentDisplay(order: Order) {
+  if (!order.payment_method) return "";
+
+  if (order.payment_method === "mbway")
+    return `${getPaymentLabel(order.payment_method)} - ${order.mbway_number}`;
+
+  return getPaymentLabel(order.payment_method);
+}
+
 interface OrderDetailOverlayProps {
   orderId: number;
   orders: Order[];
@@ -267,7 +276,7 @@ export default function OrderDetailOverlay({
             <div className={styles.orderNumber}>
               {order.payment_reference ? order.payment_reference : order.order_number}
               <FaArrowRightLong />
-              {order.payment_method ? getPaymentLabel(order.payment_method) : ""}
+              {getPaymentDisplay(order)}
             </div>
 
             <div className={styles.infoGrid}>
@@ -453,33 +462,44 @@ export default function OrderDetailOverlay({
 
             {canManage ? (
               <div className={styles.section}>
-                <h3>Estado</h3>
-                <div className={styles.actionButtons}>
-                  <button
-                    className={styles.buttonOutline}
-                    onClick={() => setShowPaymentOverlay(true)}
-                    disabled={!canSetPaid}>
-                    Pagar
-                  </button>
-                  <button
-                    className={styles.buttonPrimary}
-                    onClick={() => setPendingStatus("ready")}
-                    disabled={!canSetReady}>
-                    Marcar como Pronto
-                  </button>
-                  <button
-                    className={styles.buttonPrimary}
-                    onClick={() => setPendingStatus("delivered")}
-                    disabled={!canSetDelivered}>
-                    Marcar como Entregue
-                  </button>
-                  <button
-                    className={styles.buttonOutline}
-                    onClick={() => setPendingStatus("cancelled")}
-                    disabled={!canCancel}>
-                    Cancelar Encomenda
-                  </button>
-                </div>
+                {order.status !== "cancelled" && (
+                  <>
+                    <h3>Estado</h3>
+                    <div className={styles.actionButtons}>
+                      {canSetPaid && (
+                        <button
+                          className={styles.buttonPrimary}
+                          onClick={() => setShowPaymentOverlay(true)}>
+                          Pagar
+                        </button>
+                      )}
+
+                      {canSetReady && (
+                        <button
+                          className={styles.buttonPrimary}
+                          onClick={() => setPendingStatus("ready")}>
+                          Marcar como Pronto
+                        </button>
+                      )}
+
+                      {canSetDelivered && (
+                        <button
+                          className={styles.buttonPrimary}
+                          onClick={() => setPendingStatus("delivered")}>
+                          Marcar como Entregue
+                        </button>
+                      )}
+
+                      {canCancel && (
+                        <button
+                          className={styles.buttonOutline}
+                          onClick={() => setPendingStatus("cancelled")}>
+                          Cancelar Encomenda
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
                 <p className={styles.timestamp}>
                   Criada por {order.created_by || "-"} em{" "}
                   {new Date(order.created_at).toLocaleString("pt-PT")}

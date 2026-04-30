@@ -21,6 +21,7 @@ import {
   ActivityProperties,
   ActivityEvent,
 } from "@/types/events";
+import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -827,21 +828,34 @@ export function mapDeleteProductDbErrorToResponse(
 
 export const getAllOrders = async (): Promise<Order[]> => {
   const { rows } = await db_query<dbOrder>(`SELECT * FROM neiist.get_all_orders()`);
-  return rows.map(mapdbOrderToOrder);
+  return rows.map((row) => ({
+    ...mapdbOrderToOrder(row),
+    mbway_number: getMbWayNumberForOrder(row.order_number),
+  }));
 };
 
 export const getOrderById = async (orderId: number): Promise<Order | null> => {
   const {
     rows: [row],
   } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order($1, NULL)`, [orderId]);
-  return row ? mapdbOrderToOrder(row) : null;
+  return row
+    ? {
+        ...mapdbOrderToOrder(row),
+        mbway_number: getMbWayNumberForOrder(row.order_number),
+      }
+    : null;
 };
 
 export const getOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
   const {
     rows: [row],
   } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order($1, NULL)`, [orderNumber]);
-  return row ? mapdbOrderToOrder(row) : null;
+  return row
+    ? {
+        ...mapdbOrderToOrder(row),
+        mbway_number: getMbWayNumberForOrder(row.order_number),
+      }
+    : null;
 };
 
 export const updateOrder = async (

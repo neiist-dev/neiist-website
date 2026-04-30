@@ -65,12 +65,12 @@ export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialO
       {
         key: "pending",
         label: "Pendente",
-        activeStatuses: ["pending", "paid", "ready", "delivered"],
+        activeStatuses: ["pending", "paid"],
       },
       {
         key: "confirmed",
         label: "Confirmado",
-        activeStatuses: ["paid", "ready", "delivered"],
+        activeStatuses: ["paid"],
       },
     ],
   },
