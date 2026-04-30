@@ -1,5 +1,13 @@
 # neiist
 
+## [1.10.2](https://github.com/neiist-dev/neiist-website/compare/v1.10.1...v1.10.2) (2026-04-30)
+
+
+### Bug Fixes
+
+* **email:** add open hours for NEIIST to email and ShopCheckoutOverlay ([7f1732d](https://github.com/neiist-dev/neiist-website/commit/7f1732dfbcce78d1a0a82acc08c9e5701b214051))
+* **shop:** progres steps for special categories, show on order details ([3026a0a](https://github.com/neiist-dev/neiist-website/commit/3026a0ab122d1a31da04bb932ab6386b2325fc03))
+
 ## 1.0.0 (2026-04-30)
 
 
