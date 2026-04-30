@@ -149,7 +149,57 @@
   color: #3f3f3f;
   line-height: 1.5;
   margin: 0 0 2rem;
-  white-space: pre-wrap;
+}
+
+.description > * {
+  margin: 0;
+}
+
+.description > * + * {
+  margin-top: 0.75rem;
+}
+
+.description h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-top: 1.25rem;
+}
+
+.description h3 {
+  font-size: 1.25rem;
+  color: #1f2937;
+  margin-top: 1rem;
+}
+
+.description p {
+  font-size: 1rem;
+}
+
+.description strong {
+  color: #1f2937;
+}
+
+.description em {
+  font-style: italic;
+}
+
+.description a {
+  color: var(--secondary-colour);
+  text-decoration: underline;
+}
+
+.description ul,
+.description ol {
+  padding-left: 1.25rem;
+}
+
+.description li {
+  margin: 0.25rem 0;
+}
+
+.description small {
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 
 .label {

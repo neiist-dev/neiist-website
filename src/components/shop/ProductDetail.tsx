@@ -8,6 +8,7 @@ import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
 import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
+import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 
 interface ProductDetailProps {
@@ -232,7 +233,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         <div className={styles.infoSection}>
           <h1 className={styles.title}>{product.name}</h1>
           <div className={styles.price}>{price.toFixed(2)}€</div>
-          <p className={styles.description}>{product.description}</p>
+          <div className={styles.description}>
+            <ReactMarkdown
+              components={{
+                a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+              }}>
+              {product.description}
+            </ReactMarkdown>
+          </div>
 
           {optionNames.map((optionName, idx) => {
             const isColor = isColorKey(optionName);

@@ -574,7 +574,8 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
                 <>
                   Para a tua encomenda ser confirmada conclui o pagamento.
                   <br />
-                  Presencialmente na {getCampusLocation(order?.campus)}.
+                  Presencialmente na {getCampusLocation(order?.campus)}, consulta o email para os
+                  horários.
                 </>
               )
             ) : (
