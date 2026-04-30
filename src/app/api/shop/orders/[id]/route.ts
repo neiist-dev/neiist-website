@@ -13,6 +13,7 @@ import { PAYMENT_METHODS } from "@/types/shop/payment";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { User } from "@/types/user";
 import { Order } from "@/types/shop/order";
+import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 import {
   getPaidOrderEmailTemplate,
   getPendingOrderEmailTemplate,
@@ -48,7 +49,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!isOrderOwner(order, user!) && !isShopManagerOrAbove(roles ?? []))
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
-  return NextResponse.json(order);
+  return NextResponse.json({
+    ...order,
+    mbway_number: getMbWayNumberForOrder(order.order_number),
+  });
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -271,6 +271,14 @@
   animation: checkPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+.checkIcon svg {
+  display: block;
+  margin: 0;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+}
+
 .spinnerWrapper {
   margin: 0 auto 24px;
   display: flex;

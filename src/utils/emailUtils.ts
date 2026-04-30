@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { OrderKind } from "@/types/shop/orderKind";
 import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
-import { getColorFromOptions } from "@/utils/shop/shopUtils";
+import { formatCampus, getCampusLocation, getColorFromOptions } from "@/utils/shop/shopUtils";
 import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 
 interface EmailOptions {
@@ -63,23 +63,6 @@ type OrderEmailItem = {
   quantity: number;
   unit_price: number;
 };
-
-function formatCampus(campus?: string): string {
-  if (!campus) return "";
-
-  return campus.charAt(0).toUpperCase() + campus.slice(1);
-}
-
-function getCampusLocation(campus?: string): string {
-  if (!campus) return "uma banca NEIIST";
-
-  const campusLower = campus.toLowerCase();
-  if (campusLower === "alameda") return "Sala NEIIST Alameda (Informática I 3.03)";
-
-  if (campusLower === "taguspark") return "Sala NEIIST Taguspark (1 - 4.14)";
-
-  return `banca NEIIST em ${formatCampus(campus)}`;
-}
 
 function formatDeadline(pickupDeadline?: string | null): string {
   if (!pickupDeadline) return "72 horas após a criação da encomenda";

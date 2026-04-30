@@ -129,7 +129,7 @@ export default async function DinnerPage() {
           <Link
             href={`/shop/${jantarProduct.id}`}
             className={`${styles.button} ${handelsonTwo.className}`}>
-            Saber mais
+            Comprar Já
           </Link>
         </div>
 

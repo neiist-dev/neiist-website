@@ -9,6 +9,7 @@ export enum Campus {
 export interface Order {
   id: number;
   order_number: string;
+  mbway_number?: string | null;
   customer_name: string;
   user_istid?: string;
   customer_email?: string;

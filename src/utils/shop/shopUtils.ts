@@ -100,3 +100,20 @@ export function getCompactProductsSummary(items: OrderItem[]): string[] {
       .join(" ");
   });
 }
+
+export function formatCampus(campus?: string): string {
+  if (!campus) return "";
+
+  return campus.charAt(0).toUpperCase() + campus.slice(1);
+}
+
+export function getCampusLocation(campus?: string): string {
+  if (!campus) return "uma banca NEIIST";
+
+  const campusLower = campus.toLowerCase();
+  if (campusLower === "alameda") return "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)";
+
+  if (campusLower === "taguspark") return "Sala do NEIIST Taguspark (1 - 4.14)";
+
+  return `banca NEIIST em ${formatCampus(campus)}`;
+}

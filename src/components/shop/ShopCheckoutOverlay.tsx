@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FaCheck } from "react-icons/fa";
+import { IoIosWarning } from "react-icons/io";
 import { useEffect, useRef, useCallback, useState } from "react";
 import styles from "@/styles/components/shop/ShopCheckoutOverlay.module.css";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
@@ -18,6 +19,7 @@ import type {
   CreateCheckoutResponse,
   ApiErrorResponse,
 } from "@/types/sumup";
+import { getCampusLocation } from "@/utils/shop/shopUtils";
 
 type FlowState = "loading" | "widget" | "processing" | "success" | "error";
 type VerifyResult = "paid" | "pending" | "failed";
@@ -38,6 +40,8 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
   const router = useRouter();
   const isInPerson = paymentMethod === "in-person" || paymentMethod === "mbway";
   const isOnlinePayment = paymentMethod === "sumup" || paymentMethod === "apple-pay";
+  const shouldLoadOrder =
+    isOnlinePayment || paymentMethod === "mbway" || paymentMethod === "in-person";
 
   const [flowState, setFlowState] = useState<FlowState>("loading");
   const [checkoutId, setCheckoutId] = useState<string | null>(null);
@@ -382,7 +386,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
   );
 
   useEffect(() => {
-    if (!isOnlinePayment || !orderId) return;
+    if (!shouldLoadOrder || !orderId) return;
 
     let cancelled = false;
     fetch(`/api/shop/orders/${orderId}`)
@@ -406,7 +410,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [isOnlinePayment, orderId]);
+  }, [shouldLoadOrder, orderId]);
 
   useEffect(() => {
     if (!isOnlinePayment || !orderId || checkoutId) return;
@@ -538,24 +542,39 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       <div className={styles.overlay}>
         <div className={styles.panel}>
           <div className={styles.checkIcon}>
-            <FaCheck size={48} />
+            {/*TODO: fix css so it has warning and cehck, separated componets */}
+            {isInPerson ? <IoIosWarning size={75} /> : <FaCheck size={48} />}
           </div>
           <h2 className={styles.title}>
-            {isInPerson ? "Encomenda Registada!" : "Encomenda Submetida!"}
+            {isInPerson ? "Encomenda Pendente!" : "Encomenda Submetida!"}
           </h2>
           <p className={styles.muted}>
             {isInPerson ? (
               paymentMethod === "mbway" ? (
                 <>
-                  A tua encomenda foi registada.
+                  Para a tua encomenda ser confirmada conclui o pagamento.
                   <br />
-                  Paga por MBWay de acordo com as instruções no email para concluir a compra.
+                  {order ? (
+                    <>
+                      Transfere €{order.total_amount.toFixed(2)} via MBWay para o número:
+                      <br />
+                      <strong>{order.mbway_number ?? "Número indisponível"}</strong>
+                      <br />
+                      <strong>Instruções:</strong> na descrição da transferência indica{" "}
+                      <strong>{order.order_number}</strong> para conseguirmos identificar o teu
+                      pagamento.
+                      <br />
+                      Para mais informações por favor consulta o email.
+                    </>
+                  ) : (
+                    "A carregar os detalhes do pagamento..."
+                  )}
                 </>
               ) : (
                 <>
-                  A tua encomenda foi registada.
+                  Para a tua encomenda ser confirmada conclui o pagamento.
                   <br />
-                  Paga presencialmente na banca.
+                  Presencialmente na {getCampusLocation(order?.campus)}.
                 </>
               )
             ) : (
@@ -568,7 +587,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           </p>
           <div className={styles.actionButtons}>
             <button onClick={handleViewOrders} className={styles.btnPrimary}>
-              Ver Encomendas
+              {isInPerson ? "Continuar" : "Ver Encomendas"}
             </button>
           </div>
         </div>
