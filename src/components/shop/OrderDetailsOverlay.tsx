@@ -13,17 +13,14 @@ import { FaCheck, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "sonner";
 import { FiChevronDown, FiChevronUp, FiEdit2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
+import { getColorFromOptions, isColorKey, formatVariantSimple } from "@/utils/shop/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
-  if (label) return label;
-  if (!options) return "-";
-  return Object.entries(options)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join(", ");
+  const { text } = formatVariantSimple(options ?? undefined, label ?? undefined);
+  return text || "-";
 }
 
 function getPaymentDisplay(order: Order) {

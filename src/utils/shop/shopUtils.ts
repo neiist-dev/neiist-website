@@ -117,3 +117,28 @@ export function getCampusLocation(campus?: string): string {
 
   return `banca NEIIST em ${formatCampus(campus)}`;
 }
+
+export function formatVariantSimple(
+  options?: Record<string, string> | null,
+  label?: string | null
+): { text: string; colorInfo: { name?: string; hex?: string } } {
+  const colorInfo = getColorFromOptions(options ?? undefined, label ?? undefined);
+  if (!options || Object.keys(options).length === 0) {
+    return { text: label || "", colorInfo };
+  }
+
+  const parts: string[] = [];
+
+  if (colorInfo.name) parts.push(colorInfo.name);
+
+  const size = options.Tamanho || options.Size;
+  if (size) parts.push(size);
+
+  for (const [key, value] of Object.entries(options)) {
+    if (!isColorKey(key) && key !== "Tamanho" && key !== "Size") {
+      parts.push(value);
+    }
+  }
+
+  return { text: parts.filter(Boolean).join(" - "), colorInfo };
+}

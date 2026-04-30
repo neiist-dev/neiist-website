@@ -574,8 +574,20 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
                 <>
                   Para a tua encomenda ser confirmada conclui o pagamento.
                   <br />
-                  Presencialmente na {getCampusLocation(order?.campus)}, consulta o email para os
-                  horários.
+                  Presencialmente na {getCampusLocation(order?.campus)}
+                  {order?.campus === "alameda" ? (
+                    <>
+                      <br />
+                      Consulta o email para os horários ou vê o horário aqui:{" "}
+                      <a
+                        href="https://docs.google.com/spreadsheets/d/10JFhajL0b3Qp9hGFTEFhgoqX9Psa7klIsyYanibAuO4/edit?gid=0#gid=0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#2863FD", textDecoration: "underline" }}>
+                        Horário
+                      </a>
+                    </>
+                  ) : null}
                 </>
               )
             ) : (

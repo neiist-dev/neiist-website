@@ -1,7 +1,13 @@
 import nodemailer from "nodemailer";
 import { OrderKind } from "@/types/shop/orderKind";
 import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
-import { formatCampus, getCampusLocation, getColorFromOptions } from "@/utils/shop/shopUtils";
+import {
+  formatCampus,
+  getCampusLocation,
+  getColorFromOptions,
+  formatVariantSimple,
+  isColorKey,
+} from "@/utils/shop/shopUtils";
 import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 
 interface EmailOptions {
@@ -18,16 +24,38 @@ export function formatVariantLabel(
   variantLabel?: string,
   variantOptions?: Record<string, string>
 ): string {
-  const colorInfo = getColorFromOptions(variantOptions, variantLabel);
-  const colorName = colorInfo.name ?? "";
-  let size = "";
-  if (variantOptions) size = variantOptions.Tamanho || variantOptions.Size || "";
+  const { text, colorInfo } = formatVariantSimple(
+    variantOptions ?? undefined,
+    variantLabel ?? undefined
+  );
+  if (!text) return "";
 
-  if (!size && variantLabel) {
-    const m = variantLabel.match(/(XS|S|M|L|XL|XXL)/);
-    if (m) size = m[1];
+  if (colorInfo.hex) {
+    return `<span style="display:inline-block;width:12px;height:12px;border-radius:12px;background:${colorInfo.hex};margin-right:8px;vertical-align:middle;"></span>${text}`;
   }
-  return [colorName, size].filter(Boolean).join(" - ");
+
+  return text;
+}
+
+export function formatVariantForEmail(variantOptions?: Record<string, string>): string {
+  if (!variantOptions || Object.keys(variantOptions).length === 0) return "";
+
+  const colorInfo = getColorFromOptions(variantOptions);
+  const parts: string[] = [];
+  if (colorInfo.hex)
+    parts.push(
+      `<span style="display:inline-block;width:12px;height:12px;border-radius:12px;background:${colorInfo.hex};margin-right:6px;vertical-align:middle;"></span>`
+    );
+
+  const optionParts: string[] = [];
+  for (const [key, value] of Object.entries(variantOptions)) {
+    if (!isColorKey(key)) {
+      optionParts.push(`${key}: ${value}`);
+    }
+  }
+  if (optionParts.length > 0) parts.push(optionParts.join(" "));
+
+  return parts.join("");
 }
 
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
@@ -81,22 +109,19 @@ function formatDeadline(pickupDeadline?: string | null): string {
 
 function renderItemsTable(items: OrderEmailItem[], total: number): string {
   const itemsHtml = items
-    .map(
-      (item) => `
+    .map((item) => {
+      const variant = formatVariantForEmail(item.variant_options);
+      const variantText = variant ? ` - ${variant}` : "";
+      return `
         <tr>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef;">
-            ${item.product_name}
-            ${
-              formatVariantLabel(item.variant_label, item.variant_options)
-                ? ` - ${formatVariantLabel(item.variant_label, item.variant_options)}`
-                : ""
-            }
+            ${item.product_name}${variantText}
           </td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: center;">${item.quantity}</td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: right;">€${item.unit_price.toFixed(2)}</td>
         </tr>
-      `
-    )
+      `;
+    })
     .join("");
 
   return `
@@ -253,8 +278,15 @@ export function getJantarDeCursoPendingTemplate(
       <p>Por favor responde a este email ou contacta a equipa NEIIST para receber o número MB Way de pagamento.</p>
     `
     : `
-      <p><strong>Pagamento:</strong> presencial na sala do NEIIST (${getCampusLocation(campus)}).</p>
-      <p>Deve ser feito dentro de um prazo de 72 horas após o pedido.</p>
+      <p>
+        <strong>Pagamento:</strong> presencialmente na (${getCampusLocation(campus)}).
+        ${
+          campus === "alameda"
+            ? `Consulta o horário aqui: <a href="https://docs.google.com/spreadsheets/d/10JFhajL0b3Qp9hGFTEFhgoqX9Psa7klIsyYanibAuO4/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
+            : ""
+        }
+      </p>
+      <p>O pagamento deve ser efetuado no prazo de 72 horas após a criação da encomenda.</p>
     `;
 
   return `
