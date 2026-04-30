@@ -505,21 +505,25 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
           <div className={styles.expandableWrapper}>
             <div className={styles.expandSection}>
-              <button
-                className={styles.expandButton}
-                onClick={() => setShowTaxInfo((v) => !v)}
-                aria-expanded={showTaxInfo}>
-                <span className={styles.expandText}>
-                  Taxas incluídas. Entrega calculada no checkout.
-                </span>
-                <FaChevronDown
-                  className={`${styles.expandIcon} ${showTaxInfo ? styles.expanded : ""}`}
-                />
-              </button>
-              {showTaxInfo && (
-                <div className={styles.expandContent}>
-                  As taxas são calculadas automaticamente com base na sua localização.
-                </div>
+              {!isSpecialOrderKind && (
+                <>
+                  <button
+                    className={styles.expandButton}
+                    onClick={() => setShowTaxInfo((v) => !v)}
+                    aria-expanded={showTaxInfo}>
+                    <span className={styles.expandText}>
+                      Taxas incluídas. Entrega calculada no checkout.
+                    </span>
+                    <FaChevronDown
+                      className={`${styles.expandIcon} ${showTaxInfo ? styles.expanded : ""}`}
+                    />
+                  </button>
+                  {showTaxInfo && (
+                    <div className={styles.expandContent}>
+                      As taxas são calculadas automaticamente com base na sua localização.
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div className={styles.expandSection}>
