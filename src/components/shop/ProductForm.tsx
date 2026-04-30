@@ -67,18 +67,15 @@ const normalizeOptVal = (type: string, raw: string) => {
 const optValMatches = (type: string, varVal: string, grpVal: string) =>
   isColorKey(type) ? splitNameHex(varVal).hex === splitNameHex(grpVal).hex : varVal === grpVal;
 
-const toBase64 = (file: File): Promise<string> =>
-  new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res((reader.result as string).split(",")[1]);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-
-const toImageUpload = async (file: File) => ({
-  imageBase64: await toBase64(file),
-  imageName: file.name,
-});
+async function uploadFiles(files: File[]): Promise<string[]> {
+  if (!files || files.length === 0) return [];
+  const fd = new FormData();
+  files.forEach((f) => fd.append("files", f));
+  const res = await fetch("/api/shop/uploads", { method: "POST", body: fd });
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json();
+  return data.paths ?? [];
+}
 
 const cartesian = <T,>(sets: T[][]): T[][] =>
   sets.reduce<T[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
@@ -454,34 +451,41 @@ export default function ProductForm({
         (id) => !currentVariantIds.has(id)
       );
 
-      const payload = {
-        id: product?.id,
-        ...form,
-        images: productImages.existing,
-        imageUploads: await Promise.all(productImages.new.map((f) => toImageUpload(f.file))),
-        group_image_uploads: Object.fromEntries(
-          await Promise.all(
-            Object.entries(groupImages).map(async ([k, v]) => [
-              k,
-              {
-                existing: v.existing,
-                price_modifier: v.price_modifier,
-                uploads: await Promise.all(v.newFiles.map((f) => toImageUpload(f.file))),
-              },
-            ])
-          )
-        ),
-        variants: await Promise.all(
-          variants.map(async (v) => ({
+      const productImagePaths: string[] = [...productImages.existing];
+      if (productImages.new.length > 0) {
+        const uploaded = await uploadFiles(productImages.new.map((f) => f.file));
+        productImagePaths.push(...uploaded);
+      }
+
+      const groupUploadsEntries = await Promise.all(
+        Object.entries(groupImages).map(async ([k, v]) => {
+          const uploads =
+            v.newFiles.length > 0 ? await uploadFiles(v.newFiles.map((f) => f.file)) : [];
+          return [k, { existing: v.existing, price_modifier: v.price_modifier, uploads }];
+        })
+      );
+
+      const variantsPayload = await Promise.all(
+        variants.map(async (v) => {
+          const uploads =
+            v.newImages.length > 0 ? await uploadFiles(v.newImages.map((f) => f.file)) : [];
+          return {
             id: v.id,
             options: v.options,
             price_modifier: v.price_modifier,
             stock_quantity: v.stock_quantity,
             active: v.active,
-            images: v.existingImages,
-            imageUploads: await Promise.all(v.newImages.map((f) => toImageUpload(f.file))),
-          }))
-        ),
+            images: [...v.existingImages, ...uploads],
+          };
+        })
+      );
+
+      const payload = {
+        id: product?.id,
+        ...form,
+        images: productImagePaths,
+        group_image_uploads: Object.fromEntries(groupUploadsEntries),
+        variants: variantsPayload,
         variantsToDelete,
         order_deadline: form.order_deadline?.toISOString() ?? null,
       };
