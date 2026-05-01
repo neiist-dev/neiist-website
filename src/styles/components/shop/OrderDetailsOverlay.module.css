@@ -120,7 +120,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .infoColumnWide {
@@ -133,8 +133,22 @@
   gap: 0.25rem;
 }
 
+.infoItemInline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .infoItem label {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.infoItemInline label {
+  flex-shrink: 0;
+  font-size: 0.95rem;
   color: var(--foreground-colour);
   margin: 0;
 }
@@ -143,6 +157,12 @@
   font-size: 0.95rem;
   margin: 0;
   word-break: break-word;
+}
+
+.infoItemInline p {
+  font-size: 0.95rem;
+  margin: 0;
+  word-break: normal;
 }
 
 .table {

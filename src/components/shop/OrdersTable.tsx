@@ -693,9 +693,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                         {selectedOrders.has(String(order.id)) && <FiCheck size={16} />}
                       </div>
                     </td>
-                    <td>
-                      {order.payment_reference ? order.payment_reference : order.order_number}
-                    </td>
+                    <td>{order.order_number}</td>
                     <td>{new Date(order.created_at).toLocaleDateString("pt-PT")}</td>
                     <td>{getFirstAndLastName(order.customer_name)}</td>
                     <td className={styles.campusCell}>

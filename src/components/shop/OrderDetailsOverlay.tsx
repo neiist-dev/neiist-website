@@ -271,7 +271,7 @@ export default function OrderDetailOverlay({
             </div>
 
             <div className={styles.orderNumber}>
-              {order.payment_reference ? order.payment_reference : order.order_number}
+              {order.order_number}
               <FaArrowRightLong />
               {getPaymentDisplay(order)}
             </div>
@@ -312,6 +312,14 @@ export default function OrderDetailOverlay({
                   <p>{order.customer_phone || "-"}</p>
                 </div>
               </div>
+              {order.payment_reference && (
+                <div className={styles.infoColumn}>
+                  <div className={styles.infoItemInline}>
+                    <label>Referência de Pagamento:</label>
+                    <p>{order.payment_reference}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className={styles.section}>
