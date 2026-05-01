@@ -1,5 +1,12 @@
 # neiist
 
+## [1.12.0](https://github.com/neiist-dev/neiist-website/compare/v1.11.0...v1.12.0) (2026-05-01)
+
+
+### Features
+
+* **shop:** allow selling to guest user for now only admin can via ([a3f9651](https://github.com/neiist-dev/neiist-website/commit/a3f96514f2f194dc9962e224859e10f74ac7095c))
+
 ## [1.11.0](https://github.com/neiist-dev/neiist-website/compare/v1.10.2...v1.11.0) (2026-05-01)
 
 
