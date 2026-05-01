@@ -1,5 +1,18 @@
 # neiist
 
+## [1.11.0](https://github.com/neiist-dev/neiist-website/compare/v1.10.2...v1.11.0) (2026-05-01)
+
+
+### Features
+
+* **orderStatus:** refactor order status so they are centerlized and can ([dc0d287](https://github.com/neiist-dev/neiist-website/commit/dc0d287dff9d2b9999d1e6eff6c3d2eaa168d9e2))
+
+
+### Bug Fixes
+
+* **dinnerProdcut:** allow multiple products of same special category ([41e5fe8](https://github.com/neiist-dev/neiist-website/commit/41e5fe80b49971a4f588a9164eac4cb5a2078a6e))
+* **shop:** make payment_reference and order number visible at all times ([18583ce](https://github.com/neiist-dev/neiist-website/commit/18583ce132c12303c347838cb3b757c59a19cdb2))
+
 ## [1.10.2](https://github.com/neiist-dev/neiist-website/compare/v1.10.1...v1.10.2) (2026-04-30)
 
 
