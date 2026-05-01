@@ -19,11 +19,16 @@ export default async function DinnerPage() {
   const userRoles = await serverCheckRoles([]);
   const products = await getAllProducts(true);
   const productById = new Map(products.map((product) => [product.id, product]));
-  const jantarProduct = products.find((product) => isJantarDeCursoCategory(product.category));
 
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
   const now = new Date();
   const isUnlocked = now >= unlockDate;
+
+  const jantarProduct = Array.from(products.values()).find(
+    (product) =>
+      isJantarDeCursoCategory(product.category) &&
+      (!product.order_deadline || new Date(product.order_deadline) > now)
+  );
 
   if (!jantarProduct) {
     return (
