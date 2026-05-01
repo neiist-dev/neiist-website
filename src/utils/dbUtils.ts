@@ -752,23 +752,29 @@ export const newOrder = async (
 ): Promise<Order | null> => {
   const {
     rows: [row],
-  } = await db_query<dbOrder>(`SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [
-    order.user_istid ?? null,
-    order.customer_nif ?? null,
-    order.campus ?? null,
-    order.notes ?? null,
-    order.payment_method ?? null,
-    order.payment_reference ?? null,
-    order.created_by ?? null,
-    JSON.stringify(
-      order.items.map((i) => ({
-        product_id: i.product_id,
-        variant_id: i.variant_id ?? null,
-        quantity: i.quantity,
-      }))
-    ),
-    stockOverride,
-  ]);
+  } = await db_query<dbOrder>(
+    `SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+    [
+      order.user_istid ?? null,
+      order.customer_name ?? null,
+      order.customer_email ?? null,
+      order.customer_phone ?? null,
+      order.customer_nif ?? null,
+      order.campus ?? null,
+      order.notes ?? null,
+      order.payment_method ?? null,
+      order.payment_reference ?? null,
+      order.created_by ?? null,
+      JSON.stringify(
+        order.items.map((i) => ({
+          product_id: i.product_id,
+          variant_id: i.variant_id ?? null,
+          quantity: i.quantity,
+        }))
+      ),
+      stockOverride,
+    ]
+  );
   return row ? mapdbOrderToOrder(row) : null;
 };
 

@@ -243,6 +243,9 @@ CREATE TABLE neiist.orders (
   id SERIAL PRIMARY KEY,
   order_number TEXT NOT NULL UNIQUE DEFAULT neiist.generate_order_number(),
   user_istid VARCHAR(10) REFERENCES neiist.users(istid),
+  customer_name TEXT,
+  customer_email TEXT,
+  customer_phone TEXT,
   nif TEXT,
   campus TEXT,
   notes TEXT,
@@ -257,7 +260,11 @@ CREATE TABLE neiist.orders (
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  status neiist.shop_order_status_enum NOT NULL DEFAULT 'pending'
+  status neiist.shop_order_status_enum NOT NULL DEFAULT 'pending',
+  CONSTRAINT orders_identity_mode_chk CHECK (
+    user_istid IS NULL
+    OR (customer_name IS NULL AND customer_email IS NULL AND customer_phone IS NULL)
+  )
 );
 
 CREATE TABLE neiist.order_items (
@@ -1688,6 +1695,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- New order created
 CREATE OR REPLACE FUNCTION neiist.new_order(
   p_user_istid VARCHAR(10),
+  p_customer_name TEXT,
+  p_customer_email TEXT,
+  p_customer_phone TEXT,
   p_nif TEXT,
   p_campus TEXT,
   p_notes TEXT,
@@ -1722,6 +1732,9 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
 ) AS $$
 DECLARE
   v_order_id INTEGER;
+  v_customer_name TEXT;
+  v_customer_email TEXT;
+  v_customer_phone TEXT;
   it JSONB;
   v_pid INTEGER;
   v_vid INTEGER;
@@ -1737,8 +1750,26 @@ DECLARE
   v_v_label TEXT;
   v_v_opts JSONB;
 BEGIN
+  v_customer_name := CASE
+    WHEN p_user_istid IS NOT NULL THEN NULL
+    ELSE NULLIF(BTRIM(p_customer_name), '')
+  END;
+
+  v_customer_email := CASE
+    WHEN p_user_istid IS NOT NULL THEN NULL
+    ELSE NULLIF(BTRIM(p_customer_email), '')
+  END;
+
+  v_customer_phone := CASE
+    WHEN p_user_istid IS NOT NULL THEN NULL
+    ELSE NULLIF(BTRIM(p_customer_phone), '')
+  END;
+
   INSERT INTO neiist.orders(
     user_istid,
+    customer_name,
+    customer_email,
+    customer_phone,
     nif,
     campus,
     notes,
@@ -1748,6 +1779,9 @@ BEGIN
   )
   VALUES (
     p_user_istid,
+    v_customer_name,
+    v_customer_email,
+    v_customer_phone,
     p_nif,
     p_campus,
     p_notes,
@@ -1860,10 +1894,24 @@ BEGIN
   RETURN QUERY
   SELECT
     o.id, o.order_number,
-    COALESCE(u.name, '') AS customer_name,
+    CASE
+      WHEN o.user_istid IS NULL THEN COALESCE(o.customer_name, '')
+      ELSE COALESCE(u.name, '')
+    END AS customer_name,
     o.user_istid,
-    u.email AS customer_email,
-    (SELECT c.contact_value FROM neiist.user_contacts c WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone' LIMIT 1) AS customer_phone,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_email
+      ELSE u.email
+    END AS customer_email,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_phone
+      ELSE (
+        SELECT c.contact_value
+        FROM neiist.user_contacts c
+        WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone'
+        LIMIT 1
+      )
+    END AS customer_phone,
     o.nif AS customer_nif,
      o.campus,
     o.pickup_deadline,
@@ -1933,16 +1981,25 @@ BEGIN
   SELECT
     o.id,
     o.order_number,
-    COALESCE(u.name, '') AS customer_name,
+    CASE
+      WHEN o.user_istid IS NULL THEN COALESCE(o.customer_name, '')
+      ELSE COALESCE(u.name, '')
+    END AS customer_name,
     o.user_istid,
-    u.email AS customer_email,
-    (
-      SELECT c.contact_value
-      FROM neiist.user_contacts c
-      WHERE c.user_istid = o.user_istid
-        AND c.contact_type = 'phone'
-      LIMIT 1
-    ) AS customer_phone,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_email
+      ELSE u.email
+    END AS customer_email,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_phone
+      ELSE (
+        SELECT c.contact_value
+        FROM neiist.user_contacts c
+        WHERE c.user_istid = o.user_istid
+          AND c.contact_type = 'phone'
+        LIMIT 1
+      )
+    END AS customer_phone,
     o.nif AS customer_nif,
     o.campus,
     o.pickup_deadline,
@@ -2016,15 +2073,24 @@ BEGIN
   SELECT
     o.id,
     o.order_number,
-    COALESCE(u.name, '') AS customer_name,
+    CASE
+      WHEN o.user_istid IS NULL THEN COALESCE(o.customer_name, '')
+      ELSE COALESCE(u.name, '')
+    END AS customer_name,
     o.user_istid,
-    u.email AS customer_email,
-    (
-      SELECT c.contact_value
-      FROM neiist.user_contacts c
-      WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone'
-      LIMIT 1
-    ) AS customer_phone,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_email
+      ELSE u.email
+    END AS customer_email,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_phone
+      ELSE (
+        SELECT c.contact_value
+        FROM neiist.user_contacts c
+        WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone'
+        LIMIT 1
+      )
+    END AS customer_phone,
     o.nif AS customer_nif,
     o.campus,
     o.pickup_deadline,

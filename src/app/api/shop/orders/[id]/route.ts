@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   updateOrder,
   setOrderState,
-  updateUser,
   mapOrderDbErrorToResponse,
   getOrderById,
 } from "@/utils/dbUtils";
@@ -90,21 +89,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (body.customer_nif !== undefined) filteredUpdates.nif = body.customer_nif;
 
-    const phone = body.customer_phone !== undefined ? String(body.customer_phone ?? "") : undefined;
-
-    if (Object.keys(filteredUpdates).length === 0 && phone === undefined)
+    if (Object.keys(filteredUpdates).length === 0)
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
 
     const isShopOps = isShopManagerOrAbove(roles ?? []);
 
     const onlyNotes =
-      Object.keys(filteredUpdates).length === 1 &&
-      filteredUpdates.notes !== undefined &&
-      phone === undefined;
+      Object.keys(filteredUpdates).length === 1 && filteredUpdates.notes !== undefined;
     const onlyInPersonSwitch =
-      Object.keys(filteredUpdates).length === 1 &&
-      filteredUpdates.payment_method === "in-person" &&
-      phone === undefined;
+      Object.keys(filteredUpdates).length === 1 && filteredUpdates.payment_method === "in-person";
 
     if (onlyNotes) {
       if (!isOrderOwner(order, user!) && !isShopOps) {
@@ -166,12 +159,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json({ error: "Invalid payment_method" }, { status: 400 });
     }
 
-    const updatedOrder = await updateOrder(orderId, filteredUpdates as Partial<Order>);
+    const stockOverride =
+      (userRoles.roles?.includes(UserRole._ADMIN) ?? false) && body.stock_override === true;
+
+    const updatedOrder = await updateOrder(
+      orderId,
+      filteredUpdates as Partial<Order>,
+      stockOverride
+    );
     if (!updatedOrder)
       return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
-
-    if (phone !== undefined && order.user_istid)
-      await updateUser(order.user_istid, { phone: phone || null });
 
     if (onlyInPersonSwitch && updatedOrder.customer_email) {
       if (

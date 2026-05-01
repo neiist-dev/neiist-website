@@ -52,9 +52,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validPaymentMethods = new Set(Object.keys(PAYMENT_METHODS));
     const orderSource = parseOrderSource(body.order_source);
+    const guestCheckout = body.guest_checkout === true;
+    const canUseGuestCheckout =
+      userRoles.roles?.some((role) => [UserRole._ADMIN].includes(role)) && orderSource === "pos";
 
     if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
+    }
+
+    if (guestCheckout && !canUseGuestCheckout) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const hasExplicitPaymentMethod =
@@ -99,11 +106,27 @@ export async function POST(request: NextRequest) {
 
     const userAssignmentRequired = orderRules.requiresUserAssignment;
 
-    if (userAssignmentRequired && !body.user_istid) {
+    if (userAssignmentRequired && !body.user_istid && !guestCheckout) {
       return NextResponse.json(
         { error: "Utilizador obrigatorio para este tipo de pedido" },
         { status: 400 }
       );
+    }
+
+    const customerName = String(body.customer_name ?? "").trim();
+    const customerEmail = typeof body.customer_email === "string" ? body.customer_email.trim() : "";
+    const customerPhone = typeof body.customer_phone === "string" ? body.customer_phone.trim() : "";
+
+    if (guestCheckout && userAssignmentRequired) {
+      if (!customerName) {
+        return NextResponse.json({ error: "Nome do cliente obrigatorio" }, { status: 400 });
+      }
+      if (!customerEmail) {
+        return NextResponse.json({ error: "Email do cliente obrigatorio" }, { status: 400 });
+      }
+      if (!customerPhone) {
+        return NextResponse.json({ error: "Telemóvel do cliente obrigatorio" }, { status: 400 });
+      }
     }
 
     const stockOverride =
@@ -111,11 +134,14 @@ export async function POST(request: NextRequest) {
 
     const order = await newOrder(
       {
-        user_istid: userAssignmentRequired ? body.user_istid : undefined,
-        customer_name:
-          body.customer_name ?? (userAssignmentRequired ? "" : "Cliente POS - Churrasco"),
-        customer_email: userAssignmentRequired ? (body.customer_email ?? null) : null,
-        customer_phone: body.customer_phone ?? null,
+        user_istid: guestCheckout
+          ? undefined
+          : userAssignmentRequired
+            ? body.user_istid
+            : undefined,
+        customer_name: customerName || (guestCheckout ? "Cliente POS" : ""),
+        customer_email: customerEmail || null,
+        customer_phone: customerPhone || null,
         customer_nif: body.customer_nif ?? null,
         campus: body.campus ?? null,
         notes: body.notes ?? null,
@@ -128,7 +154,7 @@ export async function POST(request: NextRequest) {
     );
     if (!order) return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
 
-    if (userAssignmentRequired && body.customer_phone && body.user_istid) {
+    if (!guestCheckout && userAssignmentRequired && body.customer_phone && body.user_istid) {
       const user = await getUser(body.user_istid);
       if (user && user.phone !== body.customer_phone)
         await updateUser(body.user_istid, { phone: body.customer_phone });
