@@ -5,6 +5,7 @@ export interface OrderStatusConfig {
   cssClass: string;
   progressStep: number;
   allowedTransitions: OrderStatus[];
+  visibleInProgress?: boolean;
 }
 
 export const ORDER_STATUS_CONFIG: Record<OrderStatus, OrderStatusConfig> = {

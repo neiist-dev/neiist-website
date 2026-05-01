@@ -8,6 +8,7 @@ import styles from "@/styles/components/shop/MyOrdersList.module.css";
 import { Order } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
+import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
 
 type Props = { orders: Order[]; products: Product[] };
 
@@ -80,16 +81,6 @@ export default function MyOrdersList({ orders, products }: Props) {
     return undefined;
   };
 
-  const getStatusLabel = (status?: string) => {
-    const s = (status ?? "").toLowerCase();
-    if (s.includes("pend") || s === "pending") return "Pendente";
-    if (s.includes("paid") || s === "pago") return "Pago";
-    if (s.includes("prepare") || s.includes("ready") || s === "preparing") return "Pronto";
-    if (s.includes("deliver") || s.includes("entregue") || s === "delivered") return "Entregue";
-    if (s.includes("cancel")) return "Cancelado";
-    return status ?? "";
-  };
-
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
@@ -123,9 +114,10 @@ export default function MyOrdersList({ orders, products }: Props) {
           filtered.map((order) => {
             const img = selectImage(order);
             const productSummary = getCompactProductsSummary(order.items).join(" · ");
+            const orderKind = getOrderKindFromItems(order.items).orderKind;
             const statusLabel = order.delivered_at
               ? `Entregue em ${new Date(order.delivered_at).toLocaleDateString("pt-PT")}`
-              : getStatusLabel(order.status);
+              : getOrderStatusLabelForKind(orderKind, order.status);
 
             return (
               <Link

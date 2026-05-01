@@ -4,9 +4,15 @@ import { useEffect, useState, useCallback, useRef, type CSSProperties } from "re
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
-import { getOrderProgressSteps, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import {
+  getAllowedOrderStatusTransitions,
+  getOrderProgressSteps,
+  getOrderKindFromItems,
+  getOrderStatusLabelForKind,
+  canTransitionOrderStatus,
+} from "@/utils/shop/orderKindUtils";
 import { getPaymentLabel } from "@/types/shop/payment";
-import { getStatusLabel, getStatusCssClass, canTransitionTo } from "@/utils/shop/orderStatusUtils";
+import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
 import { Product } from "@/types/shop/product";
 import { MdClose } from "react-icons/md";
 import { FaCheck, FaExclamationTriangle } from "react-icons/fa";
@@ -209,10 +215,15 @@ export default function OrderDetailOverlay({
     "--progress-width": progressWidth,
   } as CSSProperties;
 
-  const canSetPaid = canManage && canTransitionTo(order.status, "paid");
-  const canSetReady = canManage && canTransitionTo(order.status, "ready");
-  const canSetDelivered = canManage && canTransitionTo(order.status, "delivered");
-  const canCancel = canManage && canTransitionTo(order.status, "cancelled");
+  const allowedStatusTransitions = canManage
+    ? getAllowedOrderStatusTransitions(orderKind, order.status)
+    : [];
+  const canSetPaid = canManage && canTransitionOrderStatus(orderKind, order.status, "paid");
+  const canSetReady = canManage && canTransitionOrderStatus(orderKind, order.status, "ready");
+  const canSetDelivered =
+    canManage && canTransitionOrderStatus(orderKind, order.status, "delivered");
+  const canCancel = canManage && canTransitionOrderStatus(orderKind, order.status, "cancelled");
+  const canShowManageStatusActions = allowedStatusTransitions.length > 0;
   const userCanCancel = !canManage && order.status === "pending";
 
   const saveNotes = async (): Promise<boolean> => {
@@ -266,7 +277,7 @@ export default function OrderDetailOverlay({
             <div className={styles.header}>
               <h2>Encomenda</h2>
               <span className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
-                {getStatusLabel(order.status)}
+                {getOrderStatusLabelForKind(orderKind, order.status)}
               </span>
             </div>
 
@@ -467,7 +478,7 @@ export default function OrderDetailOverlay({
 
             {canManage ? (
               <div className={styles.section}>
-                {order.status !== "cancelled" && (
+                {canShowManageStatusActions && (
                   <>
                     <h3>Estado</h3>
                     <div className={styles.actionButtons}>

@@ -6,7 +6,11 @@ import {
   type OrderProgressStep,
 } from "@/types/shop/orderKind";
 import { POS_PAYMENT_METHODS, type PaymentMethod } from "@/types/shop/payment";
-import { ORDER_STATUS_CONFIG, type OrderStatus } from "@/types/shop/orderStatus";
+import {
+  ORDER_STATUS_CONFIG,
+  type OrderStatus,
+  type OrderStatusConfig,
+} from "@/types/shop/orderStatus";
 
 const ORDER_KIND_BY_CATEGORY: Record<string, Exclude<OrderKind, "normal">> = {
   churrasco: "churrasco",
@@ -77,23 +81,54 @@ export function getOrderKindRules(
       ...specialConfig?.emailTemplates,
     },
     afterPurchaseActionKey: specialConfig?.afterPurchaseAction,
-    progressSteps: specialConfig?.progressSteps,
+    statusOverrides: specialConfig?.statusOverrides,
   };
 }
 
-export function getOrderProgressSteps(orderKind: OrderKind): readonly OrderProgressStep[] {
+export function getOrderStatusConfigForKind(
+  orderKind: OrderKind,
+  status: OrderStatus
+): OrderStatusConfig {
   const orderRules = getOrderKindRules(orderKind);
-  if (orderRules.progressSteps && orderRules.progressSteps.length > 0) {
-    return orderRules.progressSteps;
-  }
+  const baseConfig = ORDER_STATUS_CONFIG[status];
+  return {
+    ...baseConfig,
+    ...orderRules.statusOverrides?.[status],
+    allowedTransitions:
+      orderRules.statusOverrides?.[status]?.allowedTransitions ?? baseConfig.allowedTransitions,
+  };
+}
 
+export function getAllowedOrderStatusTransitions(
+  orderKind: OrderKind,
+  currentStatus: OrderStatus
+): readonly OrderStatus[] {
+  return getOrderStatusConfigForKind(orderKind, currentStatus).allowedTransitions;
+}
+
+export function canTransitionOrderStatus(
+  orderKind: OrderKind,
+  currentStatus: OrderStatus,
+  targetStatus: OrderStatus
+): boolean {
+  return getAllowedOrderStatusTransitions(orderKind, currentStatus).includes(targetStatus);
+}
+
+export function getOrderProgressSteps(orderKind: OrderKind): readonly OrderProgressStep[] {
   const defaultProgressStatuses: readonly OrderStatus[] = ["pending", "paid", "ready", "delivered"];
+  const visibleStatuses = defaultProgressStatuses.filter(
+    (status) => getOrderStatusConfigForKind(orderKind, status).visibleInProgress !== false
+  );
 
-  return defaultProgressStatuses.map((status, index, statuses) => ({
+  return visibleStatuses.map((status, index, statuses) => ({
     key: status,
-    label: ORDER_STATUS_CONFIG[status].label,
+    label: getOrderStatusConfigForKind(orderKind, status).label,
     activeStatuses: statuses.slice(index),
   }));
+}
+
+export function getOrderStatusLabelForKind(orderKind: OrderKind, status: OrderStatus): string {
+  return getOrderStatusConfigForKind(orderKind, status).label;
 }
 
 export function getOrderKindFromItems(

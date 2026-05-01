@@ -12,6 +12,7 @@ import * as XLSX from "xlsx";
 import Fuse from "fuse.js";
 import { getColorFromOptions, getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import { useRouter } from "next/navigation";
@@ -362,6 +363,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
 
   const handleExport = () => {
     const ordersSheet = filtered.map((o) => ({
+      Estado: getOrderStatusLabelForKind(getOrderKindFromItems(o.items).orderKind, o.status),
       Número: o.order_number,
       Data: new Date(o.created_at).toLocaleString("pt-PT"),
       Nome: o.customer_name,
@@ -370,7 +372,6 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       "IST ID": o.user_istid,
       Campus: o.campus,
       Telefone: o.customer_phone,
-      Estado: getStatusLabel(o.status),
       "Método de pagamento": o.payment_method,
       "Referencia SumUp": o.payment_reference,
       "Total (€)": o.total_amount,
@@ -718,7 +719,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                     <td>
                       <span
                         className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
-                        {getStatusLabel(order.status)}
+                        {getOrderStatusLabelForKind(
+                          getOrderKindFromItems(order.items).orderKind,
+                          order.status
+                        )}
                       </span>
                     </td>
                   </tr>

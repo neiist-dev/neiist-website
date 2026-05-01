@@ -1,5 +1,6 @@
 import type { PaymentMethod } from "@/types/shop/payment";
 import type { OrderStatus } from "@/types/shop/orderStatus";
+import type { OrderStatusConfig } from "@/types/shop/orderStatus";
 
 export const SPECIAL_CATEGORIES = ["Churrasco", "Jantar de Curso"] as const;
 
@@ -27,7 +28,7 @@ interface SpecialOrderConfig {
   requiresUserAssignment?: boolean;
   autoCancelEnabled?: boolean;
   afterPurchaseAction?: AfterPurchaseAction;
-  progressSteps?: readonly OrderProgressStep[];
+  statusOverrides?: Partial<Record<OrderStatus, Partial<OrderStatusConfig>>>;
 }
 
 export interface OrderKindRules {
@@ -38,7 +39,7 @@ export interface OrderKindRules {
   autoCancelEnabled: boolean;
   emailTemplates: Record<OrderEmailTemplateType, OrderEmailTemplateKey>;
   afterPurchaseActionKey?: AfterPurchaseAction;
-  progressSteps?: readonly OrderProgressStep[];
+  statusOverrides?: Partial<Record<OrderStatus, Partial<OrderStatusConfig>>>;
 }
 
 export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialOrderConfig> = {
@@ -61,17 +62,20 @@ export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialO
       paid: "jantar_paid",
     },
     afterPurchaseAction: "register_jantar_de_curso",
-    progressSteps: [
-      {
-        key: "pending",
-        label: "Pendente",
-        activeStatuses: ["pending", "paid"],
+    statusOverrides: {
+      pending: {
+        allowedTransitions: ["paid", "cancelled"],
       },
-      {
-        key: "confirmed",
+      paid: {
         label: "Confirmado",
-        activeStatuses: ["paid"],
+        allowedTransitions: ["cancelled"],
       },
-    ],
+      ready: {
+        visibleInProgress: false,
+      },
+      delivered: {
+        visibleInProgress: false,
+      },
+    },
   },
 };
