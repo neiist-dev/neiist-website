@@ -25,7 +25,6 @@ const adminRoutes = [
 ];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
-
 const isDev = process.env.NODE_ENV === "development";
 
 const MARKDOWN_SITE = `# NEIIST — Núcleo Estudantil de Informática do IST
