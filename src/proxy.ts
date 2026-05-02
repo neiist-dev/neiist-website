@@ -25,6 +25,51 @@ const adminRoutes = [
 ];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
+const BOT_USER_AGENTS = [
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "Claude-Web",
+  "ClaudeBot",
+  "anthropic-ai",
+  "Google-Extended",
+  "Google-CloudVertex",
+  "PerplexityBot",
+  "DuckAssistBot",
+  "MistralAI-User",
+  "LinerBot",
+  "QualifiedBot",
+  "ICC-Crawler",
+  "CCBot",
+  "cohere-ai",
+  "Amazonbot",
+  "AhrefsBot",
+  "AhrefsSiteAudit",
+  "Bytespider",
+  "Diffbot",
+  "PetalBot",
+  "YandexBot",
+  "Applebot-Extended",
+  "Meta-ExternalAgent",
+  "facebookexternalhit",
+  "YouBot",
+];
+
+const isDev = process.env.NODE_ENV === "development";
+
+const MARKDOWN_SITE = `# NEIIST — Núcleo Estudantil de Informática do IST
+
+Associação de estudantes de Informática do Instituto Superior Técnico, Lisboa.
+
+## Páginas Públicas
+
+- [Início](https://neiist.tecnico.ulisboa.pt/)
+- [Sobre Nós](https://neiist.tecnico.ulisboa.pt/about-us)
+- [Atividades](https://neiist.tecnico.ulisboa.pt/activities)
+- [Loja](https://neiist.tecnico.ulisboa.pt/shop)
+- [Jantar](https://neiist.tecnico.ulisboa.pt/dinner)
+`;
+
 function getIp(request: NextRequest): string {
   return (
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
@@ -33,7 +78,10 @@ function getIp(request: NextRequest): string {
   );
 }
 
-const isDev = process.env.NODE_ENV === "development";
+function isBot(request: NextRequest): boolean {
+  const ua = request.headers.get("user-agent")?.toLowerCase() ?? "";
+  return BOT_USER_AGENTS.some((bot) => ua.includes(bot.toLowerCase()));
+}
 
 function addSecurityHeaders(response: NextResponse) {
   response.headers.set("Content-Security-Policy", CSP);
@@ -41,6 +89,7 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  response.headers.append("Link", `</sitemap.xml>; rel="sitemap"`);
   if (!isDev) {
     response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   }
@@ -79,6 +128,17 @@ function canAccess(path: string, roles: UserRole[]) {
 
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
+
+  if (isBot(req)) {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
+
+  if (!path.startsWith("/api/") && (req.headers.get("accept") ?? "").includes("text/markdown")) {
+    return new NextResponse(MARKDOWN_SITE, {
+      status: 200,
+      headers: { "Content-Type": "text/markdown; charset=utf-8" },
+    });
+  }
 
   if (path.startsWith("/api/")) {
     const rule = getRateLimitRule(path);
