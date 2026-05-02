@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
-import { hasRequiredRole } from "@/types/user";
+import { UserRole, hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./utils/authUtils";
 import { rateLimit } from "@/utils/security/rateLimitUtils";
 import { CSP } from "@/utils/security/cspUtils";
 import { getRateLimitRule } from "@/lib/rateLimitRules";
+import { BOT_USER_AGENTS } from "@/lib/botAgents";
 
 const publicRoutes = [
   "/home",
@@ -25,35 +25,6 @@ const adminRoutes = [
 ];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
-const BOT_USER_AGENTS = [
-  "GPTBot",
-  "OAI-SearchBot",
-  "ChatGPT-User",
-  "Claude-Web",
-  "ClaudeBot",
-  "anthropic-ai",
-  "Google-Extended",
-  "Google-CloudVertex",
-  "PerplexityBot",
-  "DuckAssistBot",
-  "MistralAI-User",
-  "LinerBot",
-  "QualifiedBot",
-  "ICC-Crawler",
-  "CCBot",
-  "cohere-ai",
-  "Amazonbot",
-  "AhrefsBot",
-  "AhrefsSiteAudit",
-  "Bytespider",
-  "Diffbot",
-  "PetalBot",
-  "YandexBot",
-  "Applebot-Extended",
-  "Meta-ExternalAgent",
-  "facebookexternalhit",
-  "YouBot",
-];
 
 const isDev = process.env.NODE_ENV === "development";
 
