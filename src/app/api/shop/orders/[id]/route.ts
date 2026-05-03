@@ -13,7 +13,6 @@ import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { User } from "@/types/user";
 import { Order } from "@/types/shop/order";
 import {
-  getPaidOrderEmailTemplate,
   getPendingOrderEmailTemplate,
   getStatusUpdateOrderEmailTemplate,
   sendEmail,
@@ -228,45 +227,33 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const orderId = Number((await params).id);
     if (!status) return NextResponse.json({ error: "No status provided" }, { status: 400 });
 
+    if (status === "paid")
+      return NextResponse.json({ error: "Use POST /pay to mark order as paid" }, { status: 400 });
+
     const order = await getOrderById(orderId);
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-    await setOrderState(orderId, status, userRoles.user?.istid ?? "system");
-
+    await setOrderState(orderId, status, userRoles.user!.istid);
     const updatedOrder = await getOrderById(orderId);
 
     if (updatedOrder?.customer_email) {
       const statusLabel = getStatusLabel(status);
-      const isPaid = status === "paid";
-      if (
-        !getOrderKindRules(getOrderKindFromItems(updatedOrder.items).orderKind)
-          .customerEmailsEnabled
-      )
-        return NextResponse.json(updatedOrder);
+      const orderKindRules = getOrderKindRules(getOrderKindFromItems(updatedOrder.items).orderKind);
 
-      await sendEmail({
-        to: updatedOrder.customer_email,
-        subject: `Encomenda ${updatedOrder.order_number} - ${statusLabel}`,
-        html: isPaid
-          ? getPaidOrderEmailTemplate(
-              getOrderKindFromItems(updatedOrder.items).orderKind,
-              updatedOrder.order_number,
-              updatedOrder.customer_name,
-              updatedOrder.items,
-              Number(updatedOrder.total_amount),
-              updatedOrder.campus,
-              updatedOrder.payment_method,
-              updatedOrder.payment_reference
-            )
-          : getStatusUpdateOrderEmailTemplate(
-              getOrderKindFromItems(updatedOrder.items).orderKind,
-              updatedOrder.order_number,
-              updatedOrder.customer_name,
-              status,
-              statusLabel,
-              updatedOrder.campus
-            ),
-      });
+      if (orderKindRules.customerEmailsEnabled) {
+        await sendEmail({
+          to: updatedOrder.customer_email,
+          subject: `Encomenda ${updatedOrder.order_number} - ${statusLabel}`,
+          html: getStatusUpdateOrderEmailTemplate(
+            getOrderKindFromItems(updatedOrder.items).orderKind,
+            updatedOrder.order_number,
+            updatedOrder.customer_name,
+            status,
+            statusLabel,
+            updatedOrder.campus
+          ),
+        });
+      }
     }
 
     return NextResponse.json(updatedOrder);

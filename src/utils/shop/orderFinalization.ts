@@ -40,11 +40,13 @@ export async function finalizePaidOrder({
   if (!statusUpdate)
     return { success: false, error: "Failed to update order status", statusCode: 500 };
 
-  const updateTransactionCode = await updateOrder(orderId, {
-    payment_reference: reference,
-  });
-  if (!updateTransactionCode)
-    return { success: false, error: "Failed to update payment reference", statusCode: 500 };
+  if (statusUpdate.payment_method !== "cash") {
+    const updateTransactionCode = await updateOrder(orderId, {
+      payment_reference: reference,
+    });
+    if (!updateTransactionCode)
+      return { success: false, error: "Failed to update payment reference", statusCode: 500 };
+  }
 
   const { orderKind } = getOrderKindFromItems(statusUpdate.items);
   const orderRules = getOrderKindRules(orderKind, "other");

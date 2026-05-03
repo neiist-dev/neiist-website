@@ -168,21 +168,26 @@ export default function PosPaymentOverlay({
     [order.id]
   );
 
-  const markOrderAsPaid = useCallback(async (): Promise<Order> => {
-    const res = await fetch(`/api/shop/orders/${order.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "paid" }),
-    });
+  const finalizePaidOrder = useCallback(
+    async (paymentReference: string): Promise<Order> => {
+      const res = await fetch(`/api/shop/orders/${order.id}/pay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentReference }),
+      });
 
-    const data = (await res.json().catch(() => null)) as { error?: string } | Order | null;
-    if (!res.ok || !data || !("id" in data))
-      throw new Error(
-        (data as { error?: string } | null)?.error || "Falha ao marcar encomenda como paga"
-      );
+      if (!res.ok) {
+        const errorData = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(errorData?.error || "Falha ao finalizar encomenda");
+      }
 
-    return data;
-  }, [order.id]);
+      const data = (await res.json().catch(() => null)) as Order | null;
+      if (!data || !("id" in data)) throw new Error("Resposta inválida do servidor");
+
+      return data;
+    },
+    [order.id]
+  );
 
   const pollReaderTransactionPaid = useCallback(
     async (
@@ -261,7 +266,7 @@ export default function PosPaymentOverlay({
               payment_method: "sumup-tpa",
               payment_reference: paymentReference,
             });
-            const updated = await markOrderAsPaid();
+            const updated = await finalizePaidOrder(paymentReference);
             return updated;
           }
 
@@ -287,7 +292,7 @@ export default function PosPaymentOverlay({
         payment_method: "sumup-tpa",
         payment_reference: paymentReference,
       });
-      const updated = await markOrderAsPaid();
+      const updated = await finalizePaidOrder(paymentReference);
       return updated;
     }
 
@@ -303,7 +308,7 @@ export default function PosPaymentOverlay({
     refreshOrder,
     pollReaderTransactionPaid,
     updateOrderFields,
-    markOrderAsPaid,
+    finalizePaidOrder,
   ]);
 
   const handleConfirm = useCallback(async () => {
@@ -320,17 +325,19 @@ export default function PosPaymentOverlay({
       let updated: Order | null = null;
 
       if (paymentMethod === "cash") {
-        await updateOrderFields({ payment_method: "cash", payment_reference: "" });
-        updated = await markOrderAsPaid();
+        const ref = "cash";
+        await updateOrderFields({ payment_method: "cash", payment_reference: ref });
+        updated = await finalizePaidOrder(ref);
       } else if (paymentMethod === "other" || paymentMethod === "mbway") {
         if (!paymentReference.trim())
           throw new Error("Preenche a referência de pagamento (IBAN / MB Way Pessoal).");
 
+        const ref = paymentReference.trim();
         await updateOrderFields({
           payment_method: paymentMethod,
-          payment_reference: paymentReference.trim(),
+          payment_reference: ref,
         });
-        updated = await markOrderAsPaid();
+        updated = await finalizePaidOrder(ref);
       } else if (paymentMethod === "sumup-tpa") {
         updated = await runTpaFlow();
       }
@@ -360,7 +367,7 @@ export default function PosPaymentOverlay({
     paymentMethod,
     paymentReference,
     updateOrderFields,
-    markOrderAsPaid,
+    finalizePaidOrder,
     runTpaFlow,
     onOrderUpdatedAction,
     onCloseAction,
