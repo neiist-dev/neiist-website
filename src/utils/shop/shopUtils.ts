@@ -1,55 +1,70 @@
 import { Product } from "@/types/shop/product";
 import { Order, OrderItem } from "@/types/shop/order";
 
-export function getFeaturedAndTopProducts(products: Product[], orders: Order[]) {
-  const salesCount: Record<number, number> = {};
-  orders.forEach((order) => {
+const COLOR_KEYS = new Set(["cor", "color", "colour"]);
+const SIZE_KEYS = new Set(["tamanho", "size"]);
+
+const REGEX = {
+  HEX: /#([0-9a-fA-F]{3,8})\b/,
+  NAME_WITH_HEX: /^(.*?)\s*[-–—]?\s*#([0-9a-fA-F]{3,8})\b/,
+  LABEL_DELIMITER: /\||,/,
+};
+
+const CAMPUS_LOCATIONS: Record<string, string> = {
+  alameda: "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)",
+  taguspark: "Sala do NEIIST Taguspark (1 - 4.14)",
+};
+
+export function getFeaturedAndTopProducts(
+  products: Product[],
+  orders: Order[]
+): { featured?: Product; top: Product[] } {
+  const salesCount = orders.reduce<Record<number, number>>((acc, order) => {
     order.items.forEach((item) => {
-      salesCount[item.product_id] = (salesCount[item.product_id] || 0) + item.quantity;
+      acc[item.product_id] = (acc[item.product_id] || 0) + item.quantity;
     });
-  });
+    return acc;
+  }, {});
 
   const topProducts = [...products]
     .sort((a, b) => (salesCount[b.id] || 0) - (salesCount[a.id] || 0))
     .slice(0, 5);
 
-  const randomFeatured = products[Math.floor(Math.random() * products.length)];
+  const featured =
+    products.length > 0 ? products[Math.floor(Math.random() * products.length)] : undefined;
 
-  return {
-    featured: randomFeatured,
-    top: topProducts,
-  };
+  return { featured, top: topProducts };
 }
 
 export function splitNameHex(val?: string): { name: string; hex: string } {
   if (!val) return { name: "", hex: "" };
-  const m = val.match(/^(.*?)\s*[-–—]?\s*#([0-9a-fA-F]{3,8})\b/);
-  if (m) {
-    return { name: m[1].trim(), hex: `#${m[2]}` };
-  }
-  const hexOnly = val.match(/#([0-9a-fA-F]{3,8})\b/);
-  if (hexOnly) return { name: val.replace(hexOnly[0], "").trim(), hex: hexOnly[0] };
+
+  const fullMatch = val.match(REGEX.NAME_WITH_HEX);
+  if (fullMatch) return { name: fullMatch[1].trim(), hex: `#${fullMatch[2]}` };
+
+  const hexMatch = val.match(REGEX.HEX);
+  if (hexMatch) return { name: val.replace(hexMatch[0], "").trim(), hex: hexMatch[0] };
+
   return { name: val.trim(), hex: "" };
 }
 
-export function joinNameHex(name: string, hex: string): string {
-  name = (name || "").trim();
-  hex = (hex || "").trim();
-  if (!hex) return name;
-  if (!name) return hex;
-  return `${name} - ${hex}`;
+export function joinNameHex(name?: string, hex?: string): string {
+  const cleanName = (name || "").trim();
+  const cleanHex = (hex || "").trim();
+
+  if (!cleanHex) return cleanName;
+  if (!cleanName) return cleanHex;
+
+  return `${cleanName} - ${cleanHex}`;
 }
 
 export function extractHex(val?: string): string | undefined {
-  if (!val) return undefined;
-  const m = val.match(/#([0-9a-fA-F]{3,8})\b/);
-  return m ? `#${m[1]}` : undefined;
+  const match = val?.match(REGEX.HEX);
+  return match ? `#${match[1]}` : undefined;
 }
 
-export function isColorKey(key?: string) {
-  if (!key) return false;
-  const k = key.trim().toLowerCase();
-  return ["cor", "color", "colour"].includes(k);
+export function isColorKey(key?: string): boolean {
+  return !!key && COLOR_KEYS.has(key.trim().toLowerCase());
 }
 
 export function getColorFromOptions(
@@ -57,25 +72,19 @@ export function getColorFromOptions(
   label?: string | null
 ): { name?: string; hex?: string } {
   if (options) {
-    for (const rawKey of Object.keys(options)) {
-      const key = rawKey.trim().toLowerCase();
-      if (isColorKey(key)) {
-        const value = options[rawKey] ?? "";
-        const { name, hex } = splitNameHex(value);
-        return { name: name || undefined, hex: hex || undefined };
-      }
+    const colorKey = Object.keys(options).find(isColorKey);
+    if (colorKey) {
+      const { name, hex } = splitNameHex(options[colorKey] ?? "");
+      return { name: name || undefined, hex: hex || undefined };
     }
   }
 
   if (label) {
-    const parts = label.split(/\||,/).map((p) => p.trim());
+    const parts = label.split(REGEX.LABEL_DELIMITER).map((p) => p.trim());
     for (const part of parts) {
       const [k, ...rest] = part.split(":");
-      if (!k) continue;
-      const key = k.trim().toLowerCase();
-      if (isColorKey(key)) {
-        const value = rest.join(":").trim();
-        const { name, hex } = splitNameHex(value);
+      if (isColorKey(k)) {
+        const { name, hex } = splitNameHex(rest.join(":"));
         return { name: name || undefined, hex: hex || undefined };
       }
     }
@@ -85,60 +94,51 @@ export function getColorFromOptions(
 
 export function getCompactProductsSummary(items: OrderItem[]): string[] {
   return items.map((it) => {
-    const colorInfo = getColorFromOptions(
-      it.variant_options ?? undefined,
-      it.variant_label ?? undefined
-    );
-    const colorName = colorInfo.name ?? undefined;
-    const size =
-      it.variant_options?.Tamanho ||
-      it.variant_options?.Size ||
-      it.variant_label?.match(/XS|S|M|L|XL|XXL/)?.[0];
+    const { text: variantText } = formatVariantSimple(it.variant_options, it.variant_label);
 
-    return [`${it.quantity} - ${it.product_name}`, size ? size : "", colorName ? colorName : ""]
-      .filter(Boolean)
-      .join(" ");
+    return variantText ? `${it.product_name} ${variantText}`.trim() : it.product_name;
   });
 }
 
 export function formatCampus(campus?: string): string {
   if (!campus) return "";
 
-  return campus.charAt(0).toUpperCase() + campus.slice(1);
+  return campus
+    .trim()
+    .split(/\s+/)
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : ""))
+    .join(" ");
 }
 
 export function getCampusLocation(campus?: string): string {
   if (!campus) return "uma banca NEIIST";
 
-  const campusLower = campus.toLowerCase();
-  if (campusLower === "alameda") return "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)";
-
-  if (campusLower === "taguspark") return "Sala do NEIIST Taguspark (1 - 4.14)";
-
-  return `banca NEIIST em ${formatCampus(campus)}`;
+  const normalizedCampus = campus.trim().toLowerCase();
+  return CAMPUS_LOCATIONS[normalizedCampus] || `banca NEIIST em ${formatCampus(campus)}`;
 }
 
 export function formatVariantSimple(
   options?: Record<string, string> | null,
   label?: string | null
 ): { text: string; colorInfo: { name?: string; hex?: string } } {
-  const colorInfo = getColorFromOptions(options ?? undefined, label ?? undefined);
-  if (!options || Object.keys(options).length === 0) {
-    return { text: label || "", colorInfo };
-  }
+  const colorInfo = getColorFromOptions(options, label);
+
+  if (!options || Object.keys(options).length === 0) return { text: label || "", colorInfo };
 
   const parts: string[] = [];
 
   if (colorInfo.name) parts.push(colorInfo.name);
 
-  const size = options.Tamanho || options.Size;
-  if (size) parts.push(size);
+  const sizeEntry = Object.entries(options).find(([k]) => SIZE_KEYS.has(k.toLowerCase()));
+  if (sizeEntry) parts.push(sizeEntry[1]);
 
   for (const [key, value] of Object.entries(options)) {
-    if (!isColorKey(key) && key !== "Tamanho" && key !== "Size") {
-      parts.push(value);
-    }
+    const normalizedKey = key.toLowerCase();
+    if (!isColorKey(normalizedKey) && !SIZE_KEYS.has(normalizedKey)) parts.push(value);
   }
 
-  return { text: parts.filter(Boolean).join(" - "), colorInfo };
+  return {
+    text: parts.filter(Boolean).join(" - "),
+    colorInfo,
+  };
 }
