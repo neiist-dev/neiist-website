@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay, isBefore, startOfDay } from "date-fns";
+import { format, parse, startOfWeek, getDay, isBefore, startOfDay, AddYearsOptions } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import EventDetails from "@/components/activities/EventDetails";
@@ -91,24 +91,22 @@ function mapToBigCalendarEvent(event: NormalizedCalendarEvent) {
 function CustomToolbar({
   label,
   onNavigate,
-  dict,
 }: {
   label: string;
   onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
-  dict: Record<string, string>;
 }) {
   const [month, year] = label.split(" ");
 
   return (
     <div className={styles.header}>
       <button className={styles.todayButton} onClick={() => onNavigate("TODAY")}>
-        {dict.today}
+        Hoje
       </button>
       <div className={styles.navigationButtons}>
-        <button onClick={() => onNavigate("PREV")} aria-label={dict.previous_month}>
+        <button onClick={() => onNavigate("PREV")} aria-label="Previous Month">
           <FiChevronLeft />
         </button>
-        <button onClick={() => onNavigate("NEXT")} aria-label={dict.next_month}>
+        <button onClick={() => onNavigate("NEXT")} aria-label="Next Month">
           <FiChevronRight />
         </button>
       </div>
@@ -162,7 +160,7 @@ export default function Calendar({
     toolbar: (props: {
       label: string;
       onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
-    }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} dict={dict.toolbar} />,
+    }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} />,
     event: IconEventsCard,
   };
 

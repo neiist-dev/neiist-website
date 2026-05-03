@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-//import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { login, logout } from "@/utils/userUtils";
@@ -41,7 +41,7 @@ interface NavBarProps {
 }
 
 export default function NavBar({ dict, currentLocale }: NavBarProps) {
-  //const router = useRouter();
+  const router = useRouter();
   const { user, setUser } = useUser();
   const [isSticky, setIsSticky] = useState(false);
   const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
@@ -87,12 +87,12 @@ export default function NavBar({ dict, currentLocale }: NavBarProps) {
     setTimeout(() => setMenuState("closed"), 300);
   };
 
-  //const handleMobileNavClick = (href: string) => {
-  //  closeMenu();
-  //  setTimeout(() => {
-  //    router.push(href);
-  //  }, 300);
-  //};
+  const handleMobileNavClick = (href: string) => {
+    closeMenu();
+    setTimeout(() => {
+      router.push(href);
+    }, 300);
+  };
 
   const handleLogout = async () => {
     await logout();
