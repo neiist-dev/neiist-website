@@ -1,5 +1,12 @@
 # neiist
 
+## [1.13.3](https://github.com/neiist-dev/neiist-website/compare/v1.13.2...v1.13.3) (2026-05-04)
+
+
+### Bug Fixes
+
+* **orders:** add updated_by/updated_at fields to track alterations to orders. Also added to excel export. ([5efd9e9](https://github.com/neiist-dev/neiist-website/commit/5efd9e9fc247f415cf5133f2cd485cdc6e40bdef))
+
 ## [1.13.2](https://github.com/neiist-dev/neiist-website/compare/v1.13.1...v1.13.2) (2026-05-04)
 
 
