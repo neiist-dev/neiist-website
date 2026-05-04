@@ -4,12 +4,14 @@ import { useEffect, useState, useCallback, useRef, type CSSProperties } from "re
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
+import type { OrderProgressStep } from "@/types/shop/orderKind";
 import {
   getAllowedOrderStatusTransitions,
   getOrderProgressSteps,
   getOrderKindFromItems,
   getOrderStatusLabelForKind,
   canTransitionOrderStatus,
+  getOrderStatusLabelValue,
 } from "@/utils/shop/orderKindUtils";
 import { getPaymentLabel } from "@/types/shop/payment";
 import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
@@ -204,6 +206,7 @@ export default function OrderDetailOverlay({
 
   const { orderKind } = getOrderKindFromItems(order.items);
   const progressSteps = getOrderProgressSteps(orderKind);
+  const getStepLabel = (step: OrderProgressStep) => getOrderStatusLabelValue(step.label, order);
   const activeStepIndex = progressSteps.findLastIndex((step) =>
     step.activeStatuses.includes(order.status)
   );
@@ -277,7 +280,7 @@ export default function OrderDetailOverlay({
             <div className={styles.header}>
               <h2>Encomenda</h2>
               <span className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
-                {getOrderStatusLabelForKind(orderKind, order.status)}
+                {getOrderStatusLabelForKind(orderKind, order.status, order)}
               </span>
             </div>
 
@@ -561,7 +564,7 @@ export default function OrderDetailOverlay({
                                   <FaCheck size={14} />
                                 ))}
                             </span>
-                            {step.label}
+                            {getStepLabel(step)}
                           </li>
                         );
                       })}

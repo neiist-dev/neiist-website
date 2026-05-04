@@ -1,6 +1,7 @@
 import type { PaymentMethod } from "@/types/shop/payment";
 import type { OrderStatus } from "@/types/shop/orderStatus";
 import type { OrderStatusConfig } from "@/types/shop/orderStatus";
+import { Order } from "./order";
 
 export const SPECIAL_CATEGORIES = ["Churrasco", "Jantar de Curso"] as const;
 
@@ -10,10 +11,11 @@ export type OrderEmailTemplateType = "pending" | "paid" | "cancelled_auto" | "st
 export type OrderEmailTemplateKey = "default" | "jantar_pending" | "jantar_paid";
 export type AfterPurchaseAction = "register_jantar_de_curso";
 export type OrderProgressStepKey = OrderStatus | "confirmed";
+export type StatusLabel = string | ((_order: Order) => string);
 
 export interface OrderProgressStep {
   key: OrderProgressStepKey;
-  label: string;
+  label: StatusLabel;
   activeStatuses: readonly OrderStatus[];
 }
 
@@ -64,6 +66,8 @@ export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialO
     afterPurchaseAction: "register_jantar_de_curso",
     statusOverrides: {
       pending: {
+        label: (order: Order) =>
+          order.payment_method === "mbway" ? "Pagamento MB Way em verificação" : "Pendente",
         allowedTransitions: ["paid", "cancelled"],
       },
       paid: {

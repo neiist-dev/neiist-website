@@ -9,7 +9,10 @@ export function getStatusConfig(status: OrderStatus): OrderStatusConfig {
 }
 
 export function getStatusLabel(status: OrderStatus): string {
-  return ORDER_STATUS_CONFIG[status]?.label || status;
+  const label = ORDER_STATUS_CONFIG[status]?.label;
+  if (typeof label === "function") return status;
+
+  return label || status;
 }
 
 export function getStatusCssClass(status: OrderStatus): string {

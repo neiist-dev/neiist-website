@@ -117,7 +117,7 @@ export default function MyOrdersList({ orders, products }: Props) {
             const orderKind = getOrderKindFromItems(order.items).orderKind;
             const statusLabel = order.delivered_at
               ? `Entregue em ${new Date(order.delivered_at).toLocaleDateString("pt-PT")}`
-              : getOrderStatusLabelForKind(orderKind, order.status);
+              : getOrderStatusLabelForKind(orderKind, order.status, order);
 
             return (
               <Link

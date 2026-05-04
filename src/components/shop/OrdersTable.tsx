@@ -363,7 +363,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
 
   const handleExport = () => {
     const ordersSheet = filtered.map((o) => ({
-      Estado: getOrderStatusLabelForKind(getOrderKindFromItems(o.items).orderKind, o.status),
+      Estado: getOrderStatusLabelForKind(getOrderKindFromItems(o.items).orderKind, o.status, o),
       Número: o.order_number,
       Data: new Date(o.created_at).toLocaleString("pt-PT"),
       Nome: o.customer_name,
@@ -721,7 +721,8 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                         className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
                         {getOrderStatusLabelForKind(
                           getOrderKindFromItems(order.items).orderKind,
-                          order.status
+                          order.status,
+                          order
                         )}
                       </span>
                     </td>

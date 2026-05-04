@@ -1,7 +1,9 @@
+import type { StatusLabel } from "./orderKind";
+
 export type OrderStatus = "pending" | "paid" | "ready" | "delivered" | "cancelled";
 
 export interface OrderStatusConfig {
-  label: string;
+  label: StatusLabel;
   cssClass: string;
   progressStep: number;
   allowedTransitions: OrderStatus[];

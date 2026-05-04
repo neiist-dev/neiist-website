@@ -4,6 +4,7 @@ import {
   type OrderSource,
   type OrderKindRules,
   type OrderProgressStep,
+  StatusLabel,
 } from "@/types/shop/orderKind";
 import { POS_PAYMENT_METHODS, type PaymentMethod } from "@/types/shop/payment";
 import {
@@ -11,6 +12,7 @@ import {
   type OrderStatus,
   type OrderStatusConfig,
 } from "@/types/shop/orderStatus";
+import { Order } from "@/types/shop/order";
 
 const ORDER_KIND_BY_CATEGORY: Record<string, Exclude<OrderKind, "normal">> = {
   churrasco: "churrasco",
@@ -127,8 +129,21 @@ export function getOrderProgressSteps(orderKind: OrderKind): readonly OrderProgr
   }));
 }
 
-export function getOrderStatusLabelForKind(orderKind: OrderKind, status: OrderStatus): string {
-  return getOrderStatusConfigForKind(orderKind, status).label;
+export function getOrderStatusLabelForKind(
+  orderKind: OrderKind,
+  status: OrderStatus,
+  order?: Order
+): string {
+  const labelData = getOrderStatusConfigForKind(orderKind, status).label;
+  if (order) return getOrderStatusLabelValue(labelData, order);
+  return typeof labelData === "function" ? "" : labelData;
+}
+
+export function getOrderStatusLabelValue(labelData: StatusLabel, order: Order): string {
+  if (!labelData) return "";
+  if (typeof labelData === "function") return labelData(order);
+
+  return labelData;
 }
 
 export function getOrderKindFromItems(
