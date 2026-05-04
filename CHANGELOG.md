@@ -1,5 +1,12 @@
 # neiist
 
+## [1.13.2](https://github.com/neiist-dev/neiist-website/compare/v1.13.1...v1.13.2) (2026-05-04)
+
+
+### Bug Fixes
+
+* **shop:** show on NewOrderModal and PosPaymentOverlay POS flow the ([aedc23c](https://github.com/neiist-dev/neiist-website/commit/aedc23c05f059a9ea67058eb281f66e0062c6344))
+
 ## [1.13.1](https://github.com/neiist-dev/neiist-website/compare/v1.13.0...v1.13.1) (2026-05-04)
 
 
