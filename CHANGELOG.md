@@ -1,5 +1,12 @@
 # neiist
 
+## [1.13.1](https://github.com/neiist-dev/neiist-website/compare/v1.13.0...v1.13.1) (2026-05-04)
+
+
+### Bug Fixes
+
+* **shop:** add links for availability on tagus and alameda, new custom ([2bcfcfb](https://github.com/neiist-dev/neiist-website/commit/2bcfcfb0b0003fafba125f45380fa43d83b92136))
+
 ## [1.13.0](https://github.com/neiist-dev/neiist-website/compare/v1.12.0...v1.13.0) (2026-05-04)
 
 
