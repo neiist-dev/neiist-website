@@ -147,7 +147,8 @@
 }
 
 .infoItemInline label {
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
   font-size: 0.95rem;
   color: var(--foreground-colour);
   margin: 0;
@@ -162,7 +163,7 @@
 .infoItemInline p {
   font-size: 0.95rem;
   margin: 0;
-  word-break: normal;
+  word-break: keep-all;
 }
 
 .table {

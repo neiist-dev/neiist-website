@@ -6,7 +6,7 @@ import { MdClose } from "react-icons/md";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { Order } from "@/types/shop/order";
-import { PaymentMethod } from "@/types/shop/payment";
+import { PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
@@ -83,6 +83,11 @@ export default function PosPaymentOverlay({
     () => getOrderKindRules(orderKind, "pos").paymentMethods,
     [orderKind]
   );
+
+  const isExistingOrderPaymentFlow = initialPaymentMethod
+    ? PENDING_PAYMENT_METHODS.has(initialPaymentMethod)
+    : false;
+  const title = isExistingOrderPaymentFlow ? "Registar Pagamento" : "Finalizar Encomenda";
 
   useEffect(() => {
     if (!open || paymentMethod !== "sumup-tpa") return;
@@ -328,9 +333,13 @@ export default function PosPaymentOverlay({
         const ref = "cash";
         await updateOrderFields({ payment_method: "cash", payment_reference: ref });
         updated = await finalizePaidOrder(ref);
-      } else if (paymentMethod === "other" || paymentMethod === "mbway") {
+      } else if (paymentMethod === "mbway") {
+        const ref = "mbway";
+        await updateOrderFields({ payment_method: "mbway", payment_reference: ref });
+        updated = await finalizePaidOrder(ref);
+      } else if (paymentMethod === "other") {
         if (!paymentReference.trim())
-          throw new Error("Preenche a referência de pagamento (IBAN / MB Way Pessoal).");
+          throw new Error("Preenche a referência de pagamento correspondente.");
 
         const ref = paymentReference.trim();
         await updateOrderFields({
@@ -408,7 +417,9 @@ export default function PosPaymentOverlay({
   const confirmationMessage =
     paymentMethod === "cash"
       ? "Confirmas que recebeste o pagamento em dinheiro e está correto?"
-      : `Confirmas que recebeste o pagamento da referência "${paymentReference.trim() || "-"}" e está correto?`;
+      : paymentMethod === "mbway"
+        ? "Confirmas que recebeste o pagamento por MBWay e está correto?"
+        : `Confirmas que recebeste o pagamento da referência "${paymentReference.trim() || "-"}" e está correto?`;
 
   if (flowState === "processing" || flowState === "success") {
     return (
@@ -448,7 +459,7 @@ export default function PosPaymentOverlay({
           <MdClose size={20} />
         </button>
 
-        <h3 className={styles.title}>Pagar Encomenda {order.order_number}</h3>
+        <h3 className={styles.title}>{title}</h3>
 
         {error ? <div className={styles.error}>{error}</div> : null}
 
@@ -467,19 +478,19 @@ export default function PosPaymentOverlay({
           </select>
         </label>
 
-        {paymentMethod === "other" || paymentMethod === "mbway" ? (
+        {paymentMethod === "other" && (
           <label className={styles.label}>
             Referência de pagamento
             <input
               className={styles.input}
               type="text"
-              placeholder="IBAN / MB Way / tx id"
+              placeholder="Identifica o meio alternativo de pagamento..."
               value={paymentReference}
               onChange={(e) => setPaymentReference(e.target.value)}
               disabled={isSubmitting}
             />
           </label>
-        ) : null}
+        )}
 
         {paymentMethod === "sumup-tpa" ? (
           <>

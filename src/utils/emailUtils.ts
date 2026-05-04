@@ -282,8 +282,8 @@ export function getJantarDeCursoPendingTemplate(
         <strong>Pagamento:</strong> presencialmente na (${getCampusLocation(campus)}).
         ${
           campus === "alameda"
-            ? `Consulta o horário aqui: <a href="https://docs.google.com/spreadsheets/d/10JFhajL0b3Qp9hGFTEFhgoqX9Psa7klIsyYanibAuO4/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
-            : ""
+            ? `Consulta o horário aqui: <a href="https://docs.google.com/spreadsheets/d/1qlqOqU1zSD-lWX4i10Y_dXPz4FHqiD-KKXBEbTt5ngs/edit?gid=256603615#gid=256603615" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
+            : `Consulta o horário aqui: <a href="https://docs.google.com/spreadsheets/d/1qlqOqU1zSD-lWX4i10Y_dXPz4FHqiD-KKXBEbTt5ngs/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
         }
       </p>
       <p>O pagamento deve ser efetuado no prazo de 72 horas após a criação da encomenda.</p>

@@ -25,6 +25,7 @@ import { getColorFromOptions, isColorKey, formatVariantSimple } from "@/utils/sh
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
+import { PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
 
 function formatVariant(options?: Record<string, string>, label?: string) {
   const { text } = formatVariantSimple(options ?? undefined, label ?? undefined);
@@ -38,6 +39,23 @@ function getPaymentDisplay(order: Order) {
     return `${getPaymentLabel(order.payment_method)} - ${order.mbway_number}`;
 
   return getPaymentLabel(order.payment_method);
+}
+
+function hasPaymentReference(order: Order): boolean {
+  const paymentReference = order.payment_reference?.trim();
+  return (
+    (order.payment_method === "sumup" ||
+      order.payment_method === "sumup-tpa" ||
+      order.payment_method === "other" ||
+      order.payment_method === "apple-pay") &&
+    Boolean(paymentReference)
+  );
+}
+
+function getPaymentButtonLabel(paymentMethod?: Order["payment_method"]): string {
+  return paymentMethod && PENDING_PAYMENT_METHODS.has(paymentMethod)
+    ? "Registar Pagamento"
+    : "Finalizar Encomenda";
 }
 
 interface OrderDetailOverlayProps {
@@ -71,6 +89,8 @@ export default function OrderDetailOverlay({
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showEditOrderModal, setShowEditOrderModal] = useState(false);
   const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
+
+  const paymentButtonLabel = getPaymentButtonLabel(order?.payment_method);
 
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
@@ -326,11 +346,11 @@ export default function OrderDetailOverlay({
                   <p>{order.customer_phone || "-"}</p>
                 </div>
               </div>
-              {order.payment_reference && (
+              {hasPaymentReference(order) && (
                 <div className={styles.infoColumn}>
                   <div className={styles.infoItemInline}>
                     <label>Referência de Pagamento:</label>
-                    <p>{order.payment_reference}</p>
+                    <p>{order.payment_reference?.trim()}</p>
                   </div>
                 </div>
               )}
@@ -489,7 +509,7 @@ export default function OrderDetailOverlay({
                         <button
                           className={styles.buttonPrimary}
                           onClick={() => setShowPaymentOverlay(true)}>
-                          Pagar
+                          {paymentButtonLabel}
                         </button>
                       )}
 
@@ -645,6 +665,7 @@ export default function OrderDetailOverlay({
         <PosPaymentOverlay
           open={showPaymentOverlay}
           order={order}
+          initialPaymentMethod={order.payment_method}
           reopenOrderUrl={`${basePath}?orderId=${order.id}`}
           onCloseAction={() => setShowPaymentOverlay(false)}
           onOrderUpdatedAction={(updatedOrder) => {

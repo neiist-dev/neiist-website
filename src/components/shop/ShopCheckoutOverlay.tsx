@@ -537,12 +537,17 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
     finalizeAndNavigate(orderId != null ? `/my-orders?orderId=${orderId}` : "/my-orders");
   }, [orderId, finalizeAndNavigate]);
 
+  const scheduleLink =
+    order?.campus === "alameda"
+      ? "https://docs.google.com/spreadsheets/d/1qlqOqU1zSD-lWX4i10Y_dXPz4FHqiD-KKXBEbTt5ngs/edit?gid=256603615#gid=256603615"
+      : "https://docs.google.com/spreadsheets/d/1qlqOqU1zSD-lWX4i10Y_dXPz4FHqiD-KKXBEbTt5ngs/edit?gid=0#gid=0";
+
   if (!isOnlinePayment) {
     return (
       <div className={styles.overlay}>
         <div className={styles.panel}>
           <div className={styles.checkIcon}>
-            {/*TODO: fix css so it has warning and cehck, separated componets */}
+            {/*TODO: fix css so it has warning and check, separated componets */}
             {isInPerson ? <IoIosWarning size={75} /> : <FaCheck size={48} />}
           </div>
           <h2 className={styles.title}>
@@ -575,12 +580,12 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
                   Para a tua encomenda ser confirmada conclui o pagamento.
                   <br />
                   Presencialmente na {getCampusLocation(order?.campus)}
-                  {order?.campus === "alameda" ? (
+                  {order?.campus ? (
                     <>
                       <br />
                       Consulta o email para os horários ou vê o horário aqui:{" "}
                       <a
-                        href="https://docs.google.com/spreadsheets/d/10JFhajL0b3Qp9hGFTEFhgoqX9Psa7klIsyYanibAuO4/edit?gid=0#gid=0"
+                        href={scheduleLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: "#2863FD", textDecoration: "underline" }}>
