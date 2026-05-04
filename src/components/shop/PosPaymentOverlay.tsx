@@ -80,7 +80,10 @@ export default function PosPaymentOverlay({
   const { orderKind } = useMemo(() => getOrderKindFromItems(order.items), [order.items]);
 
   const availablePaymentMethods = useMemo(
-    () => getOrderKindRules(orderKind, "pos").paymentMethods,
+    () =>
+      getOrderKindRules(orderKind, "pos").paymentMethods.filter(
+        (method): method is Exclude<PaymentMethod, "in-person"> => method !== "in-person"
+      ),
     [orderKind]
   );
 
@@ -124,10 +127,11 @@ export default function PosPaymentOverlay({
 
     autoStartedRef.current = false;
     const defaultMethod = availablePaymentMethods[0] ?? "cash";
-    const preferredMethod =
-      initialPaymentMethod && availablePaymentMethods.includes(initialPaymentMethod)
-        ? initialPaymentMethod
-        : defaultMethod;
+    const canUseInitialMethod =
+      initialPaymentMethod &&
+      initialPaymentMethod !== "in-person" &&
+      availablePaymentMethods.includes(initialPaymentMethod);
+    const preferredMethod = canUseInitialMethod ? initialPaymentMethod : defaultMethod;
 
     setPaymentMethod(preferredMethod);
     setSelectedReaderId(initialReaderId ?? "");
@@ -490,6 +494,11 @@ export default function PosPaymentOverlay({
               disabled={isSubmitting}
             />
           </label>
+        )}
+        {paymentMethod === "mbway" && order.payment_method !== "mbway" && (
+          <div className={styles.label}>
+            Enviar MBWay para: <strong>{order.mbway_number || "Número não disponível"}</strong>
+          </div>
         )}
 
         {paymentMethod === "sumup-tpa" ? (

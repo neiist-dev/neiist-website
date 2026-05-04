@@ -435,8 +435,6 @@ export default function NewOrderModal({
     | { status: "error"; message: string };
 
   const submitOrder = async (stockOverride = false): Promise<SubmitResult> => {
-    const selectedOrderKind = selectedOrderClassification.orderKind;
-    const specialPosPaymentMethods = getOrderKindRules(selectedOrderKind, "pos").paymentMethods;
     const guestCheckout = !selectedUser;
     const customerName = selectedUser?.name ?? guestName.trim();
     const customerEmail = selectedUser?.email ?? guestEmail.trim();
@@ -450,7 +448,7 @@ export default function NewOrderModal({
       campus: campus || undefined,
       notes: notes || undefined,
       stock_override: stockOverride,
-      payment_method: !isEditMode ? specialPosPaymentMethods?.[0] : undefined,
+      payment_method: !isEditMode ? "in-person" : undefined,
       guest_checkout: !isEditMode ? guestCheckout : undefined,
       items: selectedProducts.map(({ product, variant, quantity }) => ({
         product_id: product.id,

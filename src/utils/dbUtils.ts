@@ -775,7 +775,12 @@ export const newOrder = async (
       stockOverride,
     ]
   );
-  return row ? mapdbOrderToOrder(row) : null;
+  return row
+    ? {
+        ...mapdbOrderToOrder(row),
+        mbway_number: getMbWayNumberForOrder(row.order_number),
+      }
+    : null;
 };
 
 export function mapOrderDbErrorToResponse(
