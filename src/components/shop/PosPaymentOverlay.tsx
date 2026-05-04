@@ -334,13 +334,13 @@ export default function PosPaymentOverlay({
       let updated: Order | null = null;
 
       if (paymentMethod === "cash") {
-        const ref = "cash";
-        await updateOrderFields({ payment_method: "cash", payment_reference: ref });
-        updated = await finalizePaidOrder(ref);
+        await updateOrderFields({ payment_method: "cash" });
+        updated = await finalizePaidOrder("cash");
       } else if (paymentMethod === "mbway") {
-        const ref = "mbway";
-        await updateOrderFields({ payment_method: "mbway", payment_reference: ref });
-        updated = await finalizePaidOrder(ref);
+        const mbwayRef = order.mbway_number?.trim() ?? "";
+        if (!mbwayRef) throw new Error("MBWay number missing for this order");
+        await updateOrderFields({ payment_method: "mbway", payment_reference: mbwayRef });
+        updated = await finalizePaidOrder(mbwayRef);
       } else if (paymentMethod === "other") {
         if (!paymentReference.trim())
           throw new Error("Preenche a referência de pagamento correspondente.");
@@ -379,6 +379,7 @@ export default function PosPaymentOverlay({
   }, [
     paymentMethod,
     paymentReference,
+    order.mbway_number,
     updateOrderFields,
     finalizePaidOrder,
     runTpaFlow,
@@ -413,6 +414,17 @@ export default function PosPaymentOverlay({
 
     onCloseAction();
   };
+
+  const handleClose = useCallback(async () => {
+    if (!completedOrder) {
+      try {
+        await updateOrderFields({ payment_method: "in-person" });
+      } catch (err) {
+        console.warn("Failed to set payment method to in-person on close", err);
+      }
+    }
+    onCloseAction();
+  }, [completedOrder, updateOrderFields, onCloseAction]);
 
   if (!open) return null;
 
@@ -451,14 +463,12 @@ export default function PosPaymentOverlay({
   }
 
   return (
-    <div
-      className={styles.backdrop}
-      onClick={(e) => e.target === e.currentTarget && onCloseAction()}>
+    <div className={styles.backdrop} onClick={(e) => e.target === e.currentTarget && handleClose()}>
       <div className={styles.modal}>
         <button
           className={styles.closeButton}
           type="button"
-          onClick={onCloseAction}
+          onClick={handleClose}
           aria-label="Fechar">
           <MdClose size={20} />
         </button>
@@ -531,7 +541,7 @@ export default function PosPaymentOverlay({
           <button
             type="button"
             className={styles.cancelButton}
-            onClick={onCloseAction}
+            onClick={handleClose}
             disabled={isSubmitting}>
             Cancelar
           </button>

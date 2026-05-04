@@ -448,7 +448,7 @@ export default function NewOrderModal({
       campus: campus || undefined,
       notes: notes || undefined,
       stock_override: stockOverride,
-      payment_method: !isEditMode ? "in-person" : undefined,
+      payment_method: !isEditMode ? "cash" : undefined,
       guest_checkout: !isEditMode ? guestCheckout : undefined,
       items: selectedProducts.map(({ product, variant, quantity }) => ({
         product_id: product.id,

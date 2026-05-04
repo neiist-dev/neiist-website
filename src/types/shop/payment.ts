@@ -14,12 +14,7 @@ export function getPaymentLabel(method: PaymentMethod) {
   return PAYMENT_METHODS[method].label;
 }
 
-export const PENDING_PAYMENT_METHODS: ReadonlySet<PaymentMethod> = new Set([
-  "in-person",
-  "mbway",
-  "cash",
-  "other",
-]);
+export const PENDING_PAYMENT_METHODS: ReadonlySet<PaymentMethod> = new Set(["in-person", "mbway"]);
 
 export const POS_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = ["cash", "other", "sumup-tpa"];
 

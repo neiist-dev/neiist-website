@@ -80,7 +80,7 @@ export async function finalizePaidOrder({
         Number(statusUpdate.total_amount),
         statusUpdate.campus,
         statusUpdate.payment_method,
-        reference
+        statusUpdate.payment_method === "cash" ? undefined : reference
       ),
     }).catch((err) => console.warn("Confirmation couldn't be sent:", err));
   }
