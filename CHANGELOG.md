@@ -1,5 +1,17 @@
 # neiist
 
+## [1.13.0](https://github.com/neiist-dev/neiist-website/compare/v1.12.0...v1.13.0) (2026-05-04)
+
+
+### Features
+
+* **security:** add bot protection, sitemap and robots.txt ([09d1a49](https://github.com/neiist-dev/neiist-website/commit/09d1a49438438b8d9f6113f30644c9a5de3b38a4))
+
+
+### Bug Fixes
+
+* **shop:** add override for status labels, with conditional messages for ([3d72068](https://github.com/neiist-dev/neiist-website/commit/3d720683f4db6a1ab37eb60bf04efc58765a0d4f))
+
 ## [1.12.0](https://github.com/neiist-dev/neiist-website/compare/v1.11.0...v1.12.0) (2026-05-01)
 
 
