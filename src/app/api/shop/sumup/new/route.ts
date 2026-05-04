@@ -79,10 +79,15 @@ export async function POST(req: NextRequest) {
 
     if (!checkoutId) return sumupErrorResponse("Unexpected response from payment service", 502);
 
-    await updateOrder(orderId, {
-      payment_reference: checkoutId,
-      updated_at: new Date().toISOString(),
-    }).catch((error) => console.warn("Failed to persist checkoutId on order:", error));
+    await updateOrder(
+      orderId,
+      {
+        payment_reference: checkoutId,
+        updated_at: new Date().toISOString(),
+      },
+      false,
+      auth.user?.istid ?? "system"
+    ).catch((error) => console.warn("Failed to persist checkoutId on order:", error));
 
     const response: CreateCheckoutResponse = { checkoutId };
     return NextResponse.json(response);

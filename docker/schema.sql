@@ -260,6 +260,7 @@ CREATE TABLE neiist.orders (
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_by TEXT,
   status neiist.shop_order_status_enum NOT NULL DEFAULT 'pending',
   CONSTRAINT orders_identity_mode_chk CHECK (
     user_istid IS NULL
@@ -1728,6 +1729,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
+  updated_by TEXT,
   status TEXT
 ) AS $$
 DECLARE
@@ -1889,7 +1891,7 @@ BEGIN
     );
   END LOOP;
 
-  UPDATE neiist.orders SET total_amount = ROUND(v_total, 2), updated_at = NOW() WHERE orders.id = v_order_id;
+  UPDATE neiist.orders SET total_amount = ROUND(v_total, 2), updated_at = NOW(), updated_by = p_created_by WHERE orders.id = v_order_id;
 
   RETURN QUERY
   SELECT
@@ -1931,7 +1933,7 @@ BEGIN
     ), '[]'::JSONB) AS items,
     o.notes, o.total_amount, o.payment_method, o.payment_reference,
     o.created_by,
-    o.created_at, o.paid_at, o.payment_checked_by, o.delivered_at, o.delivered_by, o.updated_at,
+    o.created_at, o.paid_at, o.payment_checked_by, o.delivered_at, o.delivered_by, o.updated_at, o.updated_by,
     o.status::TEXT
   FROM neiist.orders o
   LEFT JOIN neiist.users u ON u.istid = o.user_istid
@@ -1966,6 +1968,7 @@ RETURNS TABLE (
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
+  updated_by TEXT,
   status neiist.shop_order_status_enum
 ) AS $$
 BEGIN
@@ -2031,6 +2034,7 @@ BEGIN
     o.delivered_at,
     o.delivered_by,
     o.updated_at,
+    o.updated_by,
     o.status
   FROM neiist.orders o
   LEFT JOIN neiist.users u ON u.istid = o.user_istid
@@ -2066,6 +2070,7 @@ RETURNS TABLE (
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
+  updated_by TEXT,
   status neiist.shop_order_status_enum
 ) AS $$
 BEGIN
@@ -2122,6 +2127,7 @@ BEGIN
     o.delivered_at,
     o.delivered_by,
     o.updated_at,
+    o.updated_by,
     o.status
   FROM neiist.orders o
   LEFT JOIN neiist.users u ON u.istid = o.user_istid
@@ -2133,7 +2139,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.update_order(
   p_order_id INTEGER,
   p_updates JSONB,
-  p_stock_override BOOLEAN DEFAULT FALSE
+  p_stock_override BOOLEAN DEFAULT FALSE,
+  p_user_istid TEXT DEFAULT NULL
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -2156,6 +2163,7 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
+  updated_by TEXT,
   status TEXT
 ) AS $$
 DECLARE
@@ -2331,10 +2339,10 @@ BEGIN
       );
     END LOOP;
 
-    UPDATE neiist.orders SET total_amount = ROUND(v_total, 2) WHERE neiist.orders.id = p_order_id;
+    UPDATE neiist.orders SET total_amount = ROUND(v_total, 2), updated_by = p_user_istid WHERE neiist.orders.id = p_order_id;
   END IF;
 
-  UPDATE neiist.orders SET updated_at = NOW() WHERE neiist.orders.id = p_order_id;
+  UPDATE neiist.orders SET updated_at = NOW(), updated_by = p_user_istid WHERE neiist.orders.id = p_order_id;
 
   RETURN QUERY
   SELECT
@@ -2359,6 +2367,7 @@ BEGIN
     g.delivered_at,
     g.delivered_by,
     g.updated_at,
+    g.updated_by,
     g.status::TEXT
   FROM neiist.get_all_orders() g
   WHERE g.id = p_order_id;
@@ -2369,7 +2378,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.set_order_state(
   p_order_id INTEGER,
   p_status neiist.shop_order_status_enum,
-  p_actor TEXT DEFAULT NULL
+  p_user_istid TEXT DEFAULT NULL
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -2392,16 +2401,18 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   delivered_at TIMESTAMPTZ,
   delivered_by TEXT,
   updated_at TIMESTAMPTZ,
+  updated_by TEXT,
   status TEXT
 ) AS $$
 BEGIN
   UPDATE neiist.orders o
   SET status = p_status,
       paid_at = CASE WHEN p_status = 'paid' THEN NOW() ELSE o.paid_at END,
-      payment_checked_by = CASE WHEN p_status = 'paid' THEN COALESCE(p_actor, o.payment_checked_by) ELSE o.payment_checked_by END,
-      delivered_at = CASE WHEN p_status = 'delivered' THEN NOW() ELSE o.delivered_at END,
-      delivered_by = CASE WHEN p_status = 'delivered' THEN COALESCE(p_actor, o.delivered_by) ELSE o.delivered_by END,
-      updated_at = NOW()
+        payment_checked_by = CASE WHEN p_status = 'paid' THEN COALESCE(p_user_istid, o.payment_checked_by) ELSE o.payment_checked_by END,
+        delivered_at = CASE WHEN p_status = 'delivered' THEN NOW() ELSE o.delivered_at END,
+        delivered_by = CASE WHEN p_status = 'delivered' THEN COALESCE(p_user_istid, o.delivered_by) ELSE o.delivered_by END,
+        updated_at = NOW(),
+        updated_by = COALESCE(p_user_istid, o.updated_by)
   WHERE o.id = p_order_id;
 
   RETURN QUERY
@@ -2427,6 +2438,7 @@ BEGIN
     g.delivered_at,
     g.delivered_by,
     g.updated_at,
+    g.updated_by,
     g.status::TEXT
   FROM neiist.get_all_orders() g
   WHERE g.id = p_order_id;

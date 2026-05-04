@@ -872,14 +872,16 @@ export const getOrderByNumber = async (orderNumber: string): Promise<Order | nul
 export const updateOrder = async (
   orderId: number,
   updates: Partial<Order>,
-  stockOverride: boolean = false
+  stockOverride: boolean = false,
+  user_istid?: string
 ): Promise<Order | null> => {
   const {
     rows: [row],
-  } = await db_query<dbOrder>(`SELECT * FROM neiist.update_order($1,$2,$3)`, [
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.update_order($1,$2,$3,$4)`, [
     orderId,
     JSON.stringify(updates),
     stockOverride,
+    user_istid ?? null,
   ]);
   return row ? mapdbOrderToOrder(row) : null;
 };
@@ -887,14 +889,14 @@ export const updateOrder = async (
 export const setOrderState = async (
   orderId: number,
   status: OrderStatus,
-  actor?: string
+  user_istid?: string
 ): Promise<Order | null> => {
   const {
     rows: [row],
   } = await db_query<dbOrder>(`SELECT * FROM neiist.set_order_state($1,$2,$3)`, [
     orderId,
     status,
-    actor ?? null,
+    user_istid ?? null,
   ]);
   return row ? mapdbOrderToOrder(row) : null;
 };

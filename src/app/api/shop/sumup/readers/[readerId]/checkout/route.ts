@@ -16,19 +16,12 @@ function toMinorUnits(amountMajor: number, minorUnit = 2): number {
   return Math.round(amountMajor * 10 ** minorUnit);
 }
 
-async function authorize() {
-  const auth = await serverCheckRoles([UserRole._SHOP_MANAGER, UserRole._ADMIN]);
-  if (!auth.isAuthorized) return { error: auth.error };
-
-  return { success: true };
-}
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ readerId: string }> }
 ) {
-  const auth = await authorize();
-  if (auth.error) return auth.error;
+  const auth = await serverCheckRoles([UserRole._SHOP_MANAGER, UserRole._ADMIN]);
+  if (!auth.isAuthorized) return auth.error;
 
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
@@ -72,10 +65,15 @@ export async function POST(
   const clientTransactionId = data?.data?.client_transaction_id ?? null;
 
   if (clientTransactionId) {
-    await updateOrder(orderId, {
-      payment_reference: clientTransactionId,
-      updated_at: new Date().toISOString(),
-    });
+    await updateOrder(
+      orderId,
+      {
+        payment_reference: clientTransactionId,
+        updated_at: new Date().toISOString(),
+      },
+      false,
+      auth.user?.istid ?? "system"
+    );
   }
 
   return NextResponse.json({

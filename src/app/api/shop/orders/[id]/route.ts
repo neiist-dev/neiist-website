@@ -164,7 +164,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const updatedOrder = await updateOrder(
       orderId,
       filteredUpdates as Partial<Order>,
-      stockOverride
+      stockOverride,
+      user?.istid ?? "system"
     );
     if (!updatedOrder)
       return NextResponse.json({ error: "Failed to update order" }, { status: 500 });

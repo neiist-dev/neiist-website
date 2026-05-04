@@ -29,6 +29,7 @@ export interface Order {
   delivered_at?: string;
   delivered_by?: string;
   updated_at?: string;
+  updated_by?: string;
   status: OrderStatus;
 }
 
@@ -54,6 +55,7 @@ export interface dbOrder {
   delivered_at: string | null;
   delivered_by: string | null;
   updated_at: string | null;
+  updated_by: string | null;
   status: string;
 }
 
@@ -113,6 +115,7 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     delivered_at: row.delivered_at ?? undefined,
     delivered_by: row.delivered_by ?? undefined,
     updated_at: row.updated_at ?? undefined,
+    updated_by: row.updated_by ?? undefined,
     status: row.status as Order["status"],
   };
 }

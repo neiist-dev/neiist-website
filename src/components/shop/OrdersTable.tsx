@@ -373,9 +373,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       Campus: o.campus,
       Telefone: o.customer_phone,
       "Método de pagamento": o.payment_method,
-      "Referencia SumUp": o.payment_reference,
+      "Referencia de Pagamento": o.payment_reference,
       "Total (€)": o.total_amount,
       Notas: o.notes || "",
+      "Ultima modificação por": o.updated_by,
       Produtos: o.items
         .map((it) => `${it.product_name} ${it.variant_label || ""} x${it.quantity}`)
         .join("; "),
