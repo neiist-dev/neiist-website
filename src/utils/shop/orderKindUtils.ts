@@ -75,6 +75,7 @@ export function getOrderKindRules(
     paymentMethods,
     customerEmailsEnabled:
       specialConfig?.customerEmailsEnabled ?? DEFAULT_ORDER_RULES.customerEmailsEnabled,
+    maxQuantityPerUser: specialConfig?.maxQuantityPerUser,
     requiresUserAssignment:
       specialConfig?.requiresUserAssignment ?? DEFAULT_ORDER_RULES.requiresUserAssignment,
     autoCancelEnabled: specialConfig?.autoCancelEnabled ?? DEFAULT_ORDER_RULES.autoCancelEnabled,

@@ -869,6 +869,20 @@ export const getOrderByNumber = async (orderNumber: string): Promise<Order | nul
     : null;
 };
 
+export const getUserOrderedProductsInCategory = async (
+  userIstid: string,
+  categoryName: string
+): Promise<Record<number, number>> => {
+  if (!userIstid || !categoryName) return {};
+  const { rows } = await db_query<{ product_id: number; total: number }>(
+    `SELECT * FROM neiist.get_user_ordered_products_in_category($1, $2)`,
+    [userIstid, categoryName]
+  );
+  const result: Record<number, number> = {};
+  for (const row of rows) result[Number(row.product_id)] = Number(row.total ?? 0);
+  return result;
+};
+
 export const updateOrder = async (
   orderId: number,
   updates: Partial<Order>,

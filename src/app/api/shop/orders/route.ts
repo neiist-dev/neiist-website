@@ -6,6 +6,7 @@ import {
   updateUser,
   mapOrderDbErrorToResponse,
   getProduct,
+  getUserOrderedProductsInCategory,
 } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { PAYMENT_METHODS, PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
@@ -77,6 +78,12 @@ export async function POST(request: NextRequest) {
 
     const { orderKind, isMixedInvalid } = getOrderKindFromItems(products as Product[]);
     const orderRules = getOrderKindRules(orderKind, orderSource);
+    const userAssignmentRequired = orderRules.requiresUserAssignment;
+    const orderUserIstid = guestCheckout
+      ? undefined
+      : userAssignmentRequired
+        ? body.user_istid
+        : undefined;
 
     if (isMixedInvalid) {
       return NextResponse.json(
@@ -92,6 +99,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (orderRules.maxQuantityPerUser && orderUserIstid) {
+      const categoryName = products[0]?.category?.trim();
+      if (categoryName) {
+        const existingByProduct = await getUserOrderedProductsInCategory(
+          orderUserIstid,
+          categoryName
+        );
+
+        const requestedQuantitiesByProduct: Record<number, number> = {};
+        for (const item of body.items as OrderItem[]) {
+          const productId = Number(item.product_id);
+          requestedQuantitiesByProduct[productId] =
+            (requestedQuantitiesByProduct[productId] ?? 0) + Number(item.quantity ?? 0);
+        }
+
+        for (const [productIdString, requestedQty] of Object.entries(
+          requestedQuantitiesByProduct
+        )) {
+          const productId = Number(productIdString);
+          const existing = existingByProduct[productId] ?? 0;
+          if (existing + requestedQty > orderRules.maxQuantityPerUser) {
+            const product = await getProduct(productId);
+            const productLabel = product?.name ?? `product ${productId}`;
+            return NextResponse.json(
+              {
+                error: `O limite para o produto "${productLabel}" para este utilizador foi atingido`,
+              },
+              { status: 400 }
+            );
+          }
+        }
+      }
+    }
+
     const allowedPaymentMethods = orderRules.paymentMethods;
     const paymentMethod: PaymentMethod =
       explicitlyRequestedMethod ??
@@ -103,8 +144,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const userAssignmentRequired = orderRules.requiresUserAssignment;
 
     if (userAssignmentRequired && !body.user_istid && !guestCheckout) {
       return NextResponse.json(
@@ -134,11 +173,7 @@ export async function POST(request: NextRequest) {
 
     const order = await newOrder(
       {
-        user_istid: guestCheckout
-          ? undefined
-          : userAssignmentRequired
-            ? body.user_istid
-            : undefined,
+        user_istid: orderUserIstid,
         customer_name: customerName || (guestCheckout ? "Cliente POS" : ""),
         customer_email: customerEmail || null,
         customer_phone: customerPhone || null,
@@ -154,10 +189,10 @@ export async function POST(request: NextRequest) {
     );
     if (!order) return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
 
-    if (!guestCheckout && userAssignmentRequired && body.customer_phone && body.user_istid) {
-      const user = await getUser(body.user_istid);
+    if (orderUserIstid && body.customer_phone) {
+      const user = await getUser(orderUserIstid);
       if (user && user.phone !== body.customer_phone)
-        await updateUser(body.user_istid, { phone: body.customer_phone });
+        await updateUser(orderUserIstid, { phone: body.customer_phone });
     }
 
     if (

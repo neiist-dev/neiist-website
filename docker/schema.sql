@@ -284,6 +284,9 @@ CREATE TABLE neiist.order_items (
 -- Index for better search performance of products on orders
 CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON neiist.order_items(product_id);
 
+-- Index to speed up lookups by user on orders
+CREATE INDEX IF NOT EXISTS idx_orders_user_istid ON neiist.orders(user_istid);
+
 --Triggers
 
 --Resotck Limited stock items on order cancellation
@@ -2444,6 +2447,22 @@ BEGIN
   WHERE g.id = p_order_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all non-cancelled ordered quantities by product for a user within a category
+CREATE OR REPLACE FUNCTION neiist.get_user_ordered_products_in_category(
+  p_user_istid VARCHAR(10),
+  p_category_name TEXT
+) RETURNS TABLE(product_id INTEGER, total INTEGER) AS $$
+  SELECT oi.product_id, SUM(oi.quantity)::INT AS total
+  FROM neiist.order_items oi
+  JOIN neiist.orders o ON oi.order_id = o.id
+  JOIN neiist.products p ON oi.product_id = p.id
+  JOIN neiist.categories c ON p.category_id = c.id
+  WHERE o.user_istid = p_user_istid
+    AND o.status <> 'cancelled'
+    AND lower(c.name) = lower(p_category_name)
+  GROUP BY oi.product_id;
+$$ LANGUAGE sql SECURITY DEFINER;
 
 -- Get all available product categories
 CREATE OR REPLACE FUNCTION neiist.get_all_categories()

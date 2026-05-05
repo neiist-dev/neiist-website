@@ -24,6 +24,7 @@ interface SpecialOrderConfig {
   paymentMethods: readonly PaymentMethod[];
   paymentMethodsBySource?: Partial<Record<OrderSource, readonly PaymentMethod[]>>;
   customerEmailsEnabled?: boolean;
+  maxQuantityPerUser?: number;
   emailTemplates?: Partial<
     Record<OrderEmailTemplateType, Exclude<OrderEmailTemplateKey, "default">>
   >;
@@ -37,6 +38,7 @@ export interface OrderKindRules {
   allowedSources: readonly OrderSource[];
   paymentMethods: readonly PaymentMethod[];
   customerEmailsEnabled: boolean;
+  maxQuantityPerUser?: number;
   requiresUserAssignment: boolean;
   autoCancelEnabled: boolean;
   emailTemplates: Record<OrderEmailTemplateType, OrderEmailTemplateKey>;
@@ -55,6 +57,7 @@ export const SPECIAL_ORDER_CONFIG: Record<Exclude<OrderKind, "normal">, SpecialO
   jantar_de_curso: {
     allowedSources: ["dinner", "pos"],
     paymentMethods: ["in-person", "mbway", "cash", "other"],
+    maxQuantityPerUser: 1,
     paymentMethodsBySource: {
       dinner: ["in-person", "mbway"],
       pos: ["in-person", "cash", "other", "mbway"],
