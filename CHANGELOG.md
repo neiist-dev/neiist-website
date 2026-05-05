@@ -1,5 +1,12 @@
 # neiist
 
+## [1.13.4](https://github.com/neiist-dev/neiist-website/compare/v1.13.3...v1.13.4) (2026-05-04)
+
+
+### Bug Fixes
+
+* **shop:** when POS flow fails/exit set order as pending (in-person) as ([08ca0fc](https://github.com/neiist-dev/neiist-website/commit/08ca0fca0936e9cde69648c1f2c4a0ffd235170b))
+
 ## [1.13.3](https://github.com/neiist-dev/neiist-website/compare/v1.13.2...v1.13.3) (2026-05-04)
 
 
