@@ -1,5 +1,12 @@
 # neiist
 
+## [1.13.5](https://github.com/neiist-dev/neiist-website/compare/v1.13.4...v1.13.5) (2026-05-06)
+
+
+### Bug Fixes
+
+* **shop:** product variants are now correctly order and saved ([3700853](https://github.com/neiist-dev/neiist-website/commit/37008539b0b7cd2689104def912630d3a5f6e640))
+
 ## [1.13.4](https://github.com/neiist-dev/neiist-website/compare/v1.13.3...v1.13.4) (2026-05-04)
 
 
