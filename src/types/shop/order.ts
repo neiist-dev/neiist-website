@@ -1,4 +1,5 @@
 import type { PaymentMethod } from "@/types/shop/payment";
+import { decodeVariantOptionsFromStorage } from "@/types/shop/product";
 import type { OrderStatus } from "@/types/shop/orderStatus";
 
 export enum Campus {
@@ -98,7 +99,7 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
         product_name: item.product_name,
         variant_id: item.variant_id ?? undefined,
         variant_label: item.variant_label ?? undefined,
-        variant_options: item.variant_options ?? undefined,
+        variant_options: decodeVariantOptionsFromStorage(item.variant_options ?? undefined),
         quantity: item.quantity,
         unit_price: Number(item.unit_price),
         total_price: Number(item.total_price),
