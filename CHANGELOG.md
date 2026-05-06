@@ -1,5 +1,12 @@
 # neiist
 
+## [1.13.6](https://github.com/neiist-dev/neiist-website/compare/v1.13.5...v1.13.6) (2026-05-06)
+
+
+### Bug Fixes
+
+* **shop:** all db to object mappers use the new product variants parser ([f2574c5](https://github.com/neiist-dev/neiist-website/commit/f2574c5c2166c0a7366caa4a76c48b9eafb6e7c6))
+
 ## [1.13.5](https://github.com/neiist-dev/neiist-website/compare/v1.13.4...v1.13.5) (2026-05-06)
 
 
