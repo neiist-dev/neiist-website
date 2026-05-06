@@ -774,13 +774,13 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
 BEGIN
   -- Update users table fields
   IF p_updates ? 'name' THEN
-    UPDATE neiist.users SET name = p_updates->>'name' WHERE istid = p_istid;
+    UPDATE neiist.users SET name = p_updates->>'name' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'email' THEN
-    UPDATE neiist.users SET email = p_updates->>'email' WHERE istid = p_istid;
+    UPDATE neiist.users SET email = p_updates->>'email' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'photo' THEN
-    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE istid = p_istid;
+    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'github' THEN
     UPDATE neiist.users SET github = p_updates->>'github' WHERE neiist.users.istid = p_istid;
@@ -2474,3 +2474,34 @@ BEGIN
   RETURN QUERY SELECT c.id, c.name FROM neiist.categories c ORDER BY c.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Erase user data (keeps the row and primary key but clears personal data)
+CREATE OR REPLACE FUNCTION neiist.remove_user(p_istid VARCHAR(10))
+RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  active_dept_count INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO active_dept_count
+  FROM neiist.membership m
+  JOIN neiist.departments d ON m.department_name = d.name
+  WHERE m.user_istid = p_istid
+    AND d.department_type IN ('team', 'admin_body');
+
+  IF active_dept_count > 0 THEN
+    RAISE EXCEPTION 'User is a member of a team or admin body';
+  END IF;
+
+  UPDATE neiist.users
+  SET
+    name = 'Utilizador Eliminado',
+    email = 'deleted_' || p_istid || '@deleted.neiist',
+    github = NULL,
+    linkedin = NULL,
+    photo_path = NULL
+  WHERE istid = p_istid;
+
+  DELETE FROM neiist.user_contacts WHERE user_istid = p_istid;
+  DELETE FROM neiist.user_courses WHERE user_istid = p_istid;
+  DELETE FROM neiist.email_token WHERE istid = p_istid;
+END;
+$$;

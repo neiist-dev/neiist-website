@@ -17,6 +17,7 @@ import {
   FiGithub,
   FiLinkedin,
 } from "react-icons/fi";
+import { toast } from "sonner";
 import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
@@ -52,7 +53,8 @@ export default function ProfileClient({
     webViewLink: string;
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
 
@@ -94,7 +96,6 @@ export default function ProfileClient({
   const handleConfirmChange = async () => {
     if (!pendingChange || !user) return;
     setShowConfirmDialog(false);
-    setError("");
 
     try {
       const { field } = pendingChange;
@@ -130,8 +131,7 @@ export default function ProfileClient({
         setUser(updated);
       }
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
+      toast.error(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
     } finally {
       setPendingChange(null);
     }
@@ -154,8 +154,7 @@ export default function ProfileClient({
       setCalendarData(links);
       return links;
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao obter link do calendário.");
+      toast.error(e instanceof Error ? e.message : "Erro ao obter link do calendário.");
       return null;
     }
   };
@@ -163,7 +162,6 @@ export default function ProfileClient({
   const handleAddCalendar = async () => {
     if (!user?.istid || calendarLoading) return;
     setCalendarLoading(true);
-    setError("");
 
     try {
       const data = await getCalendarData();
@@ -178,7 +176,6 @@ export default function ProfileClient({
   const handleViewCalendar = async () => {
     if (!user?.istid || calendarLoading) return;
     setCalendarLoading(true);
-    setError("");
 
     try {
       const data = await getCalendarData();
@@ -193,13 +190,11 @@ export default function ProfileClient({
   const onCvUpload = async (file: File | null) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
-      // TODO: (ERROR)
-      setError("Envie apenas ficheiros PDF.");
+      toast.error("Envie apenas ficheiros PDF.");
       return;
     }
     setCvLoading(true);
     try {
-      // TODO: (LOADING) show loading toast while the CV upload is in progress.
       const form = new FormData();
       form.append("file", file);
       form.append("istid", user.istid);
@@ -207,10 +202,8 @@ export default function ProfileClient({
       const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
       if (!res.ok) throw new Error("Falha ao enviar o CV.");
       setHasCV(true);
-      // TODO: (SUCCESS) show success toast after the CV is uploaded.
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao enviar o CV.");
+      toast.error(e instanceof Error ? e.message : "Erro ao enviar o CV.");
     } finally {
       setCvLoading(false);
     }
@@ -222,12 +215,26 @@ export default function ProfileClient({
       const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
       if (!res.ok) throw new Error("Falha ao remover o CV.");
       setHasCV(false);
-      // TODO: (SUCCESS) show success toast after the CV is removed.
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao remover o CV.");
+      toast.error(e instanceof Error ? e.message : "Erro ao remover o CV.");
     } finally {
       setCvLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setShowDeleteConfirmDialog(false);
+    setDeleteLoading(true);
+    try {
+      const res = await fetch("/api/user/delete", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Erro ao apagar dados.");
+      }
+      window.location.href = "/";
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao apagar dados pessoais.");
+      setDeleteLoading(false);
     }
   };
 
@@ -246,8 +253,7 @@ export default function ProfileClient({
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao descarregar o CV.");
+      toast.error(e instanceof Error ? e.message : "Erro ao descarregar o CV.");
     } finally {
       setCvLoading(false);
     }
@@ -469,10 +475,17 @@ export default function ProfileClient({
               </div>
             )}
           </div>
+          <div>
+            <button
+              type="button"
+              className={styles.dangerButton}
+              onClick={() => setShowDeleteConfirmDialog(true)}
+              disabled={deleteLoading}>
+              <FiTrash2 /> {deleteLoading ? "A apagar..." : "Apagar Dados"}
+            </button>
+          </div>
         </div>
       </div>
-      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-      {error && <p className={styles.error}>{error}</p>}
       <ConfirmDialog
         open={showConfirmDialog}
         message={
@@ -490,6 +503,12 @@ export default function ProfileClient({
           setShowConfirmDialog(false);
           setPendingChange(null);
         }}
+      />
+      <ConfirmDialog
+        open={showDeleteConfirmDialog}
+        message="Tens a certeza que queres apagar os teus dados pessoais? Esta ação é irreversível e terminará a tua sessão."
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setShowDeleteConfirmDialog(false)}
       />
     </>
   );
