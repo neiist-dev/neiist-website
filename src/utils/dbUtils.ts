@@ -6,6 +6,8 @@ import {
   ProductVariant,
   dbProduct,
   dbProductVariant,
+  decodeVariantOptionsFromStorage,
+  encodeVariantOptionsForStorage,
   mapdbProductToProduct,
 } from "@/types/shop/product";
 import { Order, dbOrder, mapdbOrderToOrder } from "@/types/shop/order";
@@ -663,7 +665,7 @@ export const addProductVariant = async (
     variant.price_modifier ?? 0,
     variant.stock_quantity ?? null,
     variant.active ?? true,
-    JSON.stringify(variant.options ?? {}),
+    JSON.stringify(encodeVariantOptionsForStorage(variant.options ?? {})),
   ]);
   return row ? mapdbProductToProduct(row) : null;
 };
@@ -726,7 +728,7 @@ export const updateProductVariant = async (
       stock_quantity:
         updates.stock_quantity == null ? null : Math.round(Number(updates.stock_quantity)),
       active: updates.active,
-      options: updates.options,
+      options: encodeVariantOptionsForStorage(updates.options ?? {}),
     }),
   ]);
   return row
@@ -737,7 +739,7 @@ export const updateProductVariant = async (
         price_modifier: Number(row.price_modifier ?? 0),
         stock_quantity: row.stock_quantity ?? undefined,
         active: row.active,
-        options: row.options ?? {},
+        options: decodeVariantOptionsFromStorage(row.options),
         label: row.label ?? undefined,
       }
     : null;

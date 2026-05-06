@@ -55,7 +55,98 @@ export interface CartItem {
   quantity: number;
 }
 
+const OPTION_ORDER_PREFIX = "__ord";
+const OPTION_ORDER_SEPARATOR = "__::";
+
+type ParsedOptionEntry = {
+  index: number;
+  key: string;
+  value: string;
+  originalPosition: number;
+};
+
+function makeOrderedStorageKey(index: number, key: string): string {
+  const safeIndex = Number.isFinite(index) ? Math.max(0, Math.floor(index)) : 0;
+  const paddedIndex = String(safeIndex).padStart(4, "0");
+  return `${OPTION_ORDER_PREFIX}${paddedIndex}${OPTION_ORDER_SEPARATOR}${key}`;
+}
+
+function parseOrderedStorageKey(rawKey: string): { index: number; key: string } {
+  if (!rawKey.startsWith(OPTION_ORDER_PREFIX))
+    return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
+
+  const separatorIndex = rawKey.indexOf(OPTION_ORDER_SEPARATOR);
+  if (separatorIndex === -1) return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
+
+  const indexPart = rawKey.slice(OPTION_ORDER_PREFIX.length, separatorIndex);
+  const parsedIndex = Number.parseInt(indexPart, 10);
+  const key = rawKey.slice(separatorIndex + OPTION_ORDER_SEPARATOR.length);
+
+  if (!Number.isFinite(parsedIndex) || !key) return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
+
+  return { index: parsedIndex, key };
+}
+
+export function encodeVariantOptionsForStorage(
+  options: Record<string, string>
+): Record<string, string> {
+  const entries = Object.entries(options ?? {});
+  const encoded: Record<string, string> = {};
+
+  entries.forEach(([key, value], index) => {
+    encoded[makeOrderedStorageKey(index, key)] = value;
+  });
+
+  return encoded;
+}
+
+export function decodeVariantOptionsFromStorage(
+  options: Record<string, string> | null | undefined
+): Record<string, string> {
+  const rawEntries = Object.entries(options ?? {});
+  if (!rawEntries.some(([key]) => key.startsWith(OPTION_ORDER_PREFIX)))
+    return Object.fromEntries(rawEntries);
+
+  const entries: ParsedOptionEntry[] = rawEntries.map(([rawKey, value], originalPosition) => ({
+    ...parseOrderedStorageKey(rawKey),
+    value,
+    originalPosition,
+  }));
+
+  entries.sort((a, b) => {
+    if (a.index !== b.index) return a.index - b.index;
+    return a.originalPosition - b.originalPosition;
+  });
+
+  const decoded: Record<string, string> = {};
+  for (const entry of entries) decoded[entry.key] = entry.value;
+
+  return decoded;
+}
+
+export function restoreVariantOptionOrder(
+  variants: ProductVariant[] | undefined
+): ProductVariant[] {
+  return (variants ?? []).map((variant) => ({
+    ...variant,
+    options: decodeVariantOptionsFromStorage(variant.options),
+  }));
+}
+
 export function mapdbProductToProduct(row: dbProduct): Product {
+  const mappedVariants = (row.variants ?? []).map(
+    (variant): ProductVariant => ({
+      id: variant.id,
+      sku: variant.sku ?? undefined,
+      images: variant.images ?? undefined,
+      price_modifier: Number(variant.price_modifier ?? 0),
+      stock_quantity: variant.stock_quantity ?? undefined,
+      active: Boolean(variant.active),
+      options: variant.options ?? {},
+      label: variant.label ?? undefined,
+    })
+  );
+
   return {
     id: row.id,
     name: row.name,
@@ -67,17 +158,6 @@ export function mapdbProductToProduct(row: dbProduct): Product {
     stock_quantity: row.stock_quantity ?? undefined,
     order_deadline: row.order_deadline ?? undefined,
     active: row.active ?? true,
-    variants: (row.variants ?? []).map(
-      (variant): ProductVariant => ({
-        id: variant.id,
-        sku: variant.sku ?? undefined,
-        images: variant.images ?? undefined,
-        price_modifier: Number(variant.price_modifier ?? 0),
-        stock_quantity: variant.stock_quantity ?? undefined,
-        active: Boolean(variant.active),
-        options: variant.options ?? {},
-        label: variant.label ?? undefined,
-      })
-    ),
+    variants: restoreVariantOptionOrder(mappedVariants),
   };
 }

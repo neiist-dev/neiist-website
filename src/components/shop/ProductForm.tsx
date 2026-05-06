@@ -58,28 +58,6 @@ const emptyGroupSlot = (): GroupSlot => ({ existing: [], newFiles: [], price_mod
 
 const slotImages = (slot: GroupSlot) => [...slot.existing, ...slot.newFiles.map((f) => f.preview)];
 
-const normalizeOptVal = (type: string, raw: string) => {
-  if (!isColorKey(type)) return raw;
-  const { name, hex } = splitNameHex(raw);
-  return hex ? joinNameHex(name, hex) : raw;
-};
-
-const optValMatches = (type: string, varVal: string, grpVal: string) =>
-  isColorKey(type) ? splitNameHex(varVal).hex === splitNameHex(grpVal).hex : varVal === grpVal;
-
-async function uploadFiles(files: File[]): Promise<string[]> {
-  if (!files || files.length === 0) return [];
-  const fd = new FormData();
-  files.forEach((f) => fd.append("files", f));
-  const res = await fetch("/api/shop/uploads", { method: "POST", body: fd });
-  if (!res.ok) throw new Error("Upload failed");
-  const data = await res.json();
-  return data.paths ?? [];
-}
-
-const cartesian = <T,>(sets: T[][]): T[][] =>
-  sets.reduce<T[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
-
 function ImageGrid({
   images,
   onAdd,
@@ -121,6 +99,83 @@ function ImageGrid({
       </div>
     </div>
   );
+}
+
+const normalizeOptVal = (type: string, raw: string) => {
+  if (!isColorKey(type)) return raw;
+  const { name, hex } = splitNameHex(raw);
+  return hex ? joinNameHex(name, hex) : raw;
+};
+
+const groupKeyFromOption = (type: string, value: string) =>
+  `${type}::${normalizeOptVal(type, value)}`;
+
+const getGroupPriceModifier = (
+  variants: ProductVariant[],
+  optType: string,
+  optVal: string
+): number => {
+  const matching = variants.filter(
+    (v) => normalizeOptVal(optType, String(v.options?.[optType] ?? "")) === optVal
+  );
+  if (!matching.length) return 0;
+
+  const modifiers = new Set(matching.map((v) => Number(v.price_modifier ?? 0)));
+  return modifiers.size === 1 ? Number(matching[0].price_modifier ?? 0) : 0;
+};
+
+const buildInitialGroupImages = (variants: ProductVariant[] | undefined): GroupImages => {
+  if (!variants?.length) return {};
+
+  const initial: GroupImages = {};
+
+  variants.forEach((variant) => {
+    Object.entries(variant.options ?? {}).forEach(([type, value]) => {
+      const key = groupKeyFromOption(type, String(value).replace(/["']/g, ""));
+      if (!initial[key]) {
+        const normalizedValue = key.split("::")[1] ?? "";
+        initial[key] = {
+          ...emptyGroupSlot(),
+          price_modifier: getGroupPriceModifier(variants, type, normalizedValue),
+        };
+      }
+    });
+  });
+
+  Object.entries(initial).forEach(([key, slot]) => {
+    const [optType, optVal] = key.split("::");
+    const seen = new Set<string>();
+
+    variants
+      .filter(
+        (variant) => normalizeOptVal(optType, String(variant.options?.[optType] ?? "")) === optVal
+      )
+      .forEach((v: ProductVariant) =>
+        v.images?.forEach((img: string) => {
+          if (!seen.has(img)) {
+            seen.add(img);
+            slot.existing.push(img);
+          }
+        })
+      );
+  });
+  return initial;
+};
+
+const optValMatches = (type: string, varVal: string, grpVal: string) =>
+  isColorKey(type) ? splitNameHex(varVal).hex === splitNameHex(grpVal).hex : varVal === grpVal;
+
+const cartesian = <T,>(sets: T[][]): T[][] =>
+  sets.reduce<T[][]>((acc, set) => acc.flatMap((x) => set.map((y) => [...x, y])), [[]]);
+
+async function uploadFiles(files: File[]): Promise<string[]> {
+  if (!files || files.length === 0) return [];
+  const fd = new FormData();
+  files.forEach((f) => fd.append("files", f));
+  const res = await fetch("/api/shop/uploads", { method: "POST", body: fd });
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json();
+  return data.paths ?? [];
 }
 
 function Field({
@@ -239,6 +294,7 @@ export default function ProductForm({
   const initialVariantIdsRef = useRef<Set<number>>(
     new Set(product?.variants?.map((v) => v.id) ?? [])
   );
+  const hasInitializedFromProduct = useRef(!!product?.variants?.length);
 
   const [productImages, setProductImages] = useState<{ existing: string[]; new: ImageFile[] }>({
     existing: product?.images ?? [],
@@ -264,50 +320,29 @@ export default function ProductForm({
     });
   });
 
-  const [variants, setVariants] = useState<VariantForm[]>(
-    product?.variants?.map((v: ProductVariant) => ({
-      id: v.id,
-      options: Object.fromEntries(
-        Object.entries(v.options ?? {}).map(([k, val]) => [
-          k,
-          normalizeOptVal(k, String(val).replace(/['"]/g, "")),
-        ])
-      ),
-      price_modifier: v.price_modifier ?? 0,
-      stock_quantity: v.stock_quantity ?? 0,
-      active: v.active !== false,
-      existingImages: v.images ?? [],
-      newImages: [],
-    })) ?? []
-  );
+  const [variants, setVariants] = useState<VariantForm[]>(() => {
+    const initialized =
+      product?.variants?.map((v: ProductVariant) => {
+        return {
+          id: v.id,
+          options: Object.fromEntries(
+            Object.entries(v.options ?? {}).map(([k, val]) => [
+              k,
+              normalizeOptVal(k, String(val).replace(/['"]/g, "")),
+            ])
+          ),
+          price_modifier: v.price_modifier ?? 0,
+          stock_quantity: v.stock_quantity ?? 0,
+          active: v.active !== false,
+          existingImages: v.images ?? [],
+          newImages: [],
+        };
+      }) ?? [];
+    return initialized;
+  });
 
   const [groupImages, setGroupImages] = useState<GroupImages>(() => {
-    if (!product?.variants?.length) return {};
-    const initial: GroupImages = {};
-    product.variants.forEach((v: ProductVariant) =>
-      Object.entries(v.options ?? {}).forEach(([t, val]) => {
-        const key = `${t}::${normalizeOptVal(t, String(val).replace(/['"]/g, ""))}`;
-        if (!initial[key]) initial[key] = emptyGroupSlot();
-      })
-    );
-    Object.entries(initial).forEach(([key, slot]) => {
-      const [optType, optVal] = key.split("::");
-      const seen = new Set<string>();
-      product
-        .variants!.filter(
-          (v: ProductVariant) =>
-            normalizeOptVal(optType, String(v.options?.[optType] ?? "")) === optVal
-        )
-        .forEach((v: ProductVariant) =>
-          v.images?.forEach((img: string) => {
-            if (!seen.has(img)) {
-              seen.add(img);
-              slot.existing.push(img);
-            }
-          })
-        );
-    });
-    return initial;
+    return buildInitialGroupImages(product?.variants);
   });
 
   const [activeTab, setActiveTab] = useState<"__groups__" | "__combos__">("__groups__");
@@ -361,10 +396,14 @@ export default function ProductForm({
     return () => document.removeEventListener("mousedown", handler);
   }, [showDatePicker]);
 
-  // Auto-generate variant combinations from definitions
   useEffect(() => {
+    if (hasInitializedFromProduct.current) {
+      hasInitializedFromProduct.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       const valid = variantDefinitions.filter((d) => d.name && d.values.length > 0);
+
       if (!valid.length) {
         setVariants([]);
         setGroupImages({});
@@ -373,43 +412,48 @@ export default function ProductForm({
 
       const names = valid.map((d) => d.name);
       const newCombos = cartesian(valid.map((d) => d.values)).map((combo) => {
-        const opts = Object.fromEntries(
-          names.map((n, i) => {
-            const val = combo[i];
-            return [n, typeof val === "string" ? val : joinNameHex(val.name, val.color)];
-          })
-        );
+        const opts: Record<string, string> = {};
+        valid.forEach((d, i) => {
+          const val = combo[i];
+          const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
+          opts[d.name] = strVal;
+        });
         return opts;
       });
 
       setVariants((prev) => {
-        const matchedExisting: VariantForm[] = [];
-        const matchedCombos = new Set<string>();
-
+        const getOptsKey = (opts: Record<string, string>) =>
+          JSON.stringify(names.reduce((acc, k) => ({ ...acc, [k]: opts[k] }), {}));
+        const prevMap = new Map<string, VariantForm>();
         prev.forEach((v) => {
-          const isStillValid = names.every((n) =>
-            optValMatches(n, v.options[n] ?? "", v.options[n] ?? "")
-          );
-          if (isStillValid) {
-            matchedExisting.push(v);
-            matchedCombos.add(JSON.stringify(v.options));
+          const isValid = names.every((n) => {
+            const vOpt = v.options[n];
+            if (!vOpt) return false;
+            return valid
+              .find((d) => d.name === n)
+              ?.values.some((dv) => {
+                const strVal = typeof dv === "string" ? dv : joinNameHex(dv.name, dv.color);
+                return optValMatches(n, vOpt, strVal);
+              });
+          });
+          if (isValid && Object.keys(v.options).length === names.length) {
+            prevMap.set(getOptsKey(v.options), v);
           }
         });
 
-        const newVariants = newCombos
-          .filter((opts) => !matchedCombos.has(JSON.stringify(opts)))
-          .map((opts) => ({
-            options: opts,
-            price_modifier: 0,
-            stock_quantity: 0,
-            active: true,
-            existingImages: [],
-            newImages: [],
-          }));
-
-        return [...matchedExisting, ...newVariants];
+        return newCombos.map(
+          (opts) =>
+            prevMap.get(getOptsKey(opts)) ?? {
+              options: opts,
+              price_modifier: 0,
+              stock_quantity: 0,
+              active: true,
+              existingImages: [],
+              newImages: [],
+            }
+        );
       });
-    }, 500);
+    }, 300);
     return () => clearTimeout(timer);
   }, [variantDefinitions]);
 
