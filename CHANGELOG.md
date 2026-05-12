@@ -1,5 +1,21 @@
 # neiist
 
+## [1.14.0](https://github.com/neiist-dev/neiist-website/compare/v1.13.6...v1.14.0) (2026-05-12)
+
+
+### Features
+
+* **shop:** discount codes. Ability to create and manage codes, send ([b2165b7](https://github.com/neiist-dev/neiist-website/commit/b2165b7ade394e0cea6f05fcfa8bb55b69538cc4))
+* **shop:** variants and names of products all centralized. Clean up and ([b789e2e](https://github.com/neiist-dev/neiist-website/commit/b789e2e6d5483468cd40061c1b7d123c88e7e7ef))
+
+
+### Bug Fixes
+
+* **email:** email editor css on DiscountCodesDashboard ([b4d7b66](https://github.com/neiist-dev/neiist-website/commit/b4d7b663f2022c7c45a1f138672195dc74ffa5ae))
+* **shop:** dicount code managment page button on shop managment ([2571eee](https://github.com/neiist-dev/neiist-website/commit/2571eee78ce8685a8833a23cb4b69159c8dc7d6d))
+* **shop:** email editor for discountEmail now supports more variables ([9ac80ca](https://github.com/neiist-dev/neiist-website/commit/9ac80ca2b78d44878e9dbdbb30e3ffcdd7f787ef))
+* **toast:** add toast notifications instead of inline erros for ([4ac4853](https://github.com/neiist-dev/neiist-website/commit/4ac4853971b4247285cbfce70aa2924acc35da54))
+
 ## [1.13.6](https://github.com/neiist-dev/neiist-website/compare/v1.13.5...v1.13.6) (2026-05-06)
 
 
