@@ -1,5 +1,12 @@
 # neiist
 
+## [1.14.1](https://github.com/neiist-dev/neiist-website/compare/v1.14.0...v1.14.1) (2026-05-12)
+
+
+### Bug Fixes
+
+* **shop:** allow sending discount code to external emails (non neiist ([aae8b4b](https://github.com/neiist-dev/neiist-website/commit/aae8b4b45e6ae31d34b5d025f06acac42d968fc5))
+
 ## [1.14.0](https://github.com/neiist-dev/neiist-website/compare/v1.13.6...v1.14.0) (2026-05-12)
 
 
