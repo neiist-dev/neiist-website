@@ -1,5 +1,14 @@
 # neiist
 
+## [1.14.2](https://github.com/neiist-dev/neiist-website/compare/v1.14.1...v1.14.2) (2026-05-13)
+
+
+### Bug Fixes
+
+* **discount:** rename folder struct ([c67088c](https://github.com/neiist-dev/neiist-website/commit/c67088cb728fdfe10ee4109f264a72b7e7d69ff8))
+* **discount:** separated page to manage and create codes ([ed57dab](https://github.com/neiist-dev/neiist-website/commit/ed57dabc158fc53bf08aaa068edf2c277e7af63a))
+* **email:** use getFirstandLastName for discount emails ([88db331](https://github.com/neiist-dev/neiist-website/commit/88db3316b02fd47c38b27f3f2ee0a6a1d250a5dd))
+
 ## [1.14.1](https://github.com/neiist-dev/neiist-website/compare/v1.14.0...v1.14.1) (2026-05-12)
 
 
