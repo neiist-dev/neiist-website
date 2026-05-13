@@ -62,7 +62,7 @@ export default function Hero() {
         do Instituto Superior Técnico
       </h1>
       <div ref={campusRef} className={styles.heroImage}>
-        <Image src={hero} alt="IST Campus" className={styles.campusImage} />
+        <Image src={hero} alt="IST Campus" className={styles.campusImage} preload />
         {showStudent && (
           <Image
             ref={studentRef}

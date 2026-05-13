@@ -35,21 +35,25 @@ export async function GET() {
     const phone = info.phone ?? null;
 
     const registrations = (info?.roles?.student?.registrations ?? []) as FenixRegistration[];
-    const courses: string[] = registrations
-      .map((r) => {
-        const nameField = r?.degree?.name;
-        if (nameField && typeof nameField === "object") {
-          return (
-            nameField["pt-PT"] ??
-            nameField["en-GB"] ??
-            Object.values(nameField)[0] ??
-            r?.degree?.acronym ??
-            null
-          );
-        }
-        return (nameField as string) ?? r?.degree?.acronym ?? null;
-      })
-      .filter((c): c is string => Boolean(c));
+    const courses: string[] = [
+      ...new Set(
+        registrations
+          .map((r) => {
+            const nameField = r?.degree?.name;
+            if (nameField && typeof nameField === "object") {
+              return (
+                nameField["pt-PT"] ??
+                nameField["en-GB"] ??
+                Object.values(nameField)[0] ??
+                r?.degree?.acronym ??
+                null
+              );
+            }
+            return (nameField as string) ?? r?.degree?.acronym ?? null;
+          })
+          .filter((c): c is string => Boolean(c))
+      ),
+    ];
 
     let user = await getUser(istid);
     if (!user) {
