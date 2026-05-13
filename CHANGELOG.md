@@ -1,5 +1,12 @@
 # neiist
 
+## [1.14.3](https://github.com/neiist-dev/neiist-website/compare/v1.14.2...v1.14.3) (2026-05-13)
+
+
+### Bug Fixes
+
+* **auth:** auth and account creation for user with multiple courses ([20c9d69](https://github.com/neiist-dev/neiist-website/commit/20c9d69e7f8e3f9e7a09b6d5f0da00a47ee5a38d))
+
 ## [1.14.2](https://github.com/neiist-dev/neiist-website/compare/v1.14.1...v1.14.2) (2026-05-13)
 
 
