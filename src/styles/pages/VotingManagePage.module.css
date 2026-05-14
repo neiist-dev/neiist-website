@@ -1,0 +1,49 @@
+.container {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.grid {
+  max-width: 72rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.talliesColumn {
+  display: grid;
+  gap: 1rem;
+}
+
+.header {
+  max-width: 72rem;
+  margin: 0 auto 1.5rem;
+}
+
+.header h1 {
+  margin: 0;
+  color: var(--foreground-colour);
+  font-size: 2rem;
+}
+
+.header p {
+  margin: 0.35rem 0 0;
+  color: #334155;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+}

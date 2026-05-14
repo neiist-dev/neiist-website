@@ -31,6 +31,21 @@ import {
   ActivityProperties,
   ActivityEvent,
 } from "@/types/events";
+import {
+  DbCreatedSession,
+  DbSessionResult,
+  DbVotingNominee,
+  DbVotingSession,
+  DbVotingSync,
+  groupDbVotingSessions,
+  mapDbSessionResult,
+  mapDbVotingNominee,
+  mapDbVotingSync,
+  SessionResult,
+  VotingNominee,
+  VotingSession,
+  VotingSync,
+} from "@/types/voting";
 import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 
 const pool = new Pool({
@@ -1057,4 +1072,92 @@ export const addCategory = async (name: string): Promise<Category | null> => {
     console.error("Error adding category:", error);
     return null;
   }
+};
+
+export const createVotingSession = async (
+  name: string,
+  activityId: string,
+  description?: string
+): Promise<VotingSession | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbCreatedSession>(`SELECT * FROM neiist.create_voting_session($1, $2, $3)`, [
+    name,
+    description ?? null,
+    activityId,
+  ]);
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description ?? undefined,
+    activityId: row.activity_id,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.created_at,
+    winners: [],
+  };
+};
+
+export const getVotingSessions = async (limit = 20): Promise<VotingSession[]> => {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.floor(limit)) : 20;
+  const { rows } = await db_query<DbVotingSession>(`SELECT * FROM neiist.get_voting_sessions($1)`, [
+    safeLimit,
+  ]);
+  return groupDbVotingSessions(rows);
+};
+
+export const getVotingSync = async (): Promise<VotingSync | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbVotingSync>(`SELECT * FROM neiist.get_voting_sync()`);
+  return row ? mapDbVotingSync(row) : null;
+};
+
+export const getActivityNominees = async (activityId: string): Promise<VotingNominee[]> => {
+  const { rows } = await db_query<DbVotingNominee>(
+    `SELECT * FROM neiist.get_activity_nominees($1)`,
+    [activityId]
+  );
+  return rows.map(mapDbVotingNominee);
+};
+
+export const startVoting = async (sessionId: number): Promise<void> => {
+  await db_query(`SELECT * FROM neiist.start_voting($1)`, [sessionId]);
+};
+
+export const submitVote = async (
+  sessionId: number,
+  voterIstid: string,
+  nomineeIstid: string
+): Promise<void> => {
+  await db_query(`SELECT neiist.submit_vote($1, $2, $3)`, [sessionId, voterIstid, nomineeIstid]);
+};
+
+export const finishVoting = async (sessionId: number): Promise<void> => {
+  await db_query(`SELECT neiist.finish_voting($1)`, [sessionId]);
+};
+
+export const clearVotingSync = async (): Promise<void> => {
+  await db_query(`SELECT neiist.clear_voting_sync()`);
+};
+
+export const getSessionResults = async (sessionId: number): Promise<SessionResult[]> => {
+  const { rows } = await db_query<DbSessionResult>(`SELECT * FROM neiist.get_session_results($1)`, [
+    sessionId,
+  ]);
+  return rows.map(mapDbSessionResult);
+};
+
+export const getUserVote = async (
+  sessionId: number,
+  voterIstid: string
+): Promise<string | null> => {
+  const {
+    rows: [row],
+  } = await db_query<{ nominee_istid: string }>(`SELECT * FROM neiist.get_user_vote($1, $2)`, [
+    sessionId,
+    voterIstid,
+  ]);
+  return row?.nominee_istid ?? null;
 };

@@ -177,6 +177,48 @@ CREATE TABLE neiist.activities_sign_up (
   PRIMARY KEY (event_id, user_istid)
 );
 
+-- VOTING SESSIONS
+CREATE TABLE neiist.voting_sessions (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  activity_id TEXT NOT NULL REFERENCES neiist.activities(id),
+  status TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle', 'voting', 'finished')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- CASTED VOTES
+CREATE TABLE neiist.votes (
+  session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id),
+  voter_istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid),
+  nominee_istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid),
+  voted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (session_id, voter_istid)
+);
+
+-- VOTE RESULTS
+CREATE TABLE neiist.voting_results (
+  id SERIAL PRIMARY KEY,
+  session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id),
+  winner_istid VARCHAR(10) REFERENCES neiist.users(istid),
+  winner_name TEXT,
+  winner_photo_path TEXT,
+  vote_count BIGINT NOT NULL DEFAULT 0,
+  revealed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- SESSION SYNC STATE SINGLETON
+CREATE TABLE neiist.voting_sync (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  active_session_id INTEGER REFERENCES neiist.voting_sessions(id),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ 
+INSERT INTO neiist.voting_sync (id, active_session_id)
+VALUES (1, NULL)
+ON CONFLICT (id) DO NOTHING;
+
 -- SHOP CATEGORIES
 CREATE TABLE neiist.categories (
   id SERIAL PRIMARY KEY,
@@ -1226,6 +1268,320 @@ CREATE OR REPLACE FUNCTION neiist.delete_activities(p_id TEXT)
 RETURNS VOID AS $$
 BEGIN
   DELETE FROM neiist.activities WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create Voting Session
+CREATE OR REPLACE FUNCTION neiist.create_voting_session(
+  p_name TEXT,
+  p_description TEXT DEFAULT NULL,
+  p_activity_id TEXT DEFAULT NULL
+) RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  activity_id TEXT,
+  status TEXT,
+  created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  p_name := BTRIM(p_name);
+  IF p_name IS NULL OR LENGTH(p_name) = 0 THEN
+    RAISE EXCEPTION 'Session name cannot be empty';
+  END IF;
+ 
+  IF p_activity_id IS NULL THEN
+    RAISE EXCEPTION 'activity_id is required to define nominees';
+  END IF;
+ 
+  IF NOT EXISTS (SELECT 1 FROM neiist.activities a WHERE a.id = p_activity_id) THEN
+    RAISE EXCEPTION 'Activity % does not exist', p_activity_id;
+  END IF;
+ 
+  RETURN QUERY
+  INSERT INTO neiist.voting_sessions (name, description, activity_id)
+  VALUES (p_name, NULLIF(BTRIM(p_description), ''), p_activity_id)
+  RETURNING
+    voting_sessions.id,
+    voting_sessions.name,
+    voting_sessions.description,
+    voting_sessions.activity_id,
+    voting_sessions.status,
+    voting_sessions.created_at;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Start voting session
+CREATE OR REPLACE FUNCTION neiist.start_voting(
+  p_session_id INTEGER
+) RETURNS TABLE (
+  id INTEGER,
+  status TEXT,
+  updated_at TIMESTAMPTZ
+) AS $$
+DECLARE
+  v_status TEXT;
+BEGIN
+  SELECT vs.status INTO v_status
+  FROM neiist.voting_sessions vs
+  WHERE vs.id = p_session_id;
+ 
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Session % does not exist', p_session_id;
+  END IF;
+ 
+  IF v_status <> 'idle' THEN
+    RAISE EXCEPTION 'Session % cannot be started from status "%"', p_session_id, v_status;
+  END IF;
+ 
+  -- Point the sync singleton at this session so clients get notified
+  UPDATE neiist.voting_sync
+  SET active_session_id = p_session_id, updated_at = NOW()
+  WHERE neiist.voting_sync.id = 1;
+ 
+  RETURN QUERY
+  UPDATE neiist.voting_sessions vs
+  SET status = 'voting', updated_at = NOW()
+  WHERE vs.id = p_session_id
+  RETURNING vs.id, vs.status, vs.updated_at;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Cast/Submit User Vote
+CREATE OR REPLACE FUNCTION neiist.submit_vote(
+  p_session_id INTEGER,
+  p_voter_istid VARCHAR(10),
+  p_nominee_istid VARCHAR(10)
+) RETURNS VOID AS $$
+DECLARE
+  v_session neiist.voting_sessions%ROWTYPE;
+BEGIN
+  SELECT * INTO v_session
+  FROM neiist.voting_sessions vs
+  WHERE vs.id = p_session_id;
+ 
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Session % does not exist', p_session_id;
+  END IF;
+ 
+  IF v_session.status <> 'voting' THEN
+    RAISE EXCEPTION 'Session % is not open for voting (status: "%")', p_session_id, v_session.status;
+  END IF;
+ 
+  IF NOT EXISTS (
+    SELECT 1
+    FROM neiist.activities_sign_up asu
+    WHERE asu.event_id = v_session.activity_id
+      AND asu.user_istid = p_nominee_istid
+  ) THEN
+    RAISE EXCEPTION 'Nominee % is not a sign-up of activity %', p_nominee_istid, v_session.activity_id;
+  END IF;
+ 
+  INSERT INTO neiist.votes (session_id, voter_istid, nominee_istid, voted_at)
+  VALUES (p_session_id, p_voter_istid, p_nominee_istid, NOW())
+  ON CONFLICT (session_id, voter_istid) DO UPDATE SET
+    nominee_istid = EXCLUDED.nominee_istid,
+    voted_at = NOW();
+
+  UPDATE neiist.voting_sync
+  SET updated_at = NOW()
+  WHERE neiist.voting_sync.id = 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Close Voting Session
+CREATE OR REPLACE FUNCTION neiist.finish_voting(
+  p_session_id INTEGER
+) RETURNS VOID AS $$
+DECLARE
+  v_status TEXT;
+  v_winner RECORD;
+  v_any BOOLEAN := FALSE;
+BEGIN
+  SELECT vs.status INTO v_status
+  FROM neiist.voting_sessions vs
+  WHERE vs.id = p_session_id;
+ 
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Session % does not exist', p_session_id;
+  END IF;
+ 
+  IF v_status <> 'voting' THEN
+    RAISE EXCEPTION 'Session % cannot be finished from status "%"', p_session_id, v_status;
+  END IF;
+
+  FOR v_winner IN
+    WITH tally AS (
+      SELECT
+        v.nominee_istid,
+        u.name AS winner_name,
+        u.photo_path AS winner_photo_path,
+        COUNT(*)::BIGINT AS vote_count,
+        RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk
+      FROM neiist.votes v
+      JOIN neiist.users u ON u.istid = v.nominee_istid
+      WHERE v.session_id = p_session_id
+      GROUP BY v.nominee_istid, u.name, u.photo_path
+    )
+    SELECT * FROM tally WHERE rnk = 1
+  LOOP
+    v_any := TRUE;
+    INSERT INTO neiist.voting_results (session_id, winner_istid, winner_name, winner_photo_path, vote_count)
+    VALUES (p_session_id, v_winner.nominee_istid, v_winner.winner_name, v_winner.winner_photo_path, v_winner.vote_count);
+  END LOOP;
+ 
+  IF NOT v_any THEN
+    INSERT INTO neiist.voting_results (session_id, winner_istid, winner_name, winner_photo_path, vote_count)
+    VALUES (p_session_id, NULL, NULL, NULL, 0);
+  END IF;
+ 
+  UPDATE neiist.voting_sessions
+  SET status = 'finished', updated_at = NOW()
+  WHERE id = p_session_id;
+
+  UPDATE neiist.voting_sync
+  SET updated_at = NOW()
+  WHERE id = 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get Sync State (Pull or Subscribe)
+CREATE OR REPLACE FUNCTION neiist.get_voting_sync()
+RETURNS TABLE (
+  active_session_id INTEGER,
+  session_name TEXT,
+  session_status TEXT,
+  activity_id TEXT,
+  updated_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    sync.active_session_id,
+    vs.name,
+    vs.status,
+    vs.activity_id,
+    sync.updated_at
+  FROM neiist.voting_sync sync
+  LEFT JOIN neiist.voting_sessions vs ON vs.id = sync.active_session_id
+  WHERE sync.id = 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Clear active voting session and return system to idle view
+CREATE OR REPLACE FUNCTION neiist.clear_voting_sync()
+RETURNS VOID AS $$
+BEGIN
+  UPDATE neiist.voting_sync
+  SET active_session_id = NULL,
+      updated_at = NOW()
+  WHERE neiist.voting_sync.id = 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all historic voting sessions
+-- Pass p_limit = 1 to get just the most recent
+CREATE OR REPLACE FUNCTION neiist.get_voting_sessions(
+  p_limit INTEGER DEFAULT 20
+) RETURNS TABLE (
+  session_id INTEGER,
+  session_name TEXT,
+  description TEXT,
+  activity_id TEXT,
+  status TEXT,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  winner_istid VARCHAR(10),
+  winner_name TEXT,
+  winner_photo_path TEXT,
+  vote_count BIGINT,
+  revealed_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    vs.id,
+    vs.name,
+    vs.description,
+    vs.activity_id,
+    vs.status,
+    vs.created_at,
+    vs.updated_at,
+    vr.winner_istid,
+    vr.winner_name,
+    vr.winner_photo_path,
+    vr.vote_count,
+    vr.revealed_at
+  FROM neiist.voting_sessions vs
+  LEFT JOIN neiist.voting_results vr ON vr.session_id = vs.id
+  ORDER BY vs.created_at DESC, vs.id DESC
+  LIMIT GREATEST(COALESCE(p_limit, 20), 1);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get detailed voting session results
+CREATE OR REPLACE FUNCTION neiist.get_session_results(
+  p_session_id INTEGER
+) RETURNS TABLE (
+  nominee_istid VARCHAR(10),
+  nominee_name TEXT,
+  nominee_photo_path TEXT,
+  vote_count BIGINT
+) AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM neiist.voting_sessions vs WHERE vs.id = p_session_id) THEN
+    RAISE EXCEPTION 'Session % does not exist', p_session_id;
+  END IF;
+ 
+  RETURN QUERY
+  SELECT
+    v.nominee_istid,
+    u.name,
+    u.photo_path,
+    COUNT(*)::BIGINT AS vote_count
+  FROM neiist.votes v
+  JOIN neiist.users u ON u.istid = v.nominee_istid
+  WHERE v.session_id = p_session_id
+  GROUP BY v.nominee_istid, u.name, u.photo_path
+  ORDER BY vote_count DESC, u.name ASC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get nominees for an activity voting session
+CREATE OR REPLACE FUNCTION neiist.get_activity_nominees(
+  p_activity_id TEXT
+) RETURNS TABLE (
+  istid VARCHAR(10),
+  name TEXT,
+  photo_path TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    asu.user_istid,
+    COALESCE(u.name, asu.user_istid::TEXT) AS name,
+    u.photo_path
+  FROM neiist.activities_sign_up asu
+  LEFT JOIN neiist.users u ON u.istid = asu.user_istid
+  WHERE asu.event_id = p_activity_id
+  ORDER BY COALESCE(u.name, asu.user_istid::TEXT) ASC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get current user's vote for a session
+CREATE OR REPLACE FUNCTION neiist.get_user_vote(
+  p_session_id INTEGER,
+  p_voter_istid VARCHAR(10)
+) RETURNS TABLE (
+  nominee_istid VARCHAR(10)
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT v.nominee_istid
+  FROM neiist.votes v
+  WHERE v.session_id = p_session_id
+    AND v.voter_istid = p_voter_istid
+  LIMIT 1;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

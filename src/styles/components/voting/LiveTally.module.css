@@ -1,0 +1,46 @@
+.card {
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(40, 99, 253, 0.08);
+  padding: 1rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.9rem;
+  font-size: 1.35rem;
+}
+
+.empty {
+  margin: 0;
+  color: #64748b;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 2.1rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.6rem;
+  background: #f8fafc;
+}
+
+.rank {
+  color: #64748b;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.count {
+  color: var(--primary-colour);
+}

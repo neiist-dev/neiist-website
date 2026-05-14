@@ -1,0 +1,54 @@
+.card {
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(40, 99, 253, 0.08);
+  padding: 1rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.9rem;
+  font-size: 1.35rem;
+}
+
+.empty {
+  margin: 0;
+  color: #64748b;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.item {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.7rem;
+  background: #f8fafc;
+  padding: 0.65rem 0.75rem;
+}
+
+.main {
+  display: grid;
+  gap: 0.1rem;
+  margin-bottom: 0.35rem;
+}
+
+.main strong {
+  font-size: 1rem;
+}
+
+.main span {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
