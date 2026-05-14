@@ -22,9 +22,7 @@ const targetDate = new Date("2026-05-21T20:00:00");
 function getTimeLeft(): TimeLeft {
   const total = targetDate.getTime() - new Date().getTime();
 
-  if (total <= 0) {
-    return { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
-  }
+  if (total <= 0) return { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
 
   return {
     total,
@@ -33,6 +31,10 @@ function getTimeLeft(): TimeLeft {
     minutes: Math.floor((total / 1000 / 60) % 60),
     seconds: Math.floor((total / 1000) % 60),
   };
+}
+
+function formatTime(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
 export default function Countdown() {
@@ -49,22 +51,22 @@ export default function Countdown() {
   return (
     <div className={`${styles.countdown} ${handelsonTwo.className}`}>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.days).padStart(2, "0")}</span>
+        <span className={styles.countdownValue}>{formatTime(timeLeft.days)}</span>
         <span className={styles.countdownLabel}>dias</span>
       </div>
       <span className={styles.countdownDot}>•</span>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.hours).padStart(2, "0")}</span>
+        <span className={styles.countdownValue}>{formatTime(timeLeft.hours)}</span>
         <span className={styles.countdownLabel}>horas</span>
       </div>
       <span className={styles.countdownDot}>•</span>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.minutes).padStart(2, "0")}</span>
+        <span className={styles.countdownValue}>{formatTime(timeLeft.minutes)}</span>
         <span className={styles.countdownLabel}>minutos</span>
       </div>
       <span className={styles.countdownDot}>•</span>
       <div className={styles.countdownItem}>
-        <span className={styles.countdownValue}>{String(timeLeft.seconds).padStart(2, "0")}</span>
+        <span className={styles.countdownValue}>{formatTime(timeLeft.seconds)}</span>
         <span className={styles.countdownLabel}>segundos</span>
       </div>
     </div>

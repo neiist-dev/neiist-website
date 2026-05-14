@@ -1,30 +1,95 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getAllProducts, getAllOrders } from "@/utils/dbUtils";
-import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
-import { serverCheckRoles } from "@/utils/permissionUtils";
-import InfoListItem from "@/components/dinner/InfoListItem";
-import Countdown from "@/components/dinner/Countdown";
-import { FaMapMarkerAlt, FaCalendarAlt, FaClock } from "react-icons/fa";
-import penguinImg from "@/assets/events/DinnerPenguin.png";
 import localFont from "next/font/local";
-import styles from "@/styles/pages/DinnerPage.module.css";
+import {
+  FaBug,
+  FaCalendarAlt,
+  FaClock,
+  FaMapMarkerAlt,
+  FaMicrophone,
+  FaTrophy,
+  FaVoteYea,
+} from "react-icons/fa";
+import Countdown from "@/components/dinner/Countdown";
+import InfoListItem from "@/components/dinner/InfoListItem";
 import UnlockedDinnerPage from "@/components/dinner/UnlockedDinnerPage";
+import { getAllProducts, getUserOrderedProductsInCategory } from "@/utils/dbUtils";
+import { serverCheckRoles } from "@/utils/permissionUtils";
+import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
+import penguinImg from "@/assets/events/DinnerPenguin.png";
+import styles from "@/styles/pages/DinnerPage.module.css";
 
 const handelsonTwo = localFont({
   src: "../../assets/fonts/handelson-two.otf",
   display: "swap",
 });
 
+const teaserItems = [
+  {
+    icon: <FaBug />,
+    title: "Desafios",
+    text: "No início do jantar, desafios vão estar disponíveis no nosso website. Cumpre o desafio, mostra ao staff e ganha uma senha extra!",
+    accentClass: styles.teaserRed,
+  },
+  {
+    icon: <FaTrophy />,
+    title: "Concursos",
+    text: "Depois do jantar, mostra o que vales nos nossos concursos e habilita-te a ganhar senhas ou prémios variados!",
+    accentClass: styles.teaserYellow,
+  },
+  {
+    icon: <FaVoteYea />,
+    title: "Títulos",
+    text: "Vota nos teus colegas! Durante o jantar, elege o teu amigo para receber um título.",
+    accentClass: styles.teaserBlue,
+  },
+  {
+    icon: <FaMicrophone />,
+    title: "Karaoke",
+    text: "Mostra os teus dotes no microfone! Sozinho ou em grupo, os corajosos do karaoke recebem senhas ;)",
+    accentClass: styles.teaserPurple,
+  },
+] as const;
+
+type TeaserItem = (typeof teaserItems)[number];
+
+function DinnerTeasers() {
+  return (
+    <section className={styles.teaserSection} aria-label="Atividades em destaque">
+      <div className={styles.teaserGrid}>
+        {teaserItems.map((item: TeaserItem) => (
+          <article key={item.title} className={styles.teaserCard}>
+            <div className={`${styles.teaserIcon} ${item.accentClass}`}>{item.icon}</div>
+            <h2 className={`${styles.teaserTitle} ${handelsonTwo.className}`}>{item.title}</h2>
+            <p className={`${styles.teaserText} ${handelsonTwo.className}`}>{item.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DinnerInfoList() {
+  return (
+    <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
+      <InfoListItem
+        icon={<FaMapMarkerAlt />}
+        label="Local"
+        value="MADSpot"
+        url="https://www.instagram.com/mad_spot_fa/"
+      />
+      <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
+      <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
+    </ul>
+  );
+}
+
 export default async function DinnerPage() {
   const userRoles = await serverCheckRoles([]);
   const products = await getAllProducts(true);
-  const productById = new Map(products.map((product) => [product.id, product]));
-
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
   const now = new Date();
-  //const isUnlocked = now >= unlockDate;
-  const isUnlocked = true;
+  const isUnlocked = now >= unlockDate;
 
   const jantarProduct = Array.from(products.values()).find(
     (product) =>
@@ -32,68 +97,26 @@ export default async function DinnerPage() {
       (!product.order_deadline || new Date(product.order_deadline) > now)
   );
 
-  if (!jantarProduct) {
+  if (!jantarProduct)
     return (
       <div className={styles.container}>
         <p>Produto de Jantar de Curso não encontrado</p>
       </div>
     );
-  }
+
+  let hasJantarOrder = false;
 
   if (userRoles.isAuthorized && userRoles.user) {
-    const allOrders = await getAllOrders();
-    const userOrders = allOrders.filter((order) => order.user_istid === userRoles.user?.istid);
-    const hasJantarOrder = userOrders.some(
-      (order) =>
-        order.status === "paid" &&
-        order.items.some((item) =>
-          isJantarDeCursoCategory(productById.get(item.product_id)?.category)
-        )
+    const orderedProducts = await getUserOrderedProductsInCategory(
+      userRoles.user.istid,
+      jantarProduct.category ?? "jantar de curso"
     );
-    if (/*hasJantarOrder*/true) {
-      if (isUnlocked) {
-        return <UnlockedDinnerPage />;
-      }
-      return (
-        <div className={styles.container}>
-          <div className={styles.contentWrapper}>
-            <div className={styles.leftColumn}>
-              <h1 className={`${styles.mainTitle} ${handelsonTwo.className}`}>
-                <span className={styles.jantar}>JANTAR</span>
-                <span className={styles.de}>de</span>
-                <span className={styles.curso}>CURSO</span>
-              </h1>
-
-              <p className={`${styles.signedUpMessage} ${handelsonTwo.className}`}>
-                O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua
-                espera.
-              </p>
-
-              <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
-                <InfoListItem
-                  icon={<FaMapMarkerAlt />}
-                  label="Local"
-                  value="MADSpot"
-                  url="https://www.instagram.com/mad_spot_fa/"
-                />
-                <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
-                <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
-              </ul>
-            </div>
-
-            <div className={styles.rightColumn}>
-              <Image
-                src={penguinImg}
-                alt="Poster do Jantar de Curso"
-                className={styles.image}
-                priority
-              />
-            </div>
-          </div>
-        </div>
-      );
-    }
+    hasJantarOrder = Object.values(orderedProducts).some((quantity) => quantity > 0);
   }
+
+  if (hasJantarOrder && isUnlocked) return <UnlockedDinnerPage />;
+
+  const signedUpView = hasJantarOrder && !isUnlocked;
 
   return (
     <div className={styles.container}>
@@ -105,35 +128,46 @@ export default async function DinnerPage() {
             <span className={styles.curso}>CURSO</span>
           </h1>
 
-          <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
-            <InfoListItem
-              icon={<FaMapMarkerAlt />}
-              label="Local"
-              value="MADSpot"
-              url="https://www.instagram.com/mad_spot_fa/"
-            />
-            <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
-            <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
-          </ul>
+          {signedUpView ? (
+            <p className={`${styles.signedUpMessage} ${handelsonTwo.className}`}>
+              O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua
+              espera.
+            </p>
+          ) : (
+            <p className={`${styles.description} ${handelsonTwo.className}`}>
+              Junta-te a nós para um jantar inesquecível!
+            </p>
+          )}
 
-          <p className={`${styles.description} ${handelsonTwo.className}`}>
-            Junta-te a nós para um jantar inesquecível!
-          </p>
+          <DinnerInfoList />
 
-          <Link
-            href={`/shop/${jantarProduct.id}`}
-            className={`${styles.button} ${handelsonTwo.className}`}>
-            Comprar Já
-          </Link>
+          {signedUpView ? (
+            <div className={styles.lockedSection}>
+              <p className={`${styles.unlockTimeMessage} ${handelsonTwo.className}`}>
+                O conteúdo será desbloqueado às{" "}
+                <span className={styles.highlight}>20h do dia 21 de maio</span>
+              </p>
+              <Countdown />
+            </div>
+          ) : (
+            <Link
+              href={`/shop/${jantarProduct.id}`}
+              className={`${styles.button} ${handelsonTwo.className}`}>
+              Comprar Já
+            </Link>
+          )}
         </div>
 
         <div className={styles.rightColumn}>
-          <Image
-            src={penguinImg}
-            alt="Poster do Jantar de Curso"
-            className={styles.image}
-            priority
-          />
+          <div className={styles.imageWrapper}>
+            <Image
+              src={penguinImg}
+              alt="Poster do Jantar de Curso"
+              className={styles.image}
+              priority
+            />
+          </div>
+          <DinnerTeasers />
         </div>
       </div>
     </div>
