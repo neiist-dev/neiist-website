@@ -1,0 +1,300 @@
+.container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--background-colour);
+}
+
+.contentWrapper {
+  display: flex;
+  /*align-items: center;*/
+  align-items: flex-start;
+  max-width: 2000px;
+  width: 100%;
+  margin: 2.5rem auto;
+  gap: 4rem;
+}
+
+.blueIcon {
+  color: #6b8ddd;
+}
+
+.redIcon {
+  color: #d01531;
+}
+
+.yellowIcon {
+  color: #e6b148;
+}
+
+.mainTitle {
+  letter-spacing: 2px;
+  color: #d01531;
+  text-align: center;
+  margin-bottom: auto;
+  margin-top: -1rem;
+}
+
+.topLine {
+  display: inline-flex;
+  align-items: flex-start; /* 👈 chave */
+  gap: 0.5rem;
+}
+
+.jantar {
+  font-size: clamp(3.5rem, 6.5vw, 5.5rem);
+  transform: rotate(-7deg) translateX(-10px);
+}
+
+.de {
+  font-size: clamp(2rem, 4vw, 3rem);
+  transform: rotate(-7deg) translateY(5px);
+}
+
+.curso {
+  display: block;
+  width: fit-content; /* 👈 importante */
+  margin: -1rem auto 0 auto; /* centra */;
+  font-size: clamp(4.2rem, 7.5vw, 6.5rem);
+  transform: rotate(-7deg);
+}
+
+.WelcomeMessage {
+  max-width: clamp(400px, 90%, 550px);
+  font-size: clamp(1.3rem, 3vw, 1.5rem);
+
+  text-align: center;
+
+  margin: auto;
+}
+
+
+
+/* ---- Unlocked Page ---- */
+.unlockedLeftColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 33%;
+}
+
+.unlockedRightColumn {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.unlockedGrid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 210px);
+  gap: 1rem;
+  /*transform: translate(-70px, 120px);*/
+  margin-top: clamp(1rem, 5vw, 120px);
+}
+
+.unlockedImage {
+  position: absolute;
+  max-width: 150%; 
+  margin-top: -100px;
+  height: auto;
+  opacity: 0.15;
+  z-index: 1;
+  pointer-events: none;
+  justify-content: right;
+}
+
+
+.sideModal {
+  position: relative;
+  margin-top: 2rem;
+
+  width: 80%;
+
+  background: white;
+
+  border-radius: 2rem;
+
+  padding: 2rem;
+
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+
+  animation: modalAppear 0.25s ease;
+
+  text-align: center;
+
+}
+
+/*
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(6px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+}
+
+.modal {
+  position: relative;
+
+  width: min(90%, 900px);
+  
+  height: 550px;
+
+  background: white;
+
+  border-radius: 2rem;
+
+  padding: 3rem;
+
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+
+  animation: modalAppear 0.25s ease;
+  text-align: center;
+
+  overflow-y: auto; 
+}
+*/
+
+
+.modalTitle {
+  font-size: 35px;
+  font-weight: normal;
+  margin-top: -0.6rem;
+}
+
+.modalIcon {
+  font-size: 3rem;
+  text-align: center;
+}
+
+.modalDivider {
+  height: 2px;
+  background:
+    repeating-linear-gradient(
+      to right,
+      #e6b148 0px,
+      #e6b148 6px,
+      transparent 6px,
+      transparent 14px
+    );
+    margin-top: -0.5rem;
+  /*margin: 2rem 0;*/
+}
+
+.modalText {
+  font-size: 2rem;
+  margin-top: 10px;
+}
+
+.modalDescription {
+  font-size: 22px;
+  white-space: pre-line;
+  margin-top: -1.5rem;
+}
+
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+}
+
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    overflow-x: hidden;
+  }
+
+  .contentWrapper {
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0 auto;
+    width: 100%;
+    align-items: center;
+  }
+  
+  .unlockedLeftColumn {
+    position: relative;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .unlockedRightColumn {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .unlockedGrid {
+    grid-template-columns: repeat(2, minmax(140px, 160px));
+    gap: 0.8rem;
+    transform: none;
+  }
+
+  .sideModal {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;  
+  
+    width: auto;
+
+    padding:
+    1rem
+    clamp(1rem, 4vw, 2rem)
+    2rem;
+  
+    border-radius: 2rem 2rem 0 0;
+  
+    background: white;
+  
+    z-index: 999;
+  
+    animation: slideUp 0.3s ease;
+
+    height: fit-content;
+  }
+
+  .modalTitle {
+    font-size: 2rem;
+  }
+
+  .modalText {
+    font-size: 1.7rem;
+  }
+
+  .modalDescription {
+    font-size: 1.4rem;
+    line-height: 1.5;
+  }
+
+  .modalHandle {
+    width: 50px;
+    height: 5px;
+
+    background: #d0d0d0;
+
+    border-radius: 999px;
+
+    margin: 0 auto 1.5rem auto;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

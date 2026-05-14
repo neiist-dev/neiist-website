@@ -231,6 +231,38 @@
   text-align: center;
 }
 
+/* ---- Unlocked Page ---- */
+.unlockedLeftColumn {
+  position: relative;
+  justify-content: center;
+  width: 40%;
+}
+
+.unlockedRightColumn {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.unlockedGrid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.unlockedImage {
+  position: absolute;
+  max-width: 150%; 
+  margin-top: -100px;
+  height: auto;
+  opacity: 0.15;
+  z-index: 1;
+  pointer-events: none;
+  justify-content: right;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;

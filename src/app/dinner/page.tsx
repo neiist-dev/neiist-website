@@ -9,6 +9,7 @@ import { FaMapMarkerAlt, FaCalendarAlt, FaClock } from "react-icons/fa";
 import penguinImg from "@/assets/events/DinnerPenguin.png";
 import localFont from "next/font/local";
 import styles from "@/styles/pages/DinnerPage.module.css";
+import UnlockedDinnerPage from "@/components/dinner/UnlockedDinnerPage";
 
 const handelsonTwo = localFont({
   src: "../../assets/fonts/handelson-two.otf",
@@ -22,7 +23,8 @@ export default async function DinnerPage() {
 
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
   const now = new Date();
-  const isUnlocked = now >= unlockDate;
+  //const isUnlocked = now >= unlockDate;
+  const isUnlocked = true;
 
   const jantarProduct = Array.from(products.values()).find(
     (product) =>
@@ -48,7 +50,10 @@ export default async function DinnerPage() {
           isJantarDeCursoCategory(productById.get(item.product_id)?.category)
         )
     );
-    if (hasJantarOrder) {
+    if (/*hasJantarOrder*/true) {
+      if (isUnlocked) {
+        return <UnlockedDinnerPage />;
+      }
       return (
         <div className={styles.container}>
           <div className={styles.contentWrapper}>
@@ -74,22 +79,6 @@ export default async function DinnerPage() {
                 <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
                 <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
               </ul>
-
-              {!isUnlocked ? (
-                <div className={styles.lockedSection}>
-                  <p className={`${styles.unlockTimeMessage} ${handelsonTwo.className}`}>
-                    O conteúdo será desbloqueado às{" "}
-                    <span className={styles.highlight}>20h do dia 21 de maio</span>
-                  </p>
-                  <Countdown />
-                </div>
-              ) : (
-                <div className={styles.unlockedSection}>
-                  <p className={`${styles.unlockMessage} ${handelsonTwo.className}`}>
-                    🎉 Já podes aceder às surpresas!
-                  </p>
-                </div>
-              )}
             </div>
 
             <div className={styles.rightColumn}>
