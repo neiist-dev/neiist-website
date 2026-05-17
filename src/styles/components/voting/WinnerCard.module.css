@@ -1,74 +1,87 @@
 .wrapper,
 .emptyState {
-  width: min(72rem, 100%);
-  margin: 0 auto;
-  padding: 1rem;
+  padding: 0 2rem 4rem;
   text-align: center;
   box-sizing: border-box;
 }
 
+.sectionKicker {
+  display: none;
+}
+
 .kicker {
-  margin: 0;
-  color: var(--primary-colour);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.85rem;
+  display: none;
 }
 
 .category {
-  margin: 0.4rem 0 1rem;
-  font-size: clamp(1.5rem, 3.1vw, 2.4rem);
+  display: none;
 }
 
 .single,
 .tieGrid {
-  display: grid;
-  gap: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
   justify-content: center;
 }
 
-.single {
-  grid-template-columns: minmax(220px, 380px);
-}
-
-.tieGrid {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 280px));
-}
-
 .card {
+  width: clamp(14rem, 22vw, 22rem);
   background: #ffffff;
-  border: 1px solid #dbe2ea;
-  box-shadow: 0 4px 18px rgba(40, 99, 253, 0.1);
-  border-radius: 1rem;
-  padding: 0.95rem;
+  border: none;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  border-radius: 1.5rem;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .imageWrap {
-  border-radius: 0.8rem;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
 }
 
 .image {
-  width: 100%;
-  height: auto;
   object-fit: cover;
-  aspect-ratio: 1 / 1;
 }
 
 .name {
-  margin: 0.7rem 0 0.15rem;
+  margin: 1rem 0.75rem 0.25rem;
+  color: var(--foreground-colour);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
 }
 
 .votes {
-  margin: 0;
-  color: #475569;
+  margin: 0 0 1rem;
+  color: var(--light-foreground-colour);
+  font-size: 0.95rem;
 }
 
 .emptyState {
-  max-width: 36rem;
+  max-width: 48rem;
+  margin: 0 auto;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  box-shadow: 0 4px 18px rgba(40, 99, 253, 0.08);
-  padding: 1.2rem;
+  border-radius: 1.875rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  padding: 3rem 2rem;
+}
+
+.emptyState h1 {
+  font-size: 2rem;
+  margin: 0 0 0.5rem;
+  color: var(--foreground-colour);
+}
+
+.emptyState p {
+  color: var(--light-foreground-colour);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .card {
+    width: clamp(10rem, 60vw, 16rem);
+  }
 }

@@ -3,24 +3,25 @@
 import { useEffect, useState } from "react";
 import styles from "@/styles/components/shop/MobileFiltersDrawer.module.css";
 import { FiCheck, FiX } from "react-icons/fi";
-import { OrderStatus } from "@/types/shop/orderStatus";
 
-interface FilterState {
-  dateRange: { start: Date | null; end: Date | null };
-  products: string[];
-  campuses: string[];
-  statuses: string[];
+export interface MobileFilterGroup<T = Record<string, unknown>> {
+  id: Extract<keyof T, string>;
+  title: string;
+  options: string[];
+  selected: string[];
+  getLabel?: (_option: string) => string;
 }
 
-interface MobileFiltersDrawerProps {
+export interface BaseFilterState {
+  dateRange: { start: Date | null; end: Date | null };
+}
+
+interface MobileFiltersDrawerProps<T extends BaseFilterState> {
   isOpen: boolean;
   onClose: () => void;
-  filters: FilterState;
-  onApplyFilters: (_filters: FilterState) => void;
-  availableProducts: string[];
-  availableCampuses: string[];
-  availableStatuses: string[];
-  getStatusLabel: (_status: OrderStatus) => string;
+  initialFilters: T;
+  onApplyFilters: (_filters: T) => void;
+  filterGroups: MobileFilterGroup<T>[];
 }
 
 function getMonthDays(date: Date): (Date | null)[] {
@@ -53,17 +54,14 @@ function toggleArrayItem<T>(array: T[], item: T): T[] {
   return array.includes(item) ? array.filter((i) => i !== item) : [...array, item];
 }
 
-export default function MobileFiltersDrawer({
+export default function MobileFiltersDrawer<T extends BaseFilterState>({
   isOpen,
   onClose,
-  filters: initialFilters,
+  initialFilters,
   onApplyFilters,
-  availableProducts,
-  availableCampuses,
-  availableStatuses,
-  getStatusLabel,
-}: MobileFiltersDrawerProps) {
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+  filterGroups,
+}: MobileFiltersDrawerProps<T>) {
+  const [filters, setFilters] = useState<T>(initialFilters);
   const [dateMode, setDateMode] = useState<"until" | "range">("until");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [expandedSection, setExpandedSection] = useState<string | null>("date");
@@ -83,10 +81,10 @@ export default function MobileFiltersDrawer({
     };
   }, [isOpen]);
 
-  const toggleItem = (key: keyof FilterState, item: string) => {
+  const toggleItem = (key: Extract<keyof T, string>, item: string) => {
     setFilters((prev) => ({
       ...prev,
-      [key]: toggleArrayItem(prev[key] as string[], item),
+      [key]: toggleArrayItem((prev[key] as unknown as string[]) || [], item),
     }));
   };
 
@@ -117,12 +115,13 @@ export default function MobileFiltersDrawer({
   };
 
   const handleClearAll = () => {
-    setFilters({
+    const cleared = {
       dateRange: { start: null, end: null },
-      products: [],
-      campuses: [],
-      statuses: [],
+    } as unknown as T;
+    filterGroups.forEach((g) => {
+      (cleared as Record<string, unknown>)[g.id] = [];
     });
+    setFilters(cleared);
   };
 
   const handleApply = () => {
@@ -136,9 +135,7 @@ export default function MobileFiltersDrawer({
 
   const activeFiltersCount =
     (filters.dateRange.start || filters.dateRange.end ? 1 : 0) +
-    filters.products.length +
-    filters.campuses.length +
-    filters.statuses.length;
+    filterGroups.reduce((acc, g) => acc + ((filters[g.id] as unknown as string[])?.length || 0), 0);
 
   if (!isOpen) return null;
 
@@ -228,56 +225,25 @@ export default function MobileFiltersDrawer({
             </div>
           </FilterSection>
 
-          <FilterSection
-            title="Produtos"
-            badge={filters.products.length}
-            expanded={expandedSection === "products"}
-            onToggle={() => toggleSection("products")}>
-            <div className={styles.list}>
-              {availableProducts.map((product) => (
-                <CheckboxItem
-                  key={product}
-                  label={product}
-                  checked={filters.products.includes(product)}
-                  onToggle={() => toggleItem("products", product)}
-                />
-              ))}
-            </div>
-          </FilterSection>
-
-          <FilterSection
-            title="Campus"
-            badge={filters.campuses.length}
-            expanded={expandedSection === "campus"}
-            onToggle={() => toggleSection("campus")}>
-            <div className={styles.list}>
-              {availableCampuses.map((campus) => (
-                <CheckboxItem
-                  key={campus}
-                  label={campus}
-                  checked={filters.campuses.includes(campus)}
-                  onToggle={() => toggleItem("campuses", campus)}
-                />
-              ))}
-            </div>
-          </FilterSection>
-
-          <FilterSection
-            title="Estado"
-            badge={filters.statuses.length}
-            expanded={expandedSection === "status"}
-            onToggle={() => toggleSection("status")}>
-            <div className={styles.list}>
-              {availableStatuses.map((status) => (
-                <CheckboxItem
-                  key={status}
-                  label={getStatusLabel(status as OrderStatus)}
-                  checked={filters.statuses.includes(status)}
-                  onToggle={() => toggleItem("statuses", status)}
-                />
-              ))}
-            </div>
-          </FilterSection>
+          {filterGroups.map((group) => (
+            <FilterSection
+              key={group.id}
+              title={group.title}
+              badge={(filters[group.id] as unknown as string[])?.length || 0}
+              expanded={expandedSection === group.id}
+              onToggle={() => toggleSection(group.id)}>
+              <div className={styles.list}>
+                {group.options.map((option) => (
+                  <CheckboxItem
+                    key={option}
+                    label={group.getLabel ? group.getLabel(option) : option}
+                    checked={((filters[group.id] as unknown as string[]) || []).includes(option)}
+                    onToggle={() => toggleItem(group.id, option)}
+                  />
+                ))}
+              </div>
+            </FilterSection>
+          ))}
         </div>
 
         <div className={styles.footer}>

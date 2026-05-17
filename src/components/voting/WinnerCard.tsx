@@ -24,18 +24,18 @@ export default function WinnerCard({ sessionName, results }: WinnerCardProps) {
 
   return (
     <section className={styles.wrapper}>
+      <p className={styles.sectionKicker}>Resultado da última sessão</p>
       <p className={styles.kicker}>{isTie ? "Empate!" : "Vencedor"}</p>
       {sessionName ? <h1 className={styles.category}>{sessionName}</h1> : null}
 
       <div className={isTie ? styles.tieGrid : styles.single}>
         {winners.map((winner) => (
-          <div key={winner.nomineeIstid} className={styles.card}>
+          <div key={winner.nomineeId} className={styles.card}>
             <div className={styles.imageWrap}>
               <Image
-                src={winner.nomineePhotoPath}
+                src={winner.nomineePhotoPath ?? "/default_user.png"}
                 alt={winner.nomineeName}
-                width={isTie ? 200 : 320}
-                height={isTie ? 200 : 320}
+                fill
                 className={styles.image}
               />
             </div>

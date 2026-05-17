@@ -1,52 +1,46 @@
-import { getVotingSessions, getSessionResults, getActivitiesEventsFromDb } from "@/utils/dbUtils";
+import {
+  getVotingSessions,
+  getActivitiesEventsFromDb,
+  getAllUsers,
+  getVotingSessionById,
+  getSessionResults,
+} from "@/utils/dbUtils";
 import VotingSync from "@/components/voting/VotingSync";
-import SessionControls from "@/components/voting/SessionsControls";
-import LiveTally from "@/components/voting/LiveTally";
-import SessionHistory from "@/components/voting/SessionHistory";
-import styles from "@/styles/pages/VotingManagePage.module.css";
+import VotingManagement from "@/components/voting/admin/VotingManagement";
+import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
 
 export const dynamic = "force-dynamic";
 
-export default async function VotingManagePage() {
-  const [sessions, activities] = await Promise.all([
-    getVotingSessions(20),
+interface PageProps {
+  searchParams: Promise<{ sessionId?: string }>;
+}
+
+export default async function VotingManagePage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const sessionId = params.sessionId ? parseInt(params.sessionId, 10) : undefined;
+
+  const [sessions, activities, users] = await Promise.all([
+    getVotingSessions(100),
     getActivitiesEventsFromDb(),
+    getAllUsers(),
   ]);
 
-  const activeSessions = sessions.filter((session) => session.status === "voting");
-  const activeTallies = await Promise.all(
-    activeSessions.map(async (session) => ({
-      sessionId: session.id,
-      sessionName: session.name,
-      tally: await getSessionResults(session.id),
-    }))
-  );
+  let selectedSession = null;
+  let results = null;
+  if (sessionId) {
+    [selectedSession, results] = await Promise.all([
+      getVotingSessionById(sessionId),
+      getSessionResults(sessionId),
+    ]);
+  }
 
   return (
-    <div className={styles.container}>
+    <>
       <VotingSync />
-      <header className={styles.header}>
-        <h1>Painel de Votação</h1>
-        <p>Controla o estado global da votação em tempo real.</p>
-      </header>
-
-      <div className={styles.grid}>
-        <SessionControls activities={activities} sessions={sessions} />
-        <div className={styles.talliesColumn}>
-          {activeTallies.length === 0 ? (
-            <LiveTally tally={[]} sessionName={null} />
-          ) : (
-            activeTallies.map((entry) => (
-              <LiveTally
-                key={entry.sessionId}
-                tally={entry.tally}
-                sessionName={entry.sessionName}
-              />
-            ))
-          )}
-        </div>
-        <SessionHistory sessions={sessions} />
-      </div>
-    </div>
+      <VotingManagement initialSessions={sessions} activities={activities} users={users} />
+      {selectedSession ? (
+        <VotingSessionDetailOverlay session={selectedSession} results={results || []} />
+      ) : null}
+    </>
   );
 }

@@ -4,50 +4,43 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { VotingNominee } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+import { getFirstAndLastName } from "@/utils/userUtils";
 import styles from "@/styles/components/voting/VotingGrid.module.css";
 
 interface VotingGridProps {
   sessionId: number;
   sessionName: string | null;
   nominees: VotingNominee[];
-  selectedNomineeIstid?: string | null;
+  selectedNomineeId?: string | null;
 }
 
 const PAGE_SIZE = 36;
-
-function nomineeLabel(nominee: VotingNominee) {
-  return `${nominee.name} (${nominee.istid})`;
-}
 
 export default function VotingGrid({
   sessionId,
   sessionName,
   nominees,
-  selectedNomineeIstid,
+  selectedNomineeId,
 }: VotingGridProps) {
-  const [selectedNomineeFilter, setSelectedNomineeFilter] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const nomineeOptions = useMemo(() => nominees.map(nomineeLabel), [nominees]);
-
-  const nomineeByOption = useMemo(
-    () => new Map(nominees.map((nominee) => [nomineeLabel(nominee), nominee])),
-    [nominees]
-  );
-
-  const selectedFilter = selectedNomineeFilter[0] ?? null;
-
   const filteredNominees = useMemo(() => {
-    if (!selectedFilter) return nominees;
-
-    const nominee = nomineeByOption.get(selectedFilter);
-    return nominee ? [nominee] : nominees;
-  }, [selectedFilter, nomineeByOption, nominees]);
+    if (!searchQuery.trim()) return nominees;
+    const query = searchQuery.toLowerCase().trim();
+    return nominees.filter((nominee) => {
+      const displayName = getFirstAndLastName(nominee.name).toLowerCase();
+      return (
+        displayName.includes(query) ||
+        nominee.name.toLowerCase().includes(query) ||
+        nominee.id.toLowerCase().includes(query)
+      );
+    });
+  }, [searchQuery, nominees]);
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [sessionId, selectedFilter]);
+  }, [sessionId, searchQuery]);
 
   const visibleNominees = filteredNominees.slice(0, visibleCount);
   const hasMore = filteredNominees.length > visibleCount;
@@ -60,15 +53,15 @@ export default function VotingGrid({
       </header>
 
       <div className={styles.toolbar}>
-        <MultiSelectDropdown
-          id={`nominee-filter-${sessionId}`}
-          label="Filtrar nominee"
-          availableItems={nomineeOptions}
-          selectedItems={selectedNomineeFilter}
-          onChange={setSelectedNomineeFilter}
-          multiSelect={false}
-          placeholder="Procurar por nome/IST ID"
-        />
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Procurar por nome ou ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
         <p className={styles.count}>
           A mostrar {visibleNominees.length} de {filteredNominees.length} nominees
         </p>
@@ -76,26 +69,32 @@ export default function VotingGrid({
 
       <div className={styles.grid}>
         {visibleNominees.map((nominee) => {
-          const isSelected = selectedNomineeIstid === nominee.istid;
+          const isSelected = selectedNomineeId === nominee.id;
+          const displayName = getFirstAndLastName(nominee.name);
 
           return (
-            <form key={nominee.istid} action={submitVoteAction}>
+            <form key={nominee.id} action={submitVoteAction} className={styles.gridItem}>
               <input type="hidden" name="sessionId" value={sessionId} />
-              <input type="hidden" name="nomineeIstid" value={nominee.istid} />
+              <input type="hidden" name="nomineeId" value={nominee.id} />
               <button
                 type="submit"
                 className={`${styles.card} ${isSelected ? styles.selectedCard : ""}`}>
-                <Image
-                  src={nominee.photoPath}
-                  alt={nominee.name}
-                  width={180}
-                  height={180}
-                  className={styles.photo}
-                />
-                <span className={styles.name}>{nominee.name}</span>
-                <span className={styles.cta}>
-                  {isSelected ? "Voto atual" : selectedNomineeIstid ? "Mudar voto" : "Votar"}
-                </span>
+                <div className={styles.photoWrapper}>
+                  <Image
+                    src={nominee.photoPath ?? "/default_user.png"}
+                    alt={nominee.name}
+                    fill
+                    className={styles.photo}
+                  />
+                  <div className={styles.overlay}>
+                    <span className={styles.cta}>
+                      {isSelected ? "Voto atual" : selectedNomineeId ? "Mudar voto" : "Votar"}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.nameWrapper}>
+                  <span className={styles.name}>{displayName}</span>
+                </div>
               </button>
             </form>
           );
