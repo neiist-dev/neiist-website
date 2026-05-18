@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       let heartbeatId: ReturnType<typeof setInterval> | null = null;
+
       const onUpdate = (payload: { updated_at: string }) => {
         try {
           const data = JSON.stringify({ updatedAt: payload.updated_at });
@@ -20,6 +21,11 @@ export async function GET(request: NextRequest) {
           console.error("SSE Broadcast Error:", error);
         }
       };
+
+      // Send initial state to synchronize client
+      const initialData = JSON.stringify({ updatedAt: new Date().toISOString() });
+      controller.enqueue(encoder.encode(`data: ${initialData}\n\n`));
+
       // Subscribe
       dbBroadcaster.on("voting_update", onUpdate);
 

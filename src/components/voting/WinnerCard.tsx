@@ -1,49 +1,59 @@
 import Image from "next/image";
 import { SessionResult } from "@/types/voting";
 import styles from "@/styles/components/voting/WinnerCard.module.css";
+import { getFirstAndLastName } from "@/utils/userUtils";
 
 interface WinnerCardProps {
-  sessionName: string | null;
   results: SessionResult[];
 }
 
-export default function WinnerCard({ sessionName, results }: WinnerCardProps) {
-  const topCount = results[0]?.voteCount ?? 0;
-  const winners = results.filter((r) => r.voteCount === topCount);
+export default function WinnerCard({ results }: WinnerCardProps) {
+  const sortedResults = [...results].sort((a, b) => b.voteCount - a.voteCount);
+  const topResults = sortedResults.slice(0, 3);
 
-  if (winners.length === 0 || topCount === 0) {
+  if (!topResults.length || topResults[0].voteCount === 0) {
     return (
-      <section className={styles.emptyState}>
-        <h1>Sem resultados</h1>
-        <p>Ninguém votou nesta sessão.</p>
-      </section>
+      <div className={styles.emptyState}>
+        <p>Não houve votos em nenhum dos candidatos.</p>
+      </div>
     );
   }
 
-  const isTie = winners.length > 1;
+  let currentRank = 1;
+  let lastVoteCount = -1;
 
   return (
-    <section className={styles.wrapper}>
-      <p className={styles.sectionKicker}>Resultado da última sessão</p>
-      <p className={styles.kicker}>{isTie ? "Empate!" : "Vencedor"}</p>
-      {sessionName ? <h1 className={styles.category}>{sessionName}</h1> : null}
+    <div className={styles.resultsGrid}>
+      {topResults.map((result, index) => {
+        if (result.voteCount !== lastVoteCount) {
+          currentRank = index + 1;
+        }
+        lastVoteCount = result.voteCount;
 
-      <div className={isTie ? styles.tieGrid : styles.single}>
-        {winners.map((winner) => (
-          <div key={winner.nomineeId} className={styles.card}>
+        return (
+          <div
+            key={result.nomineeId}
+            className={`${styles.card} ${styles[`rank${currentRank}`] || ""}`}>
+            <div className={styles.rankBadge}>{currentRank}º</div>
+
             <div className={styles.imageWrap}>
               <Image
-                src={winner.nomineePhotoPath ?? "/default_user.png"}
-                alt={winner.nomineeName}
+                src={result.nomineePhotoPath ?? "/default_user.png"}
+                alt={result.nomineeName}
                 fill
                 className={styles.image}
               />
             </div>
-            <h2 className={styles.name}>{winner.nomineeName}</h2>
-            <p className={styles.votes}>{winner.voteCount} votos</p>
+
+            <div className={styles.infoWrap}>
+              <h2 className={styles.name}>{getFirstAndLastName(result.nomineeName)}</h2>
+              <p className={styles.votes}>
+                {result.voteCount} {result.voteCount === 1 ? "voto" : "votos"}
+              </p>
+            </div>
           </div>
-        ))}
-      </div>
-    </section>
+        );
+      })}
+    </div>
   );
 }

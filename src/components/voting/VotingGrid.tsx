@@ -10,15 +10,17 @@ import styles from "@/styles/components/voting/VotingGrid.module.css";
 interface VotingGridProps {
   sessionId: number;
   sessionName: string | null;
+  sessionDescription?: string | null;
   nominees: VotingNominee[];
   selectedNomineeId?: string | null;
 }
 
-const PAGE_SIZE = 36;
+const PAGE_SIZE = 12;
 
 export default function VotingGrid({
   sessionId,
   sessionName,
+  sessionDescription,
   nominees,
   selectedNomineeId,
 }: VotingGridProps) {
@@ -50,6 +52,7 @@ export default function VotingGrid({
       <header className={styles.header}>
         <p className={styles.kicker}>Votação em curso</p>
         <h1 className={styles.title}>{sessionName ?? "Seleciona o teu voto"}</h1>
+        {sessionDescription && <p className={styles.description}>{sessionDescription}</p>}
       </header>
 
       <div className={styles.toolbar}>
@@ -57,13 +60,13 @@ export default function VotingGrid({
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Procurar por nome ou ID..."
+            placeholder="Procurar por nome ou istID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <p className={styles.count}>
-          A mostrar {visibleNominees.length} de {filteredNominees.length} nominees
+          A mostrar {visibleNominees.length} de {filteredNominees.length} candidatos
         </p>
       </div>
 
@@ -107,7 +110,7 @@ export default function VotingGrid({
             type="button"
             className={styles.loadMoreButton}
             onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}>
-            Mostrar mais nominees
+            Mostrar mais candidatos
           </button>
         </div>
       )}

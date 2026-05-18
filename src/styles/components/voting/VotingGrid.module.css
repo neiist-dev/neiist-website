@@ -25,6 +25,14 @@
   word-wrap: break-word;
 }
 
+.description {
+  margin: 0.8rem auto 0;
+  font-size: 1.1rem;
+  color: var(--light-foreground-colour);
+  max-width: 40rem;
+  line-height: 1.5;
+}
+
 .toolbar {
   display: flex;
   flex-direction: column;
@@ -90,6 +98,7 @@
   border-radius: 1.25rem;
   background: #ffffff;
   box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  font-family: inherit;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -181,21 +190,23 @@
 }
 
 .loadMoreButton {
+  display: inline-flex;
+  font-family: inherit;
+  align-items: center;
+  gap: 0.5rem;
   border: none;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
   background: var(--primary-colour);
-  color: #ffffff;
-  border-radius: 0.75rem;
-  padding: 0.85rem 2rem;
-  font-size: 1rem;
-  cursor: pointer;
+  color: white;
   transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-  max-width: 100%;
+    background 0.18s,
+    opacity 0.18s;
 }
 
 .loadMoreButton:hover {
-  background: var(--secondary-colour);
+  opacity: 0.9;
 }
 
 @media (max-width: 768px) {

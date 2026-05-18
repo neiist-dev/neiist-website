@@ -20,7 +20,7 @@ export default function VotingSync() {
         return;
       }
 
-      // First payload is the current snapshot; do not refresh on initial connect.
+      // First payload is the current snapshot
       if (lastUpdatedAtRef.current === null) {
         lastUpdatedAtRef.current = updatedAt;
         return;
@@ -32,8 +32,8 @@ export default function VotingSync() {
       router.refresh();
     };
 
-    source.onerror = () => {
-      source.close();
+    source.onerror = (err) => {
+      console.error("VotingSync SSE Error:", err);
     };
 
     return () => {

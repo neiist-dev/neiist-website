@@ -19,6 +19,7 @@ export const dynamic = "force-dynamic";
 interface ActiveSessionView {
   sessionId: number;
   sessionName: string;
+  sessionDescription?: string;
   nominees: VotingNominee[];
   selectedNomineeId: string | null;
 }
@@ -54,18 +55,20 @@ export default async function VotingPage({
                 <FaArrowLeft /> Voltar
               </Link>
               <ColorfulText
-                as="h2"
+                as="h1"
                 className={styles.resultTitle}
                 text="Últimos Resultados"
                 chunk={true}
               />
             </div>
             <div className={styles.resultContent}>
-              <h3 className={styles.sessionTitle}>{lastFinishedSession.name}</h3>
-              <WinnerCard
-                sessionName={lastFinishedSession.name}
-                results={lastResults.slice(0, 4)}
-              />
+              <div className={styles.sessionInfo}>
+                <h2 className={styles.sessionTitle}>{lastFinishedSession.name}</h2>
+                {lastFinishedSession.description && (
+                  <p className={styles.sessionDescription}>{lastFinishedSession.description}</p>
+                )}
+              </div>
+              <WinnerCard results={lastResults.slice(0, 4)} />
             </div>
           </div>
         </>
@@ -77,12 +80,12 @@ export default async function VotingPage({
         <VotingSync />
         <div className={styles.waitingPage}>
           <h1 className={styles.waitingTitle}>
-            Espera pela <span>votação</span>
+            Aguarda pelo inicío da
             <br />
-            começar
+            <span>próxima votação</span>
           </h1>
           <p className={styles.waitingSubtitle}>
-            A votação vai começar em breve. A página atualiza automaticamente.
+            Quando a votação abrir a página vai atualizar automáticamente.
           </p>
           <div className={styles.waitingDots}>
             <span />
@@ -91,7 +94,7 @@ export default async function VotingPage({
           </div>
           {lastFinishedSession && (
             <Link href="?view=lastresult" scroll={false} className={styles.lastResultButton}>
-              Ver último resultado
+              Ver resultados anteriores
             </Link>
           )}
         </div>
@@ -112,6 +115,7 @@ export default async function VotingPage({
       return {
         sessionId: session.id,
         sessionName: session.name,
+        sessionDescription: session.description,
         nominees,
         selectedNomineeId,
       };
@@ -128,7 +132,7 @@ export default async function VotingPage({
           <h1 className={styles.waitingTitle}>
             Votos <span>submetidos!</span>
           </h1>
-          <p className={styles.waitingSubtitle}>Já votaste em todas as sessões ativas.</p>
+          <p className={styles.waitingSubtitle}>Aguarda pela publicação dos resultados.</p>
         </div>
       </>
     );
@@ -143,6 +147,7 @@ export default async function VotingPage({
             key={entry.sessionId}
             sessionId={entry.sessionId}
             sessionName={entry.sessionName}
+            sessionDescription={entry.sessionDescription}
             nominees={entry.nominees}
           />
         ))}

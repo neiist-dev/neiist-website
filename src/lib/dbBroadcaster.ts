@@ -4,9 +4,11 @@ import { EventEmitter } from "events";
 class DatabaseBroadcaster extends EventEmitter {
   private client: Client | null = null;
   private readonly connectionString: string;
+  private isReconnecting = false;
 
   constructor() {
     super();
+    this.setMaxListeners(100);
     this.connectionString = process.env.DATABASE_URL || "";
     if (!this.connectionString) {
       console.error("DATABASE_URL env not defined");
@@ -14,7 +16,7 @@ class DatabaseBroadcaster extends EventEmitter {
   }
 
   async connect() {
-    if (this.client) return;
+    if (this.client || !this.connectionString) return;
 
     this.client = new Client({
       connectionString: this.connectionString,
@@ -28,14 +30,16 @@ class DatabaseBroadcaster extends EventEmitter {
         if (msg.channel === "voting_update" && msg.payload) {
           try {
             const payload = JSON.parse(msg.payload);
-            this.emit("voting_update", payload);
+            const updatedAt = payload.updated_at || payload.updatedAt || msg.payload;
+            this.emit("voting_update", { updated_at: updatedAt });
           } catch {
-            this.emit("voting_update", { updatedAt: msg.payload });
+            this.emit("voting_update", { updated_at: msg.payload });
           }
         }
       });
 
-      this.client.on("error", () => {
+      this.client.on("error", (err) => {
+        console.error("DB Broadcaster Client Error:", err);
         this.reconnect();
       });
 
@@ -43,14 +47,26 @@ class DatabaseBroadcaster extends EventEmitter {
         this.reconnect();
       });
     } catch (error) {
-      console.error("Database listener error:", error);
-      this.reconnect();
+      console.error("DB Broadcaster Connection Error:", error);
+      await this.reconnect();
     }
   }
 
-  private reconnect() {
-    this.client = null;
-    setTimeout(() => this.connect(), 5000);
+  private async reconnect() {
+    if (this.isReconnecting) return;
+    this.isReconnecting = true;
+
+    if (this.client) {
+      try {
+        await this.client.end();
+      } catch {}
+      this.client = null;
+    }
+
+    setTimeout(async () => {
+      this.isReconnecting = false;
+      await this.connect();
+    }, 5000);
   }
 }
 
