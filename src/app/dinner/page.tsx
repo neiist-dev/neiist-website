@@ -91,32 +91,34 @@ export default async function DinnerPage() {
   const now = new Date();
   const isUnlocked = now >= unlockDate;
 
-  const jantarProduct = Array.from(products.values()).find(
-    (product) =>
-      isJantarDeCursoCategory(product.category) &&
-      (!product.order_deadline || new Date(product.order_deadline) > now)
+  const dinnerProduct = Array.from(products.values()).find((product) =>
+    isJantarDeCursoCategory(product.category)
   );
 
-  if (!jantarProduct)
+  if (!dinnerProduct)
     return (
       <div className={styles.container}>
         <p>Produto de Jantar de Curso não encontrado</p>
       </div>
     );
+  const isSaleOpen = !dinnerProduct.order_deadline || new Date(dinnerProduct.order_deadline) > now;
 
-  let hasJantarOrder = false;
+  const hasDinnerOrder =
+    userRoles.isAuthorized && userRoles.user
+      ? Object.values(
+          await getUserOrderedProductsInCategory(
+            userRoles.user.istid,
+            dinnerProduct.category ?? "jantar de curso"
+          )
+        ).some((q) => q > 0)
+      : false;
 
-  if (userRoles.isAuthorized && userRoles.user) {
-    const orderedProducts = await getUserOrderedProductsInCategory(
-      userRoles.user.istid,
-      jantarProduct.category ?? "jantar de curso"
-    );
-    hasJantarOrder = Object.values(orderedProducts).some((quantity) => quantity > 0);
+  if (hasDinnerOrder && isUnlocked) {
+    return <UnlockedDinnerPage />;
   }
 
-  if (hasJantarOrder && isUnlocked) return <UnlockedDinnerPage />;
-
-  const signedUpView = hasJantarOrder && !isUnlocked;
+  const showCountdown = hasDinnerOrder;
+  const showBuyButton = !hasDinnerOrder && isSaleOpen;
 
   return (
     <div className={styles.container}>
@@ -128,7 +130,7 @@ export default async function DinnerPage() {
             <span className={styles.curso}>CURSO</span>
           </h1>
 
-          {signedUpView ? (
+          {showCountdown ? (
             <p className={`${styles.signedUpMessage} ${handelsonTwo.className}`}>
               O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua
               espera.
@@ -141,17 +143,20 @@ export default async function DinnerPage() {
 
           <DinnerInfoList />
 
-          {signedUpView ? (
+          {showCountdown && (
             <div className={styles.lockedSection}>
               <p className={`${styles.unlockTimeMessage} ${handelsonTwo.className}`}>
                 O conteúdo será desbloqueado às{" "}
                 <span className={styles.highlight}>20h do dia 21 de maio</span>
               </p>
+
               <Countdown />
             </div>
-          ) : (
+          )}
+
+          {showBuyButton && (
             <Link
-              href={`/shop/${jantarProduct.id}`}
+              href={`/shop/${dinnerProduct.id}`}
               className={`${styles.button} ${handelsonTwo.className}`}>
               Comprar Já
             </Link>
@@ -167,6 +172,7 @@ export default async function DinnerPage() {
               priority
             />
           </div>
+
           <DinnerTeasers />
         </div>
       </div>
