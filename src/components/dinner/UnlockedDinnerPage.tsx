@@ -4,6 +4,7 @@ import Image from "next/image";
 import penguinImg from "@/assets/events/DinnerPenguin.png";
 import localFont from "next/font/local";
 import FeatureCard from "@/components/dinner/FeatureCard";
+import Link from "next/link";
 import {
   FaCamera,
   FaDumbbell,
@@ -265,6 +266,16 @@ export default function UnlockedDinnerPage() {
                 <p className={`${styles.modalDescription} ${handelsonTwo.className}`}>
                   {cardData[selectedCard].description}
                 </p>
+
+                {selectedCard === "votações" && (
+                  <div className={styles.votingButtonWrapper}>
+                    <Link
+                      href="/voting"
+                      className={`${styles.votingButton} ${handelsonTwo.className}`}>
+                      Ir para as Votações
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           )}
