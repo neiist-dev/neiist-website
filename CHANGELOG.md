@@ -1,5 +1,21 @@
 # neiist
 
+## [1.16.0](https://github.com/neiist-dev/neiist-website/compare/1.15.0...v1.16.0) (2026-05-19)
+
+
+### Features
+
+* **dinner:** add voting button and styles to UnlockedDinnerPage ([b662315](https://github.com/neiist-dev/neiist-website/commit/b662315ef79891067de0e8bf97b2e353cfdb5c69))
+* migrate google api to google service accounts. Script to backup db prod and staging ([bc83bc4](https://github.com/neiist-dev/neiist-website/commit/bc83bc461d92065d7f4f51804b3de97ed47a267a))
+* **voting:** new pg_notify based SSE backend. New pages for management, vote and wait for voting to start. Make shop filtering components universal. ([9d1422e](https://github.com/neiist-dev/neiist-website/commit/9d1422e6b42192e4fb84f627d638559edc7df141))
+* **voting:** voting system using postgres state sync between client ([5d0a9f9](https://github.com/neiist-dev/neiist-website/commit/5d0a9f901ef9c896915e561e9a00b6afa3dba499))
+
+
+### Bug Fixes
+
+* **dinner:** refactor dinner page logic and state handling ([c9bf727](https://github.com/neiist-dev/neiist-website/commit/c9bf7275fd36eb251f3d14ea44c69bdb8fa64e19))
+* **voting:** fix SSE and pg_notify memory and db connections leak. UI/UX improvements on the user vonting screen ([c20dc75](https://github.com/neiist-dev/neiist-website/commit/c20dc7516db350f3eb97cc7717e9f8e8eea617e3))
+
 ## [1.14.3](https://github.com/neiist-dev/neiist-website/compare/v1.14.2...v1.14.3) (2026-05-13)
 
 
