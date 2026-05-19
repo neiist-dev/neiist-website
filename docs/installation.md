@@ -17,12 +17,7 @@ This guide will help you get a local copy up and running follow these simple ste
   npm install -g yarn
   ```
 - **Python 3**:
-  Required for Google Drive authentication.
-  - **Python requirements**:
-    Install required modules:
-    ```sh
-    pip install PyQt5 google-auth-oauthlib
-    ```
+  Required for some internal scripts.
 - **Docker**:
   Download and install from [docker.com](https://docs.docker.com/get-docker/).
 - **DataGrip** (optional):
@@ -94,30 +89,31 @@ This guide will help you get a local copy up and running follow these simple ste
    ```sh
    yarn setup
    ```
-9. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need to set up a Google Cloud project:
-   1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
+9. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need a service account:
+   1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
    2. Enable the **Google Drive API** for your project.
-   3. Create OAuth 2.0 credentials (Desktop App) and download the `client_secret.json` file.
-   4. Add your email as a test user in the OAuth consent screen.
-   5. **Install required Python modules:**
-      ```sh
-      pip install PyQt5 google-auth google-auth-oauthlib
+   3. Create a **Service Account**:
+      - Go to "IAM & Admin" → "Service Accounts"
+      - Click "Create Service Account"
+      - Give it a name (e.g., "neiist-drive")
+      - Click "Done"
+   4. Generate a key for the service account:
+      - Click on the service account
+      - Go to "Keys" tab
+      - Click "Add Key" → "Create new key"
+      - Choose JSON format
+      - Download the key file
+   5. Place the json key file on the root of the app folder.
+   6. **Permissions:** You must share the target Google Drive folders with the service account email.
+      - Open the folder in Google Drive.
+      - Click "Share".
+      - Add the service account email (e.g., `neiist-drive@project-id.iam.gserviceaccount.com`) as an **Editor**.
+   7. Add to your `.env`:
       ```
-   6. Run the authentication script:
-      ```sh
-      python scripts/gdrive-auth.py
-      ```
-
-      - Select your `client_secret.json` file.
-      - Choose a location to save the token (e.g., `token.json`).
-      - Complete the authentication flow in your browser.
-   7. Use the generated token and credentials in your `.env` file:
-      ```
-      GOOGLE_CLIENT_SECRET_JSON=client_secret.json
-      GDRIVE_TOKEN_PATH=token.json
+      GDRIVE_SERVICE_ACCOUNT_EMAIL=your-service-account@project-id.iam.gserviceaccount.com
+      GDRIVE_SERVICE_ACCOUNT_KEY=file_name.json
       GDRIVE_CV_FOLDER_ID=your_drive_folder_id
       GDRIVE_SWEATS_FOLDER_ID=your_sweats_folder_id
-
       ```
 
 ## Database Management

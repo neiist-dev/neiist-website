@@ -1,41 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { google } from "googleapis";
 import { Readable } from "stream";
-import fs from "fs/promises";
 import { getUserFromJWT } from "@/utils/authUtils";
+import { getDriveClient } from "@/utils/googleDrive";
 
-const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON!;
-const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH!;
 const FOLDER_ID = process.env.GDRIVE_CV_FOLDER_ID!;
-if (!CREDENTIALS_PATH) throw new Error("Missing env: GOOGLE_CLIENT_SECRET_JSON");
-if (!TOKEN_PATH) throw new Error("Missing env: GDRIVE_TOKEN_PATH");
 if (!FOLDER_ID) throw new Error("Missing env: GDRIVE_CV_FOLDER_ID");
-
-async function getGoogleDriveClient() {
-  const credentials = JSON.parse(await fs.readFile(CREDENTIALS_PATH, "utf8"));
-  const token = JSON.parse(await fs.readFile(TOKEN_PATH, "utf8"));
-  const oAuth2Client = new google.auth.OAuth2(
-    credentials.installed.client_id,
-    credentials.installed.client_secret,
-    credentials.installed.redirect_uris[0]
-  );
-  oAuth2Client.setCredentials(token);
-  return google.drive({ version: "v3", auth: oAuth2Client });
-}
 
 function escapeDriveQueryString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 async function findUserCVFileId(username: string): Promise<string | null> {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const filename = `${username}.pdf`;
   const safeName = escapeDriveQueryString(filename);
   const res = await drive.files.list({
     q: `'${FOLDER_ID}' in parents and name='${safeName}' and trashed=false`,
     fields: "files(id, name)",
     spaces: "drive",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
   if (Array.isArray(res.data.files) && res.data.files.length > 0 && res.data.files[0]?.id) {
     return res.data.files[0].id;
@@ -44,23 +29,26 @@ async function findUserCVFileId(username: string): Promise<string | null> {
 }
 
 async function removeUserCV(username: string): Promise<boolean> {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const fileId = await findUserCVFileId(username);
   if (!fileId) return false;
-  await drive.files.delete({ fileId });
+  await drive.files.delete({ fileId, supportsAllDrives: true });
   return true;
 }
 
 async function downloadUserCV(username: string): Promise<Buffer | null> {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const fileId = await findUserCVFileId(username);
   if (!fileId) return null;
-  const res = await drive.files.get({ fileId, alt: "media" }, { responseType: "arraybuffer" });
+  const res = await drive.files.get(
+    { fileId, alt: "media", supportsAllDrives: true },
+    { responseType: "arraybuffer" }
+  );
   return Buffer.from(res.data as ArrayBuffer);
 }
 
 async function uploadCV(fileBuffer: Buffer, filename: string) {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const bufferStream = new Readable();
   bufferStream.push(fileBuffer);
   bufferStream.push(null);
@@ -76,6 +64,7 @@ async function uploadCV(fileBuffer: Buffer, filename: string) {
       body: bufferStream,
     },
     fields: "id,webViewLink",
+    supportsAllDrives: true,
   });
 
   return {
