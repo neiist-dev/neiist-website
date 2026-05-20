@@ -39,4 +39,4 @@ jobs:
       - name: Confirm Production Deployment
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c \"bash -lc 'pm2 jlist | jq -r \".[] | select(.name==\\\"blue\\\" or .name==\\\"green\\\") | \\\"🌿 \\\" + .name + \\\" → \\\" + .pm2_env.status\"'\""
+          "su - neiist -c 'bash -lc \"pm2 jlist\"'" | jq -r '.[] | select(.name=="blue" or .name=="green") | "🌿 " + .name + " → " + .pm2_env.status'

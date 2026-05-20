@@ -149,7 +149,7 @@ const cardData = {
     when: "Final da noite",
     reward: "1 senha",
   },
-} as const;
+};
 
 type CardKey = keyof typeof cardData;
 
