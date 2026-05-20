@@ -27,7 +27,7 @@
 }
 
 .mainTitle {
-  margin: -1rem 0 0;
+  margin: 0;
   color: #d01531;
   text-align: center;
   letter-spacing: 2px;
@@ -59,7 +59,7 @@
 
 .WelcomeMessage {
   max-width: clamp(400px, 90%, 550px);
-  margin: 0 auto;
+  margin: 0;
   font-size: clamp(1.1rem, 3vw, 1.5rem);
   text-align: center;
 }
@@ -71,6 +71,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: clamp(0.5rem, 2vw, 15px);
 }
 
 .unlockedRightColumn {
@@ -215,6 +216,7 @@
     gap: 0.75rem;
     width: 100%;
     box-sizing: border-box;
+    margin-top: 0rem;
   }
 
   .sideModal {
