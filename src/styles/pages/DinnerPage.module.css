@@ -58,7 +58,7 @@
 .infoList {
   list-style: none;
   padding: 0;
-  margin: 2rem auto;
+  margin: auto;
   max-width: 500px;
 }
 
@@ -117,8 +117,9 @@
 }
 
 .description {
-  margin-top: -1rem;
+  margin-top: 1rem;
   font-size: clamp(1.3rem, 3vw, 1.8rem);
+  max-width: none;
 }
 
 .signedUpMessage {
@@ -276,7 +277,9 @@
   }
   .contentWrapper {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0rem;
+    align-items: center;
+    margin-top: 0.5rem;
   }
   .image {
     width: 85%;
