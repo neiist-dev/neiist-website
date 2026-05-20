@@ -1,5 +1,15 @@
 # neiist
 
+## [1.16.1](https://github.com/neiist-dev/neiist-website/compare/v1.16.0...v1.16.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* **deploy:** pm2 check on github action ([7df9229](https://github.com/neiist-dev/neiist-website/commit/7df9229fc572f2907cafe607e07dbeaacfb2f35c))
+* **styles:** adjust margins and alignment for improved layout on DinnerPage ([8839a0c](https://github.com/neiist-dev/neiist-website/commit/8839a0c2b19b87187494dd599f1fb756e823e0ca))
+* **styles:** adjust margins and layout for improved spacing on DinnerPage ([92331e9](https://github.com/neiist-dev/neiist-website/commit/92331e9917b88df2bae62f1f76bb1ae896d720ef))
+* **styles:** normalize margins for main title and welcome message in DinnerSurprises ([0b9de7f](https://github.com/neiist-dev/neiist-website/commit/0b9de7fcfb606a3163f4bcd0ba532b2c42b19aa0))
+
 ## [1.16.0](https://github.com/neiist-dev/neiist-website/compare/1.15.0...v1.16.0) (2026-05-19)
 
 
