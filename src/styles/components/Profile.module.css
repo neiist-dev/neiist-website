@@ -255,6 +255,120 @@
   max-width: 400px;
 }
 
+.dangerButton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 1.2rem;
+  border: 2px solid #c0392b;
+  border-radius: 0.6rem;
+  background: white;
+  color: #c0392b;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 1rem;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: #fde7e7;
+}
+
+.memberDialogOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.memberDialog {
+  background: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  max-width: 440px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.memberDialogHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff4e5;
+  border-bottom: 1.5px solid #fdd9a0;
+  padding: 1.1rem 1.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #7a4100;
+}
+
+.memberDialogIcon {
+  font-size: 1.4rem;
+  color: #e67e00;
+  flex-shrink: 0;
+}
+
+.memberDialogBody {
+  padding: 1.4rem 1.5rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.memberDialogBody p {
+  margin: 0;
+  font-size: 0.97rem;
+  color: #333;
+  line-height: 1.55;
+}
+
+.memberDialogEmail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: var(--primary-colour);
+  background: #f0f4ff;
+  border: 1.5px solid #c5d3f8;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.memberDialogEmail:hover {
+  background: #dde7ff;
+}
+
+.memberDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem 1.2rem;
+}
+
+.memberDialogClose {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.5rem 1.4rem;
+  border-radius: 0.6rem;
+  border: 2px solid #ccc;
+  background: #f5f5f5;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.memberDialogClose:hover {
+  background: #e8e8e8;
+}
+
 @media (max-width: 1100px) {
   .container {
     flex-direction: column;

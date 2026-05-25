@@ -1176,3 +1176,17 @@ export const getUserVote = async (
   ]);
   return row?.nominee_id ?? null;
 };
+
+export const removeUser = async (istid: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    await db_query("SELECT neiist.remove_user($1::VARCHAR(10))", [istid]);
+    return { success: true };
+  } catch (error) {
+    const msg = (error as { message?: string })?.message ?? "";
+    if (msg.includes("member of a team or admin body")) {
+      return { success: false, error: "member_of_department" };
+    }
+    console.error("Error removing user:", error);
+    return { success: false, error: "internal_error" };
+  }
+};

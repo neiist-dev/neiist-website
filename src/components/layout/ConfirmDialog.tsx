@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import styles from "@/styles/components/layout/ConfirmDialog.module.css";
 
 export default function ConfirmDialog({
@@ -5,11 +6,15 @@ export default function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
+  confirmLabel = "Sim",
+  cancelLabel = "Cancelar",
 }: {
   open: boolean;
-  message: string;
-  onConfirm: () => void;
+  message: ReactNode;
+  onConfirm?: () => void;
   onCancel: () => void;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }) {
   if (!open) return null;
   return (
@@ -17,11 +22,13 @@ export default function ConfirmDialog({
       <div className={styles.dialog}>
         <div className={styles.message}>{message}</div>
         <div className={styles.actions}>
-          <button className={styles.confirm} onClick={onConfirm}>
-            Sim
-          </button>
-          <button className={styles.cancel} onClick={onCancel}>
-            Cancelar
+          {onConfirm && (
+            <button type="button" className={styles.confirm} onClick={onConfirm}>
+              {confirmLabel}
+            </button>
+          )}
+          <button type="button" className={styles.cancel} onClick={onCancel}>
+            {cancelLabel}
           </button>
         </div>
       </div>
