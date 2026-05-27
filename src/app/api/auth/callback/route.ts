@@ -1,6 +1,7 @@
-// ...existing code...
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { getUser, createUser } from "@/utils/dbUtils";
+import { signUserJWT } from "@/utils/authUtils";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -78,6 +79,69 @@ export async function GET(request: Request) {
     }
     response.cookies.set(clearedStateCookie);
     response.cookies.set(clearedRedirectCookie);
+
+    try {
+      const personRes = await fetch("https://fenix.tecnico.ulisboa.pt/tecnico-api/v2/person", {
+        cache: "no-store",
+        headers: { Authorization: `Bearer ${access_token}` },
+      });
+      if (personRes.ok) {
+        const info = await personRes.json();
+        const istid = info.username;
+        let user = await getUser(istid);
+        if (!user) {
+          const registrations = (info?.roles?.student?.registrations ?? []) as {
+            degree?: {
+              name?: Record<string, string> | string | null;
+              acronym?: string | null;
+            } | null;
+          }[];
+          const courses = [
+            ...new Set(
+              registrations
+                .map((r) => {
+                  const nameField = r?.degree?.name;
+                  if (nameField && typeof nameField === "object") {
+                    return (
+                      nameField["pt-PT"] ??
+                      nameField["en-GB"] ??
+                      Object.values(nameField)[0] ??
+                      r?.degree?.acronym ??
+                      null
+                    );
+                  }
+                  return (nameField as string) ?? r?.degree?.acronym ?? null;
+                })
+                .filter((c): c is string => Boolean(c))
+            ),
+          ];
+          user = await createUser({
+            istid,
+            name: info.name ?? info.displayName,
+            email: info.email ?? info.institutionalEmail ?? null,
+            phone: info.phone ?? null,
+            courses,
+          });
+        }
+        if (user) {
+          const jwtToken = signUserJWT({
+            istid: user.istid,
+            roles: user.roles,
+            name: user.name,
+            email: user.email,
+          });
+          response.cookies.set("session", jwtToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 60 * 60 * 24,
+            path: "/",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to set session cookie during callback:", error);
+    }
+
     return response;
   } catch (error) {
     console.error("Error in Callback:", error);

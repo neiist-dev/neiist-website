@@ -144,7 +144,9 @@ export function proxy(req: NextRequest) {
 
   if (!isAuthenticated && protectedRoutes.some((r) => path.startsWith(r))) {
     if (path !== "/api/auth/login") {
-      const response = NextResponse.redirect(new URL("/api/auth/login", req.url));
+      const loginUrl = new URL("/api/auth/login", req.url);
+      loginUrl.searchParams.set("returnUrl", path);
+      const response = NextResponse.redirect(loginUrl);
       addSecurityHeaders(response);
       return response;
     }

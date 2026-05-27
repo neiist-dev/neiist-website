@@ -3,16 +3,20 @@ import ProfileClient from "@/components/Profile";
 import styles from "@/styles/pages/ProfilePage.module.css";
 import { getUserFromJWT } from "@/utils/authUtils";
 import { getUser } from "@/utils/dbUtils";
-import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = getUserFromJWT(sessionToken)!;
+  const jwtUser = getUserFromJWT(sessionToken);
+
+  if (!jwtUser) {
+    redirect("/api/auth/login?returnUrl=/profile");
+  }
 
   const user = await getUser(jwtUser.istid);
   if (!user) {
-    return NextResponse.redirect("/login");
+    redirect("/api/auth/login?returnUrl=/profile");
   }
 
   let hasCV = false;
