@@ -1,0 +1,160 @@
+.container {
+  margin: 0 4rem 4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin-bottom: 1.2rem;
+}
+
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchContainer {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 30rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--foreground-colour);
+}
+
+.searchInput {
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem 0 2.75rem;
+  border: 1px solid #e6e8eb;
+  border-radius: 0.75rem;
+  font-family: inherit;
+  color: var(--foreground-colour);
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--tertiary-colour);
+}
+
+.mobileFilterBtn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  color: var(--primary-colour);
+  cursor: pointer;
+  display: none;
+}
+
+.mobileFilterBtn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 9.5rem;
+  flex: 0 0 auto;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--secondary-colour);
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.iconBtn:hover {
+  transform: scale(1.15);
+}
+
+.newBtn {
+  background: var(--primary-colour);
+  color: white;
+  font-family: inherit;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.card {
+  background: white;
+  min-height: 75vh;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.desktopOnly {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none !important;
+  }
+
+  .mobileFilterBtn {
+    display: flex;
+  }
+
+  .searchInput {
+    padding-right: 3.5rem;
+  }
+
+  .searchContainer {
+    max-width: calc(100% - 11.5rem);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 525px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .searchContainer {
+    max-width: none;
+    width: 100%;
+  }
+
+  .rightControls {
+    justify-content: flex-end;
+    width: 100%;
+  }
+}

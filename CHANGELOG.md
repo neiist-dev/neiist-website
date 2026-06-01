@@ -1,5 +1,70 @@
 # neiist
 
+## [1.16.1](https://github.com/neiist-dev/neiist-website/compare/v1.16.0...v1.16.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* **deploy:** pm2 check on github action ([7df9229](https://github.com/neiist-dev/neiist-website/commit/7df9229fc572f2907cafe607e07dbeaacfb2f35c))
+* **styles:** adjust margins and alignment for improved layout on DinnerPage ([8839a0c](https://github.com/neiist-dev/neiist-website/commit/8839a0c2b19b87187494dd599f1fb756e823e0ca))
+* **styles:** adjust margins and layout for improved spacing on DinnerPage ([92331e9](https://github.com/neiist-dev/neiist-website/commit/92331e9917b88df2bae62f1f76bb1ae896d720ef))
+* **styles:** normalize margins for main title and welcome message in DinnerSurprises ([0b9de7f](https://github.com/neiist-dev/neiist-website/commit/0b9de7fcfb606a3163f4bcd0ba532b2c42b19aa0))
+
+## [1.16.0](https://github.com/neiist-dev/neiist-website/compare/1.15.0...v1.16.0) (2026-05-19)
+
+
+### Features
+
+* **dinner:** add voting button and styles to UnlockedDinnerPage ([b662315](https://github.com/neiist-dev/neiist-website/commit/b662315ef79891067de0e8bf97b2e353cfdb5c69))
+* migrate google api to google service accounts. Script to backup db prod and staging ([bc83bc4](https://github.com/neiist-dev/neiist-website/commit/bc83bc461d92065d7f4f51804b3de97ed47a267a))
+* **voting:** new pg_notify based SSE backend. New pages for management, vote and wait for voting to start. Make shop filtering components universal. ([9d1422e](https://github.com/neiist-dev/neiist-website/commit/9d1422e6b42192e4fb84f627d638559edc7df141))
+* **voting:** voting system using postgres state sync between client ([5d0a9f9](https://github.com/neiist-dev/neiist-website/commit/5d0a9f901ef9c896915e561e9a00b6afa3dba499))
+
+
+### Bug Fixes
+
+* **dinner:** refactor dinner page logic and state handling ([c9bf727](https://github.com/neiist-dev/neiist-website/commit/c9bf7275fd36eb251f3d14ea44c69bdb8fa64e19))
+* **voting:** fix SSE and pg_notify memory and db connections leak. UI/UX improvements on the user vonting screen ([c20dc75](https://github.com/neiist-dev/neiist-website/commit/c20dc7516db350f3eb97cc7717e9f8e8eea617e3))
+
+## [1.14.3](https://github.com/neiist-dev/neiist-website/compare/v1.14.2...v1.14.3) (2026-05-13)
+
+
+### Bug Fixes
+
+* **auth:** auth and account creation for user with multiple courses ([20c9d69](https://github.com/neiist-dev/neiist-website/commit/20c9d69e7f8e3f9e7a09b6d5f0da00a47ee5a38d))
+
+## [1.14.2](https://github.com/neiist-dev/neiist-website/compare/v1.14.1...v1.14.2) (2026-05-13)
+
+
+### Bug Fixes
+
+* **discount:** rename folder struct ([c67088c](https://github.com/neiist-dev/neiist-website/commit/c67088cb728fdfe10ee4109f264a72b7e7d69ff8))
+* **discount:** separated page to manage and create codes ([ed57dab](https://github.com/neiist-dev/neiist-website/commit/ed57dabc158fc53bf08aaa068edf2c277e7af63a))
+* **email:** use getFirstandLastName for discount emails ([88db331](https://github.com/neiist-dev/neiist-website/commit/88db3316b02fd47c38b27f3f2ee0a6a1d250a5dd))
+
+## [1.14.1](https://github.com/neiist-dev/neiist-website/compare/v1.14.0...v1.14.1) (2026-05-12)
+
+
+### Bug Fixes
+
+* **shop:** allow sending discount code to external emails (non neiist ([aae8b4b](https://github.com/neiist-dev/neiist-website/commit/aae8b4b45e6ae31d34b5d025f06acac42d968fc5))
+
+## [1.14.0](https://github.com/neiist-dev/neiist-website/compare/v1.13.6...v1.14.0) (2026-05-12)
+
+
+### Features
+
+* **shop:** discount codes. Ability to create and manage codes, send ([b2165b7](https://github.com/neiist-dev/neiist-website/commit/b2165b7ade394e0cea6f05fcfa8bb55b69538cc4))
+* **shop:** variants and names of products all centralized. Clean up and ([b789e2e](https://github.com/neiist-dev/neiist-website/commit/b789e2e6d5483468cd40061c1b7d123c88e7e7ef))
+
+
+### Bug Fixes
+
+* **email:** email editor css on DiscountCodesDashboard ([b4d7b66](https://github.com/neiist-dev/neiist-website/commit/b4d7b663f2022c7c45a1f138672195dc74ffa5ae))
+* **shop:** dicount code managment page button on shop managment ([2571eee](https://github.com/neiist-dev/neiist-website/commit/2571eee78ce8685a8833a23cb4b69159c8dc7d6d))
+* **shop:** email editor for discountEmail now supports more variables ([9ac80ca](https://github.com/neiist-dev/neiist-website/commit/9ac80ca2b78d44878e9dbdbb30e3ffcdd7f787ef))
+* **toast:** add toast notifications instead of inline erros for ([4ac4853](https://github.com/neiist-dev/neiist-website/commit/4ac4853971b4247285cbfce70aa2924acc35da54))
+
 ## [1.13.6](https://github.com/neiist-dev/neiist-website/compare/v1.13.5...v1.13.6) (2026-05-06)
 
 

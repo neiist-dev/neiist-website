@@ -547,7 +547,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       <div className={styles.overlay}>
         <div className={styles.panel}>
           <div className={styles.checkIcon}>
-            {/*TODO: fix css so it has warning and check, separated componets */}
+            {/*TODO: fix css so it has warning and check, separated components, in-person/needed confirmation payments are different from online payments */}
             {isInPerson ? <IoIosWarning size={75} /> : <FaCheck size={48} />}
           </div>
           <h2 className={styles.title}>

@@ -8,6 +8,7 @@ import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { PiContactlessPayment } from "react-icons/pi";
+import { MdOutlineDiscount } from "react-icons/md";
 import ProductManagementCard from "./ProductManagementCard";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
@@ -142,9 +143,11 @@ export default function ShopManagement({ products, categories, dict, locale }: S
       <div className={styles.container}>
         <div className={styles.header}>
           <ColorfulText className={styles.title} text={dict.title} />
-          <button className={styles.addBtn} onClick={() => router.push("/shop/manage/new")}>
-            <FaPlus /> {dict.add_product}
-          </button>
+          <div className={styles.headerActions}>
+            <button className={styles.addBtn} onClick={() => router.push("/shop/manage/new")}>
+              <FaPlus /> {dict.add_product}
+            </button>
+          </div>
         </div>
 
         <div className={styles.filters}>
@@ -177,6 +180,9 @@ export default function ShopManagement({ products, categories, dict, locale }: S
           </button>
           <button className={styles.addBtn} onClick={() => router.push("/shop/pos")}>
             <PiContactlessPayment /> {dict.pos_link}
+          </button>
+          <button className={styles.addBtn} onClick={() => router.push("/shop/manage/discounts")}>
+            <MdOutlineDiscount /> Descontos
           </button>
         </div>
 

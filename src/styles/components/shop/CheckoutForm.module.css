@@ -324,16 +324,6 @@
   padding: 0 0 0.75rem 0;
 }
 
-.errorMessage {
-  padding: 1rem;
-  background-color: #fff0f0;
-  border: 1px solid #ffd6d6;
-  border-radius: 8px;
-  color: #c33;
-  font-size: 0.95rem;
-  margin-top: 1rem;
-}
-
 @media (max-width: 1024px) {
   .container {
     grid-template-columns: 1fr;

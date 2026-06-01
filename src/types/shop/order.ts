@@ -20,6 +20,8 @@ export interface Order {
   pickup_deadline?: string | null;
   items: OrderItem[];
   notes?: string;
+  discount_code?: string;
+  discount_amount?: number;
   total_amount: number;
   payment_method?: PaymentMethod;
   payment_reference?: string;
@@ -46,6 +48,8 @@ export interface dbOrder {
   pickup_deadline: string | null;
   items: dbOrderItem[] | null;
   notes: string | null;
+  discount_code: string | null;
+  discount_amount: string | number | null;
   total_amount: string | number;
   payment_method: string | null;
   payment_reference: string | null;
@@ -93,6 +97,8 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     customer_nif: row.customer_nif ?? undefined,
     campus: row.campus ?? undefined,
     pickup_deadline: row.pickup_deadline ?? undefined,
+    discount_code: row.discount_code ?? undefined,
+    discount_amount: row.discount_amount == null ? undefined : Number(row.discount_amount),
     items: (row.items ?? []).map(
       (item): OrderItem => ({
         product_id: item.product_id,

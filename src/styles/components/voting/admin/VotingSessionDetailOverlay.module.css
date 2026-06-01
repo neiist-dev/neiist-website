@@ -1,0 +1,232 @@
+.container {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: clamp(0.75rem, 3vw, 1.5rem);
+}
+
+.modal {
+  background: var(--background-colour);
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 48rem;
+  max-height: 85vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  position: relative;
+  padding: 2rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: clamp(0.9375rem, 3vw, 1.25rem);
+  right: clamp(0.9375rem, 3vw, 1.25rem);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--light-foreground-colour);
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  color: var(--foreground-colour);
+  transform: scale(1.05);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.header h2 {
+  font-size: clamp(1.125rem, 4vw, 1.5rem);
+  color: var(--foreground-colour);
+}
+
+.name {
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  color: var(--foreground-colour);
+  margin-bottom: clamp(1rem, 4vw, 1.5rem);
+}
+
+.description {
+  color: var(--foreground-colour);
+  margin: 0 0 1.5rem;
+  white-space: pre-wrap;
+}
+
+.section {
+  font-size: clamp(0.875rem, 3vw, 1rem);
+  color: var(--foreground-colour);
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.section h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.infoItem label {
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.infoItem p {
+  font-size: 0.95rem;
+  margin: 0;
+  word-break: break-word;
+}
+
+.candidateList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.moreResults {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+.candidate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.candidateInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.candidateName {
+  color: var(--foreground-colour);
+}
+
+.voteCount {
+  color: var(--primary-colour);
+  white-space: nowrap;
+}
+
+.progressBar {
+  height: 0.7rem;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--primary-colour);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.actionButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  margin-top: 1.25rem;
+}
+
+.buttonOutline,
+.buttonPrimary,
+.buttonDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: clamp(0.5rem, 2vw, 0.75rem) 1rem;
+  border-radius: 0.5rem;
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  text-align: center;
+  line-height: 1;
+}
+
+.buttonOutline {
+  background: white;
+  color: var(--foreground-colour);
+  border: 1px solid var(--background-colour-hover);
+}
+
+.buttonPrimary {
+  background: var(--primary-colour);
+  border: none;
+  color: white;
+}
+
+.buttonDanger {
+  background: #ff3b30;
+  color: white;
+}
+
+.buttonIcon {
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.buttonOutline:hover {
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}
+
+.buttonPrimary:hover {
+  background: var(--secondary-colour);
+}
+
+.buttonDanger:hover {
+  background: #e02828;
+  filter: opacity(0.9);
+}
+
+@media (max-width: 720px) {
+  .infoGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .candidateInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -18,7 +18,7 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import InputTextDialog from "@/components/layout/InputTextDialog";
 import { useUser } from "@/context/UserContext";
 import type { NewOrderModalDict } from "@/types/i18n";
-
+import { validateDiscount } from "@/utils/shop/discountUtils";
 
 interface Props {
   onClose: () => void;
@@ -156,6 +156,13 @@ export default function NewOrderModal({
   const [showGuestPhoneInput, setShowGuestPhoneInput] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    code: string;
+    discount_amount: number;
+  } | null>(null);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
 
   const { user } = useUser();
   const isAdmin = checkRoles(user, [UserRole._ADMIN]);
@@ -193,6 +200,22 @@ export default function NewOrderModal({
     () => getOrderKindFromItems(selectedProducts.map((item) => item.product)),
     [selectedProducts]
   );
+
+  const selectedProductsTotal = useMemo(
+    () =>
+      selectedProducts.reduce(
+        (sum, item) =>
+          sum +
+          (item.product.price +
+            (item.product.variants.find((v) => v.id === item.variant.id)?.price_modifier ?? 0)) *
+            item.quantity,
+        0
+      ),
+    [selectedProducts]
+  );
+
+  const discountAmount = appliedDiscount?.discount_amount ?? 0;
+  const totalAmount = Math.max(selectedProductsTotal - discountAmount, 0);
 
   const isUserRequiredForSelectedOrder = getOrderKindRules(
     selectedOrderClassification.orderKind,
@@ -317,6 +340,11 @@ export default function NewOrderModal({
   }, [usersLoaded]);
 
   useEffect(() => {
+    setAppliedDiscount(null);
+    setDiscountError(null);
+  }, [selectedProducts, selectedUser?.istid]);
+
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (showCreateUser) setShowCreateUser(false);
@@ -432,6 +460,47 @@ export default function NewOrderModal({
   const removeProduct = (idx: number) =>
     setSelectedProducts((prev) => prev.filter((_, i) => i !== idx));
 
+  const handleApplyDiscount = async () => {
+    const code = discountCode.trim();
+    if (!code) {
+      setAppliedDiscount(null);
+      setDiscountError("Indica um código de desconto.");
+      return;
+    }
+
+    setDiscountLoading(true);
+    setDiscountError(null);
+    try {
+      const result = await validateDiscount({
+        code,
+        userIstid: selectedUser?.istid ?? null,
+        cartItems: selectedProducts.map(({ product, variant, quantity }) => ({
+          product_id: product.id,
+          variant_id: variant.id || undefined,
+          quantity,
+        })),
+      });
+
+      if (!result.valid) {
+        setAppliedDiscount(null);
+        setDiscountError(result.error ?? "Código de desconto inválido.");
+        return;
+      }
+
+      setAppliedDiscount({
+        code: result.code ?? code,
+        discount_amount: Number(result.discount_amount ?? 0),
+      });
+    } catch (error) {
+      setAppliedDiscount(null);
+      setDiscountError(
+        error instanceof Error ? error.message : "Não foi possível validar o código."
+      );
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
   type SubmitResult =
     | { status: "success"; order: Order | null }
     | { status: "stock_override"; message: string }
@@ -453,6 +522,7 @@ export default function NewOrderModal({
       stock_override: stockOverride,
       payment_method: !isEditMode ? "cash" : undefined,
       guest_checkout: !isEditMode ? guestCheckout : undefined,
+      discount_code: !isEditMode ? (appliedDiscount?.code ?? undefined) : undefined,
       items: selectedProducts.map(({ product, variant, quantity }) => ({
         product_id: product.id,
         variant_id: variant.id || undefined,
@@ -859,6 +929,52 @@ export default function NewOrderModal({
               className={styles.input}
               disabled={isSubmitting}
             />
+          </div>
+
+          {!isEditMode && (
+            <div className={styles.formGroup}>
+              <label>Código de desconto</label>
+              <div className={styles.discountRow}>
+                <input
+                  type="text"
+                  placeholder="NEIIST20"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  className={styles.input}
+                  disabled={isSubmitting || discountLoading}
+                />
+                <button
+                  type="button"
+                  className={styles.discountButton}
+                  onClick={handleApplyDiscount}
+                  disabled={isSubmitting || discountLoading || selectedProducts.length === 0}>
+                  {discountLoading ? "A validar..." : "Aplicar"}
+                </button>
+              </div>
+              {discountError && <div className={styles.discountError}>{discountError}</div>}
+              {appliedDiscount && discountAmount > 0 && (
+                <div className={styles.discountSuccess}>
+                  Desconto aplicado: - €{discountAmount.toFixed(2)} ({appliedDiscount.code})
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className={styles.orderSummary}>
+            <div className={styles.summaryLine}>
+              <span>Subtotal</span>
+              <span>€{selectedProductsTotal.toFixed(2)}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className={styles.summaryLine}>
+                <span>Desconto</span>
+                <span>- €{discountAmount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className={`${styles.summaryLine} ${styles.summaryTotal}`}>
+              <span>Total</span>
+              <span>€{totalAmount.toFixed(2)}</span>
+            </div>
           </div>
 
           <div className={styles.buttonRow}>

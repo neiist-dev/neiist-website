@@ -1,8 +1,8 @@
-import React from "react";
+import type { ReactNode } from "react";
 import styles from "@/styles/pages/DinnerPage.module.css";
 
 interface InfoListItemProps {
-  icon: string | React.ReactNode;
+  icon: string | ReactNode;
   label: string;
   value: string;
   url?: string;

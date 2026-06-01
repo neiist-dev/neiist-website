@@ -12,39 +12,16 @@
   background-color: #6b8ddd;
   border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .button:hover {
   transform: translateY(-2px);
   background-color: #4d77da;
   box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
-}
-
-.signedUpScreen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  width: 100%;
-  background: var(--background-colour);
-}
-
-.signedUpContent {
-  text-align: center;
-  color: white;
-}
-
-.signedUpContent h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-}
-
-.signedUpContent p {
-  font-size: 1.25rem;
-  margin: 0;
-  opacity: 0.95;
 }
 
 .highlight {
@@ -55,7 +32,7 @@
   letter-spacing: 2px;
   color: #d01531;
   text-align: center;
-  margin-bottom: auto;
+  margin: 0;
 }
 
 .jantar {
@@ -81,53 +58,43 @@
 .infoList {
   list-style: none;
   padding: 0;
-  margin: 2rem auto;
+  margin: 0 auto;
   max-width: 500px;
-}
-
-.icon {
-  margin-right: 2rem;
-  font-size: 2rem;
 }
 
 .infoItem {
   display: flex;
   align-items: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
   font-size: clamp(1.4rem, 3.5vw, 2rem);
   padding: clamp(0.8rem, 2vw, 1.25rem) 0;
   border-bottom: 2px dashed #e6b148;
-}
-
-.infoItem:nth-child(1) .icon {
-  color: #d01531;
-}
-
-.infoItem:nth-child(1) .infoValue {
-  color: #d01531;
-}
-
-.infoItem:nth-child(2) .icon {
-  color: #6b8ddd;
-}
-
-.infoItem:nth-child(2) .infoValue {
-  color: #6b8ddd;
-}
-
-.infoItem:nth-child(3) .icon {
-  color: #e6b148;
-}
-
-.infoItem:nth-child(3) .infoValue {
-  color: #e6b148;
 }
 
 .infoItem:last-child {
   border-bottom: none;
 }
 
+.icon {
+  font-size: 2rem;
+}
+
+.infoItem:nth-child(1) .icon,
+.infoItem:nth-child(1) .infoValue {
+  color: #d01531;
+}
+
+.infoItem:nth-child(2) .icon,
+.infoItem:nth-child(2) .infoValue {
+  color: #6b8ddd;
+}
+
+.infoItem:nth-child(3) .icon,
+.infoItem:nth-child(3) .infoValue {
+  color: #e6b148;
+}
+
 .infoValue {
-  margin-left: clamp(2rem, 3vw, 3rem);
   word-spacing: clamp(0.1rem, 0.5vw, 0.5rem);
   letter-spacing: 1px;
 }
@@ -135,7 +102,6 @@
 .infoValue a {
   color: inherit;
   text-decoration: none;
-  cursor: pointer;
   transition: opacity 0.2s;
 }
 
@@ -143,47 +109,53 @@
   opacity: 0.7;
 }
 
-.description {
+.description,
+.signedUpMessage,
+.unlockTimeMessage {
   max-width: clamp(400px, 90%, 550px);
-  margin-top: clamp(-1rem, -1vw, -1rem);
-  font-size: clamp(1.3rem, 3vw, 1.8rem);
   text-align: center;
+}
+
+.description {
+  margin-top: 1rem;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  max-width: none;
+}
+
+.signedUpMessage {
+  margin-top: -0.4rem;
+  margin-bottom: -1rem;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+}
+
+.unlockTimeMessage {
+  margin-top: -1rem;
+  font-size: clamp(1.3rem, 3vw, 1.6rem);
+  white-space: nowrap;
 }
 
 .contentWrapper {
   display: flex;
-  align-items: center;
-  max-width: 1200px;
+  align-items: flex-start;
+  max-width: 1500px;
   margin: 2.5rem auto;
   gap: 4rem;
 }
 
 .leftColumn {
-  flex: 1;
+  flex: 0.8;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 4vw, 30px);
 }
 
 .rightColumn {
-  flex: 1;
+  flex: 1.2;
   display: flex;
-  justify-content: center;
-}
-
-.image {
-  max-width: 100%;
-  height: auto;
-  transform: translateY(2rem);
-  filter: drop-shadow(0 10px 20px var(--background-colour));
-}
-
-/*---- Waiting Page ----*/
-.signedUpMessage {
-  max-width: clamp(400px, 90%, 550px);
-  margin-top: clamp(-0.4rem, -0.4vw, -0.4rem);
-  margin-bottom: clamp(-1rem, -1vw, -1rem);
-  font-size: clamp(1.3rem, 3vw, 1.8rem);
-  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .countdown {
@@ -195,8 +167,7 @@
   border: 2px solid #6b8ddd;
   border-radius: 0.5rem;
   width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }
 
 .countdownItem {
@@ -214,7 +185,6 @@
 .countdownLabel {
   font-size: clamp(0.75rem, 2vw, 1rem);
   color: #6b8ddd;
-  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -224,11 +194,83 @@
   margin: 0 0.5rem;
 }
 
-.unlockTimeMessage {
-  max-width: clamp(400px, 90%, 550px);
-  margin-top: clamp(-1rem, -1vw, -1rem);
-  font-size: clamp(1.3rem, 3vw, 1.6rem);
-  text-align: center;
+.imageWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.image {
+  width: 90%;
+  max-width: 550px;
+  height: auto;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+}
+
+.teaserSection {
+  margin-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  width: 100%;
+}
+
+.teaserGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.teaserCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.8rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+.teaserIcon {
+  font-size: 1.5rem;
+}
+
+.teaserTitle {
+  margin: 0;
+  font-size: clamp(1.2rem, 3vw, 1.55rem);
+  color: #d01531;
+}
+
+.teaserText {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.375rem);
+  line-height: 1.35;
+}
+
+.teaserRed {
+  color: #d01531;
+}
+.teaserYellow {
+  color: #e6b148;
+}
+.teaserBlue {
+  color: #6b8ddd;
+}
+.teaserPurple {
+  color: #7c6ae6;
+}
+
+@media (max-width: 1260px) {
+  .teaserGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  .teaserCard {
+    padding: 0.85rem;
+  }
+  .image {
+    max-width: 450px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -236,66 +278,35 @@
     padding: 1rem;
     overflow-x: hidden;
   }
-
   .contentWrapper {
     flex-direction: column;
-    gap: 1rem;
-    margin: 0 auto;
+    gap: 0rem;
+    align-items: center;
+    margin-top: 0.5rem;
   }
-
   .image {
-    max-width: 85%;
-    transform: none;
+    width: 85%;
   }
-
+  .teaserGrid {
+    grid-template-columns: 1fr;
+  }
   .infoItem {
-    padding: 0.5rem 0rem;
+    padding: 0.5rem 0;
   }
-
   .description {
     display: none;
   }
-
   .button {
     margin-top: auto;
   }
-
-  /*----Waiting Page----*/
-
   .countdown {
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
-    border: 2px solid #6b8ddd;
-    border-radius: 0.5rem;
+    padding: 1rem;
   }
-
   .countdownItem {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0rem;
+    gap: 0;
   }
-
-  .countdownValue {
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
-    color: #6b8ddd;
-  }
-
   .countdownLabel {
     font-size: clamp(0.7rem, 2vw, 1rem);
-  }
-
-  .countdownDot {
-    color: #6b8ddd;
-    font-size: 1.5rem;
-    margin: 0 0.5rem;
-  }
-
-  .unlockTimeMessage {
-    max-width: clamp(400px, 90%, 550px);
-    margin-top: clamp(-1rem, -1vw, -1rem);
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
-    text-align: center;
   }
 }

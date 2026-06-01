@@ -1,0 +1,52 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100px;
+  padding: 1.5rem;
+  text-align: center;
+  background: #fff;
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  gap: 0.2rem;
+  font: inherit;
+  box-sizing: border-box;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.card:focus-visible {
+  outline: 3px solid rgba(107, 141, 221, 0.35);
+  outline-offset: 3px;
+}
+
+.icon {
+  font-size: 3rem;
+  color: currentColor;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+  }
+
+  .icon {
+    font-size: 2rem;
+  }
+}

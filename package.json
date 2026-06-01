@@ -1,6 +1,6 @@
 {
   "name": "neiist",
-  "version": "1.13.6",
+  "version": "1.16.1",
   "private": true,
   "scripts": {
     "setup": "chmod +x ./scripts/setup.sh && ./scripts/setup.sh",
@@ -15,6 +15,11 @@
     "format:check": "prettier --config ./config/prettier/.prettierrc.json --ignore-path ./config/prettier/.prettierignore --check .",
     "type:check": "tsc --noEmit",
     "db:reset": "docker compose -f ./docker/docker-compose.yml down && docker volume rm neiist_db && docker compose -f ./docker/docker-compose.yml up -d",
+    "manage-calendars": "npx tsx scripts/manage-calendars.ts",
+    "db:backup:prod": "echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh backup prod",
+    "db:backup:staging": "echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh backup staging",
+    "db:backup:all": " echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh backup all",
+    "db:restore": "echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh restore",
     "clean": "rm -rf .next out dist build"
   },
   "dependencies": {

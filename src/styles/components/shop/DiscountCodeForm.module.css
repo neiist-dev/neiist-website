@@ -1,0 +1,254 @@
+.container {
+  min-height: 95vh;
+}
+
+.header {
+  margin: 1rem 2rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 1.8rem;
+}
+
+.grid {
+  margin: 0 2rem 2.5rem;
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
+.sectionCol {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.stackBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+}
+
+.row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  color: #3f3f3f;
+  margin-bottom: 0.25rem;
+}
+
+.sectionTitleIcon {
+  color: var(--primary-colour);
+  font-size: 1.25rem;
+}
+
+.fieldWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  color: #555d6d;
+  font-size: 0.95rem;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #555d6d;
+  margin: 0;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.inputControl {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.inputIcon {
+  color: var(--primary-colour);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.alignTopIcon {
+  align-self: flex-start;
+  margin-top: 14px;
+}
+
+.field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  border: 2px solid #d3d7df;
+  background: white;
+  font-size: 0.95rem;
+  color: #3f3f3f;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+textarea.field {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.field:focus {
+  border-color: var(--primary-colour);
+  box-shadow: 0 0 0 1px var(--primary-colour);
+}
+
+.field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ececf0;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  font-family: inherit;
+  transition:
+    background 0.18s,
+    opacity 0.18s;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: var(--primary-colour);
+  color: white;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btnSecondary {
+  background: var(--background-colour);
+  color: #555d6d;
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: #d3d7df;
+}
+
+.btnDanger {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.5rem 0.75rem;
+}
+
+.btnDanger:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.btnPrimary:disabled,
+.btnSecondary:disabled,
+.btnDanger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.datePickerWrap {
+  position: relative;
+  width: 100%;
+}
+
+.datePickerPopup {
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 0.5rem);
+  z-index: 10;
+  background: white;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 0.6rem;
+  padding: 0.5rem;
+}
+
+.datePickerPopup :global(.rdp-root) {
+  --rdp-accent-color: var(--primary-colour);
+}
+
+.datePickerPanel {
+  overflow-y: auto;
+  background: white;
+  border-radius: 0.6rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  padding: 0.5rem;
+}
+
+.previewEmail {
+  border: 2px solid #d3d7df;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .datePickerPopup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(2px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
