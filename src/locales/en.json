@@ -886,6 +886,7 @@
         "error_update_status": "Error updating status.",
         "error_cancel": "Error cancelling order.",
         "error_save_notes": "Error saving notes.",
+        "success_save_notes": "Notes saved successfully.",
         "pickup_toast": "Pickup deadline: {date}",
         "payment_reference_label": "Payment Reference:",
         "register_payment": "Register Payment",

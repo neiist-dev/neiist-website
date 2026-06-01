@@ -460,6 +460,7 @@ export interface OrderDetailsOverlayDict {
       error_update_status: string;
       error_cancel: string;
       error_save_notes: string;
+      success_save_notes: string;
       pickup_toast: string;
       payment_reference_label: string;
       register_payment: string;
@@ -810,7 +811,7 @@ export interface CheckoutFormDict {
     error_payment_incomplete: string;
   }
 
-  export interface PosPaymentDict {
+export interface PosPaymentDict {
   close_label: string;
   title: string;
   title_register_payment: string;

@@ -1,0 +1,112 @@
+.resultsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.card {
+  position: relative;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  border-radius: 1.5rem;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.card:hover {
+  transform: scale(1.01);
+}
+
+.rankBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.15);
+}
+
+.rank1 {
+  width: clamp(15rem, 24vw, 24rem);
+  order: 2;
+}
+.rank1 .rankBadge {
+  background: var(--primary-colour);
+}
+
+.rank2 {
+  width: clamp(13rem, 20vw, 20rem);
+  order: 1;
+}
+.rank2 .rankBadge {
+  background: var(--secondary-colour);
+}
+
+.rank3 {
+  width: clamp(13rem, 20vw, 20rem);
+  order: 3;
+}
+.rank3 .rankBadge {
+  background: var(--quaternary-colour);
+}
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.infoWrap {
+  padding: 1.5rem 1rem;
+}
+
+.name {
+  margin: 0 0 0.25rem;
+  color: var(--foreground-colour);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+}
+
+.votes {
+  margin: 0;
+  color: var(--light-foreground-colour);
+  font-size: 0.95rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: var(--light-foreground-colour);
+}
+
+@media (max-width: 768px) {
+  .resultsGrid {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .rank1,
+  .rank2,
+  .rank3 {
+    order: unset;
+    width: 100%;
+    max-width: 20rem;
+  }
+}

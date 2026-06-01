@@ -417,13 +417,6 @@
   filter: opacity(0.9);
 }
 
-.error {
-  color: #dc2626;
-  text-align: center;
-  margin-top: 1rem;
-  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
-}
-
 @media (max-width: 768px) {
   .infoColumnWide {
     grid-column: span 1;

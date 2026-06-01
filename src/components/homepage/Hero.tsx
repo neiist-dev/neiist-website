@@ -67,7 +67,7 @@ export default function Hero({ dict }: HeroProps) {
         {dict.title_suffix}
       </h1>
       <div ref={campusRef} className={styles.heroImage}>
-        <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} />
+          <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
         {showStudent && (
           <Image
             ref={studentRef}

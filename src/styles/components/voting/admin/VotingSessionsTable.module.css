@@ -1,0 +1,140 @@
+.container {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e6e8eb;
+  font-size: 0.9rem;
+  color: var(--foreground-colour);
+}
+
+.table tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eef2f6;
+  font-size: 0.9rem;
+  color: var(--foreground-colour);
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.row {
+  cursor: pointer;
+}
+
+.cell {
+  padding: 1rem;
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.name {
+  color: var(--foreground-colour);
+}
+
+.description {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  max-width: 25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  min-width: 5.75rem;
+  justify-content: center;
+}
+
+.activity {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.users {
+  background: #fef3c7;
+  color: #92400e;
+}
+.custom {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.idle {
+  background: #f3f4f6;
+  color: #374151;
+}
+.voting {
+  background: #dcfce7;
+  color: #166534;
+}
+.finished {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.period {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+}
+
+.votes {
+  color: var(--primary-colour);
+}
+
+.empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--light-foreground-colour);
+}
+
+.headerWithFilter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerFilterBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--light-foreground-colour);
+  transition: transform 0.2s;
+}
+
+.headerFilterBtn:hover {
+  transform: scale(1.2);
+}
+
+.desktopOnly {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none !important;
+  }
+}

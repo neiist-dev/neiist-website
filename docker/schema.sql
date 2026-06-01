@@ -177,10 +177,102 @@ CREATE TABLE neiist.activities_sign_up (
   PRIMARY KEY (event_id, user_istid)
 );
 
+-- VOTING SESSIONS
+CREATE TABLE neiist.voting_sessions (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  type VARCHAR(20) NOT NULL CHECK (type IN ('activity', 'users', 'custom')),
+  activity_id TEXT REFERENCES neiist.activities(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle', 'voting', 'finished')),
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- VOTING NOMINEES
+CREATE TABLE neiist.voting_nominees (
+  session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id) ON DELETE CASCADE,
+  nominee_id TEXT NOT NULL,
+  PRIMARY KEY (session_id, nominee_id)
+);
+
+-- CAST VOTES
+CREATE TABLE neiist.votes (
+  session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id) ON DELETE CASCADE,
+  voter_istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid) ON DELETE CASCADE,
+  nominee_id TEXT NOT NULL,
+  voted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (session_id, voter_istid)
+);
+
+-- VOTE RESULTS (Frozen tally)
+CREATE TABLE neiist.voting_results (
+  session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id) ON DELETE CASCADE,
+  nominee_id TEXT NOT NULL,
+  vote_count BIGINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (session_id, nominee_id),
+  FOREIGN KEY (session_id, nominee_id) REFERENCES neiist.voting_nominees(session_id, nominee_id) ON DELETE CASCADE
+);
+
+-- Trigger to touch updated_at on session when a vote is cast and notify listeners
+CREATE OR REPLACE FUNCTION neiist.touch_voting_session_updated_at()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_now TIMESTAMPTZ := NOW();
+BEGIN
+  UPDATE neiist.voting_sessions
+  SET updated_at = v_now
+  WHERE id = NEW.session_id;
+
+  -- Broadcast to the 'voting_update' channel
+  PERFORM pg_notify('voting_update', json_build_object('updated_at', v_now)::text);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_touch_voting_session
+AFTER INSERT OR UPDATE ON neiist.votes
+FOR EACH ROW
+EXECUTE FUNCTION neiist.touch_voting_session_updated_at();
+
+-- Trigger to notify on voting session changes
+CREATE OR REPLACE FUNCTION neiist.notify_voting_session_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify('voting_update', json_build_object('updated_at', NOW())::text);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_notify_voting_session_change
+AFTER INSERT OR UPDATE OF status, start_at, end_at, name, description, updated_at ON neiist.voting_sessions
+FOR EACH ROW
+EXECUTE FUNCTION neiist.notify_voting_session_change();
+
 -- SHOP CATEGORIES
 CREATE TABLE neiist.categories (
   id SERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE neiist.discount_codes (
+  id SERIAL PRIMARY KEY,
+  code TEXT UNIQUE NOT NULL,
+  discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
+  discount_value NUMERIC(10,2) NOT NULL CHECK (discount_value >= 0),
+  valid_product_ids INTEGER[],
+  valid_istids TEXT[],
+  max_uses INTEGER,
+  current_uses INTEGER NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_discount_codes_max_uses CHECK (max_uses IS NULL OR max_uses > 0),
+  CONSTRAINT chk_discount_codes_current_uses CHECK (current_uses >= 0)
 );
 
 -- PRODUCTS
@@ -249,6 +341,8 @@ CREATE TABLE neiist.orders (
   nif TEXT,
   campus TEXT,
   notes TEXT,
+  discount_code TEXT,
+  discount_amount NUMERIC(10,2),
   total_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
   payment_method TEXT,
   payment_reference TEXT,
@@ -825,7 +919,7 @@ BEGIN
     IF jsonb_array_length(p_updates->'courses') > 0 THEN
       INSERT INTO neiist.user_courses (user_istid, course_name)
       SELECT p_istid, value::TEXT
-      FROM jsonb_array_elements_text(p_updates->'courses');
+      FROM jsonb_array_elements_text(p_updates->'courses') AS value;
     END IF;
   END IF;
 
@@ -1144,7 +1238,7 @@ BEGIN
   GROUP BY e.id, e.title, e.description, e.url, e.location, e.type,
            e.teams, e.attendees, e.start, e."end", e.all_day, e.last_edited_time,
            e.signup_enabled, e.signup_deadline, e.max_attendees, e.custom_icon
-  ORDER BY e.start ASC;
+  ORDER BY e.start;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1198,7 +1292,7 @@ BEGIN
     AND uc.contact_type = 'alt_email'
     AND uc.is_preferred = TRUE
   WHERE es.event_id = p_event_id
-  ORDER BY es.signed_up_at ASC;
+  ORDER BY es.signed_up_at;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1696,6 +1790,364 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Add discount code
+CREATE OR REPLACE FUNCTION neiist.add_discount_code(
+  p_code TEXT,
+  p_discount_type TEXT,
+  p_discount_value NUMERIC,
+  p_valid_product_ids INTEGER[] DEFAULT NULL,
+  p_valid_istids TEXT[] DEFAULT NULL,
+  p_max_uses INTEGER DEFAULT NULL,
+  p_expires_at TIMESTAMPTZ DEFAULT NULL,
+  p_active BOOLEAN DEFAULT TRUE
+) RETURNS TABLE (
+  id INTEGER,
+  code TEXT,
+  discount_type TEXT,
+  discount_value NUMERIC(10,2),
+  valid_product_ids INTEGER[],
+  valid_istids TEXT[],
+  max_uses INTEGER,
+  current_uses INTEGER,
+  expires_at TIMESTAMPTZ,
+  active BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+) AS $$
+DECLARE
+  v_code TEXT;
+BEGIN
+  v_code := UPPER(BTRIM(p_code));
+
+  IF v_code IS NULL OR v_code = '' THEN
+    RAISE EXCEPTION 'Discount code is required';
+  END IF;
+
+  IF p_discount_type NOT IN ('percentage', 'fixed') THEN
+    RAISE EXCEPTION 'Invalid discount type';
+  END IF;
+
+  INSERT INTO neiist.discount_codes (
+    code,
+    discount_type,
+    discount_value,
+    valid_product_ids,
+    valid_istids,
+    max_uses,
+    expires_at,
+    active
+  )
+  VALUES (
+    v_code,
+    p_discount_type,
+    ROUND(COALESCE(p_discount_value, 0), 2),
+    NULLIF(p_valid_product_ids, '{}'),
+    NULLIF(p_valid_istids, '{}'),
+    p_max_uses,
+    p_expires_at,
+    COALESCE(p_active, TRUE)
+  )
+  RETURNING
+    discount_codes.id,
+    discount_codes.code,
+    discount_codes.discount_type,
+    discount_codes.discount_value,
+    discount_codes.valid_product_ids,
+    discount_codes.valid_istids,
+    discount_codes.max_uses,
+    discount_codes.current_uses,
+    discount_codes.expires_at,
+    discount_codes.active,
+    discount_codes.created_at,
+    discount_codes.updated_at
+  INTO
+    id,
+    code,
+    discount_type,
+    discount_value,
+    valid_product_ids,
+    valid_istids,
+    max_uses,
+    current_uses,
+    expires_at,
+    active,
+    created_at,
+    updated_at;
+
+  RETURN NEXT;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Update discount code
+CREATE OR REPLACE FUNCTION neiist.update_discount_code(
+  p_discount_code_id INTEGER,
+  p_updates JSONB
+) RETURNS TABLE (
+  id INTEGER,
+  code TEXT,
+  discount_type TEXT,
+  discount_value NUMERIC(10,2),
+  valid_product_ids INTEGER[],
+  valid_istids TEXT[],
+  max_uses INTEGER,
+  current_uses INTEGER,
+  expires_at TIMESTAMPTZ,
+  active BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  UPDATE neiist.discount_codes
+  SET
+    code = COALESCE(UPPER(BTRIM(NULLIF(p_updates->>'code', ''))), code),
+    discount_type = COALESCE(NULLIF(p_updates->>'discount_type', ''), discount_type),
+    discount_value = COALESCE(ROUND(NULLIF(p_updates->>'discount_value', '')::NUMERIC, 2), discount_value),
+    valid_product_ids = CASE
+      WHEN p_updates ? 'valid_product_ids' THEN (
+        SELECT COALESCE(array_agg(value::INTEGER), '{}'::INTEGER[])
+        FROM jsonb_array_elements_text(COALESCE(p_updates->'valid_product_ids', '[]'::jsonb)) AS value
+      )
+      ELSE valid_product_ids
+    END,
+    valid_istids = CASE
+      WHEN p_updates ? 'valid_istids' THEN (
+        SELECT COALESCE(array_agg(value::TEXT), '{}'::TEXT[])
+        FROM jsonb_array_elements_text(COALESCE(p_updates->'valid_istids', '[]'::jsonb)) AS value
+      )
+      ELSE valid_istids
+    END,
+    max_uses = COALESCE(NULLIF(p_updates->>'max_uses', '')::INTEGER, max_uses),
+    expires_at = CASE
+      WHEN p_updates ? 'expires_at' THEN NULLIF(p_updates->>'expires_at', '')::TIMESTAMPTZ
+      ELSE expires_at
+    END,
+    active = COALESCE(NULLIF(p_updates->>'active', '')::BOOLEAN, active),
+    updated_at = NOW()
+  WHERE id = p_discount_code_id
+  RETURNING
+    discount_codes.id,
+    discount_codes.code,
+    discount_codes.discount_type,
+    discount_codes.discount_value,
+    discount_codes.valid_product_ids,
+    discount_codes.valid_istids,
+    discount_codes.max_uses,
+    discount_codes.current_uses,
+    discount_codes.expires_at,
+    discount_codes.active,
+    discount_codes.created_at,
+    discount_codes.updated_at
+  INTO
+    id,
+    code,
+    discount_type,
+    discount_value,
+    valid_product_ids,
+    valid_istids,
+    max_uses,
+    current_uses,
+    expires_at,
+    active,
+    created_at,
+    updated_at;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Discount code % not found', p_discount_code_id;
+  END IF;
+
+  RETURN NEXT;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Delete discount code
+CREATE OR REPLACE FUNCTION neiist.delete_discount_code(
+  p_discount_code_id INTEGER
+) RETURNS VOID AS $$
+BEGIN
+  DELETE FROM neiist.discount_codes WHERE id = p_discount_code_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Discount code % not found', p_discount_code_id;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get all discount codes
+CREATE OR REPLACE FUNCTION neiist.get_all_discount_codes()
+RETURNS TABLE (
+  id INTEGER,
+  code TEXT,
+  discount_type TEXT,
+  discount_value NUMERIC,
+  valid_product_ids INTEGER[],
+  valid_istids TEXT[],
+  max_uses INTEGER,
+  current_uses INTEGER,
+  expires_at TIMESTAMPTZ,
+  active BOOLEAN,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    discount_codes.id,
+    discount_codes.code,
+    discount_codes.discount_type,
+    discount_codes.discount_value,
+    discount_codes.valid_product_ids,
+    discount_codes.valid_istids,
+    discount_codes.max_uses,
+    discount_codes.current_uses,
+    discount_codes.expires_at,
+    discount_codes.active,
+    discount_codes.created_at,
+    discount_codes.updated_at
+  FROM neiist.discount_codes
+  ORDER BY id DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Validate discount code
+CREATE OR REPLACE FUNCTION neiist.validate_discount_code(
+  p_code TEXT,
+  p_user_istid VARCHAR(10),
+  p_cart_items JSONB
+) RETURNS TABLE (
+  is_valid BOOLEAN,
+  discount_code_id INTEGER,
+  discount_code TEXT,
+  discount_type TEXT,
+  discount_value NUMERIC(10,2),
+  discount_amount NUMERIC(10,2),
+  error TEXT
+) AS $$
+DECLARE
+  v_code TEXT;
+  v_discount neiist.discount_codes%ROWTYPE;
+  it JSONB;
+  v_pid INTEGER;
+  v_vid INTEGER;
+  v_qty INTEGER;
+  v_price NUMERIC(10,2);
+  v_modifier NUMERIC(10,2);
+  v_unit NUMERIC(10,2);
+  v_eligible_total NUMERIC(10,2) := 0;
+  v_has_cart BOOLEAN := FALSE;
+  v_matching_items BOOLEAN := FALSE;
+BEGIN
+  v_code := UPPER(BTRIM(COALESCE(p_code, '')));
+
+  IF v_code = '' THEN
+    RETURN QUERY SELECT FALSE, NULL::INTEGER, NULL::TEXT, NULL::TEXT, NULL::NUMERIC(10,2), 0::NUMERIC(10,2), 'Discount code is required';
+    RETURN;
+  END IF;
+
+  SELECT * INTO v_discount
+  FROM neiist.discount_codes
+  WHERE UPPER(code) = v_code;
+
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, NULL::INTEGER, v_code, NULL::TEXT, NULL::NUMERIC(10,2), 0::NUMERIC(10,2), 'Discount code not found';
+    RETURN;
+  END IF;
+
+  IF NOT v_discount.active THEN
+    RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Discount code not found or inactive';
+    RETURN;
+  END IF;
+
+  IF v_discount.expires_at IS NOT NULL AND NOW() > v_discount.expires_at THEN
+    RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Discount code expired';
+    RETURN;
+  END IF;
+
+  IF v_discount.max_uses IS NOT NULL AND v_discount.current_uses >= v_discount.max_uses THEN
+    RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Discount code max uses reached';
+    RETURN;
+  END IF;
+
+  IF v_discount.valid_istids IS NOT NULL AND COALESCE(array_length(v_discount.valid_istids, 1), 0) > 0 THEN
+    IF p_user_istid IS NULL OR NOT EXISTS (
+      SELECT 1
+      FROM unnest(v_discount.valid_istids) AS allowed_istid
+      WHERE LOWER(BTRIM(allowed_istid)) = LOWER(BTRIM(p_user_istid))
+    ) THEN
+      RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Discount code not valid for user';
+      RETURN;
+    END IF;
+  END IF;
+
+  FOR it IN SELECT * FROM jsonb_array_elements(COALESCE(p_cart_items, '[]'::jsonb))
+  LOOP
+    v_has_cart := TRUE;
+    v_pid := (it->>'product_id')::INTEGER;
+    v_vid := NULLIF(it->>'variant_id', '')::INTEGER;
+    v_qty := COALESCE((it->>'quantity')::INTEGER, 0);
+
+    IF v_qty <= 0 THEN
+      RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Invalid quantity in cart';
+      RETURN;
+    END IF;
+
+    SELECT p.price
+      INTO v_price
+    FROM neiist.products p
+    WHERE p.id = v_pid AND p.active = TRUE;
+
+    IF NOT FOUND THEN
+      RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Product not found or inactive';
+      RETURN;
+    END IF;
+
+    v_unit := ROUND(v_price, 2);
+
+    IF v_vid IS NOT NULL THEN
+      SELECT pv.price_modifier
+        INTO v_modifier
+      FROM neiist.product_variants pv
+      WHERE pv.id = v_vid
+        AND pv.product_id = v_pid
+        AND pv.active = TRUE;
+
+      IF NOT FOUND THEN
+        RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Variant not found or inactive';
+        RETURN;
+      END IF;
+
+      v_unit := ROUND(v_unit + COALESCE(v_modifier, 0), 2);
+    END IF;
+
+    IF v_discount.valid_product_ids IS NULL OR COALESCE(array_length(v_discount.valid_product_ids, 1), 0) = 0 OR v_pid = ANY(v_discount.valid_product_ids) THEN
+      v_eligible_total := v_eligible_total + (v_unit * v_qty);
+      v_matching_items := TRUE;
+    END IF;
+  END LOOP;
+
+  IF NOT v_has_cart THEN
+    RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Cart is empty';
+    RETURN;
+  END IF;
+
+  IF v_discount.valid_product_ids IS NOT NULL AND COALESCE(array_length(v_discount.valid_product_ids, 1), 0) > 0 AND NOT v_matching_items THEN
+    RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Discount code not applicable to these products';
+    RETURN;
+  END IF;
+
+  IF v_discount.discount_type = 'percentage' THEN
+    v_eligible_total := ROUND(v_eligible_total * (v_discount.discount_value / 100.0), 2);
+  ELSE
+    v_eligible_total := ROUND(LEAST(v_eligible_total, v_discount.discount_value), 2);
+  END IF;
+
+  IF v_eligible_total <= 0 THEN
+    RETURN QUERY SELECT FALSE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, 0::NUMERIC(10,2), 'Discount code not applicable to these products';
+    RETURN;
+  END IF;
+
+  RETURN QUERY SELECT TRUE, v_discount.id, v_discount.code, v_discount.discount_type, v_discount.discount_value, v_eligible_total, NULL::TEXT;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- New order created
 CREATE OR REPLACE FUNCTION neiist.new_order(
   p_user_istid VARCHAR(10),
@@ -1709,6 +2161,7 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   p_payment_reference TEXT,
   p_created_by TEXT,
   p_items JSONB,
+  p_discount_code TEXT DEFAULT NULL,
   p_stock_override BOOLEAN DEFAULT FALSE
 ) RETURNS TABLE (
   id INTEGER,
@@ -1722,6 +2175,8 @@ CREATE OR REPLACE FUNCTION neiist.new_order(
   pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
+  discount_code TEXT,
+  discount_amount NUMERIC(10,2),
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
@@ -1754,6 +2209,9 @@ DECLARE
   v_pname TEXT;
   v_v_label TEXT;
   v_v_opts JSONB;
+  v_discount_code TEXT := NULL;
+  v_discount_amount NUMERIC(10,2) := 0;
+  v_discount_result RECORD;
 BEGIN
   v_customer_name := CASE
     WHEN p_user_istid IS NOT NULL THEN NULL
@@ -1778,6 +2236,8 @@ BEGIN
     nif,
     campus,
     notes,
+    discount_code,
+    discount_amount,
     payment_method,
     payment_reference,
     created_by
@@ -1790,6 +2250,8 @@ BEGIN
     p_nif,
     p_campus,
     p_notes,
+    NULL,
+    NULL,
     p_payment_method,
     p_payment_reference,
     p_created_by
@@ -1894,7 +2356,38 @@ BEGIN
     );
   END LOOP;
 
-  UPDATE neiist.orders SET total_amount = ROUND(v_total, 2), updated_at = NOW(), updated_by = p_created_by WHERE orders.id = v_order_id;
+  IF NULLIF(BTRIM(COALESCE(p_discount_code, '')), '') IS NOT NULL THEN
+    SELECT * INTO v_discount_result
+    FROM neiist.validate_discount_code(p_discount_code, p_user_istid, p_items);
+
+    IF NOT COALESCE(v_discount_result.is_valid, FALSE) THEN
+      RAISE EXCEPTION '%', COALESCE(v_discount_result.error, 'Invalid discount code');
+    END IF;
+
+    UPDATE neiist.discount_codes
+    SET current_uses = neiist.discount_codes.current_uses + 1,
+        updated_at = NOW()
+    WHERE neiist.discount_codes.id = v_discount_result.discount_code_id
+      AND neiist.discount_codes.active = TRUE
+      AND (neiist.discount_codes.expires_at IS NULL OR neiist.discount_codes.expires_at > NOW())
+      AND (neiist.discount_codes.max_uses IS NULL OR neiist.discount_codes.current_uses < neiist.discount_codes.max_uses)
+    RETURNING neiist.discount_codes.code INTO v_discount_code;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Discount code max uses reached';
+    END IF;
+
+    v_discount_amount := LEAST(v_total, COALESCE(v_discount_result.discount_amount, 0));
+  END IF;
+
+  UPDATE neiist.orders
+  SET
+    discount_code = v_discount_code,
+    discount_amount = CASE WHEN v_discount_code IS NULL THEN NULL ELSE ROUND(v_discount_amount, 2) END,
+    total_amount = ROUND(v_total - COALESCE(v_discount_amount, 0), 2),
+    updated_at = NOW(),
+    updated_by = p_created_by
+  WHERE orders.id = v_order_id;
 
   RETURN QUERY
   SELECT
@@ -1934,7 +2427,7 @@ BEGIN
       FROM neiist.order_items oi
       WHERE oi.order_id = o.id
     ), '[]'::JSONB) AS items,
-    o.notes, o.total_amount, o.payment_method, o.payment_reference,
+    o.notes, o.discount_code, o.discount_amount, o.total_amount, o.payment_method, o.payment_reference,
     o.created_by,
     o.created_at, o.paid_at, o.payment_checked_by, o.delivered_at, o.delivered_by, o.updated_at, o.updated_by,
     o.status::TEXT
@@ -1961,6 +2454,8 @@ RETURNS TABLE (
   pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
+  discount_code TEXT,
+  discount_amount NUMERIC(10,2),
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
@@ -2027,6 +2522,8 @@ BEGIN
       WHERE oi.order_id = o.id
     ) AS items,
     o.notes,
+    o.discount_code,
+    o.discount_amount,
     o.total_amount,
     o.payment_method,
     o.payment_reference,
@@ -2063,6 +2560,8 @@ RETURNS TABLE (
   pickup_deadline TIMESTAMPTZ,
   items JSONB,
   notes TEXT,
+  discount_code TEXT,
+  discount_amount NUMERIC(10,2),
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
@@ -2120,6 +2619,8 @@ BEGIN
       WHERE oi.order_id = o.id
     ) AS items,
     o.notes,
+    o.discount_code,
+    o.discount_amount,
     o.total_amount,
     o.payment_method,
     o.payment_reference,
@@ -2155,6 +2656,8 @@ CREATE OR REPLACE FUNCTION neiist.update_order(
   campus TEXT,
   items JSONB,
   notes TEXT,
+  discount_code TEXT,
+  discount_amount NUMERIC(10,2),
   total_amount NUMERIC(10,2),
   payment_method TEXT,
   payment_reference TEXT,
@@ -2184,7 +2687,13 @@ DECLARE
   v_pname TEXT;
   v_v_label TEXT;
   v_v_opts JSONB;
+  v_existing_discount_amount NUMERIC(10,2) := 0;
 BEGIN
+  SELECT COALESCE(o.discount_amount, 0)
+    INTO v_existing_discount_amount
+  FROM neiist.orders o
+  WHERE o.id = p_order_id;
+
   IF p_updates ? 'user_istid' THEN
     UPDATE neiist.orders SET user_istid = NULLIF(p_updates->>'user_istid','') WHERE neiist.orders.id = p_order_id;
   END IF;
@@ -2342,7 +2851,7 @@ BEGIN
       );
     END LOOP;
 
-    UPDATE neiist.orders SET total_amount = ROUND(v_total, 2), updated_by = p_user_istid WHERE neiist.orders.id = p_order_id;
+    UPDATE neiist.orders SET total_amount = ROUND(v_total - COALESCE(v_existing_discount_amount, 0), 2), updated_by = p_user_istid WHERE neiist.orders.id = p_order_id;
   END IF;
 
   UPDATE neiist.orders SET updated_at = NOW(), updated_by = p_user_istid WHERE neiist.orders.id = p_order_id;
@@ -2359,6 +2868,8 @@ BEGIN
     g.campus,
     g.items,
     g.notes,
+    g.discount_code,
+    g.discount_amount,
     g.total_amount,
     g.payment_method,
     g.payment_reference,
@@ -2472,5 +2983,294 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY SELECT c.id, c.name FROM neiist.categories c ORDER BY c.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Wrapper for LISTEN
+CREATE OR REPLACE FUNCTION neiist.listen_voting_updates()
+RETURNS VOID AS $$
+BEGIN
+  EXECUTE 'LISTEN voting_update';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Helper view for session data with total votes
+CREATE OR REPLACE VIEW neiist.voting_sessions_with_total_votes AS
+SELECT 
+    s.*,
+    (SELECT COUNT(*) FROM neiist.votes WHERE session_id = s.id) as total_votes
+FROM neiist.voting_sessions s;
+
+-- GET VOTING SESSIONS
+CREATE OR REPLACE FUNCTION neiist.get_voting_sessions(p_limit INTEGER)
+RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  type VARCHAR(20),
+  activity_id TEXT,
+  status TEXT,
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  total_votes BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.*
+  FROM neiist.voting_sessions_with_total_votes v
+  ORDER BY v.created_at DESC
+  LIMIT p_limit;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET VOTING SESSION BY ID
+CREATE OR REPLACE FUNCTION neiist.get_voting_session_by_id(p_session_id INTEGER)
+RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  type VARCHAR(20),
+  activity_id TEXT,
+  status TEXT,
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  total_votes BIGINT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.*
+  FROM neiist.voting_sessions_with_total_votes v
+  WHERE v.id = p_session_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ADD VOTING SESSION
+CREATE OR REPLACE FUNCTION neiist.create_voting_session(
+  p_name TEXT,
+  p_description TEXT,
+  p_type VARCHAR(20),
+  p_nominee_ids TEXT[],
+  p_activity_id TEXT DEFAULT NULL,
+  p_start_at TIMESTAMPTZ DEFAULT NULL,
+  p_end_at TIMESTAMPTZ DEFAULT NULL
+) RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  type VARCHAR(20),
+  activity_id TEXT,
+  status TEXT,
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  total_votes BIGINT
+) AS $$
+DECLARE
+  v_session_id INTEGER;
+BEGIN
+  INSERT INTO neiist.voting_sessions (name, description, type, activity_id, start_at, end_at)
+  VALUES (p_name, p_description, p_type, p_activity_id, p_start_at, p_end_at)
+  RETURNING neiist.voting_sessions.id INTO v_session_id;
+
+  IF p_nominee_ids IS NOT NULL AND array_length(p_nominee_ids, 1) > 0 THEN
+    INSERT INTO neiist.voting_nominees (session_id, nominee_id)
+    SELECT v_session_id, unnest(p_nominee_ids);
+  END IF;
+
+  RETURN QUERY SELECT * FROM neiist.get_voting_session_by_id(v_session_id);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- UPDATE VOTING SESSION
+CREATE OR REPLACE FUNCTION neiist.update_voting_session(
+  p_session_id INTEGER,
+  p_name TEXT,
+  p_description TEXT,
+  p_type VARCHAR(20),
+  p_nominee_ids TEXT[],
+  p_activity_id TEXT DEFAULT NULL,
+  p_start_at TIMESTAMPTZ DEFAULT NULL,
+  p_end_at TIMESTAMPTZ DEFAULT NULL
+) RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  type VARCHAR(20),
+  activity_id TEXT,
+  status TEXT,
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  total_votes BIGINT
+) AS $$
+BEGIN
+  UPDATE neiist.voting_sessions
+  SET name = p_name,
+      description = p_description,
+      type = p_type,
+      activity_id = p_activity_id,
+      start_at = p_start_at,
+      end_at = p_end_at,
+      updated_at = NOW()
+  WHERE neiist.voting_sessions.id = p_session_id;
+
+  -- Replace nominees
+  DELETE FROM neiist.voting_nominees WHERE session_id = p_session_id;
+  IF p_nominee_ids IS NOT NULL AND array_length(p_nominee_ids, 1) > 0 THEN
+    INSERT INTO neiist.voting_nominees (session_id, nominee_id)
+    SELECT p_session_id, unnest(p_nominee_ids);
+  END IF;
+
+  RETURN QUERY SELECT * FROM neiist.get_voting_session_by_id(p_session_id);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET SESSION NOMINEES
+CREATE OR REPLACE FUNCTION neiist.get_session_nominees(p_session_id INTEGER)
+RETURNS TABLE (
+  id TEXT,
+  name TEXT,
+  photo_path TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    vn.nominee_id as id,
+    COALESCE(u.name, vn.nominee_id) as name,
+    u.photo_path
+  FROM neiist.voting_nominees vn
+  LEFT JOIN neiist.users u ON u.istid = vn.nominee_id
+  WHERE vn.session_id = p_session_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- START VOTING
+CREATE OR REPLACE FUNCTION neiist.start_voting(p_session_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE neiist.voting_sessions
+  SET status = 'voting',
+      start_at = COALESCE(start_at, NOW())
+  WHERE id = p_session_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- SUBMIT VOTE
+CREATE OR REPLACE FUNCTION neiist.submit_vote(
+  p_session_id INTEGER,
+  p_voter_istid VARCHAR(10),
+  p_nominee_id TEXT
+) RETURNS VOID AS $$
+BEGIN
+  -- Check session status
+  IF NOT EXISTS (SELECT 1 FROM neiist.voting_sessions WHERE id = p_session_id AND status = 'voting') THEN
+    RAISE EXCEPTION 'Voting is not active for this session';
+  END IF;
+
+  -- Check if nominee is valid for this session
+  IF NOT EXISTS (SELECT 1 FROM neiist.voting_nominees WHERE session_id = p_session_id AND nominee_id = p_nominee_id) THEN
+    RAISE EXCEPTION 'Invalid nominee for this session';
+  END IF;
+
+  -- Insert or update vote
+  INSERT INTO neiist.votes (session_id, voter_istid, nominee_id)
+  VALUES (p_session_id, p_voter_istid, p_nominee_id)
+  ON CONFLICT (session_id, voter_istid) DO UPDATE
+  SET nominee_id = EXCLUDED.nominee_id,
+      voted_at = NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- FINISH VOTING
+CREATE OR REPLACE FUNCTION neiist.finish_voting(p_session_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE neiist.voting_sessions
+  SET status = 'finished',
+      end_at = COALESCE(end_at, NOW())
+  WHERE id = p_session_id;
+
+  -- Clear any existing results for this session
+  DELETE FROM neiist.voting_results WHERE session_id = p_session_id;
+
+  -- Frozen tally
+  INSERT INTO neiist.voting_results (session_id, nominee_id, vote_count)
+  SELECT 
+    p_session_id,
+    vn.nominee_id,
+    COUNT(v.voter_istid)
+  FROM neiist.voting_nominees vn
+  LEFT JOIN neiist.votes v ON v.session_id = vn.session_id AND v.nominee_id = vn.nominee_id
+  WHERE vn.session_id = p_session_id
+  GROUP BY vn.nominee_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET SESSION RESULTS
+CREATE OR REPLACE FUNCTION neiist.get_session_results(p_session_id INTEGER)
+RETURNS TABLE (
+  nominee_id TEXT,
+  nominee_name TEXT,
+  nominee_photo_path TEXT,
+  vote_count BIGINT
+) AS $$
+BEGIN
+  -- If session is finished, return frozen tally
+  IF EXISTS (SELECT 1 FROM neiist.voting_sessions WHERE id = p_session_id AND status = 'finished') THEN
+    RETURN QUERY
+    SELECT 
+      vr.nominee_id,
+      COALESCE(u.name, vr.nominee_id) as nominee_name,
+      u.photo_path as nominee_photo_path,
+      vr.vote_count
+    FROM neiist.voting_results vr
+    LEFT JOIN neiist.users u ON u.istid = vr.nominee_id
+    WHERE vr.session_id = p_session_id
+    ORDER BY vr.vote_count DESC;
+  ELSE
+    -- Live tally
+    RETURN QUERY
+    SELECT 
+      vn.nominee_id,
+      COALESCE(u.name, vn.nominee_id) as nominee_name,
+      u.photo_path as nominee_photo_path,
+      COUNT(v.voter_istid)::BIGINT as vote_count
+    FROM neiist.voting_nominees vn
+    LEFT JOIN neiist.users u ON u.istid = vn.nominee_id
+    LEFT JOIN neiist.votes v ON v.session_id = vn.session_id AND v.nominee_id = vn.nominee_id
+    WHERE vn.session_id = p_session_id
+    GROUP BY vn.nominee_id, u.name, u.photo_path
+    ORDER BY vote_count DESC;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET USER VOTE
+CREATE OR REPLACE FUNCTION neiist.get_user_vote(p_session_id INTEGER, p_voter_istid VARCHAR(10))
+RETURNS TABLE (nominee_id TEXT) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT v.nominee_id
+  FROM neiist.votes v
+  WHERE v.session_id = p_session_id AND v.voter_istid = p_voter_istid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- DELETE VOTING SESSION
+CREATE OR REPLACE FUNCTION neiist.delete_voting_session(p_session_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  DELETE FROM neiist.voting_sessions WHERE id = p_session_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Voting session % not found', p_session_id;
+  END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

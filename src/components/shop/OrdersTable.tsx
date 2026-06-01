@@ -550,21 +550,35 @@ export default function OrdersTable({ orders, products, dict, locale }: OrdersTa
         <div className={styles.desktopOnly}>
           <ActiveFilters
             dateRange={filters.dateRange}
-            products={filters.products}
-            campuses={filters.campuses}
-            statuses={filters.statuses}
             onRemoveDateRange={() =>
               setFilters((p) => ({ ...p, dateRange: { start: null, end: null } }))
             }
-            onRemoveProduct={(p) =>
-              setFilters((prev) => ({ ...prev, products: prev.products.filter((x) => x !== p) }))
-            }
-            onRemoveCampus={(c) =>
-              setFilters((prev) => ({ ...prev, campuses: prev.campuses.filter((x) => x !== c) }))
-            }
-            onRemoveStatus={(s) =>
-              setFilters((prev) => ({ ...prev, statuses: prev.statuses.filter((x) => x !== s) }))
-            }
+            filterGroups={[
+              {
+                id: "products",
+                label: "Produtos",
+                values: filters.products,
+              },
+              {
+                id: "campuses",
+                label: "Campus",
+                values: filters.campuses,
+              },
+              {
+                id: "statuses",
+                label: "Estado",
+                values: filters.statuses,
+                getDisplayValue: (s) => getStatusLabel(s as OrderStatus),
+              },
+            ]}
+            onRemoveValue={(groupId, value) => {
+              setFilters((prev) => ({
+                ...prev,
+                [groupId]: (prev[groupId as keyof FilterState] as string[]).filter(
+                  (x) => x !== value
+                ),
+              }));
+            }}
             onClearAll={handleClearAll}
             getStatusLabel={getStatusLabel}
             dict={dict.active_filters}
@@ -804,18 +818,34 @@ export default function OrdersTable({ orders, products, dict, locale }: OrdersTa
       <MobileFiltersDrawer
         isOpen={showMobileFilters}
         onClose={() => setShowMobileFilters(false)}
-        filters={filters}
+        initialFilters={filters}
         onApplyFilters={(newFilters) => {
-          setFilters(newFilters);
+          setFilters(newFilters as FilterState);
           setShowMobileFilters(false);
         }}
-        availableProducts={uniqueProducts}
-        availableCampuses={uniqueCampuses}
-        availableStatuses={availableStatuses}
-        getStatusLabel={getStatusLabel}
+        filterGroups={[
+          {
+            id: "products",
+            title: dict.mobile_filters_drawer.products_section,
+            options: uniqueProducts,
+            selected: filters.products,
+          },
+          {
+            id: "campuses",
+            title: dict.mobile_filters_drawer.campus_section,
+            options: uniqueCampuses,
+            selected: filters.campuses,
+          },
+          {
+            id: "statuses",
+            title: dict.mobile_filters_drawer.status_section,
+            options: availableStatuses,
+            selected: filters.statuses,
+            getLabel: (s) => getStatusLabel(s as OrderStatus),
+          },
+        ]}        
         dict={dict.mobile_filters_drawer}
         locale={locale}
-      />
 
       {showNewOrderModal && (
         <NewOrderModal

@@ -13,6 +13,14 @@ import {
 import { Order, dbOrder, mapdbOrderToOrder } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
 import { Category, dbCategory, mapdbCategoryToCategory } from "@/types/shop/category";
+import {
+  DiscountCode,
+  DiscountCodeInput,
+  DiscountCodeUpdateInput,
+  DiscountValidationResult,
+  dbDiscountCode,
+  mapdbDiscountCodeToDiscountCode,
+} from "@/types/shop/discountCode";
 import { isSpecialCategory } from "@/utils/shop/orderKindUtils";
 import { SPECIAL_CATEGORIES } from "@/types/shop/orderKind";
 import {
@@ -23,6 +31,17 @@ import {
   ActivityProperties,
   ActivityEvent,
 } from "@/types/events";
+import {
+  DbSessionResult,
+  DbVotingNominee,
+  DbVotingSession,
+  mapDbSessionResult,
+  mapDbVotingNominee,
+  mapDbVotingSession,
+  SessionResult,
+  VotingNominee,
+  VotingSession,
+} from "@/types/voting";
 import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
 
 const pool = new Pool({
@@ -745,17 +764,103 @@ export const updateProductVariant = async (
     : null;
 };
 
+export const getAllDiscountCodes = async (): Promise<DiscountCode[]> => {
+  try {
+    const { rows } = await db_query<dbDiscountCode>(
+      `SELECT * FROM neiist.get_all_discount_codes()`
+    );
+    return rows.map(mapdbDiscountCodeToDiscountCode);
+  } catch (error) {
+    console.error("Error fetching discount codes:", error);
+    return [];
+  }
+};
+
+export const createDiscountCode = async (
+  discountCode: DiscountCodeInput
+): Promise<DiscountCode | null> => {
+  try {
+    const {
+      rows: [row],
+    } = await db_query<dbDiscountCode>(
+      `SELECT * FROM neiist.add_discount_code($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        discountCode.code,
+        discountCode.discount_type,
+        discountCode.discount_value,
+        discountCode.valid_product_ids ?? null,
+        discountCode.valid_istids ?? null,
+        discountCode.max_uses ?? null,
+        discountCode.expires_at ?? null,
+        discountCode.active ?? true,
+      ]
+    );
+    return row ? mapdbDiscountCodeToDiscountCode(row) : null;
+  } catch (error) {
+    console.error("Error creating discount code:", error);
+    return null;
+  }
+};
+
+export const updateDiscountCode = async (
+  discountCodeId: number,
+  updates: DiscountCodeUpdateInput
+): Promise<DiscountCode | null> => {
+  try {
+    const {
+      rows: [row],
+    } = await db_query<dbDiscountCode>(`SELECT * FROM neiist.update_discount_code($1, $2)`, [
+      discountCodeId,
+      JSON.stringify(updates),
+    ]);
+    return row ? mapdbDiscountCodeToDiscountCode(row) : null;
+  } catch (error) {
+    console.error("Error updating discount code:", error);
+    return null;
+  }
+};
+
+export const deleteDiscountCode = async (discountCodeId: number): Promise<boolean> => {
+  try {
+    await db_query(`SELECT neiist.delete_discount_code($1)`, [discountCodeId]);
+    return true;
+  } catch (error) {
+    console.error("Error deleting discount code:", error);
+    return false;
+  }
+};
+
+export const validateDiscountCode = async (
+  code: string,
+  userIstid: string | null,
+  cartItems: Array<{ product_id: number; variant_id?: number | null; quantity: number }>
+): Promise<DiscountValidationResult | null> => {
+  try {
+    const {
+      rows: [row],
+    } = await db_query<DiscountValidationResult>(
+      `SELECT * FROM neiist.validate_discount_code($1, $2, $3)`,
+      [code, userIstid ?? null, JSON.stringify(cartItems)]
+    );
+    return row ?? null;
+  } catch (error) {
+    console.error("Error validating discount code:", error);
+    return null;
+  }
+};
+
 export const newOrder = async (
   order: Partial<Order> & {
     user_istid?: string;
     items: Array<{ product_id: number; variant_id?: number; quantity: number }>;
+    discount_code?: string | null;
   },
   stockOverride: boolean = false
 ): Promise<Order | null> => {
   const {
     rows: [row],
   } = await db_query<dbOrder>(
-    `SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+    `SELECT * FROM neiist.new_order($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
     [
       order.user_istid ?? null,
       order.customer_name ?? null,
@@ -774,6 +879,7 @@ export const newOrder = async (
           quantity: i.quantity,
         }))
       ),
+      order.discount_code ?? null,
       stockOverride,
     ]
   );
@@ -809,6 +915,30 @@ export function mapOrderDbErrorToResponse(
 
   if (message.includes("Variant") && message.includes("not found or inactive")) {
     return { error: "Variante indisponivel", status: 400 };
+  }
+
+  if (message.includes("Discount code is required")) {
+    return { error: "Código de desconto obrigatório", status: 400 };
+  }
+
+  if (message.includes("Discount code not found or inactive")) {
+    return { error: "Código de desconto inválido ou inativo", status: 400 };
+  }
+
+  if (message.includes("Discount code expired")) {
+    return { error: "Código de desconto expirado", status: 400 };
+  }
+
+  if (message.includes("Discount code max uses reached")) {
+    return { error: "Código de desconto esgotado", status: 400 };
+  }
+
+  if (message.includes("Discount code not valid for user")) {
+    return { error: "Código de desconto não é válido para este utilizador", status: 400 };
+  }
+
+  if (message.includes("Discount code not applicable to these products")) {
+    return { error: "Código de desconto não é aplicável a estes produtos", status: 400 };
   }
 
   if (message.includes("Invalid quantity for product_id")) {
@@ -938,4 +1068,111 @@ export const addCategory = async (name: string): Promise<Category | null> => {
     console.error("Error adding category:", error);
     return null;
   }
+};
+
+export const addVotingSession = async (
+  input: Partial<VotingSession>
+): Promise<VotingSession | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbVotingSession>(
+    `SELECT * FROM neiist.create_voting_session($1, $2, $3, $4, $5, $6, $7)`,
+    [
+      input.name,
+      input.description ?? null,
+      input.type,
+      input.nomineeIds,
+      input.activityId ?? null,
+      input.startAt ?? null,
+      input.endAt ?? null,
+    ]
+  );
+  return row ? mapDbVotingSession(row) : null;
+};
+
+export const updateVotingSession = async (
+  sessionId: number,
+  input: Partial<VotingSession>
+): Promise<VotingSession | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbVotingSession>(
+    `SELECT * FROM neiist.update_voting_session($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [
+      sessionId,
+      input.name,
+      input.description ?? null,
+      input.type,
+      input.nomineeIds,
+      input.activityId ?? null,
+      input.startAt ?? null,
+      input.endAt ?? null,
+    ]
+  );
+  return row ? mapDbVotingSession(row) : null;
+};
+
+export const getVotingSessions = async (limit = 20): Promise<VotingSession[]> => {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.floor(limit)) : 20;
+  const { rows } = await db_query<DbVotingSession>(`SELECT * FROM neiist.get_voting_sessions($1)`, [
+    safeLimit,
+  ]);
+  return rows.map(mapDbVotingSession);
+};
+
+export const getVotingSessionById = async (sessionId: number): Promise<VotingSession | null> => {
+  const {
+    rows: [row],
+  } = await db_query<DbVotingSession>(`SELECT * FROM neiist.get_voting_session_by_id($1)`, [
+    sessionId,
+  ]);
+  return row ? mapDbVotingSession(row) : null;
+};
+
+export const getSessionNominees = async (sessionId: number): Promise<VotingNominee[]> => {
+  const { rows } = await db_query<DbVotingNominee>(
+    `SELECT * FROM neiist.get_session_nominees($1)`,
+    [sessionId]
+  );
+  return rows.map(mapDbVotingNominee);
+};
+
+export const startVoting = async (sessionId: number): Promise<void> => {
+  await db_query(`SELECT neiist.start_voting($1)`, [sessionId]);
+};
+
+export const submitVote = async (
+  sessionId: number,
+  voterIstid: string,
+  nomineeId: string
+): Promise<void> => {
+  await db_query(`SELECT neiist.submit_vote($1, $2, $3)`, [sessionId, voterIstid, nomineeId]);
+};
+
+export const finishVoting = async (sessionId: number): Promise<void> => {
+  await db_query(`SELECT neiist.finish_voting($1)`, [sessionId]);
+};
+
+export const deleteVotingSession = async (sessionId: number): Promise<void> => {
+  await db_query(`SELECT neiist.delete_voting_session($1)`, [sessionId]);
+};
+
+export const getSessionResults = async (sessionId: number): Promise<SessionResult[]> => {
+  const { rows } = await db_query<DbSessionResult>(`SELECT * FROM neiist.get_session_results($1)`, [
+    sessionId,
+  ]);
+  return rows.map(mapDbSessionResult);
+};
+
+export const getUserVote = async (
+  sessionId: number,
+  voterIstid: string
+): Promise<string | null> => {
+  const {
+    rows: [row],
+  } = await db_query<{ nominee_id: string }>(`SELECT * FROM neiist.get_user_vote($1, $2)`, [
+    sessionId,
+    voterIstid,
+  ]);
+  return row?.nominee_id ?? null;
 };

@@ -1,0 +1,235 @@
+.wrapper {
+  padding: 0 0 3rem 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.header {
+  text-align: center;
+  margin: 1rem 0 1.5rem;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--primary-colour);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.title {
+  margin: 0.4rem 0 0;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: var(--foreground-colour);
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+
+.description {
+  margin: 0.8rem auto 0;
+  font-size: 1.1rem;
+  color: var(--light-foreground-colour);
+  max-width: 40rem;
+  line-height: 1.5;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.searchContainer {
+  width: 100%;
+  max-width: 32rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  border: 2px solid transparent;
+  background: #ffffff;
+  border-radius: 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--foreground-colour);
+  outline: none;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-colour);
+  box-shadow: 0 0.25rem 1rem rgba(40, 99, 253, 0.15);
+}
+
+.searchInput::placeholder {
+  color: var(--light-foreground-colour);
+}
+
+.count {
+  margin: 0;
+  color: var(--light-foreground-colour);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.gridItem {
+  min-width: 0;
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.card {
+  width: 100%;
+  border: none;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  font-family: inherit;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
+}
+
+.selectedCard {
+  box-shadow:
+    0 0 0 3px var(--primary-colour),
+    0 0.5rem 1.5rem rgba(40, 99, 253, 0.2);
+}
+
+.selectedCard:hover {
+  box-shadow:
+    0 0 0 3px var(--primary-colour),
+    0 0.75rem 2rem rgba(40, 99, 253, 0.25);
+}
+
+.photoWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #eef0f4;
+}
+
+.photo {
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .photo {
+  transform: scale(1.04);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 1rem;
+  background: linear-gradient(to top, rgba(40, 99, 253, 0.85) 0%, transparent 55%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.card:hover .overlay,
+.selectedCard .overlay {
+  opacity: 1;
+}
+
+.cta {
+  color: white;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.nameWrapper {
+  padding: 0.85rem 0.5rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.name {
+  color: var(--foreground-colour);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.loadMoreButton {
+  display: inline-flex;
+  font-family: inherit;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.6rem;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  background: var(--primary-colour);
+  color: white;
+  transition:
+    background 0.18s,
+    opacity 0.18s;
+}
+
+.loadMoreButton:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: clamp(1.2rem, 5vw, 2rem);
+  }
+
+  .overlay {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .nameWrapper {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .name {
+    font-size: 0.9rem;
+  }
+}

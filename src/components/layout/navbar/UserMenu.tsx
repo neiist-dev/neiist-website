@@ -2,7 +2,7 @@ import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
 import { GoSignOut, GoPeople, GoPerson, GoOrganization } from "react-icons/go";
-import { LuFileText, LuShoppingBag, LuPackage } from "react-icons/lu";
+import { LuFileText, LuShoppingBag, LuPackage, LuVote } from "react-icons/lu";
 import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
@@ -119,6 +119,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict }) => {
       href: "/shop/manage",
       label: dict.manage_shop,
       icon: LuShoppingBag,
+      roles: [UserRole._ADMIN],
+      adminOnly: true,
+    },
+    {
+      href: "/voting/manage",
+      label: "Gerir Votações",
+      icon: LuVote,
       roles: [UserRole._ADMIN],
       adminOnly: true,
     },

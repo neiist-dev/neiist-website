@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
         payment_reference: body.payment_reference ?? "",
         created_by: userRoles.user!.istid,
         items: body.items,
+        discount_code: typeof body.discount_code === "string" ? body.discount_code : undefined,
       },
       stockOverride
     );

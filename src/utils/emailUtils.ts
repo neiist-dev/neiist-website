@@ -9,6 +9,10 @@ import {
   isColorKey,
 } from "@/utils/shop/shopUtils";
 import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
+import {
+  renderDiscountCampaignEmailHtml,
+  type DiscountEmailTemplateData,
+} from "@/utils/shop/discountEmail";
 
 interface EmailOptions {
   to: string;
@@ -58,10 +62,10 @@ export function formatVariantForEmail(variantOptions?: Record<string, string>): 
   return parts.join("");
 }
 
-export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
+export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
   if (!isSMTPConfigured()) {
     console.warn("SMTP not configured. Email not sent:", { to, subject });
-    return; // Silently skip email sending
+    return false;
   }
 
   try {
@@ -79,9 +83,18 @@ export async function sendEmail({ to, subject, html }: EmailOptions): Promise<vo
       subject,
       html,
     });
+    return true;
   } catch (error) {
     console.error("Failed to send email:", error);
+    return false;
   }
+}
+
+export function getDiscountCampaignEmailTemplate(
+  introLine: string,
+  templateData: DiscountEmailTemplateData
+): string {
+  return renderDiscountCampaignEmailHtml(introLine, templateData);
 }
 
 type OrderEmailItem = {

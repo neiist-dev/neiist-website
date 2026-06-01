@@ -1,56 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { google } from "googleapis";
 import { Readable } from "stream";
-import fs from "fs/promises";
 import { getUserFromJWT } from "@/utils/authUtils";
+import { getDriveClient } from "@/utils/googleDrive";
 
-const CREDENTIALS_PATH = process.env.GOOGLE_CLIENT_SECRET_JSON!;
-const TOKEN_PATH = process.env.GDRIVE_TOKEN_PATH!;
 const SWEATS_FOLDER_ID = process.env.GDRIVE_SWEATS_FOLDER_ID!;
 const MAX_SUBMISSIONS = 3;
 const CONTEST_ACTIVE = false;
 
-if (!CREDENTIALS_PATH) throw new Error("Missing env: GOOGLE_CLIENT_SECRET_JSON");
-if (!TOKEN_PATH) throw new Error("Missing env: GDRIVE_TOKEN_PATH");
 if (!SWEATS_FOLDER_ID) throw new Error("Missing env: GDRIVE_SWEATS_FOLDER_ID");
-
-async function getGoogleDriveClient() {
-  const credentials = JSON.parse(await fs.readFile(CREDENTIALS_PATH, "utf8"));
-  const token = JSON.parse(await fs.readFile(TOKEN_PATH, "utf8"));
-  const oAuth2Client = new google.auth.OAuth2(
-    credentials.installed.client_id,
-    credentials.installed.client_secret,
-    credentials.installed.redirect_uris[0]
-  );
-  oAuth2Client.setCredentials(token);
-  return google.drive({ version: "v3", auth: oAuth2Client });
-}
 
 function escapeDriveQueryString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 async function getUserSubmissions(username: string): Promise<Array<{ id: string; name: string }>> {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const safeUsername = escapeDriveQueryString(username);
   const res = await drive.files.list({
     q: `'${SWEATS_FOLDER_ID}' in parents and name contains '${safeUsername}_' and trashed=false`,
     fields: "files(id, name, createdTime)",
     spaces: "drive",
     orderBy: "createdTime desc",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
   return (res.data.files || []) as Array<{ id: string; name: string }>;
 }
 
 async function deleteOldestSubmission(submissions: Array<{ id: string; name: string }>) {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const oldestFile = submissions[submissions.length - 1];
-  await drive.files.delete({ fileId: oldestFile.id });
+  await drive.files.delete({ fileId: oldestFile.id, supportsAllDrives: true });
 }
 
 async function uploadSubmission(fileBuffer: Buffer, filename: string) {
-  const drive = await getGoogleDriveClient();
+  const drive = getDriveClient();
   const bufferStream = new Readable();
   bufferStream.push(fileBuffer);
   bufferStream.push(null);
@@ -66,6 +51,7 @@ async function uploadSubmission(fileBuffer: Buffer, filename: string) {
       body: bufferStream,
     },
     fields: "id,webViewLink",
+    supportsAllDrives: true,
   });
 
   return {

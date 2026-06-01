@@ -76,7 +76,6 @@ export default function OrderDetailOverlay({
   const d = dict.order_details;
   const [order, setOrder] = useState<Order | null>(null);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
 
@@ -155,7 +154,6 @@ export default function OrderDetailOverlay({
 
   const handleStatusChange = async (status: OrderStatus) => {
     if (!order) return;
-    setError(null);
     const res = await fetch(`/api/shop/orders/${order.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -165,25 +163,22 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      // TODO: (SUCCESS)
+      toast.success(`Estado atualizado para ${getStatusLabel(status)}.`, { closeButton: true });
     } else {
-      // TODO: (ERROR)
-      setError(d.error_update_status);
+      toast.error(d.error_update_status, { closeButton: true });
     }
   };
 
   const handleUserCancel = async () => {
     if (!order) return;
-    setError(null);
     const res = await fetch(`/api/shop/orders/${order.id}`, { method: "DELETE" });
     if (res.ok) {
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      // TODO: (SUCCESS)
+      toast.success("Encomenda cancelada com sucesso.", { closeButton: true });
     } else {
-      // TODO: (ERROR)
-      setError(d.error_cancel);
+      toast.error(d.error_cancel, { closeButton: true });
     }
   };
 
@@ -246,30 +241,24 @@ export default function OrderDetailOverlay({
       setNotesEditing(false);
       return true;
     }
-    setError(null);
     try {
       const res = await fetch(`/api/shop/orders/${order.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: notesDraft }),
       });
-      if (res.ok) {
-        const updated = await res.json();
-        setOrder(updated);
-        setNotesEditing(false);
-        router.refresh();
-        // TODO: (SUCCESS) show success toast after the order notes are saved.
-        return true;
-      } else {
-        const err = await res.json().catch(() => null);
-        // TODO: (ERROR)
-        setError(err?.error ?? d.error_save_notes);
-        return false;
-      }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || d.error_save_notes);
+
+      setOrder(data);
+      setNotesEditing(false);
+      router.refresh();
+      toast.success(d.success_save_notes, { closeButton: true });
+      return true;
     } catch (err) {
-      // TODO: (ERROR)
-      setError(d.error_save_notes);
-      console.error(err);
+      toast.error(err instanceof Error ? err.message : d.error_save_notes, {
+        closeButton: true,
+      });
       return false;
     }
   };
@@ -410,6 +399,15 @@ export default function OrderDetailOverlay({
                     </div>
                   );
                 })}
+                {order.discount_amount != null && Number(order.discount_amount) > 0 && (
+                  <div className={styles.tableRow}>
+                    <span>Desconto</span>
+                    <span>{order.discount_code}</span>
+                    <span>1</span>
+                    <span>-{order.discount_amount.toFixed(2)}€</span>
+                    <span>-{order.discount_amount.toFixed(2)}€</span>
+                  </div>
+                )}
               </div>
               <div className={styles.totalRow}>{d.total_label.replace("{amount}", order.total_amount.toFixed(2))}</div>
             </div>
@@ -617,9 +615,6 @@ export default function OrderDetailOverlay({
             }}
             dict={dict.confirm_dialog}
           />
-
-          {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-          {error && <div className={styles.error}>{error}</div>}
         </div>
       )}
 
