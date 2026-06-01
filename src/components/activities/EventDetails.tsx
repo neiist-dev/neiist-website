@@ -33,10 +33,9 @@ interface EventDetailsProps {
   event: NormalizedCalendarEvent;
   onClose: () => void;
   isSignedUp: boolean;
-  // eslint-disable-next-line no-unused-vars
   onSignUpChange: (eventId: string, signedUp: boolean) => void;
-  // eslint-disable-next-line no-unused-vars
   onUpdate: (updatedEvent?: CalendarEvent) => void;
+  dict: any;
 }
 
 export default function EventDetails({
@@ -45,6 +44,7 @@ export default function EventDetails({
   isSignedUp,
   onSignUpChange,
   onUpdate,
+  dict,
 }: EventDetailsProps) {
   const router = useRouter();
   const { user } = useUser();
@@ -87,7 +87,7 @@ export default function EventDetails({
 
   const saveSettings = useCallback(async () => {
     if (!isAdmin || !hasChanges.current) return;
-    const saveToastId = toast.loading("Saving event settings...", {
+    const saveToastId = toast.loading(dict?.details?.saving_settings, {
       closeButton: true,
     });
     try {
@@ -126,18 +126,18 @@ export default function EventDetails({
         };
         onUpdate(patchedRaw);
         router.refresh();
-        toast.success("Event settings saved successfully.", {
+        toast.success(dict?.details?.settings_saved, {
           id: saveToastId,
           closeButton: true,
         });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save event settings.", {
+      toast.error(error instanceof Error ? error.message : dict.details.errors.save_settings, {
         id: saveToastId,
         closeButton: true,
       });
     }
-  }, [isAdmin, settings, event.id, event.raw, onUpdate, router]);
+  }, [isAdmin, settings, event.id, event.raw, onUpdate, router, dict]);
 
   const handleClose = useCallback(async () => {
     await saveSettings();
@@ -161,20 +161,20 @@ export default function EventDetails({
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      toast.warning("Por favor inicie sessão para se inscrever neste evento.", {
+      toast.warning(dict?.details?.please_login, {
         closeButton: true,
       });
       return;
     }
 
     if (!canSignUp && subscriberCount >= maxAttendeesNum) {
-      toast.error("Número máximo de participantes atingido.", { closeButton: true });
+      toast.error(dict?.details?.max_attendees_reached, { closeButton: true });
       return;
     }
 
     setIsProcessing(true);
     const signUpToastId = toast.loading(
-      signedUp ? "Cancelling sign-up..." : "Signing up for event...",
+      signedUp ? dict?.details?.cancelling_signup : dict?.details?.signing_up,
       {
         closeButton: true,
       }
@@ -192,17 +192,20 @@ export default function EventDetails({
         return;
       }
 
-      if (!res.ok) throw new Error("Failed to sign up");
+      if (!res.ok) throw new Error(dict.details.errors.sign_up);
       const data = await res.json();
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
-      toast.success(data.signedUp ? "Signed up successfully." : "Sign-up cancelled successfully.", {
-        id: signUpToastId,
-        closeButton: true,
-      });
+      toast.success(
+        data.signedUp ? dict?.details?.signed_up : dict?.details?.signup_cancelled,
+        {
+          id: signUpToastId,
+          closeButton: true,
+        }
+      );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update sign-up.", {
+      toast.error(error instanceof Error ? error.message : dict.details.errors.update_signup, {
         id: signUpToastId,
         closeButton: true,
       });
@@ -212,7 +215,7 @@ export default function EventDetails({
   };
 
   const handleEmailAttendees = async () => {
-    const emailToastId = toast.loading("Preparing attendee email...", {
+    const emailToastId = toast.loading(dict?.details?.preparing_email, {
       closeButton: true,
     });
     try {
@@ -223,19 +226,19 @@ export default function EventDetails({
         window.location.reload();
         return;
       }
-      if (!res.ok) throw new Error("Failed to fetch attendees");
+      if (!res.ok) throw new Error(dict.details.errors.fetch_attendees);
       const data = await res.json();
       const emails = (data.subscribers as EventSubscriber[]).map((s) => s.email).join(",");
       window.open(
         `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
         "_blank"
       );
-      toast.success("Email draft opened successfully.", {
+      toast.success(dict?.details?.email_opened, {
         id: emailToastId,
         closeButton: true,
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to fetch attendee emails.", {
+      toast.error(error instanceof Error ? error.message : dict.details.errors.fetch_emails, {
         id: emailToastId,
         closeButton: true,
       });
@@ -245,7 +248,7 @@ export default function EventDetails({
   const handleShare = () => {
     const url = `${window.location.origin}/activities?eventId=${event.id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Link do evento copiado", {
+    toast.success(dict?.details?.link_copied, {
       closeButton: true,
     });
   };
@@ -255,7 +258,7 @@ export default function EventDetails({
       className={styles.modalOverlay}
       onClick={(e) => e.target === e.currentTarget && handleClose()}>
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={handleClose} aria-label="Fechar">
+        <button className={styles.closeButton} onClick={handleClose} aria-label={dict?.details?.close}>
           <IoClose size={32} />
         </button>
 
@@ -266,11 +269,11 @@ export default function EventDetails({
             style={{ cursor: isAdmin ? "pointer" : "default" }}>
             <EventIcon size={48} />
           </div>
-          <h2 className={styles.eventTitle}>{event.summary || "Untitled Event"}</h2>
+          <h2 className={styles.eventTitle}>{event.summary || dict?.details?.untitled_event}</h2>
           <button
             className={styles.shareButton}
             onClick={handleShare}
-            title="Copiar link do evento">
+            title={dict?.details?.share_title}>
             <IoShareOutline size={22} />
           </button>
         </div>
@@ -314,12 +317,12 @@ export default function EventDetails({
         {isAdmin && (
           <div className={styles.adminSection}>
             <label>
-              Descrição do evento
+              {dict?.details?.labels?.description}
               <textarea
                 value={settings.description}
                 onChange={(e) => updateSetting("description", e.target.value)}
                 rows={4}
-                placeholder="Adicionar descrição..."
+                placeholder={dict?.details?.placeholders?.description}
                 disabled={isProcessing}
               />
             </label>
@@ -331,13 +334,13 @@ export default function EventDetails({
                 onChange={(e) => updateSetting("signupEnabled", e.target.checked)}
                 disabled={isProcessing}
               />
-              <span>Permitir inscrições</span>
+              <span>{dict?.details?.labels?.allow_signups}</span>
             </label>
 
             {settings.signupEnabled && (
               <>
                 <label>
-                  Data limite para inscrições
+                  {dict?.details?.labels?.signup_deadline}
                   <input
                     type="datetime-local"
                     value={settings.signupDeadline}
@@ -347,13 +350,13 @@ export default function EventDetails({
                 </label>
 
                 <label>
-                  Número máximo de participantes
+                  {dict?.details?.labels?.max_attendees}
                   <input
                     type="number"
                     min="1"
                     value={settings.maxAttendees}
                     onChange={(e) => updateSetting("maxAttendees", e.target.value)}
-                    placeholder="Sem limite"
+                    placeholder={dict?.details?.placeholders?.no_limit}
                     disabled={isProcessing}
                   />
                 </label>
@@ -365,7 +368,7 @@ export default function EventDetails({
         <div className={styles.actionSection}>
           {isAdmin && subscriberCount > 0 && (
             <div className={styles.subscriberCount}>
-              {String(subscriberCount).padStart(2, "0")} Inscritos
+              {String(subscriberCount).padStart(2, "0")} {dict?.details?.labels?.subscribers}
             </div>
           )}
 
@@ -374,28 +377,29 @@ export default function EventDetails({
             onClick={handleSignUp}
             disabled={isProcessing || !currentIstid}>
             {isProcessing
-              ? "A processar..."
+              ? dict?.details?.processing
               : !currentIstid
-                ? "Por favor inicie sessão para se inscrever"
-                : signedUp
-                  ? "Cancelar inscrição"
-                  : "Sign Up"}
+              ? dict?.details?.please_login
+              : signedUp
+              ? dict?.details?.buttons?.cancel_signup
+              : dict?.details?.buttons?.sign_up}
           </button>
           {isAdmin && subscriberCount > 0 && (
             <button onClick={handleEmailAttendees} className={styles.emailLink}>
-              Enviar email para todos os inscritos.
+              {dict?.details?.buttons?.email_attendees}
             </button>
           )}
         </div>
-      </div>
 
-      {showIconPicker && (
-        <IconPicker
-          value={settings.customIcon}
-          onChange={(icon) => updateSetting("customIcon", icon)}
-          onClose={() => setShowIconPicker(false)}
-        />
-      )}
+        {showIconPicker && (
+          <IconPicker
+            value={settings.customIcon}
+            onChange={(icon) => updateSetting("customIcon", icon)}
+            onClose={() => setShowIconPicker(false)}
+            dict={{ icon_picker: dict?.details?.icon_picker }}
+          />
+        )}
+      </div>
     </div>
   );
 }

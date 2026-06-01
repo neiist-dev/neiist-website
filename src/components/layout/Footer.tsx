@@ -11,7 +11,7 @@ import {
 import { SiLinktree } from "react-icons/si";
 import styles from "@/styles/components/layout/Footer.module.css";
 
-export default function Footer() {
+export default function Footer({ dict }: { dict?: any }) {
   const socialIcons = [
     {
       href: "https://facebook.com/NEIIST",
@@ -54,19 +54,15 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.top}>
         <div className={styles.mission}>
-          <h4>NEIIST</h4>
-          <p>
-            Um grupo de estudantes motivados para ajudar todo e qualquer aluno de Engenharia
-            Informática e Computadores (e não só), realizando atividades no ambito da informática e
-            apoio social.
-          </p>
+          <h4>{dict?.title_neiist}</h4>
+          <p>{dict?.mission_description}</p>
         </div>
         <div className={styles.section}>
-          <h4>Sobre o Núcleo</h4>
+          <h4>{dict?.about_title}</h4>
           <ul>
             <li>
               <Link className={styles.link} href="/about-us">
-                Equipa
+                {dict?.team_link}
               </Link>
             </li>
             <li>
@@ -84,14 +80,14 @@ export default function Footer() {
                 href="/estatutos.pdf"
                 target="_blank"
                 rel="noopener noreferrer">
-                Estatutos
+                {dict?.estatutos_link}
               </Link>
             </li>
           </ul>
         </div>
 
         <div className={styles.section}>
-          <h4>Cursos de EIC</h4>
+          <h4>{dict?.courses_title}</h4>
           <ul>
             <li>
               <Link
@@ -140,7 +136,7 @@ export default function Footer() {
         </div>
 
         <div className={styles.section}>
-          <h4>Contactos</h4>
+          <h4>{dict?.contacts_title}</h4>
           <ul>
             <li>
               ✉️{" "}
@@ -154,13 +150,13 @@ export default function Footer() {
                 <br />
                 Instituto Superior Técnico
                 <br />
-                Av. Rovisco Pais 1, 1049-001 Lisboa
+                {dict.address}
               </address>
             </li>
           </ul>
         </div>
         <div className={styles.section}>
-          <h4>Powered by:</h4>
+          <h4>{dict?.powered_by}</h4>
           <Link
             href="https://dei.tecnico.ulisboa.pt"
             target="_blank"
@@ -172,7 +168,7 @@ export default function Footer() {
       </div>
 
       <div className={styles.bottom}>
-        <p className={styles.copyright}>© 2025 NEIIST. All rights reserved.</p>
+        <p className={styles.copyright}>{dict?.copyright}</p>
         <div className={styles.socialIcons}>
           {socialIcons.map(({ href, icon, ariaLabel }, index) => (
             <Link

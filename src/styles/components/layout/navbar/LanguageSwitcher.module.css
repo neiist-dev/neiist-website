@@ -1,0 +1,71 @@
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.triggerButton {
+  background: transparent;
+  color: var(--foreground-colour);
+  border: none;
+  cursor: pointer;
+  outline: none;
+  font-weight: bold;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.triggerButton:hover {
+  color: var(--primary-colour);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 150px;
+  background-color: var(--background-colour);
+  padding: 0.5rem;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 50;
+  animation: slideIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdownItem {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  transition: color 0.15s ease;
+  font-family: inherit;
+}
+
+.dropdownItem:hover {
+  color: var(--primary-colour);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

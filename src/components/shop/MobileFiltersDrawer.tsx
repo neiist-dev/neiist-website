@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "@/styles/components/shop/MobileFiltersDrawer.module.css";
 import { FiCheck, FiX } from "react-icons/fi";
+import type { MobileFiltersDrawerDict } from "@/types/i18n";
 
 export interface MobileFilterGroup<T = Record<string, unknown>> {
   id: Extract<keyof T, string>;
@@ -22,6 +23,8 @@ interface MobileFiltersDrawerProps<T extends BaseFilterState> {
   initialFilters: T;
   onApplyFilters: (_filters: T) => void;
   filterGroups: MobileFilterGroup<T>[];
+  dict: MobileFiltersDrawerDict;
+  locale?: string;
 }
 
 function getMonthDays(date: Date): (Date | null)[] {
@@ -60,6 +63,8 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
   initialFilters,
   onApplyFilters,
   filterGroups,
+  dict,
+  locale = "pt-PT",
 }: MobileFiltersDrawerProps<T>) {
   const [filters, setFilters] = useState<T>(initialFilters);
   const [dateMode, setDateMode] = useState<"until" | "range">("until");
@@ -146,19 +151,19 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
       <div className={styles.overlay} onClick={onClose} />
       <div className={styles.drawer}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Filtros</h2>
+          <h2 className={styles.title}>{dict.title}</h2>
           <button
             type="button"
             className={styles.closeBtn}
             onClick={onClose}
-            aria-label="Close filters">
+            aria-label={dict.close_label}>
             <FiX size={24} />
           </button>
         </div>
 
         <div className={styles.content}>
           <FilterSection
-            title="Data"
+            title={dict.date_section}
             expanded={expandedSection === "date"}
             onToggle={() => toggleSection("date")}>
             <div className={styles.dateTabs}>
@@ -166,13 +171,13 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
                 type="button"
                 className={dateMode === "until" ? styles.tabActive : styles.tab}
                 onClick={() => setDateMode("until")}>
-                Até data
+                {dict.until}
               </button>
               <button
                 type="button"
                 className={dateMode === "range" ? styles.tabActive : styles.tab}
                 onClick={() => setDateMode("range")}>
-                Intervalo
+                {dict.range}
               </button>
             </div>
 
@@ -182,7 +187,7 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
                   ‹
                 </button>
                 <div className={styles.monthLabel}>
-                  {currentMonth.toLocaleDateString("pt-PT", {
+                  {currentMonth.toLocaleDateString(locale, {
                     month: "long",
                     year: "numeric",
                   })}
@@ -193,7 +198,7 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
               </div>
 
               <div className={styles.calendarGrid}>
-                {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
+                {dict.days.map((day, i) => (
                   <div key={i} className={styles.dayName}>
                     {day}
                   </div>
@@ -248,10 +253,10 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
 
         <div className={styles.footer}>
           <button type="button" className={styles.clearBtn} onClick={handleClearAll}>
-            Limpar Tudo
+            {dict.clear_all}
           </button>
           <button type="button" className={styles.applyBtn} onClick={handleApply}>
-            Aplicar {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            {dict.apply} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </button>
         </div>
       </div>

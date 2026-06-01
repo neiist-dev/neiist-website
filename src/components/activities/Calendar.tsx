@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay, isBefore, startOfDay } from "date-fns";
+import { format, parse, startOfWeek, getDay, isBefore, startOfDay, AddYearsOptions } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import EventDetails from "@/components/activities/EventDetails";
@@ -29,6 +29,8 @@ const localizer = dateFnsLocalizer({
 interface CalendarProps {
   events: CalendarEvent[];
   signedUpEventIds: string[];
+  dict: CalendarDict
+  locale: string;
 }
 
 interface ReactBigCalendarEvent {
@@ -112,6 +114,8 @@ export default function Calendar({
   events,
   signedUpEventIds,
   initialSelectedEventId,
+  dict,
+  locale,
 }: CalendarProps & { initialSelectedEventId?: string }) {
   const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
   const [signUps, setSignUps] = useState<Set<string>>(new Set(signedUpEventIds));
@@ -215,6 +219,7 @@ export default function Calendar({
           onUpdate={(updatedEvent?: CalendarEvent) =>
             handleEventUpdate(updatedEvent ?? selectedEvent!.raw)
           }
+          dict={dict}
         />
       )}
     </>

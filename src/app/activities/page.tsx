@@ -1,6 +1,7 @@
 import Calendar from "@/components/activities/Calendar";
 import { getActivitiesEventsFromDb } from "@/utils/dbUtils";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
+import { getLocale, getDictionary } from "@/lib/i18n";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/Activities.module.css";
@@ -38,20 +39,35 @@ export default async function ActivitiesPage({
   const params = searchParams ? await searchParams : {};
   const { events, signedUpEventIds } = await getEventsAndSubscriptions();
   const urlSelectdEventID = params.eventId || undefined;
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
-        <span className={styles.primary}>Ati</span>
-        <span className={styles.secondary}>vi</span>
-        <span className={styles.tertiary}>da</span>
-        <span className={styles.quaternary}>des</span>
+        {(() => {
+          const letters: string[] | undefined = dict.activities?.title_letters;
+          const title: string | undefined = dict.activities?.title;
+          if (letters && letters.length > 0) {
+            return letters.map((l: string, i: number) => (
+              <span key={i} className={(styles as any)[["primary", "secondary", "tertiary", "quaternary"][i]]}>
+                {l}
+              </span>
+            ));
+          }
+          if (title) {
+            return <span>{title}</span>;
+          }
+          return null;
+        })()}
       </h1>
-      <Calendar
-        events={events}
-        signedUpEventIds={signedUpEventIds}
-        initialSelectedEventId={urlSelectdEventID}
-      />
+          <Calendar
+            events={events}
+            signedUpEventIds={signedUpEventIds}
+            initialSelectedEventId={urlSelectdEventID}
+            dict={dict.activities}
+            locale={locale}
+          />
     </div>
   );
 }

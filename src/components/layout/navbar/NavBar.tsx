@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
@@ -10,22 +10,38 @@ import NeiistLogo from "@/components/layout/navbar/NeiistLogo";
 import ShoppingCart from "@/components/layout/navbar/ShoppingCart";
 import LoginButton from "@/components/layout/navbar/LoginButton";
 import UserMenu from "@/components/layout/navbar/UserMenu";
+import LanguageSwitcher from "@/components/layout/navbar/LanguageSwitcher";
+import { Locale } from "@/lib/i18n-config";
 import styles from "@/styles/components/layout/navbar/NavBar.module.css";
+import type { NavBarDict } from "@/types/i18n";
 
+
+interface NavBarProps {
+  dict: NavBarDict;
+  currentLocale: Locale;
+}
+/*
 const navLinks = [
   { name: "Sobre Nós", href: "/about-us" },
   { name: "Atividades", href: "/activities" },
-  /*{ name: "Blog", href: "/blog" },*/
+  { name: "Blog", href: "/blog" },
   { name: "Loja", href: "/shop" },
   { name: "Jantar de Curso", href: "/dinner" },
-];
+]; */
 
-export default function NavBar() {
+export default function NavBar({ dict, currentLocale }: NavBarProps) {
   const router = useRouter();
   const { user, setUser } = useUser();
   const [isSticky, setIsSticky] = useState(false);
   const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const navLinks = [
+    { name: dict.about_us, href: "/about-us" },
+    { name: dict.activities, href: "/activities" },
+    { name: dict.shop, href: "/shop" },
+    { name: dict.dinner, href: "/dinner" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setIsSticky(window.scrollY > 0);
@@ -76,7 +92,7 @@ export default function NavBar() {
   const renderNavItems = (onClick?: (_href: string) => void) => {
     return navLinks.map((link) => (
       <NavItem
-        key={link.name}
+        key={link.href}
         href={link.href}
         label={link.name}
         onClick={onClick ? () => onClick(link.href) : undefined}
@@ -93,11 +109,12 @@ export default function NavBar() {
         <div className={styles.navItems}>{renderNavItems()}</div>
       </nav>
       <div className={styles.actions}>
+        <LanguageSwitcher currentLocale={currentLocale} />
         <ShoppingCart />
         {user ? (
-          <UserMenu userData={user} logout={handleLogout} />
+          <UserMenu userData={user} logout={handleLogout} dict={dict.menu}/>
         ) : (
-          <LoginButton onClick={login} />
+          <LoginButton onClick={login} dict={dict.layout_navbar} />
         )}
         <div className={styles.menuButton}>
           <Squash
@@ -109,16 +126,6 @@ export default function NavBar() {
           />
         </div>
       </div>
-      {(menuState === "open" || menuState === "closing") && (
-        <div
-          ref={menuRef}
-          className={`${styles.menu} ${menuState === "closing" ? styles.slideOut : ""}`}>
-          <Link href="/" className={styles.logo} onClick={() => handleMobileNavClick("/")}>
-            <NeiistLogo />
-          </Link>
-          <nav className={styles.navItems}>{renderNavItems(handleMobileNavClick)}</nav>
-        </div>
-      )}
     </header>
   );
 }

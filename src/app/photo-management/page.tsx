@@ -1,11 +1,13 @@
-import { getAllMemberships, getAllDepartments } from "@/utils/dbUtils";
+import { getAllMemberships } from "@/utils/dbUtils";
 import { Membership } from "@/types/memberships";
 import PhotoTeamMembers from "@/components/photo-management/PhotoTeamMembers";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
+import { getLocale, getDictionary } from "@/lib/i18n";
 
 export default async function PhotoTeamMembersPage() {
   const memberships = await getAllMemberships();
-  const departments = await getAllDepartments();
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
 
   const activeMemberships: Membership[] = memberships.filter((membership) => membership.isActive);
 
@@ -19,8 +21,8 @@ export default async function PhotoTeamMembersPage() {
 
   return (
     <>
-      <h1 className={styles.title}>Gestão de Fotos dos Membros</h1>
-      <PhotoTeamMembers membersByDepartment={membersByDepartment} departments={departments} />
+      <h1 className={styles.title}>{dict.photo_team_members.page_title}</h1>
+      <PhotoTeamMembers membersByDepartment={membersByDepartment} dict={dict.photo_team_members} />
     </>
   );
 }

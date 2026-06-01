@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole, hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./utils/authUtils";
+import { locales, defaultLocale } from "@/lib/i18n-config";
 import { rateLimit } from "@/utils/security/rateLimitUtils";
 import { CSP } from "@/utils/security/cspUtils";
 import { getRateLimitRule } from "@/lib/rateLimitRules";
@@ -141,6 +142,7 @@ export function proxy(req: NextRequest) {
 
   const accessToken = req.cookies.get("access_token")?.value;
   const isAuthenticated = !!accessToken;
+  let response: NextResponse | undefined;
 
   if (!isAuthenticated && protectedRoutes.some((r) => path.startsWith(r))) {
     if (path !== "/api/auth/login") {
@@ -153,24 +155,49 @@ export function proxy(req: NextRequest) {
     return response;
   }
 
-  if (isAuthenticated) {
+  if (!response && isAuthenticated) {
     const sessionToken = req.cookies.get("session")?.value;
     const jwtUser = getUserFromJWT(sessionToken);
     const roles = jwtUser?.roles || [UserRole._GUEST];
 
     if (!canAccess(path, roles)) {
       if (path !== "/unauthorized") {
-        const response = NextResponse.redirect(new URL("/unauthorized", req.url));
+        response = NextResponse.redirect(new URL("/unauthorized", req.url));
         addSecurityHeaders(response);
         return response;
       }
-      const response = NextResponse.next();
-      addSecurityHeaders(response);
-      return response;
+      const next = NextResponse.next();
+      addSecurityHeaders(next);
+      return next;
     }
   }
 
-  const response = NextResponse.next();
+  response = response || NextResponse.next();
+
+  const cookieLocale = req.cookies.get("locale")?.value;
+
+  if (!cookieLocale || !(locales as readonly string[]).includes(cookieLocale)) {
+    const acceptLanguage = req.headers.get("accept-language");
+    let bestLocale = defaultLocale;
+
+    if (acceptLanguage) {
+      const parsedLocales = acceptLanguage
+        .split(",")
+        .map((l) => {
+          const [locale, q] = l.split(";q=");
+          return { locale: locale.trim().split("-")[0], q: q ? parseFloat(q) : 1 };
+        })
+        .sort((a, b) => b.q - a.q);
+
+      const match = parsedLocales.find((l) => (locales as readonly string[]).includes(l.locale));
+      if (match) {
+        bestLocale = match.locale;
+      }
+    }
+
+    response.cookies.set("locale", bestLocale, { path: "/", maxAge: 31536000 });
+  }
+
   addSecurityHeaders(response);
   return response;
 }

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import styles from "@/styles/components/about-us/MemberCard.module.css";
 import { FiGithub, FiLinkedin } from "react-icons/fi";
+import type { MemberCardDict } from "@/types/i18n";
+
 
 type MemberCardProps = {
   name: string;
@@ -10,6 +12,7 @@ type MemberCardProps = {
   githuburl?: string;
   linkdinurl?: string;
   username?: string;
+  dict: MemberCardDict;
 };
 
 const toGithubUrl = (v?: string) =>
@@ -22,18 +25,20 @@ export default function MemberCard({
   name,
   role,
   image,
-  imageAlt = `${name} photo`,
+  imageAlt,
   githuburl,
   linkdinurl,
   username,
+  dict
 }: MemberCardProps) {
   const ghUrl = toGithubUrl(githuburl);
   const liUrl = toLinkedinUrl(linkdinurl);
+  const alt = imageAlt || `${name} ${dict.photo_alt}`;
 
   return (
     <div className={styles.container}>
       <div className={styles.imageCard}>
-        <Image alt={imageAlt} className={styles.cardImage} src={image} fill />
+        <Image alt={alt} className={styles.cardImage} src={image} fill />
         <div className={styles.overlay}>
           <div className={styles.actions}>
             {ghUrl && (
@@ -41,7 +46,7 @@ export default function MemberCard({
                 href={ghUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="GitHub"
+                aria-label={dict.github_label}
                 className={styles.iconLink}>
                 <FiGithub className={styles.icon} />
               </a>
@@ -51,7 +56,7 @@ export default function MemberCard({
                 href={liUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="LinkedIn"
+                aria-label={dict.linkedin_label}
                 className={styles.iconLink}>
                 <FiLinkedin className={styles.icon} />
               </a>

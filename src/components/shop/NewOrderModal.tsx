@@ -17,6 +17,7 @@ import { isColorKey, splitNameHex } from "@/utils/shop/shopUtils";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import InputTextDialog from "@/components/layout/InputTextDialog";
 import { useUser } from "@/context/UserContext";
+import type { NewOrderModalDict } from "@/types/i18n";
 import { validateDiscount } from "@/utils/shop/discountUtils";
 
 interface Props {
@@ -25,6 +26,7 @@ interface Props {
   products: Product[];
   mode?: "create" | "edit";
   orderToEdit?: Order | null;
+  dict: NewOrderModalDict;
 }
 
 interface SelectedProduct {
@@ -127,6 +129,7 @@ export default function NewOrderModal({
   products,
   mode = "create",
   orderToEdit = null,
+  dict,
 }: Props) {
   const [userSearch, setUserSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
@@ -557,31 +560,31 @@ export default function NewOrderModal({
   const handleSubmit = async (stockOverride = false) => {
     if (!selectedProducts.length) {
       // TODO: (ERROR)
-      setError("Por favor, selecione pelo menos um produto.");
+      setError(dict.new_order_modal.errors.no_products);
       return;
     }
     if (!isEditMode && !campus) {
       // TODO: (ERROR)
-      setError("Por favor, selecione o campus.");
+      setError(dict.new_order_modal.errors.no_campus);
       return;
     }
     if (selectedOrderClassification.isMixedInvalid) {
-      setError("Este pedido nao pode misturar categorias especiais com outras categorias.");
+      setError(dict.new_order_modal.errors.mixed_invalid);
       return;
     }
 
     const guestCheckout = !selectedUser;
     if (guestCheckout) {
       if (isUserRequiredForSelectedOrder && !guestName.trim()) {
-        setError("Por favor, indique o nome do cliente.");
+        setError(dict.new_order_modal.errors.guest_name);
         return;
       }
       if (isUserRequiredForSelectedOrder && !guestEmail.trim()) {
-        setError("Por favor, indique o email do cliente.");
+        setError(dict.new_order_modal.errors.guest_email);
         return;
       }
       if (isUserRequiredForSelectedOrder && !phone.trim()) {
-        setError("Por favor, indique o telemóvel do cliente.");
+        setError(dict.new_order_modal.errors.guest_phone);
         return;
       }
     }
@@ -636,6 +639,8 @@ export default function NewOrderModal({
         onClose={() => setShowCreateUser(false)}
         onSubmit={handleUserCreated}
         initialIstId={userSearch}
+        dict={dict.create_user_modal}
+        confirm_dialog={dict.confirm_dialog}
       />
     );
   }
@@ -647,7 +652,7 @@ export default function NewOrderModal({
           <MdClose size={24} />
         </button>
 
-        <h2>{isEditMode ? "Editar Encomenda" : "Nova Encomenda"}</h2>
+        <h2>{isEditMode ? dict.new_order_modal.title_edit : dict.new_order_modal.title_create}</h2>
 
         {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
@@ -663,13 +668,13 @@ export default function NewOrderModal({
           }}>
           {!isEditMode && (
             <div className={styles.formGroup}>
-              <label>User</label>
+              <label>{dict.new_order_modal.user_label}</label>
               <div className={styles.searchWrapper}>
                 <MdSearch className={styles.searchIcon} />
                 <input
                   ref={userInputRef}
                   type="text"
-                  placeholder="Search by istid..."
+                  placeholder={dict.new_order_modal.user_placeholder}
                   value={selectedUser ? `${selectedUser.istid} - ${selectedUser.name}` : userSearch}
                   onChange={(e) => {
                     if (selectedUser) {
@@ -724,9 +729,9 @@ export default function NewOrderModal({
                         className={`${styles.dropdownItem} ${filteredUsers.length === userHighlight ? styles.highlighted : ""}`}
                         onClick={() => setShowCreateUser(true)}
                         onMouseEnter={() => setUserHighlight(filteredUsers.length)}>
-                        <div className={styles.dropdownItemTitle}>Utilizador não encontrado</div>
+                        <div className={styles.dropdownItemTitle}>{dict.new_order_modal.user_not_found}</div>
                         <div className={styles.dropdownItemSubtitle}>
-                          Clique para criar novo utilizador
+                          {dict.new_order_modal.user_create_new}
                         </div>
                       </div>
                     )}
@@ -737,13 +742,13 @@ export default function NewOrderModal({
           )}
 
           <div className={styles.formGroup}>
-            <label>Produtos</label>
+            <label>{dict.new_order_modal.products_label}</label>
             <div className={styles.searchWrapper}>
               <MdSearch className={styles.searchIcon} />
               <input
                 ref={productInputRef}
                 type="text"
-                placeholder="Adicionar produtos..."
+                placeholder={dict.new_order_modal.products_placeholder}
                 value={productSearch}
                 onChange={(e) => {
                   setProductSearch(e.target.value);
@@ -871,14 +876,14 @@ export default function NewOrderModal({
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Campus</label>
+              <label>{dict.new_order_modal.campus_label}</label>
               <select
                 value={campus}
                 onChange={(e) => setCampus(e.target.value as Campus)}
                 className={styles.input}
                 disabled={isSubmitting}
                 required>
-                <option value="">Selecionar campus</option>
+                <option value="">{dict.new_order_modal.campus_placeholder}</option>
                 {CAMPUS_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.id}>
                     {opt.label}
@@ -888,10 +893,10 @@ export default function NewOrderModal({
             </div>
 
             <div className={styles.formGroup}>
-              <label>NIF (opcional)</label>
+              <label>{dict.new_order_modal.nif_label}</label>
               <input
                 type="text"
-                placeholder="123456789"
+                placeholder={dict.new_order_modal.nif_placeholder}
                 value={nif}
                 onChange={(e) => setNif(e.target.value)}
                 className={styles.input}
@@ -902,10 +907,10 @@ export default function NewOrderModal({
 
           {!isEditMode && (
             <div className={styles.formGroup}>
-              <label>Telemóvel (opcional)</label>
+              <label>{dict.new_order_modal.phone_label}</label>
               <input
                 type="text"
-                placeholder="999333111"
+                placeholder={dict.new_order_modal.phone_placeholder}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className={styles.input}
@@ -915,10 +920,10 @@ export default function NewOrderModal({
           )}
 
           <div className={styles.formGroup}>
-            <label>Notas</label>
+            <label>{dict.new_order_modal.notes_label}</label>
             <input
               type="text"
-              placeholder="Notas"
+              placeholder={dict.new_order_modal.notes_placeholder}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className={styles.input}
@@ -978,16 +983,16 @@ export default function NewOrderModal({
               className={styles.buttonCancel}
               onClick={onClose}
               disabled={isSubmitting}>
-              Cancelar
+              {dict.new_order_modal.cancel}
             </button>
             <button type="submit" className={styles.buttonSubmit} disabled={isSubmitting}>
               {isSubmitting
                 ? isEditMode
-                  ? "A guardar..."
-                  : "A criar..."
+                  ? dict.new_order_modal.submitting_edit
+                  : dict.new_order_modal.submitting_create
                 : isEditMode
-                  ? "Guardar Encomenda"
-                  : "Criar Encomenda"}
+                  ? dict.new_order_modal.submit_edit
+                  : dict.new_order_modal.submit_create}
             </button>
           </div>
         </form>
@@ -996,34 +1001,36 @@ export default function NewOrderModal({
             open={showConfirm}
             message={
               isEditMode
-                ? "Tem a certeza que deseja guardar as alterações da encomenda?"
-                : "Tem a certeza que deseja criar esta encomenda?"
+                ? dict.new_order_modal.confirm_edit
+                : dict.new_order_modal.confirm_create
             }
             onConfirm={async () => {
               setShowConfirm(false);
               await handleSubmit();
             }}
             onCancel={() => setShowConfirm(false)}
+            dict={dict.confirm_dialog}
           />
         )}
         {showGuestConfirm && (
           <ConfirmDialog
             open={showGuestConfirm}
-            message="Tem a certeza que deseja vender esta encomenda como Guest?"
+            message={dict.new_order_modal.guest_confirm}
             onConfirm={startGuestFlow}
             onCancel={() => setShowGuestConfirm(false)}
+            dict={dict.confirm_dialog}
           />
         )}
         {showGuestNameInput && (
           <InputTextDialog
             open={showGuestNameInput}
-            title="Guest"
-            label="Nome do cliente"
+            title={dict.new_order_modal.guest_title}
+            label={dict.new_order_modal.guest_name_label}
             initialValue={guestName}
-            placeholder="Nome do cliente"
+            placeholder={dict.new_order_modal.guest_name_placeholder}
             onConfirm={(value) => {
               if (!value) {
-                setError("Por favor, indique o nome do cliente.");
+                setError(dict.new_order_modal.errors.guest_name);
                 return;
               }
               setGuestName(value);
@@ -1036,14 +1043,14 @@ export default function NewOrderModal({
         {showGuestEmailInput && (
           <InputTextDialog
             open={showGuestEmailInput}
-            title="Guest"
-            label="Email do cliente"
+            title={dict.new_order_modal.guest_title}
+            label={dict.new_order_modal.guest_email_label}
             initialValue={guestEmail}
-            placeholder="mail@example.com"
+            placeholder={dict.new_order_modal.guest_email_placeholder}
             type="email"
             onConfirm={(value) => {
               if (!value) {
-                setError("Por favor, indique o email do cliente.");
+                setError(dict.new_order_modal.errors.guest_email);
                 return;
               }
               setGuestEmail(value);
@@ -1056,14 +1063,14 @@ export default function NewOrderModal({
         {showGuestPhoneInput && (
           <InputTextDialog
             open={showGuestPhoneInput}
-            title="Guest"
-            label="Telemóvel do cliente"
+            title={dict.new_order_modal.guest_title}
+            label={dict.new_order_modal.guest_phone_label}
             initialValue={phone}
-            placeholder="+351 000 000 000"
+            placeholder={dict.new_order_modal.guest_phone_placeholder}
             type="tel"
             onConfirm={(value) => {
               if (!value) {
-                setError("Por favor, indique o telemóvel do cliente.");
+                setError(dict.new_order_modal.errors.guest_phone);
                 return;
               }
               setPhone(value);
@@ -1076,7 +1083,7 @@ export default function NewOrderModal({
         {showStockOverrideConfirm && (
           <ConfirmDialog
             open={showStockOverrideConfirm}
-            message={`Tem a certeza que deseja criar a encomenda à mesma?\n"${stockOverrideMessage}."`}
+            message={`${dict.new_order_modal.confirm_stock_override}\n"${stockOverrideMessage}".`}
             onConfirm={async () => {
               setShowStockOverrideConfirm(false);
               setStockOverrideMessage(null);
@@ -1086,6 +1093,7 @@ export default function NewOrderModal({
               setShowStockOverrideConfirm(false);
               setStockOverrideMessage(null);
             }}
+            dict={dict.confirm_dialog}
           />
         )}
       </div>

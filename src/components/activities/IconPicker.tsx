@@ -10,11 +10,14 @@ import { useMemo, useState } from "react";
 import Fuse from "fuse.js";
 import { IconType } from "react-icons";
 import styles from "@/styles/components/activities/IconPicker.module.css";
+import type { IconPickerDict } from "@/types/i18n";
+
 
 interface IconPickerProps {
   value: string | null;
   onChange: (_iconName: string) => void;
   onClose: () => void;
+  dict: IconPickerDict;
 }
 
 const ALL_ICONS = {
@@ -29,7 +32,7 @@ const ALL_ICONS = {
 
 const ICON_NAMES = Object.keys(ALL_ICONS);
 
-export default function IconPicker({ value, onChange, onClose }: IconPickerProps) {
+export default function IconPicker({ value, onChange, onClose, dict }: IconPickerProps) {
   const [search, setSearch] = useState("");
 
   const fuse = useMemo(() => {
@@ -57,14 +60,14 @@ export default function IconPicker({ value, onChange, onClose }: IconPickerProps
     <div className={styles.modal} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <h3>Escolher Ícone</h3>
+          <h3>{dict.icon_picker.title}</h3>
           <button onClick={onClose} className={styles.closeButton}>
-            ✕
+            {dict.icon_picker.close_label}
           </button>
         </div>
         <input
           type="text"
-          placeholder="Procurar ícone..."
+          placeholder={dict.icon_picker.search_placeholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={styles.search}

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "@/styles/components/shop/ColumnFilter.module.css";
+import type { DateFilterDict } from "@/types/i18n";
+
 
 interface DateFilterProps {
   isOpen: boolean;
@@ -9,6 +11,8 @@ interface DateFilterProps {
   dateRange: { start: Date | null; end: Date | null };
   onChange: (_range: { start: Date | null; end: Date | null }) => void;
   buttonRef: React.RefObject<HTMLButtonElement | null>;
+  dict: DateFilterDict;
+  locale: string;
 }
 
 function getMonthDays(date: Date): (Date | null)[] {
@@ -54,6 +58,8 @@ export default function DateFilter({
   dateRange,
   onChange,
   buttonRef,
+  dict,
+  locale,
 }: DateFilterProps) {
   const [mode, setMode] = useState<"until" | "range">("until");
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -158,7 +164,7 @@ export default function DateFilter({
           : undefined
       }>
       <div className={styles.header}>
-        <h3 className={styles.title}>Data</h3>
+        <h3 className={styles.title}>{dict.title}</h3>
       </div>
 
       <div className={styles.tabs}>
@@ -166,13 +172,13 @@ export default function DateFilter({
           type="button"
           className={mode === "until" ? styles.tabActive : styles.tab}
           onClick={() => setMode("until")}>
-          Até data
+          {dict.until}
         </button>
         <button
           type="button"
           className={mode === "range" ? styles.tabActive : styles.tab}
           onClick={() => setMode("range")}>
-          Intervalo
+          {dict.range}
         </button>
       </div>
 
@@ -182,7 +188,7 @@ export default function DateFilter({
             ‹
           </button>
           <div className={styles.monthLabel}>
-            {currentMonth.toLocaleDateString("pt-PT", { month: "long", year: "numeric" })}
+            {currentMonth.toLocaleDateString(locale, { month: "long", year: "numeric" })}
           </div>
           <button type="button" className={styles.navBtn} onClick={() => navigateMonth(1)}>
             ›
@@ -190,7 +196,7 @@ export default function DateFilter({
         </div>
 
         <div className={styles.calendarGrid}>
-          {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
+          {dict.days.map((day, i) => (
             <div key={i} className={styles.dayName}>
               {day}
             </div>

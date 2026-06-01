@@ -13,10 +13,13 @@ import YearSelector from "@/components/about-us/YearSelector";
 import Hero from "@/components/about-us/Hero";
 import { Membership, Team } from "@/types/memberships";
 import { User } from "@/types/user";
+import { getLocale, getDictionary, t } from "@/lib/i18n";
+
 
 type Department = {
   name: string;
   description?: string;
+  displayName?: string;
 };
 
 type RoleOrderItem = {
@@ -79,6 +82,9 @@ export default async function AboutPage({
 }: {
   searchParams?: Promise<{ year?: string }>;
 }) {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
+
   const params = searchParams ? await searchParams : {};
   const [memberships, rawTeams, rawAdminBodies, users]: [
     Membership[],
@@ -86,14 +92,28 @@ export default async function AboutPage({
     Array<{ name: string; active: boolean }>,
     User[],
   ] = await Promise.all([getAllMemberships(), getAllTeams(), getAllAdminBodies(), getAllUsers()]);
+
+  const teamNameMap: Record<string, string> =
+    (dict.about_us_page && (dict.about_us_page as any).hero?.teams_names) || {};
+  const teamDescMap: Record<string, string> =
+    (dict.about_us_page && (dict.about_us_page as any).hero?.team_descriptions) || {};
+  const roleNameMap: Record<string, string> =
+    (dict.about_us_page && (dict.about_us_page as any).roles_names) || {};
+
   const teams: Team[] = rawTeams.map((team) => ({
     name: team.name,
-    description: team.description,
+    displayName: teamNameMap[team.name] ?? team.name,
+    description:
+      teamDescMap[team.name] ??
+      (typeof (team as any).description === "object"
+        ? ((team as any).description[locale] ?? (team as any).description.default ?? team.description)
+        : team.description),
     icon: "FiUsers",
   }));
 
   const adminBodies: Department[] = rawAdminBodies.map((body) => ({
     name: body.name,
+    displayName: teamNameMap[body.name] ?? body.name,
   }));
 
   const userMap = new Map(users.map((u) => [u.istid, u]));
@@ -150,32 +170,35 @@ export default async function AboutPage({
   ];
 
   const uniqueIstids = [...new Set(filteredMemberships.map((m) => m.userName))];
+  const memberCount = String(uniqueIstids.length);
 
   return (
     <section className={styles.page}>
       <Hero
         teams={teamsWithMembers}
         teamImage={teamImage}
-        description={`A equipa do NEIIST é composta por ${uniqueIstids.length} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.`}
+        heroDict={dict.about_us_page.hero}
+        description={t(dict.about_us_page.hero.description, { count: memberCount })}
       />
 
       <h2 className={styles.title} />
-      <YearSelector years={allAcademicYears} selectedYear={selectedYear} />
+      <YearSelector years={allAcademicYears} selectedYear={selectedYear} dict={dict.about_us_page.year_selector}/>
 
       {sortedDepartmentsWithMembers.map((department) => (
         <div key={department.name}>
-          <h3 className={styles.departmentTitle}>{department.name}</h3>
+          <h3 className={styles.departmentTitle}>{department.displayName ?? department.name}</h3>
           <div className={styles.grid}>
             {roleOrders[department.name]?.map((roleName) =>
               membersByDepartmentAndRole[department.name][roleName]?.map((member) => (
                 <MemberCard
                   key={member.id}
                   name={getFirstAndLastName(member.userName)}
-                  role={roleName}
+                  role={roleNameMap[roleName] ?? roleName}
                   image={member.userPhoto}
                   githuburl={member.github}
                   linkdinurl={member.linkedin}
                   username={member.linkedin}
+                  dict={dict.member_card}
                 />
               ))
             )}

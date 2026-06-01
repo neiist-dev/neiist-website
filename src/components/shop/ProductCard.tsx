@@ -6,16 +6,14 @@ import { FiImage } from "react-icons/fi";
 import { Product } from "@/types/shop/product";
 import styles from "@/styles/components/shop/ProductCard.module.css";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, dict }: { product: Product; dict?: any }) {
   const [imageIndex, setImageIndex] = useState(0);
-
   const images = [
     ...new Set([
       ...(product.images || []),
       ...(product.variants?.flatMap((v) => v.images || []) || []),
     ]),
   ];
-
   const currentImage = images[imageIndex];
 
   return (
@@ -33,12 +31,12 @@ export default function ProductCard({ product }: { product: Product }) {
         ) : (
           <div className={styles.placeholder}>
             <FiImage size={40} />
-            <span>Sem Imagem</span>
+            <span>{dict.no_image_label}</span>
           </div>
         )}
       </div>
       <div className={styles.info}>
-        <h3 className={styles.name}>{product.name}</h3>
+        <h3 className={styles.name}>{dict?.products?.[product.name]?.title ?? product.name}</h3>
       </div>
       <div className={styles.price}>{product.price}€</div>
     </Link>

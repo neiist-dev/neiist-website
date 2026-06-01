@@ -13,9 +13,10 @@ import { toast } from "sonner";
 
 interface ProductDetailProps {
   product: Product;
+  dict?: any;
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
+export default function ProductDetail({ product, dict }: ProductDetailProps) {
   const router = useRouter();
   const isJantarDeCurso = isJantarDeCursoCategory(product.category);
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
@@ -146,8 +147,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     if (!canBuy) {
       toast.error(
         isDeadlineExpired
-          ? "O prazo de encomenda deste produto já terminou."
-          : "Este produto já não está disponível para compra.",
+          ? (dict?.error_deadline ?? "O prazo de encomenda deste produto já terminou.")
+          : (dict?.error_unavailable ?? "Este produto já não está disponível para compra."),
         { id: unavailableToastId, duration: Infinity }
       );
       return;
@@ -173,10 +174,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     <div className={styles.container}>
       <div className={styles.breadcrumbs}>
         <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
-          Store
+          {dict?.breadcrumbs?.shop}
         </span>
         <span className={styles.breadcrumbSeparator}>››</span>
-        <span className={styles.breadcrumbCurrent}>{product.name}</span>
+        <span className={styles.breadcrumbCurrent}>{dict?.products?.[product.name]?.title ?? product.name}</span>
       </div>
 
       <div className={styles.grid}>
@@ -193,7 +194,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           ) : (
             <div className={`${styles.mainImage} ${styles.noImage}`}>
               <FiImage size={64} />
-              <span>Sem Imagem</span>
+              <span>{dict?.no_image_label}</span>
             </div>
           )}
           {allImages.length > 1 && (
@@ -212,14 +213,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         </div>
 
         <div className={styles.infoSection}>
-          <h1 className={styles.title}>{product.name}</h1>
+          <h1 className={styles.title}>{dict?.products?.[product.name]?.title ?? product.name}</h1>
           <div className={styles.price}>{price.toFixed(2)}€</div>
           <div className={styles.description}>
             <ReactMarkdown
               components={{
                 a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
               }}>
-              {product.description}
+              {dict?.products?.[product.name]?.description ?? product.description}
             </ReactMarkdown>
           </div>
 
@@ -283,7 +284,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             );
           })}
 
-          <span className={styles.label}>Quantidade</span>
+          <span className={styles.label}>{dict?.labels?.quantity ?? "Quantidade"}</span>
           <div className={styles.qtyAndButton}>
             <div className={`${styles.quantity} ${isJantarDeCurso ? styles.quantityDisabled : ""}`}>
               <button onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={isJantarDeCurso}>
@@ -302,7 +303,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 if (!canBuy) addToCart();
               }}>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
-                {isJantarDeCurso ? "Comprar já" : "Adicionar ao Carrinho"}
+                {isJantarDeCurso 
+                  ? (dict?.buttons?.buy_now ?? "Comprar já") 
+                  : (dict?.buttons?.add_to_cart ?? "Adicionar ao Carrinho")}
               </button>
             </div>
           </div>
@@ -311,11 +314,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <div className={styles.asideDetails}>
               <details className={styles.detailsBlock}>
                 <summary>
-                  <span>Guia de Tamanhos</span>
+                  <span>{dict?.size_guide_title ?? "Size Guide"}</span>
                   <FiChevronDown className={styles.detailIcon} aria-hidden />
                 </summary>
                 <p>
-                  Vê o nosso{" "}
+                  {(dict?.size_guide_text ?? "Check our {link} for more details.").split("{link}")[0]}
                   <a
                     href="#"
                     className={styles.sizeGuideLink}
@@ -323,20 +326,19 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                       e.preventDefault();
                       setShowSizeGuide(true);
                     }}>
-                    Guia de Tamanhos
-                  </a>{" "}
-                  para mais detalhes.
+                    {dict?.size_guide_link ?? "Guia de Tamanhos"}
+                  </a>
+                  {(dict?.size_guide_text ?? "Check our {link} for more details.").split("{link}")[1]}
                 </p>
               </details>
               <SizeGuideOverlay open={showSizeGuide} onClose={() => setShowSizeGuide(false)} />
               <details className={styles.detailsBlock}>
                 <summary>
-                  <span>Prazos de Entrega</span>
+                  <span>{dict?.delivery_title ?? "Prazos de Entrega"}</span>
                   <FiChevronDown className={styles.detailIcon} aria-hidden />
                 </summary>
                 <p>
-                  Encomenda até 25 de Dezembro para receberes entre 20 e 25 de Janeiro. Pedidos após
-                  esta data terão um tempo de espera superior.
+                  {dict?.delivery_text ?? "Encomenda até 25 de Dezembro para receberes entre 20 e 25 de Janeiro. Pedidos após esta data terão um tempo de espera superior."}
                 </p>
               </details>
             </div>

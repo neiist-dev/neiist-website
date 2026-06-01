@@ -3,6 +3,7 @@ import { getAllUsers, getAllMemberships, getDepartmentRoles } from "@/utils/dbUt
 import UsersSearchList from "@/components/admin/UsersSearchList";
 import styles from "@/styles/components/admin/UsersManagement.module.css";
 import { Membership } from "@/types/memberships";
+import { getLocale, getDictionary } from "@/lib/i18n";
 
 interface Role {
   role_name: string;
@@ -15,6 +16,8 @@ interface UserWithMemberships extends User {
 }
 
 export default async function UsersManagement() {
+  const locale = await getLocale();
+  const dict = await getDictionary(locale);
   const users = await getAllUsers();
   const memberships: Membership[] = await getAllMemberships();
 
@@ -33,8 +36,8 @@ export default async function UsersManagement() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Visualização de Utilizadores</h2>
-      <UsersSearchList users={usersWithMemberships} roles={roles} />
+      <h2 className={styles.title}>{dict.admin.users_management.title}</h2>
+      <UsersSearchList users={usersWithMemberships} roles={roles} dict={dict.admin.users_management} />
     </div>
   );
 }

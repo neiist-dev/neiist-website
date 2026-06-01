@@ -8,6 +8,8 @@ import { SortableContext, useSortable, arrayMove } from "@dnd-kit/sortable";
 import YearSelector from "@/components/about-us/YearSelector";
 import memberCardStyles from "@/styles/components/about-us/MemberCard.module.css";
 import styles from "@/styles/pages/AboutUs.module.css";
+import type { AboutUsEditorDict } from "@/types/i18n";
+
 
 function getAcademicYearRange(year: string) {
   const [startYear, endYear] = year.split("/").map(Number);
@@ -57,11 +59,13 @@ export default function AboutUsEditor({
   memberships,
   users,
   selectedYear,
+  dict,
 }: {
   departments: { name: string; description?: string; department_type?: string; active?: boolean }[];
   memberships: Membership[];
   users: User[];
   selectedYear: string;
+  dict: AboutUsEditorDict;
 }) {
   const allAcademicYears = getAllAcademicYears(memberships);
   const [roleOrders, setRoleOrders] = useState<Record<string, string[]>>({});
@@ -149,9 +153,9 @@ export default function AboutUsEditor({
 
   return (
     <section className={styles.page}>
-      <h2 className={styles.title}>Pré-visualização da Página Sobre nós</h2>
+      <h2 className={styles.title}>{dict.title}</h2>
       <div style={{ marginBottom: "2rem" }}>
-        <YearSelector years={allAcademicYears} selectedYear={selectedYear} visible={5} />
+        <YearSelector years={allAcademicYears} selectedYear={selectedYear} visible={5} dict={dict}/>
       </div>
       {departmentsWithMembers.map((dept) => {
         const roles = roleOrders[dept.name] || [];
@@ -174,10 +178,11 @@ export default function AboutUsEditor({
                           <SortableRoleCard
                             key={safeRole + "-empty"}
                             id={safeRole}
-                            name="Sem membro"
+                            name={dict.no_member}
                             photo="/default_user.png"
                             role={safeRole}
                             isGeneric
+                            dict={dict}
                           />
                         );
                       }
@@ -188,6 +193,7 @@ export default function AboutUsEditor({
                           name={member.userName}
                           photo={member.userPhoto}
                           role={safeRole}
+                          dict={dict}
                         />
                       ));
                     })}
@@ -206,13 +212,14 @@ function SortableRoleCard({
   name,
   photo,
   role,
-  isGeneric = false,
+  isGeneric = false, dict,
 }: {
   id: string;
   name: string;
   photo: string;
   role: string;
   isGeneric?: boolean;
+  dict: { photo_alt: string };
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
@@ -232,7 +239,7 @@ function SortableRoleCard({
       {...attributes}
       {...listeners}>
       <div className={memberCardStyles.imageCard}>
-        <Image alt={`${name} photo`} className={memberCardStyles.cardImage} src={photo} fill />
+        <Image alt={`${name} ${dict.photo_alt}`} className={memberCardStyles.cardImage} src={photo} fill />
       </div>
       <div className={memberCardStyles.name}>
         <p className={memberCardStyles.nameText}>{name}</p>

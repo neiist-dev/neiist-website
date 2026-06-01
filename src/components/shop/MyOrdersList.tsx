@@ -10,9 +10,26 @@ import { Product } from "@/types/shop/product";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
 
-type Props = { orders: Order[]; products: Product[] };
+type Dict = {
+  title_letters: string[];
+  search_placeholder: string;
+  search_aria_label: string;
+  deadline_banner: string;
+  delivered_on: string;
+  order_aria_label: string;
+  empty: string;
+  status: {
+    pending: string;
+    paid: string;
+    ready: string;
+    delivered: string;
+    cancelled: string;
+  };
+};
 
-export default function MyOrdersList({ orders, products }: Props) {
+type Props = { orders: Order[]; products: Product[]; dict: Dict };
+
+export default function MyOrdersList({ orders, products, dict }: Props) {
   const [query, setQuery] = useState("");
   const anyDeadlineNear = useMemo(() => {
     if (!orders || orders.length === 0) return false;
@@ -72,34 +89,50 @@ export default function MyOrdersList({ orders, products }: Props) {
     const variantObj = firstItem.variant_id
       ? product.variants?.find((v) => String(v.id) === String(firstItem.variant_id))
       : undefined;
-    return variantObj?.images?.[0] ?? product.images?.[0];
+    if (variantObj && Array.isArray(variantObj.images) && variantObj.images.length > 0) {
+      return variantObj.images[0];
+    }
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      return product.images[0];
+    }
+    return undefined;
+  };
+
+  const getStatusLabel = (status?: string) => {
+    const s = (status ?? "").toLowerCase();
+    if (s.includes("pend") || s === "pending") return dict.status.pending;
+    if (s.includes("paid") || s === "pago") return dict.status.paid;
+    if (s.includes("prepare") || s.includes("ready") || s === "preparing") return dict.status.ready;
+    if (s.includes("deliver") || s.includes("entregue") || s === "delivered") return dict.status.delivered;
+    if (s.includes("cancel")) return dict.status.cancelled;
+    return status ?? "";
   };
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
-        <span className={styles.primary}>As mi</span>
-        <span className={styles.secondary}>nhas en</span>
-        <span className={styles.tertiary}>come</span>
-        <span className={styles.quaternary}>ndas</span>
+        <span className={styles.primary}>{dict.title_letters[0]}</span>
+        <span className={styles.secondary}>{dict.title_letters[1]}</span>
+        <span className={styles.tertiary}>{dict.title_letters[2]}</span>
+        <span className={styles.quaternary}>{dict.title_letters[3]}</span>
       </h1>
 
       <div className={styles.searchRow}>
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Procurar número, produto, estado ou data..."
+            placeholder={dict.search_placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className={styles.searchInput}
-            aria-label="Pesquisar encomendas"
+            aria-label={dict.search_aria_label}
           />
         </div>
       </div>
 
       {anyDeadlineNear && (
         <div className={styles.deadlineBanner} role="status">
-          Atenção: tens pelo menos uma encomenda com prazo de levantamento próximo.
+          {dict.deadline_banner}
         </div>
       )}
 
@@ -110,15 +143,15 @@ export default function MyOrdersList({ orders, products }: Props) {
             const productSummary = getCompactProductsSummary(order.items).join(" · ");
             const orderKind = getOrderKindFromItems(order.items).orderKind;
             const statusLabel = order.delivered_at
-              ? `Entregue em ${new Date(order.delivered_at).toLocaleDateString("pt-PT")}`
-              : getOrderStatusLabelForKind(orderKind, order.status, order);
+              ? dict.delivered_on.replace("{date}", new Date(order.delivered_at).toLocaleDateString("pt-PT"))
+              : getStatusLabel(order.status);
 
             return (
               <Link
                 key={order.id}
                 href={`/my-orders?orderId=${order.id}`}
                 className={styles.orderCard}
-                aria-label={`Ver encomenda ${order.order_number}`}>
+                aria-label={dict.order_aria_label.replace("{number}", String(order.order_number))}>
                 <div className={styles.orderImageWrapper}>
                   <Image
                     src={img || "/default_user.png"}
@@ -138,7 +171,7 @@ export default function MyOrdersList({ orders, products }: Props) {
           })
         ) : (
           <div className={styles.emptyState}>
-            <p>Nenhuma encomenda encontrada.</p>
+            <p>{dict.empty}</p>
           </div>
         )}
       </div>

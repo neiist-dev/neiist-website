@@ -29,6 +29,18 @@ import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOpt
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import ColorfulText from "@/components/ColorfulText";
 import ToggleSwitch from "@/components/ToggleSwitch";
+import type { ProductFormDict } from "@/types/i18n";
+
+
+export interface ProductFormProps {
+  product?: Product | null;
+  isEdit?: boolean;
+  onBackAction?: () => void;
+  backHref?: string;
+  categories: Category[];
+  locale: string;
+  dict: ProductFormDict;
+}
 
 type ImageFile = { file: File; preview: string };
 type VariantDefinition = { id: string; name: string; values: variantValue[] };
@@ -42,14 +54,6 @@ type VariantForm = {
   active: boolean;
   existingImages: string[];
   newImages: ImageFile[];
-};
-
-type ProductFormProps = {
-  product?: Product;
-  isEdit?: boolean;
-  onBackAction?: () => void;
-  backHref?: string;
-  categories: Category[];
 };
 
 const MAX_VARIANTS = 3;
@@ -274,6 +278,8 @@ export default function ProductForm({
   onBackAction,
   backHref = "/shop/manage",
   categories,
+  dict,
+  locale
 }: ProductFormProps) {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -478,14 +484,18 @@ export default function ProductForm({
         updateForm({ category: data.category.name });
       }
     } catch {
-      toast.error("Erro ao criar categoria.");
+      toast.error(dict.error_create_category);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.category)
-      return toast.error("Nome e Categoria são obrigatórios.");
+    if (!form.name.trim()) {
+      return toast.error(dict.error_name_missing);
+    }
+    if (!form.category) {
+      return toast.error(dict.error_category_missing);
+    }
     setUploading(true);
     try {
       const currentVariantIds = new Set(
@@ -541,7 +551,7 @@ export default function ProductForm({
       if (res.ok) router.replace(backHref);
       else throw new Error((await res.json()).error);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao guardar.");
+      toast.error(err instanceof Error ? err.message : dict.error_saving_product);
     } finally {
       setUploading(false);
     }
@@ -588,53 +598,53 @@ export default function ProductForm({
             type="button"
             className={styles.btnSecondary}
             onClick={onBackAction ?? (() => router.push(backHref))}>
-            <FaArrowLeft /> Voltar
+            <FaArrowLeft /> {dict.back_button}
           </button>
           <ColorfulText
             className={styles.title}
-            text={isEdit ? "Editar Produto" : "Novo Produto"}
+            text={isEdit ? `${dict.edit} ${form.name}` : dict.add_product}
           />
           <button type="submit" className={styles.btnPrimary} disabled={uploading}>
             {isEdit ? <FaSave /> : <FaPlus />}
-            {uploading ? "A guardar..." : isEdit ? "Guardar Alterações" : "Criar Produto"}
+            {uploading ? dict.saving : isEdit ? dict.save_changes : dict.create_product}
           </button>
         </div>
 
         <div className={styles.grid}>
           <div className={styles.sectionCol}>
             <div className={styles.stackBlock}>
-              <Field label="Nome do Produto" icon={<FaTag />}>
+              <Field label={dict.product_name_placeholder} icon={<FaTag />}>
                 <input
                   className={styles.field}
                   value={form.name}
                   onChange={(e) => updateForm({ name: e.target.value })}
-                  placeholder="Ex: T-Shirt Clássica"
+                  placeholder={dict.product_name_placeholder}
                   required
                 />
               </Field>
 
-              <Field label="Descrição" icon={<FaAlignLeft />} iconAlignTop>
+              <Field label={dict.product_description_placeholder} icon={<FaAlignLeft />} iconAlignTop>
                 <textarea
                   className={styles.field}
                   value={form.description}
                   onChange={(e) => updateForm({ description: e.target.value })}
-                  placeholder="Detalhes do produto..."
+                  placeholder={dict.product_description_placeholder}
                   rows={3}
                 />
               </Field>
 
-              <Field label="Categoria" icon={<FaFolder />}>
+              <Field label={dict.choose_categories} icon={<FaFolder />}>
                 <MultiSelectDropdown
                   availableItems={categoryOptions}
                   selectedItems={form.category ? [form.category] : []}
                   onChange={(items) => updateForm({ category: items[0] ?? "" })}
                   onItemCreate={handleCategoryCreate}
-                  placeholder={form.category || "Escolha ou cria categoria"}
+                  placeholder={form.category || dict.choose_categories}
                   multiSelect={false}
                 />
               </Field>
 
-              <Field label="Preço Base" icon={<FaEuroSign />}>
+              <Field label={dict.product_price_placeholder} icon={<FaEuroSign />}>
                 <input
                   className={styles.field}
                   type="number"
@@ -648,29 +658,29 @@ export default function ProductForm({
             </div>
 
             <div className={styles.stackBlock}>
-              <SectionTitle icon={<FaBox />}>Stock</SectionTitle>
+              <SectionTitle icon={<FaBox />}>{dict.stock}</SectionTitle>
 
-              <Field label="Tipo de Stock" icon={<FaLayerGroup />}>
+              <Field label={dict.stock_type_label} icon={<FaLayerGroup />}>
                 <MultiSelectDropdown
-                  availableItems={["Stock Limitado", "Sob Encomenda"]}
+                  availableItems={[dict.limited_stock, dict.on_demand_stock]}
                   selectedItems={[
-                    form.stock_type === "on_demand" ? "Sob Encomenda" : "Stock Limitado",
+                    form.stock_type === "on_demand" ? dict.on_demand_stock : dict.limited_stock,
                   ]}
                   onChange={([item]) => {
-                    const stock_type = item === "Sob Encomenda" ? "on_demand" : "limited";
+                    const stock_type = item === dict.on_demand_stock ? "on_demand" : "limited";
                     updateForm({
                       stock_type,
                       ...(stock_type === "limited" && !hasVariants ? { stock_quantity: 0 } : {}),
                     });
                   }}
-                  placeholder={form.stock_type === "on_demand" ? "Sob Encomenda" : "Stock Limitado"}
+                  placeholder={form.stock_type === "on_demand" ? dict.on_demand_stock : dict.limited_stock}
                   multiSelect={false}
                   disabled={uploading}
                 />
               </Field>
 
               {form.stock_type === "limited" ? (
-                <Field label="Quantidade Total" icon={<FaBox />}>
+                <Field label={dict.product_quantity_placeholder} icon={<FaBox />}>
                   <input
                     className={styles.field}
                     type="number"
@@ -678,16 +688,15 @@ export default function ProductForm({
                     onChange={(e) => updateForm({ stock_quantity: Number(e.target.value) })}
                     disabled={hasVariants}
                   />
-                  {hasVariants && <p className={styles.hint}>Gerido pela soma das variantes.</p>}
                 </Field>
               ) : (
-                <Field label="Data Limite (Opcional)" icon={<FaCalendarAlt />}>
+                <Field label={dict.limit_date_placeholder} icon={<FaCalendarAlt />}>
                   <div className={styles.datePickerWrap} ref={datePickerRef}>
                     <input
                       className={styles.field}
                       type="text"
-                      value={form.order_deadline?.toLocaleDateString("pt-PT") ?? ""}
-                      placeholder="Selecione uma data"
+                      value={form.order_deadline?.toLocaleDateString(locale) ?? ""}
+                      placeholder={dict.limit_date_placeholder}
                       readOnly
                       onClick={() => setShowDatePicker((p) => !p)}
                     />
@@ -720,7 +729,7 @@ export default function ProductForm({
 
           <div className={styles.sectionCol}>
             <div className={styles.stackBlock}>
-              <SectionTitle icon={<FaSlidersH />}>Variantes</SectionTitle>
+              <SectionTitle icon={<FaSlidersH />}>{dict.variants_label}</SectionTitle>
 
               <div className={styles.col}>
                 {variantDefinitions.map((def, idx) => (
@@ -733,7 +742,7 @@ export default function ProductForm({
                           p.map((d, i) => (i === idx ? { ...d, name: e.target.value } : d))
                         )
                       }
-                      placeholder="Nome (Ex: Cor)"
+                      placeholder={dict.option_placeholder}
                     />
                     <div className={styles.variantEditorWrap}>
                       <VariantOptionsEditor
@@ -744,7 +753,7 @@ export default function ProductForm({
                           )
                         }
                         placeholder={
-                          isColorKey(def.name) ? "Nome da cor (ex: Azul)" : "Valores (ex: S, M, L)"
+                          isColorKey(def.name) ? dict.default_option_color : dict.default_option_size
                         }
                         isColor={isColorKey(def.name)}
                       />
@@ -767,7 +776,7 @@ export default function ProductForm({
                         { id: Math.random().toString(), name: "", values: [] },
                       ])
                     }>
-                    <FaPlus size={12} /> Adicionar
+                    <FaPlus size={12} /> {dict.add_button}
                   </button>
                 )}
               </div>
@@ -780,7 +789,7 @@ export default function ProductForm({
                         type="button"
                         className={`${styles.tabButton} ${activeTab === "__groups__" ? styles.activeTab : ""}`}
                         onClick={() => setActiveTab("__groups__")}>
-                        Grupos
+                        {dict.groups_tab}
                       </button>
                     )}
                     {hasVariants && (
@@ -788,7 +797,7 @@ export default function ProductForm({
                         type="button"
                         className={`${styles.tabButton} ${activeTab === "__combos__" ? styles.activeTab : ""}`}
                         onClick={() => setActiveTab("__combos__")}>
-                        Combinações{" "}
+                        {dict.combos_tab}{" "}
                         <span className={styles.badge}>
                           {variants.filter((v) => v.active).length}
                         </span>
@@ -802,12 +811,12 @@ export default function ProductForm({
                         {groupKeys.length > 0 && secondaryGroupsCount > 0 && (
                           <div className={styles.inputRow}>
                             <span className={styles.hint}>
-                              Mostrar grupos secundários ({secondaryGroupsCount})
+                              {dict.show_secundary_groups} ({secondaryGroupsCount})
                             </span>
                             <ToggleSwitch
                               checked={showSecondaryGroups}
                               onChange={setShowSecondaryGroups}
-                              aria-label="Mostrar grupos secundários"
+                              aria-label={dict.show_secundary_groups}
                             />
                           </div>
                         )}
@@ -829,7 +838,7 @@ export default function ProductForm({
                               badge={slotImages(slot).length}>
                               <div className={styles.row}>
                                 <div className={styles.fieldWrap}>
-                                  <span className={styles.subLabel}>Preço +/- (€)</span>
+                                  <span className={styles.subLabel}>{dict.extra_price} (+/- €)</span>
                                   <input
                                     className={styles.field}
                                     type="number"
@@ -853,7 +862,7 @@ export default function ProductForm({
                                 </div>
                               </div>
                               <ImageGrid
-                                hint="Imagens da Variante"
+                                hint={dict.images_label}
                                 images={slotImages(slot)}
                                 onAdd={(f) => addGroupImage(g, slot, f)}
                                 onRemove={(i) => removeGroupImage(g, slot, i)}
@@ -896,7 +905,7 @@ export default function ProductForm({
                             }>
                             <div className={styles.row}>
                               <div className={styles.fieldWrap}>
-                                <span className={styles.subLabel}>Preço +/- (€)</span>
+                                <span className={styles.subLabel}>{dict.extra_price} (+/- €)</span>
                                 <input
                                   className={styles.field}
                                   type="number"
@@ -909,7 +918,7 @@ export default function ProductForm({
                                 />
                               </div>
                               <div className={styles.fieldWrap}>
-                                <span className={styles.subLabel}>Stock (un)</span>
+                                <span className={styles.subLabel}>{dict.stock_placeholder}</span>
                                 <input
                                   className={styles.field}
                                   type="number"
@@ -922,7 +931,7 @@ export default function ProductForm({
                               </div>
                             </div>
                             <ImageGrid
-                              hint="Imagens Específicas"
+                              hint={dict.images_label}
                               images={imgs}
                               onAdd={(f) =>
                                 updateVariant({
@@ -954,7 +963,7 @@ export default function ProductForm({
 
             {showGlobalImages && (
               <div className={styles.stackBlock}>
-                <SectionTitle icon={<FaImages />}>Imagens</SectionTitle>
+                <SectionTitle icon={<FaImages />}>{dict.images_label}</SectionTitle>
                 <ImageGrid
                   images={allGlobalImages}
                   onAdd={(f) =>

@@ -18,7 +18,7 @@ import {
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
 import NewOrderModal from "./NewOrderModal";
-import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
+import PosPaymentOverlay, { type PosPaymentDict } from "@/components/shop/PosPaymentOverlay";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import InputDialog from "@/components/layout/InputDateDialog";
@@ -26,6 +26,8 @@ import MultiSelectFilter from "./MultiSelectFilter";
 import DateFilter from "./DateFilter";
 import ActiveFilters from "./ActiveFilters";
 import MobileFiltersDrawer from "./MobileFiltersDrawer";
+import type { OrdersTableDict } from "@/types/i18n";
+
 
 function normalizeCampus(campus?: string): string {
   return campus ? campus.trim().toLowerCase() : "";
@@ -51,6 +53,8 @@ function sortByMultipleFields<T>(a: T, b: T, ...fields: (keyof T)[]): number {
 interface OrdersTableProps {
   orders: Order[];
   products: Product[];
+  locale: string;
+  dict: OrdersTableDict;
 }
 
 interface FilterState {
@@ -60,7 +64,7 @@ interface FilterState {
   statuses: string[];
 }
 
-export default function OrdersTable({ orders, products }: OrdersTableProps) {
+export default function OrdersTable({ orders, products, dict, locale }: OrdersTableProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
@@ -367,21 +371,21 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
 
   const handleExport = () => {
     const ordersSheet = filtered.map((o) => ({
-      Estado: getOrderStatusLabelForKind(getOrderKindFromItems(o.items).orderKind, o.status, o),
-      Número: o.order_number,
-      Data: new Date(o.created_at).toLocaleString("pt-PT"),
-      Nome: o.customer_name,
-      Email: o.customer_email,
-      NIF: o.customer_nif || "",
-      "IST ID": o.user_istid,
-      Campus: o.campus,
-      Telefone: o.customer_phone,
-      "Método de pagamento": o.payment_method,
-      "Referencia de Pagamento": o.payment_reference,
-      "Total (€)": o.total_amount,
-      Notas: o.notes || "",
-      "Ultima modificação por": o.updated_by,
-      Produtos: o.items
+      [dict.orders_table.export_status]: getOrderStatusLabelForKind(getOrderKindFromItems(o.items).orderKind, o.status, o),
+      [dict.orders_table.export_number]: o.order_number,
+      [dict.orders_table.export_date]: new Date(o.created_at).toLocaleString(locale),
+      [dict.orders_table.export_name]: o.customer_name,
+      [dict.orders_table.export_email]: o.customer_email,
+      [dict.orders_table.export_nif]: o.customer_nif || "",
+      [dict.orders_table.export_ist_id]: o.user_istid,
+      [dict.orders_table.export_campus]: o.campus,
+      [dict.orders_table.export_phone]: o.customer_phone,
+      [dict.orders_table.export_payment_method]: o.payment_method,
+      [dict.orders_table.export_payment_reference]: o.payment_reference,
+      [dict.orders_table.export_total]: o.total_amount,
+      [dict.orders_table.export_notes]: o.notes || "",
+      [dict.orders_table.export_updated_by || "Ultima modificação por"]: o.updated_by,
+      [dict.orders_table.export_products]: o.items
         .map((it) => `${it.product_name} ${it.variant_label || ""} x${it.quantity}`)
         .join("; "),
     }));
@@ -425,7 +429,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           statsMapDetalhes[key] = { modelo, cor, tamanho, quantidade: 0 };
         }
         statsMapDetalhes[key].quantidade += item.quantity;
-        const campus = order.campus || "Unknown";
+        const campus = order.campus || dict.orders_table.unknown_campus;
         const ciKey = `${campus}|||${modelo}|||${cor}|||${tamanho}`;
         if (!statsMapCampusInventory[ciKey]) {
           statsMapCampusInventory[ciKey] = {
@@ -456,61 +460,61 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     const statsSheet = Object.values(statsMapDetalhes)
       .sort((a, b) => sortByMultipleFields(a, b, "modelo", "cor", "tamanho"))
       .map((itemData) => ({
-        Modelo: itemData.modelo,
-        Cor: itemData.cor,
-        Tamanho: itemData.tamanho,
-        Quantidade: itemData.quantidade,
+        [dict.orders_table.export_col_model]: itemData.modelo,
+        [dict.orders_table.export_col_color]: itemData.cor,
+        [dict.orders_table.export_col_size]: itemData.tamanho,
+        [dict.orders_table.export_col_quantity]: itemData.quantidade,
       }));
 
     const statsCampusInventorySheet = Object.values(statsMapCampusInventory)
       .sort((a, b) => sortByMultipleFields(a, b, "campus", "modelo", "cor", "tamanho"))
       .map((itemData) => ({
-        Campus: itemData.campus,
-        Modelo: itemData.modelo,
-        Cor: itemData.cor,
-        Tamanho: itemData.tamanho,
-        Quantidade: itemData.quantidade,
+        [dict.orders_table.export_campus]: itemData.campus,
+        [dict.orders_table.export_col_model]: itemData.modelo,
+        [dict.orders_table.export_col_color]: itemData.cor,
+        [dict.orders_table.export_col_size]: itemData.tamanho,
+        [dict.orders_table.export_col_quantity]: itemData.quantidade,
       }));
 
     const statsCampusDateSheet = Object.values(statsMapCampusDate)
       .sort((a, b) => sortByMultipleFields(a, b, "campus", "modelo", "data", "cor", "tamanho"))
       .map((itemData) => ({
-        Campus: itemData.campus,
-        Modelo: itemData.modelo,
-        Data: itemData.data,
-        Cor: itemData.cor,
-        Tamanho: itemData.tamanho,
-        Quantidade: itemData.quantidade,
+        [dict.orders_table.export_campus]: itemData.campus,
+        [dict.orders_table.export_col_model]: itemData.modelo,
+        [dict.orders_table.export_date]: itemData.data,
+        [dict.orders_table.export_col_color]: itemData.cor,
+        [dict.orders_table.export_col_size]: itemData.tamanho,
+        [dict.orders_table.export_col_quantity]: itemData.quantidade,
       }));
 
     const excelWorkbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(
       excelWorkbook,
       XLSX.utils.json_to_sheet(ordersSheet),
-      "Encomendas"
+      dict.orders_table.export_sheet_orders
     );
-    XLSX.utils.book_append_sheet(excelWorkbook, XLSX.utils.json_to_sheet(statsSheet), "Detalhes");
+    XLSX.utils.book_append_sheet(excelWorkbook, XLSX.utils.json_to_sheet(statsSheet), dict.orders_table.export_sheet_details);
     XLSX.utils.book_append_sheet(
       excelWorkbook,
       XLSX.utils.json_to_sheet(statsCampusInventorySheet),
-      "InventarioPorCampus"
+      dict.orders_table.export_sheet_campus_inventory
     );
     XLSX.utils.book_append_sheet(
       excelWorkbook,
       XLSX.utils.json_to_sheet(statsCampusDateSheet),
-      "InventarioPorCampusPorDia"
+      dict.orders_table.export_sheet_campus_date
     );
-    XLSX.writeFile(excelWorkbook, `encomendas_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(excelWorkbook, `${dict.orders_table.export_filename}_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   return (
     <>
       <div className={styles.container}>
         <h1 className={styles.title}>
-          <span className={styles.primary}>En</span>
-          <span className={styles.secondary}>com</span>
-          <span className={styles.tertiary}>end</span>
-          <span className={styles.quaternary}>as</span>
+          <span className={styles.primary}>{dict.orders_table.title_1}</span>
+          <span className={styles.secondary}>{dict.orders_table.title_2}</span>
+          <span className={styles.tertiary}>{dict.orders_table.title_3}</span>
+          <span className={styles.quaternary}>{dict.orders_table.title_4}</span>
         </h1>
 
         <div className={styles.controlsRow}>
@@ -520,7 +524,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             </div>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={dict.orders_table.search_placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -528,16 +532,17 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             <button
               className={styles.mobileFilterBtn}
               onClick={() => setShowMobileFilters(true)}
-              title="Filtros">
+              title={dict.orders_table.filters_title}>
               <TbFilter size={20} />
             </button>
           </div>
           <div className={styles.rightControls}>
-            <button className={styles.iconBtn} onClick={handleExport} title="Exportar">
+            <button className={styles.iconBtn} onClick={handleExport} title={dict.orders_table.export_button}>
+
               <TbTableExport />
             </button>
             <button className={styles.newBtn} onClick={() => setShowNewOrderModal(true)}>
-              Nova Encomenda
+              {dict.orders_table.new_order_button}
             </button>
           </div>
         </div>
@@ -575,60 +580,64 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
               }));
             }}
             onClearAll={handleClearAll}
+            getStatusLabel={getStatusLabel}
+            dict={dict.active_filters}
+            locale={locale}
           />
         </div>
 
         {selectedOrders.size > 0 && (
           <div className={styles.bulkActions}>
             <span className={styles.bulkCount}>
-              {selectedOrders.size} encomenda{selectedOrders.size !== 1 ? "s" : ""} selecionada
-              {selectedOrders.size !== 1 ? "s" : ""}
+              {selectedOrders.size} {selectedOrders.size !== 1 ? dict.orders_table.order_plural : dict.orders_table.order_singular} 
+              {selectedOrders.size !== 1 ? dict.orders_table.selected_plural : dict.orders_table.selected_singular}
             </span>
             <div className={styles.bulkButtons}>
               <button
                 onClick={handleEmailSelected}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}
-                title="Enviar email aos selecionados">
-                {bulkLoading ? "A processar..." : "Enviar Email"}
+                title={dict.orders_table.send_email_selected}>
+                {bulkLoading ? dict.orders_table.processing : dict.orders_table.send_email}
               </button>
               <button
                 onClick={handleSetPickupDeadline}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}
-                title="Definir prazo limite de levantamento">
-                {bulkLoading ? "A processar..." : "Definir prazo para levantamento"}
+                title={dict.orders_table.set_pickup_deadline_title}>
+                {bulkLoading ? dict.orders_table.processing : dict.orders_table.set_pickup_deadline}
               </button>
               <InputDialog
                 open={showPickupDialog}
-                title={"Prazo limite para levantamento das encomendas"}
+                title={dict.orders_table.pickup_dialog_title}
                 initialValue={pickupInput ?? ""}
                 onConfirm={(val) => confirmSetPickupDeadline(val)}
                 onCancel={() => setShowPickupDialog(false)}
+                dict={dict.input_date_dialog}
               />
               <button
                 onClick={() => handleBulkStatusChange("paid")}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}>
-                {bulkLoading ? "A processar..." : "Marcar como Pago"}
+                {bulkLoading ? dict.orders_table.processing : dict.orders_table.mark_paid}
               </button>
               <button
                 onClick={() => handleBulkStatusChange("ready")}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}>
-                {bulkLoading ? "A processar..." : "Marcar como Pronto"}
+                {bulkLoading ? dict.orders_table.processing : dict.orders_table.mark_ready}
               </button>
               <button
                 onClick={() => handleBulkStatusChange("delivered")}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}>
-                {bulkLoading ? "A processar..." : "Marcar como Entregue"}
+                {bulkLoading ? dict.orders_table.processing : dict.orders_table.mark_delivered}
               </button>
               <button
                 onClick={() => handleBulkStatusChange("cancelled")}
                 disabled={bulkLoading}
                 className={styles.bulkBtnDanger}>
-                {bulkLoading ? "A processar..." : "Cancelar Encomendas"}
+                {bulkLoading ? dict.orders_table.processing : dict.orders_table.cancel_orders}
               </button>
             </div>
           </div>
@@ -647,10 +656,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       {isSomeSelected && <span className={styles.indeterminateIcon}>−</span>}
                     </div>
                   </th>
-                  <th>Número</th>
+                  <th>{dict.orders_table.col_number}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Data
+                      {dict.orders_table.col_date}
                       <button
                         ref={dateFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -659,10 +668,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </button>
                     </div>
                   </th>
-                  <th>Nome</th>
+                  <th>{dict.orders_table.col_name}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Campus
+                      {dict.orders_table.col_campus}
                       <button
                         ref={campusFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -671,10 +680,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </button>
                     </div>
                   </th>
-                  <th>Email</th>
+                  <th>{dict.orders_table.col_email}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Produtos
+                      {dict.orders_table.col_products}
                       <button
                         ref={productsFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -683,10 +692,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </button>
                     </div>
                   </th>
-                  <th>Total</th>
+                  <th>{dict.orders_table.col_total}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Estado
+                      {dict.orders_table.col_status}
                       <button
                         ref={statusFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -714,7 +723,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </div>
                     </td>
                     <td>{order.order_number}</td>
-                    <td>{new Date(order.created_at).toLocaleDateString("pt-PT")}</td>
+                    <td>{new Date(order.created_at).toLocaleDateString(locale)}</td>
                     <td>{getFirstAndLastName(order.customer_name)}</td>
                     <td className={styles.campusCell}>
                       {order.campus ? displayCampus(normalizeCampus(order.campus)) : "-"}
@@ -750,7 +759,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={9} style={{ padding: 20, textAlign: "center" }}>
-                      Nenhuma encomenda encontrada.
+                      {dict.orders_table.no_orders}
                     </td>
                   </tr>
                 )}
@@ -767,6 +776,8 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           dateRange={filters.dateRange}
           onChange={(range) => setFilters((p) => ({ ...p, dateRange: range }))}
           buttonRef={dateFilterRef}
+          dict={dict.date_filter}
+          locale={locale}
         />
       )}
       {productsFilterOpen && (
@@ -777,7 +788,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           selected={filters.products}
           onChange={(products) => setFilters((p) => ({ ...p, products }))}
           buttonRef={productsFilterRef}
-          title="Produtos"
+          title={dict.orders_table.filter_products}
         />
       )}
       {campusFilterOpen && (
@@ -788,7 +799,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           selected={filters.campuses}
           onChange={(campuses) => setFilters((p) => ({ ...p, campuses }))}
           buttonRef={campusFilterRef}
-          title="Campus"
+          title={dict.orders_table.filter_campus}
         />
       )}
       {statusFilterOpen && (
@@ -799,7 +810,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           selected={filters.statuses}
           onChange={(statuses) => setFilters((p) => ({ ...p, statuses }))}
           buttonRef={statusFilterRef}
-          title="Estado"
+          title={dict.orders_table.filter_status}
           getLabel={(status) => getStatusLabel(status as OrderStatus)}
         />
       )}
@@ -815,31 +826,37 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         filterGroups={[
           {
             id: "products",
-            title: "Produtos",
+            title: dict.mobile_filters_drawer.products_section,
             options: uniqueProducts,
             selected: filters.products,
           },
           {
             id: "campuses",
-            title: "Campus",
+            title: dict.mobile_filters_drawer.campus_section,
             options: uniqueCampuses,
             selected: filters.campuses,
           },
           {
             id: "statuses",
-            title: "Estado",
+            title: dict.mobile_filters_drawer.status_section,
             options: availableStatuses,
             selected: filters.statuses,
             getLabel: (s) => getStatusLabel(s as OrderStatus),
           },
-        ]}
-      />
+        ]}        
+        dict={dict.mobile_filters_drawer}
+        locale={locale}
 
       {showNewOrderModal && (
         <NewOrderModal
           onClose={() => setShowNewOrderModal(false)}
           onSubmit={handleNewOrderSubmit}
           products={products}
+          dict={{
+            new_order_modal: dict.new_order_modal,
+            create_user_modal: dict.create_user_modal,
+            confirm_dialog: dict.confirm_dialog,
+          }}
         />
       )}
 
@@ -853,18 +870,20 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             setNewOrderPosPayment(null);
             router.refresh();
           }}
+          dict={{ pos_payment: dict.pos_payment, confirm_dialog: dict.confirm_dialog }}
         />
       )}
 
       {pendingBulkStatus && (
         <ConfirmDialog
           open={!!pendingBulkStatus}
-          message={`Tem a certeza que deseja alterar o estado de ${selectedOrders.size} encomenda${selectedOrders.size !== 1 ? "s" : ""} para ${getStatusLabel(pendingBulkStatus)}?`}
+          message={`${dict.orders_table.bulk_confirm_1} ${selectedOrders.size} ${dict.orders_table.bulk_confirm_2} ${dict.orders_table.bulk_confirm_3} ${getStatusLabel(pendingBulkStatus)} ${dict.orders_table.bulk_confirm_4}`}
           onConfirm={async () => {
             await doBulkStatusChange(pendingBulkStatus);
             setPendingBulkStatus(null);
           }}
           onCancel={() => setPendingBulkStatus(null)}
+          dict={dict.confirm_dialog}
         />
       )}
     </>

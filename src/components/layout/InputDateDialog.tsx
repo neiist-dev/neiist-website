@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import styles from "@/styles/components/layout/InputDateDialog.module.css";
+import type { InputDateDialogDict } from "@/types/i18n";
+
 
 export default function InputDateDialog({
   open,
@@ -10,6 +12,7 @@ export default function InputDateDialog({
   placeholder,
   onConfirm,
   onCancel,
+  dict,
 }: {
   open: boolean;
   title?: string;
@@ -17,6 +20,7 @@ export default function InputDateDialog({
   placeholder?: string;
   onConfirm: (_value: string | null) => void;
   onCancel: () => void;
+  dict: InputDateDialogDict
 }) {
   const [value, setValue] = useState<string>(initialValue ?? "");
 
@@ -38,16 +42,16 @@ export default function InputDateDialog({
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />
-          <div className={styles.hint}>Para remover o prazo, deixar vazio.</div>
+          <div className={styles.hint}>{dict.hint}</div>
         </div>
         <div className={styles.actions}>
           <button
             className={styles.confirm}
             onClick={() => onConfirm(value.trim() === "" ? null : value)}>
-            Confirmar
+            {dict.confirm}
           </button>
           <button className={styles.cancel} onClick={onCancel}>
-            Cancelar
+            {dict.cancel}
           </button>
         </div>
       </div>

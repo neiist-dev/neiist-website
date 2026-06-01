@@ -2,6 +2,7 @@ export interface Team {
   name: string;
   description: string;
   icon: string;
+  displayName?: string;
 }
 
 export interface Role {

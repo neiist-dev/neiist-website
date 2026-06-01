@@ -18,6 +18,7 @@ import { serverCheckRoles } from "@/utils/permissionUtils";
 import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import penguinImg from "@/assets/events/DinnerPenguin.png";
 import styles from "@/styles/pages/DinnerPage.module.css";
+import { getLocale, getDictionary } from "@/lib/i18n";
 
 const handelsonTwo = localFont({
   src: "../../assets/fonts/handelson-two.otf",
@@ -69,22 +70,9 @@ function DinnerTeasers() {
   );
 }
 
-function DinnerInfoList() {
-  return (
-    <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
-      <InfoListItem
-        icon={<FaMapMarkerAlt />}
-        label="Local"
-        value="MADSpot"
-        url="https://www.instagram.com/mad_spot_fa/"
-      />
-      <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
-      <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
-    </ul>
-  );
-}
-
 export default async function DinnerPage() {
+  const locale = await getLocale();
+  const dictionary = await getDictionary(locale);
   const userRoles = await serverCheckRoles([]);
   const products = await getAllProducts(true);
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
@@ -98,7 +86,7 @@ export default async function DinnerPage() {
   if (!dinnerProduct)
     return (
       <div className={styles.container}>
-        <p>Produto de Jantar de Curso não encontrado</p>
+        <p>{dictionary.dinner.not_found}</p>
       </div>
     );
   const isSaleOpen = !dinnerProduct.order_deadline || new Date(dinnerProduct.order_deadline) > now;
@@ -132,24 +120,31 @@ export default async function DinnerPage() {
 
           {showCountdown ? (
             <p className={`${styles.signedUpMessage} ${handelsonTwo.className}`}>
-              O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua
-              espera.
+              {dictionary.dinner.signed_up_message}
             </p>
           ) : (
             <p className={`${styles.description} ${handelsonTwo.className}`}>
-              Junta-te a nós para um jantar inesquecível!
+              {dictionary.dinner.description}
             </p>
           )}
 
-          <DinnerInfoList />
+          <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
+            <InfoListItem
+              icon={<FaMapMarkerAlt />}
+              label={dictionary.dinner.location_label}
+              value={dictionary.dinner.location_value}
+              url={dictionary.dinner.location_url}
+            />
+            <InfoListItem icon={<FaCalendarAlt />} label={dictionary.dinner.date_label} value={dictionary.dinner.date_value} />
+            <InfoListItem icon={<FaClock />} label={dictionary.dinner.time_label} value={dictionary.dinner.time_value} />
+          </ul>
 
           {showCountdown && (
             <div className={styles.lockedSection}>
               <p className={`${styles.unlockTimeMessage} ${handelsonTwo.className}`}>
-                O conteúdo será desbloqueado às{" "}
-                <span className={styles.highlight}>20h do dia 21 de maio</span>
+                {dictionary.dinner.unlock_time_message}{" "}
+                <span className={styles.highlight}>{dictionary.dinner.unlock_highlight}</span>
               </p>
-
               <Countdown />
             </div>
           )}
@@ -158,7 +153,7 @@ export default async function DinnerPage() {
             <Link
               href={`/shop/${dinnerProduct.id}`}
               className={`${styles.button} ${handelsonTwo.className}`}>
-              Comprar Já
+              {dictionary.dinner.buy_button}
             </Link>
           )}
         </div>
@@ -167,7 +162,7 @@ export default async function DinnerPage() {
           <div className={styles.imageWrapper}>
             <Image
               src={penguinImg}
-              alt="Poster do Jantar de Curso"
+              alt={dictionary.dinner.poster_alt}
               className={styles.image}
               priority
             />
