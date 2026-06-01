@@ -886,6 +886,7 @@
         "error_update_status": "Erro ao atualizar estado.",
         "error_cancel": "Erro ao cancelar encomenda.",
         "error_save_notes": "Erro ao guardar notas.",
+        "success_save_notes": "Notas guardadas com sucesso.",
         "pickup_toast": "Prazo limite de levantamento: {date}",
         "payment_reference_label": "Referência de pagamento:",
         "register_payment": "Registar Pagamento",
