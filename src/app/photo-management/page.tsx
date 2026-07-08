@@ -1,7 +1,7 @@
-import { getAllMemberships, getAllDepartments } from "@/utils/dbUtils";
 import { Membership } from "@/types/memberships";
 import PhotoTeamMembers from "@/components/photo-management/PhotoTeamMembers";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
+import { getAllMemberships, getAllDepartments } from "@/utils/db/userQueries";
 
 export default async function PhotoTeamMembersPage() {
   const memberships = await getAllMemberships();

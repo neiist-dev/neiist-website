@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { addEmailVerification } from "@/utils/dbUtils";
 import { sendEmail, getEmailVerificationTemplate } from "@/utils/emailUtils";
+import { addEmailVerification } from "@/utils/db/userQueries";
 
 export async function POST(request: Request) {
   const { istid, alternativeEmail } = await request.json();

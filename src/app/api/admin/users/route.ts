@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllUsers, createUser } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { getAllUsers, createUser } from "@/utils/db/userQueries";
 
 export async function GET() {
   const userRoles = await serverCheckRoles([
@@ -15,8 +16,8 @@ export async function GET() {
   try {
     const users = await getAllUsers();
     return NextResponse.json(users);
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -58,16 +59,6 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
-    console.error("Error creating user:", error);
-    if (error instanceof Error) {
-      if (error.message.includes("duplicate") || error.message.includes("unique")) {
-        return NextResponse.json(
-          { error: "User with this IST ID or email already exists" },
-          { status: 409 }
-        );
-      }
-    }
-
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+    return handleApiError(error);
   }
 }

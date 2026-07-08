@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { User, UserRole } from "@/types/user";
-import { getUser, updateUser, updateUserPhoto } from "@/utils/dbUtils";
 import fs from "fs/promises";
 import path from "path";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { getUser, updateUser, updateUserPhoto } from "@/utils/db/userQueries";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
   const userRoles = await serverCheckRoles([
@@ -127,8 +128,7 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
             `/api/user/photo/${targetUserId}?custom&v=${Date.now()}`
           );
         } catch (photoError) {
-          console.error("Error updating photo:", photoError);
-          return NextResponse.json({ error: "Erro ao atualizar foto" }, { status: 500 });
+          return handleApiError(photoError);
         }
       }
     }
@@ -145,18 +145,7 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
       message: "Perfil atualizado com sucesso",
     });
   } catch (error) {
-    console.error("Error updating user profile:", error);
-
-    if (error instanceof SyntaxError) {
-      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-    }
-
-    return NextResponse.json(
-      {
-        error: "Erro interno do servidor",
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 

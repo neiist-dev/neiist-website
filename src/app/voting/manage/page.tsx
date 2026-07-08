@@ -1,11 +1,11 @@
 import {
   getVotingSessions,
-  getActivitiesEventsFromDb,
-  getAllUsers,
   getVotingSessionById,
   getSessionResults,
+  getActivitiesEventsFromDb,
 } from "@/utils/dbUtils";
-import VotingSync from "@/components/voting/VotingSync";
+import { getAllUsers } from "@/utils/db/userQueries";
+import AdminVotingSync from "@/components/voting/AdminVotingSync";
 import VotingManagement from "@/components/voting/admin/VotingManagement";
 import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
 
@@ -36,7 +36,7 @@ export default async function VotingManagePage({ searchParams }: PageProps) {
 
   return (
     <>
-      <VotingSync />
+      <AdminVotingSync />
       <VotingManagement initialSessions={sessions} activities={activities} users={users} />
       {selectedSession ? (
         <VotingSessionDetailOverlay session={selectedSession} results={results || []} />

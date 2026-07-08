@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getEmailVerification, deleteEmailVerification, updateUser } from "@/utils/dbUtils";
+import { getEmailVerification, deleteEmailVerification, updateUser } from "@/utils/db/userQueries";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

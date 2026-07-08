@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addAdminBody, removeAdminBody, getAllAdminBodies } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { addAdminBody, removeAdminBody, getAllAdminBodies } from "@/utils/db/userQueries";
 
 export async function GET() {
   const permissionCheck = await serverCheckRoles([UserRole._ADMIN]);
@@ -15,8 +16,8 @@ export async function GET() {
       active: true, // Since getAllAdminBodies only returns active admin bodies
     }));
     return NextResponse.json(transformedAdminBodies);
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch admin bodies" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -37,8 +38,8 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to add admin body" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to add admin body" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -59,7 +60,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to remove admin body" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to remove admin body" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUser } from "@/utils/dbUtils";
 import {
   getOrCreateUserCalendar,
   getAddCalendarLink,
@@ -14,6 +13,7 @@ import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
 import { getUserFromJWT } from "@/utils/authUtils";
+import { getUser } from "@/utils/db/userQueries";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;

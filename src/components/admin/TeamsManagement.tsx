@@ -1,7 +1,7 @@
-import { getAllTeams } from "@/utils/dbUtils";
 import TeamsSearchFilter from "@/components/admin/TeamsSearchFilter";
 import AddDepartmentModal from "@/components/admin/AddDepartmentModal";
 import styles from "@/styles/components/admin/TeamsManagement.module.css";
+import { getAllTeams } from "@/utils/db/userQueries";
 
 export default async function TeamsManagement() {
   const teams = await getAllTeams();

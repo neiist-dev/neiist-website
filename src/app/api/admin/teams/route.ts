@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addTeam, removeTeam, getAllTeams } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { addTeam, removeTeam, getAllTeams } from "@/utils/db/userQueries";
 
 export async function GET() {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
@@ -15,8 +16,8 @@ export async function GET() {
       active: true, // Since getAllTeams only returns active teams
     }));
     return NextResponse.json(transformedTeams);
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch teams" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to add team" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to add team" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -57,7 +58,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to remove team" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to remove team" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

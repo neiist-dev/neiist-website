@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
-import { getUser, createUser, getEmailVerificationByUser } from "@/utils/dbUtils";
 import { signUserJWT } from "@/utils/authUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { getUser, createUser, getEmailVerificationByUser } from "@/utils/db/userQueries";
 
 type FenixRegistration = {
   degree?: {
@@ -93,7 +94,6 @@ export async function GET() {
     });
     return response;
   } catch (error) {
-    console.error("Error in UserData API:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { UserRole } from "@/types/user";
+import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
 import {
   addValidDepartmentRole,
   removeValidDepartmentRole,
   getDepartmentRoles,
-} from "@/utils/dbUtils";
-import { UserRole } from "@/types/user";
-import { serverCheckRoles } from "@/utils/permissionUtils";
+} from "@/utils/db/userQueries";
 
 export async function GET(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
@@ -19,8 +20,8 @@ export async function GET(request: NextRequest) {
     }
     const roles = await getDepartmentRoles(department);
     return NextResponse.json(roles);
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -43,8 +44,8 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to add role" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to add role" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -67,7 +68,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to remove role" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to remove role" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

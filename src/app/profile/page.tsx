@@ -2,15 +2,15 @@ import { cookies } from "next/headers";
 import ProfileClient from "@/components/Profile";
 import styles from "@/styles/pages/ProfilePage.module.css";
 import { getUserFromJWT } from "@/utils/authUtils";
-import { getUser } from "@/utils/dbUtils";
 import { NextResponse } from "next/server";
+import { getUser } from "@/utils/db/userQueries";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = getUserFromJWT(sessionToken)!;
 
-  const user = await getUser(jwtUser.istid);
+  const user = await getUser(jwtUser.istid).catch(() => null);
   if (!user) {
     return NextResponse.redirect("/login");
   }

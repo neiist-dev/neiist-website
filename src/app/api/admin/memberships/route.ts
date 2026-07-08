@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addTeamMember, removeTeamMember, getAllMemberships } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { Membership } from "@/types/memberships";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { addTeamMember, removeTeamMember, getAllMemberships } from "@/utils/db/userQueries";
 
 async function checkMembershipPermission(departmentName: string) {
   const roles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
@@ -40,8 +41,7 @@ export async function GET() {
     const memberships: Membership[] = await getAllMemberships();
     return NextResponse.json(memberships);
   } catch (error) {
-    console.error("Error fetching memberships:", error);
-    return NextResponse.json({ error: "Failed to fetch memberships" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -86,7 +86,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to remove team member" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to remove team member" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

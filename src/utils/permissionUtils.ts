@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/dbUtils";
 import { UserRole, mapRoleToUserRole, hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "@/utils/authUtils";
+import { getUser } from "@/utils/db/userQueries";
 
 export async function serverCheckRoles(required: UserRole[]) {
   try {

@@ -8,9 +8,9 @@ import type { NotionPage, NotionApiResponse } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
 import { syncAllEventsToCalendar, getCalendarClient } from "@/utils/googleCalendar";
-import { getAllUsers } from "@/utils/dbUtils";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
+import { getAllUsers } from "@/utils/db/userQueries";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;

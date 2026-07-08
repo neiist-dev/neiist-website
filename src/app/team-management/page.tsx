@@ -1,9 +1,9 @@
-import { getAllUsers, getAllMemberships, getAllValidDepartmentRoles } from "@/utils/dbUtils";
 import CoordinatorTeamManagementSearch from "@/components/team-management/CoordinatorTeamManagementSearch";
 import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { cookies } from "next/headers";
 import { getUserFromJWT } from "@/utils/authUtils";
+import { getAllUsers, getAllMemberships, getAllValidDepartmentRoles } from "@/utils/db/userQueries";
 
 interface Role {
   department_name: string;
@@ -18,8 +18,8 @@ export default async function TeamManagementPage() {
   const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
   const istid = jwtUser?.istid;
 
-  const users = await getAllUsers();
-  const memberships: Membership[] = await getAllMemberships();
+  const users = await getAllUsers().catch(() => []);
+  const memberships: Membership[] = await getAllMemberships().catch(() => []);
   const validRoles: Role[] = await getAllValidDepartmentRoles();
   const userMemberships = memberships.filter(
     (membership) => membership.userNumber === istid && membership.isActive

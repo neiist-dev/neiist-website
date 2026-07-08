@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addDepartment, removeDepartment, getAllDepartments } from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { addDepartment, removeDepartment, getAllDepartments } from "@/utils/db/userQueries";
 
 export async function GET() {
   const permissionCheck = await serverCheckRoles([UserRole._ADMIN]);
@@ -11,8 +12,8 @@ export async function GET() {
   try {
     const departments = await getAllDepartments();
     return NextResponse.json(departments);
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch departments" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to add department" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to add department" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -55,7 +56,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       return NextResponse.json({ error: "Failed to remove department" }, { status: 500 });
     }
-  } catch {
-    return NextResponse.json({ error: "Failed to remove department" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

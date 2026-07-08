@@ -1,13 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getAllOrders,
-  newOrder,
-  getUser,
-  updateUser,
-  mapOrderDbErrorToResponse,
-  getProduct,
-  getUserOrderedProductsInCategory,
-} from "@/utils/dbUtils";
 import { UserRole } from "@/types/user";
 import { PAYMENT_METHODS, PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
 import { OrderSource } from "@/types/shop/orderKind";
@@ -16,6 +7,14 @@ import { OrderItem } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import { sendEmail, getPendingOrderEmailTemplate } from "@/utils/emailUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import {
+  getAllOrders,
+  newOrder,
+  getProduct,
+  getUserOrderedProductsInCategory,
+} from "@/utils/dbUtils";
+import { getUser, updateUser } from "@/utils/db/userQueries";
 
 function parseOrderSource(value: string): OrderSource {
   switch (value) {
@@ -40,8 +39,8 @@ export async function GET() {
   try {
     const orders = await getAllOrders();
     return NextResponse.json(orders);
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
@@ -218,17 +217,12 @@ export async function POST(request: NextRequest) {
           ),
         });
       } catch (emailErr) {
-        console.warn("Failed to send order confirmation email:", emailErr);
+        return handleApiError(emailErr);
       }
     }
 
     return NextResponse.json(order);
   } catch (error) {
-    const mappedError = mapOrderDbErrorToResponse(error);
-    if (mappedError)
-      return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
-
-    console.error("orders POST error:", error);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    return handleApiError(error);
   }
 }
