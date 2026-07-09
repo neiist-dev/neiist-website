@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById } from "@/utils/dbUtils";
 import { getSumUpClient, sumupErrorResponse } from "@/utils/sumupUtils";
 import type { SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
+import { getOrderById } from "@/utils/db/shopQueries";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 

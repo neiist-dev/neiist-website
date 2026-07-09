@@ -1,5 +1,5 @@
 import ShopManagement from "@/components/shop/ShopManagement";
-import { getAllProductsAdmin, getAllCategories } from "@/utils/dbUtils";
+import { getAllProductsAdmin, getAllCategories } from "@/utils/db/shopQueries";
 
 export default async function ShopManagePage() {
   const [products, categories] = await Promise.all([getAllProductsAdmin(), getAllCategories(true)]);

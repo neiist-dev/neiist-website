@@ -1,6 +1,6 @@
 import ProductForm from "@/components/shop/ProductForm";
 import { redirect } from "next/navigation";
-import { getAllCategories, getProduct } from "@/utils/dbUtils";
+import { getAllCategories, getProduct } from "@/utils/db/shopQueries";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

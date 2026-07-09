@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
+import path from "path";
+import fs from "fs/promises";
+import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
 import {
   updateProduct,
   updateProductVariant,
@@ -7,11 +11,7 @@ import {
   addProductVariant,
   deleteProduct,
   deleteProductVariant,
-  mapDeleteProductDbErrorToResponse,
-} from "@/utils/dbUtils";
-import path from "path";
-import fs from "fs/promises";
-import { serverCheckRoles } from "@/utils/permissionUtils";
+} from "@/utils/db/shopQueries";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -123,10 +123,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       product: updatedProduct,
     });
   } catch (error) {
-    const mapped = mapDeleteProductDbErrorToResponse(error);
-    if (mapped) return NextResponse.json({ error: mapped.error }, { status: mapped.status });
-    console.error("Error updating product:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -153,10 +150,7 @@ export async function DELETE(
     }
     return NextResponse.json({ message: "Product archived successfully" });
   } catch (error) {
-    const mapped = mapDeleteProductDbErrorToResponse(error);
-    if (mapped) return NextResponse.json({ error: mapped.error }, { status: mapped.status });
-    console.error("Error deleting product:", error);
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -179,8 +173,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
     return NextResponse.json({ message: "Product updated", product: updated });
   } catch (error) {
-    console.error("Error patching product:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -197,7 +190,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error("Error fetching product:", error);
-    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
+    return handleApiError(error);
   }
 }

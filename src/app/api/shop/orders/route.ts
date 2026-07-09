@@ -13,7 +13,7 @@ import {
   newOrder,
   getProduct,
   getUserOrderedProductsInCategory,
-} from "@/utils/dbUtils";
+} from "@/utils/db/shopQueries";
 import { getUser, updateUser } from "@/utils/db/userQueries";
 
 function parseOrderSource(value: string): OrderSource {
@@ -156,15 +156,14 @@ export async function POST(request: NextRequest) {
     const customerPhone = typeof body.customer_phone === "string" ? body.customer_phone.trim() : "";
 
     if (guestCheckout && userAssignmentRequired) {
-      if (!customerName) {
+      if (!customerName)
         return NextResponse.json({ error: "Nome do cliente obrigatorio" }, { status: 400 });
-      }
-      if (!customerEmail) {
+
+      if (!customerEmail)
         return NextResponse.json({ error: "Email do cliente obrigatorio" }, { status: 400 });
-      }
-      if (!customerPhone) {
+
+      if (!customerPhone)
         return NextResponse.json({ error: "Telemóvel do cliente obrigatorio" }, { status: 400 });
-      }
     }
 
     const stockOverride =

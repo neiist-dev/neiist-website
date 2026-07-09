@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import {
   validateSumUpCredentials,
@@ -9,6 +8,7 @@ import {
 } from "@/utils/sumupUtils";
 import type { ApplePayPaymentToken, VerifyCheckoutRequestBody, SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
+import { getOrderById } from "@/utils/db/shopQueries";
 
 export async function POST(req: NextRequest) {
   const auth = await serverCheckRoles([]);

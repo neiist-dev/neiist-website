@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { getAllCategories, addCategory } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { getAllCategories, addCategory } from "@/utils/db/shopQueries";
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
@@ -26,8 +27,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating category:", error);
-    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -36,7 +36,6 @@ export async function GET() {
     const categories = await getAllCategories(true);
     return NextResponse.json({ categories });
   } catch (error) {
-    console.error("Error fetching categories:", error);
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    return handleApiError(error);
   }
 }

@@ -1,5 +1,5 @@
 import DiscountCodeForm from "@/components/shop/DiscountCodeForm";
-import { getAllProductsAdmin } from "@/utils/dbUtils";
+import { getAllProductsAdmin } from "@/utils/db/shopQueries";
 import { getAllUsers } from "@/utils/db/userQueries";
 
 export const dynamic = "force-dynamic";

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById, updateOrder } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import {
   validateSumUpCredentials,
@@ -9,6 +8,7 @@ import {
 } from "@/utils/sumupUtils";
 import { UserRole } from "@/types/user";
 import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/sumup";
+import { getOrderById, updateOrder } from "@/utils/db/shopQueries";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 

@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  updateOrder,
-  setOrderState,
-  mapOrderDbErrorToResponse,
-  getOrderById,
-} from "@/utils/dbUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
 import { UserRole } from "@/types/user";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
@@ -17,6 +12,7 @@ import {
   getStatusUpdateOrderEmailTemplate,
   sendEmail,
 } from "@/utils/emailUtils";
+import { updateOrder, setOrderState, getOrderById } from "@/utils/db/shopQueries";
 
 function isShopManagerOrAbove(roles: UserRole[]) {
   return (
@@ -202,15 +198,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (error instanceof Error && error.message.startsWith("Item "))
       return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const mappedError = mapOrderDbErrorToResponse(error);
-    if (mappedError)
-      return NextResponse.json({ error: mappedError.error }, { status: mappedError.status });
-
-    console.error("Order PUT error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to update order" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 

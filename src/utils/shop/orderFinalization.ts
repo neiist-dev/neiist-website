@@ -1,9 +1,10 @@
-import { getOrderById, updateOrder, setOrderState, signUpToEvent } from "@/utils/dbUtils";
 import { getPaidOrderEmailTemplate, sendEmail } from "@/utils/emailUtils";
 import { Order } from "@/types/shop/order";
 import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
 import { getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import { getOrderById, updateOrder, setOrderState } from "@/utils/db/shopQueries";
+import { signUpToEvent } from "@/utils/db/eventQueries";
 
 const AFTER_PURCHASE_ACTIONS = {
   register_jantar_de_curso: async (order: Order) => {

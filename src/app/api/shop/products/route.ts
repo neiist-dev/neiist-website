@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { addProduct, addProductVariant, getProduct } from "@/utils/dbUtils";
 import path from "path";
 import fs from "fs/promises";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { handleApiError } from "@/utils/apiErrorUtils";
+import { addProduct, addProductVariant, getProduct } from "@/utils/db/shopQueries";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -138,7 +139,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating product:", error);
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+    return handleApiError(error);
   }
 }

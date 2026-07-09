@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateDiscountCode } from "@/utils/dbUtils";
+import { validateDiscountCode } from "@/utils/db/shopQueries";
 
 export async function POST(request: NextRequest) {
   try {

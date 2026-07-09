@@ -1,8 +1,8 @@
-import { getAllOrders, setOrderState } from "@/utils/dbUtils";
 import { getAutoCancelledOrderEmailTemplate, sendEmail } from "@/utils/emailUtils";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { Order } from "@/types/shop/order";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
+import { getAllOrders, setOrderState } from "@/utils/db/shopQueries";
 
 const AUTO_CANCEL_MS = 72 * 60 * 60 * 1000;
 

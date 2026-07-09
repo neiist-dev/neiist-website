@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById, updateOrder } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/utils/sumupUtils";
 import type {
@@ -8,6 +7,7 @@ import type {
   SumUpCheckoutPayload,
 } from "@/types/sumup";
 import { formatVariantLabel } from "@/utils/emailUtils";
+import { getOrderById, updateOrder } from "@/utils/db/shopQueries";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 const CHECKOUT_TTL_MINUTES = 15;

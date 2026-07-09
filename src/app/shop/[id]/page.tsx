@@ -1,11 +1,11 @@
 import ProductDetail from "@/components/shop/ProductDetail";
-import { getProduct } from "@/utils/dbUtils";
 import styles from "@/styles/pages/ProductDetail.module.css";
+import { getProduct } from "@/utils/db/shopQueries";
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
   const productId = Number(id);
-  const product = await getProduct(productId);
+  const product = await getProduct(productId).catch(() => null);
 
   if (!product) {
     return (
