@@ -227,7 +227,10 @@ BEGIN
   WHERE id = NEW.session_id;
 
   -- Broadcast to the 'voting_update' channel
-  PERFORM pg_notify('voting_update', json_build_object('updated_at', v_now)::text);
+  PERFORM pg_notify('voting_update', json_build_object(
+    'type', 'VOTE',
+    'updated_at', v_now
+  )::text);
 
   RETURN NEW;
 END;
@@ -242,7 +245,10 @@ EXECUTE FUNCTION neiist.touch_voting_session_updated_at();
 CREATE OR REPLACE FUNCTION neiist.notify_voting_session_change()
 RETURNS TRIGGER AS $$
 BEGIN
-  PERFORM pg_notify('voting_update', json_build_object('updated_at', NOW())::text);
+  PERFORM pg_notify('voting_update', json_build_object(
+    'type', 'STATE_CHANGE',
+    'updated_at', NOW()
+  )::text);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

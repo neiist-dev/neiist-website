@@ -12,9 +12,7 @@ import {
   startVoting,
   submitVote,
   updateVotingSession,
-} from "@/utils/dbUtils";
-
-// --- Form Data Helpers ---
+} from "@/utils/db/votingQueries";
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
@@ -47,7 +45,6 @@ function parseNomineeIds(raw: string | undefined): string[] {
 
 /**
  * Extracts and validates VotingSession data from FormData.
- * This centralizes the parsing logic to avoid duplication between create and update actions.
  */
 function extractVotingSessionData(formData: FormData): Partial<VotingSession> {
   const type = requireString(formData.get("type"), "type") as VotingType;
@@ -84,15 +81,11 @@ function extractVotingSessionData(formData: FormData): Partial<VotingSession> {
   }
 }
 
-// --- Utils ---
-
 function revalidateVotingPaths() {
   revalidatePath("/voting");
   revalidatePath("/voting/manage");
   revalidatePath("/dinner");
 }
-
-// --- Server Actions ---
 
 export async function createVotingSessionAction(formData: FormData): Promise<void> {
   const auth = await serverCheckRoles([UserRole._ADMIN]);
@@ -155,6 +148,4 @@ export async function submitVoteAction(formData: FormData): Promise<void> {
   const nomineeId = requireString(formData.get("nomineeId"), "nomineeId");
 
   await submitVote(sessionId, auth.user.istid, nomineeId);
-  revalidateVotingPaths();
-  redirect("/voting");
 }

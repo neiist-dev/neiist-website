@@ -13,6 +13,7 @@ interface VotingGridProps {
   sessionDescription?: string | null;
   nominees: VotingNominee[];
   selectedNomineeId?: string | null;
+  onVote?: (_nomineeId: string) => Promise<void>;
 }
 
 const PAGE_SIZE = 12;
@@ -23,6 +24,7 @@ export default function VotingGrid({
   sessionDescription,
   nominees,
   selectedNomineeId,
+  onVote,
 }: VotingGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -76,7 +78,16 @@ export default function VotingGrid({
           const displayName = getFirstAndLastName(nominee.name);
 
           return (
-            <form key={nominee.id} action={submitVoteAction} className={styles.gridItem}>
+            <form
+              key={nominee.id}
+              action={async (formData) => {
+                if (onVote) {
+                  await onVote(nominee.id);
+                } else {
+                  await submitVoteAction(formData);
+                }
+              }}
+              className={styles.gridItem}>
               <input type="hidden" name="sessionId" value={sessionId} />
               <input type="hidden" name="nomineeId" value={nominee.id} />
               <button

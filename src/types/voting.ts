@@ -88,3 +88,22 @@ export function mapDbVotingSession(row: DbVotingSession): VotingSession {
     updatedAt: new Date(row.updated_at),
   };
 }
+
+export interface GlobalVotingState {
+  activeSessions: {
+    sessionId: number;
+    sessionName: string;
+    sessionDescription?: string;
+    nominees: VotingNominee[];
+  }[];
+  lastFinishedSession?: {
+    id: number;
+    name: string;
+    description?: string;
+  };
+  lastResults?: SessionResult[];
+}
+
+export type VotingSyncPayload =
+  | { type: "STATE_UPDATE"; updatedAt: string; state: GlobalVotingState }
+  | { type: "VOTE_PING"; updatedAt: string };

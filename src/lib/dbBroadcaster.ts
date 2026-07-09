@@ -5,6 +5,8 @@ class DatabaseBroadcaster extends EventEmitter {
   private client: Client | null = null;
   private readonly connectionString: string;
   private isReconnecting = false;
+  private reconnectAttempts = 0;
+  private readonly maxReconnectDelay = 30000; // 30 seconds
 
   constructor() {
     super();
@@ -24,16 +26,19 @@ class DatabaseBroadcaster extends EventEmitter {
 
     try {
       await this.client.connect();
+      this.reconnectAttempts = 0;
       await this.client.query("SELECT neiist.listen_voting_updates()");
+      this.emit("voting_update", { type: "STATE_CHANGE", updated_at: new Date().toISOString() });
 
       this.client.on("notification", (msg) => {
         if (msg.channel === "voting_update" && msg.payload) {
           try {
             const payload = JSON.parse(msg.payload);
             const updatedAt = payload.updated_at || payload.updatedAt || msg.payload;
-            this.emit("voting_update", { updated_at: updatedAt });
+            const type = payload.type || "STATE_CHANGE";
+            this.emit("voting_update", { type, updated_at: updatedAt });
           } catch {
-            this.emit("voting_update", { updated_at: msg.payload });
+            this.emit("voting_update", { type: "STATE_CHANGE", updated_at: msg.payload });
           }
         }
       });
@@ -59,14 +64,20 @@ class DatabaseBroadcaster extends EventEmitter {
     if (this.client) {
       try {
         await this.client.end();
-      } catch {}
+      } catch (err) {
+        console.error("Error closing old DB Broadcaster connection:", err);
+      }
       this.client = null;
     }
+
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
+    this.reconnectAttempts++;
+    console.warn(`DB Broadcaster reconnecting in ${delay}ms (Attempt ${this.reconnectAttempts})`);
 
     setTimeout(async () => {
       this.isReconnecting = false;
       await this.connect();
-    }, 5000);
+    }, delay);
   }
 }
 
