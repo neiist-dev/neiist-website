@@ -63,22 +63,9 @@ Follow the steps in the [Installation](installation.md) guide to begin.
 
 ### Pull Request Process
 
-Before making changes, please **fork the repository** and **create a new branch** for your work. This ensures that your changes don't interfere with the main codebase. Make sure your branch is based on the latest version of the repository, and give your branch a descriptive name (e.g., `feature/new-feature` or `fix/bug-fix`). Make your changes in this branch, and then submit a pull request.
-
-### Commit your Changes
-
 1. **Commit Your Changes**:
-   * Write clear, concise commit messages following the [Conventional Commits]([https://www.conventionalcommits.org/en/v1.0.0/](https://www.conventionalcommits.org/en/v1.0.0/)) specification.
-   * Example: `feat: add user authentication endpoint` or `fix: typo in README`.
-2. **Update Changelog and Bump Version**:
-  * Before pushing your final changes and opening a pull request, generate a changelog and bump the project version using the changeset package:
-    ```bash
-    yarn release
-    ```
-  * You’ll be prompted to:
-    - Select the type of version update: patch, minor, or major.
-    - Write a changelog message — for small fixes, this can be the same as your commit message.
-  * Write a concise changelog message following the Keep a ChangeLog [format]([https://keepachangelog.com/]) specification.
+   * We use `commitlint` to strictly enforce Conventional Commits.
+   * Write clear messages like: `feat: add user authentication endpoint` or `fix: typo in README`.
 2. **Push Your Branch**:
    ```bash
    git push origin feature/<your-feature-name>
@@ -87,18 +74,22 @@ Before making changes, please **fork the repository** and **create a new branch*
    - Go to the repository’s GitHub page and click "New Pull Request."
    - Select your branch and provide a detailed description of your changes.
    - Reference any related issues (e.g., `Closes #123`).
-4. **Respond to Feedback**: Maintainers may request changes. Address them promptly to keep the review process smooth.
-5. **Merge**: Once approved, a maintainer will merge your pull request.
+4. **Automated Releases**:
+   * We use `release-please` via GitHub Actions.
+   * You **do not** need to manually bump versions. 
+   * When your PR is merged, `release-please` will automatically group your conventional commits, determine the next semantic version, update the Changelog, and create a Release PR.
+5. **Respond to Feedback**: Maintainers may request changes. Address them promptly to keep the review process smooth.
+6. **Merge**: Once approved, a maintainer will merge your pull request.
 
 ### Code Style Guidelines
 
-- Follow the project’s existing code style (check for a `.editorconfig` or linter configuration like ESLint or Prettier).
+- Follow the project’s existing code style.
 - Write clear, commented code where necessary.
 - Ensure your code passes all tests by running:
   ```bash
-  yarn lint
-  yarn format
-  yarn test
+  pnpm format
+  pnpm type:check
+  pnpm lint
   ```
 - Include tests for new features or bug fixes when applicable.
 

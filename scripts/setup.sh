@@ -1,246 +1,153 @@
 #!/usr/bin/env bash
-set -e  # Exit immediately if a command exits with a non-zero status
+set -euo pipefail
 
-echo "NEIIST Dev Env Setup Script"
-echo "==============================="
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info()    { echo -e "${BLUE} $1${NC}"; }
+log_success() { echo -e "${GREEN} $1${NC}"; }
+log_warn()    { echo -e "${YELLOW}️ $1${NC}"; }
+log_error()   { echo -e "${RED} $1${NC}" >&2; }
 
 # Function to prompt for y/n and only accept valid input
 prompt_yes_no() {
   local prompt="$1"
   local answer
   while true; do
-    read -p "$prompt" answer
+    read -rp "${YELLOW} ${prompt} (y/n): ${NC}" answer
+    local answer_lower
     answer_lower=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
-    if [[ "$answer_lower" == "y" || "$answer_lower" == "n" || "$answer_lower" == "yes" || "$answer_lower" == "no" ]]; then
-      if [[ "$answer_lower" == "yes" ]]; then
-        answer="y"
-      elif [[ "$answer_lower" == "no" ]]; then
-        answer="n"
-      else
-        answer="$answer_lower"
-      fi
-      break
+    if [[ "$answer_lower" == "y" || "$answer_lower" == "yes" ]]; then
+      echo "y"
+      return 0
+    elif [[ "$answer_lower" == "n" || "$answer_lower" == "no" ]]; then
+      echo "n"
+      return 0
     else
-      echo "Invalid input. Please enter 'y' for yes or 'n' for no." 1>&2
+      log_error "Invalid input. Please enter 'y' for yes or 'n' for no." >&2
     fi
   done
-  echo "$answer"
 }
 
-# Function to collect Fénix Application details only if not already set
-collect_fenix_env() {
-  if [ -z "${fenix_client_id}" ] || [ -z "${fenix_client_secret}" ]; then
-    echo "Enter your Fénix Application details:"
-  fi
-  if [ -z "${fenix_client_id}" ]; then
-    read -p "FENIX_CLIENT_ID: " fenix_client_id
-  fi
-  if [ -z "${fenix_client_secret}" ]; then
-    read -p "FENIX_CLIENT_SECRET: " fenix_client_secret
-  fi
+check_dependencies() {
+  local deps=("pnpm" "docker")
+  for dep in "${deps[@]}"; do
+    if ! command -v "$dep" >/dev/null 2>&1; then
+      log_error "Required command '$dep' is not installed. Please install it and try again."
+      exit 1
+    fi
+  done
 }
 
-# Function to collect SMTP config
-collect_smtp_env() {
-  if [ -z "${smtp_host}" ]; then
-    read -p "SMTP_HOST (e.g. smtp.yourprovider.com): " smtp_host
-  fi
-  if [ -z "${smtp_port}" ]; then
-    read -p "SMTP_PORT (e.g. 587): " smtp_port
-  fi
-  if [ -z "${smtp_user}" ]; then
-    read -p "SMTP_USER (your email): " smtp_user
-  fi
-  if [ -z "${smtp_pass}" ]; then
-    read -p "SMTP_PASS (your SMTP password): " smtp_pass
-  fi
+install_packages() {
+  echo ""
+  log_info "1. Installing Node dependencies..."
+  pnpm install
+  log_success "Dependencies installed."
 }
 
-# Function to collect NEXT_PUBLIC_BASE_URL
-collect_base_url() {
-  if [ -z "${next_public_base_url}" ]; then
-    read -p "NEXT_PUBLIC_BASE_URL (e.g. https://neiist.tecnico.ulisboa.pt): " next_public_base_url
+setup_environment_variables() {
+  echo ""
+  log_info "2. Setting up environment variables..."
+  local create_main_env="y"
+
+  if [ -f ".env" ]; then
+    log_warn "A .env file already exists in the root directory."
+    local overwrite_env
+    overwrite_env=$(prompt_yes_no "Do you want to overwrite it?")
+
+    if [[ "$overwrite_env" == "n" ]]; then
+      create_main_env="n"
+      log_info "Keeping existing .env file."
+    fi
   fi
-}
 
-# Function to collect the istID, name, and email of the user
-add_dev_admin_to_init_sql() {
-  echo "Configure Dev Admin for local development:"
-  read -p "ISTID (e.g. ist1999999): " dev_istid
-  read -p "Name (e.g. John Doe): " dev_name
-  read -p "Email (e.g. john.doe@tecnico.ulisboa.pt): " dev_email
+  if [[ "$create_main_env" == "y" ]]; then
+    if [ -f ".env.example" ]; then
+      cp .env.example .env
+      log_success "Created .env from .env.example"
+    else
+      log_warn ".env.example not found. Creating a blank .env file."
+      touch .env
+    fi
 
-  dev_sql="
--- Dev Admin User (auto-added by setup.sh)
-SELECT neiist.add_user('${dev_istid}', '${dev_name}', '${dev_email}', Null, Null, Null, '{Engenharia Informática e de Computadores - Taguspark}', NULL, NULL);
-SELECT neiist.add_team_member('${dev_istid}', 'Dev-Team', 'Coordenador');
-"
-
-  echo "$dev_sql" >> docker/init.sql
-  echo "Dev admin user added to docker/init.sql."
-}
-
-# Function to collect Notion API config
-collect_notion_env() {
-  if [ -z "${notion_api_key}" ]; then
-    read -p "NOTION_API_KEY (your Notion integration secret): " notion_api_key
-  fi
-  if [ -z "${database_id}" ]; then
-    read -p "DATABASE_ID (your Notion database id): " database_id
-  fi
-}
-
-# Function to collect Google Calendar Service Account
-collect_google_calendar_env() {
-  if [ -z "${google_service_account_email}" ]; then
-    read -p "GOOGLE_SERVICE_ACCOUNT_EMAIL (your service account email): " google_service_account_email
-  fi
-  if [ -z "${google_service_account_key}" ]; then
-    read -p "GOOGLE_SERVICE_ACCOUNT_KEY (path to your service account JSON key file): " google_service_account_key
-  fi
-}
-
-# Function to collect Admin ISTID
-collect_admin_istid() {
-  if [ -z "${admin_istid}" ]; then
-    read -p "ADMIN_ISTID (ISTID for dev admin user): " admin_istid
-  fi
-}
-
-# Function to auto-generate JWT secret
-generate_jwt_secret() {
-  if [ -z "${jwt_secret}" ]; then
+    local jwt_secret
     if command -v openssl >/dev/null 2>&1; then
       jwt_secret=$(openssl rand -hex 32)
     else
       jwt_secret=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
     fi
+    echo "JWT_SECRET=$jwt_secret" >> .env
+    log_success "Injected random JWT_SECRET into .env"
+    log_warn "PLEASE FILL OUT THE REST OF THE API KEYS IN .env"
+  fi
+
+  mkdir -p docker
+  if [ ! -f "docker/.env" ]; then
+    cat > "docker/.env" << EOF
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=admin
+POSTGRES_DB=neiist
+EOF
+    log_success "docker/.env created successfully."
+  else
+    log_success "docker/.env already exists."
   fi
 }
 
-add_dev_admin_to_init_sql
+start_database() {
+  echo ""
+  log_info "3. Starting local database..."
+  pushd docker >/dev/null || { log_error "Docker directory not found!"; exit 1; }
+  docker compose -p neiist up -d
+  popd >/dev/null
 
-# Create .env file in project root
-echo "Creating .env file..."
-if [ -f ".env" ]; then
-  override=$(prompt_yes_no ".env file already exists. Override? (y/n): ")
-  if [ "$override" != "y" ]; then
-    echo "Keeping existing .env file."
+  log_info "Waiting for database to initialize (3s)..."
+  sleep 3
+  log_success "Database container is running."
+}
+
+configure_git_hooks() {
+  echo ""
+  log_info "4. Configuring Git hooks..."
+  pnpm exec husky
+  log_success "Husky configured."
+}
+
+seed_database() {
+  echo ""
+  log_info "5. Database Seeding"
+
+  local should_seed
+  should_seed=$(prompt_yes_no "Do you want to seed the developer admin account now?")
+
+  if [[ "$should_seed" == "y" ]]; then
+    log_info "Seeding developer admin account..."
+    pnpm db:seed
+    log_success "Database seeded successfully."
   else
-    collect_fenix_env
-    collect_smtp_env
-    collect_base_url
-    collect_notion_env
-    collect_google_calendar_env
-    generate_jwt_secret
-    cat > .env << EOF
-FENIX_CLIENT_ID=${fenix_client_id}
-FENIX_CLIENT_SECRET=${fenix_client_secret}
-FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
-# This username and password must match the ones created in schema.sql
-DATABASE_URL=postgresql://neiist_app_user:neiist_app_user_password@localhost:5432/neiist
-# SMTP configuration to send emails
-SMTP_HOST=${smtp_host}
-SMTP_PORT=${smtp_port}
-SMTP_USER=${smtp_user}
-SMTP_PASS=${smtp_pass}
-NEXT_PUBLIC_BASE_URL=${next_public_base_url}
-# Notion Calendar Api
-NOTION_API_KEY=${notion_api_key}
-DATABASE_ID=${database_id}
-# Google Calendar Service Account
-GOOGLE_SERVICE_ACCOUNT_EMAIL=${google_service_account_email}
-GOOGLE_SERVICE_ACCOUNT_KEY=${google_service_account_key}
-JWT_SECRET=${jwt_secret}
-DEV_ISTID=${dev_istid}[ADMIN]
-EOF
-    echo ".env file created successfully."
+    log_info "Skipping database seed."
   fi
-else
-  collect_fenix_env
-  collect_smtp_env
-  collect_base_url
-  collect_notion_env
-  collect_google_calendar_env
-  generate_jwt_secret
-  cat > .env << EOF
-FENIX_CLIENT_ID=${fenix_client_id}
-FENIX_CLIENT_SECRET=${fenix_client_secret}
-FENIX_REDIRECT_URI=http://localhost:3000/api/auth/callback
-# This username and password must match the ones created in schema.sql
-DATABASE_URL=postgresql://neiist_app_user:neiist_app_user_password@localhost:5432/neiist
-# SMTP configuration to send emails
-SMTP_HOST=${smtp_host}
-SMTP_PORT=${smtp_port}
-SMTP_USER=${smtp_user}
-SMTP_PASS=${smtp_pass}
-NEXT_PUBLIC_BASE_URL=${next_public_base_url}
-# Notion Calendar Api
-NOTION_API_KEY=${notion_api_key}
-DATABASE_ID=${database_id}
-# Google Calendar Service Account
-GOOGLE_SERVICE_ACCOUNT_EMAIL=${google_service_account_email}
-GOOGLE_SERVICE_ACCOUNT_KEY=${google_service_account_key}
-JWT_SECRET=${jwt_secret}
-DEV_ISTID=${dev_istid}[ADMIN]
-EOF
-  echo ".env file created successfully."
-fi
+}
 
-# Create docker/.env file
-file="docker/.env"
-echo "Creating $file file..."
-if [ -f "$file" ]; then
-  override=$(prompt_yes_no "$file file already exists. Override? (y/n): ")
-  if [ "$override" != "y" ]; then
-    echo "Keeping existing $file file."
-  else
-    cat > "$file" << EOF
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=admin
-POSTGRES_DB=neiist
-EOF
-    echo "$file file created successfully."
-  fi
-else
-  cat > "$file" << EOF
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=admin
-POSTGRES_DB=neiist
-EOF
-  echo "$file file created successfully."
-fi
+main() {
+  echo -e "${BLUE}===============================${NC}"
+  echo -e "${BLUE}  NEIIST Dev Env Setup Script  ${NC}"
+  echo -e "${BLUE}===============================${NC}"
 
-# Check if Docker is installed
-if ! command -v docker &> /dev/null; then
-  echo "Docker is not installed. Please install Docker to continue."
-  echo "https://docs.docker.com/get-docker/"
-  exit 1
-fi
+  check_dependencies
+  install_packages
+  setup_environment_variables
+  start_database
+  configure_git_hooks
+  seed_database
 
-# Start Docker containers
-echo "Building Docker containers..."
-cd docker
-docker compose -p neiist build
-wait
-cd ..
+  echo ""
+  log_success "Setup completed successfully!"
+  log_info "Next steps: Run 'pnpm dev' to start the development server."
+}
 
-# Setup of husky pre-commit
-echo "Setting up Husky Pre-Commit..."
-chmod +x .husky/pre-commit
-yarn husky
-
-echo "Setup completed successfully!"
-echo 
-echo "Next steps:"
-echo "1. Run 'yarn dev' to start the development server."
-echo "2. You can change your dev admin permissions at any time on the .env file."
-echo "3. Refer to INSTALLATION.md for further instructions."
-echo
-if [ "$override" = "y" ]; then
-  echo "Note: Your database credentials are:"
-  echo "   - user: neiist_app_user"
-  echo "   - password: neiist_app_user_password"
-  echo "   - database: neiist"
-  echo
-fi
+main "$@"

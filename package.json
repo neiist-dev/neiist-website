@@ -1,10 +1,10 @@
 {
   "name": "neiist",
   "version": "1.16.1",
+  "packageManager": "pnpm@11.10.0",
   "private": true,
   "scripts": {
     "setup": "chmod +x ./scripts/setup.sh && ./scripts/setup.sh",
-    "release": "yarn changeset && yarn changeset version && yarn changeset publish",
     "dev": "docker compose -f ./docker/docker-compose.yml up -d && next dev --turbopack; docker compose -f ./docker/docker-compose.yml stop > /dev/null 2>&1",
     "build": "next build",
     "start": "next start",
@@ -15,11 +15,12 @@
     "format:check": "prettier --config ./config/prettier/.prettierrc.json --ignore-path ./config/prettier/.prettierignore --check .",
     "type:check": "tsc --noEmit",
     "db:reset": "docker compose -f ./docker/docker-compose.yml down && docker volume rm neiist_db && docker compose -f ./docker/docker-compose.yml up -d",
-    "manage-calendars": "node scripts/manage-calendars.mts",
+    "db:seed": "node scripts/seed-db.mts",
     "db:backup:prod": "echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh backup prod",
     "db:backup:staging": "echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh backup staging",
     "db:backup:all": " echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh backup all",
     "db:restore": "echo 'WARN: This should only be run on the server' && ./scripts/manage-db.sh restore",
+    "manage-calendars": "node scripts/manage-calendars.mts",
     "clean": "rm -rf .next out dist build"
   },
   "dependencies": {
@@ -56,7 +57,8 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "@eslint/eslintrc": "^3.3.5",
     "@next/eslint-plugin-next": "16.2.6",
     "@types/node": "^25.6.2",
@@ -68,20 +70,13 @@
     "eslint-config-next": "16.2.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-validate-filename": "^1.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.4",
     "node-cron": "^4.2.1",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3"
-  },
-  "resolutions": {
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
-    "qs": "^6.15.2",
-    "@babel/core": "^7.29.6",
-    "postcss": "^8.5.10",
-    "js-yaml": "^4.2.0",
-    "**/read-yaml-file/js-yaml": "^3.15.0"
   }
 }

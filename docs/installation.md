@@ -11,10 +11,10 @@ This guide will help you get a local copy up and running follow these simple ste
   ```sh
   nvm use
   ```
-- **Yarn**:
+- **pnpm**:
   Install globally:
   ```sh
-  npm install -g yarn
+  npm install -g pnpm
   ```
 - **Python 3**:
   Required for some internal scripts.
@@ -34,10 +34,11 @@ This guide will help you get a local copy up and running follow these simple ste
    git clone https://github.com/<your-github-username>/neiist-website.git
    cd neiist-website
    ```
-4. Install Yarn.
+4. **Run the automated setup**:
    ```sh
-   npm install yarn
+   pnpm setup
    ```
+   *This will install dependencies, generate your `.env`, boot the Docker database, setup Git hooks, and seed your local Admin user interactively.*
 5. **SMTP Setup (Optional — for email sending features):**To enable email functionality (e.g., for notifications or verification), you need SMTP credentials.
    - For testing, you can use [Ethereal Email](https://ethereal.email/), a free fake SMTP service:
      1. Go to [ethereal.email](https://ethereal.email/) and create a test account.
@@ -85,10 +86,7 @@ This guide will help you get a local copy up and running follow these simple ste
       NOTION_API_KEY=secret_your_integration_token
       DATABASE_ID=your_database_id_here
       ```
-8. After getting your secrets you can run the setup script with Yarn, and it will ask for them.
-   ```sh
-   yarn setup
-   ```
+8. Now that you have gathered your API keys, open your `.env` file and fill them in!
 9. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need a service account:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
    2. Enable the **Google Drive API** for your project.

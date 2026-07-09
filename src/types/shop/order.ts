@@ -99,18 +99,16 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     pickup_deadline: row.pickup_deadline ?? undefined,
     discount_code: row.discount_code ?? undefined,
     discount_amount: row.discount_amount == null ? undefined : Number(row.discount_amount),
-    items: (row.items ?? []).map(
-      (item): OrderItem => ({
-        product_id: item.product_id,
-        product_name: item.product_name,
-        variant_id: item.variant_id ?? undefined,
-        variant_label: item.variant_label ?? undefined,
-        variant_options: decodeVariantOptionsFromStorage(item.variant_options ?? undefined),
-        quantity: item.quantity,
-        unit_price: Number(item.unit_price),
-        total_price: Number(item.total_price),
-      })
-    ),
+    items: (row.items ?? []).map((item): OrderItem => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      variant_id: item.variant_id ?? undefined,
+      variant_label: item.variant_label ?? undefined,
+      variant_options: decodeVariantOptionsFromStorage(item.variant_options ?? undefined),
+      quantity: item.quantity,
+      unit_price: Number(item.unit_price),
+      total_price: Number(item.total_price),
+    })),
     notes: row.notes ?? undefined,
     total_amount: Number(row.total_amount),
     payment_method: (row.payment_method as PaymentMethod) ?? undefined,

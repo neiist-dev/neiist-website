@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag or branch to deploy'
+        required: true
+        default: 'main'
 
 jobs:
   deploy:
@@ -28,10 +34,19 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
               "chmod +x /home/neiist/deploy_staging.sh"
 
+      - name: Determine Deploy Ref
+        id: deploy_ref
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "REF=main" >> $GITHUB_ENV
+          else
+            echo "REF=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          fi
+
       - name: Deploy to Staging
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c 'bash ~/deploy_staging.sh'"
+          "su - neiist -c 'bash ~/deploy_staging.sh ${{ env.REF }}'"
 
       - name: Confirm Staging Deployment
         run: |

@@ -86,12 +86,7 @@ export interface VerifyCheckoutResponse {
 }
 
 export type SumUpCardResponseType =
-  | "sent"
-  | "invalid"
-  | "auth-screen"
-  | "error"
-  | "success"
-  | "fail";
+  "sent" | "invalid" | "auth-screen" | "error" | "success" | "fail";
 
 export interface SumUpCardSentBody {
   last_4_digits?: string;
@@ -106,9 +101,7 @@ export interface SumUpCardErrorBody {
 }
 
 export type SumUpCardResponseBody =
-  | SumUpCardSentBody
-  | SumUpCardErrorBody
-  | Record<string, unknown>;
+  SumUpCardSentBody | SumUpCardErrorBody | Record<string, unknown>;
 
 export interface SumUpCardMountOptions {
   checkoutId: string;

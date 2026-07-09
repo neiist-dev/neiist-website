@@ -3,6 +3,7 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import nextPlugin from "@next/eslint-plugin-next";
 import validateFilename from "eslint-plugin-validate-filename";
 import reactHooks from "eslint-plugin-react-hooks";
+import reactPlugin from "eslint-plugin-react";
 
 /**
  * Normalize Next.js config rule names from "@next/next/..." to "next/..."
@@ -37,6 +38,8 @@ export default [
       "**/docker/**",
       "**/.husky/**",
       "**/yarn.lock",
+      "**/pnpm-lock.lock",
+      "**/pnpm-workspace.lock",
       "**/*.md",
       "**/*.yml",
       "**/*.yaml",
@@ -59,6 +62,7 @@ export default [
       next: nextPlugin,
       "validate-filename": validateFilename,
       "react-hooks": reactHooks,
+      react: reactPlugin,
     },
 
     rules: {
@@ -101,6 +105,48 @@ export default [
       "no-console": ["error", { allow: ["error", "warn"] }],
       "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "no-irregular-whitespace": "error",
+      /*
+      "react/forbid-elements": [
+        "error",
+        {
+          forbid: [
+            { element: "button", message: "Use the shared `Button` primitive instead." },
+            { element: "input", message: "Use the shared `Input` primitive instead." },
+            { element: "a", message: "Use `next/link` for internal navigation." },
+          ],
+        },
+      ],
+*/
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            { group: ["lucide-react"], message: "Use our project default library `react-icons`." },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/presenters/*.{js,jsx,ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react",
+              importNames: ["useState", "useEffect", "useContext", "useReducer"],
+              message: "Presenters must be dumb. Do not use React state/effects here.",
+            },
+          ],
+        },
+      ],
+      "no-restricted-globals": [
+        "error",
+        { name: "fetch", message: "Move fetch to an orchestrator." },
+        { name: "localStorage", message: "Move storage to an orchestrator." },
+      ],
     },
   },
 ];

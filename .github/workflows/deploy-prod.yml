@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag or branch to deploy'
+        required: true
+        default: 'main'
 
 permissions:
   contents: read
@@ -31,10 +36,19 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
               "chmod +x /home/neiist/deploy_prod.sh"
 
+      - name: Determine Deploy Ref
+        id: deploy_ref
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "REF=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          else
+            echo "REF=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          fi
+
       - name: Deploy to Production
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-           "su - neiist -c 'bash ~/deploy_prod.sh'"
+           "su - neiist -c 'bash ~/deploy_prod.sh ${{ env.REF }}'"
 
       - name: Confirm Production Deployment
         run: |

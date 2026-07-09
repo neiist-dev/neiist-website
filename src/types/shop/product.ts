@@ -134,18 +134,16 @@ export function restoreVariantOptionOrder(
 }
 
 export function mapdbProductToProduct(row: dbProduct): Product {
-  const mappedVariants = (row.variants ?? []).map(
-    (variant): ProductVariant => ({
-      id: variant.id,
-      sku: variant.sku ?? undefined,
-      images: variant.images ?? undefined,
-      price_modifier: Number(variant.price_modifier ?? 0),
-      stock_quantity: variant.stock_quantity ?? undefined,
-      active: Boolean(variant.active),
-      options: variant.options ?? {},
-      label: variant.label ?? undefined,
-    })
-  );
+  const mappedVariants = (row.variants ?? []).map((variant): ProductVariant => ({
+    id: variant.id,
+    sku: variant.sku ?? undefined,
+    images: variant.images ?? undefined,
+    price_modifier: Number(variant.price_modifier ?? 0),
+    stock_quantity: variant.stock_quantity ?? undefined,
+    active: Boolean(variant.active),
+    options: variant.options ?? {},
+    label: variant.label ?? undefined,
+  }));
 
   return {
     id: row.id,
