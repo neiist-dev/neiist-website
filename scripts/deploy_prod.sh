@@ -40,7 +40,7 @@ fi
 cd $DEPLOYING_TO_DIR || { echo "❌ Could not access $DEPLOYING_TO_DIR"; exit 1; }
 
 echo "📦 Pulling code for ref: $DEPLOY_REF..."
-git fetch origin --tags
+git fetch origin --tags --force
 git checkout -f "$DEPLOY_REF"
 if git show-ref --verify --quiet refs/heads/"$DEPLOY_REF"; then
   git pull origin "$DEPLOY_REF" || true
