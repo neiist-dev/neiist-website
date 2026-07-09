@@ -1,9 +1,9 @@
 import Calendar from "@/components/activities/Calendar";
-import { getActivitiesEventsFromDb } from "@/utils/dbUtils";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/Activities.module.css";
+import { getActivitiesEventsFromDb } from "@/utils/db/eventQueries";
 
 async function getEventsAndSubscriptions() {
   let istid: string | null = null;
@@ -15,7 +15,7 @@ async function getEventsAndSubscriptions() {
     isAdmin = perm.roles?.includes(UserRole._ADMIN) ?? false;
   }
 
-  let events = await getActivitiesEventsFromDb();
+  let events = await getActivitiesEventsFromDb().catch(() => []);
 
   // If no events in DB, sync from Notion
   if (events.length === 0) {
@@ -37,7 +37,7 @@ export default async function ActivitiesPage({
 }) {
   const params = searchParams ? await searchParams : {};
   const { events, signedUpEventIds } = await getEventsAndSubscriptions();
-  const urlSelectdEventID = params.eventId || undefined;
+  const urlSelectedEventID = params.eventId || undefined;
 
   return (
     <div className={styles.container}>
@@ -50,7 +50,7 @@ export default async function ActivitiesPage({
       <Calendar
         events={events}
         signedUpEventIds={signedUpEventIds}
-        initialSelectedEventId={urlSelectdEventID}
+        initialSelectedEventId={urlSelectedEventID}
       />
     </div>
   );

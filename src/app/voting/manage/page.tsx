@@ -3,7 +3,7 @@ import {
   getVotingSessionById,
   getSessionResults,
 } from "@/utils/db/votingQueries";
-import { getActivitiesEventsFromDb } from "@/utils/dbUtils";
+import { getActivitiesEventsFromDb } from "@/utils/db/eventQueries";
 import { getAllUsers } from "@/utils/db/userQueries";
 import AdminVotingSync from "@/components/voting/AdminVotingSync";
 import VotingManagement from "@/components/voting/admin/VotingManagement";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { updateActivityProperties, getEventSubscribers } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
+import { updateActivityProperties, getEventSubscribers } from "@/utils/db/eventQueries";
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
