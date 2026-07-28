@@ -6,7 +6,7 @@ import {
   sumupErrorResponse,
   getErrorStatus,
   formatSumUpError,
-} from "@/utils/sumupUtils";
+} from "@/lib/sumup";
 import { UserRole } from "@/types/user";
 import type { SumUpReadersListResponse } from "@/types/sumup";
 

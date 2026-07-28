@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { serverCheckRoles } from "@/utils/permissionUtils";
-import { validateSumUpCredentials, sumupErrorResponse } from "@/utils/sumupUtils";
+import { validateSumUpCredentials, sumupErrorResponse } from "@/lib/sumup";
 
 type ApplePaySessionRequestBody = {
   checkoutId?: string;

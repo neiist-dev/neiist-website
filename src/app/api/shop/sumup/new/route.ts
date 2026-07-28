@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { serverCheckRoles } from "@/utils/permissionUtils";
-import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/utils/sumupUtils";
+import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
 import type {
   CreateCheckoutResponse,
   CreateCheckoutRequestBody,

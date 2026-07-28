@@ -5,7 +5,7 @@ import {
   getSumUpClient,
   sumupErrorResponse,
   formatSumUpError,
-} from "@/utils/sumupUtils";
+} from "@/lib/sumup";
 import type { ApplePayPaymentToken, VerifyCheckoutRequestBody, SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { getOrderById } from "@/utils/db/shopQueries";

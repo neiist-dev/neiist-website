@@ -7,7 +7,7 @@ import {
   getErrorStatus,
   sumupErrorResponse,
   formatSumUpError,
-} from "@/utils/sumupUtils";
+} from "@/lib/sumup";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 

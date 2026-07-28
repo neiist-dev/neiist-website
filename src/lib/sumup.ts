@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import SumUp from "@sumup/sdk";
 
+let _sumupClient: SumUp | null = null;
 /**
  * Validates that required SumUp environment variables are set.
  * Returns error response if missing, otherwise null.
@@ -18,12 +19,16 @@ export function validateSumUpCredentials(): NextResponse | null {
 }
 
 /**
- * Creates and returns a SumUp client instance.
+ * Creates if necessary and returns a SumUp client singleton.
  * Assumes credentials are already validated via validateSumUpCredentials().
  */
 export function getSumUpClient(): SumUp {
-  const apiKey = process.env.SUMUP_API_KEY!;
-  return new SumUp({ apiKey });
+  if (!_sumupClient) {
+    const apiKey = process.env.SUMUP_API_KEY;
+    if (!_sumupClient) throw new Error("SUMUP_API_KEY is missing");
+    _sumupClient = new SumUp({ apiKey });
+  }
+  return _sumupClient;
 }
 
 /**

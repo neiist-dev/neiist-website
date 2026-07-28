@@ -5,7 +5,7 @@ import {
   getSumUpClient,
   sumupErrorResponse,
   getErrorStatus,
-} from "@/utils/sumupUtils";
+} from "@/lib/sumup";
 import { UserRole } from "@/types/user";
 import type { SumUpCheckout } from "@/types/sumup";
 
