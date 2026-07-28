@@ -8,6 +8,8 @@ const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 const BATCH_SIZE = 50;
 const BATCH_DELAY_MS = 10;
 
+let _calendarClient: ReturnType<typeof google.calendar> | null = null;
+
 function getServiceAccountCredentials() {
   const keyEnv = process.env.GOOGLE_SERVICE_ACCOUNT_KEY!;
 
@@ -20,14 +22,12 @@ function getServiceAccountCredentials() {
 }
 
 export function getCalendarClient() {
-  const serviceAccountKey = getServiceAccountCredentials();
-
-  const auth = new google.auth.GoogleAuth({
-    credentials: serviceAccountKey,
-    scopes: SCOPES,
-  });
-
-  return google.calendar({ version: "v3", auth });
+  if (!_calendarClient) {
+    const serviceAccountKey = getServiceAccountCredentials();
+    const auth = new google.auth.GoogleAuth({ credentials: serviceAccountKey, scopes: SCOPES });
+    _calendarClient = google.calendar({ version: "v3", auth });
+  }
+  return _calendarClient;
 }
 
 function isDateOnly(s?: string | null) {

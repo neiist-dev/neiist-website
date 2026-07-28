@@ -2,6 +2,10 @@ import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
 
+const SCOPES = ["https://www.googleapis.com/auth/drive"];
+
+let _driveClient: ReturnType<typeof google.drive> | null = null;
+
 function getServiceAccountCredentials() {
   const keyEnv = process.env.GDRIVE_SERVICE_ACCOUNT_KEY!;
 
@@ -18,12 +22,10 @@ function getServiceAccountCredentials() {
 }
 
 export function getDriveClient() {
-  const serviceAccountKey = getServiceAccountCredentials();
-
-  const auth = new google.auth.GoogleAuth({
-    credentials: serviceAccountKey,
-    scopes: ["https://www.googleapis.com/auth/drive"],
-  });
-
-  return google.drive({ version: "v3", auth });
+  if (!_driveClient) {
+    const serviceAccountKey = getServiceAccountCredentials();
+    const auth = new google.auth.GoogleAuth({ credentials: serviceAccountKey, scopes: SCOPES });
+    _driveClient = google.drive({ version: "v3", auth });
+  }
+  return _driveClient;
 }

@@ -7,7 +7,7 @@ import path from "path";
 import type { NotionPage, NotionApiResponse } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
-import { syncAllEventsToCalendar, getCalendarClient } from "@/utils/googleCalendar";
+import { syncAllEventsToCalendar, getCalendarClient } from "@/lib/google/calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
 import { getAllUsers } from "@/utils/db/userQueries";

@@ -5,7 +5,7 @@ import {
   getAddCalendarLink,
   getCalendarWebLink,
   syncEventsToCalendarBatched,
-} from "@/utils/googleCalendar";
+} from "@/lib/google/calendar";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { Client } from "@notionhq/client";
 import type { NotionPage, NotionApiResponse } from "@/types/notion";
