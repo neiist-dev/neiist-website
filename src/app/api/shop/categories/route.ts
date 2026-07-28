@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAllCategories, addCategory } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);

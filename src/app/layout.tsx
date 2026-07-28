@@ -11,7 +11,7 @@ import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
 import "@/lib/autoCancelScheduler";
 import { cookies } from "next/headers";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { getUser } from "@/utils/db/userQueries";
 
 const secularOne = Secular_One({

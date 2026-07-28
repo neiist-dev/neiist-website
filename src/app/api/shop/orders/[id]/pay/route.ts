@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { UserRole } from "@/types/user";
 import { getOrderById } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userRoles = await serverCheckRoles([

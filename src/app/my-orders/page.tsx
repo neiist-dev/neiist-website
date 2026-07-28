@@ -1,6 +1,6 @@
 import MyOrdersList from "@/components/shop/MyOrdersList";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { getAllOrders, getAllProducts } from "@/utils/db/shopQueries";
 

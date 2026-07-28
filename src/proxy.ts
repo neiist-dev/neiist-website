@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole, hasRequiredRole } from "@/types/user";
-import { getUserFromJWT } from "./utils/authUtils";
-import { rateLimit } from "@/utils/security/rateLimitUtils";
-import { CSP } from "@/utils/security/cspUtils";
+import { getUserFromJWT } from "./lib/auth";
+import { rateLimit } from "@/lib/security/rateLimitUtils";
+import { CSP } from "@/lib/security/cspUtils";
 import { getRateLimitRule } from "@/lib/rateLimitRules";
 import { BOT_USER_AGENTS } from "@/lib/botAgents";
 

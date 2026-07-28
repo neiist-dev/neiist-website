@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import {
   addValidDepartmentRole,
   removeValidDepartmentRole,
   getDepartmentRoles,
 } from "@/utils/db/userQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);

@@ -1,8 +1,8 @@
 import OrdersTable from "@/components/shop/OrdersTable";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { UserRole } from "@/types/user";
 import { getAllOrders, getAllProducts } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 interface PageProps {
   searchParams: Promise<{ orderId?: string }>;

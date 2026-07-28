@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import ProfileClient from "@/components/Profile";
 import styles from "@/styles/pages/ProfilePage.module.css";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/db/userQueries";
 

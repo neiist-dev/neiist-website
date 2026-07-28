@@ -5,8 +5,7 @@ import { OrderSource } from "@/types/shop/orderKind";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { OrderItem } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
-import { serverCheckRoles } from "@/utils/permissionUtils";
-import { sendEmail, getPendingOrderEmailTemplate } from "@/utils/emailUtils";
+import { sendEmail, getPendingOrderEmailTemplate } from "@/lib/email";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import {
   getAllOrders,
@@ -15,6 +14,7 @@ import {
   getUserOrderedProductsInCategory,
 } from "@/utils/db/shopQueries";
 import { getUser, updateUser } from "@/utils/db/userQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 function parseOrderSource(value: string): OrderSource {
   switch (value) {

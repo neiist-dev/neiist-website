@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
-import { signUserJWT } from "@/utils/authUtils";
+import { signUserJWT } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getUser, createUser, getEmailVerificationByUser } from "@/utils/db/userQueries";
 

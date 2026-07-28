@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { serverCheckRoles } from "@/utils/permissionUtils";
-import { sendEmail, getDiscountCampaignEmailTemplate } from "@/utils/emailUtils";
+import { sendEmail, getDiscountCampaignEmailTemplate } from "@/lib/email";
 import type {
   DiscountCodeInput,
   DiscountCodeUpdateInput,
@@ -14,6 +13,7 @@ import {
   getAllDiscountCodes,
   updateDiscountCode,
 } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 function normalizeString(value: unknown): string | null {
   if (typeof value !== "string") return null;

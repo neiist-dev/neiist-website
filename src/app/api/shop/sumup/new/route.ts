@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
 import type {
   CreateCheckoutResponse,
   CreateCheckoutRequestBody,
   SumUpCheckoutPayload,
 } from "@/types/sumup";
-import { formatVariantLabel } from "@/utils/emailUtils";
+import { formatVariantLabel } from "@/lib/email";
 import { getOrderById, updateOrder } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 const CHECKOUT_TTL_MINUTES = 15;

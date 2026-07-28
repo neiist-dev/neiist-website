@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { User, UserRole } from "@/types/user";
 import fs from "fs/promises";
 import path from "path";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getUser, updateUser, updateUserPhoto } from "@/utils/db/userQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
   const userRoles = await serverCheckRoles([

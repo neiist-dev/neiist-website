@@ -1,9 +1,9 @@
 import Calendar from "@/components/activities/Calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { UserRole } from "@/types/user";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/Activities.module.css";
 import { getActivitiesEventsFromDb } from "@/utils/db/eventQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 async function getEventsAndSubscriptions() {
   let istid: string | null = null;

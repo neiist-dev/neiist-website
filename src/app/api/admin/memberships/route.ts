@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { Membership } from "@/types/memberships";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { addTeamMember, removeTeamMember, getAllMemberships } from "@/utils/db/userQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 async function checkMembershipPermission(departmentName: string) {
   const roles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { sendEmail, getEmailVerificationTemplate } from "@/utils/emailUtils";
+import { sendEmail, getEmailVerificationTemplate } from "@/lib/email";
 import { addEmailVerification } from "@/utils/db/userQueries";
 
 export async function POST(request: Request) {

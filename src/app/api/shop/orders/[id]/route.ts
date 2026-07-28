@@ -4,15 +4,15 @@ import { UserRole } from "@/types/user";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
 import { PAYMENT_METHODS } from "@/types/shop/payment";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import type { User } from "@/types/user";
 import { Order } from "@/types/shop/order";
 import {
   getPendingOrderEmailTemplate,
   getStatusUpdateOrderEmailTemplate,
   sendEmail,
-} from "@/utils/emailUtils";
+} from "@/lib/email";
 import { updateOrder, setOrderState, getOrderById } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 function isShopManagerOrAbove(roles: UserRole[]) {
   return (

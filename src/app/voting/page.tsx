@@ -1,4 +1,3 @@
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { GlobalVotingState } from "@/types/voting";
 import VotingClient from "@/components/voting/VotingClient";
 import {
@@ -7,6 +6,7 @@ import {
   getUserVote,
   getSessionResults,
 } from "@/utils/db/votingQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 

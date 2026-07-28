@@ -1,5 +1,5 @@
 import CheckoutForm from "@/components/shop/CheckoutForm";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getUser } from "@/utils/db/userQueries";

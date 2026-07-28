@@ -1,4 +1,4 @@
-import { getAutoCancelledOrderEmailTemplate, sendEmail } from "@/utils/emailUtils";
+import { getAutoCancelledOrderEmailTemplate, sendEmail } from "@/lib/email";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { Order } from "@/types/shop/order";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";

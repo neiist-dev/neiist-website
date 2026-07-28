@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import path from "path";
 import fs from "fs/promises";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import {
   updateProduct,
@@ -12,6 +11,7 @@ import {
   deleteProduct,
   deleteProductVariant,
 } from "@/utils/db/shopQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF

@@ -1,4 +1,4 @@
-import { getPaidOrderEmailTemplate, sendEmail } from "@/utils/emailUtils";
+import { getPaidOrderEmailTemplate, sendEmail } from "@/lib/email";
 import { Order } from "@/types/shop/order";
 import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";

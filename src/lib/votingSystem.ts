@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { serverCheckRoles } from "@/utils/permissionUtils";
 import { UserRole } from "@/types/user";
 import { VotingSession, VotingType } from "@/types/voting";
 import {
@@ -13,6 +12,7 @@ import {
   submitVote,
   updateVotingSession,
 } from "@/utils/db/votingQueries";
+import { serverCheckRoles } from "@/lib/auth";
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);

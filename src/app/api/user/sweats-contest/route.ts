@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { Readable } from "stream";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { getDriveClient } from "@/lib/google/drive";
 
 const SWEATS_FOLDER_ID = process.env.GDRIVE_SWEATS_FOLDER_ID!;

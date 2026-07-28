@@ -12,7 +12,7 @@ import type { NotionPage, NotionApiResponse } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { getUser } from "@/utils/db/userQueries";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;

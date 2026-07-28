@@ -2,7 +2,7 @@ import CoordinatorTeamManagementSearch from "@/components/team-management/Coordi
 import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { cookies } from "next/headers";
-import { getUserFromJWT } from "@/utils/authUtils";
+import { getUserFromJWT } from "@/lib/auth";
 import { getAllUsers, getAllMemberships, getAllValidDepartmentRoles } from "@/utils/db/userQueries";
 
 interface Role {
