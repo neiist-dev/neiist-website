@@ -1,5 +1,30 @@
 # neiist
 
+## [2.0.0](https://github.com/neiist-dev/neiist-website/compare/v1.16.1...v2.0.0) (2026-08-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate to pnpm, new db seed script and updated deployments
+
+### Features
+
+* load google service accouts from env not from json files ([b173609](https://github.com/neiist-dev/neiist-website/commit/b17360982087fee3f3831fb9a336bd46498d558f))
+* update packages with security vulnerabilities ([141b9f8](https://github.com/neiist-dev/neiist-website/commit/141b9f832050197dfe030752cb57e86bd6c7cf22))
+* **votingSystem:** optimize SSE pub/sub architecture and fix stale state amnesia ([41154f9](https://github.com/neiist-dev/neiist-website/commit/41154f91d36e34e240d4f1cfdaf04261b83cc8e7))
+
+
+### Bug Fixes
+
+* **deploy:** correct git tags fetching on the server ([ca2a9ec](https://github.com/neiist-dev/neiist-website/commit/ca2a9ec14cbfa2a37fbeacb1f67cc71a3c5755ca))
+* **layout:** replace self-loopback HTTP fetch with a server side call to ([311845a](https://github.com/neiist-dev/neiist-website/commit/311845a9db1f3b64d934acb8f4ba4bb3856eb2df))
+* **scripts:** manage manage-calendars, setup google and setup notion ([a1cb866](https://github.com/neiist-dev/neiist-website/commit/a1cb8662e23d1770969ebceb6c7f8f8e44a29ff9))
+
+
+### Miscellaneous Chores
+
+* migrate to pnpm, new db seed script and updated deployments ([55ff382](https://github.com/neiist-dev/neiist-website/commit/55ff382af397652d7d7119b306e2416d651cc847)), closes [#656](https://github.com/neiist-dev/neiist-website/issues/656)
+
 ## [1.16.1](https://github.com/neiist-dev/neiist-website/compare/v1.16.0...v1.16.1) (2026-05-20)
 
 
