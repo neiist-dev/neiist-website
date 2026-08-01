@@ -1,8 +1,5 @@
 import { google } from "googleapis";
-import fs from "fs";
-import path from "path";
 import { loadEnvFile } from "node:process";
-
 import enquirer from "enquirer";
 const { MultiSelect, Confirm } = enquirer;
 
@@ -13,25 +10,24 @@ try {
   // Ignore if .env file is missing
 }
 
-function getServiceAccountCredentials() {
-  const keyEnv = process.env.GOOGLE_SERVICE_ACCOUNT_KEY!;
-
-  if (!keyEnv) {
-    throw new Error("Missing env: GOOGLE_SERVICE_ACCOUNT_KEY");
-  }
-
-  if (keyEnv.endsWith(".json")) {
-    const keyPath = path.resolve(process.cwd(), keyEnv);
-    const keyContent = fs.readFileSync(keyPath, "utf8");
-    return JSON.parse(keyContent);
-  }
-  return JSON.parse(keyEnv);
-}
-
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
 
+function parseServiceAccountCredentials(value: string): object {
+  const accountCredentials = value.trim();
+  if (accountCredentials.startsWith("{")) return JSON.parse(accountCredentials);
+
+  return JSON.parse(Buffer.from(accountCredentials, "base64").toString("utf8"));
+}
+
+function getServiceAccount(envName: string): object {
+  const envValue = process.env[envName];
+  if (!envValue) throw new Error("Missing env for Google Service Account");
+
+  return parseServiceAccountCredentials(envValue);
+}
+
 async function getCalendarClient() {
-  const serviceAccountKey = getServiceAccountCredentials();
+  const serviceAccountKey = getServiceAccount("GOOGLE_SERVICE_ACCOUNT_KEY");
   const auth = new google.auth.GoogleAuth({
     credentials: serviceAccountKey,
     scopes: SCOPES,

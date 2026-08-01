@@ -38,14 +38,16 @@ This guide will help you get a local copy up and running follow these simple ste
    ```sh
    pnpm setup
    ```
-   *This will install dependencies, generate your `.env`, boot the Docker database, setup Git hooks, and seed your local Admin user interactively.*
-5. **SMTP Setup (Optional — for email sending features):**To enable email functionality (e.g., for notifications or verification), you need SMTP credentials.
+   *This will install dependencies, generate your `.env`, boot the Docker database, setup Git hooks, and seed your local Admin user interactively, and optionally quickly setup Google Service Accounts and Notion.*
+
+5. **SMTP Setup (Optional — for email sending features):** To enable email functionality (e.g., for notifications or verification), you need SMTP credentials.
    - For testing, you can use [Ethereal Email](https://ethereal.email/), a free fake SMTP service:
      1. Go to [ethereal.email](https://ethereal.email/) and create a test account.
      2. Copy the SMTP details (host, port, user, password).
      3. When running the setup script, enter these details when prompted.
    - You can also use credentials from your own email provider if preferred.
-6. **Google Calendar Integration (Optional):**To enable Google Calendar integration, you need a service account:
+
+6. **Google Calendar Integration (Optional):** To enable Google Calendar integration, you need a service account:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
    2. Enable the **Google Calendar API** for your project.
    3. Create a **Service Account**:
@@ -59,12 +61,13 @@ This guide will help you get a local copy up and running follow these simple ste
       - Click "Add Key" → "Create new key"
       - Choose JSON format
       - Download the key file
-   5. Place the json key file on the root of the app folder:
+   5. Place the JSON key file on the root of the app folder:
       ```
-      GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project-id.iam.gserviceaccount.com
-      GOOGLE_SERVICE_ACCOUNT_KEY=file_name.json
+      pnpm setup:service-accounts
       ```
-7. **Notion Integration (Optional — for event sync):**To sync events from Notion to Google Calendar and Activities Page:
+      This automatically parses, convert to base64 and assign your service accounts JSON contents to GOOGLE_SERVICE_ACCOUNT_KEY and GDRIVE_SERVICE_ACCOUNT_KEY inside .env.
+
+7. **Notion Integration (Optional — for event sync):** To sync events from Notion to Google Calendar and Activities Page:
    1. Go to [Notion Integrations](https://www.notion.so/my-integrations).
    2. Click "New integration".
    3. Give it a name (e.g., "NEIIST Calendar Sync").
@@ -86,8 +89,12 @@ This guide will help you get a local copy up and running follow these simple ste
       NOTION_API_KEY=secret_your_integration_token
       DATABASE_ID=your_database_id_here
       ```
-8. Now that you have gathered your API keys, open your `.env` file and fill them in!
-9. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need a service account:
+   9. Then run the script to verify the webhook token:
+      ```
+      pnpm setup:notion
+      ```
+
+8. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need a service account:
    1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
    2. Enable the **Google Drive API** for your project.
    3. Create a **Service Account**:
@@ -101,18 +108,16 @@ This guide will help you get a local copy up and running follow these simple ste
       - Click "Add Key" → "Create new key"
       - Choose JSON format
       - Download the key file
-   5. Place the json key file on the root of the app folder.
+   5. Place the JSON key file on the root of the app folder.
    6. **Permissions:** You must share the target Google Drive folders with the service account email.
       - Open the folder in Google Drive.
       - Click "Share".
       - Add the service account email (e.g., `neiist-drive@project-id.iam.gserviceaccount.com`) as an **Editor**.
-   7. Add to your `.env`:
+   7. Run the setup script for service accounts:
       ```
-      GDRIVE_SERVICE_ACCOUNT_EMAIL=your-service-account@project-id.iam.gserviceaccount.com
-      GDRIVE_SERVICE_ACCOUNT_KEY=file_name.json
-      GDRIVE_CV_FOLDER_ID=your_drive_folder_id
-      GDRIVE_SWEATS_FOLDER_ID=your_sweats_folder_id
+      pnpm setup:service-accounts
       ```
+      This automatically parses, convert to base64 and assign your service accounts JSON contents GDRIVE_SERVICE_ACCOUNT_KEY inside .env and adds the correct folder IDs.
 
 ## Database Management
 
@@ -127,7 +132,7 @@ This guide will help you get a local copy up and running follow these simple ste
 
 - Husky is set up for pre-commit hooks to help maintain code quality.
 - **DEV_ISTID**
-  This variable sets the your ISTID as admin or other permissions.
+  This variable sets the ISTID as admin or other permissions.
   You can change its value in `.env` to instantly switch the permission level for your local session.
   Example:
   ```

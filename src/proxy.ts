@@ -3,8 +3,8 @@ import { UserRole, hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./lib/auth";
 import { rateLimit } from "@/lib/security/rateLimitUtils";
 import { CSP } from "@/lib/security/cspUtils";
-import { getRateLimitRule } from "@/lib/rateLimitRules";
-import { BOT_USER_AGENTS } from "@/lib/botAgents";
+import { getRateLimitRule } from "@/lib/security/rateLimitRules";
+import { BOT_USER_AGENTS } from "@/lib/security/botAgents";
 
 const publicRoutes = [
   "/home",

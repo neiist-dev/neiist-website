@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import pLimit from "p-limit";
 import { Client } from "@notionhq/client";
 import crypto from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import type { NotionPage, NotionApiResponse } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
@@ -14,12 +12,6 @@ import { getAllUsers } from "@/utils/db/userQueries";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
-const ENV_PATH = path.resolve(process.cwd(), ".env");
-
-type NotionWebhookPayload = {
-  verification_token?: string;
-  [key: string]: unknown;
-};
 
 const notion = new Client({ auth: NOTION_API_KEY });
 
@@ -88,7 +80,7 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
     )
   );
 
-  const totals = results.reduce(
+  return results.reduce(
     (acc, stat) => ({
       updated: acc.updated + stat.updated,
       deleted: acc.deleted + stat.deleted,
@@ -96,50 +88,12 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
     }),
     { updated: 0, deleted: 0, unchanged: 0 }
   );
-
-  return totals;
-}
-
-async function getVerificationToken(): Promise<string | undefined> {
-  return process.env.VERIFICATION_TOKEN;
-}
-
-async function saveVerificationTokenToEnv(token: string) {
-  let env = "";
-  try {
-    env = await fs.readFile(ENV_PATH, "utf8");
-  } catch {
-    env = "";
-  }
-
-  if (/^VERIFICATION_TOKEN=.*/m.test(env)) {
-    env = env.replace(/^VERIFICATION_TOKEN=.*/m, `VERIFICATION_TOKEN=${token}`);
-  } else {
-    if (!env.endsWith("\n")) env += "\n";
-    env += `VERIFICATION_TOKEN=${token}\n`;
-  }
-
-  await fs.writeFile(ENV_PATH, env, "utf8");
 }
 
 export async function POST(req: NextRequest) {
   const bodyText = await req.text();
-  let payload: NotionWebhookPayload;
-  try {
-    payload = JSON.parse(bodyText) as NotionWebhookPayload;
-  } catch {
-    return new NextResponse("Invalid JSON", { status: 400 });
-  }
+  const verificationToken = process.env.VERIFICATION_TOKEN;
 
-  if (payload.verification_token) {
-    await saveVerificationTokenToEnv(payload.verification_token);
-    return NextResponse.json({
-      message: "verification_token saved to .env file. Restart your app to use it.",
-      verification_token: payload.verification_token,
-    });
-  }
-
-  const verificationToken = await getVerificationToken();
   if (verificationToken) {
     const signatureHeader =
       req.headers.get("X-Notion-Signature") || req.headers.get("x-notion-signature") || "";

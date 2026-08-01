@@ -133,6 +133,34 @@ seed_database() {
   fi
 }
 
+configure_service_accounts() {
+  echo ""
+  log_info "6. Service Account Keys Configuration"
+
+  local should_config
+  should_config=$(prompt_yes_no "Do you want to configure Service Account JSON keys into .env now?")
+
+  if [[ "$should_config" == "y" ]]; then
+    pnpm setup:service-accounts
+  else
+    log_info "Skipping Service Account keys setup."
+  fi
+}
+
+configure_notion() {
+  echo ""
+  log_info "7. Notion Integration Configuration"
+
+  local should_config
+  should_config=$(prompt_yes_no "Do you want to setup and verify Notion integration credentials now?")
+
+  if [[ "$should_config" == "y" ]]; then
+    pnpm setup:notion
+  else
+    log_info "Skipping Notion setup."
+  fi
+}
+
 main() {
   echo -e "${BLUE}===============================${NC}"
   echo -e "${BLUE}  NEIIST Dev Env Setup Script  ${NC}"
@@ -144,6 +172,8 @@ main() {
   start_database
   configure_git_hooks
   seed_database
+  configure_service_accounts
+  configure_notion
 
   echo ""
   log_success "Setup completed successfully!"
