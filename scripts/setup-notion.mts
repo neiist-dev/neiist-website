@@ -2,9 +2,7 @@ import fs from "fs";
 import path from "path";
 import { loadEnvFile } from "node:process";
 import { Client } from "@notionhq/client";
-import enquirer from "enquirer";
-
-const { Input, Confirm } = enquirer as any;
+import { text, confirm, isCancel, cancel } from "@clack/prompts";
 
 try {
   loadEnvFile();
@@ -15,7 +13,7 @@ try {
 const ENV_PATH = path.resolve(process.cwd(), ".env");
 
 function updateEnvVar(key: string, value: string) {
-  let envContent = "";
+  let envContent: string;
   try {
     envContent = fs.readFileSync(ENV_PATH, "utf8");
   } catch {
@@ -28,12 +26,9 @@ function updateEnvVar(key: string, value: string) {
   if (regex.test(envContent)) {
     envContent = envContent.replace(regex, line);
   } else {
-    if (envContent && !envContent.endsWith("\n")) {
-      envContent += "\n";
-    }
+    if (envContent && !envContent.endsWith("\n")) envContent += "\n";
     envContent += `${line}\n`;
   }
-
   fs.writeFileSync(ENV_PATH, envContent, "utf8");
 }
 
@@ -47,20 +42,22 @@ async function main() {
   let verificationToken = process.env.VERIFICATION_TOKEN || "";
 
   if (!apiKey || apiKey === "your_notion_secret") {
-    const apiKeyPrompt = new Input({
-      name: "apiKey",
+    const inputKey = await text({
       message: "Enter your Notion API Key (starts with ntn_ or secret_):",
     });
-    apiKey = await apiKeyPrompt.run();
+    if (isCancel(inputKey)) return cancel("Setup cancelled.");
+
+    apiKey = inputKey as string;
     if (apiKey) updateEnvVar("NOTION_API_KEY", apiKey.trim());
   }
 
   if (!databaseId || databaseId === "your_database_id") {
-    const dbPrompt = new Input({
-      name: "databaseId",
+    const inputDb = await text({
       message: "Enter your Notion Database ID (32 character hex string):",
     });
-    databaseId = await dbPrompt.run();
+    if (isCancel(inputDb)) return cancel("Setup cancelled.");
+
+    databaseId = inputDb as string;
     if (databaseId) updateEnvVar("DATABASE_ID", databaseId.trim());
   }
 
@@ -78,24 +75,23 @@ async function main() {
       );
     } catch (err) {
       console.error("Notion connection failed:", (err as Error).message);
-      const confirmPrompt = new Confirm({
-        name: "continue",
+      const proceed = await confirm({
         message: "Would you like to continue configuring the Webhook Verification Token?",
       });
-      const proceed = await confirmPrompt.run();
-      if (!proceed) return;
+      if (isCancel(proceed) || !proceed) return cancel("Setup cancelled.");
     }
   }
 
   console.log("\n--- Webhook Verification Token Setup ---");
-  const tokenPrompt = new Input({
-    name: "token",
+  const tokenInput = await text({
     message: "Enter your Notion Webhook Verification Token (or press Enter to skip):",
-    initial:
+    initialValue:
       verificationToken && verificationToken !== "verification_token" ? verificationToken : "",
   });
 
-  const inputToken = (await tokenPrompt.run()).trim();
+  if (isCancel(tokenInput)) return cancel("Setup cancelled.");
+
+  const inputToken = (tokenInput as string).trim();
   if (inputToken) {
     updateEnvVar("VERIFICATION_TOKEN", inputToken);
     console.log("Updated VERIFICATION_TOKEN in .env");

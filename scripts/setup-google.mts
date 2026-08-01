@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { loadEnvFile } from "node:process";
-import enquirer from "enquirer";
-
-const { Select, Input } = enquirer as any;
+import { select, text, isCancel } from "@clack/prompts";
 
 try {
   loadEnvFile();
@@ -14,7 +12,7 @@ try {
 const ENV_PATH = path.resolve(process.cwd(), ".env");
 
 function updateEnvVar(key: string, value: string) {
-  let envContent = "";
+  let envContent: string;
   try {
     envContent = fs.readFileSync(ENV_PATH, "utf8");
   } catch {
@@ -29,12 +27,9 @@ function updateEnvVar(key: string, value: string) {
   if (regex.test(envContent)) {
     envContent = envContent.replace(regex, line);
   } else {
-    if (envContent && !envContent.endsWith("\n")) {
-      envContent += "\n";
-    }
+    if (envContent && !envContent.endsWith("\n")) envContent += "\n";
     envContent += `${line}\n`;
   }
-
   fs.writeFileSync(ENV_PATH, envContent, "utf8");
 }
 
@@ -61,9 +56,8 @@ function validateAndEncodeJson(filePath: string): { encoded: string; parsed: any
     const content = fs.readFileSync(fullPath, "utf8");
     const parsed = JSON.parse(content);
 
-    if (parsed.type !== "service_account") {
+    if (parsed.type !== "service_account")
       console.warn(`Warning: ${filePath} missing "type": "service_account".`);
-    }
 
     const minified = JSON.stringify(parsed);
     const encoded = Buffer.from(minified).toString("base64");
@@ -79,40 +73,36 @@ async function configureKey(targetEnvVar: string, friendlyName: string): Promise
   console.log(`\n--- Configuring ${friendlyName} (${targetEnvVar}) ---`);
 
   const jsonFiles = findJsonFiles();
-  let selectedPath = "";
+  let selectedPath: string | symbol;
 
   if (jsonFiles.length > 0) {
-    const choices = [...jsonFiles, "Enter custom file path", "Skip"];
-    const prompt = new Select({
-      name: "file",
+    selectedPath = await select({
       message: `Select JSON key file for ${friendlyName}:`,
-      choices: choices,
+      options: [
+        ...jsonFiles.map((f) => ({ label: f, value: f })),
+        { label: "Enter custom file path", value: "custom" },
+        { label: "Skip", value: "skip" },
+      ],
     });
-    selectedPath = await prompt.run();
   } else {
-    const prompt = new Input({
-      name: "path",
+    selectedPath = await text({
       message: `Enter path to the ${friendlyName} JSON key file (or leave blank to skip):`,
     });
-    selectedPath = await prompt.run();
   }
 
-  if (!selectedPath || selectedPath === "Skip") {
+  if (isCancel(selectedPath) || selectedPath === "skip" || !selectedPath) {
     console.log(`Skipping ${friendlyName} key setup.`);
     return null;
   }
 
-  if (selectedPath === "Enter custom file path") {
-    const prompt = new Input({
-      name: "path",
+  if (selectedPath === "custom") {
+    selectedPath = await text({
       message: `Enter path to the JSON key file:`,
     });
-    selectedPath = await prompt.run();
+    if (isCancel(selectedPath) || !selectedPath) return null;
   }
 
-  if (!selectedPath) return null;
-
-  const result = validateAndEncodeJson(selectedPath);
+  const result = validateAndEncodeJson(selectedPath as string);
   if (result) {
     updateEnvVar(targetEnvVar, result.encoded);
     console.log(`Successfully stored ${targetEnvVar} in .env file (Base64 Encoded)!`);
@@ -122,19 +112,18 @@ async function configureKey(targetEnvVar: string, friendlyName: string): Promise
 }
 
 async function configureFolder(targetEnvVar: string, friendlyName: string) {
-  const prompt = new Input({
-    name: "folderUrl",
+  const input = await text({
     message: `Paste the URL (or ID) for the ${friendlyName} (leave blank to skip):`,
   });
 
-  const input: string = await prompt.run();
-  if (!input.trim()) {
+  if (isCancel(input) || !(input as string).trim()) {
     console.log(`Skipping ${friendlyName}.`);
     return;
   }
 
-  const match = input.match(/[-\w]{25,}/);
-  const folderId = match ? match[0] : input.trim();
+  const strInput = input as string;
+  const match = strInput.match(/[-\w]{25,}/);
+  const folderId = match ? match[0] : strInput.trim();
 
   updateEnvVar(targetEnvVar, folderId);
   console.log(`Extracted ID: ${folderId}`);

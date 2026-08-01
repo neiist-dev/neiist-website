@@ -1,7 +1,6 @@
 import { google } from "googleapis";
 import { loadEnvFile } from "node:process";
-import enquirer from "enquirer";
-const { MultiSelect, Confirm } = enquirer;
+import { multiselect, confirm, isCancel, cancel } from "@clack/prompts";
 
 // Load environment variables
 try {
@@ -40,6 +39,7 @@ async function main() {
     const calendar = await getCalendarClient();
 
     console.log("Fetching calendars...");
+
     const response = await calendar.calendarList.list();
     const calendars = response.data.items || [];
 
@@ -48,45 +48,36 @@ async function main() {
       return;
     }
 
-    const choices = calendars.map((cal) => ({
-      name: cal.id!,
-      message: `${cal.summary} (${cal.id})`,
-      value: cal.id,
-    }));
-
-    const prompt = new MultiSelect({
-      name: "selected",
-      message: "Select calendars to DELETE (Space to select, Enter to confirm)",
-      choices: choices,
+    const selectedIds = await multiselect({
+      message: "Select calendars to DELETE (Space to select, Enter to confirm, Esc to exit)",
+      options: calendars.map((cal) => ({
+        label: `${cal.summary} (${cal.id})`,
+        value: cal.id!,
+      })),
     });
 
-    const selectedIds: string[] = await prompt.run();
-
-    if (selectedIds.length === 0) {
-      console.log("No calendars selected. Exiting.");
+    if (isCancel(selectedIds) || (selectedIds as string[]).length === 0) {
+      cancel("No calendars selected. Exiting.");
       return;
     }
 
     console.log("\nYou selected the following calendars for deletion:");
-    selectedIds.forEach((id) => {
+    (selectedIds as string[]).forEach((id) => {
       const cal = calendars.find((c) => c.id === id);
       console.log(` - ${cal?.summary} (${id})`);
     });
 
-    const confirmPrompt = new Confirm({
-      name: "confirm",
-      message: `Are you SURE you want to delete these ${selectedIds.length} calendars? This cannot be undone.`,
+    const confirmed = await confirm({
+      message: `Are you SURE you want to delete these ${(selectedIds as string[]).length} calendars? This cannot be undone.`,
     });
 
-    const confirmed = await confirmPrompt.run();
-
-    if (!confirmed) {
-      console.log("Deletion cancelled.");
+    if (isCancel(confirmed) || !confirmed) {
+      cancel("Deletion cancelled.");
       return;
     }
 
     console.log("\nDeleting calendars...");
-    for (const id of selectedIds) {
+    for (const id of selectedIds as string[]) {
       try {
         await calendar.calendars.delete({ calendarId: id });
         console.log(`Successfully deleted: ${id}`);
@@ -102,4 +93,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  console.error("An error occurred:", err);
+  process.exit(1);
+});
