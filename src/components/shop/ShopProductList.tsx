@@ -1,4 +1,3 @@
-"use client";
 import styles from "@/styles/components/shop/ShopProductList.module.css";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
