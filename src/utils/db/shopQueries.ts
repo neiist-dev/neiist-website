@@ -23,6 +23,7 @@ import {
 import { isSpecialCategory } from "@/utils/shop/orderKindUtils";
 
 import { db_query } from "@/utils/db/dbClient";
+import { cacheTag } from "next/cache";
 
 export const addProduct = async (
   product: Partial<Product> & {
@@ -67,6 +68,8 @@ export const addProductVariant = async (
 };
 
 export const getAllProducts = async (includeSpecial: boolean = false): Promise<Product[]> => {
+  "use cache";
+  cacheTag("products");
   const { rows } = await db_query<dbProduct>(`SELECT * FROM neiist.get_all_products()`);
   const products = rows.map(mapdbProductToProduct);
   return includeSpecial
@@ -75,6 +78,8 @@ export const getAllProducts = async (includeSpecial: boolean = false): Promise<P
 };
 
 export const getAllProductsAdmin = async (): Promise<Product[]> => {
+  "use cache";
+  cacheTag("products");
   const { rows } = await db_query<dbProduct>(
     `SELECT * FROM neiist.get_all_products_including_archived()`
   );
@@ -90,6 +95,8 @@ export const deleteProductVariant = async (variantId: number): Promise<void> => 
 };
 
 export const getProduct = async (productId: number): Promise<Product | null> => {
+  "use cache";
+  cacheTag("products");
   const {
     rows: [row],
   } = await db_query<dbProduct>(`SELECT * FROM neiist.get_product($1)`, [productId]);
@@ -242,6 +249,8 @@ export const newOrder = async (
 };
 
 export const getAllOrders = async (): Promise<Order[]> => {
+  "use cache";
+  cacheTag("orders");
   const { rows } = await db_query<dbOrder>(`SELECT * FROM neiist.get_all_orders()`);
   return rows.map((row) => ({
     ...mapdbOrderToOrder(row),
@@ -250,6 +259,8 @@ export const getAllOrders = async (): Promise<Order[]> => {
 };
 
 export const getOrderById = async (orderId: number): Promise<Order | null> => {
+  "use cache";
+  cacheTag("orders");
   const {
     rows: [row],
   } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order($1, NULL)`, [orderId]);
@@ -262,9 +273,11 @@ export const getOrderById = async (orderId: number): Promise<Order | null> => {
 };
 
 export const getOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
+  "use cache";
+  cacheTag("orders");
   const {
     rows: [row],
-  } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order($1, NULL)`, [orderNumber]);
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.get_order(NULL, $1)`, [orderNumber]);
   return row
     ? {
         ...mapdbOrderToOrder(row),
@@ -273,10 +286,21 @@ export const getOrderByNumber = async (orderNumber: string): Promise<Order | nul
     : null;
 };
 
+export const getOrderByIdOrNumber = async (idOrNumber: string | number): Promise<Order | null> => {
+  const num = Number(idOrNumber);
+  if (Number.isInteger(num) && num > 0) {
+    const order = await getOrderById(num);
+    if (order) return order;
+  }
+  return getOrderByNumber(String(idOrNumber));
+};
+
 export const getUserOrderedProductsInCategory = async (
   userIstid: string,
   categoryName: string
 ): Promise<Record<number, number>> => {
+  "use cache";
+  cacheTag("orders");
   if (!userIstid || !categoryName) return {};
   const { rows } = await db_query<{ product_id: number; total: number }>(
     `SELECT * FROM neiist.get_user_ordered_products_in_category($1, $2)`,

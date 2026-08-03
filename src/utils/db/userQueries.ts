@@ -2,6 +2,7 @@ import { Membership, dbMembership, mapdbMembershipToMembership } from "@/types/m
 import { User, mapRoleToUserRole, mapdbUserToUser } from "@/types/user";
 
 import { db_query } from "@/utils/db/dbClient";
+import { cacheTag } from "next/cache";
 
 export const createUser = async (user: Partial<User>): Promise<User | null> => {
   if (!user.istid || !user.name || !user.email) return null;
@@ -47,6 +48,8 @@ export const updateUserPhoto = async (istid: string, photoData: string): Promise
 };
 
 export const getUser = async (istid: string): Promise<User | null> => {
+  "use cache";
+  cacheTag("users");
   const {
     rows: [user],
   } = await db_query<User>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
@@ -87,6 +90,8 @@ export const getUser = async (istid: string): Promise<User | null> => {
 };
 
 export const getAllUsers = async (): Promise<User[]> => {
+  "use cache";
+  cacheTag("users");
   const { rows } = await db_query<User>("SELECT * FROM neiist.get_all_users()");
   return rows.map(mapdbUserToUser);
 };
@@ -311,6 +316,8 @@ export const removeTeamMember = async (
 };
 
 export const getAllMemberships = async (): Promise<Membership[]> => {
+  "use cache";
+  cacheTag("memberships");
   const [dbMemberships, users] = await Promise.all([
     db_query<dbMembership>("SELECT * FROM neiist.get_all_memberships()").then((res) => res.rows),
     getAllUsers(),

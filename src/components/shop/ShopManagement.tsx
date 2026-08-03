@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useOptimistic } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
@@ -32,8 +32,34 @@ export default function ShopManagement({ products, categories }: ShopManagementP
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
 
-  const activeProducts = useMemo(() => products.filter((p) => p.active !== false), [products]);
-  const archivedProducts = useMemo(() => products.filter((p) => p.active === false), [products]);
+  const [optimisticProducts, setOptimisticProducts] = useOptimistic(
+    products,
+    (state, action: ConfirmAction) => {
+      if (action.type === "archive") {
+        return state.map((product) =>
+          product.id === action.productId ? { ...product, active: false } : product
+        );
+      }
+      if (action.type === "restore") {
+        return state.map((product) =>
+          product.id === action.productId ? { ...product, active: true } : product
+        );
+      }
+      if (action.type === "permanent") {
+        return state.filter((product) => product.id !== action.productId);
+      }
+      return state;
+    }
+  );
+
+  const activeProducts = useMemo(
+    () => optimisticProducts.filter((product) => product.active !== false),
+    [optimisticProducts]
+  );
+  const archivedProducts = useMemo(
+    () => optimisticProducts.filter((product) => product.active === false),
+    [optimisticProducts]
+  );
   const visibleProducts = showArchived ? archivedProducts : activeProducts;
 
   const fuse = useMemo(
@@ -90,6 +116,10 @@ export default function ShopManagement({ products, categories }: ShopManagementP
     if (!pendingAction) return;
     const { type, productId } = pendingAction;
 
+    setOptimisticProducts({ type, productId });
+    setShowConfirm(false);
+    setPendingAction(null);
+
     try {
       let response: Response;
 
@@ -107,18 +137,13 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         });
       }
 
-      if (response.ok) {
-        window.location.reload();
-      } else {
+      if (!response.ok) {
         const data = await response.json();
         toast.error(data?.error ?? "Ocorreu um erro. Tenta novamente.");
       }
     } catch {
       toast.error("Ocorreu um erro. Tenta novamente.");
     }
-
-    setShowConfirm(false);
-    setPendingAction(null);
   };
 
   const isFiltering = search.trim() !== "" || categoryFilter !== "all";

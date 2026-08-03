@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import { updateActivityProperties, getEventSubscribers } from "@/utils/db/eventQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update event" }, { status: 500 });
     }
 
+    revalidateTag("activities", "max");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Event update error:", error);

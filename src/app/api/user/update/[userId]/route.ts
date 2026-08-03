@@ -5,6 +5,7 @@ import path from "path";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getUser, updateUser, updateUserPhoto } from "@/utils/db/userQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
   const userRoles = await serverCheckRoles([
@@ -21,9 +22,8 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
     const { userId: targetUserId } = await params;
 
     const currentUser = userRoles.user;
-    if (!currentUser) {
+    if (!currentUser)
       return NextResponse.json({ error: "Current user not found" }, { status: 404 });
-    }
 
     const currentUserRoles = userRoles.roles || [UserRole._GUEST];
     const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
@@ -33,20 +33,19 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
 
     const isSelfUpdate = currentUser.istid === targetUserId;
 
-    if (!isSelfUpdate && !(isAdmin || isPhotoCoord)) {
+    if (!isSelfUpdate && !(isAdmin || isPhotoCoord))
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
 
     const existingUser = await getUser(targetUserId);
-    if (!existingUser) {
+    if (!existingUser)
       return NextResponse.json({ error: "Target user not found" }, { status: 404 });
-    }
 
     const updates: Partial<User> = {};
 
     if (updateData.alternativeEmail !== undefined) {
       let email: string | null = updateData.alternativeEmail;
       if (typeof email !== "string") email = null;
+
       email = email?.trim?.() ?? null;
       if (email === null || email === "") {
         updates.alternativeEmail = null;
@@ -60,6 +59,7 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
     if (updateData.phone !== undefined) {
       let phone: string | null = updateData.phone;
       if (typeof phone !== "string") phone = null;
+
       phone = phone?.trim?.() ?? null;
       if (phone === null || phone === "") {
         updates.phone = null;
@@ -74,21 +74,18 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
       const validMethods = ["email", "alternativeEmail", "phone"];
       if (validMethods.includes(updateData.preferredContactMethod)) {
         let dbContactMethod = updateData.preferredContactMethod;
-        if (updateData.preferredContactMethod === "alternativeEmail") {
+        if (updateData.preferredContactMethod === "alternativeEmail")
           dbContactMethod = "alternative_email";
-        }
+
         updates.preferredContactMethod = dbContactMethod;
       } else {
         return NextResponse.json({ error: "Método de contacto inválido" }, { status: 400 });
       }
     }
 
-    if (updateData.github !== undefined) {
-      updates.github = updateData.github?.trim() || null;
-    }
-    if (updateData.linkedin !== undefined) {
-      updates.linkedin = updateData.linkedin?.trim() || null;
-    }
+    if (updateData.github !== undefined) updates.github = updateData.github?.trim() || null;
+
+    if (updateData.linkedin !== undefined) updates.linkedin = updateData.linkedin?.trim() || null;
 
     if (isAdmin) {
       if (updateData.name !== undefined) {
@@ -109,9 +106,8 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
         }
       }
 
-      if (updateData.courses !== undefined && Array.isArray(updateData.courses)) {
+      if (updateData.courses !== undefined && Array.isArray(updateData.courses))
         updates.courses = updateData.courses;
-      }
     }
 
     if (updateData.photo !== undefined && (isAdmin || isPhotoCoord)) {
@@ -135,11 +131,11 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
 
     if (Object.keys(updates).length > 0) {
       const updatedUser = await updateUser(targetUserId, updates);
-      if (!updatedUser) {
+      if (!updatedUser)
         return NextResponse.json({ error: "Falha ao atualizar utilizador" }, { status: 500 });
-      }
     }
 
+    revalidateTag("users", "max");
     return NextResponse.json({
       success: true,
       message: "Perfil atualizado com sucesso",

@@ -4,6 +4,7 @@ import type { Membership } from "@/types/memberships";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { addTeamMember, removeTeamMember, getAllMemberships } from "@/utils/db/userQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 async function checkMembershipPermission(departmentName: string) {
   const roles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
 
     const success = await addTeamMember(istid, departmentName, roleName);
     if (success) {
+      revalidateTag("memberships", "max");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
@@ -82,6 +84,7 @@ export async function DELETE(request: NextRequest) {
 
     const success = await removeTeamMember(istid, departmentName, roleName);
     if (success) {
+      revalidateTag("memberships", "max");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to remove team member" }, { status: 500 });

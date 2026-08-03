@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { UserRole } from "@/types/user";
 import { VotingSession, VotingType } from "@/types/voting";
@@ -25,6 +25,7 @@ function requireInt(value: FormDataEntryValue | null, field: string): number {
 
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) throw new Error(`${field} must be a valid integer`);
+
   return parsed;
 }
 
@@ -81,10 +82,8 @@ function extractVotingSessionData(formData: FormData): Partial<VotingSession> {
   }
 }
 
-function revalidateVotingPaths() {
-  revalidatePath("/voting");
-  revalidatePath("/voting/manage");
-  revalidatePath("/dinner");
+function revalidateVotes() {
+  updateTag("votes");
 }
 
 export async function createVotingSessionAction(formData: FormData): Promise<void> {
@@ -94,7 +93,7 @@ export async function createVotingSessionAction(formData: FormData): Promise<voi
   const sessionData = extractVotingSessionData(formData);
   await addVotingSession(sessionData);
 
-  revalidateVotingPaths();
+  revalidateVotes();
   redirect("/voting/manage");
 }
 
@@ -107,7 +106,7 @@ export async function updateVotingSessionAction(formData: FormData): Promise<voi
 
   await updateVotingSession(sessionId, sessionData);
 
-  revalidateVotingPaths();
+  revalidateVotes();
   redirect("/voting/manage");
 }
 
@@ -117,7 +116,7 @@ export async function deleteVotingSessionAction(formData: FormData): Promise<voi
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
   await deleteVotingSession(sessionId);
-  revalidateVotingPaths();
+  revalidateVotes();
 }
 
 export async function startVotingAction(formData: FormData): Promise<void> {
@@ -127,7 +126,7 @@ export async function startVotingAction(formData: FormData): Promise<void> {
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
 
   await startVoting(sessionId);
-  revalidateVotingPaths();
+  revalidateVotes();
 }
 
 export async function finishVotingAction(formData: FormData): Promise<void> {
@@ -137,7 +136,7 @@ export async function finishVotingAction(formData: FormData): Promise<void> {
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
 
   await finishVoting(sessionId);
-  revalidateVotingPaths();
+  revalidateVotes();
 }
 
 export async function submitVoteAction(formData: FormData): Promise<void> {
@@ -148,4 +147,5 @@ export async function submitVoteAction(formData: FormData): Promise<void> {
   const nomineeId = requireString(formData.get("nomineeId"), "nomineeId");
 
   await submitVote(sessionId, auth.user.istid, nomineeId);
+  updateTag("votes");
 }

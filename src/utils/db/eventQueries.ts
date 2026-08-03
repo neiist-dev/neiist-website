@@ -8,6 +8,7 @@ import {
 } from "@/types/events";
 
 import { db_query } from "@/utils/db/dbClient";
+import { cacheTag } from "next/cache";
 
 export const updateActivitiesEvent = async (
   activity: Partial<ActivityEvent> & { id: string }
@@ -53,6 +54,8 @@ export const updateActivityProperties = async (
 };
 
 export const getEventSubscribers = async (eventId: string): Promise<EventSubscriber[]> => {
+  "use cache";
+  cacheTag("activities");
   const { rows } = await db_query<EventSubscriber>(
     "SELECT * FROM neiist.get_event_subscribers($1)",
     [eventId]
@@ -61,6 +64,8 @@ export const getEventSubscribers = async (eventId: string): Promise<EventSubscri
 };
 
 export const getActivitiesEventsFromDb = async (): Promise<CalendarEvent[]> => {
+  "use cache";
+  cacheTag("activities");
   const { rows } = await db_query<DbActivityRow>(`SELECT * FROM neiist.get_all_activities()`);
   return rows.map(mapDbRowToCalendarEvent);
 };

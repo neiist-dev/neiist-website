@@ -11,8 +11,14 @@ import {
   getStatusUpdateOrderEmailTemplate,
   sendEmail,
 } from "@/lib/email";
-import { updateOrder, setOrderState, getOrderById } from "@/utils/db/shopQueries";
+import {
+  updateOrder,
+  setOrderState,
+  getOrderById,
+  getOrderByIdOrNumber,
+} from "@/utils/db/shopQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 function isShopManagerOrAbove(roles: UserRole[]) {
   return (
@@ -33,10 +39,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { user, roles } = userRoles;
 
   const { id } = await params;
-  const orderId = Number(id);
-  if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
 
-  const order = await getOrderById(orderId);
+  const order = await getOrderByIdOrNumber(id);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
   if (!isOrderOwner(order, user!) && !isShopManagerOrAbove(roles ?? []))
@@ -53,11 +58,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
-    const orderId = Number(id);
-    if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+    if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
 
-    const order = await getOrderById(orderId);
+    const order = await getOrderByIdOrNumber(id);
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    const orderId = order.id;
 
     const body = await request.json();
 
@@ -95,19 +100,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       Object.keys(filteredUpdates).length === 1 && filteredUpdates.payment_method === "in-person";
 
     if (onlyNotes) {
-      if (!isOrderOwner(order, user!) && !isShopOps) {
+      if (!isOrderOwner(order, user!) && !isShopOps)
         return NextResponse.json(
           { error: "Insufficient permissions to edit notes" },
           { status: 403 }
         );
-      }
     } else if (onlyInPersonSwitch) {
-      if (!isOrderOwner(order, user!) && !isShopOps) {
+      if (!isOrderOwner(order, user!) && !isShopOps)
         return NextResponse.json(
           { error: "Insufficient permissions to switch payment method" },
           { status: 403 }
         );
-      }
 
       if (order.status !== "pending")
         return NextResponse.json(
@@ -121,9 +124,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (filteredUpdates.items !== undefined) {
-      if (!Array.isArray(filteredUpdates.items) || filteredUpdates.items.length === 0) {
+      if (!Array.isArray(filteredUpdates.items) || filteredUpdates.items.length === 0)
         return NextResponse.json({ error: "Items must be a non-empty array" }, { status: 400 });
-      }
 
       filteredUpdates.items = (filteredUpdates.items as Array<Record<string, unknown>>).map(
         (item, i) => {
@@ -193,6 +195,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
+    revalidateTag("orders", "max");
     return NextResponse.json(updatedOrder);
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("Item "))
@@ -211,16 +214,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!userRoles.isAuthorized) return userRoles.error;
 
   try {
+    const { id } = await params;
     const body = await request.json();
     const { status } = body;
-    const orderId = Number((await params).id);
+    if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
     if (!status) return NextResponse.json({ error: "No status provided" }, { status: 400 });
 
     if (status === "paid")
       return NextResponse.json({ error: "Use POST /pay to mark order as paid" }, { status: 400 });
 
-    const order = await getOrderById(orderId);
+    const order = await getOrderByIdOrNumber(id);
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    const orderId = order.id;
 
     await setOrderState(orderId, status, userRoles.user!.istid);
     const updatedOrder = await getOrderById(orderId);
@@ -245,6 +250,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     }
 
+    revalidateTag("orders", "max");
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error("Order update error:", error);
@@ -262,11 +268,11 @@ export async function DELETE(
   const { user, roles } = userRoles;
 
   const { id } = await params;
-  const orderId = Number(id);
-  if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
 
-  const order = await getOrderById(orderId);
+  const order = await getOrderByIdOrNumber(id);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  const orderId = order.id;
 
   if (
     !isOrderOwner(order, user!) &&
@@ -278,5 +284,6 @@ export async function DELETE(
   const updatedOrder = await setOrderState(orderId, "cancelled", user!.istid);
   if (!updatedOrder) return NextResponse.json({ error: "Failed to cancel order" }, { status: 500 });
 
+  revalidateTag("orders", "max");
   return NextResponse.json(updatedOrder);
 }

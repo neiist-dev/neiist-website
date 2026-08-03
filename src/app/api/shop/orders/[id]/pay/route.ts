@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { UserRole } from "@/types/user";
-import { getOrderById } from "@/utils/db/shopQueries";
+import { getOrderById, getOrderByIdOrNumber } from "@/utils/db/shopQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userRoles = await serverCheckRoles([
@@ -15,15 +16,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const body = await request.json();
     const { paymentReference } = body;
-    const orderId = Number((await params).id);
+    const { id } = await params;
 
-    if (!orderId) return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+    if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
     if (!paymentReference) {
       return NextResponse.json({ error: "Payment reference is required" }, { status: 400 });
     }
 
-    const order = await getOrderById(orderId);
+    const order = await getOrderByIdOrNumber(id);
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    const orderId = order.id;
 
     const result = await finalizePaidOrder({
       orderId,
@@ -36,6 +38,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const updatedOrder = await getOrderById(orderId);
+
+    revalidateTag("orders", "max");
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error("Order finalization error:", error);

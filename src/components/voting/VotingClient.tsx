@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useOptimistic } from "react";
 import { GlobalVotingState, VotingSyncPayload } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
 import VotingGrid from "@/components/voting/VotingGrid";
@@ -93,6 +93,14 @@ export default function VotingClient({
 }: VotingClientProps) {
   const [globalState, setGlobalState] = useState<GlobalVotingState>(initialGlobalState);
   const [userVotes, setUserVotes] = useState<Record<number, string | null>>(initialUserVotes);
+  const [optimisticUserVotes, addOptimisticVote] = useOptimistic(
+    userVotes,
+    (state, newVote: { sessionId: number; nomineeId: string }) => ({
+      ...state,
+      [newVote.sessionId]: newVote.nomineeId,
+    })
+  );
+
   const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">(
     "connecting"
   );
@@ -121,8 +129,7 @@ export default function VotingClient({
   }, []);
 
   const handleVote = async (sessionId: number, nomineeId: string) => {
-    const previousVotes = { ...userVotes };
-    setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
+    addOptimisticVote({ sessionId, nomineeId });
 
     try {
       const formData = new FormData();
@@ -130,14 +137,16 @@ export default function VotingClient({
       formData.append("nomineeId", nomineeId);
 
       await submitVoteAction(formData);
+      setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
     } catch (error) {
       console.error("Failed to submit vote:", error);
-      setUserVotes(previousVotes);
     }
   };
 
   const activeVotingSessions = globalState.activeSessions || [];
-  const unvotedSessions = activeVotingSessions.filter((s) => !userVotes[s.sessionId]);
+  const unvotedSessions = activeVotingSessions.filter(
+    (votingSession) => !optimisticUserVotes[votingSession.sessionId]
+  );
   const lastFinishedSession = globalState.lastFinishedSession;
   const lastResults = globalState.lastResults || [];
 

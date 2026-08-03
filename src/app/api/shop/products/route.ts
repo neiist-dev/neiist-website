@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { addProduct, addProductVariant, getProduct } from "@/utils/db/shopQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -24,29 +25,24 @@ async function uploadImages(
   const uploadedPaths: string[] = [];
 
   for (const upload of imageUploads) {
-    if (!upload || typeof upload.imageBase64 !== "string" || upload.imageBase64.trim() === "") {
+    if (!upload || typeof upload.imageBase64 !== "string" || upload.imageBase64.trim() === "")
       continue;
-    }
 
     // Accept both raw base64 and data URLs like: data:image/png;base64,...
     const rawBase64 = upload.imageBase64.includes(",")
       ? (upload.imageBase64.split(",").pop() ?? "")
       : upload.imageBase64;
     const base64 = rawBase64.trim();
-    if (!base64) {
-      continue;
-    }
+    if (!base64) continue;
 
     const buffer = Buffer.from(base64, "base64");
-    if (!isImage(buffer)) {
-      throw new Error("Only image uploads are allowed");
-    }
+    if (!isImage(buffer)) throw new Error("Only image uploads are allowed");
+
     const imageName = path.basename(upload.imageName || `product-${Date.now()}.png`);
     const filePath = path.join(uploadDir, imageName);
     await fs.writeFile(filePath, buffer);
     uploadedPaths.push(`/products/${imageName}`);
   }
-
   return uploadedPaths;
 }
 
@@ -74,9 +70,8 @@ export async function POST(request: NextRequest) {
       active: true,
     });
 
-    if (!newProduct) {
+    if (!newProduct)
       return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
-    }
 
     // Build a map of group images: "optType::optVal" -> string[]
     const groupImagePaths: Record<string, string[]> = {};
@@ -131,6 +126,7 @@ export async function POST(request: NextRequest) {
 
     const fullProduct = await getProduct(newProduct.id);
 
+    revalidateTag("products", "max");
     return NextResponse.json(
       {
         message: "Product created successfully",

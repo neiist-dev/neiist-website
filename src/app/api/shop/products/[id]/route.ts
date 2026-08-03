@@ -12,6 +12,7 @@ import {
   deleteProductVariant,
 } from "@/utils/db/shopQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -114,10 +115,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const updatedProduct = await getProduct(productId);
-    if (!updatedProduct) {
+    if (!updatedProduct)
       return NextResponse.json({ error: "Product not found or failed to update" }, { status: 404 });
-    }
 
+    revalidateTag("products", "max");
     return NextResponse.json({
       message: "Product updated successfully",
       product: updatedProduct,
@@ -141,13 +142,14 @@ export async function DELETE(
 
     if (permanent) {
       await deleteProduct(productId);
+      revalidateTag("products", "max");
       return NextResponse.json({ message: "Product permanently deleted" });
     }
 
     const archivedProduct = await updateProduct(productId, { active: false });
-    if (!archivedProduct) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+    if (!archivedProduct) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    revalidateTag("products", "max");
     return NextResponse.json({ message: "Product archived successfully" });
   } catch (error) {
     return handleApiError(error);
@@ -168,9 +170,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     const updated = await updateProduct(productId, { active: body.active });
-    if (!updated) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+    if (!updated) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    revalidateTag("products", "max");
     return NextResponse.json({ message: "Product updated", product: updated });
   } catch (error) {
     return handleApiError(error);
@@ -184,9 +186,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const product = await getProduct(productId);
 
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
     return NextResponse.json(product);
   } catch (error) {

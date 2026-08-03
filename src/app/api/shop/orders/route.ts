@@ -15,6 +15,7 @@ import {
 } from "@/utils/db/shopQueries";
 import { getUser, updateUser } from "@/utils/db/userQueries";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 
 function parseOrderSource(value: string): OrderSource {
   switch (value) {
@@ -220,6 +221,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    revalidateTag("orders", "max");
     return NextResponse.json(order);
   } catch (error) {
     return handleApiError(error);

@@ -11,6 +11,7 @@ import {
 } from "@/types/voting";
 
 import { db_query } from "@/utils/db/dbClient";
+import { cacheTag } from "next/cache";
 
 export const addVotingSession = async (
   input: Partial<VotingSession>
@@ -55,6 +56,8 @@ export const updateVotingSession = async (
 };
 
 export const getVotingSessions = async (limit = 20): Promise<VotingSession[]> => {
+  "use cache";
+  cacheTag("votes");
   const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.floor(limit)) : 20;
   const { rows } = await db_query<DbVotingSession>(`SELECT * FROM neiist.get_voting_sessions($1)`, [
     safeLimit,
@@ -63,6 +66,8 @@ export const getVotingSessions = async (limit = 20): Promise<VotingSession[]> =>
 };
 
 export const getVotingSessionById = async (sessionId: number): Promise<VotingSession | null> => {
+  "use cache";
+  cacheTag("votes");
   const {
     rows: [row],
   } = await db_query<DbVotingSession>(`SELECT * FROM neiist.get_voting_session_by_id($1)`, [
@@ -72,6 +77,8 @@ export const getVotingSessionById = async (sessionId: number): Promise<VotingSes
 };
 
 export const getSessionNominees = async (sessionId: number): Promise<VotingNominee[]> => {
+  "use cache";
+  cacheTag("votes");
   const { rows } = await db_query<DbVotingNominee>(
     `SELECT * FROM neiist.get_session_nominees($1)`,
     [sessionId]
@@ -100,6 +107,8 @@ export const deleteVotingSession = async (sessionId: number): Promise<void> => {
 };
 
 export const getSessionResults = async (sessionId: number): Promise<SessionResult[]> => {
+  "use cache";
+  cacheTag("votes");
   const { rows } = await db_query<DbSessionResult>(`SELECT * FROM neiist.get_session_results($1)`, [
     sessionId,
   ]);
@@ -110,6 +119,8 @@ export const getUserVote = async (
   sessionId: number,
   voterIstid: string
 ): Promise<string | null> => {
+  "use cache";
+  cacheTag("votes");
   const {
     rows: [row],
   } = await db_query<{ nominee_id: string }>(`SELECT * FROM neiist.get_user_vote($1, $2)`, [
