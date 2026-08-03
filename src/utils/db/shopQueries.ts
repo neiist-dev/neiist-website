@@ -272,7 +272,7 @@ export const getOrderById = async (orderId: number): Promise<Order | null> => {
     : null;
 };
 
-export const getOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
+const getOrderByNumber = async (orderNumber: string): Promise<Order | null> => {
   "use cache";
   cacheTag("orders");
   const {

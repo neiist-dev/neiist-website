@@ -1,5 +1,5 @@
 import { Membership, dbMembership, mapdbMembershipToMembership } from "@/types/memberships";
-import { User, mapRoleToUserRole, mapdbUserToUser } from "@/types/user";
+import { User, UserRole, mapRoleToUserRole, mapdbUserToUser } from "@/types/user";
 
 import { db_query } from "@/utils/db/dbClient";
 import { cacheTag } from "next/cache";
@@ -96,54 +96,18 @@ export const getAllUsers = async (): Promise<User[]> => {
   return rows.map(mapdbUserToUser);
 };
 
-export const addMember = async (
-  istid: string,
-  department = "Members",
-  role = "Member"
-): Promise<boolean> => {
-  try {
-    await db_query("SELECT neiist.add_department($1)", [department]);
-    await db_query("SELECT neiist.add_team($1, $2)", [department, "General membership team"]);
-    await db_query("SELECT neiist.add_valid_department_role($1, $2, $3)", [
-      department,
-      role,
-      "member",
-    ]);
-  } catch {}
-  await db_query("SELECT neiist.add_team_member($1, $2, $3)", [istid, department, role]);
-  return true;
-};
-
-export const addCollaborator = async (
-  istid: string,
-  teams: string[],
-  position: string
-): Promise<boolean> => {
-  for (const team of teams) {
-    try {
-      await db_query("SELECT neiist.add_valid_department_role($1, $2, $3)", [
-        team,
-        position,
-        "coordinator",
-      ]);
-    } catch {}
-    await db_query("SELECT neiist.add_team_member($1, $2, $3)", [istid, team, position]);
-  }
-  return true;
-};
-
-export const removeRole = async (
-  istid: string,
-  department: string,
-  role: string
-): Promise<boolean> => {
-  await db_query("SELECT neiist.remove_team_member($1, $2, $3)", [istid, department, role]);
-  return true;
-};
-
-export const getUsersByAccess = async (access: string): Promise<User[]> => {
-  const { rows } = await db_query<User>(
-    "SELECT istid, name, email, phone, courses, campus, photo_path as photo FROM neiist.get_users_by_access($1)",
+export const getUsersByAccess = async (access: UserRole): Promise<User[]> => {
+  const { rows } = await db_query<{
+    istid: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+    courses?: string[];
+    photo_path?: string;
+    github?: string;
+    linkedin?: string;
+  }>(
+    "SELECT istid, name, email, phone, courses, photo_path, github, linkedin FROM neiist.get_users_by_access($1)",
     [access]
   );
   return rows.map(mapdbUserToUser);
@@ -262,7 +226,7 @@ export const getAllAdminBodies = async (): Promise<Array<{ name: string; active:
 export const addValidDepartmentRole = async (
   departmentName: string,
   roleName: string,
-  access: "admin" | "coordinator" | "member" = "member"
+  access: UserRole = UserRole._MEMBER
 ): Promise<boolean> => {
   await db_query("SELECT neiist.add_valid_department_role($1, $2, $3)", [
     departmentName,
