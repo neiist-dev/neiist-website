@@ -15,7 +15,7 @@ async function getEventsAndSubscriptions() {
     isAdmin = perm.roles?.includes(UserRole._ADMIN) ?? false;
   }
 
-  let events = await getActivitiesEventsFromDb().catch(() => []);
+  let events = await getActivitiesEventsFromDb();
 
   // If no events in DB, sync from Notion
   if (events.length === 0) {

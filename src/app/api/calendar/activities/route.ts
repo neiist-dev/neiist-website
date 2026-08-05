@@ -3,6 +3,7 @@ import { UserRole } from "@/types/user";
 import { updateActivityProperties, getEventSubscribers } from "@/utils/db/eventQueries";
 import { serverCheckRoles } from "@/lib/auth";
 import { revalidateTag } from "next/cache";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
@@ -32,8 +33,7 @@ export async function POST(request: NextRequest) {
     revalidateTag("activities", "max");
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Event update error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ subscribers });
   } catch (error) {
-    console.error("Subscribers fetch error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

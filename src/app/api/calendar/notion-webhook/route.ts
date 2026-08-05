@@ -9,6 +9,7 @@ import { syncAllEventsToCalendar, getCalendarClient } from "@/lib/google/calenda
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
 import { getAllUsers } from "@/utils/db/userQueries";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
@@ -125,7 +126,6 @@ export async function POST(req: NextRequest) {
       message: `Synced: ${stats.updated} updated, ${stats.deleted} deleted, ${stats.unchanged} unchanged`,
     });
   } catch (error) {
-    console.error("Webhook error:", error);
-    return new NextResponse("Failed to sync calendars", { status: 500 });
+    return handleApiError(error);
   }
 }

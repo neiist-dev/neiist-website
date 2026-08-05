@@ -5,7 +5,7 @@ import { getProduct } from "@/utils/db/shopQueries";
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
   const productId = Number(id);
-  const product = await getProduct(productId).catch(() => null);
+  const product = await getProduct(productId);
 
   if (!product) {
     return (

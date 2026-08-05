@@ -4,8 +4,6 @@ import { GlobalVotingState, VotingSyncPayload } from "@/types/voting";
 import { getVotingSessions, getSessionNominees, getSessionResults } from "@/utils/db/votingQueries";
 import { serverCheckRoles } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
-
 let statePromise: Promise<GlobalVotingState> | null = null;
 let eventIdCounter = 0;
 

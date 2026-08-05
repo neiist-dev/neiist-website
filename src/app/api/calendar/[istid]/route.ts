@@ -14,6 +14,7 @@ import type { NotionEvent } from "@/types/events";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
 import { getUserFromJWT } from "@/lib/auth";
 import { getUser } from "@/utils/db/userQueries";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
@@ -93,7 +94,6 @@ export async function GET(
 
     return NextResponse.json(payload);
   } catch (error) {
-    console.error("Calendar route error:", error);
-    return new NextResponse(`Internal Server Error`, { status: 500 });
+    return handleApiError(error);
   }
 }

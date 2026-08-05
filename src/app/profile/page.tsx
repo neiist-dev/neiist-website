@@ -10,7 +10,7 @@ export default async function ProfilePage() {
   const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = getUserFromJWT(sessionToken)!;
 
-  const user = await getUser(jwtUser.istid).catch(() => null);
+  const user = await getUser(jwtUser.istid);
   if (!user) {
     return NextResponse.redirect("/login");
   }

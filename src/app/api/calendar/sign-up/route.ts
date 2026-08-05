@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getUserFromJWT } from "@/lib/auth";
 import { signUpToEvent, removeSignUpFromEvent } from "@/utils/db/eventQueries";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +38,6 @@ export async function POST(req: NextRequest) {
       signedUp: signUp,
     });
   } catch (error) {
-    console.error("Sign-up error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

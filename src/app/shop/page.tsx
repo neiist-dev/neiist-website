@@ -3,9 +3,7 @@ import styles from "@/styles/pages/Shop.module.css";
 import { getAllProducts, getAllCategories } from "@/utils/db/shopQueries";
 
 export default async function ShopPage() {
-  const [products, categories] = await Promise.all([getAllProducts(), getAllCategories()]).catch(
-    () => [[], []]
-  );
+  const [products, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
 
   return (
     <div className={styles.content}>

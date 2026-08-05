@@ -4,6 +4,7 @@ import { UserRole } from "@/types/user";
 import { getOrderById, getOrderByIdOrNumber } from "@/utils/db/shopQueries";
 import { serverCheckRoles } from "@/lib/auth";
 import { revalidateTag } from "next/cache";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userRoles = await serverCheckRoles([
@@ -42,7 +43,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     revalidateTag("orders", "max");
     return NextResponse.json(updatedOrder);
   } catch (error) {
-    console.error("Order finalization error:", error);
-    return NextResponse.json({ error: "Failed to finalize order" }, { status: 500 });
+    return handleApiError(error);
   }
 }

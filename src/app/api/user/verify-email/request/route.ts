@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { sendEmail, getEmailVerificationTemplate } from "@/lib/email";
 import { addEmailVerification } from "@/utils/db/userQueries";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: Request) {
   const { istid, alternativeEmail } = await request.json();
@@ -21,7 +22,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error in email verification request:", error);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return handleApiError(error);
   }
 }

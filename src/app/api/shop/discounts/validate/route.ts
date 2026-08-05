@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateDiscountCode } from "@/utils/db/shopQueries";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,10 +38,6 @@ export async function POST(request: NextRequest) {
       discount_amount: result.discount_amount,
     });
   } catch (error) {
-    console.error("discounts validate POST error:", error);
-    return NextResponse.json(
-      { valid: false, error: "Failed to validate discount code" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

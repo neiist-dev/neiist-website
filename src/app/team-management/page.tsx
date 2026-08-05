@@ -18,8 +18,10 @@ export default async function TeamManagementPage() {
   const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
   const istid = jwtUser?.istid;
 
-  const users = await getAllUsers().catch(() => []);
-  const memberships: Membership[] = await getAllMemberships().catch(() => []);
+  const [users, memberships] = (await Promise.all([getAllUsers(), getAllMemberships()])) as [
+    Awaited<ReturnType<typeof getAllUsers>>,
+    Membership[],
+  ];
   const validRoles: Role[] = await getAllValidDepartmentRoles();
   const userMemberships = memberships.filter(
     (membership) => membership.userNumber === istid && membership.isActive

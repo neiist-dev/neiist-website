@@ -9,7 +9,7 @@ export default async function CheckoutPage() {
   const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = getUserFromJWT(sessionToken)!;
 
-  const user = await getUser(jwtUser.istid).catch(() => null);
+  const user = await getUser(jwtUser.istid);
   if (!user) {
     redirect("/login?redirect=/shop/checkout");
   }
