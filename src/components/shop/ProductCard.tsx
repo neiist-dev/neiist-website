@@ -5,8 +5,9 @@ import { useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { Product } from "@/types/shop/product";
 import styles from "@/styles/components/shop/ProductCard.module.css";
+import { ShopDict } from "@/types/i18n";
 
-export default function ProductCard({ product, dict }: { product: Product; dict?: any }) {
+export default function ProductCard({ product, dict }: { product: Product; dict?: ShopDict }) {
   const [imageIndex, setImageIndex] = useState(0);
   const images = [
     ...new Set([
@@ -31,7 +32,7 @@ export default function ProductCard({ product, dict }: { product: Product; dict?
         ) : (
           <div className={styles.placeholder}>
             <FiImage size={40} />
-            <span>{dict.no_image_label}</span>
+            <span>{dict?.no_image_label}</span>
           </div>
         )}
       </div>

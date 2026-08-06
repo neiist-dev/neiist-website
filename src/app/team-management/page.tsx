@@ -5,6 +5,7 @@ import { Membership } from "@/types/memberships";
 import { cookies } from "next/headers";
 import { getUserFromJWT } from "@/utils/authUtils";
 import { getLocale, getDictionary } from "@/lib/i18n";
+import { CoordinatorManagementDict } from "@/types/i18n";
 
 interface Role {
   department_name: string;
@@ -53,7 +54,7 @@ export default async function TeamManagementPage() {
       coordinatorTeams={uniqueCoordinatorTeams}
       memberships={teamMemberships}
       users={users}
-      dict={{ coordinator_management: dict.coordinator_management, confirm_dialog: dict.confirm_dialog }}
+      dict={dict as CoordinatorManagementDict}
     />
   );
 }

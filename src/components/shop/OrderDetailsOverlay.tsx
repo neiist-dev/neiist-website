@@ -4,14 +4,13 @@ import { useEffect, useState, useCallback, useRef, useMemo, type CSSProperties }
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
 import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
-import type { OrderProgressStep } from "@/types/shop/orderKind";
 import {
   getAllowedOrderStatusTransitions,
   getOrderProgressSteps,
   getOrderKindFromItems,
   getOrderStatusLabelForKind,
   canTransitionOrderStatus,
-  getOrderStatusLabelValue,
+  getOrderStepLabelFromDict,
 } from "@/utils/shop/orderKindUtils";
 import { getPaymentLabel } from "@/types/shop/payment";
 import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
@@ -24,15 +23,15 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { getColorFromOptions, formatVariantSimple } from "@/utils/shop/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
-import PosPaymentOverlay, { type PosPaymentDict }from "@/components/shop/PosPaymentOverlay";
+import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import { PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
-import type { OrderDetailsOverlayDict } from "@/types/i18n";
+import type { OrderDetailsOverlayDict, PaymentLabelsDict, NewOrderModalDict } from "@/types/i18n";
 
 
-function getPaymentDisplay(order: Order) {
+function getPaymentDisplay(order: Order, dict: PaymentLabelsDict) {
   if (!order.payment_method) return "";
 
-  const label = getPaymentLabel(order.payment_method);
+  const label = getPaymentLabel(order.payment_method, dict);
   return order.payment_method === "mbway" && order.mbway_number
     ? `${label} - ${order.mbway_number}`
     : label;
@@ -212,7 +211,6 @@ export default function OrderDetailOverlay({
 
   const { orderKind } = getOrderKindFromItems(order.items);
   const progressSteps = getOrderProgressSteps(orderKind);
-  const getStepLabel = (step: OrderProgressStep) => getOrderStatusLabelValue(step.label, order);
   const activeStepIndex = progressSteps.findLastIndex((step) =>
     step.activeStatuses.includes(order.status)
   );
@@ -287,7 +285,7 @@ export default function OrderDetailOverlay({
             <div className={styles.orderNumber}>
               {order.order_number}
               <FaArrowRightLong />
-              {getPaymentDisplay(order)}
+              {getPaymentDisplay(order, dict.pos_payment)}
             </div>
 
             <div className={styles.infoGrid}>
@@ -536,11 +534,7 @@ export default function OrderDetailOverlay({
                         const isStepActive = step.activeStatuses.includes(order.status);
                         const isStepAlert = step.key === "ready" && isDeadlineNear && isStepActive;
                         
-                        let translatedLabel = getStepLabel(step);
-                        if (step.key === "pending") translatedLabel = d.step_pending;
-                        if (step.key === "paid") translatedLabel = d.step_paid;
-                        if (step.key === "ready") translatedLabel = d.step_ready;
-                        if (step.key === "delivered") translatedLabel = d.step_delivered;
+                        const translatedLabel = getOrderStepLabelFromDict(step, d);
 
                         return (
                           <li
@@ -629,11 +623,7 @@ export default function OrderDetailOverlay({
             setShowEditOrderModal(false);
             router.refresh();
           }}
-          dict={{
-            new_order_modal: dict.new_order_modal,
-            create_user_modal: dict.create_user_modal,
-            confirm_dialog: dict.confirm_dialog,
-          } as Parameters<typeof NewOrderModal>[0]["dict"]}
+          dict={dict as NewOrderModalDict}
         />
       )}
 

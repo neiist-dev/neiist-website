@@ -4,6 +4,7 @@ import { getAllOrders, getAllProducts } from "@/utils/dbUtils";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import { UserRole } from "@/types/user";
 import { getLocale, getDictionary } from "@/lib/i18n";
+import { OrderDetailsOverlayDict, OrdersTableDict } from "@/types/i18n";
 
 interface PageProps {
   searchParams: Promise<{ orderId?: string }>;
@@ -25,7 +26,7 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
 
   return (
     <>
-      <OrdersTable orders={orders} products={products} locale={locale} dict={{mobile_filters_drawer: dict.mobile_filters_drawer, date_filter: dict.date_filter, active_filters: dict.active_filters, orders_table: dict.orders_table, confirm_dialog: dict.confirm_dialog, input_date_dialog: dict.input_date_dialog, new_order_modal: dict.new_order_modal, create_user_modal: dict.create_user_modal, pos_payment: dict.pos_payment}} />
+      <OrdersTable orders={orders} products={products} locale={locale} dict={dict as OrdersTableDict} />
       {orderId && (
         <OrderDetailOverlay
           orderId={Number(orderId)}
@@ -35,13 +36,7 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
           canEditNotes={canEditOrder}
           canEditItems={canEditOrder}
           products={products}
-          dict={{
-            order_details: dict.order_details,
-            confirm_dialog: dict.confirm_dialog,
-            new_order_modal: dict.new_order_modal,
-            create_user_modal: dict.create_user_modal,
-            pos_payment: dict.pos_payment,
-          }}
+          dict={dict as OrderDetailsOverlayDict}
         />
       )}
     </>

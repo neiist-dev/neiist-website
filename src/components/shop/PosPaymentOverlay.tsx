@@ -6,58 +6,12 @@ import { MdClose } from "react-icons/md";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { Order } from "@/types/shop/order";
-import { PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
+import { PENDING_PAYMENT_METHODS, PaymentMethod, getPaymentLabel } from "@/types/shop/payment";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import styles from "@/styles/components/shop/PosPaymentOverlay.module.css";
 import type { PosPaymentOverlayDict } from "@/types/i18n";
-
-export interface PosPaymentDict {
-  close_label: string;
-  title: string;
-  title_register_payment: string;
-  method_label: string;
-  method_cash: string;
-  method_other: string;
-  method_sumup_tpa: string;
-  method_sumup: string;
-  method_apple_pay: string;
-  method_in_person: string;
-  method_mbway: string;
-  reference_label: string;
-  reference_placeholder: string;
-  reader_label: string;
-  loading_readers: string;
-  select_reader: string;
-  cancel: string;
-  confirm_btn: string;
-  success_title: string;
-  processing_terminal_title: string;
-  processing_payment_title: string;
-  success_subtitle: string;
-  awaiting_subtitle: string;
-  view_orders: string;
-  error_load_readers: string;
-  error_update_order: string;
-  error_mark_paid: string;
-  awaiting_terminal: string;
-  select_reader_error: string;
-  starting_payment: string;
-  checkout_started: string;
-  payment_initiated_toast: string;
-  failed_terminal: string;
-  payment_sent: string;
-  processing_payment: string;
-  fill_reference: string;
-  payment_confirmed: string;
-  error_payment: string;
-  confirm_cash: string;
-  confirm_mbway: string;
-  confirm_reference: string;
-  mbway_send_to: string;
-  mbway_number_unavailable: string;
-}
 
 type Props = {
   open: boolean;
@@ -114,18 +68,7 @@ export default function PosPaymentOverlay({
     };
   }, []);
 
-  const methodLabel = (method: PaymentMethod): string => {
-    const labels: Record<PaymentMethod, string> = {
-      cash: d.method_cash,
-      other: d.method_other,
-      "sumup-tpa": d.method_sumup_tpa,
-      sumup: d.method_sumup,
-      "apple-pay": d.method_apple_pay,
-      "in-person": d.method_in_person,
-      mbway: d.method_mbway,
-    };
-    return labels[method];
-  };
+  const methodLabel = (method: PaymentMethod) => getPaymentLabel(method, d);
 
   const selectedReaderName = useMemo(
     () =>

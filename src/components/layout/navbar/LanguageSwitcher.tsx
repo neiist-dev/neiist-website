@@ -7,37 +7,50 @@ import styles from "@/styles/components/layout/navbar/LanguageSwitcher.module.cs
 
 export default function LanguageSwitcher({ currentLocale }: { currentLocale: Locale }) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const closeMenu = () => {
+    setMenuState("closing");
+    setTimeout(() => setMenuState("closed"), 150);
+  };
+
+  const toggleMenu = () => {
+    if (menuState === "open" || menuState === "closing") {
+      closeMenu();
+    } else {
+      setMenuState("open");
+    }
+  };
 
   const switchLanguage = (newLocale: Locale) => {
     document.cookie = `locale=${newLocale}; path=/; max-age=31536000`;
-    setIsOpen(false);
+    closeMenu();
     router.refresh();
   };
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (menuState !== "open") return;
     const handleClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        closeMenu();
       }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [isOpen]);
+  }, [menuState]);
 
   return (
     <div className={styles.container} ref={dropdownRef}>
       <button
         className={styles.triggerButton}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleMenu}
         title="Switch Language">
         {currentLocale.toUpperCase()}
       </button>
 
-      {isOpen && (
-        <div className={styles.dropdown}>
+      {(menuState === "open"|| menuState === "closing") && (
+        <div className={`${styles.dropdown} ${menuState === "closing" ? styles.slideOut : ""}`}>
           {locales.map((locale) => (
             <button
               key={locale}

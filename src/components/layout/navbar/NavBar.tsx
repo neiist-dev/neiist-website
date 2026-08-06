@@ -126,6 +126,16 @@ export default function NavBar({ dict, currentLocale }: NavBarProps) {
           />
         </div>
       </div>
+      {(menuState === "open" || menuState === "closing") && (
+        <div
+          ref={menuRef}
+          className={`${styles.menu} ${menuState === "closing" ? styles.slideOut : ""}`}>
+          <Link href="/" className={styles.logo} onClick={() => handleMobileNavClick("/")}>
+            <NeiistLogo />
+          </Link>
+          <nav className={styles.navItems}>{renderNavItems(handleMobileNavClick)}</nav>
+        </div>
+      )}
     </header>
   );
 }

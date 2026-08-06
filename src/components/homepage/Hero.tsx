@@ -6,6 +6,7 @@ import student from "@/assets/homepage/student.png";
 import styles from "@/styles/components/homepage/Hero.module.css";
 import { useEffect, useState, useRef } from "react";
 import type { HeroDict } from "@/types/i18n";
+import ColorfulText from "@/components/ColorfulText";
 
 
 interface HeroProps {
@@ -58,14 +59,7 @@ export default function Hero({ dict }: HeroProps) {
 
   return (
     <section className={styles.hero}>
-      <h1 className={styles.title}>
-        {dict.title_prefix}
-        <span className={styles.primary}>{dict.title_letters[0]}</span>
-        <span className={styles.secondary}>{dict.title_letters[1]}</span>
-        <span className={styles.tertiary}>{dict.title_letters[2]}</span>
-        <span className={styles.quaternary}>{dict.title_letters[3]}</span>
-        {dict.title_suffix}
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict.title} />
       <div ref={campusRef} className={styles.heroImage}>
           <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
         {showStudent && (

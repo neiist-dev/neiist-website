@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole, hasRequiredRole } from "@/types/user";
 import { getUserFromJWT } from "./utils/authUtils";
-import { locales, defaultLocale } from "@/lib/i18n-config";
+import { ensureLocaleCookie } from "@/utils/i18n/localeCookieUtils";
 import { rateLimit } from "@/utils/security/rateLimitUtils";
 import { CSP } from "@/utils/security/cspUtils";
 import { getRateLimitRule } from "@/lib/rateLimitRules";
@@ -174,29 +174,7 @@ export function proxy(req: NextRequest) {
 
   response = response || NextResponse.next();
 
-  const cookieLocale = req.cookies.get("locale")?.value;
-
-  if (!cookieLocale || !(locales as readonly string[]).includes(cookieLocale)) {
-    const acceptLanguage = req.headers.get("accept-language");
-    let bestLocale = defaultLocale;
-
-    if (acceptLanguage) {
-      const parsedLocales = acceptLanguage
-        .split(",")
-        .map((l) => {
-          const [locale, q] = l.split(";q=");
-          return { locale: locale.trim().split("-")[0], q: q ? parseFloat(q) : 1 };
-        })
-        .sort((a, b) => b.q - a.q);
-
-      const match = parsedLocales.find((l) => (locales as readonly string[]).includes(l.locale));
-      if (match) {
-        bestLocale = match.locale;
-      }
-    }
-
-    response.cookies.set("locale", bestLocale, { path: "/", maxAge: 31536000 });
-  }
+  ensureLocaleCookie(req, response);
 
   addSecurityHeaders(response);
   return response;

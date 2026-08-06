@@ -21,6 +21,8 @@ import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import type { ProfileDict } from "@/types/i18n";
+import ColorfulText from "./ColorfulText";
 
 type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
 
@@ -31,7 +33,7 @@ export default function ProfileClient({
 }: {
   initialUser: User;
   initialHasCV: boolean;
-  dict?: any;
+  dict: ProfileDict;
 }) {
   const [user, setUser] = useState<User>(initialUser);
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
@@ -285,14 +287,22 @@ export default function ProfileClient({
     return value || "—";
   };
 
+  const getConfirmMessage = (change: { field: FieldName; value: string }): string => {
+    const fieldName = getFieldDisplayName(change.field) || "";
+
+    if (change.value === "") {
+      return (dict?.confirm_remove_field || "").replace("{field}", fieldName);
+    }
+
+    const valueName = getValueDisplayName(change.field, change.value);
+    return (dict?.confirm_change_field || "")
+      .replace("{field}", fieldName)
+      .replace("{value}", valueName);
+  };
+
   return (
     <>
-      <h1 className={styles.title}>
-        <span className={styles.primary}>{dict?.title_letters?.[0]}</span>
-        <span className={styles.secondary}>{dict?.title_letters?.[1]}</span>
-        <span className={styles.tertiary}>{dict?.title_letters?.[2]}</span>
-        <span className={styles.quaternary}>{dict?.title_letters?.[3]}</span>
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict?.title ?? ""} />
       <div className={styles.container}>
         <div className={styles.left}>
           <div className={styles.details}>
@@ -475,15 +485,7 @@ export default function ProfileClient({
       {error && <p className={styles.error}>{error}</p>}
       <ConfirmDialog
         open={showConfirmDialog}
-        message={
-          pendingChange
-            ? pendingChange.value === ""
-              ? (dict?.confirm_remove_field || "").replace("{field}", getFieldDisplayName(pendingChange.field) || "")
-              : (dict?.confirm_change_field || "")
-                  .replace("{field}", getFieldDisplayName(pendingChange.field) || "")
-                  .replace("{value}", getValueDisplayName(pendingChange.field, pendingChange.value))
-            : ""
-        }
+        message={pendingChange ? getConfirmMessage(pendingChange) : ""}
         onConfirm={handleConfirmChange}
         onCancel={() => {
           setShowConfirmDialog(false);

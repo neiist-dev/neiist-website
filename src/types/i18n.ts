@@ -33,6 +33,31 @@ export interface ConfirmDialogDict {
   cancel: string;
 }
 
+export interface CoordinatorManagementDict {
+  coordinator_management: {
+    title: string;
+    add_member_title: string;
+    select_user: string;
+    select_role: string;
+    add_member: string;
+    existing_members_title: string;
+    empty: string;
+    active_badge: string;
+    since_label: string;
+    remove: string;
+    confirm_remove: string;
+    errors: {
+      fetch_members: string;
+      add_member: string;
+      remove_member: string;
+    };
+  };
+  confirm_dialog: {
+    confirm: string;
+    cancel: string;
+  };
+}
+
 export interface ProductFormDict {
   unknown_error: string;
   edit: string;
@@ -84,9 +109,10 @@ export interface JoinsUsDict {
     title: string; 
     description: string;
     apply: string;
+    apply_link: string;
   }
 
-export interface HeroHeroDict {
+export interface HomeHeroDict {
     teams_title: string;
     description: string;
     title_segments: string[];
@@ -94,6 +120,8 @@ export interface HeroHeroDict {
     team_label: string;
     close_label: string;
     team_image_alt: string;
+    teams_names: Record<string, string>;
+    team_descriptions: Record<string, string>;
   }
 
 export interface YearSelectorDict {
@@ -165,6 +193,73 @@ export interface ThemeToggleDict {
     theme_toggle_dark: string;
   }
 
+export interface ProfileDict {
+  title: string;
+  confirm_dialog: {
+    confirm: string;
+    cancel: string;
+  };
+  photo_alt: string;
+  github_label: string;
+  github_placeholder: string;
+  linkedin_label: string;
+  linkedin_placeholder: string;
+  confirm_remove_field: string;
+  confirm_change_field: string;
+  errors: {
+    verify_email: string;
+    update: string;
+    update_profile: string;
+    fetch_calendar: string;
+    get_calendar_link: string;
+    pdf_only: string;
+    cv_upload: string;
+    cv_upload_error: string;
+    cv_remove: string;
+    cv_remove_error: string;
+    cv_not_found: string;
+    cv_download: string;
+  };
+  fields: {
+    alternativeEmail: string;
+    phone: string;
+    preferredContactMethod: string;
+    github: string;
+    linkedin: string;
+  };
+  values: {
+    preferredContactMethod: {
+      email: string;
+      alternativeEmail: string;
+      phone: string;
+    };
+  };
+  labels: {
+    alternativeEmail: string;
+    unverified: string;
+    phone: string;
+    preferredContactMethod: string;
+    loading: string;
+  };
+  placeholders: {
+    alternativeEmail: string;
+    phone: string;
+    cvUpload: string;
+  };
+  sections: {
+    calendar: string;
+    calendarDescription: string;
+    cvbank: string;
+    cvbankTooltip: string;
+  };
+  buttons: {
+    view_calendar: string;
+    open_in_google: string;
+    download_cv: string;
+    remove_cv: string;
+  };
+}
+
 export interface UserMenuDict {
     profile: string;
     my_orders: string;
@@ -191,7 +286,6 @@ export interface IconPickerDict {
     icon_picker: {
       title: string;
       search_placeholder: string;
-      close_label: string;
     };
   }
 
@@ -203,6 +297,16 @@ export interface AboutUsEditorDict {
     no_member: string;
     photo_alt: string;
   }
+
+export interface AboutUsPageDict {
+    hero: HomeHeroDict;
+    join_us: JoinsUsDict;
+    member_card: MemberCardDict;
+    year_selector: YearSelectorDict;
+    editor: AboutUsEditorDict;
+    roles_names: Record<string, string>;
+  }
+
 
 export interface AddDepartmentModalDict {
     add_team_button: string;
@@ -354,9 +458,7 @@ export interface SweatsContestDict {
 export interface HeroDict {
     campus_alt: string;
     student_alt: string;
-    title_prefix: string;
-    title_letters: string[];
-    title_suffix: string;
+    title: string;
   }
 
 export interface PartnershipsDict {
@@ -379,6 +481,7 @@ export interface ActivitiesDict {
 export interface SinfoDict { title: string; button: string; description: string; objective: string }
 
 export interface PhotoTeamMembersDict {
+    page_title: string;
     search_placeholder: string;
     empty: string;
     change_photo_title: string;
@@ -466,9 +569,9 @@ export interface OrderDetailsOverlayDict {
       register_payment: string;
       finalize_order: string;
     };
-    confirm_dialog: { confirm: string; cancel: string };
-    new_order_modal: Record<string, unknown>;
-    create_user_modal: Record<string, unknown>;
+    confirm_dialog: { title: string; confirm: string; cancel: string };
+    new_order_modal: NewOrderModalDict["new_order_modal"];
+    create_user_modal: NewOrderModalDict["create_user_modal"];
     pos_payment: PosPaymentDict;
   }
 
@@ -581,6 +684,7 @@ export interface CreateNewUserModalDict {
 
 export interface OrdersTableDict {
     orders_table: {
+      title: string;
       title_1: string;
       title_2: string;
       title_3: string;
@@ -768,8 +872,16 @@ export interface MobileFiltersDrawerDict {
     clear_all: string;
     apply: string;
   }
-
-export interface CheckoutFormDict {
+export interface PaymentLabelsDict {
+  method_cash: string;
+  method_sumup_tpa: string;
+  method_sumup: string;
+  method_apple_pay: string;
+  method_in_person: string;
+  method_mbway: string;
+  method_other: string;
+}
+export interface CheckoutFormDict extends PaymentLabelsDict {
     empty_cart: string;
     section_personal: string;
     phone_label: string;
@@ -794,8 +906,6 @@ export interface CheckoutFormDict {
     delivery_detail: string;
     campus_alameda: string;
     campus_taguspark: string;
-    payment_card: string;
-    payment_in_person: string;
     error_no_campus: string;
     error_no_payment: string;
     error_mixed_invalid: string;
@@ -811,18 +921,11 @@ export interface CheckoutFormDict {
     error_payment_incomplete: string;
   }
 
-export interface PosPaymentDict {
+export interface PosPaymentDict extends PaymentLabelsDict {
   close_label: string;
   title: string;
   title_register_payment: string;
   method_label: string;
-  method_cash: string;
-  method_other: string;
-  method_sumup_tpa: string;
-  method_sumup: string;
-  method_apple_pay: string;
-  method_in_person: string;
-  method_mbway: string;
   reference_label: string;
   reference_placeholder: string;
   reader_label: string;
@@ -855,4 +958,54 @@ export interface PosPaymentDict {
   confirm_reference: string;
   mbway_send_to: string;
   mbway_number_unavailable: string;
+}
+
+export interface MyOrdersDict {
+  title: string;
+  search_placeholder: string;
+  search_aria_label: string;
+  deadline_banner: string;
+  delivered_on: string;
+  order_aria_label: string;
+  empty: string;
+  status: {
+    pending: string;
+    paid: string;
+    ready: string;
+    delivered: string;
+    cancelled: string;
+  };
+}
+
+export interface ShopDict {
+  title: string;
+  subtitle: string;
+  not_found: string;
+  no_image_label: string;
+  size_guide_title: string;
+  size_guide_link: string;
+  size_guide_text: string;
+  delivery_title: string;
+  delivery_text: string;
+  error_deadline: string;
+  error_unavailable: string;
+  breadcrumbs: { shop: string };
+  labels: { quantity: string };
+  buttons: { add_to_cart: string };
+  products: Record<string, { title: string; description: string }>;
+  product_form: ProductFormDict;
+  categories: Record<string, string>;
+}
+
+export interface FooterDict {
+  title_neiist: string;
+  mission_description: string;
+  about_title: string;
+  team_link: string;
+  estatutos_link: string;
+  address: string;
+  courses_title: string;
+  contacts_title: string;
+  powered_by: string;
+  copyright: string;
 }

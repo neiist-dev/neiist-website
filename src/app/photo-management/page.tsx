@@ -3,6 +3,7 @@ import { Membership } from "@/types/memberships";
 import PhotoTeamMembers from "@/components/photo-management/PhotoTeamMembers";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
 import { getLocale, getDictionary } from "@/lib/i18n";
+import { PhotoTeamMembersDict } from "@/types/i18n";
 
 export default async function PhotoTeamMembersPage() {
   const memberships = await getAllMemberships();
@@ -22,7 +23,7 @@ export default async function PhotoTeamMembersPage() {
   return (
     <>
       <h1 className={styles.title}>{dict.photo_team_members.page_title}</h1>
-      <PhotoTeamMembers membersByDepartment={membersByDepartment} dict={dict.photo_team_members} />
+      <PhotoTeamMembers membersByDepartment={membersByDepartment} dict={dict.photo_team_members as PhotoTeamMembersDict} />
     </>
   );
 }

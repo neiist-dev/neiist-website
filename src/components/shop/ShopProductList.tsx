@@ -3,6 +3,8 @@ import styles from "@/styles/components/shop/ShopProductList.module.css";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import ProductCard from "@/components/shop/ProductCard";
+import { ShopDict } from "@/types/i18n";
+import ColorfulText from "../ColorfulText";
 
 export default function ShopProductList({
   products,
@@ -11,16 +13,11 @@ export default function ShopProductList({
 }: {
   products: Product[];
   categories: Category[];
-  dict?: any;
+  dict?: ShopDict;
 }) {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-        <span className={styles.primary}>{dict?.title_letters?.[0]}</span>
-        <span className={styles.secondary}>{dict?.title_letters?.[1]}</span>
-        <span className={styles.tertiary}>{dict?.title_letters?.[2]}</span>
-        <span className={styles.quaternary}>{dict?.title_letters?.[3]}</span>
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict?.title ?? ""} />
       <p className={styles.subTitle}>{dict?.subtitle}</p>
 
       <div className={styles.grid}>

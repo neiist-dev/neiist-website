@@ -7,7 +7,6 @@ interface JoinUsProps {
 }
 export default function JoinUs(
   { dict }: JoinUsProps) {
-  const joinUsLink = "https://google.com";
 
   return (
     <div className={styles.container}>
@@ -15,7 +14,7 @@ export default function JoinUs(
       <p className={styles.descprition}>
         {dict.description}
       </p>
-      <a href={joinUsLink} target="_blank" rel="noopener noreferrer" className={styles.apply}>
+      <a href={dict.apply_link} target="_blank" rel="noopener noreferrer" className={styles.apply}>
         {dict.apply}
       </a>
     </div>

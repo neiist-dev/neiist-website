@@ -2,6 +2,7 @@ import { getAllDepartments, getDepartmentRoles } from "@/utils/dbUtils";
 import RolesSearchFilter from "@/components/admin/RolesSearchFilter";
 import styles from "@/styles/components/admin/RolesManagement.module.css";
 import { getLocale, getDictionary } from "@/lib/i18n";
+import { RolesSearchFilterDict } from "@/types/i18n";
 
 export default async function RolesManagement({
   initialDepartmentType,
@@ -25,7 +26,7 @@ export default async function RolesManagement({
         departments={departments}
         initialDepartment={initialDepartment}
         initialRoles={initialRoles}
-        dict={{ ...dict.admin.roles_management, confirm_dialog: dict.confirm_dialog }}
+        dict={dict.admin.roles_management as RolesSearchFilterDict}
       />
     </div>
   );

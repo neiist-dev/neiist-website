@@ -6,13 +6,14 @@ import Image, { type StaticImageData } from "next/image";
 import { FiUsers } from "react-icons/fi";
 import styles from "@/styles/components/about-us/Hero.module.css";
 import { Team } from "@/types/memberships";
-import type { HeroHeroDict } from "@/types/i18n";
+import type { HomeHeroDict } from "@/types/i18n";
+import ColorfulText from "@/components/ColorfulText";
 
 
 interface HeroProps {
   teams: Team[];
   teamImage: string | StaticImageData;
-  heroDict: HeroHeroDict;
+  heroDict: HomeHeroDict;
   description?: string;
 }
 const iconMap: Record<string, React.ElementType> = {
@@ -48,17 +49,7 @@ export default function Hero({
       <div className={styles.header}>
         <div className={styles.intro}>
           <div className={styles.title}>
-            <p>
-                {Array.isArray(heroDict.title_segments) && heroDict.title_segments.length > 0 ? (
-                  heroDict.title_segments.map((seg, i) => (
-                    <span key={i} className={titleClasses[i] ?? undefined}>
-                      {seg}
-                    </span>
-                  ))
-                ) : heroDict?.title ? (
-                  <span className={styles.primary}>{heroDict.title}</span>
-                ) : null}
-            </p>
+              <ColorfulText text={heroDict.title} />
           </div>
           <p className={styles.description}>{description ?? heroDict.description}</p>
         </div>

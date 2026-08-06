@@ -18,7 +18,7 @@ import {
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
 import NewOrderModal from "./NewOrderModal";
-import PosPaymentOverlay, { type PosPaymentDict } from "@/components/shop/PosPaymentOverlay";
+import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import InputDialog from "@/components/layout/InputDateDialog";
@@ -27,6 +27,7 @@ import DateFilter from "./DateFilter";
 import ActiveFilters from "./ActiveFilters";
 import MobileFiltersDrawer from "./MobileFiltersDrawer";
 import type { OrdersTableDict } from "@/types/i18n";
+import ColorfulText from "../ColorfulText";
 
 
 function normalizeCampus(campus?: string): string {
@@ -510,12 +511,7 @@ export default function OrdersTable({ orders, products, dict, locale }: OrdersTa
   return (
     <>
       <div className={styles.container}>
-        <h1 className={styles.title}>
-          <span className={styles.primary}>{dict.orders_table.title_1}</span>
-          <span className={styles.secondary}>{dict.orders_table.title_2}</span>
-          <span className={styles.tertiary}>{dict.orders_table.title_3}</span>
-          <span className={styles.quaternary}>{dict.orders_table.title_4}</span>
-        </h1>
+        <ColorfulText as="h1" className={styles.title} text={dict.orders_table.title} />
 
         <div className={styles.controlsRow}>
           <div className={styles.searchContainer}>
@@ -580,7 +576,7 @@ export default function OrdersTable({ orders, products, dict, locale }: OrdersTa
               }));
             }}
             onClearAll={handleClearAll}
-            getStatusLabel={getStatusLabel}
+            //getStatusLabel={getStatusLabel}
             dict={dict.active_filters}
             locale={locale}
           />
@@ -846,7 +842,7 @@ export default function OrdersTable({ orders, products, dict, locale }: OrdersTa
         ]}        
         dict={dict.mobile_filters_drawer}
         locale={locale}
-
+      />
       {showNewOrderModal && (
         <NewOrderModal
           onClose={() => setShowNewOrderModal(false)}

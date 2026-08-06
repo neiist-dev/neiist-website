@@ -9,25 +9,12 @@ import { Order } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
+import { getStatusLabelFromDict } from "@/utils/shop/orderStatusUtils";
+import ColorfulText from "@/components/ColorfulText";
+import type { MyOrdersDict } from "@/types/i18n";
 
-type Dict = {
-  title_letters: string[];
-  search_placeholder: string;
-  search_aria_label: string;
-  deadline_banner: string;
-  delivered_on: string;
-  order_aria_label: string;
-  empty: string;
-  status: {
-    pending: string;
-    paid: string;
-    ready: string;
-    delivered: string;
-    cancelled: string;
-  };
-};
 
-type Props = { orders: Order[]; products: Product[]; dict: Dict };
+type Props = { orders: Order[]; products: Product[]; dict: MyOrdersDict };
 
 export default function MyOrdersList({ orders, products, dict }: Props) {
   const [query, setQuery] = useState("");
@@ -98,24 +85,9 @@ export default function MyOrdersList({ orders, products, dict }: Props) {
     return undefined;
   };
 
-  const getStatusLabel = (status?: string) => {
-    const s = (status ?? "").toLowerCase();
-    if (s.includes("pend") || s === "pending") return dict.status.pending;
-    if (s.includes("paid") || s === "pago") return dict.status.paid;
-    if (s.includes("prepare") || s.includes("ready") || s === "preparing") return dict.status.ready;
-    if (s.includes("deliver") || s.includes("entregue") || s === "delivered") return dict.status.delivered;
-    if (s.includes("cancel")) return dict.status.cancelled;
-    return status ?? "";
-  };
-
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-        <span className={styles.primary}>{dict.title_letters[0]}</span>
-        <span className={styles.secondary}>{dict.title_letters[1]}</span>
-        <span className={styles.tertiary}>{dict.title_letters[2]}</span>
-        <span className={styles.quaternary}>{dict.title_letters[3]}</span>
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict.title} />
 
       <div className={styles.searchRow}>
         <div className={styles.searchContainer}>
@@ -144,7 +116,7 @@ export default function MyOrdersList({ orders, products, dict }: Props) {
             const orderKind = getOrderKindFromItems(order.items).orderKind;
             const statusLabel = order.delivered_at
               ? dict.delivered_on.replace("{date}", new Date(order.delivered_at).toLocaleDateString("pt-PT"))
-              : getStatusLabel(order.status);
+              : getStatusLabelFromDict(order.status, dict.status);
 
             return (
               <Link

@@ -5,6 +5,7 @@ import { getUserFromJWT } from "@/utils/authUtils";
 import { getUser } from "@/utils/dbUtils";
 import { NextResponse } from "next/server";
 import { getLocale, getDictionary } from "@/lib/i18n";
+import { ProfileDict } from "@/types/i18n";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
@@ -31,7 +32,10 @@ export default async function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <ProfileClient initialUser={user} initialHasCV={hasCV} dict={{ ...fullDict.profile, confirm_dialog: fullDict.confirm_dialog }} />
+      <ProfileClient 
+          initialUser={user} 
+          initialHasCV={hasCV} 
+          dict={fullDict.profile as ProfileDict} />
     </div>
   );
 }

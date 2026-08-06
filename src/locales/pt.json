@@ -66,6 +66,7 @@
     },
 
     "shop_pos": {
+        "title": "Gestão de TPAs SumUp",
         "title_1": "Gestão",
         "title_2": "de TPA",
         "title_3": "s Sum",
@@ -73,6 +74,7 @@
     },
 
     "orders_table": {
+        "title": "Encomendas",
         "title_1": "En",
         "title_2": "com",
         "title_3": "end",
@@ -199,8 +201,13 @@
         "delivery_detail": "O tempo de entrega pode variar dependendo da localização de levantamento escolhida.",
         "campus_alameda": "Alameda",
         "campus_taguspark": "Taguspark",
-        "payment_card": "Cartão",
-        "payment_in_person": "Em pessoa",
+        "method_cash": "Dinheiro",
+        "method_sumup_tpa": "SumUp TPA",
+        "method_sumup": "SumUp Cartão Online",
+        "method_apple_pay": "Apple Pay",
+        "method_in_person": "Em pessoa",
+        "method_mbway": "MBWay",
+        "method_other": "Outro",
         "error_no_campus": "Por favor, seleciona o campus.",
         "error_no_payment": "Por favor, seleciona o método de pagamento.",
         "error_submit": "Erro ao submeter o pedido.",
@@ -219,9 +226,7 @@
     "hero": {
         "campus_alt": "Campus do IST",
         "student_alt": "Estudante",
-        "title_prefix": "Núcleo Estudantil de",
-        "title_letters": [" In", "for", "mát", "ica "],
-        "title_suffix": "do Instituto Superior Técnico"
+        "title": "Núcleo Estudantil de Informática do Instituto Superior Técnico"
     },
     
     "sinfo": {
@@ -248,7 +253,6 @@
 
     "shop": {
         "title": "Loja",
-        "title_letters": ["L","o","j","a"],
         "subtitle": "Os produtos que representam o teu curso!",
         "not_found": "Produto não encontrado",
         "no_image_label": "Sem imagem",
@@ -327,7 +331,6 @@
     },
 
     "activities": {
-        "title_letters": ["Ati","vi","da","des"],
         "title": "Atividades",
         "no_events": "Nenhuma atividade disponível.",
         "prev_label": "Anterior",
@@ -378,8 +381,7 @@
             },
             "icon_picker":{
                 "title": "Escolher Ícone",
-                "search_placeholder": "Procurar ícone...",
-                "close_label": "✕"
+                "search_placeholder": "Procurar ícone..."
             }
         },
 
@@ -459,6 +461,7 @@
 
     "about_us_page": {
         "hero": {
+            "title": "Quem Somos?",
             "title_segments": ["Qu","em ","So","mos?"],
             "description": "A equipa do NEIIST é composta por {count} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.",
             "teams_title": "As Nossas Equipas",
@@ -502,7 +505,8 @@
         "join_us": {
             "title": "Junta-te a Nós!",
             "description": "O nosso recrutamento acontece duas vezes por ano, no inicio de cada semestre. O recrutamento consiste de uma ronda de entrevistas, e para algumas equipas um pequeno desafio relacionado com o trabalho da equipa espesífica. Conta-mos contigo!",
-            "apply": "Candidata-te"
+            "apply": "Candidata-te",
+            "apply_link": "https://google.com"
         },
 
         "member_card": {
@@ -524,7 +528,11 @@
     },
 
     "profile": {
-        "title_letters": ["Pe","r","fi","l"],
+        "title": "Perfil",
+        "confirm_dialog":{
+            "confirm": "Confirmar",
+            "cancel": "Cancelar"
+        },
         "photo_alt": "Foto de perfil",
         "github_label": "GitHub",
         "github_placeholder": "Username no GitHub",
@@ -743,6 +751,10 @@
             "errors": {
                 "add_role": "Erro ao adicionar cargo",
                 "remove_role": "Erro ao remover cargo"
+            },
+            "confirm_dialog": {
+                "confirm": "Confirmar",
+                "cancel": "Cancelar"
             }
         },
 
@@ -845,7 +857,14 @@
         "confirm_archive": "Tem a certeza que deseja arquivar este produto?",
         "confirm_restore": "Tem a certeza que deseja restaurar este produto?",
         "confirm_permanent": "Tem a certeza que deseja eliminar definitivamente este produto? Esta ação não pode ser desfeita.",
-        "error_generic": "Ocorreu um erro. Tenta novamente."
+        "error_generic": "Ocorreu um erro. Tenta novamente.",
+        "confirm_dialog": {
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+        },
+        "categories": {
+            "Vestuário": "Vestuário"
+        }
     },
 
     "order_details": {
@@ -959,7 +978,7 @@
     },
 
     "my_orders": {
-        "title_letters": ["As mi", "nhas en", "come", "ndas"],
+        "title": "As Minhas Encomendas",
         "search_placeholder": "Procurar número, produto, estado ou data...",
         "search_aria_label": "Pesquisar encomendas",
         "deadline_banner": "Atenção: tens pelo menos uma encomenda com prazo de levantamento próximo.",

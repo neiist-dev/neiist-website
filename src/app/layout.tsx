@@ -9,6 +9,8 @@ import { ShopProvider } from "@/context/ShopContext";
 import { getLocale, getDictionary } from "@/lib/i18n";
 import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
+import { Metadata } from "next";
+import "@/lib/autoCancelScheduler";
 
 const secularOne = Secular_One({
   subsets: ["latin"],
@@ -17,7 +19,7 @@ const secularOne = Secular_One({
   display: "swap",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "NEIIST",
   description: "Núcleo Estudantil de Informática do Instituto Superior Técnico",
 };
@@ -50,6 +52,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                       about_us: dict.navbar.about_us,
                       activities: dict.navbar.activities,
                       shop: dict.navbar.shop,
+                      dinner: dict.navbar.dinner,
                       layout_navbar: dict.layout_navbar,
                       menu: dict.navbar.menu,
                     }}
@@ -61,7 +64,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
               mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
               toastOptions={{
                 style: {
-                  background: "var(--background-colour)",
+                  background: "white",
                   color: "var(--foreground-colour)",
                 },
               }}

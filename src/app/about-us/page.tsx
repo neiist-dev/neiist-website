@@ -14,6 +14,7 @@ import Hero from "@/components/about-us/Hero";
 import { Membership, Team } from "@/types/memberships";
 import { User } from "@/types/user";
 import { getLocale, getDictionary, t } from "@/lib/i18n";
+import { AboutUsPageDict } from "@/types/i18n";
 
 
 type Department = {
@@ -84,29 +85,27 @@ export default async function AboutPage({
 }) {
   const locale = await getLocale();
   const dict = await getDictionary(locale);
+  const aboutUsDict = dict.about_us_page as AboutUsPageDict;
+
+  const teamNameMap: Record<string, string> = aboutUsDict.hero?.teams_names ?? {};
+  const teamDescMap: Record<string, string> = aboutUsDict.hero?.team_descriptions ?? {};
+  const roleNameMap: Record<string, string> = aboutUsDict.roles_names ?? {};
 
   const params = searchParams ? await searchParams : {};
   const [memberships, rawTeams, rawAdminBodies, users]: [
     Membership[],
-    Array<{ name: string; description: string; active: boolean }>,
+    Array<{ name: string; description: string | Record<string, string>; active: boolean }>,
     Array<{ name: string; active: boolean }>,
     User[],
   ] = await Promise.all([getAllMemberships(), getAllTeams(), getAllAdminBodies(), getAllUsers()]);
-
-  const teamNameMap: Record<string, string> =
-    (dict.about_us_page && (dict.about_us_page as any).hero?.teams_names) || {};
-  const teamDescMap: Record<string, string> =
-    (dict.about_us_page && (dict.about_us_page as any).hero?.team_descriptions) || {};
-  const roleNameMap: Record<string, string> =
-    (dict.about_us_page && (dict.about_us_page as any).roles_names) || {};
 
   const teams: Team[] = rawTeams.map((team) => ({
     name: team.name,
     displayName: teamNameMap[team.name] ?? team.name,
     description:
       teamDescMap[team.name] ??
-      (typeof (team as any).description === "object"
-        ? ((team as any).description[locale] ?? (team as any).description.default ?? team.description)
+      (typeof team.description === "object"
+        ? (team.description[locale] ?? team.description.default ?? team.name)
         : team.description),
     icon: "FiUsers",
   }));
@@ -177,12 +176,12 @@ export default async function AboutPage({
       <Hero
         teams={teamsWithMembers}
         teamImage={teamImage}
-        heroDict={dict.about_us_page.hero}
-        description={t(dict.about_us_page.hero.description, { count: memberCount })}
+        heroDict={aboutUsDict.hero}
+        description={t(aboutUsDict.hero.description, { count: memberCount })}
       />
 
       <h2 className={styles.title} />
-      <YearSelector years={allAcademicYears} selectedYear={selectedYear} dict={dict.about_us_page.year_selector}/>
+      <YearSelector years={allAcademicYears} selectedYear={selectedYear} dict={aboutUsDict.year_selector}/>
 
       {sortedDepartmentsWithMembers.map((department) => (
         <div key={department.name}>

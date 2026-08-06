@@ -4,6 +4,18 @@ import {
   type OrderStatusConfig,
 } from "@/types/shop/orderStatus";
 
+export interface OrderStatusLabelsDict {
+  pending: string;
+  paid: string;
+  ready: string;
+  delivered: string;
+  cancelled: string;
+}
+
+export function getStatusLabelFromDict(status: OrderStatus, dict: OrderStatusLabelsDict): string {
+  return dict[status] ?? status;
+}
+
 export function getStatusConfig(status: OrderStatus): OrderStatusConfig {
   return ORDER_STATUS_CONFIG[status];
 }

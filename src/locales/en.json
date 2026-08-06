@@ -66,6 +66,7 @@
     },
 
     "shop_pos": {
+        "title": "Management of TPAs SumUp",
         "title_1": "Management",
         "title_2": "of TPA",
         "title_3": "s Sum",
@@ -73,6 +74,7 @@
     },
 
     "orders_table": {
+        "title": "Orders",
         "title_1": "Or",
         "title_2": "d",
         "title_3": "er",
@@ -199,8 +201,13 @@
         "delivery_detail": "Delivery time may vary depending on the chosen pickup location.",
         "campus_alameda": "Alameda",
         "campus_taguspark": "Taguspark",
-        "payment_card": "Card",
-        "payment_in_person": "In-person",
+        "method_cash": "Cash",
+        "method_sumup_tpa": "SumUp TPA",
+        "method_sumup": "SumUp Card Online",
+        "method_apple_pay": "Apple Pay",
+        "method_in_person": "In-person",
+        "method_mbway": "MBWay",
+        "method_other": "Other",
         "error_no_campus": "Please select a campus.",
         "error_no_payment": "Please select a payment method.",
         "error_submit": "Error submitting order.",
@@ -219,9 +226,7 @@
     "hero":{
         "campus_alt": "IST Campus",
         "student_alt": "Student",
-        "title_prefix": "",
-        "title_letters": [" In", "for", "mat", "ics "],
-        "title_suffix": "Student Nucleus of Instituto Superior Técnico"
+        "title": "Informatics Student Nucleus of Instituto Superior Técnico"
     },
 
     "sinfo": {
@@ -248,7 +253,6 @@
     
     "shop": {
         "title": "Shop",
-        "title_letters": ["S","h","o","p"],
         "subtitle": "Products that represent your course!",
         "not_found": "Product not found",
         "no_image_label": "No image",
@@ -328,7 +332,6 @@
 
     "activities": {
         "title": "Activities",
-        "title_letters": ["Acti","vi","ti","es"],
         "no_events": "No activities available.",
         "prev_label": "Previous",
         "next_label": "Next",
@@ -378,8 +381,7 @@
             },
             "icon_picker":{
                 "title": "Choose Icon",
-                "search_placeholder": "Search icon...",
-                "close_label": "✕"
+                "search_placeholder": "Search icon..."
             }
         },
 
@@ -459,6 +461,7 @@
 
     "about_us_page": {
         "hero": {
+            "title": "Who are we?",
             "title_segments": ["Wh","o a","re ","we?"],
             "description": "The NEIIST team is composed of {count} students from Instituto Superior Técnico, motivated and interested in helping all students in their institution who are interested in the most diverse areas of Computer Science. Founded in 2004, all NEIIST members contribute with their effort, dedication and time to organize a wide variety of activities aimed at assisting the academic community to have the best possible academic journey and benefit. Our goal is to foster interest in Computer Science and related areas, promoting contact between students, professors, professionals and companies, as well as organizing activities that contribute to the technical, scientific and human growth of the student community. Our vision is to be a reference in supporting and integrating students from the Department of Informatics Engineering, driving innovation, collaboration and excellence in the teaching and practice of Informatics Engineering.",
             "teams_title": "Our Teams",
@@ -502,7 +505,8 @@
         "join_us": {
             "title": "Join Us!",
             "description": "Our recruitment happens twice a year, at the beginning of each semester. The recruitment process consists of an interview round, and for some teams, a small challenge related to the team's work. Can we count on you?",
-            "apply": "Apply"
+            "apply": "Apply",
+            "apply_link": "https://google.com"
         },
 
         "member_card": {
@@ -524,7 +528,11 @@
     },
 
     "profile": {
-        "title_letters": ["Pr","o","fi","le"],
+        "title": "Profile",
+        "confirm_dialog":{
+            "confirm": "Confirm",
+            "cancel": "Cancel"
+        },
         "photo_alt": "Profile photo",
         "github_label": "GitHub",
         "github_placeholder": "GitHub username",
@@ -743,7 +751,12 @@
             "errors": {
                 "add_role": "Error adding role",
                 "remove_role": "Error removing role"
+            },
+            "confirm_dialog": {
+                "confirm": "Confirm",
+                "cancel": "Cancel"
             }
+
         },
 
         "add_department_modal": {
@@ -845,7 +858,14 @@
         "confirm_archive": "Are you sure you want to archive this product?",
         "confirm_restore": "Are you sure you want to restore this product?",
         "confirm_permanent": "Are you sure you want to permanently delete this product? This action cannot be undone.",
-        "error_generic": "An error occurred. Please try again."
+        "error_generic": "An error occurred. Please try again.",
+        "confirm_dialog": {
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+        },
+        "categories": {
+            "Vestuário": "Clothing"
+        }
     },
 
     "order_details": {
@@ -959,7 +979,7 @@
     },
 
     "my_orders": {
-        "title_letters": ["My ", "Or", "d", "ers"],
+        "title":"My orders",
         "search_placeholder": "Search by number, product, status or date...",
         "search_aria_label": "Search orders",
         "deadline_banner": "Warning: you have at least one order with a nearby pickup deadline.",

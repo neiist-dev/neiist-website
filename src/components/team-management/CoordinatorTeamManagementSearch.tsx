@@ -6,31 +6,7 @@ import { Membership } from "@/types/memberships";
 import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
-
-interface CoordinatorDict {
-  coordinator_management: {
-    title: string;
-    add_member_title: string;
-    select_user: string;
-    select_role: string;
-    add_member: string;
-    existing_members_title: string;
-    empty: string;
-    active_badge: string;
-    since_label: string;
-    remove: string;
-    confirm_remove: string;
-    errors: {
-      fetch_members: string;
-      add_member: string;
-      remove_member: string;
-    };
-  };
-  confirm_dialog: {
-    confirm: string;
-    cancel: string;
-  };
-}
+import { CoordinatorManagementDict } from "@/types/i18n";
 
 export default function CoordinatorTeamManagementSearch({
   coordinatorTeams,
@@ -41,7 +17,7 @@ export default function CoordinatorTeamManagementSearch({
   coordinatorTeams: string[];
   memberships: Membership[];
   users: Partial<User>[];
-  dict: CoordinatorDict;
+  dict: CoordinatorManagementDict;
 }) {
   const [selectedTeam, setSelectedTeam] = useState(coordinatorTeams[0] || "");
   const [memberships, setMemberships] = useState<Membership[]>([]);

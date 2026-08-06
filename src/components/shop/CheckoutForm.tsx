@@ -346,16 +346,10 @@ export default function CheckoutForm({ user, dict }: CheckoutFormProps) {
     { id: Campus._Taguspark, label: dict.campus_taguspark },
   ] as const;
 
-  const paymentOptions = allowedPaymentMethods.map((method) => {
-    let label : string = getPaymentLabel(method);
-    if (method === "sumup") label = dict.payment_card;
-    if (method === "in-person") label = dict.payment_in_person;
-
-    return {
-      id: method,
-      label: label,
-    };
-  });
+  const paymentOptions = allowedPaymentMethods.map((method) => ({
+    id: method,
+    label: getPaymentLabel(method, dict),
+  }));
 
   const isSelectedPaymentAllowed = payment !== null && allowedPaymentMethods.includes(payment);
   const hasSelectedPayMethod = payment !== null && payment !== "apple-pay";

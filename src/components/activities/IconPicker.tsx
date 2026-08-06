@@ -62,7 +62,7 @@ export default function IconPicker({ value, onChange, onClose, dict }: IconPicke
         <div className={styles.header}>
           <h3>{dict.icon_picker.title}</h3>
           <button onClick={onClose} className={styles.closeButton}>
-            {dict.icon_picker.close_label}
+            ✕
           </button>
         </div>
         <input

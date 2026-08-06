@@ -5,6 +5,7 @@ import { getLocale, getDictionary } from "@/lib/i18n";
 import { UserRole } from "@/types/user";
 import { serverCheckRoles } from "@/utils/permissionUtils";
 import styles from "@/styles/pages/Activities.module.css";
+import ColorfulText from "@/components/ColorfulText";
 
 async function getEventsAndSubscriptions() {
   let istid: string | null = null;
@@ -44,27 +45,15 @@ export default async function ActivitiesPage({
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-        {(() => {
-          const letters: string[] | undefined = dict.activities?.title_letters;
-          const title: string | undefined = dict.activities?.title;
-          if (letters && letters.length > 0) {
-            return letters.map((l: string, i: number) => (
-              <span key={i} className={(styles as any)[["primary", "secondary", "tertiary", "quaternary"][i]]}>
-                {l}
-              </span>
-            ));
-          }
-          if (title) {
-            return <span>{title}</span>;
-          }
-          return null;
-        })()}
-      </h1>
-          <Calendar
-            events={events}
-            signedUpEventIds={signedUpEventIds}
-            initialSelectedEventId={urlSelectdEventID}
+      <ColorfulText
+        as="h1"
+        className={styles.title}
+        text={dict.activities?.title ?? ""}
+      />
+      <Calendar
+        events={events}
+        signedUpEventIds={signedUpEventIds}
+        initialSelectedEventId={urlSelectdEventID}
             dict={dict.activities}
             locale={locale}
           />

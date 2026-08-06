@@ -147,6 +147,26 @@ export function getOrderStatusLabelValue(labelData: StatusLabel, order: Order): 
   return labelData;
 }
 
+export interface OrderStepLabelsDict {
+  step_pending: string;
+  step_paid: string;
+  step_ready: string;
+  step_delivered: string;
+}
+
+export function getOrderStepLabelFromDict(
+  step: OrderProgressStep,
+  dict: OrderStepLabelsDict
+): string {
+  const map: Record<string, string> = {
+    pending: dict.step_pending,
+    paid: dict.step_paid,
+    ready: dict.step_ready,
+    delivered: dict.step_delivered,
+  };
+  return map[step.key] ?? step.key;
+}
+
 export function getOrderKindFromItems(
   items: Array<{ product_name?: string | null; category?: string | null }> = []
 ): { orderKind: OrderKind; isMixedInvalid: boolean } {

@@ -33,6 +33,7 @@ interface EventDetailsProps {
   event: NormalizedCalendarEvent;
   onClose: () => void;
   isSignedUp: boolean;
+  // eslint-disable-next-line no-unused-vars
   onSignUpChange: (eventId: string, signedUp: boolean) => void;
   onUpdate: (updatedEvent?: CalendarEvent) => void;
   dict: any;

@@ -10,8 +10,9 @@ import {
 } from "react-icons/fa";
 import { SiLinktree } from "react-icons/si";
 import styles from "@/styles/components/layout/Footer.module.css";
+import type { FooterDict } from "@/types/i18n";
 
-export default function Footer({ dict }: { dict?: any }) {
+export default function Footer({ dict }: { dict?: FooterDict }) {
   const socialIcons = [
     {
       href: "https://facebook.com/NEIIST",
@@ -150,7 +151,7 @@ export default function Footer({ dict }: { dict?: any }) {
                 <br />
                 Instituto Superior Técnico
                 <br />
-                {dict.address}
+                {dict?.address}
               </address>
             </li>
           </ul>
