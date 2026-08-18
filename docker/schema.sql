@@ -3280,3 +3280,283 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET USER MEMBERSHIPS
+CREATE OR REPLACE FUNCTION neiist.get_user_memberships(p_istid VARCHAR(10))
+RETURNS TABLE (
+  user_istid VARCHAR(10),
+  user_name TEXT,
+  department_name VARCHAR(30),
+  role_name VARCHAR(40),
+  from_date DATE,
+  to_date DATE,
+  active BOOLEAN
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.user_istid,
+    u.name AS user_name,
+    m.department_name,
+    m.role_name,
+    m.from_date,
+    m.to_date,
+    CASE
+      WHEN m.to_date IS NULL OR m.to_date > CURRENT_DATE THEN TRUE
+      ELSE FALSE
+    END AS active
+  FROM neiist.membership m
+  JOIN neiist.users u ON m.user_istid = u.istid
+  WHERE m.user_istid = p_istid
+    AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET BATCH DEPARTMENT ROLE ORDERS
+CREATE OR REPLACE FUNCTION neiist.get_department_role_orders(p_departments text[])
+RETURNS TABLE (
+  department_name TEXT,
+  role_name TEXT,
+  position INTEGER
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT dro.department_name, dro.role_name, dro.position
+  FROM neiist.department_role_order dro
+  WHERE dro.department_name = ANY(p_departments);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ADD COLLABORATOR TO TEAMS BATCH
+CREATE OR REPLACE FUNCTION neiist.add_collaborator_to_teams(
+  p_istid VARCHAR(10),
+  p_teams text[],
+  p_role TEXT DEFAULT 'Colaborador'
+) RETURNS VOID AS $$
+DECLARE
+  t_name TEXT;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = p_istid) THEN
+    RAISE EXCEPTION 'O utilizador "%" não existe.', p_istid;
+  END IF;
+
+  FOREACH t_name IN ARRAY p_teams LOOP
+    INSERT INTO neiist.membership (user_istid, department_name, role_name, from_date, to_date)
+    VALUES (p_istid, t_name, p_role, CURRENT_DATE, NULL)
+    ON CONFLICT (user_istid, department_name, role_name)
+    DO UPDATE SET from_date = CURRENT_DATE, to_date = NULL;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ADD PRODUCT VARIANTS BATCH
+CREATE OR REPLACE FUNCTION neiist.add_product_variants(
+  p_product_id INTEGER,
+  p_variants JSONB
+) RETURNS TABLE (
+  id INTEGER,
+  name TEXT,
+  description TEXT,
+  price NUMERIC(10,2),
+  images TEXT[],
+  category TEXT,
+  stock_type TEXT,
+  stock_quantity INTEGER,
+  order_deadline TIMESTAMPTZ,
+  variants JSONB
+) AS $$
+DECLARE
+  v_product neiist.products%ROWTYPE;
+  v_category TEXT;
+  v_variant JSONB;
+  v_variant_id INTEGER;
+  v_sku TEXT;
+  v_images TEXT[];
+  v_price_modifier NUMERIC(10,2);
+  v_stock_quantity INTEGER;
+  v_active BOOLEAN;
+  v_options JSONB;
+  kv RECORD;
+BEGIN
+  SELECT * INTO v_product
+  FROM neiist.products p
+  WHERE p.id = p_product_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product % not found', p_product_id;
+  END IF;
+
+  IF p_variants IS NOT NULL AND jsonb_typeof(p_variants) = 'array' THEN
+    FOR v_variant IN SELECT * FROM jsonb_array_elements(p_variants)
+    LOOP
+      v_sku := NULLIF(v_variant->>'sku', '');
+      
+      IF v_variant ? 'images' AND jsonb_typeof(v_variant->'images') = 'array' THEN
+        SELECT COALESCE(array_agg(elem::TEXT), '{}')
+        INTO v_images
+        FROM jsonb_array_elements_text(v_variant->'images') AS elem;
+      ELSE
+        v_images := '{}';
+      END IF;
+
+      v_price_modifier := COALESCE((v_variant->>'price_modifier')::NUMERIC, (v_variant->>'price_offset')::NUMERIC, 0);
+      v_stock_quantity := NULLIF(COALESCE(v_variant->>'stock_quantity', v_variant->>'stock', ''), '')::INTEGER;
+      v_active := COALESCE((v_variant->>'active')::BOOLEAN, TRUE);
+      v_options := COALESCE(v_variant->'options', '{}'::JSONB);
+
+      INSERT INTO neiist.product_variants(
+        product_id, sku, images, price_modifier, stock_quantity, active
+      ) VALUES (
+        p_product_id, v_sku, COALESCE(v_images, '{}'),
+        v_price_modifier, v_stock_quantity, v_active
+      )
+      RETURNING neiist.product_variants.id INTO v_variant_id;
+
+      IF v_options IS NOT NULL AND jsonb_typeof(v_options) = 'object' THEN
+        FOR kv IN SELECT key, value FROM jsonb_each(v_options)
+        LOOP
+          INSERT INTO neiist.product_variant_options(variant_id, option_name, option_value)
+          VALUES (v_variant_id, kv.key, kv.value #>> '{}')
+          ON CONFLICT (variant_id, option_name) DO UPDATE
+          SET option_value = EXCLUDED.option_value;
+        END LOOP;
+      END IF;
+    END LOOP;
+  END IF;
+
+  SELECT c.name INTO v_category
+  FROM neiist.categories c
+  WHERE c.id = v_product.category_id;
+
+  RETURN QUERY
+  SELECT
+    v_product.id,
+    v_product.name,
+    v_product.description,
+    v_product.price,
+    v_product.images,
+    v_category,
+    v_product.stock_type::TEXT,
+    v_product.stock_quantity,
+    v_product.order_deadline,
+    (
+      SELECT COALESCE(jsonb_agg(
+        jsonb_build_object(
+          'id', pv.id,
+          'sku', pv.sku,
+          'images', pv.images,
+          'price_modifier', pv.price_modifier,
+          'stock_quantity', pv.stock_quantity,
+          'active', pv.active,
+          'options', COALESCE((
+              SELECT jsonb_object_agg(pvo.option_name, pvo.option_value)
+              FROM neiist.product_variant_options pvo
+              WHERE pvo.variant_id = pv.id
+            ), '{}'::jsonb),
+          'label', NULLIF((
+              SELECT string_agg(pvo.option_name || ': ' || pvo.option_value, ' | ' ORDER BY pvo.option_name)
+              FROM neiist.product_variant_options pvo
+              WHERE pvo.variant_id = pv.id
+            ), '')
+        )
+      ORDER BY pv.id), '[]'::JSONB)
+      FROM neiist.product_variants pv
+      WHERE pv.product_id = v_product.id
+    ) AS variants;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET STALE PENDING ORDERS
+CREATE OR REPLACE FUNCTION neiist.get_stale_pending_orders(p_threshold_ms BIGINT)
+RETURNS TABLE (
+  id INT,
+  order_number TEXT,
+  customer_name TEXT,
+  user_istid VARCHAR(10),
+  customer_email TEXT,
+  customer_phone TEXT,
+  customer_nif TEXT,
+  campus TEXT,
+  pickup_deadline TIMESTAMPTZ,
+  items JSONB,
+  notes TEXT,
+  discount_code TEXT,
+  discount_amount NUMERIC(10,2),
+  total_amount NUMERIC(10,2),
+  payment_method TEXT,
+  payment_reference TEXT,
+  created_by TEXT,
+  created_at TIMESTAMPTZ,
+  paid_at TIMESTAMPTZ,
+  payment_checked_by TEXT,
+  delivered_at TIMESTAMPTZ,
+  delivered_by TEXT,
+  updated_at TIMESTAMPTZ,
+  updated_by TEXT,
+  status neiist.shop_order_status_enum
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    o.id,
+    o.order_number,
+    CASE
+      WHEN o.user_istid IS NULL THEN COALESCE(o.customer_name, '')
+      ELSE COALESCE(u.name, '')
+    END AS customer_name,
+    o.user_istid,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_email
+      ELSE u.email
+    END AS customer_email,
+    CASE
+      WHEN o.user_istid IS NULL THEN o.customer_phone
+      ELSE (
+        SELECT c.contact_value
+        FROM neiist.user_contacts c
+        WHERE c.user_istid = o.user_istid AND c.contact_type = 'phone'
+        LIMIT 1
+      )
+    END AS customer_phone,
+    o.nif AS customer_nif,
+    o.campus,
+    o.pickup_deadline,
+    (
+      SELECT COALESCE(jsonb_agg(
+        jsonb_build_object(
+          'product_id', oi.product_id,
+          'product_name', oi.product_name,
+          'variant_id', oi.variant_id,
+          'variant_label', oi.variant_label,
+          'variant_options', oi.variant_options,
+          'quantity', oi.quantity,
+          'unit_price', oi.unit_price,
+          'total_price', oi.total_price
+        )
+        ORDER BY oi.id
+      ), '[]'::jsonb)
+      FROM neiist.order_items oi
+      WHERE oi.order_id = o.id
+    ) AS items,
+    o.notes,
+    o.discount_code,
+    o.discount_amount,
+    o.total_amount,
+    o.payment_method,
+    o.payment_reference,
+    o.created_by,
+    o.created_at,
+    o.paid_at,
+    o.payment_checked_by,
+    o.delivered_at,
+    o.delivered_by,
+    o.updated_at,
+    o.updated_by,
+    o.status
+  FROM neiist.orders o
+  LEFT JOIN neiist.users u ON u.istid = o.user_istid
+  WHERE o.status = 'pending'
+    AND o.created_at <= (NOW() - (INTERVAL '1 millisecond' * p_threshold_ms))
+  ORDER BY o.created_at;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
