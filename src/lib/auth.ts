@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { hasRequiredRole, mapRoleToUserRole, UserRole } from "@/types/user";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/db/userQueries";
+import { getUser } from "@/lib/db/repositories/user.repository";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 

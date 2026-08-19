@@ -1,6 +1,6 @@
 "use server";
 
-import { updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { UserRole } from "@/types/user";
 import { VotingSession, VotingType } from "@/types/voting";
@@ -11,7 +11,7 @@ import {
   startVoting,
   submitVote,
   updateVotingSession,
-} from "@/utils/db/votingQueries";
+} from "@/lib/db/repositories/voting.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
@@ -83,7 +83,9 @@ function extractVotingSessionData(formData: FormData): Partial<VotingSession> {
 }
 
 function revalidateVotes() {
-  updateTag("votes");
+  revalidateTag("votes", "max");
+  revalidatePath("/voting");
+  revalidatePath("/voting/manage");
 }
 
 export async function createVotingSessionAction(formData: FormData): Promise<void> {
@@ -147,5 +149,5 @@ export async function submitVoteAction(formData: FormData): Promise<void> {
   const nomineeId = requireString(formData.get("nomineeId"), "nomineeId");
 
   await submitVote(sessionId, auth.user.istid, nomineeId);
-  updateTag("votes");
+  revalidateVotes();
 }

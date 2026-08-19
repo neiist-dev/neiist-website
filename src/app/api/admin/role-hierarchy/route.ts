@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { getDepartmentRoleOrder, setDepartmentRoleOrder } from "@/utils/db/userQueries";
+import {
+  getDepartmentRoleOrder,
+  setDepartmentRoleOrder,
+} from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,8 +35,12 @@ export async function POST(request: NextRequest) {
     if (!departmentName || !Array.isArray(roles)) {
       return NextResponse.json({ error: "Missing data" }, { status: 400 });
     }
-    const ok = await setDepartmentRoleOrder(departmentName, roles);
-    return NextResponse.json({ ok });
+    const success = await setDepartmentRoleOrder(departmentName, roles);
+    if (success) {
+      revalidatePath("/about-us");
+      revalidatePath("/departments-management");
+    }
+    return NextResponse.json({ success });
   } catch (error) {
     return handleApiError(error);
   }

@@ -3,7 +3,11 @@ import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { cookies } from "next/headers";
 import { getUserFromJWT } from "@/lib/auth";
-import { getAllUsers, getAllMemberships, getAllValidDepartmentRoles } from "@/utils/db/userQueries";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
+import {
+  getAllMemberships,
+  getAllValidDepartmentRoles,
+} from "@/lib/db/repositories/team.repository";
 
 interface Role {
   department_name: string;

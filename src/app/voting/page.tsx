@@ -5,10 +5,8 @@ import {
   getSessionNominees,
   getUserVote,
   getSessionResults,
-} from "@/utils/db/votingQueries";
+} from "@/lib/db/repositories/voting.repository";
 import { serverCheckRoles } from "@/lib/auth";
-
-export const dynamic = "force-dynamic";
 
 export default async function VotingPage({
   searchParams,

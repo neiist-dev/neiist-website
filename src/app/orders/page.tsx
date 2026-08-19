@@ -1,7 +1,7 @@
 import OrdersTable from "@/components/shop/OrdersTable";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
 import { UserRole } from "@/types/user";
-import { getAllOrders, getAllProducts } from "@/utils/db/shopQueries";
+import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 interface PageProps {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { sendEmail, getEmailVerificationTemplate } from "@/lib/email";
-import { addEmailVerification } from "@/utils/db/userQueries";
+import { addEmailVerification } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: Request) {

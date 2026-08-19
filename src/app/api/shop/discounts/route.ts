@@ -12,8 +12,9 @@ import {
   deleteDiscountCode,
   getAllDiscountCodes,
   updateDiscountCode,
-} from "@/utils/db/shopQueries";
+} from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 function normalizeString(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -195,6 +196,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    revalidatePath("/shop/manage/discounts");
+
     return NextResponse.json(
       {
         codes: createdCodes,
@@ -267,6 +270,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update discount code" }, { status: 500 });
     }
 
+    revalidatePath("/shop/manage/discounts");
+
     return NextResponse.json(updated);
   } catch (error) {
     return handleApiError(error);
@@ -289,6 +294,8 @@ export async function DELETE(request: NextRequest) {
     if (!deleted) {
       return NextResponse.json({ error: "Failed to delete discount code" }, { status: 500 });
     }
+
+    revalidatePath("/shop/manage/discounts");
 
     return NextResponse.json({ ok: true });
   } catch (error) {

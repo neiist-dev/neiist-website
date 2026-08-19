@@ -1,6 +1,6 @@
 import DiscountCodeManagement from "@/components/shop/DiscountCodeManagement";
-import { getAllDiscountCodes, getAllProductsAdmin } from "@/utils/db/shopQueries";
-import { getAllUsers } from "@/utils/db/userQueries";
+import { getAllDiscountCodes, getAllProductsAdmin } from "@/lib/db/repositories/shop.repository";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 
 export default async function DiscountCodesPage() {
   const [products, discountCodes, users] = await Promise.all([

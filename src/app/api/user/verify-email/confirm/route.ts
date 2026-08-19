@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getEmailVerification, deleteEmailVerification, updateUser } from "@/utils/db/userQueries";
+import {
+  getEmailVerification,
+  deleteEmailVerification,
+  updateUser,
+} from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function GET(request: Request) {

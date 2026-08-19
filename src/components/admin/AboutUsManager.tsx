@@ -1,6 +1,7 @@
 import AboutUsEditor from "@/components/admin/AboutUsEditor";
 import { Membership } from "@/types/memberships";
-import { getAllDepartments, getAllMemberships, getAllUsers } from "@/utils/db/userQueries";
+import { getAllDepartments, getAllMemberships } from "@/lib/db/repositories/team.repository";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 
 export default async function AboutUsManager({
   searchParams,
@@ -14,10 +15,12 @@ export default async function AboutUsManager({
   function getAcademicYearStartYear(date: Date) {
     return date.getMonth() >= 7 ? date.getFullYear() : date.getFullYear() - 1;
   }
+
   function getCurrentAcademicYearStartYear() {
     const now = new Date();
     return getAcademicYearStartYear(now);
   }
+
   function getAllAcademicYears(memberships: Membership[]) {
     if (memberships.length === 0) return [];
     let minYear = Infinity,
@@ -31,9 +34,12 @@ export default async function AboutUsManager({
       if (startYear < minYear) minYear = startYear;
       if (endYear > maxYear) maxYear = endYear;
     });
+
     if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
+
     const years: string[] = [];
     for (let year = minYear; year <= maxYear; year++) years.push(`${year}/${year + 1}`);
+
     return years.reverse();
   }
 

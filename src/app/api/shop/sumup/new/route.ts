@@ -6,7 +6,7 @@ import type {
   SumUpCheckoutPayload,
 } from "@/types/sumup";
 import { formatVariantLabel } from "@/lib/email";
-import { getOrderById, updateOrder } from "@/utils/db/shopQueries";
+import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 

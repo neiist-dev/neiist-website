@@ -1,6 +1,6 @@
 import VotingSessionForm from "@/components/voting/admin/VotingSessionForm";
-import { getAllUsers } from "@/utils/db/userQueries";
-import { getActivitiesEventsFromDb } from "@/utils/db/eventQueries";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
+import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
 
 export default async function NewVotingSessionPage() {
   const [activities, users] = await Promise.all([getActivitiesEventsFromDb(), getAllUsers()]);

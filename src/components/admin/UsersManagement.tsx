@@ -1,8 +1,9 @@
 import { User } from "@/types/user";
+import { Membership } from "@/types/memberships";
 import UsersSearchList from "@/components/admin/UsersSearchList";
 import styles from "@/styles/components/admin/UsersManagement.module.css";
-import { Membership } from "@/types/memberships";
-import { getAllUsers, getAllMemberships, getDepartmentRoles } from "@/utils/db/userQueries";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
+import { getAllMemberships, getDepartmentRoles } from "@/lib/db/repositories/team.repository";
 
 interface Role {
   role_name: string;

@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import type { Membership } from "@/types/memberships";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { addTeamMember, removeTeamMember, getAllMemberships } from "@/utils/db/userQueries";
+import {
+  addTeamMember,
+  removeTeamMember,
+  getAllMemberships,
+} from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 async function checkMembershipPermission(departmentName: string) {
   const roles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
@@ -60,7 +64,9 @@ export async function POST(request: NextRequest) {
 
     const success = await addTeamMember(istid, departmentName, roleName);
     if (success) {
-      revalidateTag("memberships", "max");
+      revalidatePath("/about-us");
+      revalidatePath("/team-management");
+      revalidatePath("/photo-management");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to add team member" }, { status: 500 });
@@ -84,7 +90,9 @@ export async function DELETE(request: NextRequest) {
 
     const success = await removeTeamMember(istid, departmentName, roleName);
     if (success) {
-      revalidateTag("memberships", "max");
+      revalidatePath("/about-us");
+      revalidatePath("/team-management");
+      revalidatePath("/photo-management");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to remove team member" }, { status: 500 });

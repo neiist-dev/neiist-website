@@ -2,7 +2,7 @@ import CheckoutForm from "@/components/shop/CheckoutForm";
 import { getUserFromJWT } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getUser } from "@/utils/db/userQueries";
+import { getUser } from "@/lib/db/repositories/user.repository";
 
 export default async function CheckoutPage() {
   const cookieStore = await cookies();

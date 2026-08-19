@@ -16,7 +16,10 @@ import UnlockedDinnerPage from "@/components/dinner/UnlockedDinnerPage";
 import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import penguinImg from "@/assets/events/DinnerPenguin.png";
 import styles from "@/styles/pages/DinnerPage.module.css";
-import { getAllProducts, getUserOrderedProductsInCategory } from "@/utils/db/shopQueries";
+import {
+  getAllProducts,
+  getUserOrderedProductsInCategory,
+} from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 const handelsonTwo = localFont({

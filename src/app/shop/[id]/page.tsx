@@ -1,6 +1,6 @@
 import ProductDetail from "@/components/shop/ProductDetail";
 import styles from "@/styles/pages/ProductDetail.module.css";
-import { getProduct } from "@/utils/db/shopQueries";
+import { getProduct } from "@/lib/db/repositories/shop.repository";
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;

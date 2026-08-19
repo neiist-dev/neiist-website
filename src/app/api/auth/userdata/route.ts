@@ -4,7 +4,11 @@ import fs from "fs/promises";
 import path from "path";
 import { signUserJWT } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { getUser, createUser, getEmailVerificationByUser } from "@/utils/db/userQueries";
+import {
+  getUser,
+  createUser,
+  getEmailVerificationByUser,
+} from "@/lib/db/repositories/user.repository";
 
 type FenixRegistration = {
   degree?: {

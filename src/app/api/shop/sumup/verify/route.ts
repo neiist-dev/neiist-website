@@ -7,7 +7,7 @@ import {
 } from "@/lib/sumup";
 import type { ApplePayPaymentToken, VerifyCheckoutRequestBody, SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
-import { getOrderById } from "@/utils/db/shopQueries";
+import { getOrderById } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       checkoutId = String(body?.checkoutId ?? "").trim();
       orderId = Number(body?.orderId);
       applePayToken = body?.applePayToken;
+
       if (!checkoutId || !orderId) return sumupErrorResponse("Missing checkoutId or orderId", 400);
     } catch {
       return sumupErrorResponse("Invalid request body", 400);

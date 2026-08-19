@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { UserRole } from "@/types/user";
-import { getOrderById, getOrderByIdOrNumber } from "@/utils/db/shopQueries";
+import { getOrderById, getOrderByIdOrNumber } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -40,7 +40,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const updatedOrder = await getOrderById(orderId);
 
-    revalidateTag("orders", "max");
+    revalidatePath("/orders");
+    revalidatePath("/my-orders");
     return NextResponse.json(updatedOrder);
   } catch (error) {
     return handleApiError(error);

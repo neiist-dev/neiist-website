@@ -2,14 +2,12 @@ import {
   getVotingSessions,
   getVotingSessionById,
   getSessionResults,
-} from "@/utils/db/votingQueries";
-import { getActivitiesEventsFromDb } from "@/utils/db/eventQueries";
-import { getAllUsers } from "@/utils/db/userQueries";
+} from "@/lib/db/repositories/voting.repository";
+import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import AdminVotingSync from "@/components/voting/AdminVotingSync";
 import VotingManagement from "@/components/voting/admin/VotingManagement";
 import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
-
-export const dynamic = "force-dynamic";
 
 interface PageProps {
   searchParams: Promise<{ sessionId?: string }>;

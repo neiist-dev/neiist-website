@@ -3,9 +3,9 @@ import { User, UserRole } from "@/types/user";
 import fs from "fs/promises";
 import path from "path";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { getUser, updateUser, updateUserPhoto } from "@/utils/db/userQueries";
+import { getUser, updateUser, updateUserPhoto } from "@/lib/db/repositories/user.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
   const userRoles = await serverCheckRoles([
@@ -135,7 +135,11 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
         return NextResponse.json({ error: "Falha ao atualizar utilizador" }, { status: 500 });
     }
 
-    revalidateTag("users", "max");
+    revalidatePath("/about-us");
+    revalidatePath("/team-management");
+    revalidatePath("/profile");
+    revalidatePath("/photo-management");
+    revalidatePath("/users-management");
     return NextResponse.json({
       success: true,
       message: "Perfil atualizado com sucesso",

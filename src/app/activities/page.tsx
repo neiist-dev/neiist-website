@@ -2,7 +2,7 @@ import Calendar from "@/components/activities/Calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { UserRole } from "@/types/user";
 import styles from "@/styles/pages/Activities.module.css";
-import { getActivitiesEventsFromDb } from "@/utils/db/eventQueries";
+import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 async function getEventsAndSubscriptions() {

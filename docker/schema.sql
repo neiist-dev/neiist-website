@@ -3317,35 +3317,13 @@ CREATE OR REPLACE FUNCTION neiist.get_department_role_orders(p_departments text[
 RETURNS TABLE (
   department_name TEXT,
   role_name TEXT,
-  position INTEGER
+  "position" INTEGER
 ) AS $$
 BEGIN
   RETURN QUERY
   SELECT dro.department_name, dro.role_name, dro.position
   FROM neiist.department_role_order dro
   WHERE dro.department_name = ANY(p_departments);
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ADD COLLABORATOR TO TEAMS BATCH
-CREATE OR REPLACE FUNCTION neiist.add_collaborator_to_teams(
-  p_istid VARCHAR(10),
-  p_teams text[],
-  p_role TEXT DEFAULT 'Colaborador'
-) RETURNS VOID AS $$
-DECLARE
-  t_name TEXT;
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = p_istid) THEN
-    RAISE EXCEPTION 'O utilizador "%" não existe.', p_istid;
-  END IF;
-
-  FOREACH t_name IN ARRAY p_teams LOOP
-    INSERT INTO neiist.membership (user_istid, department_name, role_name, from_date, to_date)
-    VALUES (p_istid, t_name, p_role, CURRENT_DATE, NULL)
-    ON CONFLICT (user_istid, department_name, role_name)
-    DO UPDATE SET from_date = CURRENT_DATE, to_date = NULL;
-  END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

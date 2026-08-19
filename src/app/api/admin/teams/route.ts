@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { addTeam, removeTeam, getAllTeams } from "@/utils/db/userQueries";
+import { addTeam, removeTeam, getAllTeams } from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
@@ -33,6 +34,8 @@ export async function POST(request: NextRequest) {
     }
     const success = await addTeam(name, description || "");
     if (success) {
+      revalidatePath("/about-us");
+      revalidatePath("/departments-management");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to add team" }, { status: 500 });
@@ -54,6 +57,8 @@ export async function DELETE(request: NextRequest) {
     }
     const success = await removeTeam(name);
     if (success) {
+      revalidatePath("/about-us");
+      revalidatePath("/departments-management");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to remove team" }, { status: 500 });

@@ -7,7 +7,7 @@ import {
 } from "@/lib/sumup";
 import { UserRole } from "@/types/user";
 import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/sumup";
-import { getOrderById, updateOrder } from "@/utils/db/shopQueries";
+import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;

@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateDiscountCode } from "@/utils/db/shopQueries";
+import { validateDiscountCode } from "@/lib/db/repositories/shop.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { serverCheckRoles } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
+  const userRoles = await serverCheckRoles([]);
+  if (!userRoles.isAuthorized || !userRoles.user) {
+    return userRoles.error;
+  }
+
   try {
     const body = await request.json();
-    const code = typeof body.code === "string" ? body.code.trim() : "";
-    const userIstid = typeof body.user_istid === "string" ? body.user_istid.trim() : null;
-    const cartItems = Array.isArray(body.cart_items) ? body.cart_items : [];
 
-    const result = await validateDiscountCode(code, userIstid, cartItems);
+    if (!body.code || !body.cart_items || !Array.isArray(body.cart_items)) {
+      return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
+    }
+
+    const code = typeof body.code === "string" ? body.code.trim() : "";
+    const userIstid = userRoles.user.istid;
+
+    const result = await validateDiscountCode(code, userIstid, body.cart_items);
     if (!result) {
       return NextResponse.json(
         { valid: false, error: "Failed to validate discount code" },

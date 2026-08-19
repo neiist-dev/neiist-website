@@ -1,7 +1,8 @@
 import MembershipsSearchList from "./MembershipsSearchList";
 import styles from "@/styles/components/admin/MembershipsManagement.module.css";
 import { Membership } from "@/types/memberships";
-import { getAllMemberships, getAllUsers, getAllDepartments } from "@/utils/db/userQueries";
+import { getAllMemberships, getAllDepartments } from "@/lib/db/repositories/team.repository";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 
 export default async function MembershipsManagement() {
   const memberships: Membership[] = await getAllMemberships();

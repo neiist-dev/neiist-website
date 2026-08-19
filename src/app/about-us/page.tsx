@@ -11,8 +11,8 @@ import {
   getAllTeams,
   getAllAdminBodies,
   getDepartmentRoleOrder,
-  getAllUsers,
-} from "@/utils/db/userQueries";
+} from "@/lib/db/repositories/team.repository";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 
 type Department = {
   name: string;

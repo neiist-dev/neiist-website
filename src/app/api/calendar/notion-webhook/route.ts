@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import pLimit from "p-limit";
 import { Client } from "@notionhq/client";
 import crypto from "crypto";
-import type { NotionPage, NotionApiResponse } from "@/types/notion";
+import type { NotionApiResponse, NotionPage } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
-import { syncAllEventsToCalendar, getCalendarClient } from "@/lib/google/calendar";
-import { syncNotionEventsToDb } from "@/utils/eventsUtils";
-import { parseNotionPageToEvent } from "@/utils/eventsUtils";
-import { getAllUsers } from "@/utils/db/userQueries";
+import { getCalendarClient, syncAllEventsToCalendar } from "@/lib/google/calendar";
+import { parseNotionPageToEvent, syncNotionEventsToDb } from "@/utils/eventsUtils";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
@@ -66,13 +65,7 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
             : undefined;
           const alternativeEmail = alternativeEmailRaw ?? undefined;
           const calendarId = calendarByIstid.get(user.istid)!.id;
-          const stats = await syncAllEventsToCalendar(
-            calendarId,
-            events,
-            user.email!,
-            alternativeEmail
-          );
-          return stats;
+          return await syncAllEventsToCalendar(calendarId, events, user.email!, alternativeEmail);
         } catch (error) {
           console.error(`Error syncing calendar for ${user.istid}:`, error);
           return { updated: 0, deleted: 0, unchanged: 0 };

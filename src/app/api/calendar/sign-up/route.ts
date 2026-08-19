@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getUserFromJWT } from "@/lib/auth";
-import { signUpToEvent, removeSignUpFromEvent } from "@/utils/db/eventQueries";
+import { signUpToEvent, removeSignUpFromEvent } from "@/lib/db/repositories/event.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { revalidatePath } from "next/cache";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,6 +33,8 @@ export async function POST(req: NextRequest) {
     if (!success) {
       return NextResponse.json({ error: "Failed to update sign-up" }, { status: 500 });
     }
+
+    revalidatePath("/activities");
 
     return NextResponse.json({
       success: true,

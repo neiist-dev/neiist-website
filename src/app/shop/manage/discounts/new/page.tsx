@@ -1,8 +1,6 @@
 import DiscountCodeForm from "@/components/shop/DiscountCodeForm";
-import { getAllProductsAdmin } from "@/utils/db/shopQueries";
-import { getAllUsers } from "@/utils/db/userQueries";
-
-export const dynamic = "force-dynamic";
+import { getAllProductsAdmin } from "@/lib/db/repositories/shop.repository";
+import { getAllUsers } from "@/lib/db/repositories/user.repository";
 
 export default async function NewDiscountPage() {
   const [products, users] = await Promise.all([getAllProductsAdmin(), getAllUsers()]);

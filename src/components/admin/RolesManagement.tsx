@@ -1,6 +1,6 @@
 import RolesSearchFilter from "@/components/admin/RolesSearchFilter";
 import styles from "@/styles/components/admin/RolesManagement.module.css";
-import { getAllDepartments, getDepartmentRoles } from "@/utils/db/userQueries";
+import { getAllDepartments, getDepartmentRoles } from "@/lib/db/repositories/team.repository";
 
 export default async function RolesManagement({
   initialDepartmentType,

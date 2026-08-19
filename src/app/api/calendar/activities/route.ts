@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { updateActivityProperties, getEventSubscribers } from "@/utils/db/eventQueries";
+import {
+  updateActivityProperties,
+  getEventSubscribers,
+} from "@/lib/db/repositories/event.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: NextRequest) {
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update event" }, { status: 500 });
     }
 
-    revalidateTag("activities", "max");
+    revalidatePath("/activities");
     return NextResponse.json({ success: true });
   } catch (error) {
     return handleApiError(error);

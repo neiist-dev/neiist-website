@@ -5,8 +5,9 @@ import {
   addValidDepartmentRole,
   removeValidDepartmentRole,
   getDepartmentRoles,
-} from "@/utils/db/userQueries";
+} from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
@@ -40,6 +41,9 @@ export async function POST(request: NextRequest) {
     }
     const success = await addValidDepartmentRole(departmentName, roleName, access);
     if (success) {
+      revalidatePath("/about-us");
+      revalidatePath("/departments-management");
+      revalidatePath("/team-management");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to add role" }, { status: 500 });
@@ -64,6 +68,9 @@ export async function DELETE(request: NextRequest) {
     }
     const success = await removeValidDepartmentRole(departmentName, roleName);
     if (success) {
+      revalidatePath("/about-us");
+      revalidatePath("/departments-management");
+      revalidatePath("/team-management");
       return NextResponse.json({ success: true });
     } else {
       return NextResponse.json({ error: "Failed to remove role" }, { status: 500 });

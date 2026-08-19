@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { dbBroadcaster } from "@/lib/dbBroadcaster";
 import { GlobalVotingState, VotingSyncPayload } from "@/types/voting";
-import { getVotingSessions, getSessionNominees, getSessionResults } from "@/utils/db/votingQueries";
+import {
+  getVotingSessions,
+  getSessionNominees,
+  getSessionResults,
+} from "@/lib/db/repositories/voting.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 let statePromise: Promise<GlobalVotingState> | null = null;

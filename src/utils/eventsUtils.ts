@@ -6,7 +6,7 @@ import {
   updateActivitiesEvent,
   deleteActivitiesEvent,
   getActivitiesEventsFromDb,
-} from "@/utils/db/eventQueries";
+} from "@/lib/db/repositories/event.repository";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;

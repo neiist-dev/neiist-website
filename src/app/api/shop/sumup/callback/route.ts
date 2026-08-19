@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
 import type { SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
-import { getOrderById } from "@/utils/db/shopQueries";
+import { getOrderById } from "@/lib/db/repositories/shop.repository";
 
 type CheckoutStatusChangedPayload = {
   event_type?: string;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { getAllUsers, createUser } from "@/utils/db/userQueries";
+import { getAllUsers, createUser } from "@/lib/db/repositories/user.repository";
 import { serverCheckRoles } from "@/lib/auth";
 
 export async function GET() {

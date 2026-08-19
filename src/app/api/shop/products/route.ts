@@ -3,9 +3,9 @@ import { UserRole } from "@/types/user";
 import path from "path";
 import fs from "fs/promises";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { addProduct, addProductVariant, getProduct } from "@/utils/db/shopQueries";
+import { addProduct, addProductVariants, getProduct } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -96,37 +96,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    for (const variant of body.variants) {
-      let variantImages: string[] = variant.images || [];
-      if (Array.isArray(variant.imageUploads) && variant.imageUploads.length > 0) {
-        const uploadedVariantImages = await uploadImages(variant.imageUploads);
-        variantImages = [...variantImages, ...uploadedVariantImages];
-      }
+    if (Array.isArray(body.variants) && body.variants.length > 0) {
+      const processedVariants = [];
+      for (const variant of body.variants) {
+        let variantImages: string[] = variant.images || [];
+        if (Array.isArray(variant.imageUploads) && variant.imageUploads.length > 0) {
+          const uploadedVariantImages = await uploadImages(variant.imageUploads);
+          variantImages = [...variantImages, ...uploadedVariantImages];
+        }
 
-      // Apply group images to variants that have no images of their own
-      if (variantImages.length === 0) {
-        for (const [optType, optVal] of Object.entries(variant.options || {})) {
-          const key = `${optType}::${optVal}`;
-          if (groupImagePaths[key]?.length > 0) {
-            variantImages = groupImagePaths[key];
-            break; // use first matching group's images
+        // Apply group images to variants that have no images of their own
+        if (variantImages.length === 0) {
+          for (const [optType, optVal] of Object.entries(variant.options || {})) {
+            const key = `${optType}::${optVal}`;
+            if (groupImagePaths[key]?.length > 0) {
+              variantImages = groupImagePaths[key];
+              break; // use first matching group's images
+            }
           }
         }
+
+        processedVariants.push({
+          sku: variant.sku ?? null,
+          images: variantImages,
+          price_modifier: variant.price_modifier ?? 0,
+          stock_quantity: variant.stock_quantity ?? null,
+          active: variant.active ?? true,
+          options: variant.options ?? {},
+        });
       }
 
-      await addProductVariant(newProduct.id, {
-        sku: variant.sku,
-        images: variantImages,
-        price_modifier: variant.price_modifier ?? 0,
-        stock_quantity: variant.stock_quantity,
-        active: variant.active ?? true,
-        options: variant.options ?? {},
-      });
+      await addProductVariants(newProduct.id, processedVariants);
     }
 
     const fullProduct = await getProduct(newProduct.id);
 
-    revalidateTag("products", "max");
+    revalidatePath("/shop");
+    revalidatePath("/shop/manage");
     return NextResponse.json(
       {
         message: "Product created successfully",

@@ -16,9 +16,9 @@ import {
   setOrderState,
   getOrderById,
   getOrderByIdOrNumber,
-} from "@/utils/db/shopQueries";
+} from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 function isShopManagerOrAbove(roles: UserRole[]) {
   return (
@@ -195,7 +195,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    revalidateTag("orders", "max");
+    revalidatePath("/orders");
+    revalidatePath("/my-orders");
     return NextResponse.json(updatedOrder);
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("Item "))
@@ -250,7 +251,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     }
 
-    revalidateTag("orders", "max");
+    revalidatePath("/orders");
+    revalidatePath("/my-orders");
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error("Order update error:", error);
@@ -284,6 +286,7 @@ export async function DELETE(
   const updatedOrder = await setOrderState(orderId, "cancelled", user!.istid);
   if (!updatedOrder) return NextResponse.json({ error: "Failed to cancel order" }, { status: 500 });
 
-  revalidateTag("orders", "max");
+  revalidatePath("/orders");
+  revalidatePath("/my-orders");
   return NextResponse.json(updatedOrder);
 }
