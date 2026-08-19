@@ -10,6 +10,8 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const REVALIDATE_DEBOUNCE_MS = 60_000; // at most once per minute
+
 export function UserProvider({
   children,
   initialUser,
@@ -21,7 +23,12 @@ export function UserProvider({
 
   useEffect(() => {
     let mounted = true;
-    const revalidate = async () => {
+    let lastFetch = initialUser ? Date.now() : 0;
+
+    const revalidate = async (force: boolean = false) => {
+      const now = Date.now();
+      if (!force && now - lastFetch < REVALIDATE_DEBOUNCE_MS) return;
+      lastFetch = now;
       try {
         const fresh = await fetchUserData();
         if (!mounted) return;
@@ -32,7 +39,7 @@ export function UserProvider({
       }
     };
     if (!initialUser) {
-      revalidate();
+      revalidate(true);
     }
 
     const onVisibility = () => {

@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import { Metadata } from "next";
 import { Secular_One } from "next/font/google";
 import NavBar from "@/components/layout/navbar/NavBar";
@@ -9,10 +9,9 @@ import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
-import "@/lib/autoCancelScheduler";
 import { cookies } from "next/headers";
 import { getUserFromJWT } from "@/lib/auth";
-import { getUser } from "@/utils/db/userQueries";
+import { getUser } from "@/lib/db/repositories/user.repository";
 
 const secularOne = Secular_One({
   subsets: ["latin"],
@@ -26,40 +25,44 @@ export const metadata: Metadata = {
   description: "Núcleo Estudantil de Informática do Instituto Superior Técnico",
 };
 
-async function getInitialUser() {
-  try {
-    const sessionToken = (await cookies()).get("session")?.value;
-    const jwtUser = getUserFromJWT(sessionToken);
-    if (!jwtUser?.istid) return null;
-    return await getUser(jwtUser.istid);
-  } catch {
-    return null;
+async function UserData({ children }: { children: ReactNode }) {
+  let user = null;
+  const sessionToken = (await cookies()).get("session")?.value;
+  const jwtUser = getUserFromJWT(sessionToken);
+  if (jwtUser?.istid) {
+    try {
+      user = await getUser(jwtUser.istid);
+    } catch {
+      // DB unreachable — degrade to guest
+    }
   }
+  return <UserProvider initialUser={user}>{children}</UserProvider>;
 }
 
-export default async function Layout({ children }: { children: ReactNode }) {
-  const user = await getInitialUser();
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt" suppressHydrationWarning>
       <body className={secularOne.className}>
         <ShopProvider>
-          <UserProvider initialUser={user}>
-            <NavBar />
-            <Cart />
-            <Toaster
-              position="top-right"
-              offset={{ top: "96px", right: "16px", left: "16px" }}
-              mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
-              toastOptions={{
-                style: {
-                  background: "white",
-                  color: "var(--foreground-colour)",
-                },
-              }}
-            />
-            <main>{children}</main>
-            <Footer />
-          </UserProvider>
+          <Suspense fallback={null}>
+            <UserData>
+              <NavBar />
+              <Cart />
+              <Toaster
+                position="top-right"
+                offset={{ top: "96px", right: "16px", left: "16px" }}
+                mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
+                toastOptions={{
+                  style: {
+                    background: "white",
+                    color: "var(--foreground-colour)",
+                  },
+                }}
+              />
+              <main>{children}</main>
+              <Footer />
+            </UserData>
+          </Suspense>
         </ShopProvider>
       </body>
     </html>

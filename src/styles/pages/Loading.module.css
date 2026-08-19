@@ -1,0 +1,22 @@
+.container {
+  min-height: calc(100vh - 8rem - 16rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-colour);
+  padding: 1rem;
+}
+
+.spinner {
+  color: var(--primary-colour);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
