@@ -66,7 +66,11 @@ export const addCategory = async (name: string): Promise<Category | null> => {
 // Explicit seeding function
 export const seedSpecialCategories = async (): Promise<void> => {
   try {
-    await Promise.all(SPECIAL_CATEGORIES.map((name: string) => addCategory(name)));
+    await Promise.all(
+      SPECIAL_CATEGORIES.map((name: string) =>
+        db_query(`SELECT * FROM neiist.get_or_create_category($1)`, [name])
+      )
+    );
   } catch (error) {
     console.error("[seedSpecialCategories] Failed to seed special categories:", error);
   }
@@ -578,5 +582,29 @@ export const getStalePendingOrders = async (thresholdMs: number): Promise<Order[
   } catch (error) {
     console.error("[getStalePendingOrders] Error fetching stale pending orders:", error);
     return [];
+  }
+};
+
+/**
+ * Background-only: cancels an order without calling revalidateTag.
+ * Used exclusively by the autoCancelScheduler which runs outside a request context.
+ * Cache is naturally refreshed on the next request-context write or page visit.
+ */
+export const cancelOrderBackground = async (
+  orderId: number,
+  user_istid: string = "system-cron"
+): Promise<Order | null> => {
+  try {
+    const {
+      rows: [row],
+    } = await db_query<dbOrder>(`SELECT * FROM neiist.set_order_state($1,$2,$3)`, [
+      orderId,
+      "cancelled",
+      user_istid,
+    ]);
+    return row ? mapdbOrderToOrder(row) : null;
+  } catch (error) {
+    console.error("[cancelOrderBackground] Error cancelling order:", error);
+    return null;
   }
 };

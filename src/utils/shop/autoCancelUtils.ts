@@ -1,25 +1,16 @@
 import { getAutoCancelledOrderEmailTemplate, sendEmail } from "@/lib/email";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
-import { Order } from "@/types/shop/order";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
-import { getAllOrders, setOrderState } from "@/utils/db/shopQueries";
+import {
+  getStalePendingOrders,
+  cancelOrderBackground,
+} from "@/lib/db/repositories/shop.repository";
 
 const AUTO_CANCEL_MS = 72 * 60 * 60 * 1000;
 
-function isOlderThanThreshold(order: Order, now: number): boolean {
-  const createdTs = new Date(order.created_at).getTime();
-  if (!Number.isFinite(createdTs)) return false;
-
-  return now - createdTs >= AUTO_CANCEL_MS;
-}
-
 export async function autoCancelPendingOrders() {
-  const now = Date.now();
-
-  const allOrders = (await getAllOrders()) as Order[];
-  const candidates = allOrders.filter((order) => {
-    if (order.status !== "pending" || !isOlderThanThreshold(order, now)) return false;
-
+  const staleOrders = await getStalePendingOrders(AUTO_CANCEL_MS);
+  const candidates = staleOrders.filter((order) => {
     const { orderKind } = getOrderKindFromItems(order.items);
     return getOrderKindRules(orderKind).autoCancelEnabled;
   });
@@ -29,7 +20,7 @@ export async function autoCancelPendingOrders() {
 
   for (const order of candidates) {
     try {
-      const updated = await setOrderState(order.id, "cancelled", "system-cron");
+      const updated = await cancelOrderBackground(order.id);
       if (!updated) {
         failedOrderIds.push(order.id);
         continue;
@@ -67,7 +58,7 @@ export async function autoCancelPendingOrders() {
 
   return {
     success: true,
-    checkedOrders: allOrders.length,
+    checkedOrders: staleOrders.length,
     matchedOrders: candidates.length,
     cancelledCount: cancelledOrderIds.length,
     failedCount: failedOrderIds.length,

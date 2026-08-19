@@ -15,6 +15,7 @@ async function runAutoCancel() {
 }
 
 function setupAutoCancel() {
+  if (process.env.NEXT_PHASE === "phase-production-build") return;
   if (globalThis.__neiistAutoCancelScheduled) return;
 
   globalThis.__neiistAutoCancelScheduled = true;
