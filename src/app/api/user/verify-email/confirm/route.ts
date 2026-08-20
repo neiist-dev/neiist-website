@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   getEmailVerification,
   deleteEmailVerification,
@@ -6,10 +6,9 @@ import {
 } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get("token");
+    const token = req.nextUrl.searchParams.get("token");
     if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
     const record = await getEmailVerification(token);
@@ -25,7 +24,7 @@ export async function GET(request: Request) {
     await updateUser(record.istid, { alternativeEmail: record.email });
     await deleteEmailVerification(token);
 
-    return NextResponse.redirect(new URL("/email-confirmation", request.url));
+    return NextResponse.redirect(new URL("/email-confirmation", req.url));
   } catch (error) {
     return handleApiError(error);
   }

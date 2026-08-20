@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   const state = crypto.randomBytes(16).toString("hex");
 
   const url = new URL("https://fenix.tecnico.ulisboa.pt/oauth/userdialog");
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   url.searchParams.set("state", state);
 
   const returnUrl = (() => {
-    const param = new URL(request.url).searchParams.get("returnUrl") ?? "";
+    const param = req.nextUrl.searchParams.get("returnUrl") ?? "";
     return param.startsWith("/") ? param : "";
   })();
 

@@ -1,11 +1,9 @@
-// ...existing code...
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const authCode = searchParams.get("code");
-  const returnedState = searchParams.get("state");
+export async function GET(req: NextRequest) {
+  const authCode = req.nextUrl.searchParams.get("code");
+  const returnedState = req.nextUrl.searchParams.get("state");
   const cookieStore = await cookies();
   const expectedState = cookieStore.get("fenix_oauth_state")?.value;
 
