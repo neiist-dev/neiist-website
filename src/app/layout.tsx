@@ -1,7 +1,8 @@
 import { ReactNode, Suspense } from "react";
 import { Metadata } from "next";
 import { Secular_One } from "next/font/google";
-import NavBar from "@/components/layout/navbar/NavBar";
+import NavBar, { AuthWidget } from "@/components/layout/navbar/NavBar";
+import LoginButton from "@/components/layout/navbar/LoginButton";
 import Footer from "@/components/layout/Footer";
 import Cart from "@/components/shop/Cart";
 import { Toaster } from "sonner";
@@ -25,9 +26,10 @@ export const metadata: Metadata = {
   description: "Núcleo Estudantil de Informática do Instituto Superior Técnico",
 };
 
-async function UserData({ children }: { children: ReactNode }) {
+async function ServerAuthWidget() {
   let user = null;
-  const sessionToken = (await cookies()).get("session")?.value;
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = getUserFromJWT(sessionToken);
   if (jwtUser?.istid) {
     try {
@@ -36,7 +38,7 @@ async function UserData({ children }: { children: ReactNode }) {
       // DB unreachable — degrade to guest
     }
   }
-  return <UserProvider initialUser={user}>{children}</UserProvider>;
+  return <AuthWidget initialUser={user} />;
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -44,25 +46,29 @@ export default function Layout({ children }: { children: ReactNode }) {
     <html lang="pt" suppressHydrationWarning>
       <body className={secularOne.className}>
         <ShopProvider>
-          <Suspense fallback={null}>
-            <UserData>
-              <NavBar />
-              <Cart />
-              <Toaster
-                position="top-right"
-                offset={{ top: "96px", right: "16px", left: "16px" }}
-                mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
-                toastOptions={{
-                  style: {
-                    background: "white",
-                    color: "var(--foreground-colour)",
-                  },
-                }}
-              />
-              <main>{children}</main>
-              <Footer />
-            </UserData>
-          </Suspense>
+          <UserProvider initialUser={null}>
+            <NavBar
+              authSlot={
+                <Suspense fallback={<LoginButton />}>
+                  <ServerAuthWidget />
+                </Suspense>
+              }
+            />
+            <Cart />
+            <Toaster
+              position="top-right"
+              offset={{ top: "96px", right: "16px", left: "16px" }}
+              mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
+              toastOptions={{
+                style: {
+                  background: "white",
+                  color: "var(--foreground-colour)",
+                },
+              }}
+            />
+            <main>{children}</main>
+            <Footer />
+          </UserProvider>
         </ShopProvider>
       </body>
     </html>

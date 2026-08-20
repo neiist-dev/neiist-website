@@ -12,6 +12,8 @@ import LoginButton from "@/components/layout/navbar/LoginButton";
 import UserMenu from "@/components/layout/navbar/UserMenu";
 import styles from "@/styles/components/layout/navbar/NavBar.module.css";
 
+import { User } from "@/types/user";
+
 const navLinks = [
   { name: "Sobre Nós", href: "/about-us" },
   { name: "Atividades", href: "/activities" },
@@ -20,9 +22,27 @@ const navLinks = [
   { name: "Jantar de Curso", href: "/dinner" },
 ];
 
-export default function NavBar() {
-  const router = useRouter();
+export function AuthWidget({ initialUser }: { initialUser?: User | null } = {}) {
   const { user, setUser } = useUser();
+
+  useEffect(() => {
+    if (initialUser && !user) setUser(initialUser);
+  }, [initialUser, user, setUser]);
+
+  const currentUser = user ?? initialUser;
+
+  const handleLogout = async () => {
+    await logout();
+    setUser(null);
+  };
+
+  if (currentUser) return <UserMenu userData={currentUser} logout={handleLogout} />;
+
+  return <LoginButton onClick={login} />;
+}
+
+export default function NavBar({ authSlot }: { authSlot?: React.ReactNode } = {}) {
+  const router = useRouter();
   const [isSticky, setIsSticky] = useState(false);
   const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -68,11 +88,6 @@ export default function NavBar() {
     }, 300);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    setUser(null);
-  };
-
   const renderNavItems = (onClick?: (_href: string) => void) => {
     return navLinks.map((link) => (
       <NavItem
@@ -94,11 +109,7 @@ export default function NavBar() {
       </nav>
       <div className={styles.actions}>
         <ShoppingCart />
-        {user ? (
-          <UserMenu userData={user} logout={handleLogout} />
-        ) : (
-          <LoginButton onClick={login} />
-        )}
+        {authSlot ?? <AuthWidget />}
         <div className={styles.menuButton}>
           <Squash
             toggled={menuState === "open"}
