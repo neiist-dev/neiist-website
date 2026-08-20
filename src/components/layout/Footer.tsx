@@ -174,9 +174,9 @@ export default function Footer() {
       <div className={styles.bottom}>
         <p className={styles.copyright}>© 2025 NEIIST. All rights reserved.</p>
         <div className={styles.socialIcons}>
-          {socialIcons.map(({ href, icon, ariaLabel }, index) => (
+          {socialIcons.map(({ href, icon, ariaLabel }) => (
             <Link
-              key={index}
+              key={href}
               href={href}
               target="_blank"
               rel="noopener noreferrer"

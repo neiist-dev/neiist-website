@@ -111,10 +111,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
   }, [product.price, selectedVariant]);
 
-  const isDeadlineExpired =
-    product.stock_type === "on_demand" &&
-    !!product.order_deadline &&
-    new Date(product.order_deadline) < new Date();
+  const isDeadlineExpired = useMemo(() => {
+    return (
+      product.stock_type === "on_demand" &&
+      !!product.order_deadline &&
+      new Date(product.order_deadline).getTime() < Date.now()
+    );
+  }, [product.stock_type, product.order_deadline]);
 
   const isVariantAvailable = useCallback(
     (v: (typeof product.variants)[0]) =>
@@ -200,7 +203,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <div className={styles.thumbnails}>
               {allImages.map((src, i) => (
                 <button
-                  key={i}
+                  key={src}
                   className={`${styles.thumbnail} ${i === imgIndex ? styles.active : ""}`}
                   onClick={() => setImgIndex(i)}
                   aria-label={`View image ${i + 1}`}>

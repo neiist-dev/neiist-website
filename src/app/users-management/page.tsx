@@ -20,17 +20,7 @@ export default async function UsersManagementPage({
       ? sectionParam
       : "users";
 
-  let content = null;
-  switch (activeSection) {
-    case "users":
-      content = <UsersManagement />;
-      break;
-    case "memberships":
-      content = <MembershipsManagement />;
-      break;
-    default:
-      content = <UsersManagement />;
-  }
+  const content = activeSection === "memberships" ? <MembershipsManagement /> : <UsersManagement />;
 
   return (
     <div className={styles.container}>

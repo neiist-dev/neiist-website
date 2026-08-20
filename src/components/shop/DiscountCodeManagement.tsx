@@ -55,7 +55,7 @@ export default function DiscountCodeManagement({
   const router = useRouter();
   const [codes, setCodes] = useState(discountCodes);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selected, setSelected] = useState<Set<number>>(() => new Set());
   const usersByIstid = new Map(users.map((u) => [u.istid, u]));
   const productNamesById = new Map(products.map((p) => [p.id, p.name]));
 

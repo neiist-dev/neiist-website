@@ -71,13 +71,13 @@ export default function IconPicker({ value, onChange, onClose }: IconPickerProps
         />
         <div className={styles.grid}>
           {filtered.slice(0, 40).map((iconName) => {
-            const Icon = getIcon(iconName);
+            const IconComponent = getIcon(iconName);
             return (
               <button
                 key={iconName}
                 onClick={() => handleSelect(iconName)}
                 className={`${styles.iconButton} ${value === iconName ? styles.selected : ""}`}>
-                <Icon size={window.innerWidth <= 600 ? 18 : 24} />
+                {IconComponent({ size: 24 })}
               </button>
             );
           })}

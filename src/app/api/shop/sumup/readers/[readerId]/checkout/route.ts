@@ -52,7 +52,7 @@ export async function POST(
     },
   };
 
-  let data: SumUpReaderCheckoutResponse | null = null;
+  let data: SumUpReaderCheckoutResponse;
   try {
     data = await client.readers.createCheckout(SUMUP_MERCHANT_CODE!, readerId, payload);
   } catch (error: unknown) {
@@ -62,7 +62,7 @@ export async function POST(
     });
   }
 
-  const clientTransactionId = data?.data?.client_transaction_id ?? null;
+  const clientTransactionId = data.data?.client_transaction_id ?? null;
 
   if (clientTransactionId) {
     await updateOrder(

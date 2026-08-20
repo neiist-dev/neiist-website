@@ -122,10 +122,14 @@ export default function UsersSearchList({
                   <>
                     <strong>Equipas/Órgãos:</strong>
                     <ul className={styles.membershipsList}>
-                      {user.memberships.map((membership, id) => {
+                      {user.memberships.map((membership) => {
                         const accessLevel = getAccessLevelForRole(membership.roleName);
                         return (
-                          <li key={id} className={styles.membershipItem}>
+                          <li
+                            key={
+                              membership.id ?? `${membership.departmentName}-${membership.roleName}`
+                            }
+                            className={styles.membershipItem}>
                             <span className={styles.teamName}>{membership.departmentName}</span>
                             <span className={styles.roleSeparator}>-</span>
                             <span>{membership.roleName}</span>

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const validUntil = new Date(Date.now() + CHECKOUT_TTL_MINUTES * 60_000).toISOString();
     const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shop/sumup/callback?orderId=${orderId}`;
-    let description =
+    const description =
       order.items
         ?.map(
           (item: {

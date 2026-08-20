@@ -327,13 +327,23 @@ export default function NewOrderModal({
 
   useEffect(() => {
     if (usersLoaded) return;
-    fetch("/api/admin/users")
+    const controller = new AbortController();
+
+    fetch("/api/admin/users", { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : []))
       .then((users) => {
         setAllUsers(users);
         setUsersLoaded(true);
       })
-      .catch(console.error);
+      .catch((error) => {
+        if (error?.name !== "AbortError") {
+          console.error(error);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
   }, [usersLoaded]);
 
   useEffect(() => {
@@ -823,7 +833,7 @@ export default function NewOrderModal({
                           : { name: val, hex: "" };
                         return (
                           <div
-                            key={`${currentKeyIdx}-${idx}-${val}`}
+                            key={`${currentKey}-${val}`}
                             className={`${styles.dropdownItem} ${idx === productHighlight ? styles.highlighted : ""}`}
                             onClick={() => selectCascadeValue(val)}
                             onMouseEnter={() => setProductHighlight(idx)}>

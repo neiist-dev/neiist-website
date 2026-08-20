@@ -41,8 +41,8 @@ export default function MultiSelectDropdown({
   disabled = false,
   id,
 }: MultiSelectDropdownProps) {
-  const uid = useId();
-  const triggerId = id ?? `input-form-trigger-${uid}`;
+  const uId = useId();
+  const triggerId = id ?? `input-form-trigger-${uId}`;
   const canCreate = typeof onItemCreate === "function";
 
   const [open, setOpen] = useState(false);
@@ -59,7 +59,7 @@ export default function MultiSelectDropdown({
 
   const triggerRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const itemRefsRef = useRef<Array<HTMLDivElement | null>>([]);
 
   const fuse = useMemo(
     () =>
@@ -79,11 +79,11 @@ export default function MultiSelectDropdown({
 
   useEffect(() => {
     setActiveIndex(0);
-    itemRefs.current = [];
+    itemRefsRef.current = [];
   }, [open, query, options.length]);
 
   useEffect(() => {
-    itemRefs.current[activeIndex]?.scrollIntoView({ block: "nearest" });
+    itemRefsRef.current[activeIndex]?.scrollIntoView({ block: "nearest" });
   }, [activeIndex]);
 
   useEffect(() => {
@@ -272,7 +272,7 @@ export default function MultiSelectDropdown({
                 <div
                   key={opt}
                   ref={(el) => {
-                    itemRefs.current[i] = el;
+                    itemRefsRef.current[i] = el;
                   }}
                   className={optionClassName}
                   onMouseEnter={() => setActiveIndex(i)}

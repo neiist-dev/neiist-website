@@ -1,30 +1,30 @@
 "use client";
-import { useState, useRef, useEffect, useMemo, type ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import {
+  FaAlignLeft,
   FaArrowLeft,
+  FaBox,
+  FaCalendarAlt,
   FaChevronDown,
+  FaEuroSign,
+  FaFolder,
+  FaImages,
+  FaLayerGroup,
   FaPlus,
   FaSave,
-  FaTrash,
-  FaTag,
-  FaAlignLeft,
-  FaFolder,
-  FaEuroSign,
-  FaBox,
-  FaImages,
   FaSlidersH,
-  FaLayerGroup,
-  FaCalendarAlt,
+  FaTag,
+  FaTrash,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Product, ProductVariant } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import styles from "@/styles/components/shop/ProductForm.module.css";
-import { splitNameHex, isColorKey, joinNameHex } from "@/utils/shop/shopUtils";
+import { isColorKey, joinNameHex, splitNameHex } from "@/utils/shop/shopUtils";
 import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOptionsEditor";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import ColorfulText from "@/components/ColorfulText";
@@ -75,7 +75,7 @@ function ImageGrid({
       {hint && <span className={styles.subLabel}>{hint}</span>}
       <div className={styles.imgGrid}>
         {images.map((src, i) => (
-          <div key={i} className={styles.imgSlot}>
+          <div key={src} className={styles.imgSlot}>
             <Image src={src} alt="" fill className={styles.imgThumb} />
             <button type="button" className={styles.imgRemove} onClick={() => onRemove(i)}>
               <FaTrash size={10} />
@@ -276,7 +276,7 @@ export default function ProductForm({
   categories,
 }: ProductFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(() => ({
     name: product?.name ?? "",
     description: product?.description ?? "",
     price: product?.price ?? 0,
@@ -284,7 +284,7 @@ export default function ProductForm({
     stock_type: product?.stock_type ?? "limited",
     stock_quantity: product?.stock_quantity ?? 0,
     order_deadline: product?.order_deadline ? new Date(product.order_deadline) : undefined,
-  });
+  }));
   const updateForm = (updates: Partial<typeof form>) => setForm((p) => ({ ...p, ...updates }));
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -294,7 +294,7 @@ export default function ProductForm({
   const initialVariantIdsRef = useRef<Set<number>>(
     new Set(product?.variants?.map((v) => v.id) ?? [])
   );
-  const hasInitializedFromProduct = useRef(!!product?.variants?.length);
+  const hasInitializedFromProductRef = useRef(!!product?.variants?.length);
 
   const [productImages, setProductImages] = useState<{ existing: string[]; new: ImageFile[] }>({
     existing: product?.images ?? [],
@@ -321,7 +321,7 @@ export default function ProductForm({
   });
 
   const [variants, setVariants] = useState<VariantForm[]>(() => {
-    const initialized =
+    return (
       product?.variants?.map((v: ProductVariant) => {
         return {
           id: v.id,
@@ -333,12 +333,12 @@ export default function ProductForm({
           ),
           price_modifier: v.price_modifier ?? 0,
           stock_quantity: v.stock_quantity ?? 0,
-          active: v.active !== false,
+          active: v.active,
           existingImages: v.images ?? [],
           newImages: [],
         };
-      }) ?? [];
-    return initialized;
+      }) ?? []
+    );
   });
 
   const [groupImages, setGroupImages] = useState<GroupImages>(() => {
@@ -397,8 +397,8 @@ export default function ProductForm({
   }, [showDatePicker]);
 
   useEffect(() => {
-    if (hasInitializedFromProduct.current) {
-      hasInitializedFromProduct.current = false;
+    if (hasInitializedFromProductRef.current) {
+      hasInitializedFromProductRef.current = false;
       return;
     }
     const timer = setTimeout(() => {

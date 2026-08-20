@@ -157,6 +157,6 @@ function isValidEmail(email: string): boolean {
 
 // Helper function to validate phone number
 function isValidPhone(phone: string): boolean {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ""));
+  const phoneRegex = /^[+]?[1-9]\d{0,15}$/;
+  return phoneRegex.test(phone.replace(/[\s\-()]/g, ""));
 }

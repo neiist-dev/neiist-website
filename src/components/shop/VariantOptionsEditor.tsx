@@ -60,7 +60,7 @@ export default function VariantOptionsEditor({
   return (
     <div className={styles.container} ref={containerRef} onBlur={handleContainerBlur}>
       {value.map((tag, index) => (
-        <span key={index} className={styles.tag}>
+        <span key={getTagText(tag)} className={styles.tag}>
           {isColor && (
             <button
               type="button"

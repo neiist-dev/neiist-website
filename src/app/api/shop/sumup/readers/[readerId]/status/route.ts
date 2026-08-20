@@ -30,7 +30,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ readerI
   const { readerId } = await params;
   if (!readerId) return sumupErrorResponse("readerId is required", 400);
 
-  let data: SumUpReaderStatus | null = null;
+  let data: SumUpReaderStatus;
   try {
     data = (await client.readers.get(SUMUP_MERCHANT_CODE!, readerId)) as SumUpReaderStatus;
   } catch (error: unknown) {

@@ -6,8 +6,8 @@ import { MdClose } from "react-icons/md";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { Order } from "@/types/shop/order";
-import { PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
-import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import { PaymentMethod, PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
+import { getOrderKindFromItems, getOrderKindRules } from "@/utils/shop/orderKindUtils";
 import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import styles from "@/styles/components/shop/PosPaymentOverlay.module.css";
@@ -103,10 +103,11 @@ export default function PosPaymentOverlay({
   useEffect(() => {
     if (!open || paymentMethod !== "sumup-tpa") return;
 
+    const controller = new AbortController();
     setReadersLoading(true);
     setError(null);
 
-    fetch("/api/shop/sumup/readers", { cache: "no-store" })
+    fetch("/api/shop/sumup/readers", { cache: "no-store", signal: controller.signal })
       .then((response) => response.json())
       .then((data) => {
         const nextReaders: SumUpReader[] = Array.isArray(data?.readers) ? data.readers : [];
@@ -126,8 +127,20 @@ export default function PosPaymentOverlay({
           setSelectedReaderId("");
         }
       })
-      .catch((error) => setError(error.message || "Falha ao carregar leitores"))
-      .finally(() => setReadersLoading(false));
+      .catch((error) => {
+        if (error?.name !== "AbortError") {
+          setError(error.message || "Falha ao carregar leitores");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setReadersLoading(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
   }, [open, paymentMethod, initialReaderId]);
 
   useEffect(() => {
@@ -309,8 +322,7 @@ export default function PosPaymentOverlay({
         payment_method: "sumup-tpa",
         payment_reference: paymentReference,
       });
-      const updated = await finalizePaidOrder(paymentReference);
-      return updated;
+      return await finalizePaidOrder(paymentReference);
     }
 
     const pending = await updateOrderFields({

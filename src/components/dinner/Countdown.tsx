@@ -38,7 +38,7 @@ function formatTime(value: number): string {
 }
 
 export default function Countdown() {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(getTimeLeft());
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(getTimeLeft);
 
   useEffect(() => {
     const interval = setInterval(() => {

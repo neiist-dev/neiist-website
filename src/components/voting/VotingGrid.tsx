@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { VotingNominee } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
@@ -42,10 +42,6 @@ export default function VotingGrid({
     });
   }, [searchQuery, nominees]);
 
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [sessionId, searchQuery]);
-
   const visibleNominees = filteredNominees.slice(0, visibleCount);
   const hasMore = filteredNominees.length > visibleCount;
 
@@ -64,7 +60,10 @@ export default function VotingGrid({
             className={styles.searchInput}
             placeholder="Procurar por nome ou istID..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setVisibleCount(PAGE_SIZE);
+            }}
           />
         </div>
         <p className={styles.count}>

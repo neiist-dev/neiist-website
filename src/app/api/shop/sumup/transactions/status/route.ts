@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const clientTransactionId = req.nextUrl.searchParams.get("clientTransactionId");
   if (!clientTransactionId) return sumupErrorResponse("Missing clientTransactionId", 400);
 
-  let checkoutData: SumUpCheckout | null = null;
+  let checkoutData: SumUpCheckout;
   try {
     checkoutData = (await client.transactions.get(SUMUP_MERCHANT_CODE!, {
       client_transaction_id: clientTransactionId,

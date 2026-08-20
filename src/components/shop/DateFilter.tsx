@@ -11,7 +11,22 @@ interface DateFilterProps {
   buttonRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-function getMonthDays(date: Date): (Date | null)[] {
+const WEEKDAYS = [
+  { id: "sun", label: "D" },
+  { id: "mon", label: "S" },
+  { id: "tue", label: "T" },
+  { id: "wed", label: "Q" },
+  { id: "thu", label: "Q" },
+  { id: "fri", label: "S" },
+  { id: "sat", label: "S" },
+] as const;
+
+interface CalendarDaySlot {
+  key: string;
+  date: Date | null;
+}
+
+function getMonthDays(date: Date): CalendarDaySlot[] {
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -19,12 +34,12 @@ function getMonthDays(date: Date): (Date | null)[] {
   const firstWeekday = firstDay.getDay();
   const leadingBlanks = (firstWeekday + 6) % 7;
 
-  const days: (Date | null)[] = [];
+  const days: CalendarDaySlot[] = [];
   for (let i = 0; i < leadingBlanks; i++) {
-    days.push(null);
+    days.push({ key: `blank-${year}-${month}-${i}`, date: null });
   }
   for (let day = 1; day <= lastDate; day++) {
-    days.push(new Date(year, month, day));
+    days.push({ key: `day-${year}-${month}-${day}`, date: new Date(year, month, day) });
   }
   return days;
 }
@@ -56,7 +71,7 @@ export default function DateFilter({
   buttonRef,
 }: DateFilterProps) {
   const [mode, setMode] = useState<"until" | "range">("until");
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
@@ -190,15 +205,15 @@ export default function DateFilter({
         </div>
 
         <div className={styles.calendarGrid}>
-          {["D", "S", "T", "Q", "Q", "S", "S"].map((day, i) => (
-            <div key={i} className={styles.dayName}>
-              {day}
+          {WEEKDAYS.map((day) => (
+            <div key={day.id} className={styles.dayName}>
+              {day.label}
             </div>
           ))}
 
-          {days.map((date, i) => {
+          {days.map(({ key, date }) => {
             if (!date) {
-              return <button key={i} type="button" className={styles.day} disabled />;
+              return <button key={key} type="button" className={styles.day} disabled />;
             }
 
             const { start, end } = dateRange;
@@ -207,7 +222,7 @@ export default function DateFilter({
 
             return (
               <button
-                key={i}
+                key={key}
                 type="button"
                 className={`${styles.day} ${
                   isSelected ? styles.selected : ""

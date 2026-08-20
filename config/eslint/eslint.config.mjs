@@ -1,75 +1,59 @@
-import tsParser from "@typescript-eslint/parser";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
+import { defineConfig, globalIgnores } from "eslint/config";
+import eslintJs from "@eslint/js";
+import tseslint from "typescript-eslint";
+import eslintReact from "@eslint-react/eslint-plugin";
 import nextPlugin from "@next/eslint-plugin-next";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 import validateFilename from "eslint-plugin-validate-filename";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactPlugin from "eslint-plugin-react";
 
-/**
- * Normalize Next.js config rule names from "@next/next/..." to "next/..."
- * Accepts undefined safely.
- *
- * @param {Record<string, any> | undefined} rules
- * @returns {Record<string, any>}
- */
-function normalizeNextRules(rules) {
-  /** @type {Record<string, any>} */
-  const normalized = {};
-  if (!rules) return normalized;
-  for (const [key, value] of Object.entries(rules)) {
-    if (key.startsWith("@next/next/")) {
-      normalized["next/" + key.replace("@next/next/", "")] = value;
-    } else {
-      normalized[key] = value;
-    }
-  }
-  return normalized;
-}
-
-export default [
-  {
-    ignores: [
-      "**/.next/**",
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/build/**",
-      "**/out/**",
-      "**/public/**",
-      "**/docker/**",
-      "**/.husky/**",
-      "**/yarn.lock",
-      "**/pnpm-lock.lock",
-      "**/pnpm-workspace.lock",
-      "**/*.md",
-      "**/*.yml",
-      "**/*.yaml",
-      "./scripts/**",
-    ],
-  },
+export default defineConfig([
+  globalIgnores([
+    ".next/**",
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "out/**",
+    "public/**",
+    "docker/**",
+    ".husky/**",
+    "next-env.d.ts",
+    "yarn.lock",
+    "pnpm-lock.lock",
+    "pnpm-workspace.lock",
+    "**/*.md",
+    "**/*.yml",
+    "**/*.yaml",
+    "./scripts/**",
+    "./packages/**",
+  ]),
 
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
 
+    extends: [
+      eslintJs.configs.recommended,
+      tseslint.configs.recommended,
+      eslintReact.configs["recommended-typescript"],
+    ],
+
     languageOptions: {
-      parser: tsParser,
+      parser: tseslint.parser,
       parserOptions: {
         sourceType: "module",
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
 
     plugins: {
-      "@typescript-eslint": tsPlugin,
-      next: nextPlugin,
+      "@next/next": nextPlugin,
       "validate-filename": validateFilename,
-      "react-hooks": reactHooks,
-      react: reactPlugin,
     },
 
     rules: {
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": ["warn", { additionalHooks: "" }],
-      ...normalizeNextRules(nextPlugin.configs?.["core-web-vitals"]?.rules ?? {}),
-      ...(tsPlugin.configs?.recommended?.rules ?? {}),
+      ...nextPlugin.configs.recommended.rules,
+      ...(nextPlugin.configs["core-web-vitals"]?.rules ?? {}),
+
       // Filename rules
       "validate-filename/naming-rules": [
         "error",
@@ -80,7 +64,7 @@ export default [
             {
               case: "kebab",
               target: "**/app/**",
-              patterns: "^(page|layout|loading|error|not-found|route|template).tsx$",
+              patterns: "^(page|layout|loading|error|not-found|route|template|sitemap)\\.(tsx|ts)$",
             },
             { case: "camel", target: "**/hooks/**", patterns: "^use" },
           ],
@@ -105,6 +89,12 @@ export default [
       "no-console": ["error", { allow: ["error", "warn"] }],
       "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "no-irregular-whitespace": "error",
+
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
+
       /*
       "react/forbid-elements": [
         "error",
@@ -116,7 +106,8 @@ export default [
           ],
         },
       ],
-*/
+      */
+
       "no-restricted-imports": [
         "error",
         {
@@ -125,8 +116,18 @@ export default [
           ],
         },
       ],
+
+      "@eslint-react/set-state-in-effect": "off",
     },
   },
+
+  {
+    files: ["**/app/**/page.tsx", "**/app/**/layout.tsx"],
+    rules: {
+      "@eslint-react/purity": "off",
+    },
+  },
+
   {
     files: ["**/presenters/*.{js,jsx,ts,tsx}"],
     rules: {
@@ -149,4 +150,6 @@ export default [
       ],
     },
   },
-];
+
+  eslintConfigPrettier,
+]);

@@ -107,7 +107,9 @@ export default function Cart() {
               }
 
               return (
-                <div key={idx} className={styles.item}>
+                <div
+                  key={`${item.product.id}-${item.variantId ?? "default"}`}
+                  className={styles.item}>
                   <div className={styles.imageWrapper}>
                     <Image
                       src={imageSrc}

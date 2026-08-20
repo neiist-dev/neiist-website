@@ -37,6 +37,7 @@ export default function ColorfulText({
   return (
     <Component style={style} className={className}>
       {parts.map((part, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- text chunks have no natural unique IDs
         <span key={i} className="colorful-span" style={{ color: colors[i % colors.length] }}>
           {part}
         </span>

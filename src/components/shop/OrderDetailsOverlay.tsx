@@ -365,7 +365,9 @@ export default function OrderDetailOverlay({
                       item.variant_label ?? undefined
                     ).text || "-";
                   return (
-                    <div key={idx} className={styles.tableRow}>
+                    <div
+                      key={`${item.product_id}-${item.variant_id ?? item.variant_label ?? idx}`}
+                      className={styles.tableRow}>
                       <span>{item.product_name}</span>
                       <span>
                         {colorInfo.hex ? (

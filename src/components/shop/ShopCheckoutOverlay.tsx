@@ -70,7 +70,9 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
   const unmountWidget = useCallback(() => {
     try {
       widgetRef.current?.unmount?.();
-    } catch {}
+    } catch {
+      /* unmount may fail if widget was already removed — safe to ignore */
+    }
     widgetRef.current = null;
   }, []);
 
@@ -389,7 +391,9 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
     if (!shouldLoadOrder || !orderId) return;
 
     let cancelled = false;
-    fetch(`/api/shop/orders/${orderId}`)
+    const controller = new AbortController();
+
+    fetch(`/api/shop/orders/${orderId}`, { signal: controller.signal })
       .then((response) => response.json())
       .then((data) => {
         if (cancelled) return;
@@ -401,14 +405,15 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           setOrder(orderData);
         }
       })
-      .catch(() => {
-        if (!cancelled) {
+      .catch((err) => {
+        if (!cancelled && err?.name !== "AbortError") {
           setError("Erro de rede ao carregar encomenda.");
           setFlowState("error");
         }
       });
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [shouldLoadOrder, orderId]);
 
@@ -482,7 +487,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       clearAbortTimer();
       unmountWidget();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- intentional: mountWidget/clearAbortTimer/unmountWidget are stable refs; including flowState would cause infinite remount loop
   }, [isOnlinePayment, checkoutId, retryCount]);
 
   useEffect(() => {

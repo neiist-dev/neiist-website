@@ -25,8 +25,7 @@ export async function fetchUserData() {
       return null;
     }
 
-    const userData = await response.json();
-    return userData;
+    return await response.json();
   } catch (error) {
     console.error("Error fetching user data:", error);
     return null;
@@ -44,7 +43,7 @@ export function devOverrideRole(dbIstid: string): string | undefined {
   const devIstidRaw = process.env.DEV_ISTID;
   const isDev = process.env.NODE_ENV === "development";
   if (isDev && devIstidRaw) {
-    const match = devIstidRaw.match(/^([^\[]+)\[([A-Z]+)\]$/i);
+    const match = devIstidRaw.match(/^([^[]+)\[([A-Z]+)]$/i);
     if (match) {
       const [, istid, role] = match;
       if (dbIstid === istid) {

@@ -174,8 +174,8 @@ function Activities() {
                   0: { slidesPerView: 1 },
                 }}
                 className={styles.slider}>
-                {events.map((event, index) => (
-                  <SwiperSlide key={event.id || index}>
+                {events.map((event) => (
+                  <SwiperSlide key={event.id}>
                     <div className={styles.card}>
                       <Image
                         src={event.image}

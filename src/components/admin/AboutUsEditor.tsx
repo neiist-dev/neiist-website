@@ -124,7 +124,7 @@ export default function AboutUsEditor({
         setRoleOrders((prev) => ({ ...prev, [department.name]: orderedRoles }));
       });
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- intentional: departmentsWithMembers identity is unstable using .length as change proxy
   }, [selectedYear, departmentsWithMembers.length, filteredMemberships.length, users.length]);
 
   async function saveOrder(departmentName: string, newRoles: string[]) {

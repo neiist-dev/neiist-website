@@ -11,7 +11,7 @@ export default function SumUpReadersManagement() {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ pairing_code: "", name: "" });
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const [deleteReader, setdeleteReader] = useState<SumUpReader | null>(null);
+  const [readerToDelete, setReaderToDelete] = useState<SumUpReader | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const fetchReaders = async (opts?: { silent?: boolean }) => {
@@ -71,12 +71,12 @@ export default function SumUpReadersManagement() {
     setShowConfirm(false);
 
     const previousReaders = readers;
-    if (!deleteReader) return;
+    if (!readerToDelete) return;
 
-    setReaders((prev) => prev.filter((reader) => reader.id !== deleteReader.id));
+    setReaders((prev) => prev.filter((reader) => reader.id !== readerToDelete.id));
 
     try {
-      const res = await fetch(`/api/shop/sumup/readers/${encodeURIComponent(deleteReader.id)}`, {
+      const res = await fetch(`/api/shop/sumup/readers/${encodeURIComponent(readerToDelete.id)}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -89,14 +89,14 @@ export default function SumUpReadersManagement() {
       setReaders(previousReaders);
       setError((error as Error).message);
     } finally {
-      setdeleteReader(null);
+      setReaderToDelete(null);
     }
   };
 
   const handleRemoveReader = async (reader: SumUpReader) => {
     if (!reader) return;
 
-    setdeleteReader(reader);
+    setReaderToDelete(reader);
     setShowConfirm(true);
   };
 
@@ -166,7 +166,7 @@ export default function SumUpReadersManagement() {
                         type="button"
                         className={styles.deleteButton}
                         onClick={() => handleRemoveReader(reader)}
-                        disabled={deleteReader?.id === reader.id}>
+                        disabled={readerToDelete?.id === reader.id}>
                         <FiTrash2 />
                         Remover
                       </button>
@@ -181,11 +181,11 @@ export default function SumUpReadersManagement() {
       {showConfirm && (
         <ConfirmDialog
           open={showConfirm}
-          message={`Tem a certeza que deseja remover o leitor ${deleteReader?.name}`}
+          message={`Tem a certeza que deseja remover o leitor ${readerToDelete?.name}`}
           onConfirm={() => removeReader()}
           onCancel={() => {
             setShowConfirm(false);
-            setdeleteReader(null);
+            setReaderToDelete(null);
           }}
         />
       )}

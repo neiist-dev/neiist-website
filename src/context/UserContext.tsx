@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, use, useState, useEffect } from "react";
 import { User } from "@/types/user";
 import { fetchUserData } from "@/utils/userUtils";
 
@@ -57,11 +57,11 @@ export function UserProvider({
     };
   }, [initialUser]);
 
-  return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
+  return <UserContext value={{ user, setUser }}>{children}</UserContext>;
 }
 
 export function useUser() {
-  const context = useContext(UserContext);
+  const context = use(UserContext);
   if (!context) throw new Error("useUser must be used within a UserProvider");
   return context;
 }

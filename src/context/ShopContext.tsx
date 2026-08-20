@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, use, useEffect, useState, useCallback } from "react";
 import { CartItem } from "@/types/shop/product";
 
 const ShopContext = createContext({
@@ -26,7 +26,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   }, [refreshCart]);
 
   return (
-    <ShopContext.Provider
+    <ShopContext
       value={{
         isOpen,
         openCart: () => setIsOpen(true),
@@ -35,8 +35,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         refreshCart,
       }}>
       {children}
-    </ShopContext.Provider>
+    </ShopContext>
   );
 }
 
-export const useCartPopup = () => useContext(ShopContext);
+export const useCartPopup = () => use(ShopContext);

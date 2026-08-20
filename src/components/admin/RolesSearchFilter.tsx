@@ -249,10 +249,8 @@ export default function RolesSearchFilter({
           </div>
         ) : (
           <div className={styles.rolesList}>
-            {filteredRoles.map((role, index) => (
-              <div
-                key={role.role_name + (role.department || "") + index}
-                className={styles.roleCard}>
+            {filteredRoles.map((role) => (
+              <div key={`${role.department ?? ""}-${role.role_name}`} className={styles.roleCard}>
                 <div>
                   <div className={styles.roleName}>
                     {role.role_name}

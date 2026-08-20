@@ -137,8 +137,8 @@ export default function AddDepartmentModal({
                   <h4>Adicionar Cargos</h4>
                   <RoleCreationForm onAdd={addRole} disabled={loading} />
                   <ul className={styles.rolesList}>
-                    {roles.map((role, idx) => (
-                      <li key={role.roleName + idx}>
+                    {roles.map((role) => (
+                      <li key={role.roleName}>
                         <span>
                           {role.roleName} ({role.access})
                         </span>

@@ -49,15 +49,15 @@ function hexToHsl({ hex }: hexObj): hsl {
       .map((c) => c + c)
       .join("");
   while (hex.length < 6) hex += "0";
-  let r = parseInt(hex.slice(0, 2), 16) / 255;
-  let g = parseInt(hex.slice(2, 4), 16) / 255;
-  let b = parseInt(hex.slice(4, 6), 16) / 255;
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
 
   const max = Math.max(r, g, b),
     min = Math.min(r, g, b);
   let h = 0,
-    s = 0,
-    l = (max + min) / 2;
+    s = 0;
+  const l = (max + min) / 2;
 
   if (max !== min) {
     const d = max - min;
@@ -155,7 +155,7 @@ const ColourPicker = ({ value, default_value = "#1C9488", onChange }: ColourPick
     if (propNorm === internalNorm) return; // avoid unneeded setState
     const hex = propNorm.replace(/^#/, "");
     setColor({ ...hexToHsl({ hex }), hex });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line @eslint-react/exhaustive-deps -- intentional: only re-sync when controlled value prop changes; including color.hex would cause infinite update loop
   }, [value]);
 
   // notify parent only when there is a real change vs incoming prop
@@ -166,8 +166,7 @@ const ColourPicker = ({ value, default_value = "#1C9488", onChange }: ColourPick
     if (!out) return;
     if (propNorm === out) return; // don't emit if same as parent value
     onChange(out);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [color.hex, onChange]);
+  }, [color.hex, onChange, value]);
 
   return (
     <div className={styles.wrapper}>

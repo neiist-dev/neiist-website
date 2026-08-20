@@ -73,7 +73,7 @@ export default function ProductManagementCard({
         <div className={styles.thumbnails}>
           {images.map((img, idx) => (
             <button
-              key={img + idx}
+              key={img}
               className={`${styles.thumbBtn} ${imageIndex === idx ? styles.activeThumb : ""}`}
               onClick={() => setImageIndex(idx)}
               aria-current={imageIndex === idx}

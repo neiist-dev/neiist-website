@@ -8,15 +8,15 @@ import { useEffect, useState, useRef } from "react";
 
 export default function Hero() {
   const [studentMovementPosition, setStudentMovementPosition] = useState(50);
-  const [isStudentFlipped, setStudentFlipped] = useState(false);
+  const [isStudentFlipped, setIsStudentFlipped] = useState(false);
   const campusRef = useRef<HTMLDivElement>(null);
   const studentRef = useRef<HTMLImageElement>(null);
-  const [showStudent, setStudent] = useState(false);
+  const [showStudent, setShowStudent] = useState(false);
 
   useEffect(() => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     const handleResize = () => {
-      setStudent(!isTouch);
+      setShowStudent(!isTouch);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -38,13 +38,13 @@ export default function Hero() {
           if (prev - 1 < minPercent) return maxPercent;
           return prev - 1;
         });
-        setStudentFlipped(true);
+        setIsStudentFlipped(true);
       } else if (event.key === "ArrowRight") {
         setStudentMovementPosition((prev) => {
           if (prev + 1 > maxPercent) return minPercent;
           return prev + 1;
         });
-        setStudentFlipped(false);
+        setIsStudentFlipped(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);

@@ -112,7 +112,7 @@ function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode
 
 export default function DiscountCodeForm({ users, products }: DiscountCodeEditorProps) {
   const router = useRouter();
-  const [creationDraft, setCreationDraft] = useState<CreationDraft>(emptyCreationDraft());
+  const [creationDraft, setCreationDraft] = useState<CreationDraft>(emptyCreationDraft);
   const [isCreating, setIsCreating] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -207,12 +207,12 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
             }}>
             {Array.from(variantsByPrice.entries())
               .sort(([modA], [modB]) => modA - modB)
-              .map(([mod, names], idx) => {
+              .map(([mod, names]) => {
                 const variantOriginal = baseOriginal + mod;
                 const variantNew = calcPrice(variantOriginal);
                 const labelStr = names.length > 3 ? `${names.length} variantes` : names.join(", ");
                 return (
-                  <li key={idx}>
+                  <li key={mod}>
                     <em>{labelStr}</em>: {variantOriginal.toFixed(2)}€ ➜{" "}
                     <strong>{variantNew.toFixed(2)}€</strong>
                   </li>
@@ -506,6 +506,7 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
               <SectionTitle icon={<FaEye />}>Pré-visualização</SectionTitle>
               <article
                 className={styles.previewEmail}
+                // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- safe: previewHtml is generated with strict HTML escaping
                 dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
             </div>

@@ -114,7 +114,7 @@ export default function Calendar({
   initialSelectedEventId,
 }: CalendarProps & { initialSelectedEventId?: string }) {
   const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
-  const [signUps, setSignUps] = useState<Set<string>>(new Set(signedUpEventIds));
+  const [signUps, setSignUps] = useState<Set<string>>(() => new Set(signedUpEventIds));
   const [eventList, setEventList] = useState<CalendarEvent[]>(events);
 
   useEffect(() => {

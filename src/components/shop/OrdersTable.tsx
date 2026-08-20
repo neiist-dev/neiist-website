@@ -71,7 +71,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     campuses: [],
     statuses: [],
   });
-  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(() => new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const [pendingBulkStatus, setPendingBulkStatus] = useState<OrderStatus | null>(null);
   const [showPickupDialog, setShowPickupDialog] = useState(false);
@@ -728,8 +728,8 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </a>
                     </td>
                     <td className={styles.productsCell}>
-                      {getCompactProductsSummary(order.items).map((line, i) => (
-                        <div key={i} className={styles.productLine}>
+                      {getCompactProductsSummary(order.items).map((line) => (
+                        <div key={line} className={styles.productLine}>
                           {line}
                         </div>
                       ))}

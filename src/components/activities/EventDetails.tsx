@@ -33,10 +33,8 @@ interface EventDetailsProps {
   event: NormalizedCalendarEvent;
   onClose: () => void;
   isSignedUp: boolean;
-  // eslint-disable-next-line no-unused-vars
-  onSignUpChange: (eventId: string, signedUp: boolean) => void;
-  // eslint-disable-next-line no-unused-vars
-  onUpdate: (updatedEvent?: CalendarEvent) => void;
+  onSignUpChange: (_eventId: string, _signedUp: boolean) => void;
+  onUpdate: (_updatedEvent?: CalendarEvent) => void;
 }
 
 export default function EventDetails({
@@ -55,7 +53,7 @@ export default function EventDetails({
   const [signedUp, setSignedUp] = useState(isSignedUp);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [settings, setSettings] = useState<EventSettings>(() => getEventSettings(event.raw));
-  const hasChanges = useRef(false);
+  const hasChangesRef = useRef(false);
 
   const ICON_REGISTRY: Record<string, IconType> = {
     ...FA,
@@ -80,13 +78,13 @@ export default function EventDetails({
 
   useEffect(() => {
     setSettings(getEventSettings(event.raw));
-    hasChanges.current = false;
+    hasChangesRef.current = false;
   }, [event]);
 
   useEffect(() => setSignedUp(isSignedUp), [isSignedUp]);
 
   const saveSettings = useCallback(async () => {
-    if (!isAdmin || !hasChanges.current) return;
+    if (!isAdmin || !hasChangesRef.current) return;
     const saveToastId = toast.loading("Saving event settings...", {
       closeButton: true,
     });
@@ -156,7 +154,7 @@ export default function EventDetails({
 
   const updateSetting = <K extends keyof EventSettings>(key: K, value: EventSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
-    hasChanges.current = true;
+    hasChangesRef.current = true;
   };
 
   const handleSignUp = async () => {

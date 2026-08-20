@@ -53,8 +53,8 @@ const Partnerships: React.FC = () => {
       scale: string;
     }[]
   ) =>
-    partners.map((partner, index) => (
-      <a key={index} href={partner.href} target="_blank" rel="noopener noreferrer">
+    partners.map((partner) => (
+      <a key={partner.href} href={partner.href} target="_blank" rel="noopener noreferrer">
         <Image
           src={partner.src}
           alt={partner.alt}

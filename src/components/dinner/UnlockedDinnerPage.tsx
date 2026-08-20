@@ -157,8 +157,8 @@ export default function UnlockedDinnerPage() {
   const [selectedCard, setSelectedCard] = useState<CardKey | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const touchCurrentY = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchCurrentYRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
@@ -186,20 +186,20 @@ export default function UnlockedDinnerPage() {
   };
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    touchStartY.current = event.touches[0]?.clientY ?? null;
-    touchCurrentY.current = touchStartY.current;
+    touchStartYRef.current = event.touches[0]?.clientY ?? null;
+    touchCurrentYRef.current = touchStartYRef.current;
   };
 
   const handleTouchMove = (event: TouchEvent<HTMLDivElement>) => {
-    touchCurrentY.current = event.touches[0]?.clientY ?? touchCurrentY.current;
+    touchCurrentYRef.current = event.touches[0]?.clientY ?? touchCurrentYRef.current;
   };
 
   const handleTouchEnd = () => {
-    if (touchStartY.current === null || touchCurrentY.current === null) return;
+    if (touchStartYRef.current === null || touchCurrentYRef.current === null) return;
 
-    const swipeDistance = touchCurrentY.current - touchStartY.current;
-    touchStartY.current = null;
-    touchCurrentY.current = null;
+    const swipeDistance = touchCurrentYRef.current - touchStartYRef.current;
+    touchStartYRef.current = null;
+    touchCurrentYRef.current = null;
 
     if (typeof window !== "undefined" && window.innerWidth <= 768 && swipeDistance > 80)
       closeCard();

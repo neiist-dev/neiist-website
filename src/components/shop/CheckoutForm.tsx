@@ -498,7 +498,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         <div className={styles.summarySticky}>
           <h2 className={styles.summaryTitle}>Resumo da Encomenda</h2>
           <div className={styles.cartItems}>
-            {cart.map((item, idx) => {
+            {cart.map((item) => {
               const variantObj =
                 item.variantId != null
                   ? item.product.variants.find((v) => v.id === item.variantId)
@@ -511,7 +511,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
               );
               return (
                 <div
-                  key={`${item.product.id}-${item.variantId ?? "default"}-${idx}`}
+                  key={`${item.product.id}-${item.variantId ?? "default"}`}
                   className={styles.cartItem}>
                   <div className={styles.productImage}>
                     {imageSrc ? (

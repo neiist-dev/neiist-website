@@ -11,7 +11,7 @@ export default function AdminVotingSync() {
     const source = new EventSource("/api/voting/sync");
 
     source.onmessage = (event) => {
-      let updatedAt: string | null = null;
+      let updatedAt: string | null;
 
       try {
         const parsed = JSON.parse(event.data) as { updatedAt?: string };
