@@ -3,11 +3,3 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-
-minimumReleaseAgeExclude:
-  - '@types/pg@8.20.3'
-  - baseline-browser-mapping@2.11.10
-
-overrides:
-  sharp: '>=0.35.0'
-  postcss: '>=8.5.18'
