@@ -9,14 +9,17 @@ const pool = new Pool({
 });
 
 let isShuttingDown = false;
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
 const gracefulShutdown = async (signal: string) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
-  console.warn(`[DB Pool] Received ${signal}. Closing database connection pool...`);
+  if (!isBuildPhase)
+    console.warn(`[DB Pool] Received ${signal}. Closing database connection pool...`);
+
   try {
     await pool.end();
-    console.warn("[DB Pool] Database pool closed successfully.");
+    if (!isBuildPhase) console.warn("[DB Pool] Database pool closed successfully.");
   } catch (err) {
     console.error("[DB Pool] Error closing database pool:", err);
   }
