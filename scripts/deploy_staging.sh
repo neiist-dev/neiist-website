@@ -21,7 +21,7 @@ echo "📁 Installing dependencies..."
 pnpm install --frozen-lockfile
 
 echo "🏗️ Building project..."
-NODE_OPTIONS="--max-old-space-size=2048" pnpm build
+NODE_OPTIONS="--max-old-space-size=3096" pnpm build
 
 echo "♻️ Restarting PM2 process..."
 pm2 restart $PM2_NAME || pm2 start ecosystem.config.js

@@ -108,45 +108,42 @@ export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const body = await request.json();
+  const recipients = normalizeRecipients(body.recipients);
+  const discountType = body.discount_type;
+  const discountValue = Number(body.discount_value);
+  const validProductIds = normalizeProductIds(body.valid_product_ids) ?? null;
+  const maxUses =
+    body.max_uses === undefined || body.max_uses === null || body.max_uses === ""
+      ? 1
+      : Number(body.max_uses);
+  const expiresAt = normalizeString(body.expires_at);
+  const emailSubject = normalizeString(body.email_subject);
+  const emailIntroLine = normalizeString(body.email_intro_line ?? body.email_markdown);
+
+  if (!recipients)
+    return NextResponse.json({ error: "Indica pelo menos um utilizador válido." }, { status: 400 });
+
+  if (discountType !== "percentage" && discountType !== "fixed")
+    return NextResponse.json({ error: "Tipo de desconto inválido" }, { status: 400 });
+
+  if (!Number.isFinite(discountValue) || discountValue < 0)
+    return NextResponse.json({ error: "Valor de desconto inválido" }, { status: 400 });
+
+  if (!Number.isInteger(maxUses) || maxUses <= 0) {
+    return NextResponse.json(
+      { error: "O número máximo de usos deve ser positivo." },
+      { status: 400 }
+    );
+  }
+  if (!emailSubject || !emailIntroLine) {
+    return NextResponse.json(
+      { error: "O assunto e o texto do email são obrigatórios." },
+      { status: 400 }
+    );
+  }
+
   try {
-    const body = await request.json();
-    const recipients = normalizeRecipients(body.recipients);
-    const discountType = body.discount_type;
-    const discountValue = Number(body.discount_value);
-    const validProductIds = normalizeProductIds(body.valid_product_ids) ?? null;
-    const maxUses =
-      body.max_uses === undefined || body.max_uses === null || body.max_uses === ""
-        ? 1
-        : Number(body.max_uses);
-    const expiresAt = normalizeString(body.expires_at);
-    const emailSubject = normalizeString(body.email_subject);
-    const emailIntroLine = normalizeString(body.email_intro_line ?? body.email_markdown);
-
-    if (!recipients) {
-      return NextResponse.json(
-        { error: "Indica pelo menos um utilizador válido." },
-        { status: 400 }
-      );
-    }
-    if (discountType !== "percentage" && discountType !== "fixed") {
-      return NextResponse.json({ error: "Tipo de desconto inválido" }, { status: 400 });
-    }
-    if (!Number.isFinite(discountValue) || discountValue < 0) {
-      return NextResponse.json({ error: "Valor de desconto inválido" }, { status: 400 });
-    }
-    if (!Number.isInteger(maxUses) || maxUses <= 0) {
-      return NextResponse.json(
-        { error: "O número máximo de usos deve ser positivo." },
-        { status: 400 }
-      );
-    }
-    if (!emailSubject || !emailIntroLine) {
-      return NextResponse.json(
-        { error: "O assunto e o texto do email são obrigatórios." },
-        { status: 400 }
-      );
-    }
-
     const createdCodes = [] as NonNullable<Awaited<ReturnType<typeof createDiscountCode>>>[];
     const failedRecipients: Array<{ istid: string; error: string }> = [];
     let sentCount = 0;
@@ -216,59 +213,55 @@ export async function PUT(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const body = await request.json();
+  const discountCodeId = Number(body.id ?? body.discount_code_id);
+
+  if (!Number.isInteger(discountCodeId) || discountCodeId <= 0)
+    return NextResponse.json({ error: "Código de desconto inválido" }, { status: 400 });
+
+  const updates: DiscountCodeUpdateInput = {};
+  if (body.code !== undefined) {
+    const code = normalizeCode(body.code);
+    if (!code) return NextResponse.json({ error: "Código inválido" }, { status: 400 });
+    updates.code = code;
+  }
+  if (body.discount_type !== undefined) {
+    if (body.discount_type !== "percentage" && body.discount_type !== "fixed")
+      return NextResponse.json({ error: "Tipo de desconto inválido" }, { status: 400 });
+
+    updates.discount_type = body.discount_type;
+  }
+  if (body.discount_value !== undefined) {
+    const value = Number(body.discount_value);
+    if (!Number.isFinite(value) || value < 0)
+      return NextResponse.json({ error: "Valor de desconto inválido" }, { status: 400 });
+
+    updates.discount_value = value;
+  }
+  if (body.valid_product_ids !== undefined)
+    updates.valid_product_ids = normalizeProductIds(body.valid_product_ids) ?? null;
+
+  if (body.valid_istids !== undefined)
+    updates.valid_istids = normalizeList(body.valid_istids) ?? null;
+
+  if (body.max_uses !== undefined) {
+    updates.max_uses =
+      body.max_uses === null || body.max_uses === ""
+        ? null
+        : (() => {
+            const value = Number(body.max_uses);
+            return Number.isInteger(value) && value > 0 ? value : null;
+          })();
+  }
+  if (body.expires_at !== undefined)
+    updates.expires_at = body.expires_at ? String(body.expires_at) : null;
+
+  if (body.active !== undefined) updates.active = Boolean(body.active);
+
   try {
-    const body = await request.json();
-    const discountCodeId = Number(body.id ?? body.discount_code_id);
-
-    if (!Number.isInteger(discountCodeId) || discountCodeId <= 0) {
-      return NextResponse.json({ error: "Código de desconto inválido" }, { status: 400 });
-    }
-
-    const updates: DiscountCodeUpdateInput = {};
-    if (body.code !== undefined) {
-      const code = normalizeCode(body.code);
-      if (!code) return NextResponse.json({ error: "Código inválido" }, { status: 400 });
-      updates.code = code;
-    }
-    if (body.discount_type !== undefined) {
-      if (body.discount_type !== "percentage" && body.discount_type !== "fixed") {
-        return NextResponse.json({ error: "Tipo de desconto inválido" }, { status: 400 });
-      }
-      updates.discount_type = body.discount_type;
-    }
-    if (body.discount_value !== undefined) {
-      const value = Number(body.discount_value);
-      if (!Number.isFinite(value) || value < 0) {
-        return NextResponse.json({ error: "Valor de desconto inválido" }, { status: 400 });
-      }
-      updates.discount_value = value;
-    }
-    if (body.valid_product_ids !== undefined) {
-      updates.valid_product_ids = normalizeProductIds(body.valid_product_ids) ?? null;
-    }
-    if (body.valid_istids !== undefined) {
-      updates.valid_istids = normalizeList(body.valid_istids) ?? null;
-    }
-    if (body.max_uses !== undefined) {
-      updates.max_uses =
-        body.max_uses === null || body.max_uses === ""
-          ? null
-          : (() => {
-              const value = Number(body.max_uses);
-              return Number.isInteger(value) && value > 0 ? value : null;
-            })();
-    }
-    if (body.expires_at !== undefined) {
-      updates.expires_at = body.expires_at ? String(body.expires_at) : null;
-    }
-    if (body.active !== undefined) {
-      updates.active = Boolean(body.active);
-    }
-
     const updated = await updateDiscountCode(discountCodeId, updates);
-    if (!updated) {
+    if (!updated)
       return NextResponse.json({ error: "Failed to update discount code" }, { status: 500 });
-    }
 
     revalidatePath("/shop/manage/discounts");
 
@@ -282,21 +275,18 @@ export async function DELETE(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const body = await request.json().catch(() => ({}));
+  const discountCodeId = Number(body.id ?? body.discount_code_id);
+
+  if (!Number.isInteger(discountCodeId) || discountCodeId <= 0)
+    return NextResponse.json({ error: "Código de desconto inválido" }, { status: 400 });
+
   try {
-    const body = await request.json().catch(() => ({}));
-    const discountCodeId = Number(body.id ?? body.discount_code_id);
-
-    if (!Number.isInteger(discountCodeId) || discountCodeId <= 0) {
-      return NextResponse.json({ error: "Código de desconto inválido" }, { status: 400 });
-    }
-
     const deleted = await deleteDiscountCode(discountCodeId);
-    if (!deleted) {
+    if (!deleted)
       return NextResponse.json({ error: "Failed to delete discount code" }, { status: 500 });
-    }
 
     revalidatePath("/shop/manage/discounts");
-
     return NextResponse.json({ ok: true });
   } catch (error) {
     return handleApiError(error);

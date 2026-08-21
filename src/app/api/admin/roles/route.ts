@@ -11,14 +11,13 @@ import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
-  if (!userRoles.isAuthorized) {
-    return userRoles.error;
-  }
+  if (!userRoles.isAuthorized) return userRoles.error;
+
+  const department = request.nextUrl.searchParams.get("department");
+  if (!department)
+    return NextResponse.json({ error: "Department parameter is required" }, { status: 400 });
+
   try {
-    const department = request.nextUrl.searchParams.get("department");
-    if (!department) {
-      return NextResponse.json({ error: "Department parameter is required" }, { status: 400 });
-    }
     const roles = await getDepartmentRoles(department);
     return NextResponse.json(roles);
   } catch (error) {
@@ -28,17 +27,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
-  if (!userRoles.isAuthorized) {
-    return userRoles.error;
+  if (!userRoles.isAuthorized) return userRoles.error;
+
+  const { departmentName, roleName, access } = await request.json();
+  if (!departmentName || !roleName) {
+    return NextResponse.json(
+      { error: "Department name and role name are required" },
+      { status: 400 }
+    );
   }
+
   try {
-    const { departmentName, roleName, access } = await request.json();
-    if (!departmentName || !roleName) {
-      return NextResponse.json(
-        { error: "Department name and role name are required" },
-        { status: 400 }
-      );
-    }
     const success = await addValidDepartmentRole(departmentName, roleName, access);
     if (success) {
       revalidatePath("/about-us");
@@ -55,17 +54,17 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
-  if (!userRoles.isAuthorized) {
-    return userRoles.error;
+  if (!userRoles.isAuthorized) return userRoles.error;
+
+  const { departmentName, roleName } = await request.json();
+  if (!departmentName || !roleName) {
+    return NextResponse.json(
+      { error: "Department name and role name are required" },
+      { status: 400 }
+    );
   }
+
   try {
-    const { departmentName, roleName } = await request.json();
-    if (!departmentName || !roleName) {
-      return NextResponse.json(
-        { error: "Department name and role name are required" },
-        { status: 400 }
-      );
-    }
     const success = await removeValidDepartmentRole(departmentName, roleName);
     if (success) {
       revalidatePath("/about-us");

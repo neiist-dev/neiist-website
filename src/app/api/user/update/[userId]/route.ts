@@ -3,6 +3,7 @@ import { User, UserRole } from "@/types/user";
 import fs from "fs/promises";
 import path from "path";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { validateIstId, isValidEmail, isValidPhone } from "@/utils/apiValidationUtils";
 import { getUser, updateUser, updateUserPhoto } from "@/lib/db/repositories/user.repository";
 import { serverCheckRoles } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -15,10 +16,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
   ]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
-  try {
-    const updateData = await request.json();
-    const { userId: targetUserId } = await params;
+  const [targetUserId, error] = validateIstId((await params).userId, "userId");
+  if (error) return error;
 
+  const updateData = await request.json();
+
+  try {
     const currentUser = userRoles.user;
     if (!currentUser)
       return NextResponse.json({ error: "Current user not found" }, { status: 404 });
@@ -145,16 +148,4 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
   } catch (error) {
     return handleApiError(error);
   }
-}
-
-// Helper function to validate email
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-// Helper function to validate phone number
-function isValidPhone(phone: string): boolean {
-  const phoneRegex = /^[+]?[1-9]\d{0,15}$/;
-  return phoneRegex.test(phone.replace(/[\s\-()]/g, ""));
 }

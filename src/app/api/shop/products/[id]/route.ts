@@ -3,6 +3,7 @@ import { UserRole } from "@/types/user";
 import path from "path";
 import fs from "fs/promises";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { validateId } from "@/utils/apiValidationUtils";
 import {
   updateProduct,
   updateProductVariant,
@@ -57,10 +58,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const [productId, error] = validateId((await params).id, "product ID");
+  if (error) return error;
+
+  const body = await request.json();
+
   try {
-    const { id } = await params;
-    const productId = Number(id);
-    const body = await request.json();
     let finalImages = body.images || [];
     if (Array.isArray(body.imageUploads) && body.imageUploads.length > 0) {
       const uploadedImages = await uploadImages(body.imageUploads);
@@ -137,11 +140,12 @@ export async function DELETE(
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
-  try {
-    const { id } = await params;
-    const productId = Number(id);
-    const permanent = request.nextUrl.searchParams.get("permanent") === "true";
+  const [productId, error] = validateId((await params).id, "product ID");
+  if (error) return error;
 
+  const permanent = request.nextUrl.searchParams.get("permanent") === "true";
+
+  try {
     if (permanent) {
       await deleteProduct(productId);
       revalidatePath("/shop");
@@ -164,15 +168,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const [productId, error] = validateId((await params).id, "product ID");
+  if (error) return error;
+
+  const body = await request.json();
+  if (typeof body.active !== "boolean") {
+    return NextResponse.json({ error: "Missing or invalid 'active' field" }, { status: 400 });
+  }
+
   try {
-    const { id } = await params;
-    const productId = Number(id);
-    const body = await request.json();
-
-    if (typeof body.active !== "boolean") {
-      return NextResponse.json({ error: "Missing or invalid 'active' field" }, { status: 400 });
-    }
-
     const updated = await updateProduct(productId, { active: body.active });
     if (!updated) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
@@ -186,10 +190,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await params;
-    const productId = Number(id);
+  const [productId, error] = validateId((await params).id, "product ID");
+  if (error) return error;
 
+  try {
     const product = await getProduct(productId);
 
     if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });

@@ -15,6 +15,7 @@ import { parseNotionPageToEvent } from "@/utils/eventsUtils";
 import { getUserFromJWT } from "@/lib/auth";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { validateIstId } from "@/utils/apiValidationUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
@@ -41,27 +42,24 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ istid: string }> }
 ) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("access_token")?.value;
+  if (!accessToken) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  const sessionToken = cookieStore.get("session")?.value;
+  const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+  if (!jwtUser) return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
+
+  const [istid, error] = validateIstId((await params).istid);
+  if (error) return error;
+
+  if (jwtUser.istid !== istid)
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
+
   try {
-    const accessToken = (await cookies()).get("access_token")?.value;
-    if (!accessToken) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-    const sessionToken = (await cookies()).get("session")?.value;
-    const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
-    if (!jwtUser) {
-      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
-    }
-    const { istid } = await params;
-    if (!istid) {
-      return new NextResponse("Missing istid", { status: 400 });
-    }
-    if (jwtUser.istid !== istid) {
-      return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
-    }
     const user = await getUser(istid);
-    if (!user || !user.email) {
-      return new NextResponse("User not found or missing email", { status: 404 });
-    }
+    if (!user || !user.email)
+      return NextResponse.json({ error: "User not found or missing email" }, { status: 404 });
 
     const alternativeEmailRaw = user.alternativeEmailVerified ? user.alternativeEmail : undefined;
     const alternativeEmail = alternativeEmailRaw ?? undefined;

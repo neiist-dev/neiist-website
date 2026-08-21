@@ -56,16 +56,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const { user, roles } = userRoles;
 
+  const { id } = await params;
+  if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
+
+  const order = await getOrderByIdOrNumber(id);
+  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  const orderId = order.id;
+
+  const body = await request.json();
+
   try {
-    const { id } = await params;
-    if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
-
-    const order = await getOrderByIdOrNumber(id);
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    const orderId = order.id;
-
-    const body = await request.json();
-
     const allowedFields = [
       "status",
       "payment_method",
@@ -214,20 +214,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   ]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const { id } = await params;
+  if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
+
+  const body = await request.json();
+  const { status } = body;
+  if (!status) return NextResponse.json({ error: "No status provided" }, { status: 400 });
+
+  if (status === "paid")
+    return NextResponse.json({ error: "Use POST /pay to mark order as paid" }, { status: 400 });
+
+  const order = await getOrderByIdOrNumber(id);
+  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  const orderId = order.id;
+
   try {
-    const { id } = await params;
-    const body = await request.json();
-    const { status } = body;
-    if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
-    if (!status) return NextResponse.json({ error: "No status provided" }, { status: 400 });
-
-    if (status === "paid")
-      return NextResponse.json({ error: "Use POST /pay to mark order as paid" }, { status: 400 });
-
-    const order = await getOrderByIdOrNumber(id);
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    const orderId = order.id;
-
     await setOrderState(orderId, status, userRoles.user!.istid);
     const updatedOrder = await getOrderById(orderId);
 

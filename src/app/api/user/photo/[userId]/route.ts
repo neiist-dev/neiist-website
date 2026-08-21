@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
-
-function isValidIstId(id: string) {
-  return /^[a-zA-Z0-9]+$/.test(id);
-}
+import { validateIstId } from "@/utils/apiValidationUtils";
 
 export async function GET(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
+  const [userId, error] = validateIstId((await context.params).userId, "userId");
+  if (error) return error;
+
+  const isCustom = request.nextUrl.searchParams.has("custom");
+
   try {
-    const { userId } = await context.params;
-
-    if (!isValidIstId(userId)) {
-      return new NextResponse("Invalid userId", { status: 400 });
-    }
-
-    const url = new URL(request.url);
-    const isCustom = url.searchParams.has("custom");
-
     if (isCustom) {
       const customPath = path.join(process.cwd(), "data", "user_photos", `${userId}.png`);
       try {

@@ -12,14 +12,12 @@ export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const { eventId, signupEnabled, signupDeadline, maxAttendees, customIcon, description } =
+    await request.json();
+
+  if (!eventId) return NextResponse.json({ error: "Event ID required" }, { status: 400 });
+
   try {
-    const { eventId, signupEnabled, signupDeadline, maxAttendees, customIcon, description } =
-      await request.json();
-
-    if (!eventId) {
-      return NextResponse.json({ error: "Event ID required" }, { status: 400 });
-    }
-
     const success = await updateActivityProperties({
       eventId,
       signupEnabled,
@@ -44,15 +42,13 @@ export async function GET(request: NextRequest) {
   const userRoles = await serverCheckRoles([UserRole._ADMIN]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const eventId = request.nextUrl.searchParams.get("eventId");
+  if (!eventId) {
+    return NextResponse.json({ error: "Event ID required" }, { status: 400 });
+  }
+
   try {
-    const eventId = request.nextUrl.searchParams.get("eventId");
-
-    if (!eventId) {
-      return NextResponse.json({ error: "Event ID required" }, { status: 400 });
-    }
-
     const subscribers = await getEventSubscribers(eventId);
-
     return NextResponse.json({ subscribers });
   } catch (error) {
     return handleApiError(error);

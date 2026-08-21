@@ -3,6 +3,7 @@ import { getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
 import type { SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { getOrderById } from "@/lib/db/repositories/shop.repository";
+import { validateId } from "@/utils/apiValidationUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 
@@ -15,18 +16,21 @@ type ReaderCheckoutStatusPayload = {
 };
 
 export async function POST(req: NextRequest) {
+  const [orderId, error] = validateId(req.nextUrl.searchParams.get("orderId"), "orderId");
+  if (error) return error;
+
+  let body: ReaderCheckoutStatusPayload;
   try {
-    const body = (await req.json()) as ReaderCheckoutStatusPayload;
-    const orderIdRaw = req.nextUrl.searchParams.get("orderId");
-    const orderId = Number(orderIdRaw);
+    body = (await req.json()) as ReaderCheckoutStatusPayload;
+  } catch {
+    return sumupErrorResponse("Invalid JSON payload", 400);
+  }
 
-    if (!Number.isInteger(orderId) || orderId <= 0)
-      return sumupErrorResponse("Invalid orderId", 400);
+  const status = String(body?.payload?.status ?? "").toLowerCase();
+  const clientTransactionId = body?.payload?.client_transaction_id;
+  const checkoutId = body?.payload?.checkout_id;
 
-    const status = String(body?.payload?.status ?? "").toLowerCase();
-    const clientTransactionId = body?.payload?.client_transaction_id;
-    const checkoutId = body?.payload?.checkout_id;
-
+  try {
     const order = await getOrderById(orderId);
 
     if (!order) return sumupErrorResponse("Order not found", 404);
@@ -45,9 +49,7 @@ export async function POST(req: NextRequest) {
           })) as SumUpCheckout;
 
           const transactionCode = checkoutData?.transaction_code;
-          if (transactionCode) {
-            paymentReference = transactionCode;
-          }
+          if (transactionCode) paymentReference = transactionCode;
         } catch (error) {
           console.warn("Reader callback could not resolve transaction_code", error);
         }

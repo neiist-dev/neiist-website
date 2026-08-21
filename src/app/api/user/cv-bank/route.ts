@@ -82,13 +82,11 @@ async function getUsernameFromCookies(): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
+  const isDownload = request.nextUrl.searchParams.has("download");
   const username = await getUsernameFromCookies();
-  if (!username) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (url.searchParams.has("download")) {
+  if (isDownload) {
     const buffer = await downloadUserCV(username);
     if (!buffer) {
       return NextResponse.json({ error: "CV not found" }, { status: 404 });
@@ -103,38 +101,35 @@ export async function GET(request: NextRequest) {
   }
 
   const fileId = await findUserCVFileId(username);
-  if (!fileId) {
-    return NextResponse.json({ hasCV: false }, { status: 200 });
-  }
+  if (!fileId) return NextResponse.json({ hasCV: false }, { status: 200 });
+
   return NextResponse.json({ hasCV: true, fileId }, { status: 200 });
 }
 
 export async function DELETE() {
   const username = await getUsernameFromCookies();
-  if (!username) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const removed = await removeUserCV(username);
   return NextResponse.json({ removed });
 }
 
 export async function POST(request: NextRequest) {
   const username = await getUsernameFromCookies();
-  if (!username) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const formData = await request.formData();
   const file = formData.get("file");
-  if (!file || !(file instanceof Blob)) {
+  if (!file || !(file instanceof Blob))
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-  }
-  if (file.type !== "application/pdf") {
+
+  if (file.type !== "application/pdf")
     return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
-  }
+
   const buffer = Buffer.from(await file.arrayBuffer());
-  if (buffer.slice(0, 4).toString("ascii") !== "%PDF") {
+  if (buffer.slice(0, 4).toString("ascii") !== "%PDF")
     return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
-  }
+
   if (buffer.length > 10 * 1024 * 1024) {
     return NextResponse.json(
       { error: "O ficheiro é demasiado grande (máx 10MB)" },

@@ -14,34 +14,32 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   ]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
+  const { id } = await params;
+  if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
+
+  const body = await request.json();
+  const { paymentReference } = body;
+  if (!paymentReference)
+    return NextResponse.json({ error: "Payment reference is required" }, { status: 400 });
+
+  const order = await getOrderByIdOrNumber(id);
+  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  const orderId = order.id;
+
   try {
-    const body = await request.json();
-    const { paymentReference } = body;
-    const { id } = await params;
-
-    if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
-    if (!paymentReference) {
-      return NextResponse.json({ error: "Payment reference is required" }, { status: 400 });
-    }
-
-    const order = await getOrderByIdOrNumber(id);
-    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    const orderId = order.id;
-
     const result = await finalizePaidOrder({
       orderId,
       paymentReference,
       paymentCheckedBy: userRoles.user!.istid,
     });
 
-    if (!result.success) {
+    if (!result.success)
       return NextResponse.json({ error: result.error }, { status: result.statusCode });
-    }
 
     const updatedOrder = await getOrderById(orderId);
-
     revalidatePath("/orders");
     revalidatePath("/my-orders");
+
     return NextResponse.json(updatedOrder);
   } catch (error) {
     return handleApiError(error);
