@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { FenixOAuthTokenResponse } from "@/types/fenix";
 
 export async function GET(req: NextRequest) {
   const authCode = req.nextUrl.searchParams.get("code");
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
       return res;
     }
 
-    const data = await r.json();
+    const data: FenixOAuthTokenResponse = await r.json();
     const { access_token, refresh_token, expires_in } = data;
 
     if (!access_token) {

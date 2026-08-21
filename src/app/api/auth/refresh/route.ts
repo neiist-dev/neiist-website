@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { FenixOAuthTokenResponse } from "@/types/fenix";
 
 export async function POST() {
   const refresh_token = (await cookies()).get("refresh_token")?.value;
@@ -20,7 +21,7 @@ export async function POST() {
 
   if (!r.ok) return NextResponse.json({ error: "Failed to Refresh" }, { status: 401 });
 
-  const { access_token, expires_in } = await r.json();
+  const { access_token, expires_in }: FenixOAuthTokenResponse = await r.json();
   const res = NextResponse.json({ ok: true, expires_in });
   res.cookies.set("access_token", access_token, {
     httpOnly: true,

@@ -27,7 +27,7 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
     if (result) revalidateTag("users", "max");
     return result;
   } catch (error) {
-    console.warn("[UserRepository] Error creating user:", error);
+    console.warn(`[UserRepository] Error creating user (${user.istid}):`, error);
     return null;
   }
 };
@@ -46,7 +46,7 @@ export const updateUser = async (istid: string, updates: Partial<User>): Promise
     if (result) revalidateTag("users", "max");
     return result;
   } catch (error) {
-    console.warn("[UserRepository] Error updating user:", error);
+    console.warn(`[UserRepository] Error updating user (${istid}):`, error);
     return null;
   }
 };
@@ -60,7 +60,7 @@ export const updateUserPhoto = async (istid: string, photoData: string): Promise
     revalidateTag("users", "max");
     return true;
   } catch (error) {
-    console.warn("[UserRepository] Error updating user photo:", error);
+    console.warn(`[UserRepository] Error updating user photo (${istid}):`, error);
     return false;
   }
 };
@@ -122,7 +122,7 @@ export const getUser = async (istid: string): Promise<User | null> => {
       positionName,
     };
   } catch (error) {
-    console.warn("[UserRepository] Error fetching user:", error);
+    console.warn(`[UserRepository] Error fetching user (${istid}):`, error);
     return null;
   }
 };
