@@ -21,7 +21,8 @@ const adminRoutes = [
   "/users-management",
   "/departments-management",
   "/shop/manage",
-  "/voting/admin",
+  "/shop/pos",
+  "/voting/manage",
 ];
 const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
 
@@ -66,8 +67,6 @@ function addSecurityHeaders(response: NextResponse) {
 }
 
 function canAccess(path: string, roles: UserRole[]) {
-  if (path === "/" || publicRoutes.slice(1).some((r) => path.startsWith(r))) return true;
-
   const rules: [string[], UserRole[]][] = [
     [adminRoutes, [UserRole._ADMIN]],
     [coordRoutes, [UserRole._ADMIN, UserRole._COORDINATOR]],
@@ -88,27 +87,31 @@ function canAccess(path: string, roles: UserRole[]) {
   ];
 
   for (const [routes, allowed] of rules) {
-    if (routes.some((r) => path.startsWith(r))) {
+    if (routes.some((route) => path.startsWith(route))) {
       return hasRequiredRole(roles, allowed);
     }
   }
 
-  return false;
+  return (
+    path === "/" ||
+    publicRoutes
+      .slice(1)
+      .some(
+        (route) => path === route || path.startsWith(route + "/") || path.startsWith(route + "?")
+      )
+  );
 }
 
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  if (isBot(req)) {
-    return new NextResponse("Forbidden", { status: 403 });
-  }
+  if (isBot(req)) return new NextResponse("Forbidden", { status: 403 });
 
-  if (!path.startsWith("/api/") && (req.headers.get("accept") ?? "").includes("text/markdown")) {
+  if (!path.startsWith("/api/") && (req.headers.get("accept") ?? "").includes("text/markdown"))
     return new NextResponse(MARKDOWN_SITE, {
       status: 200,
       headers: { "Content-Type": "text/markdown; charset=utf-8" },
     });
-  }
 
   if (path.startsWith("/api/")) {
     const rule = getRateLimitRule(path);

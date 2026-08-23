@@ -9,11 +9,7 @@ import { serverCheckRoles } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
-  const userRoles = await serverCheckRoles([
-    UserRole._ADMIN,
-    UserRole._COORDINATOR,
-    UserRole._MEMBER,
-  ]);
+  const userRoles = await serverCheckRoles([]);
   if (!userRoles.isAuthorized) return userRoles.error;
 
   const [targetUserId, error] = validateIstId((await params).userId, "userId");

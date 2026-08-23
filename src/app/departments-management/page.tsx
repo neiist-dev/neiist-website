@@ -4,6 +4,8 @@ import AdminBodiesManagement from "@/components/admin/AdminBodiesManagement";
 import RolesManagement from "@/components/admin/RolesManagement";
 import AboutUsManager from "@/components/admin/AboutUsManager";
 import styles from "@/styles/pages/AdminDashboard.module.css";
+import { requireRoles } from "@/lib/auth";
+import { UserRole } from "@/types/user";
 
 const tabs = [
   { id: "teams", name: "Equipas", icon: <GoPeople />, departmentType: "team" },
@@ -26,6 +28,7 @@ export default async function DepartmentsManagementPage({
 }: {
   searchParams?: Promise<Record<string, string | string[]>>;
 }) {
+  await requireRoles([UserRole._ADMIN]);
   const params = await searchParams;
   const tabParam = params?.tab;
   const activeTab =

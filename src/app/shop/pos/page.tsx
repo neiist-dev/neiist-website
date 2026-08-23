@@ -1,7 +1,11 @@
 import SumUpReadersManagement from "@/components/shop/SumUpReadersManagement";
 import styles from "@/styles/pages/ShopPos.module.css";
+import { requireRoles } from "@/lib/auth";
+import { UserRole } from "@/types/user";
 
-export default function ShopPosPage() {
+export default async function ShopPosPage() {
+  await requireRoles([UserRole._ADMIN, UserRole._SHOP_MANAGER]);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>

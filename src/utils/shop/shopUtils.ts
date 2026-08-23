@@ -142,3 +142,26 @@ export function formatVariantSimple(
     colorInfo,
   };
 }
+
+export function sanitizeOrder(order: Order): Order {
+  return {
+    ...order,
+    customer_email: order.customer_email ? maskEmail(order.customer_email) : undefined,
+    customer_phone: order.customer_phone ? maskPhone(order.customer_phone) : undefined,
+    customer_nif: undefined,
+    mbway_number: undefined,
+    notes: undefined,
+  };
+}
+
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const maskedLocal = local.length <= 2 ? "***" : `${local.slice(0, 2)}***`;
+  return `${maskedLocal}@${domain}`;
+}
+
+function maskPhone(phone: string): string {
+  if (phone.length <= 4) return "***";
+  return `${phone.slice(0, 4)}***${phone.slice(-2)}`;
+}

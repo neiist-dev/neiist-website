@@ -1,8 +1,7 @@
 import CoordinatorTeamManagementSearch from "@/components/team-management/CoordinatorTeamManagementSearch";
 import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
-import { cookies } from "next/headers";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
+import { requireRoles } from "@/lib/auth";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import {
   getAllMemberships,
@@ -17,10 +16,8 @@ interface Role {
 }
 
 export default async function TeamManagementPage() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
-  const istid = jwtUser?.istid;
+  const { user } = await requireRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  const istid = user.istid;
 
   const [users, memberships] = (await Promise.all([getAllUsers(), getAllMemberships()])) as [
     Awaited<ReturnType<typeof getAllUsers>>,

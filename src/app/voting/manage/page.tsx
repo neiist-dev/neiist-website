@@ -8,12 +8,15 @@ import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import AdminVotingSync from "@/components/voting/AdminVotingSync";
 import VotingManagement from "@/components/voting/admin/VotingManagement";
 import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
+import { requireRoles } from "@/lib/auth";
+import { UserRole } from "@/types/user";
 
 interface PageProps {
   searchParams: Promise<{ sessionId?: string }>;
 }
 
 export default async function VotingManagePage({ searchParams }: PageProps) {
+  await requireRoles([UserRole._ADMIN]);
   const params = await searchParams;
   const sessionId = params.sessionId ? parseInt(params.sessionId, 10) : undefined;
 

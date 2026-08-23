@@ -6,20 +6,15 @@ import {
   getUserVote,
   getSessionResults,
 } from "@/lib/db/repositories/voting.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { requireRoles } from "@/lib/auth";
 
 export default async function VotingPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const [params, sessions, auth] = await Promise.all([
-    searchParams,
-    getVotingSessions(20),
-    serverCheckRoles([]),
-  ]);
-
-  if (!auth.isAuthorized) return auth.error;
+  const { user } = await requireRoles([]);
+  const [params, sessions] = await Promise.all([searchParams, getVotingSessions(20)]);
 
   const now = new Date();
   const activeVotingSessions = sessions.filter((session) => {
@@ -48,7 +43,7 @@ export default async function VotingPage({
       activeVotingSessions.map(async (session) => {
         const [nominees, selectedNomineeId] = await Promise.all([
           getSessionNominees(session.id),
-          getUserVote(session.id, auth.user!.istid),
+          getUserVote(session.id, user.istid),
         ]);
         return { session, nominees, selectedNomineeId };
       })
