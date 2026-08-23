@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole, hasRequiredRole } from "@/types/user";
-import { getUserFromJWT } from "./lib/auth";
+import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { rateLimit } from "@/lib/security/rateLimitUtils";
 import { CSP } from "@/lib/security/cspUtils";
 import { getRateLimitRule } from "@/lib/security/rateLimitRules";
@@ -96,7 +96,7 @@ function canAccess(path: string, roles: UserRole[]) {
   return false;
 }
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   if (isBot(req)) {
@@ -114,7 +114,7 @@ export function proxy(req: NextRequest) {
     const rule = getRateLimitRule(path);
     if (rule) {
       const sessionToken = req.cookies.get("session")?.value;
-      const jwtUser = getUserFromJWT(sessionToken);
+      const jwtUser = await verifyJWTWebCrypto(sessionToken);
       const identifier = rule.useUser ? (jwtUser?.istid ?? getIp(req)) : getIp(req);
       const bucketKey = `${path.split("/").slice(0, 4).join("/")}:${identifier}`;
       const result = rateLimit(bucketKey, rule.limit, rule.windowMs);
@@ -155,7 +155,7 @@ export function proxy(req: NextRequest) {
 
   if (isAuthenticated) {
     const sessionToken = req.cookies.get("session")?.value;
-    const jwtUser = getUserFromJWT(sessionToken);
+    const jwtUser = await verifyJWTWebCrypto(sessionToken);
     const roles = jwtUser?.roles || [UserRole._GUEST];
 
     if (!canAccess(path, roles)) {

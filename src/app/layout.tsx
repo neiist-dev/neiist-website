@@ -11,7 +11,7 @@ import { ShopProvider } from "@/context/ShopContext";
 import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
 import { cookies } from "next/headers";
-import { getUserFromJWT } from "@/lib/auth";
+import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { getUser } from "@/lib/db/repositories/user.repository";
 
 const secularOne = Secular_One({
@@ -30,7 +30,7 @@ async function ServerAuthWidget() {
   let user = null;
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = getUserFromJWT(sessionToken);
+  const jwtUser = await verifyJWTWebCrypto(sessionToken);
   if (jwtUser?.istid) {
     try {
       user = await getUser(jwtUser.istid);

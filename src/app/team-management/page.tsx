@@ -2,7 +2,7 @@ import CoordinatorTeamManagementSearch from "@/components/team-management/Coordi
 import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { cookies } from "next/headers";
-import { getUserFromJWT } from "@/lib/auth";
+import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import {
   getAllMemberships,
@@ -19,7 +19,7 @@ interface Role {
 export default async function TeamManagementPage() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
   const istid = jwtUser?.istid;
 
   const [users, memberships] = (await Promise.all([getAllUsers(), getAllMemberships()])) as [

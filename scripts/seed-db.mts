@@ -99,10 +99,9 @@ async function run() {
         [dev_istid, dev_name, dev_email]
       );
 
-      await client.query(
-        `SELECT neiist.add_team_member($1, 'Dev-Team', 'Coordenador');`,
-        [dev_istid]
-      );
+      await client.query(`SELECT neiist.add_team_member($1, 'Dev-Team', 'Coordenador');`, [
+        dev_istid,
+      ]);
 
       console.log("Dev admin user seeded successfully.");
     }

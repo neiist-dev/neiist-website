@@ -12,7 +12,7 @@ import type { NotionPage, NotionApiResponse } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
 import type { NotionEvent } from "@/types/events";
 import { parseNotionPageToEvent } from "@/utils/eventsUtils";
-import { getUserFromJWT } from "@/lib/auth";
+import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateIstId } from "@/utils/apiValidationUtils";
@@ -47,7 +47,7 @@ export async function GET(
   if (!accessToken) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
   const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
+  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
   if (!jwtUser) return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
 
   const [istid, error] = validateIstId((await params).istid);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUserFromJWT } from "@/lib/auth";
+import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { signUpToEvent, removeSignUpFromEvent } from "@/lib/db/repositories/event.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { revalidatePath } from "next/cache";
@@ -15,24 +15,18 @@ export async function POST(req: NextRequest) {
     }
 
     const sessionToken = cookieStore.get("session")?.value;
-    const jwtUser = sessionToken ? getUserFromJWT(sessionToken) : null;
-    if (!jwtUser) {
-      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
-    }
+    const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
+    if (!jwtUser) return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
 
     const { eventId, signUp } = await req.json();
 
-    if (!eventId) {
-      return NextResponse.json({ error: "Event ID required" }, { status: 400 });
-    }
+    if (!eventId) return NextResponse.json({ error: "Event ID required" }, { status: 400 });
 
     const success = signUp
       ? await signUpToEvent(eventId, jwtUser.istid)
       : await removeSignUpFromEvent(eventId, jwtUser.istid);
 
-    if (!success) {
-      return NextResponse.json({ error: "Failed to update sign-up" }, { status: 500 });
-    }
+    if (!success) return NextResponse.json({ error: "Failed to update sign-up" }, { status: 500 });
 
     revalidatePath("/activities");
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import fs from "fs/promises";
 import path from "path";
-import { signUserJWT } from "@/lib/auth";
+import { signJWTWebCrypto } from "@/lib/security/jwt";
 import { User } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import {
@@ -92,7 +92,7 @@ async function attachEmailVerification(user: User) {
   }
 }
 
-function createSessionResponse(user: User): NextResponse {
+async function createSessionResponse(user: User): Promise<NextResponse> {
   const response = NextResponse.json(user);
   const jwtPayload = {
     istid: user.istid,
@@ -100,7 +100,7 @@ function createSessionResponse(user: User): NextResponse {
     name: user.name,
     email: user.email,
   };
-  const jwtToken = signUserJWT(jwtPayload);
+  const jwtToken = await signJWTWebCrypto(jwtPayload);
 
   response.cookies.set("session", jwtToken, {
     httpOnly: true,
@@ -136,7 +136,7 @@ export async function GET() {
     await cacheFenixPhoto(user.istid, info.photo?.data, user.photo?.includes("?custom"));
     await attachEmailVerification(user);
 
-    return createSessionResponse(user);
+    return await createSessionResponse(user);
   } catch (error) {
     return handleApiError(error);
   }

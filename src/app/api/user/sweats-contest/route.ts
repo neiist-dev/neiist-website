@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { Readable } from "stream";
-import { getUserFromJWT } from "@/lib/auth";
+import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { getDriveClient } from "@/lib/google/drive";
 
 const SWEATS_FOLDER_ID = process.env.GDRIVE_SWEATS_FOLDER_ID!;
@@ -64,7 +64,7 @@ async function getUsernameFromCookies(): Promise<string | null> {
   const reqCookies = await cookies();
   const sessionToken = reqCookies.get("session")?.value;
   if (!sessionToken) return null;
-  const jwtUser = getUserFromJWT(sessionToken);
+  const jwtUser = await verifyJWTWebCrypto(sessionToken);
   return jwtUser?.istid || null;
 }
 
@@ -77,9 +77,7 @@ export async function POST(request: NextRequest) {
   }
 
   const username = await getUsernameFromCookies();
-  if (!username) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const formData = await request.formData();
   const file = formData.get("file");
