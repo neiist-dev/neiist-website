@@ -2,7 +2,7 @@ name: neiist
 services:
   db:
     container_name: neiist_db
-    image: postgres:15
+    image: postgres:16
     restart: always
     env_file:
       - .env

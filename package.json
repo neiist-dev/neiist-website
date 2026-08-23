@@ -16,7 +16,7 @@
     "format": "prettier --config ./config/prettier/.prettierrc.json --ignore-path ./config/prettier/.prettierignore --write .",
     "format:check": "prettier --config ./config/prettier/.prettierrc.json --ignore-path ./config/prettier/.prettierignore --check .",
     "type:check": "tsc --noEmit",
-    "db:reset": "docker compose -f ./docker/docker-compose.yml down && docker volume rm neiist_db && docker compose -f ./docker/docker-compose.yml up -d",
+    "db:reset": "docker compose -f ./docker/docker-compose.yml down && docker volume rm neiist_db && docker compose -f ./docker/docker-compose.yml up -d && pnpm db:seed",
     "db:seed": "node scripts/seed-db.mts",
     "manage-calendars": "node scripts/manage-calendars.mts",
     "clean": "rm -rf .next out dist build"

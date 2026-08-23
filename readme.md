@@ -17,7 +17,6 @@
     ·
     <a href="https://github.com/neiist-dev/neiist-website/issues">Request Feature</a>
   </p>
-</p>
 
 ### Getting Started
 
