@@ -6,41 +6,15 @@ import {
   addTeamMember,
   removeTeamMember,
   getAllMemberships,
+  getDepartmentRoles,
 } from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
+import { canManageDepartment, canAssignRoleAccess } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
 
-async function checkMembershipPermission(departmentName: string) {
-  const roles = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
-  if (!roles.isAuthorized) return roles;
-
-  const isAdmin = roles.roles?.includes(UserRole._ADMIN);
-  const isCoordinator = roles.roles?.includes(UserRole._COORDINATOR);
-  if (isAdmin) return roles;
-
-  if (isCoordinator) {
-    const userTeams = roles.user?.teams || [];
-    if (userTeams.includes(departmentName) || departmentName === "") {
-      return roles;
-    }
-  }
-
-  return {
-    isAuthorized: false,
-    error: NextResponse.json(
-      {
-        error: "Insufficient permissions - Admin or team coordinator required",
-      },
-      { status: 403 }
-    ),
-  } as const;
-}
-
 export async function GET() {
-  const permissionCheck = await checkMembershipPermission("");
-  if (!permissionCheck.isAuthorized) {
-    return permissionCheck.error;
-  }
+  const auth = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!auth.isAuthorized) return auth.error;
 
   try {
     const memberships: Membership[] = await getAllMemberships();
@@ -51,15 +25,32 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!auth.isAuthorized) return auth.error;
+
   try {
     const { istid, departmentName, roleName } = await request.json();
     if (!istid || !departmentName || !roleName) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const permissionCheck = await checkMembershipPermission(departmentName);
-    if (!permissionCheck.isAuthorized) {
-      return permissionCheck.error;
+    const canManage = await canManageDepartment(auth.roles, auth.user?.istid, departmentName);
+    if (!canManage) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to manage memberships in this department" },
+        { status: 403 }
+      );
+    }
+
+    const deptRoles = await getDepartmentRoles(departmentName);
+    const targetRole = deptRoles.find(
+      (r) => r.role_name.toLowerCase() === String(roleName).toLowerCase()
+    );
+    if (targetRole && !canAssignRoleAccess(auth.roles, targetRole.access)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to assign this role access level" },
+        { status: 403 }
+      );
     }
 
     const success = await addTeamMember(istid, departmentName, roleName);
@@ -77,15 +68,21 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const auth = await serverCheckRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
+  if (!auth.isAuthorized) return auth.error;
+
   try {
     const { istid, departmentName, roleName } = await request.json();
     if (!istid || !departmentName || !roleName) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const permissionCheck = await checkMembershipPermission(departmentName);
-    if (!permissionCheck.isAuthorized) {
-      return permissionCheck.error;
+    const canManage = await canManageDepartment(auth.roles, auth.user?.istid, departmentName);
+    if (!canManage) {
+      return NextResponse.json(
+        { error: "Insufficient permissions to manage memberships in this department" },
+        { status: 403 }
+      );
     }
 
     const success = await removeTeamMember(istid, departmentName, roleName);

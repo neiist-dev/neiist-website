@@ -7,6 +7,7 @@ import {
   getDepartmentRoles,
 } from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
+import { canManageDepartment, canAssignRoleAccess } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
@@ -37,6 +38,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const canManage = await canManageDepartment(
+    userRoles.roles,
+    userRoles.user?.istid,
+    departmentName
+  );
+  if (!canManage) {
+    return NextResponse.json(
+      { error: "Insufficient permissions to manage roles in this department" },
+      { status: 403 }
+    );
+  }
+
+  if (!canAssignRoleAccess(userRoles.roles, access)) {
+    return NextResponse.json(
+      { error: "Insufficient permissions to assign the requested access level" },
+      { status: 403 }
+    );
+  }
+
   try {
     const success = await addValidDepartmentRole(departmentName, roleName, access);
     if (success) {
@@ -61,6 +81,18 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       { error: "Department name and role name are required" },
       { status: 400 }
+    );
+  }
+
+  const canManage = await canManageDepartment(
+    userRoles.roles,
+    userRoles.user?.istid,
+    departmentName
+  );
+  if (!canManage) {
+    return NextResponse.json(
+      { error: "Insufficient permissions to manage roles in this department" },
+      { status: 403 }
     );
   }
 

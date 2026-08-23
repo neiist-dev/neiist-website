@@ -5,6 +5,7 @@ import {
   setDepartmentRoleOrder,
 } from "@/lib/db/repositories/team.repository";
 import { serverCheckRoles } from "@/lib/auth";
+import { canManageDepartment } from "@/lib/security/permissions";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { revalidatePath } from "next/cache";
 
@@ -31,6 +32,18 @@ export async function POST(request: NextRequest) {
   const { departmentName, roles } = await request.json();
   if (!departmentName || !Array.isArray(roles))
     return NextResponse.json({ error: "Missing data" }, { status: 400 });
+
+  const canManage = await canManageDepartment(
+    userRoles.roles,
+    userRoles.user?.istid,
+    departmentName
+  );
+  if (!canManage) {
+    return NextResponse.json(
+      { error: "Insufficient permissions to manage role order in this department" },
+      { status: 403 }
+    );
+  }
 
   try {
     const success = await setDepartmentRoleOrder(departmentName, roles);

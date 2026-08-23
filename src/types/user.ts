@@ -39,6 +39,14 @@ export enum UserRole {
   _GUEST = "guest",
 }
 
+export const ROLE_HIERARCHY: Record<UserRole, number> = {
+  [UserRole._ADMIN]: 100,
+  [UserRole._COORDINATOR]: 80,
+  [UserRole._SHOP_MANAGER]: 60,
+  [UserRole._MEMBER]: 40,
+  [UserRole._GUEST]: 0,
+};
+
 export function mapRoleToUserRole(role: string): UserRole {
   switch (role.toLowerCase()) {
     case "member":
