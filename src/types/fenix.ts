@@ -28,24 +28,17 @@ export type FenixOAuthTokenResponse = {
   expires_in: number | string;
 };
 
-export function extractCourses(registrations: FenixRegistration[]): string[] {
-  return [
-    ...new Set(
-      registrations
-        .map((registration) => {
-          const nameField = registration?.degree?.name;
-          if (nameField && typeof nameField === "object") {
-            return (
-              nameField["pt-PT"] ??
-              nameField["en-GB"] ??
-              Object.values(nameField)[0] ??
-              registration?.degree?.acronym ??
-              null
-            );
-          }
-          return (nameField as string) ?? registration?.degree?.acronym ?? null;
-        })
-        .filter((course): course is string => Boolean(course))
-    ),
-  ];
+export function extractCourses(registrations: FenixRegistration[] = []): string[] {
+  const courses = new Set<string>();
+  for (const reg of registrations) {
+    const degree = reg?.degree;
+    if (!degree) continue;
+    const rawName =
+      typeof degree.name === "object"
+        ? (degree.name?.["pt-PT"] ?? degree.name?.["en-GB"])
+        : degree.name;
+    const name = (rawName || degree.acronym)?.trim();
+    if (name) courses.add(name);
+  }
+  return Array.from(courses);
 }

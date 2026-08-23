@@ -575,7 +575,8 @@ BEGIN
   -- Insert courses if provided
   IF p_courses IS NOT NULL THEN
     INSERT INTO neiist.user_courses (user_istid, course_name)
-    SELECT p_istid, unnest(p_courses);
+    SELECT DISTINCT p_istid, unnest(p_courses)
+    ON CONFLICT (user_istid, course_name) DO NOTHING;
   END IF;
 
   RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
@@ -924,8 +925,9 @@ BEGIN
     DELETE FROM neiist.user_courses WHERE user_istid = p_istid;
     IF jsonb_array_length(p_updates->'courses') > 0 THEN
       INSERT INTO neiist.user_courses (user_istid, course_name)
-      SELECT p_istid, value::TEXT
-      FROM jsonb_array_elements_text(p_updates->'courses') AS value;
+      SELECT DISTINCT p_istid, value::TEXT
+      FROM jsonb_array_elements_text(p_updates->'courses') AS value
+      ON CONFLICT (user_istid, course_name) DO NOTHING;
     END IF;
   END IF;
 
