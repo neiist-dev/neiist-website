@@ -80,6 +80,17 @@ export async function POST(req: NextRequest) {
     if (checkout.id && String(checkout.id) !== checkoutId)
       return sumupErrorResponse("Checkout id mismatch", 400);
 
+    if (checkout.currency && checkout.currency.toUpperCase() !== "EUR")
+      return sumupErrorResponse("Payment currency mismatch", 400);
+
+    const expectedAmountCents = Math.round(Number(order.total_amount) * 100);
+    const actualAmountCents = Math.round(Number(checkout.amount) * 100);
+    if (actualAmountCents !== expectedAmountCents)
+      return sumupErrorResponse("Payment amount mismatch", 400);
+
+    if (order.payment_reference && order.payment_reference !== checkoutId)
+      return sumupErrorResponse("Payment session does not match order", 400);
+
     if (status === "FAILED" || status === "EXPIRED") {
       return NextResponse.json({
         failed: true,
@@ -100,9 +111,7 @@ export async function POST(req: NextRequest) {
         paymentCheckedBy: "sumup-verify",
       });
 
-      if (!result.success) {
-        return sumupErrorResponse(result.error, result.statusCode);
-      }
+      if (!result.success) return sumupErrorResponse(result.error, result.statusCode);
 
       return NextResponse.json({
         ok: true,

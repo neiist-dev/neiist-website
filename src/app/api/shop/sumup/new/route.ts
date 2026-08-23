@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
       description,
       valid_until: validUntil,
       return_url: returnUrl,
+      redirect_url: returnUrl,
     };
 
     try {

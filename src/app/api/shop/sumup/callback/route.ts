@@ -28,19 +28,28 @@ export async function GET(req: NextRequest) {
     return sumupErrorResponse("Failed to verify checkout", 502);
   }
 
+  const order = await getOrderById(orderId);
+  if (!order) return sumupErrorResponse("Order not found", 404);
+
   const status = String(checkout.status ?? "")
     .trim()
     .toUpperCase();
-  if (status === "PAID") {
-    const transactionCode = String(checkout.transaction_code ?? "").trim();
+
+  const expectedAmountCents = Math.round(Number(order.total_amount) * 100);
+  const actualAmountCents = Math.round(Number(checkout.amount) * 100);
+
+  if (
+    status === "PAID" &&
+    actualAmountCents === expectedAmountCents &&
+    (!checkout.currency || checkout.currency.toUpperCase() === "EUR")
+  ) {
+    const transactionCode = String(checkout.transaction_code ?? checkoutId).trim();
     if (transactionCode) {
-      const result = await finalizePaidOrder({
+      await finalizePaidOrder({
         orderId,
         paymentReference: transactionCode,
         paymentCheckedBy: "sumup-return",
       });
-
-      if (!result.success) return sumupErrorResponse(result.error, result.statusCode);
     }
   }
 
@@ -56,7 +65,7 @@ export async function GET(req: NextRequest) {
     </style>
   </head>
   <body>
-    <p>Autenticacao concluida. Podes fechar esta janela.</p>
+    <p>Autenticação concluída. Podes fechar esta janela.</p>
   </body>
 </html>`;
 
@@ -100,6 +109,14 @@ export async function POST(req: NextRequest) {
 
   if (order.payment_reference && order.payment_reference !== checkoutId)
     return sumupErrorResponse("Checkout id does not match order", 400);
+
+  if (checkout.currency && checkout.currency.toUpperCase() !== "EUR")
+    return sumupErrorResponse("Payment currency mismatch", 400);
+
+  const expectedAmountCents = Math.round(Number(order.total_amount) * 100);
+  const actualAmountCents = Math.round(Number(checkout.amount) * 100);
+  if (actualAmountCents !== expectedAmountCents)
+    return sumupErrorResponse("Payment amount mismatch", 400);
 
   const status = String(checkout.status ?? "")
     .trim()

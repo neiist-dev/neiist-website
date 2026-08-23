@@ -1,6 +1,9 @@
 export interface SumUpCheckout {
   id?: string;
   status?: "PENDING" | "FAILED" | "PAID" | "EXPIRED" | null;
+  amount?: number;
+  currency?: string;
+  checkout_reference?: string;
   transaction_code?: string;
   transactions?: Array<{
     transaction_code?: string;
@@ -16,13 +19,8 @@ export interface SumUpCheckoutPayload {
   checkout_reference: string;
   description: string;
   valid_until: string;
-  return_url: string;
-}
-
-export interface SumUpTransaction {
-  status?: string;
-  transaction_code?: string;
-  [key: string]: unknown;
+  return_url?: string;
+  redirect_url?: string;
 }
 
 export interface SumUpReaderStatus {
