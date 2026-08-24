@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import CheckoutForm from "@/components/shop/CheckoutForm";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/db/repositories/user.repository";
+import GlobalLoading from "@/app/loading";
 
-export default async function CheckoutPage() {
+async function CheckoutContent() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
   const jwtUser = await verifyJWTWebCrypto(sessionToken);
@@ -15,4 +17,12 @@ export default async function CheckoutPage() {
   if (!user) redirect("/api/auth/login?redirect=/shop/checkout");
 
   return <CheckoutForm user={user} />;
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <CheckoutContent />
+    </Suspense>
+  );
 }

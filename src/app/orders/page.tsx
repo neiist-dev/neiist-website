@@ -1,15 +1,17 @@
+import { Suspense } from "react";
 import OrdersTable from "@/components/shop/OrdersTable";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
 import { UserRole } from "@/types/user";
 import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
 import { requireRoles } from "@/lib/auth";
 import { sanitizeOrder } from "@/utils/shop/shopUtils";
+import GlobalLoading from "@/app/loading";
 
 interface PageProps {
   searchParams: Promise<{ orderId?: string }>;
 }
 
-export default async function OrdersManagementPage({ searchParams }: PageProps) {
+async function OrdersManagementContent({ searchParams }: PageProps) {
   const { roles } = await requireRoles([
     UserRole._ADMIN,
     UserRole._COORDINATOR,
@@ -44,5 +46,13 @@ export default async function OrdersManagementPage({ searchParams }: PageProps) 
         />
       )}
     </>
+  );
+}
+
+export default function OrdersManagementPage(props: PageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <OrdersManagementContent {...props} />
+    </Suspense>
   );
 }

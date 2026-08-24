@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import CoordinatorTeamManagementSearch from "@/components/team-management/CoordinatorTeamManagementSearch";
 import { UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
@@ -7,6 +8,7 @@ import {
   getAllMemberships,
   getAllValidDepartmentRoles,
 } from "@/lib/db/repositories/team.repository";
+import GlobalLoading from "@/app/loading";
 
 interface Role {
   department_name: string;
@@ -15,7 +17,7 @@ interface Role {
   active: boolean;
 }
 
-export default async function TeamManagementPage() {
+async function TeamManagementContent() {
   const { user } = await requireRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
   const istid = user.istid;
 
@@ -34,7 +36,6 @@ export default async function TeamManagementPage() {
         (role) =>
           role.department_name === membership.departmentName &&
           role.role_name === membership.roleName &&
-          // Accept both possible values for coordinator
           (role.access === UserRole._COORDINATOR || role.role_name === "Coordenador") &&
           role.active
       );
@@ -53,5 +54,13 @@ export default async function TeamManagementPage() {
       memberships={teamMemberships}
       users={users}
     />
+  );
+}
+
+export default function TeamManagementPage() {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <TeamManagementContent />
+    </Suspense>
   );
 }

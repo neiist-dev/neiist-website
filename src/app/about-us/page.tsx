@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import teamImage from "@/assets/team.png";
 import styles from "@/styles/pages/AboutUs.module.css";
@@ -13,6 +14,7 @@ import {
   getDepartmentRoleOrder,
 } from "@/lib/db/repositories/team.repository";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
+import GlobalLoading from "@/app/loading";
 
 type Department = {
   name: string;
@@ -58,15 +60,15 @@ function getAllAcademicYears(memberships: Membership[]) {
   let minYear = Infinity,
     maxYear = -Infinity;
   const currentAcademicYearStart = getCurrentAcademicYearStartYear();
-  memberships.forEach((membership) => {
-    const start = new Date(membership.startDate);
-    const end = membership.endDate ? new Date(membership.endDate) : null;
-    const startYear = getAcademicYearStartYear(start);
-    const endYear = end ? getAcademicYearStartYear(end) : currentAcademicYearStart;
-    if (startYear < minYear) minYear = startYear;
-    if (endYear > maxYear) maxYear = endYear;
+  memberships.forEach((m) => {
+    const fromYear = getAcademicYearStartYear(new Date(m.startDate));
+    const toYear = m.endDate
+      ? getAcademicYearStartYear(new Date(m.endDate))
+      : currentAcademicYearStart;
+    if (fromYear < minYear) minYear = fromYear;
+    if (toYear > maxYear) maxYear = toYear;
   });
-  if (currentAcademicYearStart > maxYear) maxYear = currentAcademicYearStart;
+  if (minYear === Infinity) return [];
   const years: string[] = [];
   for (let year = minYear; year <= maxYear; year++) years.push(`${year}/${year + 1}`);
   return years.reverse();
@@ -74,11 +76,11 @@ function getAllAcademicYears(memberships: Membership[]) {
 
 const ADMIN_PRIORITY = ["Direção", "Conselho Fiscal", "Mesa da Assembleia Geral"];
 
-export default async function AboutPage({
-  searchParams,
-}: {
+interface PageProps {
   searchParams?: Promise<{ year?: string }>;
-}) {
+}
+
+async function AboutUsContent({ searchParams }: PageProps) {
   const params = searchParams ? await searchParams : {};
   const [memberships, rawTeams, rawAdminBodies, users]: [
     Membership[],
@@ -183,5 +185,13 @@ export default async function AboutPage({
         </div>
       ))}
     </section>
+  );
+}
+
+export default function AboutPage(props: PageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <AboutUsContent {...props} />
+    </Suspense>
   );
 }

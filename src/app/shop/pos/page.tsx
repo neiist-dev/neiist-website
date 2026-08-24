@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import SumUpReadersManagement from "@/components/shop/SumUpReadersManagement";
 import styles from "@/styles/pages/ShopPos.module.css";
 import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
+import GlobalLoading from "@/app/loading";
 
-export default async function ShopPosPage() {
+async function ShopPosContent() {
   await requireRoles([UserRole._ADMIN, UserRole._SHOP_MANAGER]);
 
   return (
@@ -18,5 +20,13 @@ export default async function ShopPosPage() {
       </div>
       <SumUpReadersManagement />
     </div>
+  );
+}
+
+export default function ShopPosPage() {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <ShopPosContent />
+    </Suspense>
   );
 }

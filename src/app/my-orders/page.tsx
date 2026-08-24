@@ -1,14 +1,16 @@
+import { Suspense } from "react";
 import MyOrdersList from "@/components/shop/MyOrdersList";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { cookies } from "next/headers";
 import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
+import GlobalLoading from "@/app/loading";
 
 interface PageProps {
   searchParams: Promise<{ orderId?: string }>;
 }
 
-export default async function MyOrdersPage({ searchParams }: PageProps) {
+async function MyOrdersContent({ searchParams }: PageProps) {
   const { orderId } = await searchParams;
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("session")?.value;
@@ -30,5 +32,13 @@ export default async function MyOrdersPage({ searchParams }: PageProps) {
         />
       )}
     </>
+  );
+}
+
+export default function MyOrdersPage(props: PageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <MyOrdersContent {...props} />
+    </Suspense>
   );
 }

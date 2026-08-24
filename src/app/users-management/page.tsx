@@ -1,20 +1,22 @@
+import { Suspense } from "react";
 import UsersManagement from "@/components/admin/UsersManagement";
 import MembershipsManagement from "@/components/admin/MembershipsManagement";
 import styles from "@/styles/pages/AdminDashboard.module.css";
 import { GoPerson, GoShield } from "react-icons/go";
 import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
+import GlobalLoading from "@/app/loading";
 
 const sections = [
   { id: "users", name: "Utilizadores", icon: <GoShield /> },
   { id: "memberships", name: "Membros", icon: <GoPerson /> },
 ];
 
-export default async function UsersManagementPage({
-  searchParams: searchParamsPromise,
-}: {
+interface PageProps {
   searchParams?: Promise<Record<string, string | string[]>>;
-}) {
+}
+
+async function UsersManagementContent({ searchParams: searchParamsPromise }: PageProps) {
   await requireRoles([UserRole._ADMIN]);
   const searchParams = searchParamsPromise ? await searchParamsPromise : {};
   const sectionParam = searchParams?.section;
@@ -43,5 +45,13 @@ export default async function UsersManagementPage({
       </nav>
       <div className={styles.dashboard}>{content}</div>
     </div>
+  );
+}
+
+export default function UsersManagementPage(props: PageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <UsersManagementContent {...props} />
+    </Suspense>
   );
 }
