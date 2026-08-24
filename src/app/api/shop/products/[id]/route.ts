@@ -13,7 +13,7 @@ import {
   deleteProductVariant,
 } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       finalImages = [...finalImages, ...uploadedImages];
     }
 
-    await updateProduct(productId, {
+    const updated = await updateProduct(productId, {
       name: body.name,
       description: body.description,
       price: body.price,
@@ -78,9 +78,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       category: body.category,
       stock_type: body.stock_type,
       stock_quantity: body.stock_quantity,
+      order_start: body.order_start,
       order_deadline: body.order_deadline,
       active: body.active ?? true,
     });
+
+    if (!updated)
+      return NextResponse.json({ error: "Failed to update product in database" }, { status: 500 });
 
     if (Array.isArray(body.variantsToDelete) && body.variantsToDelete.length > 0) {
       for (const variantId of body.variantsToDelete) {
@@ -117,13 +121,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
+    revalidateTag("products", "max");
+    revalidateTag(`product-${productId}`, "max");
+    revalidatePath("/shop");
+    revalidatePath("/shop/manage");
+    revalidatePath(`/shop/${productId}`);
+    revalidatePath("/dinner");
+
     const updatedProduct = await getProduct(productId);
     if (!updatedProduct)
       return NextResponse.json({ error: "Product not found or failed to update" }, { status: 404 });
 
-    revalidatePath("/shop");
-    revalidatePath("/shop/manage");
-    revalidatePath("/shop/[id]", "page");
     return NextResponse.json({
       message: "Product updated successfully",
       product: updatedProduct,
@@ -148,16 +156,24 @@ export async function DELETE(
   try {
     if (permanent) {
       await deleteProduct(productId);
+      revalidateTag("products", "max");
+      revalidateTag(`product-${productId}`, "max");
       revalidatePath("/shop");
       revalidatePath("/shop/manage");
+      revalidatePath(`/shop/${productId}`);
+      revalidatePath("/dinner");
       return NextResponse.json({ message: "Product permanently deleted" });
     }
 
     const archivedProduct = await updateProduct(productId, { active: false });
     if (!archivedProduct) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
+    revalidateTag("products", "max");
+    revalidateTag(`product-${productId}`, "max");
     revalidatePath("/shop");
     revalidatePath("/shop/manage");
+    revalidatePath(`/shop/${productId}`);
+    revalidatePath("/dinner");
     return NextResponse.json({ message: "Product archived successfully" });
   } catch (error) {
     return handleApiError(error);
@@ -172,17 +188,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (error) return error;
 
   const body = await request.json();
-  if (typeof body.active !== "boolean") {
+  if (typeof body.active !== "boolean")
     return NextResponse.json({ error: "Missing or invalid 'active' field" }, { status: 400 });
-  }
 
   try {
     const updated = await updateProduct(productId, { active: body.active });
     if (!updated) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
+    revalidateTag("products", "max");
+    revalidateTag(`product-${productId}`, "max");
     revalidatePath("/shop");
     revalidatePath("/shop/manage");
-    revalidatePath("/shop/[id]", "page");
+    revalidatePath(`/shop/${productId}`);
+    revalidatePath("/dinner");
     return NextResponse.json({ message: "Product updated", product: updated });
   } catch (error) {
     return handleApiError(error);

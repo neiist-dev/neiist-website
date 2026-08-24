@@ -46,6 +46,17 @@
   color: white;
 }
 
+.timingBadge {
+  position: absolute;
+  top: 2.25rem;
+  right: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 10rem;
+  font-size: 0.75rem;
+  background: rgb(0 0 0 / 70%);
+  color: white;
+}
+
 .on-demand {
   background: var(--primary-colour);
 }

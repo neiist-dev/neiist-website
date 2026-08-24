@@ -1,4 +1,4 @@
-import { Product } from "@/types/shop/product";
+import { Product, ProductVariant } from "@/types/shop/product";
 import { Order, OrderItem } from "@/types/shop/order";
 
 const COLOR_KEYS = new Set(["cor", "color", "colour"]);
@@ -164,4 +164,48 @@ function maskEmail(email: string): string {
 function maskPhone(phone: string): string {
   if (phone.length <= 4) return "***";
   return `${phone.slice(0, 4)}***${phone.slice(-2)}`;
+}
+
+export function isProductUpcoming(product?: { order_start?: string | null } | null): boolean {
+  if (!product?.order_start) return false;
+  return new Date(product.order_start).getTime() > Date.now();
+}
+
+export function isProductDeadlinePassed(
+  product?: { stock_type?: string; order_deadline?: string | null } | null
+): boolean {
+  if (!product?.order_deadline || product.stock_type !== "on_demand") return false;
+  return new Date(product.order_deadline).getTime() < Date.now();
+}
+
+export function getProductTimingBadge(
+  product?: {
+    stock_type?: string;
+    order_start?: string | null;
+    order_deadline?: string | null;
+  } | null
+): "Brevemente" | "Indisponível" | null {
+  if (isProductUpcoming(product)) return "Brevemente";
+  if (isProductDeadlinePassed(product)) return "Indisponível";
+  return null;
+}
+
+export function getProductUnavailableReason(
+  product: Product,
+  selectedVariant?: ProductVariant | null
+): string | null {
+  if (isProductUpcoming(product)) {
+    const date = new Date(product.order_start!).toLocaleDateString("pt-PT");
+    return `As encomendas para este produto abrem a ${date}.`;
+  }
+  if (isProductDeadlinePassed(product)) return "O prazo de encomenda deste produto já terminou.";
+
+  const isAvailable =
+    product.variants.length === 0
+      ? product.stock_type !== "limited" || (product.stock_quantity ?? 0) > 0
+      : !!selectedVariant &&
+        selectedVariant.active &&
+        (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0);
+
+  return isAvailable ? null : "Este produto já não está disponível para compra.";
 }

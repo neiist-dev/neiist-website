@@ -110,7 +110,7 @@ export const getAllProductsAdmin = async (): Promise<Product[]> => {
 
 export const getProduct = async (productId: number): Promise<Product | null> => {
   "use cache";
-  cacheTag("products");
+  cacheTag("products", `product-${productId}`);
   try {
     const {
       rows: [row],
@@ -133,19 +133,26 @@ export const addProduct = async (
   try {
     const {
       rows: [row],
-    } = await db_query<dbProduct>(`SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [
-      product.name,
-      product.description ?? null,
-      product.price,
-      product.images ?? [],
-      product.category ?? null,
-      product.stock_type,
-      product.stock_quantity ?? null,
-      product.order_deadline ?? null,
-      product.active ?? true,
-    ]);
+    } = await db_query<dbProduct>(
+      `SELECT * FROM neiist.add_product($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [
+        product.name,
+        product.description ?? null,
+        product.price,
+        product.images ?? [],
+        product.category ?? null,
+        product.stock_type,
+        product.stock_quantity ?? null,
+        product.order_deadline ?? null,
+        product.active ?? true,
+        product.order_start ?? null,
+      ]
+    );
     const result = row ? mapdbProductToProduct(row) : null;
-    if (result) revalidateTag("products", "max");
+    if (result) {
+      revalidateTag("products", "max");
+      revalidateTag(`product-${result.id}`, "max");
+    }
     return result;
   } catch (error) {
     console.error("[addProduct] Error adding product:", error);
@@ -174,7 +181,10 @@ export const addProductVariants = async (
       [productId, JSON.stringify(encodedVariants)]
     );
     const result = row ? mapdbProductToProduct(row) : null;
-    if (result) revalidateTag("products", "max");
+    if (result) {
+      revalidateTag("products", "max");
+      revalidateTag(`product-${productId}`, "max");
+    }
     return result;
   } catch (error) {
     console.error("[addProductVariants] Error batch inserting product variants:", error);
@@ -204,7 +214,10 @@ export const addProductVariant = async (
       ]
     );
     const result = row ? mapdbProductToProduct(row) : null;
-    if (row) revalidateTag("products", "max");
+    if (row) {
+      revalidateTag("products", "max");
+      revalidateTag(`product-${productId}`, "max");
+    }
     return result;
   } catch (error) {
     console.error("[addProductVariant] Error adding product variant:", error);
@@ -224,7 +237,10 @@ export const updateProduct = async (
       JSON.stringify(updates),
     ]);
     const result = row ? mapdbProductToProduct(row) : null;
-    if (result) revalidateTag("products", "max");
+    if (result) {
+      revalidateTag("products", "max");
+      revalidateTag(`product-${productId}`, "max");
+    }
     return result;
   } catch (error) {
     console.error("[updateProduct] Error updating product:", error);
@@ -275,6 +291,7 @@ export const deleteProduct = async (productId: number): Promise<boolean> => {
   try {
     await db_query(`SELECT neiist.delete_product($1)`, [productId]);
     revalidateTag("products", "max");
+    revalidateTag(`product-${productId}`, "max");
     return true;
   } catch (error) {
     console.error("[deleteProduct] Error deleting product:", error);

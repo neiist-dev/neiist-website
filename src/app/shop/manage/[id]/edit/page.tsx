@@ -1,10 +1,16 @@
+import { Suspense } from "react";
 import ProductForm from "@/components/shop/ProductForm";
 import { redirect } from "next/navigation";
 import { getAllCategories, getProduct } from "@/lib/db/repositories/shop.repository";
 import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
+import GlobalLoading from "@/app/loading";
 
-export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+async function EditProductContent({ params }: PageProps) {
   await requireRoles([UserRole._ADMIN]);
   const { id } = await params;
   const productId = Number(id);
@@ -17,5 +23,13 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   return (
     <ProductForm product={product} isEdit={true} backHref="/shop/manage" categories={categories} />
+  );
+}
+
+export default function EditProductPage(props: PageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <EditProductContent {...props} />
+    </Suspense>
   );
 }

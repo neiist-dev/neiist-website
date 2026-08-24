@@ -61,3 +61,15 @@
   font-size: 0.95rem;
   color: #6b7280;
 }
+
+.badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.5rem;
+  backdrop-filter: blur(4px);
+}

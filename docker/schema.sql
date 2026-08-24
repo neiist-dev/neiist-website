@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS neiist.department_role_order (
     UNIQUE (department_name, role_name)
 );
 
--- Ensure perfomance to calculate the access level of a user
+-- Ensure performance to calculate the access level of a user
 CREATE INDEX idx_membership_active ON neiist.membership (user_istid, to_date)
 WHERE to_date IS NULL;
 CREATE INDEX idx_membership_to_date ON neiist.membership (to_date)
@@ -291,6 +291,7 @@ CREATE TABLE neiist.products (
   category_id INTEGER REFERENCES neiist.categories(id),
   stock_type neiist.shop_stock_type_enum NOT NULL,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   CONSTRAINT chk_products_stock
@@ -1340,7 +1341,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create a new product and varients if existent
+-- Create a new product and variants if existent
 CREATE OR REPLACE FUNCTION neiist.add_product(
   p_name TEXT,
   p_description TEXT,
@@ -1350,7 +1351,8 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   p_stock_type neiist.shop_stock_type_enum,
   p_stock_quantity INTEGER,
   p_order_deadline TIMESTAMPTZ,
-  p_active BOOLEAN DEFAULT TRUE
+  p_active BOOLEAN DEFAULT TRUE,
+  p_order_start TIMESTAMPTZ DEFAULT NULL
 ) RETURNS TABLE (
   id INTEGER,
   name TEXT,
@@ -1360,6 +1362,7 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   variants JSONB
 ) AS $$
@@ -1373,10 +1376,10 @@ BEGIN
 
   INSERT INTO neiist.products(
     name, description, price, images, category_id, stock_type, stock_quantity,
-    order_deadline, active
+    order_start, order_deadline, active
   ) VALUES (
     p_name, p_description, p_price, COALESCE(p_images,'{}'),
-    v_cat_id, p_stock_type, p_stock_quantity, p_order_deadline, COALESCE(p_active, TRUE)
+    v_cat_id, p_stock_type, p_stock_quantity, p_order_start, p_order_deadline, COALESCE(p_active, TRUE)
   )
   RETURNING products.id INTO v_id;
 
@@ -1390,6 +1393,7 @@ BEGIN
     c.name AS category,
     pr.stock_type::TEXT,
     pr.stock_quantity,
+    pr.order_start,
     pr.order_deadline,
     '[]'::JSONB AS variants
   FROM neiist.products pr
@@ -1416,6 +1420,7 @@ CREATE OR REPLACE FUNCTION neiist.add_product_variant(
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   variants JSONB
 ) AS $$
@@ -1465,6 +1470,7 @@ BEGIN
     v_category,
     v_product.stock_type::TEXT,
     v_product.stock_quantity,
+    v_product.order_start,
     v_product.order_deadline,
     (
       SELECT COALESCE(jsonb_agg(
@@ -1504,6 +1510,7 @@ RETURNS TABLE (
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   variants JSONB
 ) AS $$
@@ -1512,7 +1519,7 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    p.stock_type::TEXT, p.stock_quantity, p.order_deadline,
+    p.stock_type::TEXT, p.stock_quantity, p.order_start, p.order_deadline,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -1556,6 +1563,7 @@ RETURNS TABLE (
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   variants JSONB
 ) AS $$
@@ -1564,7 +1572,7 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    p.stock_type::TEXT, p.stock_quantity, p.order_deadline,
+    p.stock_type::TEXT, p.stock_quantity, p.order_start, p.order_deadline,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -1610,6 +1618,7 @@ CREATE OR REPLACE FUNCTION neiist.update_product(
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   variants JSONB
 ) AS $$
@@ -1639,6 +1648,9 @@ BEGIN
   IF p_updates ? 'stock_quantity' THEN
     UPDATE neiist.products SET stock_quantity = NULLIF(p_updates->>'stock_quantity','')::INTEGER WHERE products.id = p_product_id;
   END IF;
+  IF p_updates ? 'order_start' THEN
+    UPDATE neiist.products SET order_start = NULLIF(p_updates->>'order_start','')::TIMESTAMPTZ WHERE products.id = p_product_id;
+  END IF;
   IF p_updates ? 'order_deadline' THEN
     UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::TIMESTAMPTZ WHERE products.id = p_product_id;
   END IF;
@@ -1650,7 +1662,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update a product varient data
+-- Update a product variant data
 CREATE OR REPLACE FUNCTION neiist.update_product_variant(
   p_variant_id INTEGER,
   p_updates JSONB
@@ -1732,6 +1744,7 @@ RETURNS TABLE (
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   active BOOLEAN,
   variants JSONB
@@ -1741,7 +1754,7 @@ BEGIN
   SELECT
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
-    p.stock_type::TEXT, p.stock_quantity, p.order_deadline,
+    p.stock_type::TEXT, p.stock_quantity, p.order_start, p.order_deadline,
     p.active,
     COALESCE((
       SELECT jsonb_agg(
@@ -2211,6 +2224,7 @@ DECLARE
   v_unit NUMERIC(10,2);
   v_total NUMERIC(10,2) := 0;
   v_stock_type neiist.shop_stock_type_enum;
+  v_order_start TIMESTAMPTZ;
   v_order_deadline TIMESTAMPTZ;
   v_variant_stock INTEGER;
   v_product_stock INTEGER;
@@ -2276,8 +2290,8 @@ BEGIN
       RAISE EXCEPTION 'Invalid quantity for product_id %', v_pid;
     END IF;
 
-    SELECT p.name, p.price, p.stock_type, p.stock_quantity, p.order_deadline
-      INTO v_pname, v_base, v_stock_type, v_product_stock, v_order_deadline
+    SELECT p.name, p.price, p.stock_type, p.stock_quantity, p.order_start, p.order_deadline
+      INTO v_pname, v_base, v_stock_type, v_product_stock, v_order_start, v_order_deadline
     FROM neiist.products p
     WHERE p.id = v_pid AND p.active = TRUE;
 
@@ -2286,6 +2300,9 @@ BEGIN
     END IF;
 
     IF NOT p_stock_override THEN
+      IF v_order_start IS NOT NULL AND NOW() < v_order_start THEN
+        RAISE EXCEPTION 'Orders have not started yet for product % (%)', v_pid, v_pname;
+      END IF;
       IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
         RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
       END IF;
@@ -2689,6 +2706,7 @@ DECLARE
   v_unit NUMERIC(10,2);
   v_total NUMERIC(10,2) := 0;
   v_stock_type neiist.shop_stock_type_enum;
+  v_order_start TIMESTAMPTZ;
   v_order_deadline TIMESTAMPTZ;
   v_variant_stock INTEGER;
   v_product_stock INTEGER;
@@ -2771,8 +2789,8 @@ BEGIN
         RAISE EXCEPTION 'Invalid quantity for product_id %', v_pid;
       END IF;
 
-      SELECT p.name, p.price, p.stock_type, p.order_deadline
-        INTO v_pname, v_base, v_stock_type, v_order_deadline
+      SELECT p.name, p.price, p.stock_type, p.order_start, p.order_deadline
+        INTO v_pname, v_base, v_stock_type, v_order_start, v_order_deadline
       FROM neiist.products p
       WHERE p.id = v_pid AND p.active = TRUE;
 
@@ -2781,6 +2799,9 @@ BEGIN
       END IF;
 
       IF NOT p_stock_override THEN
+        IF v_order_start IS NOT NULL AND NOW() < v_order_start THEN
+          RAISE EXCEPTION 'Orders have not started yet for product % (%)', v_pid, v_pname;
+        END IF;
         IF v_stock_type = 'on_demand' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
           RAISE EXCEPTION 'Order deadline has passed for product % (%)', v_pid, v_pname;
         END IF;
@@ -3342,6 +3363,7 @@ CREATE OR REPLACE FUNCTION neiist.add_product_variants(
   category TEXT,
   stock_type TEXT,
   stock_quantity INTEGER,
+  order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
   variants JSONB
 ) AS $$
@@ -3418,6 +3440,7 @@ BEGIN
     v_category,
     v_product.stock_type::TEXT,
     v_product.stock_quantity,
+    v_product.order_start,
     v_product.order_deadline,
     (
       SELECT COALESCE(jsonb_agg(

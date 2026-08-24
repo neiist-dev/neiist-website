@@ -283,14 +283,17 @@ export default function ProductForm({
     category: product?.category ?? "",
     stock_type: product?.stock_type ?? "limited",
     stock_quantity: product?.stock_quantity ?? 0,
+    order_start: product?.order_start ? new Date(product.order_start) : undefined,
     order_deadline: product?.order_deadline ? new Date(product.order_deadline) : undefined,
   }));
   const updateForm = (updates: Partial<typeof form>) => setForm((p) => ({ ...p, ...updates }));
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
   const [allCategories, setAllCategories] = useState<Category[]>(categories);
   const [uploading, setUploading] = useState(false);
-  const datePickerRef = useRef<HTMLDivElement>(null);
+  const startDatePickerRef = useRef<HTMLDivElement>(null);
+  const deadlinePickerRef = useRef<HTMLDivElement>(null);
   const initialVariantIdsRef = useRef<Set<number>>(
     new Set(product?.variants?.map((v) => v.id) ?? [])
   );
@@ -389,12 +392,14 @@ export default function ProductForm({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node))
-        setShowDatePicker(false);
+      if (startDatePickerRef.current && !startDatePickerRef.current.contains(e.target as Node))
+        setShowStartDatePicker(false);
+      if (deadlinePickerRef.current && !deadlinePickerRef.current.contains(e.target as Node))
+        setShowDeadlinePicker(false);
     };
-    if (showDatePicker) document.addEventListener("mousedown", handler);
+    if (showStartDatePicker || showDeadlinePicker) document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [showDatePicker]);
+  }, [showStartDatePicker, showDeadlinePicker]);
 
   useEffect(() => {
     if (hasInitializedFromProductRef.current) {
@@ -415,8 +420,7 @@ export default function ProductForm({
         const opts: Record<string, string> = {};
         valid.forEach((d, i) => {
           const val = combo[i];
-          const strVal = typeof val === "string" ? val : joinNameHex(val.name, val.color);
-          opts[d.name] = strVal;
+          opts[d.name] = typeof val === "string" ? val : joinNameHex(val.name, val.color);
         });
         return opts;
       });
@@ -531,6 +535,7 @@ export default function ProductForm({
         group_image_uploads: Object.fromEntries(groupUploadsEntries),
         variants: variantsPayload,
         variantsToDelete,
+        order_start: form.order_start?.toISOString() ?? null,
         order_deadline: form.order_deadline?.toISOString() ?? null,
       };
 
@@ -669,6 +674,40 @@ export default function ProductForm({
                 />
               </Field>
 
+              <Field label="Data de Início (Opcional)" icon={<FaCalendarAlt />}>
+                <div className={styles.datePickerWrap} ref={startDatePickerRef}>
+                  <input
+                    className={styles.field}
+                    type="text"
+                    value={form.order_start?.toLocaleDateString("pt-PT") ?? ""}
+                    placeholder="Imediato (ou selecione data)"
+                    readOnly
+                    onClick={() => setShowStartDatePicker((p) => !p)}
+                  />
+                  {showStartDatePicker && (
+                    <div
+                      className={styles.datePickerPopup}
+                      onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowStartDatePicker(false);
+                      }}>
+                      <div className={styles.datePickerPanel}>
+                        <DayPicker
+                          mode="single"
+                          selected={form.order_start}
+                          onSelect={(d) => {
+                            updateForm({ order_start: d });
+                            setShowStartDatePicker(false);
+                          }}
+                          weekStartsOn={1}
+                          captionLayout="dropdown"
+                          navLayout="around"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Field>
+
               {form.stock_type === "limited" ? (
                 <Field label="Quantidade Total" icon={<FaBox />}>
                   <input
@@ -682,20 +721,20 @@ export default function ProductForm({
                 </Field>
               ) : (
                 <Field label="Data Limite (Opcional)" icon={<FaCalendarAlt />}>
-                  <div className={styles.datePickerWrap} ref={datePickerRef}>
+                  <div className={styles.datePickerWrap} ref={deadlinePickerRef}>
                     <input
                       className={styles.field}
                       type="text"
                       value={form.order_deadline?.toLocaleDateString("pt-PT") ?? ""}
                       placeholder="Selecione uma data"
                       readOnly
-                      onClick={() => setShowDatePicker((p) => !p)}
+                      onClick={() => setShowDeadlinePicker((p) => !p)}
                     />
-                    {showDatePicker && (
+                    {showDeadlinePicker && (
                       <div
                         className={styles.datePickerPopup}
                         onClick={(e) => {
-                          if (e.target === e.currentTarget) setShowDatePicker(false);
+                          if (e.target === e.currentTarget) setShowDeadlinePicker(false);
                         }}>
                         <div className={styles.datePickerPanel}>
                           <DayPicker
@@ -703,7 +742,7 @@ export default function ProductForm({
                             selected={form.order_deadline}
                             onSelect={(d) => {
                               updateForm({ order_deadline: d });
-                              setShowDatePicker(false);
+                              setShowDeadlinePicker(false);
                             }}
                             weekStartsOn={1}
                             captionLayout="dropdown"

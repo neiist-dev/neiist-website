@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { addProduct, addProductVariants, getProduct } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       category: body.category,
       stock_type: body.stock_type,
       stock_quantity: body.stock_quantity ?? null,
+      order_start: body.order_start ?? null,
       order_deadline: body.order_deadline ?? null,
       active: true,
     });
@@ -129,10 +130,15 @@ export async function POST(request: NextRequest) {
       await addProductVariants(newProduct.id, processedVariants);
     }
 
-    const fullProduct = await getProduct(newProduct.id);
-
+    revalidateTag("products", "max");
+    revalidateTag(`product-${newProduct.id}`, "max");
     revalidatePath("/shop");
     revalidatePath("/shop/manage");
+    revalidatePath(`/shop/${newProduct.id}`);
+    revalidatePath("/dinner");
+
+    const fullProduct = await getProduct(newProduct.id);
+
     return NextResponse.json(
       {
         message: "Product created successfully",

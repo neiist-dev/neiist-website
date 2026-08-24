@@ -7,6 +7,7 @@ export interface Product {
   category?: string;
   stock_type: "limited" | "on_demand";
   stock_quantity?: number;
+  order_start?: string;
   order_deadline?: string;
   active?: boolean;
   variants: ProductVariant[];
@@ -21,6 +22,7 @@ export interface dbProduct {
   category: string | null;
   stock_type: string;
   stock_quantity: number | null;
+  order_start: string | null;
   order_deadline: string | null;
   active: boolean | null;
   variants: dbProductVariant[] | null;
@@ -154,6 +156,7 @@ export function mapdbProductToProduct(row: dbProduct): Product {
     category: row.category ?? undefined,
     stock_type: row.stock_type as Product["stock_type"],
     stock_quantity: row.stock_quantity ?? undefined,
+    order_start: row.order_start ?? undefined,
     order_deadline: row.order_deadline ?? undefined,
     active: row.active ?? true,
     variants: restoreVariantOptionOrder(mappedVariants),

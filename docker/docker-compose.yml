@@ -2,7 +2,7 @@ name: neiist
 services:
   db:
     container_name: neiist_db
-    image: postgres:16
+    image: postgres:15
     restart: always
     env_file:
       - .env
@@ -10,8 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
-      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./init.sql:/docker-entrypoint-initdb.d/02-init.sql
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sq
 
 volumes:
   db:

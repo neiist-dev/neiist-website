@@ -6,6 +6,7 @@ import { FaEdit } from "react-icons/fa";
 import { FiArchive, FiImage, FiTrash2 } from "react-icons/fi";
 import { MdOutlineUnarchive } from "react-icons/md";
 import { Product } from "@/types/shop/product";
+import { getProductTimingBadge } from "@/utils/shop/shopUtils";
 import styles from "@/styles/components/shop/ProductManagementCard.module.css";
 
 interface Props {
@@ -45,6 +46,7 @@ export default function ProductManagementCard({
     return { label: `${total} em stock`, status: "in-stock" };
   }, [product]);
 
+  const [timingBadge] = useState(() => getProductTimingBadge(product));
   const currentImage = images[imageIndex];
 
   return (
@@ -65,6 +67,7 @@ export default function ProductManagementCard({
         )}
 
         <span className={`${styles.badge} ${styles[stockInfo.status]}`}>{stockInfo.label}</span>
+        {timingBadge && <span className={styles.timingBadge}>{timingBadge}</span>}
 
         {!product.active && <span className={styles.archivedBadge}>Arquivado</span>}
       </div>

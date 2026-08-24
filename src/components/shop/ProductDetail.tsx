@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop/product";
 import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import styles from "@/styles/components/shop/ProductDetail.module.css";
-import { getColorFromOptions, isColorKey } from "@/utils/shop/shopUtils";
+import {
+  getColorFromOptions,
+  isColorKey,
+  getProductUnavailableReason,
+  isProductUpcoming,
+  isProductDeadlinePassed,
+} from "@/utils/shop/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
@@ -111,13 +117,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return (product.price || 0) + (selectedVariant?.price_modifier || 0);
   }, [product.price, selectedVariant]);
 
-  const isDeadlineExpired = useMemo(() => {
-    return (
-      product.stock_type === "on_demand" &&
-      !!product.order_deadline &&
-      new Date(product.order_deadline).getTime() < Date.now()
-    );
-  }, [product.stock_type, product.order_deadline]);
+  const isOrderNotStarted = isProductUpcoming(product);
+  const isDeadlineExpired = isProductDeadlinePassed(product);
 
   const isVariantAvailable = useCallback(
     (v: (typeof product.variants)[0]) =>
@@ -125,12 +126,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     [product]
   );
 
-  const canBuy = useMemo(() => {
-    if (isDeadlineExpired) return false;
-    if (product.variants.length === 0)
-      return product.stock_type !== "limited" || (product.stock_quantity ?? 0) > 0;
-    return !!selectedVariant && isVariantAvailable(selectedVariant);
-  }, [isDeadlineExpired, product, selectedVariant, isVariantAvailable]);
+  const unavailableReason = useMemo(
+    () => getProductUnavailableReason(product, selectedVariant),
+    [product, selectedVariant]
+  );
+
+  const canBuy = !unavailableReason;
 
   const maxQty = useMemo(() => {
     if (product.stock_type !== "limited") return 99;
@@ -146,13 +147,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const addToCart = () => {
-    if (!canBuy) {
-      toast.error(
-        isDeadlineExpired
-          ? "O prazo de encomenda deste produto já terminou."
-          : "Este produto já não está disponível para compra.",
-        { id: unavailableToastId, duration: Infinity }
-      );
+    if (unavailableReason) {
+      toast.error(unavailableReason, { id: unavailableToastId, duration: Infinity });
       return;
     }
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -305,7 +301,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 if (!canBuy) addToCart();
               }}>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
-                {isJantarDeCurso ? "Comprar já" : "Adicionar ao Carrinho"}
+                {isOrderNotStarted
+                  ? "Brevemente"
+                  : isDeadlineExpired
+                    ? "Indisponível"
+                    : isJantarDeCurso
+                      ? "Comprar já"
+                      : "Adicionar ao Carrinho"}
               </button>
             </div>
           </div>

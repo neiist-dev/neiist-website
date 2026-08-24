@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { Product } from "@/types/shop/product";
+import { getProductTimingBadge } from "@/utils/shop/shopUtils";
 import styles from "@/styles/components/shop/ProductCard.module.css";
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -17,6 +18,7 @@ export default function ProductCard({ product }: { product: Product }) {
   ];
 
   const currentImage = images[imageIndex];
+  const [badge] = useState(() => getProductTimingBadge(product));
 
   return (
     <Link href={`/shop/${product.id}`} className={styles.card}>
@@ -36,6 +38,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <span>Sem Imagem</span>
           </div>
         )}
+        {badge && <span className={styles.badge}>{badge}</span>}
       </div>
       <div className={styles.info}>
         <h3 className={styles.name}>{product.name}</h3>
