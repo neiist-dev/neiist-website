@@ -6,7 +6,7 @@ import { MdClose } from "react-icons/md";
 import { toast } from "sonner";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { Order } from "@/types/shop/order";
-import { PaymentMethod, PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
+import { getPaymentLabel, PaymentMethod, PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
 import { getOrderKindFromItems, getOrderKindRules } from "@/utils/shop/orderKindUtils";
 import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
@@ -28,19 +28,6 @@ type Props = {
 type FlowState = "form" | "processing" | "success";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function methodLabel(method: PaymentMethod): string {
-  const labels: Record<PaymentMethod, string> = {
-    cash: "Dinheiro",
-    other: "Outro",
-    "sumup-tpa": "SumUp TPA",
-    sumup: "SumUp Online",
-    "apple-pay": "Apple Pay",
-    "in-person": "Presencial",
-    mbway: "MBWay",
-  };
-  return labels[method];
-}
 
 export default function PosPaymentOverlay({
   open,
@@ -87,18 +74,21 @@ export default function PosPaymentOverlay({
 
   const { orderKind } = useMemo(() => getOrderKindFromItems(order.items), [order.items]);
 
-  const availablePaymentMethods = useMemo(
-    () =>
-      getOrderKindRules(orderKind, "pos").paymentMethods.filter(
-        (method): method is Exclude<PaymentMethod, "in-person"> => method !== "in-person"
-      ),
-    [orderKind]
-  );
-
   const isExistingOrderPaymentFlow = initialPaymentMethod
     ? PENDING_PAYMENT_METHODS.has(initialPaymentMethod)
     : false;
   const title = isExistingOrderPaymentFlow ? "Registar Pagamento" : "Finalizar Encomenda";
+
+  const availablePaymentMethods = useMemo(() => {
+    const methods = getOrderKindRules(orderKind, "pos").paymentMethods;
+    if (isExistingOrderPaymentFlow) {
+      return methods.filter(
+        (method): method is Exclude<PaymentMethod, "in-person"> => method !== "in-person"
+      );
+    }
+    const orderWithInPerson: PaymentMethod[] = ["cash", "in-person", "sumup-tpa", "mbway", "other"];
+    return orderWithInPerson.filter((m) => methods.includes(m) || m === "in-person");
+  }, [orderKind, isExistingOrderPaymentFlow]);
 
   useEffect(() => {
     if (!open || paymentMethod !== "sumup-tpa") return;
@@ -175,8 +165,7 @@ export default function PosPaymentOverlay({
     const res = await fetch(`/api/shop/orders/${order.id}`, { cache: "no-store" });
     if (!res.ok) return null;
 
-    const data = (await res.json().catch(() => null)) as Order | null;
-    return data;
+    return (await res.json().catch(() => null)) as Order | null;
   }, [order.id]);
 
   const updateOrderFields = useCallback(
@@ -296,8 +285,7 @@ export default function PosPaymentOverlay({
               payment_method: "sumup-tpa",
               payment_reference: paymentReference,
             });
-            const updated = await finalizePaidOrder(paymentReference);
-            return updated;
+            return await finalizePaidOrder(paymentReference);
           }
 
           const pending = await updateOrderFields({
@@ -353,7 +341,12 @@ export default function PosPaymentOverlay({
     try {
       let updated: Order | null = null;
 
-      if (paymentMethod === "cash") {
+      if (paymentMethod === "in-person") {
+        await updateOrderFields({ payment_method: "in-person" });
+        onOrderUpdatedAction({ ...order, payment_method: "in-person", status: "pending" });
+        onCloseAction();
+        return;
+      } else if (paymentMethod === "cash") {
         await updateOrderFields({ payment_method: "cash" });
         updated = await finalizePaidOrder("cash");
       } else if (paymentMethod === "mbway") {
@@ -399,7 +392,7 @@ export default function PosPaymentOverlay({
   }, [
     paymentMethod,
     paymentReference,
-    order.mbway_number,
+    order,
     updateOrderFields,
     finalizePaidOrder,
     runTpaFlow,
@@ -449,13 +442,18 @@ export default function PosPaymentOverlay({
   if (!open) return null;
 
   const paymentNeedsConfirmation =
-    paymentMethod === "cash" || paymentMethod === "other" || paymentMethod === "mbway";
+    paymentMethod === "cash" ||
+    paymentMethod === "other" ||
+    paymentMethod === "mbway" ||
+    paymentMethod === "in-person";
   const confirmationMessage =
-    paymentMethod === "cash"
-      ? "Confirmas que recebeste o pagamento em dinheiro e está correto?"
-      : paymentMethod === "mbway"
-        ? "Confirmas que recebeste o pagamento por MBWay e está correto?"
-        : `Confirmas que recebeste o pagamento da referência "${paymentReference.trim() || "-"}" e está correto?`;
+    paymentMethod === "in-person"
+      ? "Confirmas que a encomenda fica pendente para pagamento presencial posterior?"
+      : paymentMethod === "cash"
+        ? "Confirmas que recebeste o pagamento em dinheiro e está correto?"
+        : paymentMethod === "mbway"
+          ? "Confirmas que recebeste o pagamento por MBWay e está correto?"
+          : `Confirmas que recebeste o pagamento da referência "${paymentReference.trim() || "-"}" e está correto?`;
 
   if (flowState === "processing" || flowState === "success") {
     return (
@@ -506,7 +504,7 @@ export default function PosPaymentOverlay({
             disabled={isSubmitting || lockPaymentMethod}>
             {availablePaymentMethods.map((method) => (
               <option key={method} value={method}>
-                {methodLabel(method)}
+                {getPaymentLabel(method)}
               </option>
             ))}
           </select>
@@ -577,7 +575,7 @@ export default function PosPaymentOverlay({
               void handleConfirm();
             }}
             disabled={isSubmitting}>
-            Confirmar {methodLabel(paymentMethod)}
+            Confirmar {getPaymentLabel(paymentMethod)}
           </button>
         </div>
       </div>

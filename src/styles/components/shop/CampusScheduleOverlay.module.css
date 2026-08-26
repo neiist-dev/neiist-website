@@ -1,0 +1,83 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;
+  padding: 1.5rem;
+}
+
+.modal {
+  background: var(--background-colour);
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 2rem;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--light-foreground-colour);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  color: var(--foreground-colour);
+  transform: scale(1.15);
+}
+
+.title {
+  font-size: 1.5rem;
+  margin-bottom: 0.35rem;
+  text-align: center;
+}
+
+.location {
+  font-size: 0.95rem;
+  color: var(--light-foreground-colour);
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.tableWrapper {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.75rem;
+}
+
+.table th,
+.table td {
+  border: 2px solid var(--light-foreground-colour);
+  padding: 0.5rem 0.8rem;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.notes {
+  font-size: 0.9rem;
+  color: var(--light-foreground-colour);
+  text-align: center;
+  margin-top: 0.75rem;
+  line-height: 1.4;
+}

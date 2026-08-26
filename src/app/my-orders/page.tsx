@@ -17,7 +17,7 @@ async function MyOrdersContent({ searchParams }: PageProps) {
   const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : undefined;
 
   const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
-  const myOrders = jwtUser ? allOrders.filter((o) => o.user_istid === jwtUser.istid) : [];
+  const myOrders = jwtUser ? allOrders.filter((order) => order.user_istid === jwtUser.istid) : [];
 
   return (
     <>

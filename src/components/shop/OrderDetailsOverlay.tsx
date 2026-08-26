@@ -17,14 +17,19 @@ import { getPaymentLabel } from "@/types/shop/payment";
 import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
 import { Product } from "@/types/shop/product";
 import { MdClose } from "react-icons/md";
-import { FaCheck, FaExclamationTriangle } from "react-icons/fa";
+import { FaCalendarAlt, FaCheck, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "sonner";
 import { FiChevronDown, FiChevronUp, FiEdit2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import { getColorFromOptions, formatVariantSimple } from "@/utils/shop/shopUtils";
+import {
+  getColorFromOptions,
+  formatVariantSimple,
+  getCampusSchedule,
+} from "@/utils/shop/shopUtils";
 import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
+import CampusScheduleOverlay from "@/components/shop/CampusScheduleOverlay";
 import { PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
 
 function getPaymentDisplay(order: Order) {
@@ -79,6 +84,7 @@ export default function OrderDetailOverlay({
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showEditOrderModal, setShowEditOrderModal] = useState(false);
   const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const paymentButtonLabel = getPaymentButtonLabel(order?.payment_method);
 
@@ -301,11 +307,25 @@ export default function OrderDetailOverlay({
               <div className={styles.infoColumn}>
                 <div className={styles.infoItem}>
                   <label>Campus</label>
-                  <p>
-                    {order.campus
-                      ? order.campus.charAt(0).toUpperCase() + order.campus.slice(1)
-                      : "-"}
-                  </p>
+                  <div className={styles.campusWrapper}>
+                    <p>
+                      {order.campus
+                        ? order.campus.charAt(0).toUpperCase() + order.campus.slice(1)
+                        : "-"}
+                    </p>
+                    {order.campus && getCampusSchedule(order.campus) && (
+                      <div className={styles.infoBubbleWrapper}>
+                        <button
+                          type="button"
+                          className={styles.infoBubble}
+                          onClick={() => setShowScheduleModal(true)}
+                          aria-label="Horário de funcionamento">
+                          <FaCalendarAlt />
+                        </button>
+                        <div className={styles.tooltip}>Horário de funcionamento</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -632,6 +652,12 @@ export default function OrderDetailOverlay({
           }}
         />
       )}
+
+      <CampusScheduleOverlay
+        open={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        campus={order?.campus}
+      />
     </>
   );
 }

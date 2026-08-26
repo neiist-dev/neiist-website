@@ -188,15 +188,20 @@ export function getOrderPendingTemplate(
   total: number,
   campus?: string,
   paymentMethod?: string,
-  pickupDeadline?: string | null
+  pickupDeadline?: string | null,
+  orderId?: number
 ): string {
   const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
+  const scheduleLink = orderId
+    ? ` Consulta o horário aqui: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/my-orders?orderId=${orderId}" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
+    : "";
 
   const paymentText: Record<string, string> = {
-    "in-person": `Presencial numa banca NEIIST (${getCampusLocation(campus)}).`,
-    cash: `Numerário numa banca NEIIST (${getCampusLocation(campus)}).`,
-    other: "Transferência/MB Way (aguarda validação manual pela equipa da loja).",
-    "sumup-tpa": "Cartao no terminal SumUp POS (confirmacao no dispositivo).",
+    "in-person": `Presencial numa banca NEIIST (${getCampusLocation(campus)}).${scheduleLink}`,
+    cash: `Numerário numa banca NEIIST (${getCampusLocation(campus)}).${scheduleLink}`,
+    mbway: "MB Way (aguarda validação manual da transferência pelo NEIIST).",
+    other: "Transferência/Outro (aguarda validação manual pelo NEIIST).",
+    "sumup-tpa": "Cartão no terminal SumUp POS (confirmação no dispositivo).",
     sumup: "Cartão online via SumUp",
     "apple-pay": "Apple Pay via SumUp",
   };
@@ -236,6 +241,7 @@ export function getOrderPaidTemplate(
   const paymentMethodLabels: Record<string, string> = {
     "in-person": presencialText,
     cash: presencialText,
+    mbway: "MB Way",
     other: presencialText,
     "sumup-tpa": "Cartão via TPA SumUp",
     sumup: "Cartão online via SumUp",
@@ -273,12 +279,17 @@ export function getJantarDeCursoPendingTemplate(
   total: number,
   campus?: string,
   pickupDeadline?: string | null,
-  paymentMethod?: string
+  paymentMethod?: string,
+  orderId?: number
 ): string {
   const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
   const deadlineText = formatDeadline(pickupDeadline);
   const mbwayNumber = getMbWayNumberForOrder(orderNumber);
   const isMbWay = paymentMethod === "mbway";
+  const scheduleLink = orderId
+    ? `Consulta o horário aqui: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/my-orders?orderId=${orderId}" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
+    : "";
+
   const paymentInfo = isMbWay
     ? mbwayNumber
       ? `
@@ -293,11 +304,7 @@ export function getJantarDeCursoPendingTemplate(
     : `
       <p>
         <strong>Pagamento:</strong> presencialmente na (${getCampusLocation(campus)}).
-        ${
-          campus === "alameda"
-            ? `Consulta o horário aqui: <a href="https://docs.google.com/spreadsheets/d/1qlqOqU1zSD-lWX4i10Y_dXPz4FHqiD-KKXBEbTt5ngs/edit?gid=256603615#gid=256603615" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
-            : `Consulta o horário aqui: <a href="https://docs.google.com/spreadsheets/d/1qlqOqU1zSD-lWX4i10Y_dXPz4FHqiD-KKXBEbTt5ngs/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
-        }
+        ${scheduleLink}
       </p>
       <p>O pagamento deve ser efetuado no prazo de 72 horas após a criação da encomenda.</p>
     `;
@@ -422,7 +429,8 @@ export function getPendingOrderEmailTemplate(
   total: number,
   campus?: string,
   paymentMethod?: string,
-  pickupDeadline?: string | null
+  pickupDeadline?: string | null,
+  orderId?: number
 ): string {
   const templateKey = getOrderKindRules(orderKind).emailTemplates.pending;
 
@@ -434,7 +442,8 @@ export function getPendingOrderEmailTemplate(
       total,
       campus,
       pickupDeadline,
-      paymentMethod
+      paymentMethod,
+      orderId
     );
   }
 
@@ -445,7 +454,8 @@ export function getPendingOrderEmailTemplate(
     total,
     campus,
     paymentMethod,
-    pickupDeadline
+    pickupDeadline,
+    orderId
   );
 }
 

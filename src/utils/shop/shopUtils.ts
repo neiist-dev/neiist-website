@@ -1,5 +1,6 @@
 import { Product, ProductVariant } from "@/types/shop/product";
 import { Order, OrderItem } from "@/types/shop/order";
+import { CampusScheduleInfo, DEFAULT_CAMPUS_SCHEDULES } from "@/types/shop/schedule";
 
 const COLOR_KEYS = new Set(["cor", "color", "colour"]);
 const SIZE_KEYS = new Set(["tamanho", "size"]);
@@ -115,6 +116,12 @@ export function getCampusLocation(campus?: string): string {
 
   const normalizedCampus = campus.trim().toLowerCase();
   return CAMPUS_LOCATIONS[normalizedCampus] || `banca NEIIST em ${formatCampus(campus)}`;
+}
+
+export function getCampusSchedule(campus?: string): CampusScheduleInfo | null {
+  if (!campus) return null;
+  const normalizedCampus = campus.trim().toLowerCase();
+  return DEFAULT_CAMPUS_SCHEDULES[normalizedCampus] ?? null;
 }
 
 export function formatVariantSimple(

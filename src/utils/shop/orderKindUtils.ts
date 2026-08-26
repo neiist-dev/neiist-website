@@ -6,7 +6,11 @@ import {
   type OrderProgressStep,
   StatusLabel,
 } from "@/types/shop/orderKind";
-import { POS_PAYMENT_METHODS, type PaymentMethod } from "@/types/shop/payment";
+import {
+  DEFAULT_SHOP_PAYMENT_METHODS,
+  POS_PAYMENT_METHODS,
+  type PaymentMethod,
+} from "@/types/shop/payment";
 import {
   ORDER_STATUS_CONFIG,
   type OrderStatus,
@@ -64,7 +68,9 @@ export function getOrderKindRules(
   const specialConfig = orderKind === "normal" ? undefined : SPECIAL_ORDER_CONFIG[orderKind];
 
   const defaultPaymentMethods: readonly PaymentMethod[] =
-    source === "pos" || source === "mobile-pos" ? POS_PAYMENT_METHODS : ["sumup", "in-person"];
+    source === "pos" || source === "mobile-pos"
+      ? POS_PAYMENT_METHODS
+      : DEFAULT_SHOP_PAYMENT_METHODS;
   const paymentMethods =
     specialConfig?.paymentMethodsBySource?.[source] ??
     specialConfig?.paymentMethods ??
@@ -163,9 +169,8 @@ export function getOrderKindFromItems(
 
   if (specialKinds.length === 0) return { orderKind: "normal", isMixedInvalid: false };
 
-  if (specialKinds.length > 1 || detectedKinds.has("normal")) {
+  if (specialKinds.length > 1 || detectedKinds.has("normal"))
     return { orderKind: specialKinds[0], isMixedInvalid: true };
-  }
 
   return { orderKind: specialKinds[0], isMixedInvalid: false };
 }

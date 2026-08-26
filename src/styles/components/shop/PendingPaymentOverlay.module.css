@@ -1,0 +1,109 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-in-out;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  background-color: var(--background-colour);
+  border-radius: 16px;
+  padding: 40px 24px;
+  text-align: center;
+  max-width: 520px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.checkIcon {
+  background: var(--primary-colour);
+  color: #fff;
+}
+
+.warningIcon {
+  background: var(--light-secondary-colour);
+  color: var(--primary-colour);
+}
+
+.title {
+  font-size: 26px;
+  color: var(--foreground-colour);
+  margin: 0 0 12px;
+}
+
+.muted {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.muted strong {
+  color: var(--foreground-colour);
+}
+
+.scheduleButton {
+  margin-top: 14px;
+  background: transparent;
+  border: 1px solid var(--primary-colour);
+  color: var(--primary-colour);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.scheduleButton:hover {
+  background: var(--primary-colour);
+  color: #fff;
+}
+
+.actionButtons {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.btnPrimary {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 180px;
+  background: var(--primary-colour);
+  color: #fff;
+}
+
+.btnPrimary:hover {
+  filter: opacity(0.8);
+}
