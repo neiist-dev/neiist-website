@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
 import path from "path";
 import fs from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
+import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateId } from "@/utils/apiValidationUtils";
 import {
@@ -80,6 +80,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       stock_quantity: body.stock_quantity,
       order_start: body.order_start,
       order_deadline: body.order_deadline,
+      estimated_delivery: body.estimated_delivery,
+      size_guide: body.size_guide,
       active: body.active ?? true,
     });
 

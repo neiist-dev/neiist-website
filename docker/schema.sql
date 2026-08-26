@@ -293,6 +293,8 @@ CREATE TABLE neiist.products (
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   CONSTRAINT chk_products_stock
     CHECK (
@@ -1352,7 +1354,9 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   p_stock_quantity INTEGER,
   p_order_deadline TIMESTAMPTZ,
   p_active BOOLEAN DEFAULT TRUE,
-  p_order_start TIMESTAMPTZ DEFAULT NULL
+  p_order_start TIMESTAMPTZ DEFAULT NULL,
+  p_estimated_delivery TEXT DEFAULT NULL,
+  p_size_guide TEXT DEFAULT NULL
 ) RETURNS TABLE (
   id INTEGER,
   name TEXT,
@@ -1364,6 +1368,8 @@ CREATE OR REPLACE FUNCTION neiist.add_product(
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   variants JSONB
 ) AS $$
 DECLARE
@@ -1376,10 +1382,11 @@ BEGIN
 
   INSERT INTO neiist.products(
     name, description, price, images, category_id, stock_type, stock_quantity,
-    order_start, order_deadline, active
+    order_start, order_deadline, estimated_delivery, size_guide, active
   ) VALUES (
     p_name, p_description, p_price, COALESCE(p_images,'{}'),
-    v_cat_id, p_stock_type, p_stock_quantity, p_order_start, p_order_deadline, COALESCE(p_active, TRUE)
+    v_cat_id, p_stock_type, p_stock_quantity, p_order_start, p_order_deadline,
+    p_estimated_delivery, p_size_guide, COALESCE(p_active, TRUE)
   )
   RETURNING products.id INTO v_id;
 
@@ -1395,6 +1402,8 @@ BEGIN
     pr.stock_quantity,
     pr.order_start,
     pr.order_deadline,
+    pr.estimated_delivery,
+    pr.size_guide,
     '[]'::JSONB AS variants
   FROM neiist.products pr
   LEFT JOIN neiist.categories c ON c.id = pr.category_id
@@ -1422,6 +1431,8 @@ CREATE OR REPLACE FUNCTION neiist.add_product_variant(
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   variants JSONB
 ) AS $$
 DECLARE
@@ -1472,6 +1483,8 @@ BEGIN
     v_product.stock_quantity,
     v_product.order_start,
     v_product.order_deadline,
+    v_product.estimated_delivery,
+    v_product.size_guide,
     (
       SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
@@ -1512,6 +1525,8 @@ RETURNS TABLE (
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   variants JSONB
 ) AS $$
 BEGIN
@@ -1520,6 +1535,7 @@ BEGIN
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
     p.stock_type::TEXT, p.stock_quantity, p.order_start, p.order_deadline,
+    p.estimated_delivery, p.size_guide,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -1565,6 +1581,8 @@ RETURNS TABLE (
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   variants JSONB
 ) AS $$
 BEGIN
@@ -1573,6 +1591,7 @@ BEGIN
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
     p.stock_type::TEXT, p.stock_quantity, p.order_start, p.order_deadline,
+    p.estimated_delivery, p.size_guide,
     COALESCE((
       SELECT jsonb_agg(
         jsonb_build_object(
@@ -1620,6 +1639,8 @@ CREATE OR REPLACE FUNCTION neiist.update_product(
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   variants JSONB
 ) AS $$
 DECLARE
@@ -1653,6 +1674,12 @@ BEGIN
   END IF;
   IF p_updates ? 'order_deadline' THEN
     UPDATE neiist.products SET order_deadline = NULLIF(p_updates->>'order_deadline','')::TIMESTAMPTZ WHERE products.id = p_product_id;
+  END IF;
+  IF p_updates ? 'estimated_delivery' THEN
+    UPDATE neiist.products SET estimated_delivery = NULLIF(p_updates->>'estimated_delivery','') WHERE products.id = p_product_id;
+  END IF;
+  IF p_updates ? 'size_guide' THEN
+    UPDATE neiist.products SET size_guide = NULLIF(p_updates->>'size_guide','') WHERE products.id = p_product_id;
   END IF;
   IF p_updates ? 'active' THEN
     UPDATE neiist.products SET active = (p_updates->>'active')::BOOLEAN WHERE products.id = p_product_id;
@@ -1746,6 +1773,8 @@ RETURNS TABLE (
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   active BOOLEAN,
   variants JSONB
 ) AS $$
@@ -1755,6 +1784,7 @@ BEGIN
     p.id, p.name, p.description, p.price, p.images,
     c.name AS category,
     p.stock_type::TEXT, p.stock_quantity, p.order_start, p.order_deadline,
+    p.estimated_delivery, p.size_guide,
     p.active,
     COALESCE((
       SELECT jsonb_agg(
@@ -3365,6 +3395,8 @@ CREATE OR REPLACE FUNCTION neiist.add_product_variants(
   stock_quantity INTEGER,
   order_start TIMESTAMPTZ,
   order_deadline TIMESTAMPTZ,
+  estimated_delivery TEXT,
+  size_guide TEXT,
   variants JSONB
 ) AS $$
 DECLARE
@@ -3442,6 +3474,8 @@ BEGIN
     v_product.stock_quantity,
     v_product.order_start,
     v_product.order_deadline,
+    v_product.estimated_delivery,
+    v_product.size_guide,
     (
       SELECT COALESCE(jsonb_agg(
         jsonb_build_object(

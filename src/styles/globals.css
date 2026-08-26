@@ -17,7 +17,7 @@
 .dark {
   --background-colour: #1e1e1e;
   --foreground-colour: #e0e0e0;
-  --hover: (224, 224, 224, 0.1);
+  --hover: rgb(224, 224, 224, 0.1);
 }
 
 html,

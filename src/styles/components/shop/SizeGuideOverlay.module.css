@@ -24,11 +24,19 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: transparent;
+  background: none;
   border: none;
-  font-size: 2rem;
   cursor: pointer;
-  color: #333;
+  color: var(--light-foreground-colour);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  color: var(--foreground-colour);
+  transform: scale(1.15);
 }
 
 .title {
@@ -53,17 +61,34 @@
 
 .sizeTable th,
 .sizeTable td {
-  border: 2px solid #666;
+  border: 2px solid var(--light-foreground-colour);
   padding: 0.4rem 0.7rem;
   text-align: center;
   font-size: 1rem;
 }
 
+.sizeTable input {
+  width: 100%;
+  max-width: 3.5rem;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font: inherit;
+  outline: none;
+}
+
+.sizeTable input:focus {
+  background: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0 2px var(--primary-colour);
+}
+
 .unit {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--light-foreground-colour);
   text-align: center;
 }
+
 .explanationList {
   width: 100%;
   display: flex;
@@ -71,12 +96,89 @@
   gap: 0.5rem;
 }
 
+.explanationList li {
+  display: flex;
+  align-items: center;
+}
+
 .explanationLabel {
-  display: inline-block;
   background: var(--primary-colour);
   color: #fff;
   border-radius: 0.3rem;
   width: 1.7rem;
   text-align: center;
   margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.explanationList input {
+  flex: 1;
+  border: 1px solid var(--light-secondary-colour);
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  font: inherit;
+  background: #fff;
+}
+
+.explanationList input:focus {
+  outline: none;
+  border-color: var(--primary-colour);
+}
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  color: var(--light-foreground-colour);
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconBtn:hover {
+  color: #dc2626;
+}
+
+.addBtn {
+  background: transparent;
+  border: 1px dashed var(--light-foreground-colour);
+  color: var(--light-foreground-colour);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  width: 100%;
+}
+
+.addBtn:hover {
+  background: var(--background-colour-hover);
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}
+
+.addColBtn {
+  background: var(--background-colour);
+  border: 1px dashed var(--light-foreground-colour);
+  color: var(--foreground-colour);
+  border-radius: 0.35rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.addColBtn:hover {
+  background: var(--primary-colour);
+  color: #fff;
+  border-style: solid;
+  border-color: var(--primary-colour);
 }

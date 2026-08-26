@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
-import path from "path";
 import fs from "fs/promises";
+import path from "path";
+import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { addProduct, addProductVariants, getProduct } from "@/lib/db/repositories/shop.repository";
 import { serverCheckRoles } from "@/lib/auth";
-import { revalidatePath, revalidateTag } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
       stock_quantity: body.stock_quantity ?? null,
       order_start: body.order_start ?? null,
       order_deadline: body.order_deadline ?? null,
+      estimated_delivery: body.estimated_delivery ?? null,
+      size_guide: body.size_guide ?? null,
       active: true,
     });
 

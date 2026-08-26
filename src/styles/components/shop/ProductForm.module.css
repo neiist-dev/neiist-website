@@ -87,6 +87,49 @@
   color: #555d6d;
 }
 
+.fieldHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.fieldActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actionBtnSmall {
+  background: var(--primary-colour);
+  color: white;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  transition: opacity 0.18s;
+}
+
+.actionBtnSmall:hover {
+  opacity: 0.9;
+}
+
+.actionBtnDanger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.actionBtnDanger:hover {
+  background: #fecaca;
+  opacity: 1;
+}
+
 .hint {
   font-size: 0.85rem;
   color: #555d6d;

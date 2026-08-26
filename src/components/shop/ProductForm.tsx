@@ -10,14 +10,17 @@ import {
   FaCalendarAlt,
   FaChevronDown,
   FaEuroSign,
+  FaEye,
   FaFolder,
   FaImages,
   FaLayerGroup,
   FaPlus,
+  FaRulerHorizontal,
   FaSave,
   FaSlidersH,
   FaTag,
   FaTrash,
+  FaTruck,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -29,6 +32,9 @@ import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOpt
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import ColorfulText from "@/components/ColorfulText";
 import ToggleSwitch from "@/components/ToggleSwitch";
+import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
+import SizeGuideEditor from "@/components/shop/SizeGuideEditor";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 type ImageFile = { file: File; preview: string };
 type VariantDefinition = { id: string; name: string; values: variantValue[] };
@@ -184,7 +190,7 @@ function Field({
   iconAlignTop,
   children,
 }: {
-  label: string;
+  label: ReactNode;
   icon: ReactNode;
   iconAlignTop?: boolean;
   children: ReactNode;
@@ -221,7 +227,7 @@ function ItemCard({
   hex,
   typeTag,
   meta,
-  badge,
+  badge = 0,
   children,
 }: {
   isOpen: boolean;
@@ -233,7 +239,7 @@ function ItemCard({
   hex?: string;
   typeTag?: string | null;
   meta?: string | null;
-  badge: number;
+  badge?: number;
   children: ReactNode;
 }) {
   return (
@@ -285,11 +291,16 @@ export default function ProductForm({
     stock_quantity: product?.stock_quantity ?? 0,
     order_start: product?.order_start ? new Date(product.order_start) : undefined,
     order_deadline: product?.order_deadline ? new Date(product.order_deadline) : undefined,
+    estimated_delivery: product?.estimated_delivery ?? "",
+    size_guide: product?.size_guide ?? "",
   }));
   const updateForm = (updates: Partial<typeof form>) => setForm((p) => ({ ...p, ...updates }));
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
+  const [showSizeGuidePreview, setShowSizeGuidePreview] = useState(false);
+  const [showSizeGuideEditor, setShowSizeGuideEditor] = useState(false);
+  const [showDeleteSizeGuideConfirm, setShowDeleteSizeGuideConfirm] = useState(false);
   const [allCategories, setAllCategories] = useState<Category[]>(categories);
   const [uploading, setUploading] = useState(false);
   const startDatePickerRef = useRef<HTMLDivElement>(null);
@@ -537,6 +548,8 @@ export default function ProductForm({
         variantsToDelete,
         order_start: form.order_start?.toISOString() ?? null,
         order_deadline: form.order_deadline?.toISOString() ?? null,
+        estimated_delivery: form.estimated_delivery.trim() || null,
+        size_guide: form.size_guide.trim() || null,
       };
 
       const res = await fetch(isEdit ? `/api/shop/products/${product?.id}` : "/api/shop/products", {
@@ -674,7 +687,7 @@ export default function ProductForm({
                 />
               </Field>
 
-              <Field label="Data de Início (Opcional)" icon={<FaCalendarAlt />}>
+              <Field label="Data de Início" icon={<FaCalendarAlt />}>
                 <div className={styles.datePickerWrap} ref={startDatePickerRef}>
                   <input
                     className={styles.field}
@@ -720,7 +733,7 @@ export default function ProductForm({
                   {hasVariants && <p className={styles.hint}>Gerido pela soma das variantes.</p>}
                 </Field>
               ) : (
-                <Field label="Data Limite (Opcional)" icon={<FaCalendarAlt />}>
+                <Field label="Data Limite" icon={<FaCalendarAlt />}>
                   <div className={styles.datePickerWrap} ref={deadlinePickerRef}>
                     <input
                       className={styles.field}
@@ -991,6 +1004,44 @@ export default function ProductForm({
               )}
             </div>
 
+            <div className={styles.stackBlock}>
+              <Field label="Prazo de Entrega Estimado" icon={<FaTruck />}>
+                <input
+                  className={styles.field}
+                  value={form.estimated_delivery}
+                  onChange={(e) => updateForm({ estimated_delivery: e.target.value })}
+                  placeholder="Ex: Encomenda até 25 de Dezembro para receberes entre 20 e 25 de Janeiro"
+                />
+              </Field>
+
+              <Field label="Guia de Tamanhos" icon={<FaRulerHorizontal />}>
+                <div className={styles.fieldActions}>
+                  <button
+                    type="button"
+                    className={styles.actionBtnSmall}
+                    onClick={() => setShowSizeGuideEditor(true)}>
+                    Editar
+                  </button>
+                  {form.size_guide && (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.actionBtnSmall}
+                        onClick={() => setShowSizeGuidePreview(true)}>
+                        <FaEye size={12} /> Pré-visualizar
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.actionBtnSmall} ${styles.actionBtnDanger}`}
+                        onClick={() => setShowDeleteSizeGuideConfirm(true)}>
+                        <FaTrash size={11} /> Remover
+                      </button>
+                    </>
+                  )}
+                </div>
+              </Field>
+            </div>
+
             {showGlobalImages && (
               <div className={styles.stackBlock}>
                 <SectionTitle icon={<FaImages />}>Imagens</SectionTitle>
@@ -1019,6 +1070,27 @@ export default function ProductForm({
           </div>
         </div>
       </form>
+      <SizeGuideOverlay
+        open={showSizeGuidePreview}
+        onClose={() => setShowSizeGuidePreview(false)}
+        title={form.name ? `Guia de Tamanhos ${form.name}` : undefined}
+        customContent={form.size_guide}
+      />
+      <SizeGuideEditor
+        open={showSizeGuideEditor}
+        onClose={() => setShowSizeGuideEditor(false)}
+        value={form.size_guide}
+        onChange={(val) => updateForm({ size_guide: val })}
+      />
+      <ConfirmDialog
+        open={showDeleteSizeGuideConfirm}
+        message="Tens a certeza que pretendes remover o guia de tamanhos deste produto?"
+        onConfirm={() => {
+          updateForm({ size_guide: "" });
+          setShowDeleteSizeGuideConfirm(false);
+        }}
+        onCancel={() => setShowDeleteSizeGuideConfirm(false)}
+      />
     </div>
   );
 }
