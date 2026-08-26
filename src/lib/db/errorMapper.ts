@@ -1,4 +1,4 @@
-import { DatabaseError } from "@/types/errors";
+import { DatabaseError, ErrorCode } from "@/types/errors";
 
 export function parseDatabaseError(error: unknown): DatabaseError {
   const dbError = error as { message?: string; code?: string };
@@ -6,13 +6,32 @@ export function parseDatabaseError(error: unknown): DatabaseError {
 
   // Order & Product errors
   if (message.includes("Order deadline has passed"))
-    return new DatabaseError("O prazo de encomenda do produto já terminou", 400);
+    return new DatabaseError(
+      "O prazo de encomenda do produto já terminou",
+      400,
+      ErrorCode.STOCK_OVERRIDE_REQUIRED
+    );
+
+  if (message.includes("Orders have not started yet"))
+    return new DatabaseError(
+      "O período de encomendas ainda não começou para este produto",
+      400,
+      ErrorCode.STOCK_OVERRIDE_REQUIRED
+    );
 
   if (message.includes("Insufficient variant stock"))
-    return new DatabaseError("Stock insuficiente para a variante selecionada", 400);
+    return new DatabaseError(
+      "Stock insuficiente para a variante selecionada",
+      400,
+      ErrorCode.STOCK_OVERRIDE_REQUIRED
+    );
 
   if (message.includes("Insufficient product stock"))
-    return new DatabaseError("Stock insuficiente para o produto selecionado", 400);
+    return new DatabaseError(
+      "Stock insuficiente para o produto selecionado",
+      400,
+      ErrorCode.STOCK_OVERRIDE_REQUIRED
+    );
 
   if (message.includes("Product") && message.includes("not found or inactive"))
     return new DatabaseError("Produto indisponível", 400);

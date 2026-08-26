@@ -18,6 +18,7 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import InputTextDialog from "@/components/layout/InputTextDialog";
 import { useUser } from "@/context/UserContext";
 import { validateDiscount } from "@/utils/shop/discountUtils";
+import { ErrorCode } from "@/types/errors";
 
 interface Props {
   onClose: () => void;
@@ -163,11 +164,6 @@ export default function NewOrderModal({
 
   const { user } = useUser();
   const isAdmin = checkRoles(user, [UserRole._ADMIN]);
-  const STOCK_OVERRIDE_ERRORS = [
-    "O prazo de encomenda do produto ja terminou",
-    "Stock insuficiente para a variante selecionada",
-    "Stock insuficiente para o produto selecionado",
-  ];
   const [showStockOverrideConfirm, setShowStockOverrideConfirm] = useState(false);
   const [stockOverrideMessage, setStockOverrideMessage] = useState<string | null>(null);
 
@@ -553,9 +549,8 @@ export default function NewOrderModal({
       const errorMessage =
         data?.error || (isEditMode ? "Failed to update order" : "Failed to create order");
 
-      if (!stockOverride && isAdmin && STOCK_OVERRIDE_ERRORS.includes(errorMessage)) {
+      if (!stockOverride && isAdmin && data?.code === ErrorCode.STOCK_OVERRIDE_REQUIRED)
         return { status: "stock_override", message: errorMessage };
-      }
 
       return { status: "error", message: errorMessage };
     }

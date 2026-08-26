@@ -187,7 +187,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             Number(updatedOrder.total_amount),
             updatedOrder.campus ?? undefined,
             "in-person",
-            updatedOrder.pickup_deadline ?? null
+            updatedOrder.pickup_deadline ?? null,
+            updatedOrder.id
           ),
         });
       } catch (emailErr) {

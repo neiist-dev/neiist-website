@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const orderSource = parseOrderSource(body.order_source);
     const guestCheckout = body.guest_checkout === true;
     const canUseGuestCheckout =
-      userRoles.roles?.some((role) => [UserRole._ADMIN].includes(role)) && orderSource === "pos";
+      (userRoles.roles?.includes(UserRole._ADMIN) ?? false) && orderSource === "pos";
 
     if (!Array.isArray(body.items) || body.items.length === 0) {
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
@@ -213,7 +213,8 @@ export async function POST(request: NextRequest) {
             order.total_amount,
             order.campus ?? undefined,
             order.payment_method ?? undefined,
-            order.pickup_deadline ?? null
+            order.pickup_deadline ?? null,
+            order.id
           ),
         });
       } catch (emailErr) {
