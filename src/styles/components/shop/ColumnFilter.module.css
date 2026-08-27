@@ -63,6 +63,101 @@
   color: #334155;
 }
 
+.cascadeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.875rem;
+  cursor: pointer;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.cascadeHeader:hover {
+  background: #f1f5f9;
+}
+
+.cascadeHeaderText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cascadeCrumb {
+  color: var(--primary-colour);
+}
+
+.cascadeLevelLabel {
+  padding: 0.375rem 0.875rem 0.25rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  background: #fafafa;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.cascadeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cascadeItem:hover {
+  background: #f8fafc;
+}
+
+.cascadeItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.cascadeItemLabel {
+  font-size: 0.9rem;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.cascadeSubtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.cascadeArrow {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.colorSwatch {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.checkbox.indeterminate {
+  background: var(--light-secondary-colour);
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}
+
+.indeterminateIcon {
+  font-size: 0.875rem;
+}
+
 .tabs {
   display: flex;
   gap: 8px;

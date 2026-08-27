@@ -303,9 +303,100 @@
   color: white;
 }
 
+.checkbox.indeterminate {
+  background: var(--light-secondary-colour);
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+}
+
+.indeterminateIcon {
+  font-size: 1rem;
+}
+
 .label {
   font-size: 0.95rem;
   color: var(--foreground-colour);
+}
+
+.cascadeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0.625rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  transition: opacity 0.12s;
+}
+
+.cascadeHeader:active {
+  opacity: 0.7;
+}
+
+.cascadeHeaderText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cascadeCrumb {
+  color: var(--primary-colour);
+}
+
+.cascadeLevelLabel {
+  padding: 0.25rem 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.cascadeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.cascadeItem:active {
+  background: #f8fafc;
+}
+
+.cascadeItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.cascadeItemLabel {
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cascadeSubtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.cascadeArrow {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.colorSwatch {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 .footer {

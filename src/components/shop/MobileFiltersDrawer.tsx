@@ -3,11 +3,21 @@
 import { useEffect, useState } from "react";
 import styles from "@/styles/components/shop/MobileFiltersDrawer.module.css";
 import { FiCheck, FiX } from "react-icons/fi";
+import { MdChevronLeft, MdChevronRight } from "react-icons/md";
+import {
+  ProductCascadeItem,
+  getCascadeSelectionState,
+  getValuesForCascade,
+  matchesSelections,
+  toggleCascadeSelection,
+} from "@/utils/shop/orderFilterUtils";
+import { isColorKey, splitNameHex } from "@/utils/shop/shopUtils";
 
 export interface MobileFilterGroup<T = Record<string, unknown>> {
   id: Extract<keyof T, string>;
   title: string;
-  options: string[];
+  options?: string[];
+  cascadeOptions?: ProductCascadeItem[];
   selected: string[];
   getLabel?: (_option: string) => string;
 }
@@ -80,6 +90,11 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
   const [dateMode, setDateMode] = useState<"until" | "range">("until");
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [expandedSection, setExpandedSection] = useState<string | null>("date");
+  const [cascadeState, setCascadeState] = useState<{
+    product: ProductCascadeItem;
+    optionKeys: string[];
+    selections: Record<string, string>;
+  } | null>(null);
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -90,6 +105,7 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      setCascadeState(null);
     }
     return () => {
       document.body.style.overflow = "";
@@ -101,6 +117,19 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
       ...prev,
       [key]: toggleArrayItem((prev[key] as unknown as string[]) || [], item),
     }));
+  };
+
+  const handleCascadeBack = () => {
+    if (!cascadeState) return;
+    const entries = Object.entries(cascadeState.selections);
+    if (entries.length === 0) {
+      setCascadeState(null);
+      return;
+    }
+    setCascadeState({
+      ...cascadeState,
+      selections: Object.fromEntries(entries.slice(0, -1)),
+    });
   };
 
   const handleDateSelect = (date: Date) => {
@@ -174,6 +203,7 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
         <div className={styles.content}>
           <FilterSection
             title="Data"
+            badge={filters.dateRange.start || filters.dateRange.end ? 1 : 0}
             expanded={expandedSection === "date"}
             onToggle={() => toggleSection("date")}>
             <div className={styles.dateTabs}>
@@ -240,25 +270,205 @@ export default function MobileFiltersDrawer<T extends BaseFilterState>({
             </div>
           </FilterSection>
 
-          {filterGroups.map((group) => (
-            <FilterSection
-              key={group.id}
-              title={group.title}
-              badge={(filters[group.id] as unknown as string[])?.length || 0}
-              expanded={expandedSection === group.id}
-              onToggle={() => toggleSection(group.id)}>
-              <div className={styles.list}>
-                {group.options.map((option) => (
-                  <CheckboxItem
-                    key={option}
-                    label={group.getLabel ? group.getLabel(option) : option}
-                    checked={((filters[group.id] as unknown as string[]) || []).includes(option)}
-                    onToggle={() => toggleItem(group.id, option)}
-                  />
-                ))}
-              </div>
-            </FilterSection>
-          ))}
+          {filterGroups.map((group) => {
+            const currentSelected = (filters[group.id] as unknown as string[]) || [];
+
+            return (
+              <FilterSection
+                key={group.id}
+                title={group.title}
+                badge={currentSelected.length || 0}
+                expanded={expandedSection === group.id}
+                onToggle={() => toggleSection(group.id)}>
+                {group.cascadeOptions ? (
+                  cascadeState ? (
+                    (() => {
+                      const currentKeyIdx = Object.keys(cascadeState.selections).length;
+                      const currentKey = cascadeState.optionKeys[currentKeyIdx];
+                      const values = getValuesForCascade(
+                        cascadeState.product,
+                        cascadeState.selections
+                      );
+
+                      return (
+                        <div>
+                          <div className={styles.cascadeHeader} onClick={handleCascadeBack}>
+                            <MdChevronLeft size={20} />
+                            <span className={styles.cascadeHeaderText}>
+                              {cascadeState.product.name}
+                              {Object.entries(cascadeState.selections).map(([key, val]) => (
+                                <span key={key} className={styles.cascadeCrumb}>
+                                  {" "}
+                                  ›{" "}
+                                  {isColorKey(key)
+                                    ? splitNameHex(val).name || splitNameHex(val).hex || val
+                                    : val}
+                                </span>
+                              ))}
+                            </span>
+                          </div>
+                          <div className={styles.cascadeLevelLabel}>{currentKey}</div>
+                          <div className={styles.list}>
+                            {values.map((val) => {
+                              const newSelections = {
+                                ...cascadeState.selections,
+                                [currentKey]: val,
+                              };
+                              const { isChecked, isIndeterminate } = getCascadeSelectionState(
+                                cascadeState.product,
+                                newSelections,
+                                currentSelected
+                              );
+                              const isColor = isColorKey(currentKey);
+                              const { name: colorName, hex } = isColor
+                                ? splitNameHex(val)
+                                : { name: val, hex: "" };
+                              const hasNextLevel = cascadeState.optionKeys
+                                .slice(currentKeyIdx + 1)
+                                .some((k) =>
+                                  cascadeState.product.variants.some(
+                                    (v) =>
+                                      matchesSelections(v.options, newSelections) && v.options[k]
+                                  )
+                                );
+
+                              return (
+                                <div
+                                  key={`${currentKey}-${val}`}
+                                  className={styles.cascadeItem}
+                                  onClick={() => {
+                                    if (!hasNextLevel) {
+                                      const next = toggleCascadeSelection(
+                                        cascadeState.product,
+                                        newSelections,
+                                        currentSelected
+                                      );
+                                      setFilters((prev) => ({ ...prev, [group.id]: next }));
+                                    } else {
+                                      setCascadeState({
+                                        ...cascadeState,
+                                        selections: newSelections,
+                                      });
+                                    }
+                                  }}>
+                                  <div className={styles.cascadeItemLeft}>
+                                    <div
+                                      className={`${styles.checkbox} ${
+                                        isChecked
+                                          ? styles.checked
+                                          : isIndeterminate
+                                            ? styles.indeterminate
+                                            : ""
+                                      }`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const next = toggleCascadeSelection(
+                                          cascadeState.product,
+                                          newSelections,
+                                          currentSelected
+                                        );
+                                        setFilters((prev) => ({ ...prev, [group.id]: next }));
+                                      }}>
+                                      {isChecked && <FiCheck size={14} />}
+                                      {isIndeterminate && (
+                                        <span className={styles.indeterminateIcon}>−</span>
+                                      )}
+                                    </div>
+                                    <span className={styles.cascadeItemLabel}>
+                                      {isColor && hex && (
+                                        <span
+                                          className={styles.colorSwatch}
+                                          style={{ background: hex }}
+                                        />
+                                      )}
+                                      {colorName || val}
+                                    </span>
+                                  </div>
+                                  {hasNextLevel && (
+                                    <MdChevronRight className={styles.cascadeArrow} size={20} />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div className={styles.list}>
+                      {group.cascadeOptions.map((product) => {
+                        const hasOptions = product.optionKeys.length > 0;
+                        const { isChecked, isIndeterminate } = getCascadeSelectionState(
+                          product,
+                          {},
+                          currentSelected
+                        );
+
+                        return (
+                          <div
+                            key={product.name}
+                            className={styles.cascadeItem}
+                            onClick={() => {
+                              if (hasOptions) {
+                                setCascadeState({
+                                  product,
+                                  optionKeys: product.optionKeys,
+                                  selections: {},
+                                });
+                              } else {
+                                const next = toggleCascadeSelection(product, {}, currentSelected);
+                                setFilters((prev) => ({ ...prev, [group.id]: next }));
+                              }
+                            }}>
+                            <div className={styles.cascadeItemLeft}>
+                              <div
+                                className={`${styles.checkbox} ${
+                                  isChecked
+                                    ? styles.checked
+                                    : isIndeterminate
+                                      ? styles.indeterminate
+                                      : ""
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const next = toggleCascadeSelection(product, {}, currentSelected);
+                                  setFilters((prev) => ({ ...prev, [group.id]: next }));
+                                }}>
+                                {isChecked && <FiCheck size={14} />}
+                                {isIndeterminate && (
+                                  <span className={styles.indeterminateIcon}>−</span>
+                                )}
+                              </div>
+                              <span className={styles.cascadeItemLabel}>{product.name}</span>
+                              {product.price != null && (
+                                <span className={styles.cascadeSubtitle}>
+                                  {product.price.toFixed(2)}€
+                                </span>
+                              )}
+                            </div>
+                            {hasOptions && (
+                              <MdChevronRight className={styles.cascadeArrow} size={20} />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )
+                ) : (
+                  <div className={styles.list}>
+                    {(group.options || []).map((option) => (
+                      <CheckboxItem
+                        key={option}
+                        label={group.getLabel ? group.getLabel(option) : option}
+                        checked={currentSelected.includes(option)}
+                        onToggle={() => toggleItem(group.id, option)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </FilterSection>
+            );
+          })}
         </div>
 
         <div className={styles.footer}>

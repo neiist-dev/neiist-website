@@ -17,6 +17,11 @@ import {
 } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
+import {
+  buildProductCascadeList,
+  matchesProductFilter,
+  getProductFilterDisplayLabel,
+} from "@/utils/shop/orderFilterUtils";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import { useRouter } from "next/navigation";
@@ -108,11 +113,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     [orders]
   );
 
-  const uniqueProducts = useMemo(() => {
-    const productNameSet = new Set<string>();
-    orders.forEach((order) => order.items.forEach((item) => productNameSet.add(item.product_name)));
-    return [...productNameSet].sort();
-  }, [orders]);
+  const productCascadeList = useMemo(
+    () => buildProductCascadeList(orders, products),
+    [orders, products]
+  );
 
   const availableStatuses = useMemo(() => {
     const statusSet = new Set<string>();
@@ -156,15 +160,11 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       }
     }
 
-    if (filters.statuses.length > 0) {
+    if (filters.statuses.length > 0)
       list = list.filter((order) => filters.statuses.includes(order.status));
-    }
 
-    if (filters.products.length > 0) {
-      list = list.filter((order) =>
-        order.items.some((item) => filters.products.includes(item.product_name))
-      );
-    }
+    if (filters.products.length > 0)
+      list = list.filter((order) => matchesProductFilter(order, filters.products));
 
     if (filters.campuses.length > 0) {
       const selectedNormalized = filters.campuses.map((campus) => campus.trim().toLowerCase());
@@ -174,12 +174,9 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
     }
 
     const { start, end } = filters.dateRange;
-    if (start) {
-      list = list.filter((order) => new Date(order.created_at) >= new Date(start));
-    }
-    if (end) {
-      list = list.filter((order) => new Date(order.created_at) <= new Date(end));
-    }
+    if (start) list = list.filter((order) => new Date(order.created_at) >= new Date(start));
+
+    if (end) list = list.filter((order) => new Date(order.created_at) <= new Date(end));
 
     return list;
   }, [orders, searchQuery, fuse, filters]);
@@ -553,6 +550,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                 id: "products",
                 label: "Produtos",
                 values: filters.products,
+                getDisplayValue: getProductFilterDisplayLabel,
               },
               {
                 id: "campuses",
@@ -773,7 +771,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         <MultiSelectFilter
           isOpen={productsFilterOpen}
           onClose={() => setProductsFilterOpen(false)}
-          options={uniqueProducts}
+          cascadeOptions={productCascadeList}
           selected={filters.products}
           onChange={(products) => setFilters((p) => ({ ...p, products }))}
           buttonRef={productsFilterRef}
@@ -816,7 +814,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           {
             id: "products",
             title: "Produtos",
-            options: uniqueProducts,
+            cascadeOptions: productCascadeList,
             selected: filters.products,
           },
           {
