@@ -3,17 +3,12 @@ import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { UserRole } from "@/types/user";
 import styles from "@/styles/pages/Activities.module.css";
 import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 async function getEventsAndSubscriptions() {
-  let istid: string | null = null;
-  let isAdmin = false;
-
-  const perm = await serverCheckRoles([]); // authenticate
-  if (perm.isAuthorized && perm.user) {
-    istid = perm.user.istid;
-    isAdmin = perm.roles?.includes(UserRole._ADMIN) ?? false;
-  }
+  const session = await getAuthenticatedUser();
+  const istid = session?.user.istid ?? null;
+  const isAdmin = session?.roles.includes(UserRole._ADMIN) ?? false;
 
   let events = await getActivitiesEventsFromDb();
 

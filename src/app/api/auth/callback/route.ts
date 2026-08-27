@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { FenixOAuthTokenResponse } from "@/types/fenix";
+import { getSafeReturnUrl } from "@/lib/security/urlUtils";
+import { syncFenixUserAndCreateSession, setSessionCookie } from "@/lib/security/authSession";
 
 export async function GET(req: NextRequest) {
   const authCode = req.nextUrl.searchParams.get("code");
@@ -8,9 +10,8 @@ export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
   const expectedState = cookieStore.get("fenix_oauth_state")?.value;
 
-  if (!returnedState || !expectedState || returnedState !== expectedState) {
+  if (!returnedState || !expectedState || returnedState !== expectedState)
     return NextResponse.json({ error: "Invalid OAuth State" }, { status: 400 });
-  }
 
   const clearedStateCookie = { name: "fenix_oauth_state", value: "", path: "/", maxAge: 0 };
   const clearedRedirectCookie = { name: "post_login_redirect", value: "", path: "/", maxAge: 0 };
@@ -53,11 +54,12 @@ export async function GET(req: NextRequest) {
       res.cookies.set(clearedRedirectCookie);
       return res;
     }
+
     const postLogin = cookieStore.get("post_login_redirect")?.value;
-    const isSafe = typeof postLogin === "string" && postLogin.startsWith("/");
-    const redirectUrl = isSafe
-      ? new URL(postLogin, process.env.NEXT_PUBLIC_BASE_URL)
-      : new URL("/?login=true", process.env.NEXT_PUBLIC_BASE_URL);
+    const safeDestination = getSafeReturnUrl(postLogin, "/?login=true");
+    const baseUrl =
+      req.nextUrl.origin || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const redirectUrl = new URL(safeDestination, baseUrl);
 
     const response = NextResponse.redirect(redirectUrl);
 
@@ -67,6 +69,7 @@ export async function GET(req: NextRequest) {
       maxAge: Math.max(0, (Number(expires_in) || 3600) - 60),
       path: "/",
     });
+
     if (refresh_token) {
       response.cookies.set("refresh_token", refresh_token, {
         httpOnly: true,
@@ -75,6 +78,10 @@ export async function GET(req: NextRequest) {
         path: "/",
       });
     }
+
+    const sessionResult = await syncFenixUserAndCreateSession(access_token);
+    if (sessionResult) setSessionCookie(response, sessionResult.sessionToken);
+
     response.cookies.set(clearedStateCookie);
     response.cookies.set(clearedRedirectCookie);
     return response;

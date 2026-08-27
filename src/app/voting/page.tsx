@@ -6,14 +6,14 @@ import {
   getUserVote,
   getSessionResults,
 } from "@/lib/db/repositories/voting.repository";
-import { requireRoles } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 
 export default async function VotingPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { user } = await requireRoles([]);
+  const { user } = await requireUser();
   const [params, sessions] = await Promise.all([searchParams, getVotingSessions(20)]);
 
   const now = new Date();
@@ -28,7 +28,7 @@ export default async function VotingPage({
   const initialUserVotes: Record<number, string | null> = {};
 
   if (activeVotingSessions.length === 0) {
-    const lastFinishedSession = sessions.find((s) => s.status === "finished");
+    const lastFinishedSession = sessions.find((session) => session.status === "finished");
     if (lastFinishedSession) {
       const lastResults = await getSessionResults(lastFinishedSession.id);
       initialGlobalState.lastFinishedSession = {

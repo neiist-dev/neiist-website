@@ -10,9 +10,7 @@ import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
-import { cookies } from "next/headers";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
-import { getUser } from "@/lib/db/repositories/user.repository";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 const secularOne = Secular_One({
   subsets: ["latin"],
@@ -27,18 +25,8 @@ export const metadata: Metadata = {
 };
 
 async function ServerAuthWidget() {
-  let user = null;
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = await verifyJWTWebCrypto(sessionToken);
-  if (jwtUser?.istid) {
-    try {
-      user = await getUser(jwtUser.istid);
-    } catch {
-      // DB unreachable — degrade to guest
-    }
-  }
-  return <AuthWidget initialUser={user} />;
+  const session = await getAuthenticatedUser();
+  return <AuthWidget initialUser={session?.user ?? null} />;
 }
 
 export default function Layout({ children }: { children: ReactNode }) {

@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import MyOrdersList from "@/components/shop/MyOrdersList";
 import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
-import { cookies } from "next/headers";
+import { requireUser } from "@/lib/auth";
 import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
 import GlobalLoading from "@/app/loading";
 
@@ -12,12 +11,10 @@ interface PageProps {
 
 async function MyOrdersContent({ searchParams }: PageProps) {
   const { orderId } = await searchParams;
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : undefined;
+  const { user } = await requireUser();
 
   const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
-  const myOrders = jwtUser ? allOrders.filter((order) => order.user_istid === jwtUser.istid) : [];
+  const myOrders = allOrders.filter((order) => order.user_istid === user.istid);
 
   return (
     <>

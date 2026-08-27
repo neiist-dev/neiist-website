@@ -1,3 +1,5 @@
+import { NextRequest } from "next/server";
+
 export const BOT_USER_AGENTS = [
   "GPTBot",
   "OAI-SearchBot",
@@ -27,3 +29,16 @@ export const BOT_USER_AGENTS = [
   "facebookexternalhit",
   "YouBot",
 ];
+
+export function isBot(request: NextRequest): boolean {
+  const ua = request.headers.get("user-agent")?.toLowerCase() ?? "";
+  return BOT_USER_AGENTS.some((bot) => ua.includes(bot.toLowerCase()));
+}
+
+export function getClientIp(request: NextRequest): string {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown"
+  );
+}

@@ -5,16 +5,13 @@ import { serverCheckRoles } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized || !userRoles.user) {
-    return userRoles.error;
-  }
+  if (!userRoles.isAuthorized) return userRoles.error;
 
   try {
     const body = await request.json();
 
-    if (!body.code || !body.cart_items || !Array.isArray(body.cart_items)) {
+    if (!body.code || !body.cart_items || !Array.isArray(body.cart_items))
       return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
-    }
 
     const code = typeof body.code === "string" ? body.code.trim() : "";
     const userIstid = userRoles.user.istid;

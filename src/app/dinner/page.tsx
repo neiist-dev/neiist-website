@@ -20,7 +20,7 @@ import {
   getAllProducts,
   getUserOrderedProductsInCategory,
 } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 const handelsonTwo = localFont({
   src: "../../assets/fonts/handelson-two.otf",
@@ -88,7 +88,7 @@ function DinnerInfoList() {
 }
 
 export default async function DinnerPage() {
-  const userRoles = await serverCheckRoles([]);
+  const session = await getAuthenticatedUser();
   const products = await getAllProducts(true);
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
   const now = new Date();
@@ -106,19 +106,16 @@ export default async function DinnerPage() {
     );
   const isSaleOpen = !dinnerProduct.order_deadline || new Date(dinnerProduct.order_deadline) > now;
 
-  const hasDinnerOrder =
-    userRoles.isAuthorized && userRoles.user
-      ? Object.values(
-          await getUserOrderedProductsInCategory(
-            userRoles.user.istid,
-            dinnerProduct.category ?? "jantar de curso"
-          )
-        ).some((q) => q > 0)
-      : false;
+  const hasDinnerOrder = session?.user
+    ? Object.values(
+        await getUserOrderedProductsInCategory(
+          session.user.istid,
+          dinnerProduct.category ?? "jantar de curso"
+        )
+      ).some((q) => q > 0)
+    : false;
 
-  if (hasDinnerOrder && isUnlocked) {
-    return <UnlockedDinnerPage />;
-  }
+  if (hasDinnerOrder && isUnlocked) return <UnlockedDinnerPage />;
 
   const showCountdown = hasDinnerOrder;
   const showBuyButton = !hasDinnerOrder && isSaleOpen;

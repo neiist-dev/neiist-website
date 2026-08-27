@@ -1,23 +1,13 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import ProfileClient from "@/components/Profile";
-import styles from "@/styles/pages/ProfilePage.module.css";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
-import { redirect } from "next/navigation";
-import { getUser } from "@/lib/db/repositories/user.repository";
+import { requireUser } from "@/lib/auth";
 import { hasUserCV } from "@/lib/google/driveService";
 import GlobalLoading from "@/app/loading";
+import styles from "@/styles/pages/ProfilePage.module.css";
 
 async function ProfileContent() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = await verifyJWTWebCrypto(sessionToken);
-
-  if (!jwtUser) redirect("/api/auth/login");
-
-  const [user, hasCV] = await Promise.all([getUser(jwtUser.istid), hasUserCV(jwtUser.istid)]);
-
-  if (!user) redirect("/api/auth/login");
+  const { user } = await requireUser();
+  const hasCV = await hasUserCV(user.istid);
 
   return <ProfileClient initialUser={user} initialHasCV={hasCV} />;
 }

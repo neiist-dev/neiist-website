@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { getSafeReturnUrl } from "@/lib/security/urlUtils";
 
 export async function GET(req: NextRequest) {
   const state = crypto.randomBytes(16).toString("hex");
@@ -11,10 +12,9 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("scope", "read:personal");
   url.searchParams.set("state", state);
 
-  const returnUrl = (() => {
-    const param = req.nextUrl.searchParams.get("returnUrl") ?? "";
-    return param.startsWith("/") ? param : "";
-  })();
+  const rawParam =
+    req.nextUrl.searchParams.get("returnUrl") ?? req.nextUrl.searchParams.get("redirect");
+  const returnUrl = rawParam ? getSafeReturnUrl(rawParam, "") : "";
 
   const res = NextResponse.redirect(url.toString());
   res.cookies.set("fenix_oauth_state", state, {
@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
     path: "/",
     maxAge: 60 * 10,
   });
+
   if (returnUrl) {
     res.cookies.set("post_login_redirect", returnUrl, {
       httpOnly: true,
@@ -33,5 +34,6 @@ export async function GET(req: NextRequest) {
       maxAge: 60 * 10,
     });
   }
+
   return res;
 }
