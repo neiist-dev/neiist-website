@@ -19,7 +19,7 @@ const navLinks = [
   { name: "Atividades", href: "/activities" },
   /*{ name: "Blog", href: "/blog" },*/
   { name: "Loja", href: "/shop" },
-  { name: "Jantar de Curso", href: "/dinner" },
+  /* { name: "Jantar de Curso", href: "/dinner" },*/
 ];
 
 export function AuthWidget({ initialUser }: { initialUser?: User | null } = {}) {

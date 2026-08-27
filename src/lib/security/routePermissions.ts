@@ -1,13 +1,6 @@
 import { UserRole, hasRequiredRole } from "@/types/user";
 
-export const publicRoutes = [
-  "/home",
-  "/about-us",
-  "/email-confirmation",
-  "/shop",
-  "/activities",
-  "/dinner",
-];
+export const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
 
 export const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout", "/voting"];
 export const memberRoutes = ["/orders"];
@@ -18,6 +11,7 @@ export const adminRoutes = [
   "/shop/manage",
   "/shop/pos",
   "/voting/manage",
+  "/dinner",
 ];
 
 export const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
