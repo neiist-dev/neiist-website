@@ -252,11 +252,13 @@ export default function MembershipsSearchList({
             className={styles.input}
             disabled={adding}>
             <option value="">Selecione um utilizador</option>
-            {users.map((user) => (
-              <option key={user.istid} value={user.istid}>
-                {user.name} ({user.istid}) - {user.email}
-              </option>
-            ))}
+            {users
+              .filter((user) => !user.isAnonymized)
+              .map((user) => (
+                <option key={user.istid} value={user.istid}>
+                  {user.name} ({user.istid}) - {user.email}
+                </option>
+              ))}
           </select>
           <select
             value={newMembership.departmentName}
@@ -356,7 +358,12 @@ export default function MembershipsSearchList({
                     <strong>Cargo:</strong> {membership.roleName}
                   </div>
                   <div>
-                    <strong>Email:</strong> {membership.userEmail}
+                    <strong>Email:</strong>{" "}
+                    {membership.isAnonymized ? (
+                      <span className={styles.deletedText}>Dados eliminados</span>
+                    ) : (
+                      membership.userEmail
+                    )}
                   </div>
                   <div>
                     <strong>Desde:</strong>{" "}
@@ -371,7 +378,15 @@ export default function MembershipsSearchList({
                   </div>
                 </div>
                 <div className={styles.memberActions}>
-                  <span className={styles.badge}>{membership.isActive ? "Ativo" : "Inativo"}</span>
+                  <div className={styles.badgeGroup}>
+                    <span
+                      className={`${styles.badge} ${!membership.isActive ? styles.badgeInactive : ""}`}>
+                      {membership.isActive ? "Ativo" : "Inativo"}
+                    </span>
+                    {membership.isAnonymized && (
+                      <span className={styles.anonymizedBadge}>Conta Eliminada</span>
+                    )}
+                  </div>
                   <button
                     onClick={() =>
                       handleRemoveClick(

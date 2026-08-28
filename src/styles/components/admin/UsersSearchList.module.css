@@ -50,6 +50,44 @@
   transform: translateY(-2px) scale(1.012);
 }
 
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.itemHeader h4 {
+  margin: 0;
+}
+
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  background: #fee2e2;
+  color: #dc2626;
+  transition:
+    background 0.18s,
+    opacity 0.18s;
+}
+
+.btnDanger:hover {
+  background: #fecaca;
+}
+
 .userPhoto {
   border-radius: 1.2rem;
   margin: 0;
@@ -100,11 +138,11 @@
   font-size: 0.8rem;
   padding: 0.1rem 0.4rem;
   border-radius: 0.25rem;
-  font-weight: 500;
   margin-left: 0.3rem;
 }
 
-.admin {
+.admin,
+.deleted {
   background: #ffeaea;
   color: #d32f2f;
   border: 1px solid #f5c6cb;
@@ -123,6 +161,10 @@
   background: #f5f6fa;
   color: var(--light-foreground-colour);
   border: 1px solid #d1d5db;
+}
+
+.deletedText {
+  color: var(--light-foreground-colour);
 }
 
 @media (max-width: 900px) {
@@ -145,6 +187,24 @@
     width: 100%;
     padding: 0;
     margin: 0;
+  }
+
+  .itemHeader {
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .btnDanger {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .btnDanger:hover {
+    background: #fecaca;
   }
 
   .hideOnMobile {

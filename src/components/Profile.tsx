@@ -52,9 +52,33 @@ export default function ProfileClient({
     webViewLink: string;
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
   const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
+
+  const handleDeleteAccount = async () => {
+    if (!user || deleteLoading) return;
+    setDeleteLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/user/update/${user.istid}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Falha ao eliminar conta.");
+      }
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      window.location.href = "/";
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro ao eliminar conta.");
+      setShowDeleteConfirm(false);
+      setDeleteLoading(false);
+    }
+  };
 
   useEffect(() => {
     setAltEmailDraft(user?.alternativeEmail ?? "");
@@ -469,6 +493,37 @@ export default function ProfileClient({
               </div>
             )}
           </div>
+          <div className={styles.accountManagement}>
+            <div className={styles.sectionTitle}>
+              <FiTrash2 className={styles.dangerIcon} />
+              <span>Eliminar Conta</span>
+              <div className={styles.infoBubbleWrapper}>
+                <FiInfo className={styles.infoBubble} />
+                <div className={styles.tooltip}>
+                  <p>
+                    Podes eliminar permanentemente a tua conta e os teus dados pessoais da
+                    plataforma do NEIIST (RGPD).
+                  </p>
+                  {isMember && (
+                    <p style={{ marginTop: "0.5rem" }}>
+                      <strong>Nota para membros:</strong> Conforme a nossa Política de Privacidade,
+                      o teu nome e fotografia oficial continuarão arquivados no registo histórico da
+                      equipa.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className={styles.actionButtons}>
+              <button
+                type="button"
+                className={styles.dangerButton}
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleteLoading}>
+                <FiTrash2 /> {deleteLoading ? "A eliminar..." : "Eliminar Conta"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
@@ -489,6 +544,18 @@ export default function ProfileClient({
         onCancel={() => {
           setShowConfirmDialog(false);
           setPendingChange(null);
+        }}
+      />
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        message={
+          isMember
+            ? "Tens a certeza que pretendes eliminar a tua conta? Os teus dados pessoais serão apagados, exceto o teu nome e fotografia oficial que serão mantidos no arquivo histórico da equipa em conformidade com a Política de Privacidade (Art.º 17.º, n.º 3, al. d) do RGPD). Esta ação não pode ser revertida."
+            : "Tens a certeza que pretendes eliminar a tua conta? Todos os teus dados pessoais serão permanentemente apagados da plataforma em conformidade com o RGPD. Esta ação não pode ser revertida."
+        }
+        onConfirm={handleDeleteAccount}
+        onCancel={() => {
+          if (!deleteLoading) setShowDeleteConfirm(false);
         }}
       />
     </>
