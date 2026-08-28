@@ -5,6 +5,8 @@ import Image from "next/image";
 import { User, UserRole } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import styles from "@/styles/components/admin/UsersSearchList.module.css";
+import { FaTrash } from "react-icons/fa";
+import ConfirmDialog from "@/components/layout/ConfirmDialog";
 
 interface Role {
   role_name: string;
@@ -22,15 +24,24 @@ const sanitizeString = (value: string) =>
 export default function UsersSearchList({
   users,
   roles,
+  isAdmin = false,
 }: {
   users: UserWithMemberships[];
   roles: Role[];
+  isAdmin?: boolean;
 }) {
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
   const [search, setSearch] = useState("");
+  const [pendingDeleteUser, setPendingDeleteUser] = useState<UserWithMemberships | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const sortedUsers = useMemo(
-    () => [...users].sort((a, b) => a.name.localeCompare(b.name, "pt")),
-    [users]
+    () =>
+      users
+        .filter((u) => !deletedIds.has(u.istid))
+        .sort((a, b) => a.name.localeCompare(b.name, "pt")),
+    [users, deletedIds]
   );
 
   const filteredUsers = useMemo(() => {
@@ -77,6 +88,26 @@ export default function UsersSearchList({
     return styles[accessLevel] || styles.guest;
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteUser || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/user/update/${pendingDeleteUser.istid}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao eliminar utilizador");
+
+      setDeletedIds((prev) => new Set(prev).add(pendingDeleteUser.istid));
+      setPendingDeleteUser(null);
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : "Erro ao eliminar utilizador");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       <input
@@ -102,11 +133,35 @@ export default function UsersSearchList({
                 className={styles.userPhoto}
               />
               <div className={styles.itemContent}>
-                <h4>
-                  {user.name} <span className={styles.istid}>({user.istid})</span>
-                </h4>
+                <div className={styles.itemHeader}>
+                  <h4>
+                    {user.name} <span className={styles.istid}>({user.istid})</span>
+                    {user.isAnonymized && (
+                      <span className={`${styles.accessBadge} ${styles.deleted}`}>
+                        Conta Eliminada
+                      </span>
+                    )}
+                  </h4>
+                  {isAdmin && !user.isAnonymized && (
+                    <button
+                      type="button"
+                      className={styles.btnDanger}
+                      title={`Eliminar utilizador ${user.name}`}
+                      onClick={() => {
+                        setDeleteError(null);
+                        setPendingDeleteUser(user);
+                      }}>
+                      <FaTrash size={13} />
+                    </button>
+                  )}
+                </div>
                 <p className={styles.hideOnMobile}>
-                  <strong>Email:</strong> {user.email}
+                  <strong>Email:</strong>{" "}
+                  {user.isAnonymized ? (
+                    <span className={styles.deletedText}>Dados eliminados</span>
+                  ) : (
+                    user.email
+                  )}
                 </p>
                 {user.phone && (
                   <p className={styles.hideOnMobile}>
@@ -148,6 +203,22 @@ export default function UsersSearchList({
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDeleteUser !== null}
+        message={
+          deleteError
+            ? `Erro: ${deleteError}`
+            : `Tens a certeza que pretendes eliminar o utilizador ${pendingDeleteUser?.name} (${pendingDeleteUser?.istid})? Esta ação irá apagar os seus dados pessoais de forma permanente e não pode ser revertida.`
+        }
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          if (!isDeleting) {
+            setPendingDeleteUser(null);
+            setDeleteError(null);
+          }
+        }}
+      />
     </>
   );
 }
