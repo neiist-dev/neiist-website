@@ -15,6 +15,8 @@
   padding: 2rem;
   border-radius: 1.2rem;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+  max-width: 32rem;
+  width: 90%;
 }
 .message {
   margin-bottom: 1.5rem;
