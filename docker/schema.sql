@@ -3597,3 +3597,60 @@ BEGIN
   ORDER BY o.created_at;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- DELETE USER
+CREATE OR REPLACE FUNCTION neiist.delete_user(p_istid VARCHAR(10))
+RETURNS TABLE(success BOOLEAN, was_member BOOLEAN) AS $$
+DECLARE
+  v_is_member BOOLEAN;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM neiist.users WHERE istid = p_istid) THEN
+    RETURN QUERY SELECT FALSE, FALSE;
+    RETURN;
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1 FROM neiist.membership WHERE user_istid = p_istid
+  ) INTO v_is_member;
+
+  DELETE FROM neiist.user_contacts WHERE user_istid = p_istid;
+  DELETE FROM neiist.user_courses WHERE user_istid = p_istid;
+  DELETE FROM neiist.email_token WHERE istid = p_istid;
+  DELETE FROM neiist.activities_sign_up WHERE user_istid = p_istid;
+
+  UPDATE neiist.orders o
+  SET user_istid = NULL,
+      customer_name = u.name,
+      customer_email = u.email,
+      customer_phone = NULL
+  FROM neiist.users u
+  WHERE o.user_istid = p_istid AND u.istid = p_istid;
+
+  IF v_is_member THEN
+    UPDATE neiist.users
+    SET email = 'deleted-' || gen_random_uuid() || '@deleted.neiist.pt',
+        github = NULL,
+        linkedin = NULL
+    WHERE istid = p_istid;
+  ELSE
+    DELETE FROM neiist.users WHERE istid = p_istid;
+  END IF;
+
+  RETURN QUERY SELECT TRUE, v_is_member;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- REMOVE DELETED USER ORDERS (GDPR 10 YEAR RETENTION)
+CREATE OR REPLACE FUNCTION neiist.remove_deleted_user_orders_pii()
+RETURNS VOID AS $$
+BEGIN
+  UPDATE neiist.orders
+  SET customer_name = 'Guest',
+      customer_email = 'deleted-' || gen_random_uuid() || '@deleted.neiist.pt',
+      customer_phone = NULL,
+      nif = NULL
+  WHERE user_istid IS NULL
+    AND created_at < NOW() - INTERVAL '10 years'
+    AND customer_name IS DISTINCT FROM 'Guest';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

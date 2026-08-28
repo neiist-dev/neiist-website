@@ -512,3 +512,22 @@ export function getStatusUpdateOrderEmailTemplate(
 ): string {
   return getOrderStatusUpdateTemplate(orderNumber, customerName, status, statusLabel, campus);
 }
+
+export function getAccountDeletionTemplate(name: string): string {
+  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
+
+  return `
+    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
+      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
+      <h2 style="color: #2863FD; margin-bottom: 1rem;">Conta Eliminada</h2>
+      <p style="font-size: 1.1rem;">Olá ${name}!</p>
+      <p>Confirmamos que a tua conta no NEIIST e os teus dados pessoais foram eliminados com sucesso, conforme o RGPD (Direito ao Apagamento).</p>
+      <p style="color: #555; font-size: 0.95rem; margin-top: 1rem;">
+        <strong>Nota informativa:</strong> Caso tenhas realizado encomendas na nossa loja, os registos fiscais correspondentes são mantidos durante o período legal obrigatório de 10 anos (art.º 52.º da Lei Geral Tributária), findo o qual serão totalmente removidos.
+      </p>
+      <p style="margin-top: 1rem;">Se não solicitaste esta eliminação ou tens alguma dúvida, por favor contacta a nossa equipa.</p>
+      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
+      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
+    </div>
+  `;
+}
