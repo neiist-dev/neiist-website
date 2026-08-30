@@ -47,6 +47,10 @@
     },
     "surprises": {
       "title": "Course Dinner Surprises",
+      "welcome_message": "Welcome to the dinner!\nExplore all the activities we prepared for you:",
+      "voting_button": "Go to Voting",
+      "poster_alt": "Dinner Poster",
+      "close_label": "Close",
       "when_label": "When:",
       "reward_label": "Reward:",
       "access_here": "Access Here",
@@ -365,6 +369,9 @@
   },
 
   "hero": {
+    "title_prefix": "Computer Science Student Branch at ",
+    "title_highlight": "Instituto Superior Técnico",
+    "title_suffix": "",
     "campus_alt": "IST Campus",
     "student_alt": "Student",
     "title": "Computer Science Student Branch at Instituto Superior Técnico"
@@ -641,44 +648,11 @@
   "about_us_page": {
     "hero": {
       "title": "Who We Are?",
-      "title_segments": ["Wh", "o ", "We ", "Are?"],
       "description": "The NEIIST team consists of {count} students from Instituto Superior Técnico, motivated to support all students interested in diverse computing fields. Founded in 2004, all NEIIST members dedicate their time and effort to organizing a wide range of activities that help our academic community thrive. Our goal is to foster enthusiasm for Computer Science, connecting students, professors, and companies while promoting technical and personal growth. Our vision is to be a beacon of support and integration for students in the Department of Computer Science and Engineering.",
-      "teams_title": "Our Teams",
+      "our_teams": "Our Teams",
       "team_label": "Team",
       "close_label": "Close",
-      "team_image_alt": "NEIIST Team",
-      "teams_names": {
-        "Direção": "Board of Directors",
-        "Conselho Fiscal": "Fiscal Council",
-        "Mesa da Assembleia Geral": "General Assembly Board",
-        "Contacto": "Outreach",
-        "Controlo & Qualidade": "Quality & Control",
-        "Dev-Team": "Dev Team",
-        "Divulgação": "Marketing & PR",
-        "Fotografia": "Photography",
-        "Organização de Eventos": "Events Organization",
-        "Visuais": "Visuals"
-      },
-
-      "team_descriptions": {
-        "Contacto": "Handles communication and contact with students and partners.",
-        "Controlo & Qualidade": "Ensures quality standards and reviews internal processes.",
-        "Dev-Team": "Develops and maintains NEIIST's technical infrastructure.",
-        "Divulgação": "Promotes NEIIST events and activities across appropriate channels.",
-        "Fotografia": "Captures event photography and manages the image library.",
-        "Organização de Eventos": "Plans and executes NEIIST events and associated logistics.",
-        "Visuais": "Creates visual elements and branding materials for NEIIST."
-      },
-
-      "roles_names": {
-        "Presidente": "President",
-        "Vice-Presidente": "Vice-President",
-        "Secretário": "Secretary",
-        "Tesoureiro": "Treasurer",
-        "Coordenador": "Coordinator",
-        "Membro": "Member",
-        "Colaborador": "Collaborator"
-      }
+      "team_image_alt": "NEIIST Team"
     },
 
     "join_us": {
@@ -686,12 +660,6 @@
       "description": "Our recruitment takes place twice a year at the start of each semester. Recruitment consists of an interview round and, for some teams, a small technical challenge. We count on you!",
       "apply": "Apply Now",
       "apply_link": "https://google.com"
-    },
-
-    "member_card": {
-      "github_label": "GitHub",
-      "linkedin_label": "LinkedIn",
-      "photo_alt": "photo"
     },
 
     "year_selector": {
@@ -771,16 +739,6 @@
       "download_cv": "Download CV",
       "remove_cv": "Remove CV"
     }
-  },
-
-  "roles_names": {
-    "Presidente": "President",
-    "Vice-Presidente": "Vice-President",
-    "Secretário": "Secretary",
-    "Tesoureiro": "Treasurer",
-    "Coordenador": "Coordinator",
-    "Membro": "Member",
-    "Colaborador": "Collaborator"
   },
 
   "create_user_modal": {

@@ -113,7 +113,7 @@
   z-index: 2;
 }
 
-.teamsTitle {
+.ourTeams {
   font-weight: 800;
   font-size: clamp(1.3rem, 3vw, 2rem);
   color: #3f3f3f;

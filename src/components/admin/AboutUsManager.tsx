@@ -2,10 +2,13 @@ import AboutUsEditor from "@/components/admin/AboutUsEditor";
 import { Membership } from "@/types/memberships";
 import { getAllDepartments, getAllMemberships } from "@/lib/db/repositories/team.repository";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 export default async function AboutUsManager({
+  dict,
   searchParams,
 }: {
+  dict: Dictionary["about_us_page"];
   searchParams?: { year?: string };
 }) {
   const departments = await getAllDepartments();
@@ -55,6 +58,7 @@ export default async function AboutUsManager({
       memberships={memberships}
       users={users}
       selectedYear={selectedYear}
+      dict={dict}
     />
   );
 }

@@ -21,46 +21,46 @@ import {
   getUserOrderedProductsInCategory,
 } from "@/lib/db/repositories/shop.repository";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { getDictionary, Dictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 const handelsonTwo = localFont({
   src: "../../../assets/fonts/handelson-two.otf",
   display: "swap",
 });
 
-const teaserItems = [
-  {
-    icon: <FaBug />,
-    title: "Desafios",
-    text: "No início do jantar, desafios vão estar disponíveis no nosso website. Cumpre o desafio, mostra ao staff e ganha uma senha extra!",
-    accentClass: styles.teaserRed,
-  },
-  {
-    icon: <FaTrophy />,
-    title: "Concursos",
-    text: "Depois do jantar, mostra o que vales nos nossos concursos e habilita-te a ganhar senhas ou prémios variados!",
-    accentClass: styles.teaserYellow,
-  },
-  {
-    icon: <FaVoteYea />,
-    title: "Títulos",
-    text: "Vota nos teus colegas! Durante o jantar, elege o teu amigo para receber um título.",
-    accentClass: styles.teaserBlue,
-  },
-  {
-    icon: <FaMicrophone />,
-    title: "Karaoke",
-    text: "Mostra os teus dotes no microfone! Sozinho ou em grupo, os corajosos do karaoke recebem senhas ;)",
-    accentClass: styles.teaserPurple,
-  },
-] as const;
+function DinnerTeasers({ dict }: { dict: Dictionary["dinner"]["teasers"] }) {
+  const teaserItems = [
+    {
+      icon: <FaBug />,
+      title: dict.challenges_title,
+      text: dict.challenges_text,
+      accentClass: styles.teaserRed,
+    },
+    {
+      icon: <FaTrophy />,
+      title: dict.contests_title,
+      text: dict.contests_text,
+      accentClass: styles.teaserYellow,
+    },
+    {
+      icon: <FaVoteYea />,
+      title: dict.titles_title,
+      text: dict.titles_text,
+      accentClass: styles.teaserBlue,
+    },
+    {
+      icon: <FaMicrophone />,
+      title: dict.karaoke_title,
+      text: dict.karaoke_text,
+      accentClass: styles.teaserPurple,
+    },
+  ];
 
-type TeaserItem = (typeof teaserItems)[number];
-
-function DinnerTeasers() {
   return (
     <section className={styles.teaserSection} aria-label="Atividades em destaque">
       <div className={styles.teaserGrid}>
-        {teaserItems.map((item: TeaserItem) => (
+        {teaserItems.map((item) => (
           <article key={item.title} className={styles.teaserCard}>
             <div className={`${styles.teaserIcon} ${item.accentClass}`}>{item.icon}</div>
             <h2 className={`${styles.teaserTitle} ${handelsonTwo.className}`}>{item.title}</h2>
@@ -72,22 +72,26 @@ function DinnerTeasers() {
   );
 }
 
-function DinnerInfoList() {
+function DinnerInfoList({ dict }: { dict: Dictionary["dinner"] }) {
   return (
     <ul className={`${styles.infoList} ${handelsonTwo.className}`}>
       <InfoListItem
         icon={<FaMapMarkerAlt />}
-        label="Local"
-        value="MADSpot"
-        url="https://www.instagram.com/mad_spot_fa/"
+        label={dict.location_label}
+        value={dict.location_value}
+        url={dict.location_url}
       />
-      <InfoListItem icon={<FaCalendarAlt />} label="Data" value="21 de maio" />
-      <InfoListItem icon={<FaClock />} label="Hora" value="20h00 - 04h00" />
+      <InfoListItem icon={<FaCalendarAlt />} label={dict.date_label} value={dict.date_value} />
+      <InfoListItem icon={<FaClock />} label={dict.time_label} value={dict.time_value} />
     </ul>
   );
 }
 
-export default async function DinnerPage() {
+export default async function DinnerPage({ params }: { params: LocaleParams }) {
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale).dinner;
+
   const session = await getAuthenticatedUser();
   const products = await getAllProducts(true);
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
@@ -101,7 +105,7 @@ export default async function DinnerPage() {
   if (!dinnerProduct)
     return (
       <div className={styles.container}>
-        <p>Produto de Jantar de Curso não encontrado</p>
+        <p>{dict.not_found}</p>
       </div>
     );
   const isSaleOpen = !dinnerProduct.order_deadline || new Date(dinnerProduct.order_deadline) > now;
@@ -115,7 +119,9 @@ export default async function DinnerPage() {
       ).some((q) => q > 0)
     : false;
 
-  if (hasDinnerOrder && isUnlocked) return <UnlockedDinnerPage />;
+  if (hasDinnerOrder && isUnlocked) {
+    return <UnlockedDinnerPage dict={dict.surprises} basePath={`/${locale}`} />;
+  }
 
   const showCountdown = hasDinnerOrder;
   const showBuyButton = !hasDinnerOrder && isSaleOpen;
@@ -132,22 +138,19 @@ export default async function DinnerPage() {
 
           {showCountdown ? (
             <p className={`${styles.signedUpMessage} ${handelsonTwo.className}`}>
-              O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua
-              espera.
+              {dict.signed_up_message}
             </p>
           ) : (
-            <p className={`${styles.description} ${handelsonTwo.className}`}>
-              Junta-te a nós para um jantar inesquecível!
-            </p>
+            <p className={`${styles.description} ${handelsonTwo.className}`}>{dict.description}</p>
           )}
 
-          <DinnerInfoList />
+          <DinnerInfoList dict={dict} />
 
           {showCountdown && (
             <div className={styles.lockedSection}>
               <p className={`${styles.unlockTimeMessage} ${handelsonTwo.className}`}>
-                O conteúdo será desbloqueado às{" "}
-                <span className={styles.highlight}>20h do dia 21 de maio</span>
+                {dict.unlock_time_message}{" "}
+                <span className={styles.highlight}>{dict.unlock_highlight}</span>
               </p>
 
               <Countdown />
@@ -156,24 +159,19 @@ export default async function DinnerPage() {
 
           {showBuyButton && (
             <Link
-              href={`/shop/${dinnerProduct.id}`}
+              href={`/${locale}/shop/${dinnerProduct.id}`}
               className={`${styles.button} ${handelsonTwo.className}`}>
-              Comprar Já
+              {dict.buy_button}
             </Link>
           )}
         </div>
 
         <div className={styles.rightColumn}>
           <div className={styles.imageWrapper}>
-            <Image
-              src={penguinImg}
-              alt="Poster do Jantar de Curso"
-              className={styles.image}
-              priority
-            />
+            <Image src={penguinImg} alt={dict.poster_alt} className={styles.image} priority />
           </div>
 
-          <DinnerTeasers />
+          <DinnerTeasers dict={dict.teasers} />
         </div>
       </div>
     </div>

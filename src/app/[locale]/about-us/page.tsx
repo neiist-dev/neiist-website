@@ -15,6 +15,8 @@ import {
 } from "@/lib/db/repositories/team.repository";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import GlobalLoading from "@/app/loading";
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 type Department = {
   name: string;
@@ -77,17 +79,23 @@ function getAllAcademicYears(memberships: Membership[]) {
 const ADMIN_PRIORITY = ["Direção", "Conselho Fiscal", "Mesa da Assembleia Geral"];
 
 interface PageProps {
+  params: LocaleParams;
   searchParams?: Promise<{ year?: string }>;
 }
 
-async function AboutUsContent({ searchParams }: PageProps) {
-  const params = searchParams ? await searchParams : {};
+async function AboutUsContent({ params, searchParams }: PageProps) {
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale).about_us_page;
+  const search = searchParams ? await searchParams : {};
+
   const [memberships, rawTeams, rawAdminBodies, users]: [
     Membership[],
     Array<{ name: string; description: string; active: boolean }>,
     Array<{ name: string; active: boolean }>,
     User[],
   ] = await Promise.all([getAllMemberships(), getAllTeams(), getAllAdminBodies(), getAllUsers()]);
+
   const teams: Team[] = rawTeams.map((team) => ({
     name: team.name,
     description: team.description,
@@ -102,7 +110,7 @@ async function AboutUsContent({ searchParams }: PageProps) {
 
   const allAcademicYears = getAllAcademicYears(memberships);
   const selectedYear =
-    params?.year && allAcademicYears.includes(params.year) ? params.year : allAcademicYears[0];
+    search?.year && allAcademicYears.includes(search.year) ? search.year : allAcademicYears[0];
 
   const filteredMemberships: EnrichedMembership[] = memberships
     .filter((membership) => isMembershipInAcademicYear(membership, selectedYear))
@@ -158,11 +166,16 @@ async function AboutUsContent({ searchParams }: PageProps) {
       <Hero
         teams={teamsWithMembers}
         teamImage={teamImage}
-        description={`A equipa do NEIIST é composta por ${uniqueIstids.length} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.`}
+        dict={dict.hero}
+        description={dict.hero.description.replace("{count}", String(uniqueIstids.length))}
       />
 
       <h2 className={styles.title} />
-      <YearSelector years={allAcademicYears} selectedYear={selectedYear} />
+      <YearSelector
+        years={allAcademicYears}
+        selectedYear={selectedYear}
+        dict={dict.year_selector}
+      />
 
       {sortedDepartmentsWithMembers.map((department) => (
         <div key={department.name}>

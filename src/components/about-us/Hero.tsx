@@ -6,23 +6,21 @@ import Image, { type StaticImageData } from "next/image";
 import { FiUsers } from "react-icons/fi";
 import styles from "@/styles/components/about-us/Hero.module.css";
 import { Team } from "@/types/memberships";
+import { Dictionary } from "@/i18n/dictionaries";
+import ColorfulText from "@/components/ColorfulText";
 
 interface HeroProps {
   teams: Team[];
   teamImage: string | StaticImageData;
-  teamsTitle?: string;
+  dict: Dictionary["about_us_page"]["hero"];
   description?: string;
 }
+
 const iconMap: Record<string, React.ElementType> = {
   FiUsers,
 };
 
-export default function Hero({
-  teams,
-  teamImage,
-  teamsTitle = "As Nossas Equipas",
-  description,
-}: HeroProps) {
+export default function Hero({ teams, teamImage, dict, description }: HeroProps) {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setSelectedTeam(null);
@@ -40,12 +38,7 @@ export default function Hero({
       <div className={styles.header}>
         <div className={styles.intro}>
           <div className={styles.title}>
-            <p>
-              <span className={styles.primary}>Qu</span>
-              <span className={styles.secondary}>em </span>
-              <span className={styles.tertiary}>So</span>
-              <span className={styles.quaternary}>mos?</span>
-            </p>
+            <ColorfulText as="p" text={dict.title} />
           </div>
           <p className={styles.description}>{description}</p>
         </div>
@@ -73,12 +66,12 @@ export default function Hero({
             />
           </svg>
 
-          <Image alt="NEIIST Team" className={styles.teamImage} src={teamImage} />
+          <Image alt={dict.team_image_alt} className={styles.teamImage} src={teamImage} />
         </div>
       </div>
 
       <div className={styles.teamsSection}>
-        <h2 className={styles.teamsTitle}>{teamsTitle}</h2>
+        <h2 className={styles.ourTeams}>{dict.our_teams}</h2>
         <div className={styles.teamsGrid}>
           {teams.map((team) => {
             const Icon = iconMap[team.icon] || FiUsers;
@@ -87,7 +80,7 @@ export default function Hero({
                 key={team.name}
                 className={styles.teamBox}
                 tabIndex={0}
-                aria-label={`Equipa ${team.name}`}
+                aria-label={`${dict.team_label} ${team.name}`}
                 onClick={() => setSelectedTeam(team)}
                 role="button">
                 <Icon className={styles.icon} />
@@ -104,7 +97,7 @@ export default function Hero({
             <button
               className={styles.close}
               onClick={() => setSelectedTeam(null)}
-              aria-label="Fechar">
+              aria-label={dict.close_label}>
               <Squash
                 toggled={true}
                 toggle={() => setSelectedTeam(null)}

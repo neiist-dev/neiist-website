@@ -8,6 +8,7 @@ import { SortableContext, useSortable, arrayMove } from "@dnd-kit/sortable";
 import YearSelector from "@/components/about-us/YearSelector";
 import memberCardStyles from "@/styles/components/about-us/MemberCard.module.css";
 import styles from "@/styles/pages/AboutUs.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 function getAcademicYearRange(year: string) {
   const [startYear, endYear] = year.split("/").map(Number);
@@ -52,17 +53,21 @@ function getAllAcademicYears(memberships: Membership[]) {
   return years.reverse();
 }
 
+interface AboutUsEditorProps {
+  departments: { name: string; description?: string; department_type?: string; active?: boolean }[];
+  memberships: Membership[];
+  users: User[];
+  selectedYear: string;
+  dict: Dictionary["about_us_page"];
+}
+
 export default function AboutUsEditor({
   departments,
   memberships,
   users,
   selectedYear,
-}: {
-  departments: { name: string; description?: string; department_type?: string; active?: boolean }[];
-  memberships: Membership[];
-  users: User[];
-  selectedYear: string;
-}) {
+  dict,
+}: AboutUsEditorProps) {
   const allAcademicYears = getAllAcademicYears(memberships);
   const [roleOrders, setRoleOrders] = useState<Record<string, string[]>>({});
 
@@ -124,7 +129,7 @@ export default function AboutUsEditor({
         setRoleOrders((prev) => ({ ...prev, [department.name]: orderedRoles }));
       });
     });
-    // eslint-disable-next-line @eslint-react/exhaustive-deps -- intentional: departmentsWithMembers identity is unstable using .length as change proxy
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
   }, [selectedYear, departmentsWithMembers.length, filteredMemberships.length, users.length]);
 
   async function saveOrder(departmentName: string, newRoles: string[]) {
@@ -149,9 +154,14 @@ export default function AboutUsEditor({
 
   return (
     <section className={styles.page}>
-      <h2 className={styles.title}>Pré-visualização da Página Sobre nós</h2>
+      <h2 className={styles.title}>{dict.editor.title}</h2>
       <div style={{ marginBottom: "2rem" }}>
-        <YearSelector years={allAcademicYears} selectedYear={selectedYear} visible={5} />
+        <YearSelector
+          years={allAcademicYears}
+          selectedYear={selectedYear}
+          visible={5}
+          dict={dict.year_selector}
+        />
       </div>
       {departmentsWithMembers.map((dept) => {
         const roles = roleOrders[dept.name] || [];

@@ -47,6 +47,10 @@
     },
     "surprises": {
       "title": "Surpresas do Jantar de Curso",
+      "welcome_message": "Bem-vindo ao jantar de curso!\nExplora todas as atividades que preparámos para ti:",
+      "voting_button": "Ir para as Votações",
+      "poster_alt": "Poster do Jantar de Curso",
+      "close_label": "Fechar",
       "when_label": "Quando:",
       "reward_label": "Recompensa:",
       "access_here": "Acede Aqui",
@@ -365,6 +369,9 @@
   },
 
   "hero": {
+    "title_prefix": "Núcleo Estudantil de ",
+    "title_highlight": "Informática",
+    "title_suffix": " do Instituto Superior Técnico",
     "campus_alt": "Campus do IST",
     "student_alt": "Estudante",
     "title": "Núcleo Estudantil de Informática do Instituto Superior Técnico"
@@ -641,44 +648,11 @@
   "about_us_page": {
     "hero": {
       "title": "Quem Somos?",
-      "title_segments": ["Qu", "em ", "So", "mos?"],
       "description": "A equipa do NEIIST é composta por {count} estudantes do Instituto Superior Técnico, motivados e interessados em ajudar todos os alunos da sua instituição que têm interesse nas mais diversas áreas da Informática. Fundado em 2004 todos os membros do NEIIST contribuem com o seu esforço, dedicação e tempo para organizarem uma ampla variedade de atividades que visam auxiliar a comunidade académica a ter o melhor percurso e proveito académico possível. O nosso objetivo é fomentar o interesse pela Informática e pelas suas áreas afins, promovendo o contacto entre alunos, professores, profissionais e empresas, bem como dinamizando atividades que contribuam para o crescimento técnico, científico e humano da comunidade estudantil. A nossa visão é ser uma referência no apoio e na integração dos estudantes do Departamento de Engenharia Informática, impulsionando a inovação, a colaboração e a excelência no ensino e na prática da Engenharia Informática.",
-      "teams_title": "As Nossas Equipas",
+      "our_teams": "As Nossas Equipas",
       "team_label": "Equipa",
       "close_label": "Fechar",
-      "team_image_alt": "Equipa NEIIST",
-      "teams_names": {
-        "Direção": "Direção",
-        "Conselho Fiscal": "Conselho Fiscal",
-        "Mesa da Assembleia Geral": "Mesa da Assembleia Geral",
-        "Contacto": "Contacto",
-        "Controlo & Qualidade": "Controlo & Qualidade",
-        "Dev-Team": "Dev-Team",
-        "Divulgação": "Divulgação",
-        "Fotografia": "Fotografia",
-        "Organização de Eventos": "Organização de Eventos",
-        "Visuais": "Visuais"
-      },
-
-      "team_descriptions": {
-        "Contacto": "Trata da comunicação e contacto com estudantes e parceiros.",
-        "Controlo & Qualidade": "Garante os padrões de qualidade e revê processos.",
-        "Dev-Team": "Desenvolve e mantém a infraestrutura técnica do NEIIST.",
-        "Divulgação": "Promove eventos e atividades do NEIIST nos canais apropriados.",
-        "Fotografia": "Regista fotografias dos eventos e gere a biblioteca de imagens.",
-        "Organização de Eventos": "Planeia e executa eventos do NEIIST e a logística associada.",
-        "Visuais": "Cria elementos visuais e materiais de branding para o NEIIST."
-      },
-
-      "roles_names": {
-        "Presidente": "Presidente",
-        "Vice-Presidente": "Vice-Presidente",
-        "Secretário": "Secretário",
-        "Tesoureiro": "Tesoureiro",
-        "Coordenador": "Coordenador",
-        "Membro": "Membro",
-        "Colaborador": "Colaborador"
-      }
+      "team_image_alt": "Equipa NEIIST"
     },
 
     "join_us": {
@@ -686,12 +660,6 @@
       "description": "O nosso recrutamento acontece duas vezes por ano, no inicio de cada semestre. O recrutamento consiste de uma ronda de entrevistas, e para algumas equipas um pequeno desafio relacionado com o trabalho da equipa espesífica. Conta-mos contigo!",
       "apply": "Candidata-te",
       "apply_link": "https://google.com"
-    },
-
-    "member_card": {
-      "github_label": "GitHub",
-      "linkedin_label": "LinkedIn",
-      "photo_alt": "foto"
     },
 
     "year_selector": {
@@ -771,16 +739,6 @@
       "download_cv": "Descarregar o CV",
       "remove_cv": "Remover o CV"
     }
-  },
-
-  "roles_names": {
-    "Presidente": "Presidente",
-    "Vice-Presidente": "Vice-Presidente",
-    "Secretário": "Secretário",
-    "Tesoureiro": "Tesoureiro",
-    "Coordenador": "Coordenador",
-    "Membro": "Membro",
-    "Colaborador": "Colaborador"
   },
 
   "create_user_modal": {
