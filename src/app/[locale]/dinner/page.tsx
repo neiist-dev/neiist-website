@@ -23,7 +23,7 @@ import {
 import { getAuthenticatedUser } from "@/lib/auth";
 
 const handelsonTwo = localFont({
-  src: "../../assets/fonts/handelson-two.otf",
+  src: "../../../assets/fonts/handelson-two.otf",
   display: "swap",
 });
 
