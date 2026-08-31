@@ -15,6 +15,7 @@ import {
   ORDER_STATUS_CONFIG,
   type OrderStatus,
   type OrderStatusConfig,
+  type OrderStatusDict,
 } from "@/types/shop/orderStatus";
 import { Order } from "@/types/shop/order";
 
@@ -151,6 +152,25 @@ export function getOrderStatusLabelValue(labelData: StatusLabel, order: Order): 
   if (typeof labelData === "function") return labelData(order);
 
   return labelData;
+}
+
+export function getLocalizedOrderStatusLabel(
+  orderKind: OrderKind,
+  order: Order,
+  dict: OrderStatusDict
+): string {
+  if (order.delivered_at && dict.delivered_on) {
+    return dict.delivered_on.replace("{date}", new Date(order.delivered_at).toLocaleDateString());
+  }
+  if (orderKind === "jantar_de_curso") {
+    if (order.status === "pending" && order.payment_method === "mbway" && dict.special_status) {
+      return dict.special_status.jantar_pending_mbway;
+    }
+    if (order.status === "paid" && dict.special_status) {
+      return dict.special_status.jantar_confirmed;
+    }
+  }
+  return dict.status[order.status];
 }
 
 export function getOrderKindFromItems(

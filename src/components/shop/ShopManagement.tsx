@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useMemo, useOptimistic } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -13,10 +14,13 @@ import ProductManagementCard from "./ProductManagementCard";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 import ColorfulText from "../ColorfulText";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface ShopManagementProps {
   products: Product[];
   categories: Category[];
+  dict: Dictionary["shop_management"];
+  basePath?: string;
 }
 
 type ConfirmAction =
@@ -24,7 +28,12 @@ type ConfirmAction =
   | { type: "restore"; productId: number }
   | { type: "permanent"; productId: number };
 
-export default function ShopManagement({ products, categories }: ShopManagementProps) {
+export default function ShopManagement({
+  products,
+  categories,
+  dict,
+  basePath,
+}: ShopManagementProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -87,7 +96,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
   }, [visibleProducts, search, categoryFilter, fuse]);
 
   const handleEdit = (productId: number) => {
-    router.push(`/shop/manage/${productId}/edit`);
+    router.push(`${basePath || ""}/shop/manage/${productId}/edit`);
   };
 
   const handleArchive = (productId: number) => {
@@ -106,10 +115,9 @@ export default function ShopManagement({ products, categories }: ShopManagementP
   };
 
   const confirmMessages: Record<ConfirmAction["type"], string> = {
-    archive: "Tem a certeza que deseja arquivar este produto?",
-    restore: "Tem a certeza que deseja restaurar este produto?",
-    permanent:
-      "Tem a certeza que deseja eliminar definitivamente este produto? Esta ação não pode ser desfeita.",
+    archive: dict.confirm_archive,
+    restore: dict.confirm_restore,
+    permanent: dict.confirm_permanent,
   };
 
   const confirmAction = async () => {
@@ -139,10 +147,10 @@ export default function ShopManagement({ products, categories }: ShopManagementP
 
       if (!response.ok) {
         const data = await response.json();
-        toast.error(data?.error ?? "Ocorreu um erro. Tenta novamente.");
+        toast.error(data?.error ?? dict.error_generic);
       }
     } catch {
-      toast.error("Ocorreu um erro. Tenta novamente.");
+      toast.error(dict.error_generic);
     }
   };
 
@@ -163,10 +171,12 @@ export default function ShopManagement({ products, categories }: ShopManagementP
       )}
       <div className={styles.container}>
         <div className={styles.header}>
-          <ColorfulText className={styles.title} text="Gestão da Loja" />
+          <ColorfulText className={styles.title} text={dict.title} />
           <div className={styles.headerActions}>
-            <button className={styles.addBtn} onClick={() => router.push("/shop/manage/new")}>
-              <FaPlus /> Adicionar Produto
+            <button
+              className={styles.addBtn}
+              onClick={() => router.push(`${basePath || ""}/shop/manage/new`)}>
+              <FaPlus /> {dict.add_product}
             </button>
           </div>
         </div>
@@ -174,12 +184,12 @@ export default function ShopManagement({ products, categories }: ShopManagementP
         <div className={styles.filters}>
           <input
             type="text"
-            placeholder="Pesquisar produto..."
+            placeholder={dict.search_placeholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="all">Todas categorias</option>
+            <option value="all">{dict.all_categories}</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.name}>
                 {cat.name}
@@ -196,14 +206,18 @@ export default function ShopManagement({ products, categories }: ShopManagementP
             }}>
             <FiArchive />
             {showArchived
-              ? "Ver ativos"
-              : `Arquivados${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
+              ? dict.view_active
+              : `${dict.archived}${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
           </button>
-          <button className={styles.addBtn} onClick={() => router.push("/shop/pos")}>
-            <PiContactlessPayment /> Gestão POS
+          <button
+            className={styles.addBtn}
+            onClick={() => router.push(`${basePath || ""}/shop/pos`)}>
+            <PiContactlessPayment /> {dict.pos_link}
           </button>
-          <button className={styles.addBtn} onClick={() => router.push("/shop/manage/discounts")}>
-            <MdOutlineDiscount /> Descontos
+          <button
+            className={styles.addBtn}
+            onClick={() => router.push(`${basePath || ""}/shop/manage/discounts`)}>
+            <MdOutlineDiscount /> {dict.discounts_link}
           </button>
         </div>
 
@@ -212,18 +226,18 @@ export default function ShopManagement({ products, categories }: ShopManagementP
             <FiPackage size={64} />
             {isFiltering ? (
               <>
-                <p>Nenhum produto encontrado</p>
-                <span>Tenta ajustar os filtros ou a pesquisa</span>
+                <p>{dict.no_products_found}</p>
+                <span>{dict.adjust_filters}</span>
               </>
             ) : showArchived ? (
               <>
-                <p>Sem produtos arquivados</p>
-                <span>Produtos arquivados aparecerão aqui</span>
+                <p>{dict.no_archived_products}</p>
+                <span>{dict.no_archived_products_hint}</span>
               </>
             ) : (
               <>
-                <p>Ainda não há produtos</p>
-                <span>Clica em "Adicionar Produto" para começar</span>
+                <p>{dict.no_products}</p>
+                <span>{dict.no_products_hint}</span>
               </>
             )}
           </div>
@@ -237,6 +251,7 @@ export default function ShopManagement({ products, categories }: ShopManagementP
                 onArchive={handleArchive}
                 onRestore={handleRestore}
                 onPermanentDelete={handlePermanentDelete}
+                dict={dict}
               />
             ))}
           </div>

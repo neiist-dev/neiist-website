@@ -8,6 +8,7 @@ import { MdOutlineUnarchive } from "react-icons/md";
 import { Product } from "@/types/shop/product";
 import { getProductTimingBadge } from "@/utils/shop/shopUtils";
 import styles from "@/styles/components/shop/ProductManagementCard.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Props {
   product: Product;
@@ -15,6 +16,7 @@ interface Props {
   onArchive: (_id: number) => void;
   onRestore: (_id: number) => void;
   onPermanentDelete: (_id: number) => void;
+  dict: Dictionary["shop_management"];
 }
 
 export default function ProductManagementCard({
@@ -23,6 +25,7 @@ export default function ProductManagementCard({
   onArchive,
   onRestore,
   onPermanentDelete,
+  dict,
 }: Props) {
   const [imageIndex, setImageIndex] = useState(0);
 
@@ -36,17 +39,17 @@ export default function ProductManagementCard({
 
   const stockInfo = useMemo(() => {
     if (product.stock_type === "on_demand") {
-      return { label: "Sob Encomenda", status: "on-demand" };
+      return { label: dict.on_demand, status: "on-demand" };
     }
     const total =
       product.variants?.length > 0
         ? product.variants.reduce((sum, v) => sum + (v.stock_quantity || 0), 0)
         : product.stock_quantity || 0;
-    if (total === 0) return { label: "Sem stock", status: "out-of-stock" };
-    return { label: `${total} em stock`, status: "in-stock" };
-  }, [product]);
+    if (total === 0) return { label: dict.out_of_stock, status: "out-of-stock" };
+    return { label: dict.in_stock.replace("{count}", String(total)), status: "in-stock" };
+  }, [product, dict]);
 
-  const [timingBadge] = useState(() => getProductTimingBadge(product));
+  const [timingBadge] = useState(() => getProductTimingBadge(product, dict.timing_badge));
   const currentImage = images[imageIndex];
 
   return (
@@ -62,14 +65,14 @@ export default function ProductManagementCard({
         ) : (
           <div className={styles.placeholder}>
             <FiImage size={40} />
-            <span>Sem Imagem</span>
+            <span>{dict.no_image}</span>
           </div>
         )}
 
         <span className={`${styles.badge} ${styles[stockInfo.status]}`}>{stockInfo.label}</span>
         {timingBadge && <span className={styles.timingBadge}>{timingBadge}</span>}
 
-        {!product.active && <span className={styles.archivedBadge}>Arquivado</span>}
+        {!product.active && <span className={styles.archivedBadge}>{dict.archived_badge}</span>}
       </div>
 
       {images.length > 1 && (
@@ -101,19 +104,19 @@ export default function ProductManagementCard({
           {product.active !== false ? (
             <>
               <button onClick={() => onEdit(product.id)} className={styles.btnPrimary}>
-                <FaEdit /> Editar
+                <FaEdit /> {dict.edit}
               </button>
               <button onClick={() => onArchive(product.id)} className={styles.btnSecondary}>
-                <FiArchive /> Arquivar
+                <FiArchive /> {dict.archive}
               </button>
             </>
           ) : (
             <>
               <button onClick={() => onRestore(product.id)} className={styles.btnRestore}>
-                <MdOutlineUnarchive /> Restaurar
+                <MdOutlineUnarchive /> {dict.restore}
               </button>
               <button onClick={() => onPermanentDelete(product.id)} className={styles.btnDanger}>
-                <FiTrash2 /> Eliminar
+                <FiTrash2 /> {dict.delete}
               </button>
             </>
           )}

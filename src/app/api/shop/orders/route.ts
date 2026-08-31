@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
-import { PAYMENT_METHODS, PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
+import { PAYMENT_METHODS_SET, PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
 import { OrderSource } from "@/types/shop/orderKind";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { OrderItem } from "@/types/shop/order";
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const validPaymentMethods = new Set(Object.keys(PAYMENT_METHODS));
+    const validPaymentMethods = PAYMENT_METHODS_SET;
     const orderSource = parseOrderSource(body.order_source);
     const guestCheckout = body.guest_checkout === true;
     const canUseGuestCheckout =

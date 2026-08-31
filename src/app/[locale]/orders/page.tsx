@@ -6,18 +6,27 @@ import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.reposit
 import { requireRoles } from "@/lib/auth";
 import { sanitizeOrder } from "@/utils/shop/shopUtils";
 import GlobalLoading from "@/app/loading";
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 interface PageProps {
+  params: LocaleParams;
   searchParams: Promise<{ orderId?: string }>;
 }
 
-async function OrdersManagementContent({ searchParams }: PageProps) {
+async function OrdersManagementContent({ params, searchParams }: PageProps) {
   const { roles } = await requireRoles([
     UserRole._ADMIN,
     UserRole._COORDINATOR,
     UserRole._SHOP_MANAGER,
     UserRole._MEMBER,
   ]);
+
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dictOrdersTable = getDictionary(locale).orders_table;
+  const dictOrderDetails = getDictionary(locale).order_details;
+  const dictPosPayment = getDictionary(locale).pos_payment;
 
   const { orderId } = await searchParams;
 
@@ -33,16 +42,24 @@ async function OrdersManagementContent({ searchParams }: PageProps) {
 
   return (
     <>
-      <OrdersTable orders={orders} products={products} />
+      <OrdersTable
+        orders={orders}
+        products={products}
+        dict={dictOrdersTable}
+        posPaymentDict={dictPosPayment}
+        basePath={`/${locale}`}
+      />
       {orderId && (
         <OrderDetailOverlay
           orderId={Number(orderId)}
           orders={orders}
           canManage={isManager}
-          basePath="/orders"
+          basePath={`/${locale}/orders`}
           canEditNotes={canEditOrder}
           canEditItems={canEditOrder}
           products={products}
+          dict={dictOrderDetails}
+          posPaymentDict={dictPosPayment}
         />
       )}
     </>

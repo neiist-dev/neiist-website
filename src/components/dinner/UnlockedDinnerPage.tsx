@@ -19,13 +19,12 @@ import {
   FaTshirt,
   FaVoteYea,
 } from "react-icons/fa";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, type TouchEvent } from "react";
 import { Squash } from "hamburger-react";
-import type { TouchEvent } from "react";
-import { Dictionary } from "@/i18n/dictionaries";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 const handelsonTwo = localFont({
-  src: "../../../assets/fonts/handelson-two.otf",
+  src: "../../assets/fonts/handelson-two.otf",
   display: "swap",
 });
 

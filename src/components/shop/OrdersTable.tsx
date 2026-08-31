@@ -3,25 +3,21 @@
 import { useMemo, useRef, useState } from "react";
 import styles from "@/styles/components/shop/OrdersTable.module.css";
 import { Order } from "@/types/shop/order";
-import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
+import { getStatusCssClass } from "@/utils/shop/orderStatusUtils";
 import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types/shop/orderStatus";
 import { Product } from "@/types/shop/product";
 import { FiSearch, FiCheck } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
-import * as XLSX from "xlsx";
 import Fuse from "fuse.js";
-import {
-  getColorFromOptions,
-  getCompactProductsSummary,
-  formatVariantSimple,
-} from "@/utils/shop/shopUtils";
+import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
+import { getOrderKindFromItems, getLocalizedOrderStatusLabel } from "@/utils/shop/orderKindUtils";
 import {
   buildProductCascadeList,
   matchesProductFilter,
   getProductFilterDisplayLabel,
 } from "@/utils/shop/orderFilterUtils";
+import { exportOrdersToExcel } from "@/utils/shop/orderExportUtils";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import { useRouter } from "next/navigation";
@@ -31,6 +27,8 @@ import MultiSelectFilter from "./MultiSelectFilter";
 import DateFilter from "./DateFilter";
 import ActiveFilters from "./ActiveFilters";
 import MobileFiltersDrawer from "./MobileFiltersDrawer";
+import ColorfulText from "@/components/ColorfulText";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 function normalizeCampus(campus?: string): string {
   return campus ? campus.trim().toLowerCase() : "";
@@ -43,19 +41,12 @@ function displayCampus(campus: string): string {
     .join(" ");
 }
 
-function sortByMultipleFields<T>(a: T, b: T, ...fields: (keyof T)[]): number {
-  for (const field of fields) {
-    const aValue = String(a[field]);
-    const bValue = String(b[field]);
-    const orderComparison = aValue.localeCompare(bValue);
-    if (orderComparison !== 0) return orderComparison;
-  }
-  return 0;
-}
-
 interface OrdersTableProps {
   orders: Order[];
   products: Product[];
+  dict: Dictionary["orders_table"];
+  posPaymentDict: Dictionary["pos_payment"];
+  basePath: string;
 }
 
 interface FilterState {
@@ -65,7 +56,13 @@ interface FilterState {
   statuses: string[];
 }
 
-export default function OrdersTable({ orders, products }: OrdersTableProps) {
+export default function OrdersTable({
+  orders,
+  products,
+  dict,
+  posPaymentDict,
+  basePath,
+}: OrdersTableProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
@@ -206,7 +203,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   }
 
   function handleRowClick(orderId: number): void {
-    router.push(`/orders?orderId=${orderId}`);
+    router.push(`${basePath}/orders?orderId=${orderId}`);
   }
 
   function handleNewOrderSubmit(order?: Order): void {
@@ -363,152 +360,13 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
   };
 
   const handleExport = () => {
-    const ordersSheet = filtered.map((o) => ({
-      Estado: getOrderStatusLabelForKind(getOrderKindFromItems(o.items).orderKind, o.status, o),
-      Número: o.order_number,
-      Data: new Date(o.created_at).toLocaleString("pt-PT"),
-      Nome: o.customer_name,
-      Email: o.customer_email,
-      NIF: o.customer_nif || "",
-      "IST ID": o.user_istid,
-      Campus: o.campus,
-      Telefone: o.customer_phone,
-      "Método de pagamento": o.payment_method,
-      "Referencia de Pagamento": o.payment_reference,
-      "Total (€)": o.total_amount,
-      Notas: o.notes || "",
-      "Ultima modificação por": o.updated_by,
-      Produtos: o.items
-        .map((it) => `${it.product_name} ${it.variant_label || ""} x${it.quantity}`)
-        .join("; "),
-    }));
-
-    const statsMapDetalhes: Record<
-      string,
-      { modelo: string; cor: string; tamanho: string; quantidade: number }
-    > = {};
-    const statsMapCampusInventory: Record<
-      string,
-      {
-        campus: string;
-        modelo: string;
-        cor: string;
-        tamanho: string;
-        quantidade: number;
-      }
-    > = {};
-    const statsMapCampusDate: Record<
-      string,
-      {
-        campus: string;
-        modelo: string;
-        data: string;
-        cor: string;
-        tamanho: string;
-        quantidade: number;
-      }
-    > = {};
-
-    filtered.forEach((order) =>
-      order.items.forEach((item) => {
-        const modelo = item.product_name;
-        const colorInfo = getColorFromOptions(item.variant_options, item.variant_label);
-        const cor = colorInfo.name || "";
-        const tamanho =
-          formatVariantSimple(item.variant_options ?? undefined, item.variant_label ?? undefined)
-            .text || "";
-        const key = `${modelo}|||${cor}|||${tamanho}`;
-        if (!statsMapDetalhes[key]) {
-          statsMapDetalhes[key] = { modelo, cor, tamanho, quantidade: 0 };
-        }
-        statsMapDetalhes[key].quantidade += item.quantity;
-        const campus = order.campus || "Unknown";
-        const ciKey = `${campus}|||${modelo}|||${cor}|||${tamanho}`;
-        if (!statsMapCampusInventory[ciKey]) {
-          statsMapCampusInventory[ciKey] = {
-            campus,
-            modelo,
-            cor,
-            tamanho,
-            quantidade: 0,
-          };
-        }
-        statsMapCampusInventory[ciKey].quantidade += item.quantity;
-        const dateStr = new Date(order.created_at).toISOString().slice(0, 10);
-        const cdKey = `${campus}|||${modelo}|||${dateStr}|||${cor}|||${tamanho}`;
-        if (!statsMapCampusDate[cdKey]) {
-          statsMapCampusDate[cdKey] = {
-            campus,
-            modelo,
-            data: dateStr,
-            cor,
-            tamanho,
-            quantidade: 0,
-          };
-        }
-        statsMapCampusDate[cdKey].quantidade += item.quantity;
-      })
-    );
-
-    const statsSheet = Object.values(statsMapDetalhes)
-      .sort((a, b) => sortByMultipleFields(a, b, "modelo", "cor", "tamanho"))
-      .map((itemData) => ({
-        Modelo: itemData.modelo,
-        Cor: itemData.cor,
-        Tamanho: itemData.tamanho,
-        Quantidade: itemData.quantidade,
-      }));
-
-    const statsCampusInventorySheet = Object.values(statsMapCampusInventory)
-      .sort((a, b) => sortByMultipleFields(a, b, "campus", "modelo", "cor", "tamanho"))
-      .map((itemData) => ({
-        Campus: itemData.campus,
-        Modelo: itemData.modelo,
-        Cor: itemData.cor,
-        Tamanho: itemData.tamanho,
-        Quantidade: itemData.quantidade,
-      }));
-
-    const statsCampusDateSheet = Object.values(statsMapCampusDate)
-      .sort((a, b) => sortByMultipleFields(a, b, "campus", "modelo", "data", "cor", "tamanho"))
-      .map((itemData) => ({
-        Campus: itemData.campus,
-        Modelo: itemData.modelo,
-        Data: itemData.data,
-        Cor: itemData.cor,
-        Tamanho: itemData.tamanho,
-        Quantidade: itemData.quantidade,
-      }));
-
-    const excelWorkbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      excelWorkbook,
-      XLSX.utils.json_to_sheet(ordersSheet),
-      "Encomendas"
-    );
-    XLSX.utils.book_append_sheet(excelWorkbook, XLSX.utils.json_to_sheet(statsSheet), "Detalhes");
-    XLSX.utils.book_append_sheet(
-      excelWorkbook,
-      XLSX.utils.json_to_sheet(statsCampusInventorySheet),
-      "InventarioPorCampus"
-    );
-    XLSX.utils.book_append_sheet(
-      excelWorkbook,
-      XLSX.utils.json_to_sheet(statsCampusDateSheet),
-      "InventarioPorCampusPorDia"
-    );
-    XLSX.writeFile(excelWorkbook, `encomendas_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    exportOrdersToExcel(filtered);
   };
 
   return (
     <>
       <div className={styles.container}>
-        <h1 className={styles.title}>
-          <span className={styles.primary}>En</span>
-          <span className={styles.secondary}>com</span>
-          <span className={styles.tertiary}>end</span>
-          <span className={styles.quaternary}>as</span>
-        </h1>
+        <ColorfulText as="h1" className={styles.title} text={dict.title} />
 
         <div className={styles.controlsRow}>
           <div className={styles.searchContainer}>
@@ -517,7 +375,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             </div>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={dict.search_placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -525,16 +383,16 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             <button
               className={styles.mobileFilterBtn}
               onClick={() => setShowMobileFilters(true)}
-              title="Filtros">
+              title={dict.filters_title}>
               <TbFilter size={20} />
             </button>
           </div>
           <div className={styles.rightControls}>
-            <button className={styles.iconBtn} onClick={handleExport} title="Exportar">
+            <button className={styles.iconBtn} onClick={handleExport} title={dict.export_button}>
               <TbTableExport />
             </button>
             <button className={styles.newBtn} onClick={() => setShowNewOrderModal(true)}>
-              Nova Encomenda
+              {dict.new_order_button}
             </button>
           </div>
         </div>
@@ -548,20 +406,20 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
             filterGroups={[
               {
                 id: "products",
-                label: "Produtos",
+                label: dict.filter_products,
                 values: filters.products,
                 getDisplayValue: getProductFilterDisplayLabel,
               },
               {
                 id: "campuses",
-                label: "Campus",
+                label: dict.filter_campus,
                 values: filters.campuses,
               },
               {
                 id: "statuses",
-                label: "Estado",
+                label: dict.filter_status,
                 values: filters.statuses,
-                getDisplayValue: (s) => getStatusLabel(s as OrderStatus),
+                getDisplayValue: (s) => dict.status[s as OrderStatus] ?? s,
               },
             ]}
             onRemoveValue={(groupId, value) => {
@@ -579,27 +437,28 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         {selectedOrders.size > 0 && (
           <div className={styles.bulkActions}>
             <span className={styles.bulkCount}>
-              {selectedOrders.size} encomenda{selectedOrders.size !== 1 ? "s" : ""} selecionada
-              {selectedOrders.size !== 1 ? "s" : ""}
+              {selectedOrders.size}{" "}
+              {selectedOrders.size !== 1 ? dict.order_plural : dict.order_singular}{" "}
+              {selectedOrders.size !== 1 ? dict.selected_plural : dict.selected_singular}
             </span>
             <div className={styles.bulkButtons}>
               <button
                 onClick={handleEmailSelected}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}
-                title="Enviar email aos selecionados">
-                {bulkLoading ? "A processar..." : "Enviar Email"}
+                title={dict.send_email_selected}>
+                {bulkLoading ? dict.processing : dict.send_email}
               </button>
               <button
                 onClick={handleSetPickupDeadline}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}
-                title="Definir prazo limite de levantamento">
-                {bulkLoading ? "A processar..." : "Definir prazo para levantamento"}
+                title={dict.set_pickup_deadline_title}>
+                {bulkLoading ? dict.processing : dict.set_pickup_deadline}
               </button>
               <InputDialog
                 open={showPickupDialog}
-                title={"Prazo limite para levantamento das encomendas"}
+                title={dict.pickup_dialog_title}
                 initialValue={pickupInput ?? ""}
                 onConfirm={(val) => confirmSetPickupDeadline(val)}
                 onCancel={() => setShowPickupDialog(false)}
@@ -608,25 +467,25 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                 onClick={() => handleBulkStatusChange("paid")}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}>
-                {bulkLoading ? "A processar..." : "Marcar como Pago"}
+                {bulkLoading ? dict.processing : dict.mark_paid}
               </button>
               <button
                 onClick={() => handleBulkStatusChange("ready")}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}>
-                {bulkLoading ? "A processar..." : "Marcar como Pronto"}
+                {bulkLoading ? dict.processing : dict.mark_ready}
               </button>
               <button
                 onClick={() => handleBulkStatusChange("delivered")}
                 disabled={bulkLoading}
                 className={styles.bulkBtn}>
-                {bulkLoading ? "A processar..." : "Marcar como Entregue"}
+                {bulkLoading ? dict.processing : dict.mark_delivered}
               </button>
               <button
                 onClick={() => handleBulkStatusChange("cancelled")}
                 disabled={bulkLoading}
                 className={styles.bulkBtnDanger}>
-                {bulkLoading ? "A processar..." : "Cancelar Encomendas"}
+                {bulkLoading ? dict.processing : dict.cancel_orders}
               </button>
             </div>
           </div>
@@ -645,10 +504,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       {isSomeSelected && <span className={styles.indeterminateIcon}>−</span>}
                     </div>
                   </th>
-                  <th>Número</th>
+                  <th>{dict.col_number}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Data
+                      {dict.col_date}
                       <button
                         ref={dateFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -657,10 +516,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </button>
                     </div>
                   </th>
-                  <th>Nome</th>
+                  <th>{dict.col_name}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Campus
+                      {dict.col_campus}
                       <button
                         ref={campusFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -669,10 +528,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </button>
                     </div>
                   </th>
-                  <th>Email</th>
+                  <th>{dict.col_email}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Produtos
+                      {dict.col_products}
                       <button
                         ref={productsFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -681,10 +540,10 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </button>
                     </div>
                   </th>
-                  <th>Total</th>
+                  <th>{dict.col_total}</th>
                   <th>
                     <div className={styles.headerWithFilter}>
-                      Estado
+                      {dict.col_status}
                       <button
                         ref={statusFilterRef}
                         className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -712,7 +571,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                       </div>
                     </td>
                     <td>{order.order_number}</td>
-                    <td>{new Date(order.created_at).toLocaleDateString("pt-PT")}</td>
+                    <td>{new Date(order.created_at).toLocaleDateString()}</td>
                     <td>{getFirstAndLastName(order.customer_name)}</td>
                     <td className={styles.campusCell}>
                       {order.campus ? displayCampus(normalizeCampus(order.campus)) : "-"}
@@ -736,10 +595,13 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                     <td>
                       <span
                         className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
-                        {getOrderStatusLabelForKind(
+                        {getLocalizedOrderStatusLabel(
                           getOrderKindFromItems(order.items).orderKind,
-                          order.status,
-                          order
+                          order,
+                          {
+                            status: dict.status,
+                            special_status: dict.special_status,
+                          }
                         )}
                       </span>
                     </td>
@@ -748,7 +610,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={9} style={{ padding: 20, textAlign: "center" }}>
-                      Nenhuma encomenda encontrada.
+                      {dict.no_orders}
                     </td>
                   </tr>
                 )}
@@ -775,7 +637,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           selected={filters.products}
           onChange={(products) => setFilters((p) => ({ ...p, products }))}
           buttonRef={productsFilterRef}
-          title="Produtos"
+          title={dict.filter_products}
         />
       )}
       {campusFilterOpen && (
@@ -786,7 +648,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           selected={filters.campuses}
           onChange={(campuses) => setFilters((p) => ({ ...p, campuses }))}
           buttonRef={campusFilterRef}
-          title="Campus"
+          title={dict.filter_campus}
         />
       )}
       {statusFilterOpen && (
@@ -797,8 +659,8 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
           selected={filters.statuses}
           onChange={(statuses) => setFilters((p) => ({ ...p, statuses }))}
           buttonRef={statusFilterRef}
-          title="Estado"
-          getLabel={(status) => getStatusLabel(status as OrderStatus)}
+          title={dict.filter_status}
+          getLabel={(status) => dict.status[status as OrderStatus] ?? status}
         />
       )}
 
@@ -813,22 +675,22 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         filterGroups={[
           {
             id: "products",
-            title: "Produtos",
+            title: dict.filter_products,
             cascadeOptions: productCascadeList,
             selected: filters.products,
           },
           {
             id: "campuses",
-            title: "Campus",
+            title: dict.filter_campus,
             options: uniqueCampuses,
             selected: filters.campuses,
           },
           {
             id: "statuses",
-            title: "Estado",
+            title: dict.filter_status,
             options: availableStatuses,
             selected: filters.statuses,
-            getLabel: (s) => getStatusLabel(s as OrderStatus),
+            getLabel: (s) => dict.status[s as OrderStatus] ?? s,
           },
         ]}
       />
@@ -845,7 +707,8 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
         <PosPaymentOverlay
           open={!!newOrderPosPayment}
           order={newOrderPosPayment}
-          reopenOrderUrl={`/orders?orderId=${newOrderPosPayment.id}`}
+          reopenOrderUrl={`${basePath}/orders?orderId=${newOrderPosPayment.id}`}
+          dict={posPaymentDict}
           onCloseAction={() => setNewOrderPosPayment(null)}
           onOrderUpdatedAction={() => {
             setNewOrderPosPayment(null);
@@ -857,7 +720,7 @@ export default function OrdersTable({ orders, products }: OrdersTableProps) {
       {pendingBulkStatus && (
         <ConfirmDialog
           open={!!pendingBulkStatus}
-          message={`Tem a certeza que deseja alterar o estado de ${selectedOrders.size} encomenda${selectedOrders.size !== 1 ? "s" : ""} para ${getStatusLabel(pendingBulkStatus)}?`}
+          message={`${dict.bulk_confirm_1} ${selectedOrders.size} ${selectedOrders.size !== 1 ? dict.order_plural : dict.order_singular} ${dict.bulk_confirm_3} ${dict.status[pendingBulkStatus]}?`}
           onConfirm={async () => {
             await doBulkStatusChange(pendingBulkStatus);
             setPendingBulkStatus(null);

@@ -7,7 +7,7 @@ import styles from "@/styles/components/shop/CheckoutForm.module.css";
 
 import { Campus } from "@/types/shop/order";
 import { OrderSource } from "@/types/shop/orderKind";
-import { getPaymentLabel, PaymentMethod } from "@/types/shop/payment";
+import { getLocalizedPaymentMethods, PaymentMethod } from "@/types/shop/payment";
 import { CartItem } from "@/types/shop/product";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import Image from "next/image";
@@ -17,12 +17,23 @@ import { User } from "@/types/user";
 import type { ApplePayPaymentRequest, ApplePayPaymentToken } from "@/types/sumup";
 import VariantTags from "@/components/shop/VariantTags";
 import { validateDiscount } from "@/utils/shop/discountUtils";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface CheckoutFormProps {
   user: User;
+  dict: Dictionary["checkout_form"];
+  pendingPaymentDict: Dictionary["pending_payment"];
+  checkoutOverlayDict: Dictionary["checkout_overlay"];
+  basePath?: string;
 }
 
-export default function CheckoutForm({ user }: CheckoutFormProps) {
+export default function CheckoutForm({
+  user,
+  dict,
+  pendingPaymentDict,
+  checkoutOverlayDict,
+  basePath,
+}: CheckoutFormProps) {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [campus, setCampus] = useState<Campus>(Campus._Alameda);
@@ -157,7 +168,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     });
 
     const data = (await res.json()) as { id?: number; error?: string };
-    if (!res.ok || !data?.id) throw new Error(data?.error || "Erro ao submeter encomenda.");
+    if (!res.ok || !data?.id) throw new Error(data?.error || dict.error_submit);
 
     if (persistOverlay) {
       setSubmittedPaymentMethod(selectedPayment);
@@ -169,26 +180,26 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const handleSubmit = async (selectedPayment: PaymentMethod | null = payment) => {
     if (!campus) {
-      toast.error("Por favor, seleciona o campus.", { closeButton: true });
+      toast.error(dict.error_no_campus, { closeButton: true });
       return;
     }
 
     if (isMixedInvalid) {
-      toast.error("Este pedido não pode misturar categorias especiais com outras categorias.", {
+      toast.error(dict.error_mixed_invalid, {
         closeButton: true,
       });
       return;
     }
 
     if (!selectedPayment || !allowedPaymentMethods.includes(selectedPayment)) {
-      toast.error("Seleciona um método de pagamento.", { closeButton: true });
+      toast.error(dict.error_no_payment, { closeButton: true });
       return;
     }
     setLoading(true);
     try {
       await createOrder(selectedPayment, true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao submeter encomenda.", {
+      toast.error(err instanceof Error ? err.message : dict.error_submit, {
         closeButton: true,
       });
     } finally {
@@ -198,23 +209,23 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
   const handleApplePayDirect = () => {
     if (!campus) {
-      toast.error("Por favor, seleciona o campus.", { closeButton: true });
+      toast.error(dict.error_no_campus, { closeButton: true });
       return;
     }
 
     if (typeof window === "undefined" || !window.isSecureContext) {
-      toast.error("Apple Pay requer um contexto seguro (HTTPS).", { closeButton: true });
+      toast.error(dict.error_apple_pay_context, { closeButton: true });
       return;
     }
 
     if (typeof window.ApplePaySession === "undefined") {
-      toast.error("Apple Pay não está disponível neste browser.", { closeButton: true });
+      toast.error(dict.error_apple_pay_unavailable, { closeButton: true });
       return;
     }
 
     const ApplePaySession = window.ApplePaySession;
     if (!ApplePaySession.canMakePayments()) {
-      toast.error("Apple Pay não está disponível neste dispositivo.", { closeButton: true });
+      toast.error(dict.error_apple_pay_device, { closeButton: true });
       return;
     }
 
@@ -258,34 +269,33 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         };
         if (!checkoutRes.ok)
           throw new Error(
-            checkoutData?.error || checkoutData?.message || "Falha ao criar checkout"
+            checkoutData?.error || checkoutData?.message || dict.error_checkout_create
           );
 
         checkoutId = checkoutData.checkoutId ?? checkoutData.id ?? null;
-        if (!checkoutId) throw new Error("Resposta inesperada do serviço de pagamento");
+        if (!checkoutId) throw new Error(dict.error_checkout_unexpected);
 
         const merchantRes = await fetch("/api/shop/sumup/apple-pay-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ checkoutId, validationUrl: event.validationURL }),
         });
-        if (!merchantRes.ok) throw new Error("Falha na validação Apple Pay");
+        if (!merchantRes.ok) throw new Error(dict.error_applepay_validation);
 
         const merchantSession = (await merchantRes.json()) as unknown;
         session.completeMerchantValidation(merchantSession);
       } catch (error) {
         session.abort();
-        toast.error(
-          error instanceof Error ? error.message : "Falha na validação Apple Pay. Tenta novamente.",
-          { closeButton: true }
-        );
+        toast.error(error instanceof Error ? error.message : dict.error_apple_pay_failed, {
+          closeButton: true,
+        });
         setLoading(false);
       }
     };
 
     session.onpaymentauthorized = async (event) => {
       try {
-        if (!checkoutId || !createdOrderId) throw new Error("Dados de pagamento incompletos");
+        if (!checkoutId || !createdOrderId) throw new Error(dict.error_payment_incomplete);
 
         const res = await fetch("/api/shop/sumup/verify", {
           method: "POST",
@@ -305,16 +315,15 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           router.push(`/my-orders?orderId=${createdOrderId}`);
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
-          toast.error(data?.error || "Pagamento Apple Pay falhou. Tenta novamente.", {
+          toast.error(data?.error || dict.error_apple_pay_failure, {
             closeButton: true,
           });
         }
       } catch (error) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
-        toast.error(
-          error instanceof Error ? error.message : "Erro ao processar Apple Pay. Tenta novamente.",
-          { closeButton: true }
-        );
+        toast.error(error instanceof Error ? error.message : dict.error_apple_pay_processing, {
+          closeButton: true,
+        });
       } finally {
         setLoading(false);
       }
@@ -336,20 +345,17 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           alignItems: "center",
           justifyContent: "center",
         }}>
-        <p>O teu carrinho está vazio.</p>
+        <p>{dict.empty_cart}</p>
       </div>
     );
   }
 
   const pickupOptions = [
-    { id: Campus._Alameda, label: "Alameda" },
-    { id: Campus._Taguspark, label: "Taguspark" },
+    { id: Campus._Alameda, label: dict.campus_alameda },
+    { id: Campus._Taguspark, label: dict.campus_taguspark },
   ] as const;
 
-  const paymentOptions = allowedPaymentMethods.map((method) => ({
-    id: method,
-    label: getPaymentLabel(method),
-  }));
+  const paymentOptions = getLocalizedPaymentMethods(allowedPaymentMethods, dict.payment_methods);
   const isSelectedPaymentAllowed = payment !== null && allowedPaymentMethods.includes(payment);
   const hasSelectedPayMethod = payment !== null && payment !== "apple-pay";
   const isApplePayAllowed = applePayAvailable && allowedPaymentMethods.includes("apple-pay");
@@ -360,30 +366,30 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       <div className={styles.leftColumn}>
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>1. Informações Pessoais</h2>
+            <h2 className={styles.sectionTitle}>{dict.section_personal}</h2>
           </div>
 
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label>Número de Telefone</label>
+              <label>{dict.phone_label}</label>
               <div className={styles.inputWithIcon}>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+351 999 888 777"
+                  placeholder={dict.phone_placeholder}
                   className={styles.input}
                 />
               </div>
             </div>
             {!isSpecialOrderKind && (
               <div className={styles.formGroup}>
-                <label>NIF (Opcional)</label>
+                <label>{dict.nif_label}</label>
                 <input
                   type="text"
                   value={nif}
                   onChange={(e) => setNif(e.target.value)}
-                  placeholder="123456789"
+                  placeholder={dict.nif_placeholder}
                   className={styles.input}
                 />
               </div>
@@ -394,7 +400,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         <div className={styles.divider} />
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            {isSpecialOrderKind ? "2. Campus" : "2. Local de Entrega"}
+            {isSpecialOrderKind ? dict.section_campus : dict.section_delivery}
           </h2>
 
           <div className={styles.radioGroup}>
@@ -417,7 +423,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         <div className={styles.divider} />
 
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>3. Método de Pagamento</h2>
+          <h2 className={styles.sectionTitle}>{dict.section_payment}</h2>
 
           <div className={styles.radioGroup}>
             {paymentOptions.map((opt) => (
@@ -442,26 +448,26 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
 
         <div className={styles.divider} />
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Notas (Opcional)</h2>
+          <h2 className={styles.sectionTitle}>{dict.section_notes}</h2>
           <textarea
             className={styles.textarea}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Adicione notas sobre a sua encomenda..."
+            placeholder={dict.notes_placeholder}
             rows={4}
           />
         </section>
 
         <section className={styles.section}>
           <div className={styles.formGroup}>
-            <label htmlFor="discount-code">Código de desconto</label>
+            <label htmlFor="discount-code">{dict.discount_label}</label>
             <div style={{ display: "flex", gap: "0.75rem" }}>
               <input
                 id="discount-code"
                 type="text"
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value)}
-                placeholder="NEIIST20"
+                placeholder={dict.discount_placeholder}
                 className={styles.input}
               />
               <button
@@ -470,7 +476,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                 style={{ marginTop: 0, padding: "0.75rem 1rem", width: "auto" }}
                 onClick={handleApplyDiscount}
                 disabled={discountLoading || cart.length === 0}>
-                {discountLoading ? "A validar..." : "Aplicar"}
+                {discountLoading ? dict.validating : dict.apply}
               </button>
             </div>
           </div>
@@ -481,7 +487,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             className={styles.checkoutButton}
             onClick={() => handleSubmit()}
             disabled={loading}>
-            {loading ? "A processar..." : "Finalizar Compra"}
+            {loading ? dict.processing : dict.submit}
           </button>
         )}
 
@@ -490,13 +496,13 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             className={styles.applePayStandaloneButton}
             onClick={handleApplePayDirect}
             disabled={loading}
-            aria-label="Pagar com Apple Pay"></button>
+            aria-label={dict.apple_pay_label}></button>
         )}
       </div>
 
       <div className={styles.rightColumn}>
         <div className={styles.summarySticky}>
-          <h2 className={styles.summaryTitle}>Resumo da Encomenda</h2>
+          <h2 className={styles.summaryTitle}>{dict.summary_title}</h2>
           <div className={styles.cartItems}>
             {cart.map((item) => {
               const variantObj =
@@ -553,18 +559,20 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
             {!isSpecialOrderKind && (
               <>
                 <div className={styles.priceLine}>
-                  <span>Subtotal</span>
+                  <span>{dict.subtotal}</span>
                   <span>€{subtotal.toFixed(2)}</span>
                 </div>
                 <div className={styles.priceLine}>
-                  <span>IVA (23%)</span>
+                  <span>{dict.iva}</span>
                   <span>€{taxes.toFixed(2)}</span>
                 </div>
               </>
             )}
             {appliedDiscount && discountAmount > 0 && (
               <div className={styles.priceLine}>
-                <span>Desconto aplicado ({appliedDiscount.code})</span>
+                <span>
+                  {dict.discount_applied} ({appliedDiscount.code})
+                </span>
                 <span>- €{discountAmount.toFixed(2)}</span>
               </div>
             )}
@@ -572,7 +580,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
               <div className={styles.priceDivider} />
             )}
             <div className={styles.totalLine}>
-              <span>Total</span>
+              <span>{dict.total}</span>
               <span>€{total.toFixed(2)}</span>
             </div>
           </div>
@@ -585,17 +593,13 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                     className={styles.expandButton}
                     onClick={() => setShowTaxInfo((v) => !v)}
                     aria-expanded={showTaxInfo}>
-                    <span className={styles.expandText}>
-                      Taxas incluídas. Entrega calculada no checkout.
-                    </span>
+                    <span className={styles.expandText}>{dict.tax_info}</span>
                     <FaChevronDown
                       className={`${styles.expandIcon} ${showTaxInfo ? styles.expanded : ""}`}
                     />
                   </button>
                   {showTaxInfo && (
-                    <div className={styles.expandContent}>
-                      As taxas são calculadas automaticamente com base na sua localização.
-                    </div>
+                    <div className={styles.expandContent}>{dict.tax_info_detail}</div>
                   )}
                 </>
               )}
@@ -607,15 +611,13 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
                     className={styles.expandButton}
                     onClick={() => setShowDeliveryInfo((v) => !v)}
                     aria-expanded={showDeliveryInfo}>
-                    <span className={styles.expandText}>Entrega estimada: 15-20 dias úteis</span>
+                    <span className={styles.expandText}>{dict.delivery_estimate}</span>
                     <FaChevronDown
                       className={`${styles.expandIcon} ${showDeliveryInfo ? styles.expanded : ""}`}
                     />
                   </button>
                   {showDeliveryInfo && (
-                    <div className={styles.expandContent}>
-                      O prazo de entrega pode variar conforme o local de levantamento escolhido.
-                    </div>
+                    <div className={styles.expandContent}>{dict.delivery_detail}</div>
                   )}
                 </>
               )}
@@ -624,7 +626,13 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         </div>
       </div>
       {orderId !== null && submittedPaymentMethod && (
-        <ShopCheckoutOverlay orderId={orderId} paymentMethod={submittedPaymentMethod} />
+        <ShopCheckoutOverlay
+          orderId={orderId}
+          paymentMethod={submittedPaymentMethod}
+          dict={checkoutOverlayDict}
+          pendingPaymentDict={pendingPaymentDict}
+          basePath={basePath}
+        />
       )}
     </div>
   );

@@ -185,34 +185,59 @@ export function isProductDeadlinePassed(
   return new Date(product.order_deadline).getTime() < Date.now();
 }
 
+export interface ProductTimingBadgeDict {
+  coming_soon: string;
+  unavailable: string;
+}
+
 export function getProductTimingBadge(
-  product?: {
-    stock_type?: string;
-    order_start?: string | null;
-    order_deadline?: string | null;
-  } | null
-): "Brevemente" | "Indisponível" | null {
-  if (isProductUpcoming(product)) return "Brevemente";
-  if (isProductDeadlinePassed(product)) return "Indisponível";
+  product:
+    | {
+        stock_type?: string;
+        order_start?: string | null;
+        order_deadline?: string | null;
+      }
+    | null
+    | undefined,
+  dict: ProductTimingBadgeDict
+): string | null {
+  if (isProductUpcoming(product)) return dict.coming_soon;
+  if (isProductDeadlinePassed(product)) return dict.unavailable;
   return null;
+}
+
+export interface ProductUnavailableDict {
+  error_upcoming: string;
+  error_deadline: string;
+  error_unavailable: string;
+}
+
+export function isProductAvailable(
+  product: Product,
+  selectedVariant?: ProductVariant | null
+): boolean {
+  if (isProductUpcoming(product) || isProductDeadlinePassed(product)) {
+    return false;
+  }
+  return product.variants.length === 0
+    ? product.stock_type !== "limited" || (product.stock_quantity ?? 0) > 0
+    : !!selectedVariant &&
+        selectedVariant.active &&
+        (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0);
 }
 
 export function getProductUnavailableReason(
   product: Product,
-  selectedVariant?: ProductVariant | null
+  selectedVariant: ProductVariant | null | undefined,
+  dict: ProductUnavailableDict
 ): string | null {
   if (isProductUpcoming(product)) {
-    const date = new Date(product.order_start!).toLocaleDateString("pt-PT");
-    return `As encomendas para este produto abrem a ${date}.`;
+    const date = new Date(product.order_start!).toLocaleDateString();
+    return dict.error_upcoming.replace("{date}", date);
   }
-  if (isProductDeadlinePassed(product)) return "O prazo de encomenda deste produto já terminou.";
+  if (isProductDeadlinePassed(product)) {
+    return dict.error_deadline;
+  }
 
-  const isAvailable =
-    product.variants.length === 0
-      ? product.stock_type !== "limited" || (product.stock_quantity ?? 0) > 0
-      : !!selectedVariant &&
-        selectedVariant.active &&
-        (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0);
-
-  return isAvailable ? null : "Este produto já não está disponível para compra.";
+  return isProductAvailable(product, selectedVariant) ? null : dict.error_unavailable;
 }

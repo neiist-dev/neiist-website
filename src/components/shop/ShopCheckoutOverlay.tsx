@@ -22,6 +22,7 @@ import type {
   CreateCheckoutResponse,
   ApiErrorResponse,
 } from "@/types/sumup";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 type FlowState = "loading" | "widget" | "processing" | "success" | "error";
 type VerifyResult = "paid" | "pending" | "failed";
@@ -29,6 +30,9 @@ type VerifyResult = "paid" | "pending" | "failed";
 interface Props {
   orderId: number | null;
   paymentMethod: PaymentMethod;
+  dict: Dictionary["checkout_overlay"];
+  pendingPaymentDict: Dictionary["pending_payment"];
+  basePath?: string;
 }
 
 const WIDGET_SCRIPT_SRC = "https://gateway.sumup.com/gateway/ecom/card/v2/sdk.js";
@@ -38,7 +42,13 @@ const MAX_RETRIES = 3;
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
+export default function ShopCheckoutOverlay({
+  orderId,
+  paymentMethod,
+  dict,
+  pendingPaymentDict,
+  basePath,
+}: Props) {
   const router = useRouter();
   const isInPerson = PENDING_PAYMENT_METHODS.has(paymentMethod);
   const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(paymentMethod);
@@ -172,18 +182,14 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
         if (result === "failed") {
           const verifyStatus = String(lastVerifyStatusRef.current || "").toLowerCase();
           if (verifyStatus.includes("fail") || verifyStatus.includes("declin")) {
-            setError(
-              "Pagamento recusado pelo emissor do cartão. Tenta novamente, usa outro cartão, ou escolhe pagamento presencial."
-            );
+            setError(dict.error_declined);
           } else if (verifyStatus.includes("timeout") || verifyStatus.includes("expired")) {
-            setError(
-              "A autorização expirou. Tenta novamente para gerar uma nova sessão de pagamento."
-            );
+            setError(dict.error_expired);
           } else {
-            setError("Não foi possível confirmar o pagamento após autorização bancária.");
+            setError(dict.error_unconfirmed);
           }
         } else {
-          setError("O pagamento está pendente há demasiado tempo. Se foi cobrado, contacta-nos.");
+          setError(dict.error_pending_too_long);
         }
 
         setFlowState("error");
@@ -192,7 +198,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
         verifyingRef.current = false;
       }
     },
-    [clearAbortTimer, unmountWidget, pollUntilTerminal]
+    [clearAbortTimer, unmountWidget, pollUntilTerminal, dict]
   );
 
   useEffect(() => {
@@ -243,7 +249,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       } catch (err) {
         console.error("Apple Pay merchant validation error:", err);
         session.abort();
-        setError("Falha na validação Apple Pay. Tenta novamente.");
+        setError(dict.error_apple_pay_validation);
         setFlowState("error");
         setRetryCount((count) => count + 1);
       }
@@ -261,14 +267,14 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           setFlowState("success");
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
-          setError("Pagamento Apple Pay falhou. Tenta novamente.");
+          setError(dict.error_apple_pay_failed);
           setFlowState("error");
           setRetryCount((count) => count + 1);
         }
       } catch (error) {
         console.error("Apple Pay processing error:", error);
         session.completePayment(ApplePaySession.STATUS_FAILURE);
-        setError("Erro ao processar Apple Pay. Tenta novamente.");
+        setError(dict.error_apple_pay_processing);
         setFlowState("error");
         setRetryCount((count) => count + 1);
       }
@@ -279,7 +285,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
     };
 
     session.begin();
-  }, [checkoutId, order, flowState, clearAbortTimer, verifyOnce]);
+  }, [checkoutId, order, flowState, clearAbortTimer, verifyOnce, dict]);
 
   const loadScript = useCallback(
     () =>
@@ -347,13 +353,13 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           }
 
           if (type === "invalid") {
-            setError("Verifica os dados do cartão e tenta novamente.");
+            setError(dict.error_invalid_card);
             return;
           }
 
           if (type === "error") {
             const errorBody = body as { message?: string };
-            setError(errorBody?.message || "Erro ao processar pagamento.");
+            setError(errorBody?.message || dict.error_processing);
             setFlowState("error");
             setRetryCount((count) => count + 1);
             return;
@@ -362,7 +368,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           if (type === "fail") {
             clearAbortTimer();
             unmountWidget();
-            setError("Pagamento cancelado ou expirado. Tenta novamente.");
+            setError(dict.error_canceled_or_expired);
             setFlowState("error");
             setRetryCount((count) => count + 1);
             return;
@@ -380,12 +386,12 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       abortTimerRef.current = setTimeout(() => {
         abortTimerRef.current = null;
         unmountWidget();
-        setError("A sessão de pagamento expirou. Tenta novamente.");
+        setError(dict.error_session_expired);
         setFlowState("error");
         setRetryCount((count) => count + 1);
       }, VERIFY_MAX_WAIT_MS);
     },
-    [loadScript, unmountWidget, beginVerification, clearAbortTimer]
+    [loadScript, unmountWidget, beginVerification, clearAbortTimer, dict]
   );
 
   useEffect(() => {
@@ -408,7 +414,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       })
       .catch((err) => {
         if (!cancelled && err?.name !== "AbortError") {
-          setError("Erro de rede ao carregar encomenda.");
+          setError(dict.error_processing);
           setFlowState("error");
         }
       });
@@ -416,7 +422,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       cancelled = true;
       controller.abort();
     };
-  }, [shouldLoadOrder, orderId]);
+  }, [shouldLoadOrder, orderId, dict]);
 
   useEffect(() => {
     if (!isOnlinePayment || !orderId || checkoutId) return;
@@ -434,7 +440,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
           const data = (await res.json().catch(() => ({}))) as CreateCheckoutResponse;
 
           if (!res.ok || !data.checkoutId) {
-            throw new Error(data.error ?? "Falha ao criar sessão de pagamento.");
+            throw new Error(data.error ?? dict.error_session_expired);
           }
 
           return data;
@@ -453,7 +459,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
 
         const nextCheckoutId = data.checkoutId;
         if (!nextCheckoutId) {
-          setError("Falha ao criar sessão de pagamento.");
+          setError(dict.error_session_expired);
           setFlowState("error");
           return;
         }
@@ -465,9 +471,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
         if (!active) return;
 
         console.error("Create checkout network error:", error);
-        setError(
-          error instanceof Error ? error.message : "Erro de rede ao criar sessão de pagamento."
-        );
+        setError(error instanceof Error ? error.message : dict.error_processing);
         setFlowState("error");
       }
     })();
@@ -475,7 +479,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
     return () => {
       active = false;
     };
-  }, [isOnlinePayment, orderId, checkoutId]);
+  }, [isOnlinePayment, orderId, checkoutId, dict]);
 
   useEffect(() => {
     if (!isOnlinePayment || !checkoutId) return;
@@ -518,15 +522,19 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       });
       if (!res.ok) {
         const payload = (await res.json().catch(() => null)) as ApiErrorResponse | null;
-        throw new Error(payload?.error ?? "Falha ao mudar método de pagamento.");
+        throw new Error(payload?.error ?? dict.error_switch_payment);
       }
-      finalizeAndNavigate(`/my-orders?orderId=${orderId}`);
+      finalizeAndNavigate(
+        orderId != null
+          ? `${basePath || ""}/my-orders?orderId=${orderId}`
+          : `${basePath || ""}/my-orders`
+      );
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Erro ao mudar para pagamento presencial.");
+      setError(error instanceof Error ? error.message : dict.error_switch_in_person);
     } finally {
       setIsFallbackSubmitting(false);
     }
-  }, [orderId, finalizeAndNavigate, isFallbackSubmitting]);
+  }, [orderId, finalizeAndNavigate, isFallbackSubmitting, basePath, dict]);
 
   const cancelAfterFailures = useCallback(async () => {
     if (!orderId || isFallbackSubmitting) return;
@@ -540,8 +548,12 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
   }, [orderId, cancelOrder, isFallbackSubmitting]);
 
   const handleViewOrders = useCallback(() => {
-    finalizeAndNavigate(orderId != null ? `/my-orders?orderId=${orderId}` : "/my-orders");
-  }, [orderId, finalizeAndNavigate]);
+    finalizeAndNavigate(
+      orderId != null
+        ? `${basePath || ""}/my-orders?orderId=${orderId}`
+        : `${basePath || ""}/my-orders`
+    );
+  }, [orderId, finalizeAndNavigate, basePath]);
 
   if (!isOnlinePayment) {
     return (
@@ -549,7 +561,8 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
         order={order}
         paymentMethod={paymentMethod}
         onAction={handleViewOrders}
-        actionLabel={isInPerson ? "Continuar" : "Ver Encomendas"}
+        actionLabel={isInPerson ? dict.continue : dict.view_orders}
+        dict={pendingPaymentDict}
       />
     );
   }
@@ -568,12 +581,12 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
         {paymentMethod === "sumup" && applePayAvailable && (
           <div className={styles.applePaySection}>
             <div className={styles.applePayDivider}>
-              <span>ou paga com</span>
+              <span>{dict.or_pay_with}</span>
             </div>
             <button
               className={styles.applePayButton}
               onClick={handleApplePay}
-              aria-label="Pagar com Apple Pay"
+              aria-label={dict.pay_apple_pay}
             />
           </div>
         )}
@@ -582,28 +595,22 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
       {(flowState === "processing" || flowState === "success") && (
         <PaymentProcessingSpinner
           flowState={flowState === "success" ? "success" : "processing"}
-          title={flowState === "success" ? "Pagamento Confirmado!" : "A verificar pagamento…"}
-          subtitle={
-            flowState === "success"
-              ? "A tua encomenda foi processada com sucesso."
-              : "Aguarda um momento"
-          }
+          title={flowState === "success" ? dict.payment_confirmed : dict.verifying_payment}
+          subtitle={flowState === "success" ? dict.order_processed : dict.wait_moment}
           size={flowState === "success" ? 56 : 48}
-          actionLabel={flowState === "success" ? "Ver as Minhas Encomendas" : undefined}
+          actionLabel={flowState === "success" ? dict.view_my_orders : undefined}
           onAction={flowState === "success" ? handleViewOrders : undefined}
         />
       )}
 
       {flowState === "error" && (
         <div className={styles.errorPanel}>
-          <h2 className={styles.errorTitle}>Erro no Pagamento</h2>
-          <p className={styles.errorMessage}>
-            {error ?? "Ocorreu um erro ao processar o pagamento."}
-          </p>
+          <h2 className={styles.errorTitle}>{dict.payment_error}</h2>
+          <p className={styles.errorMessage}>{error ?? dict.default_payment_error}</p>
           <div className={styles.errorActions}>
             {retryCount < MAX_RETRIES && (
               <button onClick={retryPayment} className={styles.btnPrimary}>
-                Tentar Novamente
+                {dict.retry}
               </button>
             )}
             {retryCount < MAX_RETRIES ? (
@@ -611,7 +618,7 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
                 onClick={switchToInPerson}
                 className={styles.btnSecondary}
                 disabled={isFallbackSubmitting}>
-                Pagar em Pessoa
+                {dict.pay_in_person}
               </button>
             ) : (
               <>
@@ -619,13 +626,13 @@ export default function ShopCheckoutOverlay({ orderId, paymentMethod }: Props) {
                   onClick={switchToInPerson}
                   className={styles.btnPrimary}
                   disabled={isFallbackSubmitting}>
-                  Pagar em Pessoa
+                  {dict.pay_in_person}
                 </button>
                 <button
                   onClick={cancelAfterFailures}
                   className={styles.btnSecondary}
                   disabled={isFallbackSubmitting}>
-                  Cancelar Encomenda
+                  {dict.cancel_order}
                 </button>
               </>
             )}
