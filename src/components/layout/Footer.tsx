@@ -9,17 +9,15 @@ import {
   FaGithub,
 } from "react-icons/fa";
 import { SiLinktree } from "react-icons/si";
-import { getDictionary } from "@/i18n/dictionaries";
-import { defaultLocale, Locale } from "@/i18n/i18n-config";
+import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/layout/Footer.module.css";
 
 interface FooterProps {
-  locale?: Locale;
+  dict: Dictionary["footer"];
+  basePath: string;
 }
 
-export default function Footer({ locale = defaultLocale }: FooterProps = {}) {
-  const t = getDictionary(locale).footer;
-
+export default function Footer({ dict, basePath }: FooterProps) {
   const socialIcons = [
     {
       href: "https://facebook.com/NEIIST",
@@ -62,15 +60,15 @@ export default function Footer({ locale = defaultLocale }: FooterProps = {}) {
     <footer className={styles.footer}>
       <div className={styles.top}>
         <div className={styles.mission}>
-          <h4>{t.title_neiist}</h4>
-          <p>{t.mission_description}</p>
+          <h4>{dict.title_neiist}</h4>
+          <p>{dict.mission_description}</p>
         </div>
         <div className={styles.section}>
-          <h4>{t.about_title}</h4>
+          <h4>{dict.about_title}</h4>
           <ul>
             <li>
-              <Link className={styles.link} href={`/${locale}/about-us`}>
-                {t.team_link}
+              <Link className={styles.link} href={`${basePath}/about-us`}>
+                {dict.team_link}
               </Link>
             </li>
             <li>
@@ -88,14 +86,14 @@ export default function Footer({ locale = defaultLocale }: FooterProps = {}) {
                 href="/estatutos.pdf"
                 target="_blank"
                 rel="noopener noreferrer">
-                {t.estatutos_link}
+                {dict.estatutos_link}
               </Link>
             </li>
           </ul>
         </div>
 
         <div className={styles.section}>
-          <h4>{t.courses_title}</h4>
+          <h4>{dict.courses_title}</h4>
           <ul>
             <li>
               <Link
@@ -144,7 +142,7 @@ export default function Footer({ locale = defaultLocale }: FooterProps = {}) {
         </div>
 
         <div className={styles.section}>
-          <h4>{t.contacts_title}</h4>
+          <h4>{dict.contacts_title}</h4>
           <ul>
             <li>
               ✉️{" "}
@@ -164,7 +162,7 @@ export default function Footer({ locale = defaultLocale }: FooterProps = {}) {
           </ul>
         </div>
         <div className={styles.section}>
-          <h4>{t.powered_by}</h4>
+          <h4>{dict.powered_by}</h4>
           <Link
             href="https://dei.tecnico.ulisboa.pt"
             target="_blank"
@@ -176,7 +174,7 @@ export default function Footer({ locale = defaultLocale }: FooterProps = {}) {
       </div>
 
       <div className={styles.bottom}>
-        <p className={styles.copyright}>{t.copyright}</p>
+        <p className={styles.copyright}>{dict.copyright}</p>
         <div className={styles.socialIcons}>
           {socialIcons.map(({ href, icon, ariaLabel }) => (
             <Link

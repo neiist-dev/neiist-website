@@ -10,6 +10,7 @@ import styles from "@/styles/components/shop/Cart.module.css";
 import { getColorFromOptions } from "@/utils/shop/shopUtils";
 import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import VariantTags from "@/components/shop/VariantTags";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 function getItemPrice(item: CartItem): number {
   const variant = item.variantId
@@ -18,7 +19,12 @@ function getItemPrice(item: CartItem): number {
   return item.product.price + (variant?.price_modifier ?? 0);
 }
 
-export default function Cart() {
+interface CartProps {
+  dict: Dictionary["cart"];
+  basePath: string;
+}
+
+export default function Cart({ dict, basePath }: CartProps) {
   const { isOpen, closeCart } = useCartPopup();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
@@ -75,15 +81,15 @@ export default function Cart() {
   return (
     <div className={styles.overlay} onClick={closeCart} role="dialog" aria-modal="true">
       <div className={styles.cart} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.close} onClick={closeCart} aria-label="Fechar carrinho">
+        <button className={styles.close} onClick={closeCart} aria-label={dict.close_label}>
           <Squash toggled={true} size={24} />
         </button>
 
-        <h2>Carrinho</h2>
+        <h2>{dict.title}</h2>
 
         <div className={styles.content}>
           {cartItems.length === 0 ? (
-            <p className={styles.empty}>O teu carrinho está vazio.</p>
+            <p className={styles.empty}>{dict.empty}</p>
           ) : (
             cartItems.map((item, idx) => {
               const variantObj = item.variantId
@@ -161,16 +167,16 @@ export default function Cart() {
 
         <div className={styles.footer}>
           <div>
-            <span>Total: </span>
+            <span>{dict.total} </span>
             <strong>{total.toFixed(2)}€</strong>
           </div>
           <button
             disabled={cartItems.length === 0}
             onClick={() => {
               closeCart();
-              window.location.href = "/shop/checkout";
+              window.location.href = `${basePath}/shop/checkout`;
             }}>
-            Continuar Para Pagamento
+            {dict.checkout}
           </button>
         </div>
       </div>

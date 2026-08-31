@@ -6,23 +6,23 @@ import Cart from "@/components/shop/Cart";
 import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { getDictionary } from "@/i18n/dictionaries";
-import { defaultLocale, isValidLocale, Locale, locales } from "@/i18n/i18n-config";
+import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, locales } from "@/i18n/i18n-config";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-async function ServerAuthWidget({ locale }: { locale: Locale }) {
-  const [session, dict] = await Promise.all([getAuthenticatedUser(), getDictionary(locale)]);
+async function ServerAuthWidget({
+  basePath,
+  dict,
+}: {
+  basePath: string;
+  dict: Dictionary["navbar"]["menu"];
+}) {
+  const session = await getAuthenticatedUser();
 
-  return (
-    <AuthWidget
-      initialUser={session?.user ?? null}
-      dict={dict.navbar.menu}
-      basePath={`/${locale}`}
-    />
-  );
+  return <AuthWidget initialUser={session?.user ?? null} dict={dict} basePath={basePath} />;
 }
 
 export default async function LocaleLayout({
@@ -32,27 +32,27 @@ export default async function LocaleLayout({
   children: ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const resolvedParams = await params;
-  const rawLocale = resolvedParams?.locale;
-  const locale: Locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
+  const basePath = `/${locale}`;
 
   return (
     <ShopProvider>
       <UserProvider initialUser={null}>
         <NavBar
           dict={dict.navbar}
-          basePath={`/${locale}`}
+          basePath={basePath}
           currentLocale={locale}
           authSlot={
             <Suspense fallback={<LoginButton />}>
-              <ServerAuthWidget locale={locale} />
+              <ServerAuthWidget basePath={basePath} dict={dict.navbar.menu} />
             </Suspense>
           }
         />
-        <Cart />
+        <Cart dict={dict.cart} basePath={basePath} />
         <main>{children}</main>
-        <Footer locale={locale} />
+        <Footer dict={dict.footer} basePath={basePath} />
       </UserProvider>
     </ShopProvider>
   );
