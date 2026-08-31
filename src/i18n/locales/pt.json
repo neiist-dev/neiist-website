@@ -738,6 +738,18 @@
       "open_in_google": "Abrir no Google Calendar",
       "download_cv": "Descarregar o CV",
       "remove_cv": "Remover o CV"
+    },
+    "delete_account": {
+      "title": "Eliminar Conta",
+      "tooltip": "Podes eliminar permanentemente a tua conta e os teus dados pessoais da plataforma do NEIIST (RGPD).",
+      "member_note_title": "Nota para membros:",
+      "member_note_text": "Conforme a nossa Política de Privacidade, o teu nome e fotografia oficial continuarão arquivados no registo histórico da equipa.",
+      "button": "Eliminar Conta",
+      "deleting": "A eliminar...",
+      "confirm_member": "Tens a certeza que pretendes eliminar a tua conta? Os teus dados pessoais serão apagados, exceto o teu nome e fotografia oficial que serão mantidos no arquivo histórico da equipa em conformidade com a Política de Privacidade (Art.º 17.º, n.º 3, al. d) do RGPD). Esta ação não pode ser revertida.",
+      "confirm_user": "Tens a certeza que pretendes eliminar a tua conta? Todos os teus dados pessoais serão permanentemente apagados da plataforma em conformidade com o RGPD. Esta ação não pode ser revertida.",
+      "error_generic": "Erro ao eliminar conta.",
+      "error_failed": "Falha ao eliminar conta."
     }
   },
 

@@ -738,6 +738,18 @@
       "open_in_google": "Open in Google Calendar",
       "download_cv": "Download CV",
       "remove_cv": "Remove CV"
+    },
+    "delete_account": {
+      "title": "Delete Account",
+      "tooltip": "You can permanently delete your account and personal data from the NEIIST platform (GDPR).",
+      "member_note_title": "Note for members:",
+      "member_note_text": "In accordance with our Privacy Policy, your official name and photo will remain archived in the team's historical record.",
+      "button": "Delete Account",
+      "deleting": "Deleting...",
+      "confirm_member": "Are you sure you want to delete your account? Your personal data will be erased, except your official name and photo which will remain in the team historical archive in accordance with our Privacy Policy (Art. 17(3)(d) GDPR). This action cannot be undone.",
+      "confirm_user": "Are you sure you want to delete your account? All your personal data will be permanently deleted from the platform in accordance with the GDPR. This action cannot be undone.",
+      "error_generic": "Error deleting account.",
+      "error_failed": "Failed to delete account."
     }
   },
 

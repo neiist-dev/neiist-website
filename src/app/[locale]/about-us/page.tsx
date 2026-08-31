@@ -80,14 +80,14 @@ const ADMIN_PRIORITY = ["Direção", "Conselho Fiscal", "Mesa da Assembleia Gera
 
 interface PageProps {
   params: LocaleParams;
-  searchParams?: Promise<{ year?: string }>;
+  searchParams: Promise<{ year?: string }>;
 }
 
 async function AboutUsContent({ params, searchParams }: PageProps) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).about_us_page;
-  const search = searchParams ? await searchParams : {};
+  const { year } = await searchParams;
 
   const [memberships, rawTeams, rawAdminBodies, users]: [
     Membership[],
@@ -109,8 +109,7 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
   const userMap = new Map(users.map((u) => [u.istid, u]));
 
   const allAcademicYears = getAllAcademicYears(memberships);
-  const selectedYear =
-    search?.year && allAcademicYears.includes(search.year) ? search.year : allAcademicYears[0];
+  const selectedYear = year && allAcademicYears.includes(year) ? year : allAcademicYears[0];
 
   const filteredMemberships: EnrichedMembership[] = memberships
     .filter((membership) => isMembershipInAcademicYear(membership, selectedYear))

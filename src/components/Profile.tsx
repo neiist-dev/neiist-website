@@ -21,16 +21,18 @@ import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import type { Dictionary } from "@/i18n/dictionaries";
+import ColorfulText from "@/components/ColorfulText";
 
 type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
 
-export default function ProfileClient({
-  initialUser,
-  initialHasCV,
-}: {
+interface ProfileClientProps {
   initialUser: User;
   initialHasCV: boolean;
-}) {
+  dict: Dictionary["profile"];
+}
+
+export default function ProfileClient({ initialUser, initialHasCV, dict }: ProfileClientProps) {
   const [user, setUser] = useState<User>(initialUser);
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
   const [cvLoading, setCvLoading] = useState<boolean>(false);
@@ -69,12 +71,12 @@ export default function ProfileClient({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Falha ao eliminar conta.");
+        throw new Error(data.error || dict.delete_account.error_failed);
       }
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       window.location.href = "/";
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao eliminar conta.");
+      setError(e instanceof Error ? e.message : dict.delete_account.error_generic);
       setShowDeleteConfirm(false);
       setDeleteLoading(false);
     }
@@ -132,7 +134,7 @@ export default function ProfileClient({
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Falha ao enviar email de verificação");
+          throw new Error(data.error || dict.errors.verify_email);
         }
         // TODO: (SUCCESS) show success toast after the verification email request is sent.
       } else {
@@ -144,7 +146,7 @@ export default function ProfileClient({
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Falha ao atualizar");
+          throw new Error(data.error || dict.errors.update);
         }
       }
 
@@ -154,8 +156,7 @@ export default function ProfileClient({
         setUser(updated);
       }
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao atualizar perfil.");
+      setError(e instanceof Error ? e.message : dict.errors.update_profile);
     } finally {
       setPendingChange(null);
     }
@@ -168,7 +169,7 @@ export default function ProfileClient({
       // TODO: show loading toast while fetching calendar
       const response = await fetch(`/api/calendar/${user.istid}`);
       if (!response.ok) {
-        throw new Error("Failed to get calendar data");
+        throw new Error(dict.errors.fetch_calendar);
       }
       const data = await response.json();
       const links = {
@@ -178,8 +179,7 @@ export default function ProfileClient({
       setCalendarData(links);
       return links;
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao obter link do calendário.");
+      setError(e instanceof Error ? e.message : dict.errors.get_calendar_link);
       return null;
     }
   };
@@ -217,8 +217,7 @@ export default function ProfileClient({
   const onCvUpload = async (file: File | null) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
-      // TODO: (ERROR)
-      setError("Envie apenas ficheiros PDF.");
+      setError(dict.errors.pdf_only);
       return;
     }
     setCvLoading(true);
@@ -229,12 +228,11 @@ export default function ProfileClient({
       form.append("istid", user.istid);
 
       const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
-      if (!res.ok) throw new Error("Falha ao enviar o CV.");
+      if (!res.ok) throw new Error(dict.errors.cv_upload);
       setHasCV(true);
       // TODO: (SUCCESS) show success toast after the CV is uploaded.
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao enviar o CV.");
+      setError(e instanceof Error ? e.message : dict.errors.cv_upload_error);
     } finally {
       setCvLoading(false);
     }
@@ -244,12 +242,11 @@ export default function ProfileClient({
     setCvLoading(true);
     try {
       const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
-      if (!res.ok) throw new Error("Falha ao remover o CV.");
+      if (!res.ok) throw new Error(dict.errors.cv_remove);
       setHasCV(false);
       // TODO: (SUCCESS) show success toast after the CV is removed.
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao remover o CV.");
+      setError(e instanceof Error ? e.message : dict.errors.cv_remove_error);
     } finally {
       setCvLoading(false);
     }
@@ -259,7 +256,7 @@ export default function ProfileClient({
     setCvLoading(true);
     try {
       const res = await fetch("/api/user/cv-bank?download");
-      if (!res.ok) throw new Error("CV não encontrado.");
+      if (!res.ok) throw new Error(dict.errors.cv_not_found);
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -270,57 +267,32 @@ export default function ProfileClient({
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      // TODO: (ERROR)
-      setError(e instanceof Error ? e.message : "Erro ao descarregar o CV.");
+      setError(e instanceof Error ? e.message : dict.errors.cv_download);
     } finally {
       setCvLoading(false);
     }
   };
 
   const getFieldDisplayName = (field: FieldName) => {
-    switch (field) {
-      case "alternativeEmail":
-        return "Email Alternativo";
-      case "phone":
-        return "Telefone";
-      case "preferredContactMethod":
-        return "Contacto Preferido";
-      case "github":
-        return "GitHub";
-      case "linkedin":
-        return "LinkedIn";
-    }
+    return dict.fields[field] || field;
   };
 
   const getValueDisplayName = (field: FieldName, value: string) => {
     if (field === "preferredContactMethod") {
-      return (
-        (
-          {
-            email: "Email Principal",
-            alternativeEmail: "Email Alternativo",
-            phone: "Telefone",
-          } as Record<string, string>
-        )[value] || value
-      );
+      return (dict.values.preferredContactMethod as Record<string, string>)[value] || value;
     }
     return value || "—";
   };
 
   return (
     <>
-      <h1 className={styles.title}>
-        <span className={styles.primary}> Pe</span>
-        <span className={styles.secondary}>r</span>
-        <span className={styles.tertiary}>fi</span>
-        <span className={styles.quaternary}>l</span>
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict.title} />
       <div className={styles.container}>
         <div className={styles.left}>
           <div className={styles.details}>
             <Image
               src={user?.photo || "/default-profile.png"}
-              alt="Profile photo"
+              alt={dict.photo_alt}
               width={180}
               height={180}
               className={styles.photo}
@@ -333,30 +305,30 @@ export default function ProfileClient({
           </div>
           <div className={styles.contactInfo}>
             <div>
-              <div className={styles.contactLabel}>Email Alternativo</div>
+              <div className={styles.contactLabel}>{dict.labels.alternativeEmail}</div>
               <div className={styles.contactField}>
                 <FiMail className={styles.icon} />
                 <input
                   type="email"
                   className={styles.contactInput}
-                  placeholder="email@exemplo.com"
+                  placeholder={dict.placeholders.alternativeEmail}
                   value={altEmailDraft}
                   onChange={(e) => setAltEmailDraft(e.target.value)}
                   onBlur={() => handleBlur("alternativeEmail", altEmailDraft)}
                 />
                 {user?.alternativeEmail && !user?.alternativeEmailVerified && (
-                  <span>(por verificar)</span>
+                  <span>{dict.labels.unverified}</span>
                 )}
               </div>
             </div>
             <div>
-              <div className={styles.contactLabel}>Número de Telémovel</div>
+              <div className={styles.contactLabel}>{dict.labels.phone}</div>
               <div className={styles.contactField}>
                 <FiPhone className={styles.icon} />
                 <input
                   type="tel"
                   className={styles.contactInput}
-                  placeholder="+351 xxx xxx xxx"
+                  placeholder={dict.placeholders.phone}
                   value={phoneDraft}
                   onChange={(e) => setPhoneDraft(e.target.value)}
                   onBlur={() => handleBlur("phone", phoneDraft)}
@@ -364,31 +336,35 @@ export default function ProfileClient({
               </div>
             </div>
             <div>
-              <div className={styles.contactLabel}>Método de Contacto Preferencial</div>
+              <div className={styles.contactLabel}>{dict.labels.preferredContactMethod}</div>
               <div className={styles.contactField}>
                 <RiContactsBook3Line className={styles.icon} />
                 <select
                   className={styles.contactSelect}
                   value={preferredDraft}
                   onChange={(e) => handlePreferredChange(e.target.value)}>
-                  <option value="email">Email Principal</option>
+                  <option value="email">{dict.values.preferredContactMethod.email}</option>
                   {(altEmailDraft || user?.alternativeEmail) && (
-                    <option value="alternativeEmail">Email Alternativo</option>
+                    <option value="alternativeEmail">
+                      {dict.values.preferredContactMethod.alternativeEmail}
+                    </option>
                   )}
-                  {(phoneDraft || user?.phone) && <option value="phone">Telémovel</option>}
+                  {(phoneDraft || user?.phone) && (
+                    <option value="phone">{dict.values.preferredContactMethod.phone}</option>
+                  )}
                 </select>
               </div>
             </div>
             {isMember && (
               <>
                 <div>
-                  <div className={styles.contactLabel}>GitHub</div>
+                  <div className={styles.contactLabel}>{dict.github_label}</div>
                   <div className={styles.contactField}>
                     <FiGithub className={styles.icon} />
                     <input
                       type="text"
                       className={styles.contactInput}
-                      placeholder="GitHub username"
+                      placeholder={dict.github_placeholder}
                       value={githubDraft}
                       onChange={(e) => setGithubDraft(e.target.value)}
                       onBlur={() => handleBlur("github", githubDraft)}
@@ -396,13 +372,13 @@ export default function ProfileClient({
                   </div>
                 </div>
                 <div>
-                  <div className={styles.contactLabel}>LinkedIn</div>
+                  <div className={styles.contactLabel}>{dict.linkedin_label}</div>
                   <div className={styles.contactField}>
                     <FiLinkedin className={styles.icon} />
                     <input
                       type="text"
                       className={styles.contactInput}
-                      placeholder="LinkedIn username"
+                      placeholder={dict.linkedin_placeholder}
                       value={linkedinDraft}
                       onChange={(e) => setLinkedinDraft(e.target.value)}
                       onBlur={() => handleBlur("linkedin", linkedinDraft)}
@@ -419,11 +395,9 @@ export default function ProfileClient({
               <div className={styles.schedule}>
                 <div className={styles.sectionTitle}>
                   <FiCalendar className={styles.icon} />
-                  <span>Calendário</span>
+                  <span>{dict.sections.calendar}</span>
                 </div>
-                <p className={styles.infoText}>
-                  Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!
-                </p>
+                <p className={styles.infoText}>{dict.sections.calendarDescription}</p>
                 <div className={styles.actionButtons}>
                   <a
                     className={styles.button}
@@ -436,7 +410,8 @@ export default function ProfileClient({
                       cursor: calendarLoading ? "not-allowed" : "pointer",
                       opacity: calendarLoading ? 0.6 : 1,
                     }}>
-                    <LuCalendarDays /> {calendarLoading ? "A carregar..." : "Ver Calendário"}
+                    <LuCalendarDays />{" "}
+                    {calendarLoading ? dict.labels.loading : dict.buttons.view_calendar}
                   </a>
                   <a
                     className={styles.filledButton}
@@ -450,7 +425,7 @@ export default function ProfileClient({
                       opacity: calendarLoading ? 0.6 : 1,
                     }}>
                     <IoOpenOutline />{" "}
-                    {calendarLoading ? "A carregar..." : "Abrir no Google Calendar"}
+                    {calendarLoading ? dict.labels.loading : dict.buttons.open_in_google}
                   </a>
                 </div>
               </div>
@@ -459,10 +434,10 @@ export default function ProfileClient({
           <div className={styles.cvbank}>
             <div className={styles.sectionTitle}>
               <FiUpload className={styles.icon} />
-              <span>CV Bank</span>
+              <span>{dict.sections.cvbank}</span>
               <div className={styles.infoBubbleWrapper}>
                 <FiInfo className={styles.infoBubble} />
-                <div className={styles.tooltip}>Explicação sobre o CV-Bank.</div>
+                <div className={styles.tooltip}>{dict.sections.cvbankTooltip}</div>
               </div>
             </div>
             {!hasCV ? (
@@ -470,7 +445,7 @@ export default function ProfileClient({
                 <label className={styles.cvUpload} htmlFor="cv-input">
                   <div>
                     <FiUpload className={styles.cvUploadIcon} />
-                    <p>Click to upload your CV (PDF only)</p>
+                    <p>{dict.placeholders.cvUpload}</p>
                   </div>
                 </label>
                 <input
@@ -485,10 +460,10 @@ export default function ProfileClient({
             ) : (
               <div className={styles.actionButtons}>
                 <button className={styles.button} onClick={onCvDownload} disabled={cvLoading}>
-                  <FiDownload /> Descarregar o CV
+                  <FiDownload /> {dict.buttons.download_cv}
                 </button>
                 <button className={styles.button} onClick={onCvRemove} disabled={cvLoading}>
-                  <FiTrash2 /> Remover o CV
+                  <FiTrash2 /> {dict.buttons.remove_cv}
                 </button>
               </div>
             )}
@@ -496,19 +471,15 @@ export default function ProfileClient({
           <div className={styles.accountManagement}>
             <div className={styles.sectionTitle}>
               <FiTrash2 className={styles.dangerIcon} />
-              <span>Eliminar Conta</span>
+              <span>{dict.delete_account.title}</span>
               <div className={styles.infoBubbleWrapper}>
                 <FiInfo className={styles.infoBubble} />
                 <div className={styles.tooltip}>
-                  <p>
-                    Podes eliminar permanentemente a tua conta e os teus dados pessoais da
-                    plataforma do NEIIST (RGPD).
-                  </p>
+                  <p>{dict.delete_account.tooltip}</p>
                   {isMember && (
                     <p style={{ marginTop: "0.5rem" }}>
-                      <strong>Nota para membros:</strong> Conforme a nossa Política de Privacidade,
-                      o teu nome e fotografia oficial continuarão arquivados no registo histórico da
-                      equipa.
+                      <strong>{dict.delete_account.member_note_title}</strong>{" "}
+                      {dict.delete_account.member_note_text}
                     </p>
                   )}
                 </div>
@@ -520,7 +491,8 @@ export default function ProfileClient({
                 className={styles.dangerButton}
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={deleteLoading}>
-                <FiTrash2 /> {deleteLoading ? "A eliminar..." : "Eliminar Conta"}
+                <FiTrash2 />{" "}
+                {deleteLoading ? dict.delete_account.deleting : dict.delete_account.button}
               </button>
             </div>
           </div>
@@ -533,11 +505,13 @@ export default function ProfileClient({
         message={
           pendingChange
             ? pendingChange.value === ""
-              ? `Deseja remover o método de contacto ${getFieldDisplayName(pendingChange.field)}?`
-              : `Deseja guardar a alteração de ${getFieldDisplayName(pendingChange.field)} para "${getValueDisplayName(
-                  pendingChange.field,
-                  pendingChange.value
-                )}"?`
+              ? dict.confirm_remove_field.replace(
+                  "{field}",
+                  getFieldDisplayName(pendingChange.field)
+                )
+              : dict.confirm_change_field
+                  .replace("{field}", getFieldDisplayName(pendingChange.field))
+                  .replace("{value}", getValueDisplayName(pendingChange.field, pendingChange.value))
             : ""
         }
         onConfirm={handleConfirmChange}
@@ -548,11 +522,7 @@ export default function ProfileClient({
       />
       <ConfirmDialog
         open={showDeleteConfirm}
-        message={
-          isMember
-            ? "Tens a certeza que pretendes eliminar a tua conta? Os teus dados pessoais serão apagados, exceto o teu nome e fotografia oficial que serão mantidos no arquivo histórico da equipa em conformidade com a Política de Privacidade (Art.º 17.º, n.º 3, al. d) do RGPD). Esta ação não pode ser revertida."
-            : "Tens a certeza que pretendes eliminar a tua conta? Todos os teus dados pessoais serão permanentemente apagados da plataforma em conformidade com o RGPD. Esta ação não pode ser revertida."
-        }
+        message={isMember ? dict.delete_account.confirm_member : dict.delete_account.confirm_user}
         onConfirm={handleDeleteAccount}
         onCancel={() => {
           if (!deleteLoading) setShowDeleteConfirm(false);

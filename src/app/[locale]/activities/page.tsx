@@ -1,9 +1,12 @@
 import Calendar from "@/components/activities/Calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { UserRole } from "@/types/user";
+import ColorfulText from "@/components/ColorfulText";
 import styles from "@/styles/pages/Activities.module.css";
 import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 async function getEventsAndSubscriptions() {
   const session = await getAuthenticatedUser();
@@ -26,26 +29,28 @@ async function getEventsAndSubscriptions() {
 }
 
 export default async function ActivitiesPage({
+  params,
   searchParams,
 }: {
-  searchParams?: Promise<{ eventId?: string }>;
+  params: LocaleParams;
+  searchParams: Promise<{ eventId?: string }>;
 }) {
-  const params = searchParams ? await searchParams : {};
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale);
+
+  const { eventId } = await searchParams;
   const { events, signedUpEventIds } = await getEventsAndSubscriptions();
-  const urlSelectedEventID = params.eventId || undefined;
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-        <span className={styles.primary}>Ati</span>
-        <span className={styles.secondary}>vi</span>
-        <span className={styles.tertiary}>da</span>
-        <span className={styles.quaternary}>des</span>
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict.activities.title} />
       <Calendar
         events={events}
         signedUpEventIds={signedUpEventIds}
-        initialSelectedEventId={urlSelectedEventID}
+        initialSelectedEventId={eventId}
+        dict={dict.activities}
+        currentLocale={locale}
       />
     </div>
   );
