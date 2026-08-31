@@ -3,11 +3,15 @@ import styles from "@/styles/components/layout/ConfirmDialog.module.css";
 export default function ConfirmDialog({
   open,
   message,
+  confirmText = "Sim",
+  cancelText = "Cancelar",
   onConfirm,
   onCancel,
 }: {
   open: boolean;
   message: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -18,10 +22,10 @@ export default function ConfirmDialog({
         <div className={styles.message}>{message}</div>
         <div className={styles.actions}>
           <button className={styles.confirm} onClick={onConfirm}>
-            Sim
+            {confirmText}
           </button>
           <button className={styles.cancel} onClick={onCancel}>
-            Cancelar
+            {cancelText}
           </button>
         </div>
       </div>

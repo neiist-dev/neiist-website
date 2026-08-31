@@ -8,6 +8,9 @@ export default function InputDateDialog({
   title,
   initialValue,
   placeholder,
+  hint = "Para remover o prazo, deixar vazio.",
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
   onConfirm,
   onCancel,
 }: {
@@ -15,6 +18,9 @@ export default function InputDateDialog({
   title?: string;
   initialValue?: string | null;
   placeholder?: string;
+  hint?: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: (_value: string | null) => void;
   onCancel: () => void;
 }) {
@@ -38,16 +44,16 @@ export default function InputDateDialog({
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />
-          <div className={styles.hint}>Para remover o prazo, deixar vazio.</div>
+          {hint && <div className={styles.hint}>{hint}</div>}
         </div>
         <div className={styles.actions}>
           <button
             className={styles.confirm}
             onClick={() => onConfirm(value.trim() === "" ? null : value)}>
-            Confirmar
+            {confirmText}
           </button>
           <button className={styles.cancel} onClick={onCancel}>
-            Cancelar
+            {cancelText}
           </button>
         </div>
       </div>

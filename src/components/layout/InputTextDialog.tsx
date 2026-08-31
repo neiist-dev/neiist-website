@@ -11,7 +11,8 @@ export default function InputTextDialog({
   placeholder,
   type = "text",
   hint,
-  confirmLabel = "Confirmar",
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
   onConfirm,
   onCancel,
 }: {
@@ -22,7 +23,8 @@ export default function InputTextDialog({
   placeholder?: string;
   type?: "text" | "email" | "tel" | "search" | "url" | "password";
   hint?: string;
-  confirmLabel?: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: (_value: string | null) => void;
   onCancel: () => void;
 }) {
@@ -53,10 +55,10 @@ export default function InputTextDialog({
           <button
             className={styles.confirm}
             onClick={() => onConfirm(value.trim() === "" ? null : value)}>
-            {confirmLabel}
+            {confirmText}
           </button>
           <button className={styles.cancel} onClick={onCancel}>
-            Cancelar
+            {cancelText}
           </button>
         </div>
       </div>
