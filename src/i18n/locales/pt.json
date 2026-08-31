@@ -24,7 +24,6 @@
     "signed_up_message": "O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua espera.",
     "unlock_time_message": "O conteúdo será desbloqueado às",
     "unlock_highlight": "20h do dia 21 de maio",
-    "unlocked_message": "🎉 Já podes aceder às surpresas!",
     "description": "Junta-te a nós para um jantar inesquecível!",
     "buy_button": "Comprar Já",
     "poster_alt": "Poster do Jantar de Curso",
@@ -51,101 +50,67 @@
       "voting_button": "Ir para as Votações",
       "poster_alt": "Poster do Jantar de Curso",
       "close_label": "Fechar",
-      "when_label": "Quando:",
-      "reward_label": "Recompensa:",
-      "access_here": "Acede Aqui",
-      "listen_playlist": "Ouvir Playlist",
       "cartas": {
         "title": "Cartas",
         "text": "Encontra a tua carta-par!",
-        "description": "Durante o check-in, cada pessoa recebe uma carta.\n Encontra quem tem a carta correspondente e dirige-te ao staff para receberem ambos uma senha para bebida.",
-        "when": "Check-in do jantar",
-        "reward": "1 senha por pessoa"
+        "description": "Durante o check-in, cada pessoa recebe uma carta.\n Encontra quem tem a carta correspondente e dirige-te ao staff para receberem ambos uma senha para bebida."
       },
       "votacoes": {
         "title": "Votações",
         "text": "Vota nos títulos mais icónicos!",
-        "description": "Durante o jantar vais poder votar em categorias especiais como “Vibe Coder”, “Crypto Bro”, “Fantasma” e muitas mais.\n Os vencedores recebem faixas especiais no final da noite.",
-        "when": "Check-in do jantar",
-        "reward": "Faixas"
+        "description": "Durante o jantar vais poder votar em categorias especiais como “Vibe Coder”, “Crypto Bro”, “Fantasma” e muitas mais.\n Os vencedores recebem faixas especiais no final da noite."
       },
       "story": {
         "title": "Story NEIIST",
         "text": "Publica uma story e ganha bebida!",
-        "description": "Publica uma foto ou vídeo do jantar no Instagram, identifica o @neiist e mantém a story durante pelo menos 1 hora. Depois mostra ao staff para receberes a tua senha.",
-        "when": "Durante o jantar",
-        "reward": "1 senha"
+        "description": "Publica uma foto ou vídeo do jantar no Instagram, identifica o @neiist e mantém a story durante pelo menos 1 hora. Depois mostra ao staff para receberes a tua senha."
       },
       "posters": {
         "title": "Bug nos Posters",
         "text": "Consegues encontrar os bugs?",
-        "description": "Existem posters espalhados pelo jantar — alguns têm bugs escondidos. Descobre os posters com erro e mostra ao staff para receberes uma senha.",
-        "when": "Durante o jantar",
-        "reward": "1 senha por poster"
+        "description": "Existem posters espalhados pelo jantar — alguns têm bugs escondidos. Descobre os posters com erro e mostra ao staff para receberes uma senha."
       },
       "tux": {
         "title": "Encontra o Tux",
         "text": "Onde está o Tux?",
-        "description": "Vai existir um cartaz gigante com um Tux escondido. As primeiras pessoas a encontrá-lo recebem uma senha. Tira foto e mostra ao staff.",
-        "when": "Durante o jantar",
-        "reward": "1 senha"
+        "description": "Vai existir um cartaz gigante com um Tux escondido. As primeiras pessoas a encontrá-lo recebem uma senha. Tira foto e mostra ao staff."
       },
       "stickers": {
         "title": "Stickers NEIIST",
         "text": "Procura os stickers escondidos!",
-        "description": "Existem stickers NEIIST escondidos pelo espaço. Se encontrares um, entrega-o ao staff e recebe uma senha.",
-        "when": "Durante o jantar",
-        "reward": "1 senha"
+        "description": "Existem stickers NEIIST escondidos pelo espaço. Se encontrares um, entrega-o ao staff e recebe uma senha."
       },
       "outfit": {
         "title": "Outfit Embaraçoso",
         "text": "Usa um outfit cursed",
-        "description": "Usa uma das t-shirts ou acessórios embaraçosos disponíveis durante o jantar e recebe uma senha pela coragem.",
-        "when": "Durante o jantar",
-        "reward": "1 senha"
+        "description": "Usa uma das t-shirts ou acessórios embaraçosos disponíveis durante o jantar e recebe uma senha pela coragem."
       },
       "chambel": {
         "title": "Desafia o Chambel",
         "text": "Consegues vencer o Chambel?",
-        "description": "Desafia o Chambel para um jogo rápido de cálculo mental ou desafio de programação. Se ganhares, levas uma senha.",
-        "when": "Durante o jantar",
-        "reward": "1 senha"
+        "description": "Desafia o Chambel para um jogo rápido de cálculo mental ou desafio de programação. Se ganhares, levas uma senha."
       },
       "flex": {
         "title": "Braço de Ferro",
         "text": "Testa a tua força!",
-        "description": "Participa no torneio de braço de ferro do jantar e prova que os informáticos também têm força.",
-        "when": "Depois do jantar",
-        "reward": "Senhas e troféu"
+        "description": "Participa no torneio de braço de ferro do jantar e prova que os informáticos também têm força."
       },
       "futsal": {
         "title": "Remate de Futsal",
         "text": "Acerta no alvo!",
-        "description": "Mostra a tua pontaria na mini baliza. Cada acerto no ângulo dá direito a senha.",
-        "when": "Durante o jantar",
-        "reward": "1 senha por golo"
+        "description": "Mostra a tua pontaria na mini baliza. Cada acerto no ângulo dá direito a senha."
       },
       "karaoke": {
         "title": "Karaoke",
         "text": "Canta a plenos pulmões!",
-        "description": "Sobe ao palco e canta a tua música favorita. Os mais corajosos recebem senhas de bebida.",
-        "when": "Depois do jantar",
-        "reward": "1 senha"
+        "description": "Sobe ao palco e canta a tua música favorita. Os mais corajosos recebem senhas de bebida."
       },
       "spotify": {
         "title": "Playlist do Jantar",
         "text": "A banda sonora da noite",
-        "description": "Ouve todas as músicas da nossa playlist oficial do jantar de curso e adiciona as tuas favoritas.",
-        "when": "Toda a noite",
-        "reward": "Música sem parar"
+        "description": "Ouve todas as músicas da nossa playlist oficial do jantar de curso e adiciona as tuas favoritas."
       }
     }
-  },
-
-  "layout_navbar": {
-    "button": "Login",
-    "theme_toggle_light": "Mudar para Modo Claro",
-    "theme_toggle_dark": "Mudar para Modo Escuro"
   },
 
   "sumup_readers": {
@@ -172,11 +137,7 @@
   },
 
   "shop_pos": {
-    "title": "Gestão de TPAs SumUp",
-    "title_1": "Gestão",
-    "title_2": "de TPA",
-    "title_3": "s Sum",
-    "title_4": "Up"
+    "title": "Gestão de TPAs SumUp"
   },
 
   "orders_table": {
@@ -199,9 +160,7 @@
     "selected_singular": "selecionada",
     "selected_plural": "selecionadas",
     "bulk_confirm_1": "Tem a certeza que deseja alterar o estado de",
-    "bulk_confirm_2": "encomenda",
     "bulk_confirm_3": "para",
-    "bulk_confirm_4": "?",
     "no_orders": "Nenhuma encomenda encontrada.",
     "pickup_dialog_title": "Prazo limite para levantamento das encomendas",
     "col_number": "Número",
@@ -244,13 +203,6 @@
   "input_text_dialog": {
     "confirm": "Confirmar",
     "cancel": "Cancelar"
-  },
-
-  "photo_team_members": {
-    "page_title": "Gestão de Fotos dos Membros",
-    "search_placeholder": "Procurar por nome ou ISTID...",
-    "empty": "Nenhum membro encontrado.",
-    "change_photo_title": "Clique para mudar a foto"
   },
 
   "active_filters": {
@@ -386,29 +338,18 @@
     "title": "Secção Autónoma",
     "button": "Visita a SINFO",
     "logo_alt": "SINFO",
-    "text_p1": "A SINFO é um evento anual organizado exclusivamente por estudantes que se esforçam para tornar o evento mais interessante e inovador a cada edição. Todos os participantes têm o direito de experimentar alguns dos gadgets e tecnologias mais inovadoras do mercado para além de lhes ser apresentado uma visão geral do cenário de TI pelas melhores empresas do país. Para além disto tudo, todos os dias são realizados workshops nos temas mais requisitados e recentes, permitindo a todos os participantes que melhorem as suas skills técnicas e não-técnicas.",
-    "text_p2": "O principal objetivo da SINFO é permitir que todos os estudantes e os participantes em geral possam interagir e estar mais próximos de pessoas ou empresas influentes e interessantes no ramo das Tecnologias de Informação e Engenharia Informática.",
     "description": "A SINFO é um evento anual organizado exclusivamente por estudantes que se esforçam para tornar o evento mais interessante e inovador a cada edição. Todos os participantes têm o direito de experimentar alguns dos gadgets e tecnologias mais inovadoras do mercado para além de lhes ser apresentado uma visão geral do cenário de TI pelas melhores empresas do país. Para além disto tudo, todos os dias são realizados workshops nos temas mais requisitados e recentes, permitindo a todos os participantes que melhorem as suas skills técnicas e não-técnicas.",
     "objective": "O principal objetivo da SINFO é permitir que todos os estudantes e os participantes em geral possam interagir e estar mais próximos de pessoas ou empresas influentes e interessantes no ramo das Tecnologias de Informação e Engenharia Informática."
   },
 
   "sweats_contest": {
     "title": "Concurso de Design de Sweats",
-    "desc_p1": "Queres criar a próxima sweat especial de EIC?",
-    "desc_consult": "Consulta ",
-    "desc_here": "aqui",
-    "desc_rules": " o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
-    "submit_design": "Submete um design!",
-    "submitting": "A submeter...",
-    "submitted": "Design submetido",
-    "login_required": "Por favor faça login para submeter um design",
-    "error_zip_only": "Erro: Apenas ficheiros ZIP",
-    "error_submitting": "Erro ao submeter",
     "description_start": "Queres criar a próxima sweat especial de EIC?",
     "description_link": "aqui",
     "description_end": "o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
     "button": "Submete um design!",
     "uploading": "A submeter...",
+    "submitted": "Design submetido",
     "login_warning": "Por favor faça login para submeter um design",
     "errors": {
       "zip_only": "Erro: Apenas ficheiros ZIP",
@@ -1143,7 +1084,6 @@
     "total_label": "Total: {amount}€",
     "notes_title": "Notas",
     "status_title": "Estado",
-    "pay_btn": "Pagar",
     "mark_ready": "Marcar como Pronto",
     "mark_delivered": "Marcar como Entregue",
     "cancel_order": "Cancelar Encomenda",
@@ -1219,7 +1159,6 @@
     "view_orders": "Ver Encomendas",
     "error_load_readers": "Falha ao carregar leitores",
     "error_update_order": "Falha ao atualizar encomenda",
-    "error_mark_paid": "Falha ao marcar encomenda como paga",
     "error_finalize_order": "Falha ao finalizar encomenda",
     "error_invalid_server_response": "Resposta inválida do servidor",
     "reader_status": "Leitor {name}: {status}",
@@ -1302,7 +1241,8 @@
     "waiting_title_highlight": "próxima votação",
     "waiting_subtitle": "Quando a votação abrir a página vai atualizar automáticamente.",
     "view_previous_results": "Ver resultados anteriores",
-    "votes_submitted_title": "Votos submetidos!",
+    "votes_submitted_prefix": "Votos",
+    "votes_submitted_highlight": "submetidos!",
     "votes_submitted_subtitle": "Aguarda pela publicação dos resultados.",
     "voting_in_progress": "Votação em curso",
     "select_your_vote": "Seleciona o teu voto",
@@ -1328,15 +1268,14 @@
       "title": "Título",
       "type": "Tipo",
       "period": "Período",
-      "voters": "Votantes",
-      "nominees": "Candidatos",
+      "voters": "Votos",
       "status": "Estado",
-      "empty": "Nenhuma sessão de votação encontrada."
+      "empty": "Nenhuma sessão encontrada."
     },
     "types": {
       "activity": "Atividade",
       "users": "Utilizadores",
-      "custom": "Outro"
+      "custom": "Customizada"
     },
     "statuses": {
       "idle": "Pronto",
@@ -1348,15 +1287,22 @@
       "header": "Detalhes da Sessão",
       "status": "Estado",
       "type": "Tipo",
-      "duration": "Duração",
-      "top_nominees": "Top Candidatos",
-      "total_votes": "Total de Votos: {count}",
-      "delete": "Eliminar Sessão",
-      "start": "Iniciar Votação",
-      "finish": "Terminar Votação",
-      "confirm_start": "Tem a certeza que deseja iniciar esta sessão de votação?",
-      "confirm_finish": "Tem a certeza que deseja terminar esta sessão de votação? Esta ação não pode ser revertida.",
-      "confirm_delete": "Tem a certeza que deseja eliminar esta sessão de votação?"
+      "start": "Início",
+      "end": "Fim",
+      "results": "Resultados",
+      "live": "Ao Vivo",
+      "top_3": "(Top 3)",
+      "no_votes": "Nenhum voto registado.",
+      "votes": "votos",
+      "more_results": "+ {count} outros candidatos não mostrados.",
+      "start_action": "Abrir votação",
+      "finish_action": "Fechar votação",
+      "delete_action": "Eliminar",
+      "confirm_start": "Tem a certeza que quer abrir esta votação?",
+      "confirm_finish": "Tem a certeza que quer fechar esta votação?",
+      "confirm_delete": "Tem a certeza que deseja eliminar esta sessão? Esta ação é irreversível.",
+      "confirm_yes": "Sim",
+      "confirm_cancel": "Cancelar"
     },
     "form": {
       "back": "Voltar",

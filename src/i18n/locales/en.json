@@ -20,12 +20,11 @@
   },
 
   "dinner": {
-    "not_found": "Course Dinner product not found",
-    "signed_up_message": "Your spot at the course dinner is secured! Get ready, surprises await you.",
-    "unlock_time_message": "Content will unlock at",
-    "unlock_highlight": "8:00 PM on May 21st",
-    "unlocked_message": "🎉 You can now access the surprises!",
-    "description": "Join us for an unforgettable evening!",
+    "not_found": "Dinner product not found",
+    "signed_up_message": "Your spot at the course dinner is guaranteed! Get ready, we have surprises waiting for you.",
+    "unlock_time_message": "Content will be unlocked at",
+    "unlock_highlight": "8 PM on May 21st",
+    "description": "Join us for an unforgettable dinner!",
     "buy_button": "Buy Now",
     "poster_alt": "Course Dinner Poster",
     "location_label": "Location",
@@ -37,115 +36,81 @@
     "location_url": "https://www.instagram.com/mad_spot_fa/",
     "teasers": {
       "challenges_title": "Challenges",
-      "challenges_text": "At the start of dinner, challenges will be available on our website. Complete the challenge, show the staff, and earn an extra drink token!",
+      "challenges_text": "At the start of the dinner, challenges will be available on our website. Complete the challenge, show the staff, and earn an extra drink token!",
       "contests_title": "Contests",
-      "contests_text": "After dinner, show what you've got in our contests and get a chance to win drink tokens and varied prizes!",
+      "contests_text": "After dinner, show what you've got in our contests and get a chance to win tokens or assorted prizes!",
       "titles_title": "Titles",
-      "titles_text": "Vote for your peers! During dinner, elect your friends to receive honorary titles.",
+      "titles_text": "Vote for your peers! During the dinner, elect your friend to receive a title.",
       "karaoke_title": "Karaoke",
-      "karaoke_text": "Show off your vocal skills! Solo or in a group, brave karaoke singers receive drink tokens ;)"
+      "karaoke_text": "Show off your skills on the mic! Solo or in a group, brave karaoke singers get tokens ;)"
     },
     "surprises": {
       "title": "Course Dinner Surprises",
-      "welcome_message": "Welcome to the dinner!\nExplore all the activities we prepared for you:",
+      "welcome_message": "Welcome to the course dinner!\nExplore all the activities we prepared for you:",
       "voting_button": "Go to Voting",
-      "poster_alt": "Dinner Poster",
+      "poster_alt": "Course Dinner Poster",
       "close_label": "Close",
-      "when_label": "When:",
-      "reward_label": "Reward:",
-      "access_here": "Access Here",
-      "listen_playlist": "Listen to Playlist",
       "cartas": {
         "title": "Cards",
         "text": "Find your matching card!",
-        "description": "During check-in, each person receives a playing card.\n Find who holds the matching card and head over to the staff together to both receive a drink token.",
-        "when": "Dinner check-in",
-        "reward": "1 token per person"
+        "description": "During check-in, each person receives a card.\n Find who has the matching card and head to the staff together to both receive a drink token."
       },
       "votacoes": {
         "title": "Voting",
-        "text": "Vote on the most iconic titles!",
-        "description": "During dinner you can vote in special categories like “Vibe Coder”, “Crypto Bro”, “Ghost”, and many more.\n Winners receive special sashes at the end of the night.",
-        "when": "Dinner check-in",
-        "reward": "Sashes"
+        "text": "Vote for the most iconic titles!",
+        "description": "During dinner you can vote in special categories like “Vibe Coder”, “Crypto Bro”, “Ghost” and many more.\n Winners receive special sashes at the end of the night."
       },
       "story": {
         "title": "NEIIST Story",
-        "text": "Post a story and win a drink!",
-        "description": "Post a photo or video of the dinner on Instagram, tag @neiist, and keep the story up for at least 1 hour. Then show the staff to get your drink token.",
-        "when": "During dinner",
-        "reward": "1 token"
+        "text": "Post a story and get a drink!",
+        "description": "Post a photo or video of the dinner on Instagram, tag @neiist and keep the story up for at least 1 hour. Then show the staff to get your token."
       },
       "posters": {
-        "title": "Bug on Posters",
-        "text": "Can you spot the bugs?",
-        "description": "Posters are scattered across the venue — some contain hidden bugs. Spot the erroneous posters and show the staff to receive a token.",
-        "when": "During dinner",
-        "reward": "1 token per poster"
+        "title": "Poster Bugs",
+        "text": "Can you find the bugs?",
+        "description": "There are posters scattered around the venue — some have hidden bugs. Find posters with errors and show the staff to get a token."
       },
       "tux": {
         "title": "Find Tux",
         "text": "Where is Tux?",
-        "description": "There will be a giant banner with a hidden Tux. The first people to spot him receive a token. Take a photo and show the staff.",
-        "when": "During dinner",
-        "reward": "1 token"
+        "description": "There will be a giant banner with a hidden Tux. The first people to find it receive a token. Take a photo and show the staff."
       },
       "stickers": {
         "title": "NEIIST Stickers",
         "text": "Search for hidden stickers!",
-        "description": "NEIIST stickers are hidden throughout the venue. If you find one, hand it to the staff and get a drink token.",
-        "when": "During dinner",
-        "reward": "1 token"
+        "description": "There are NEIIST stickers hidden around the venue. If you find one, bring it to the staff and get a token."
       },
       "outfit": {
-        "title": "Cursed Outfit",
+        "title": "Embarrassing Outfit",
         "text": "Wear a cursed outfit",
-        "description": "Wear one of the embarrassing t-shirts or accessories available during dinner and earn a token for your courage.",
-        "when": "During dinner",
-        "reward": "1 token"
+        "description": "Wear one of the embarrassing t-shirts or accessories available during dinner and get a token for your courage."
       },
       "chambel": {
         "title": "Challenge Chambel",
         "text": "Can you beat Chambel?",
-        "description": "Challenge Chambel to a quick mental math or coding puzzle. If you win, take home a drink token.",
-        "when": "During dinner",
-        "reward": "1 token"
+        "description": "Challenge Chambel to a quick mental math game or programming challenge. If you win, you get a token."
       },
       "flex": {
         "title": "Arm Wrestling",
         "text": "Test your strength!",
-        "description": "Join the dinner arm wrestling tournament and prove that computer scientists have power too.",
-        "when": "After dinner",
-        "reward": "Tokens and trophy"
+        "description": "Participate in the arm wrestling tournament at the dinner and prove that computer scientists have strength too."
       },
       "futsal": {
-        "title": "Futsal Target Kick",
+        "title": "Futsal Shot",
         "text": "Hit the target!",
-        "description": "Show your aim on the mini goal. Each target hit in the corner earns a drink token.",
-        "when": "During dinner",
-        "reward": "1 token per goal"
+        "description": "Show your aim on the mini goal. Each shot in the corner earns a token."
       },
       "karaoke": {
         "title": "Karaoke",
         "text": "Sing at the top of your lungs!",
-        "description": "Step on stage and sing your favorite song. The bravest performers receive drink tokens.",
-        "when": "After dinner",
-        "reward": "1 token"
+        "description": "Take the stage and sing your favorite song. The bravest singers receive drink tokens."
       },
       "spotify": {
         "title": "Dinner Playlist",
         "text": "The soundtrack of the night",
-        "description": "Listen to all the tracks on our official course dinner playlist and add your favorites.",
-        "when": "All night",
-        "reward": "Non-stop music"
+        "description": "Listen to all the songs in our official course dinner playlist and add your favorites."
       }
     }
-  },
-
-  "layout_navbar": {
-    "button": "Login",
-    "theme_toggle_light": "Switch to Light Mode",
-    "theme_toggle_dark": "Switch to Dark Mode"
   },
 
   "sumup_readers": {
@@ -172,11 +137,7 @@
   },
 
   "shop_pos": {
-    "title": "SumUp POS Management",
-    "title_1": "SumUp",
-    "title_2": "POS",
-    "title_3": "Manage",
-    "title_4": "ment"
+    "title": "SumUp POS Management"
   },
 
   "orders_table": {
@@ -199,9 +160,7 @@
     "selected_singular": "selected",
     "selected_plural": "selected",
     "bulk_confirm_1": "Are you sure you want to change the status of",
-    "bulk_confirm_2": "order",
     "bulk_confirm_3": "to",
-    "bulk_confirm_4": "?",
     "no_orders": "No orders found.",
     "pickup_dialog_title": "Pickup deadline for orders",
     "col_number": "Number",
@@ -244,13 +203,6 @@
   "input_text_dialog": {
     "confirm": "Confirm",
     "cancel": "Cancel"
-  },
-
-  "photo_team_members": {
-    "page_title": "Member Photos Management",
-    "search_placeholder": "Search by name or ISTID...",
-    "empty": "No members found.",
-    "change_photo_title": "Click to change photo"
   },
 
   "active_filters": {
@@ -386,29 +338,18 @@
     "title": "Autonomous Section",
     "button": "Visit SINFO",
     "logo_alt": "SINFO",
-    "text_p1": "SINFO is an annual event organized exclusively by students who strive to make the event more interesting and innovative with each edition. All participants have the opportunity to experience some of the most innovative gadgets and technologies on the market, in addition to being presented with an overview of the IT landscape by top companies. On top of all this, daily workshops cover the most in-demand and recent topics, helping all participants enhance their technical and non-technical skills.",
-    "text_p2": "The main goal of SINFO is to allow all students and participants in general to interact and get closer to influential and inspiring people or companies in Information Technology and Computer Science.",
     "description": "SINFO is an annual event organized exclusively by students who strive to make the event more interesting and innovative with each edition. All participants have the opportunity to experience some of the most innovative gadgets and technologies on the market, in addition to being presented with an overview of the IT landscape by top companies. On top of all this, daily workshops cover the most in-demand and recent topics, helping all participants enhance their technical and non-technical skills.",
     "objective": "The main goal of SINFO is to allow all students and participants in general to interact and get closer to influential and inspiring people or companies in Information Technology and Computer Science."
   },
 
   "sweats_contest": {
     "title": "Sweatshirt Design Contest",
-    "desc_p1": "Want to create the next special edition CS sweatshirt?",
-    "desc_consult": "Check out ",
-    "desc_here": "here",
-    "desc_rules": " the rules, submit your design, and get a chance to win a sweatshirt!",
-    "submit_design": "Submit a design!",
-    "submitting": "Submitting...",
-    "submitted": "Design submitted",
-    "login_required": "Please log in to submit a design",
-    "error_zip_only": "Error: ZIP files only",
-    "error_submitting": "Error submitting",
     "description_start": "Want to create the next special edition CS sweatshirt?",
     "description_link": "here",
     "description_end": "the rules, submit your design, and get a chance to win a sweatshirt!",
     "button": "Submit a design!",
     "uploading": "Submitting...",
+    "submitted": "Design submitted",
     "login_warning": "Please log in to submit a design",
     "errors": {
       "zip_only": "Error: ZIP files only",
@@ -1143,7 +1084,6 @@
     "total_label": "Total: {amount}€",
     "notes_title": "Notes",
     "status_title": "Status",
-    "pay_btn": "Pay",
     "mark_ready": "Mark as Ready",
     "mark_delivered": "Mark as Delivered",
     "cancel_order": "Cancel Order",
@@ -1219,7 +1159,6 @@
     "view_orders": "View Orders",
     "error_load_readers": "Failed to load readers",
     "error_update_order": "Failed to update order",
-    "error_mark_paid": "Failed to mark order as paid",
     "error_finalize_order": "Failed to finalize order",
     "error_invalid_server_response": "Invalid server response",
     "reader_status": "Reader {name}: {status}",
@@ -1302,7 +1241,8 @@
     "waiting_title_highlight": "the next voting session",
     "waiting_subtitle": "When voting opens, the page will update automatically.",
     "view_previous_results": "View previous results",
-    "votes_submitted_title": "Votes submitted!",
+    "votes_submitted_prefix": "Votes",
+    "votes_submitted_highlight": "submitted!",
     "votes_submitted_subtitle": "Awaiting publication of results.",
     "voting_in_progress": "Voting in progress",
     "select_your_vote": "Select your vote",
@@ -1328,15 +1268,14 @@
       "title": "Title",
       "type": "Type",
       "period": "Period",
-      "voters": "Voters",
-      "nominees": "Nominees",
+      "voters": "Votes",
       "status": "Status",
       "empty": "No voting sessions found."
     },
     "types": {
       "activity": "Activity",
       "users": "Users",
-      "custom": "Other"
+      "custom": "Custom"
     },
     "statuses": {
       "idle": "Ready",
@@ -1348,15 +1287,22 @@
       "header": "Session Details",
       "status": "Status",
       "type": "Type",
-      "duration": "Duration",
-      "top_nominees": "Top Nominees",
-      "total_votes": "Total Votes: {count}",
-      "delete": "Delete Session",
-      "start": "Start Voting",
-      "finish": "Finish Voting",
-      "confirm_start": "Are you sure you want to start this voting session?",
-      "confirm_finish": "Are you sure you want to finish this voting session? This action cannot be undone.",
-      "confirm_delete": "Are you sure you want to delete this voting session?"
+      "start": "Start",
+      "end": "End",
+      "results": "Results",
+      "live": "Live",
+      "top_3": "(Top 3)",
+      "no_votes": "No votes registered.",
+      "votes": "votes",
+      "more_results": "+ {count} other nominees not shown.",
+      "start_action": "Open voting",
+      "finish_action": "Close voting",
+      "delete_action": "Delete",
+      "confirm_start": "Are you sure you want to open this voting session?",
+      "confirm_finish": "Are you sure you want to close this voting session?",
+      "confirm_delete": "Are you sure you want to delete this session? This action is irreversible.",
+      "confirm_yes": "Yes",
+      "confirm_cancel": "Cancel"
     },
     "form": {
       "back": "Back",

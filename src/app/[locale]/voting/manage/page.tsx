@@ -10,15 +10,21 @@ import VotingManagement from "@/components/voting/admin/VotingManagement";
 import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
 import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 interface PageProps {
+  params: LocaleParams;
   searchParams: Promise<{ sessionId?: string }>;
 }
 
-export default async function VotingManagePage({ searchParams }: PageProps) {
+export default async function VotingManagePage({ params, searchParams }: PageProps) {
   await requireRoles([UserRole._ADMIN]);
-  const params = await searchParams;
-  const sessionId = params.sessionId ? parseInt(params.sessionId, 10) : undefined;
+  const [{ locale: rawLocale }, searchParamsObj] = await Promise.all([params, searchParams]);
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale).voting_management;
+
+  const sessionId = searchParamsObj.sessionId ? parseInt(searchParamsObj.sessionId, 10) : undefined;
 
   const [sessions, activities, users] = await Promise.all([
     getVotingSessions(100),
@@ -38,9 +44,21 @@ export default async function VotingManagePage({ searchParams }: PageProps) {
   return (
     <>
       <AdminVotingSync />
-      <VotingManagement initialSessions={sessions} activities={activities} users={users} />
+      <VotingManagement
+        initialSessions={sessions}
+        activities={activities}
+        users={users}
+        dict={dict}
+        locale={locale}
+        basePath={`/${locale}`}
+      />
       {selectedSession ? (
-        <VotingSessionDetailOverlay session={selectedSession} results={results || []} />
+        <VotingSessionDetailOverlay
+          session={selectedSession}
+          results={results || []}
+          dict={dict}
+          locale={locale}
+        />
       ) : null}
     </>
   );

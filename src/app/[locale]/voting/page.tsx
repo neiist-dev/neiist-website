@@ -7,14 +7,25 @@ import {
   getSessionResults,
 } from "@/lib/db/repositories/voting.repository";
 import { requireUser } from "@/lib/auth";
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 export default async function VotingPage({
+  params,
   searchParams,
 }: {
+  params: LocaleParams;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { user } = await requireUser();
-  const [params, sessions] = await Promise.all([searchParams, getVotingSessions(20)]);
+  const [{ locale: rawLocale }, searchParamsObj, sessions] = await Promise.all([
+    params,
+    searchParams,
+    getVotingSessions(20),
+  ]);
+
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale).voting;
 
   const now = new Date();
   const activeVotingSessions = sessions.filter((session) => {
@@ -23,7 +34,7 @@ export default async function VotingPage({
     return !(session.endAt && new Date(session.endAt) <= now);
   });
 
-  const showLastResult = params.view === "lastresult";
+  const showLastResult = searchParamsObj.view === "lastresult";
   const initialGlobalState: GlobalVotingState = { activeSessions: [] };
   const initialUserVotes: Record<number, string | null> = {};
 
@@ -65,6 +76,7 @@ export default async function VotingPage({
       initialGlobalState={initialGlobalState}
       initialUserVotes={initialUserVotes}
       showLastResult={showLastResult}
+      dict={dict}
     />
   );
 }

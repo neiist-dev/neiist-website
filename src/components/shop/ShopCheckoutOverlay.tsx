@@ -91,9 +91,9 @@ export default function ShopCheckoutOverlay({
     (path?: string) => {
       localStorage.setItem("cart", "[]");
       window.dispatchEvent(new Event("cartUpdated"));
-      router.push(path ?? "/my-orders");
+      router.push(path ?? `${basePath || ""}/my-orders`);
     },
-    [router]
+    [router, basePath]
   );
 
   const cancelOrder = useCallback(
@@ -112,10 +112,10 @@ export default function ShopCheckoutOverlay({
       } catch (error) {
         console.error("cancelOrder error", error);
       } finally {
-        finalizeAndNavigate("/my-orders");
+        finalizeAndNavigate(`${basePath || ""}/my-orders`);
       }
     },
-    [finalizeAndNavigate]
+    [finalizeAndNavigate, basePath]
   );
 
   const verifyOnce = useCallback(

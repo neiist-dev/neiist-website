@@ -312,7 +312,7 @@ export default function CheckoutForm({
           session.completePayment(ApplePaySession.STATUS_SUCCESS);
           localStorage.setItem("cart", "[]");
           window.dispatchEvent(new Event("cartUpdated"));
-          router.push(`/my-orders?orderId=${createdOrderId}`);
+          router.push(`${basePath || ""}/my-orders?orderId=${createdOrderId}`);
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
           toast.error(data?.error || dict.error_apple_pay_failure, {
