@@ -4,6 +4,7 @@ import UsersSearchList from "@/components/admin/UsersSearchList";
 import styles from "@/styles/components/admin/UsersManagement.module.css";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import { getAllMemberships, getDepartmentRoles } from "@/lib/db/repositories/team.repository";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Role {
   role_name: string;
@@ -15,7 +16,11 @@ interface UserWithMemberships extends User {
   memberships: Membership[];
 }
 
-export default async function UsersManagement() {
+export default async function UsersManagement({
+  dict,
+}: {
+  dict: Dictionary["admin"]["users_management"];
+}) {
   const users = await getAllUsers();
   const memberships: Membership[] = await getAllMemberships();
 
@@ -34,8 +39,8 @@ export default async function UsersManagement() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Visualização de Utilizadores</h2>
-      <UsersSearchList users={usersWithMemberships} roles={roles} isAdmin={true} />
+      <h2 className={styles.title}>{dict.title}</h2>
+      <UsersSearchList users={usersWithMemberships} roles={roles} isAdmin={true} dict={dict} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Membership } from "@/types/memberships";
 import { useUser } from "@/context/UserContext";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Department {
   name: string;
@@ -24,10 +25,14 @@ export default function MembershipsSearchList({
   memberships: initialMemberships,
   users,
   departments,
+  dict,
+  locale = "pt",
 }: {
   memberships: Membership[];
   users: Partial<User>[];
   departments: Department[];
+  dict: Dictionary["admin"]["memberships_management"];
+  locale?: string;
 }) {
   const [memberships, setMemberships] = useState(initialMemberships);
   const [search, setSearch] = useState("");
@@ -134,11 +139,11 @@ export default function MembershipsSearchList({
       } else {
         const error = await response.json();
         // TODO: (ERROR)
-        setError(error.error || "Erro ao adicionar membro");
+        setError(error.error || dict.errors.add_member);
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao adicionar membro");
+      setError(dict.errors.add_member);
     } finally {
       setAdding(false);
     }
@@ -173,11 +178,11 @@ export default function MembershipsSearchList({
       } else {
         const error = await response.json();
         // TODO: (ERROR)
-        setError(error.error || "Erro ao remover membro");
+        setError(error.error || dict.errors.remove_member);
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao remover membro");
+      setError(dict.errors.remove_member);
     } finally {
       setPendingRemove(null);
     }
@@ -227,7 +232,9 @@ export default function MembershipsSearchList({
     <>
       <ConfirmDialog
         open={confirmOpen}
-        message="Tem a certeza que quer remover este membro?"
+        message={dict.confirm_remove}
+        confirmText={dict.confirm_yes}
+        cancelText={dict.confirm_cancel}
         onConfirm={confirmRemove}
         onCancel={cancelRemove}
       />
@@ -242,7 +249,7 @@ export default function MembershipsSearchList({
         }}
       />
       <section className={styles.section}>
-        <h3>Adicionar Novo Membro</h3>
+        <h3>{dict.add_member_title}</h3>
         <div className={styles.addMemberForm}>
           <select
             value={newMembership.userNumber}
@@ -251,7 +258,7 @@ export default function MembershipsSearchList({
             }
             className={styles.input}
             disabled={adding}>
-            <option value="">Selecione um utilizador</option>
+            <option value="">{dict.select_user}</option>
             {users
               .filter((user) => !user.isAnonymized)
               .map((user) => (
@@ -265,7 +272,7 @@ export default function MembershipsSearchList({
             onChange={(inputEvent) => handleDepartmentChange(inputEvent.target.value)}
             className={styles.input}
             disabled={adding}>
-            <option value="">Selecione um departamento</option>
+            <option value="">{dict.select_department}</option>
             {departments.map((dept) => (
               <option key={dept.name} value={dept.name}>
                 {dept.name}
@@ -279,7 +286,7 @@ export default function MembershipsSearchList({
             }
             className={styles.input}
             disabled={adding || !newMembership.departmentName}>
-            <option value="">Selecione um cargo</option>
+            <option value="">{dict.select_role}</option>
             {roles.map((role) => (
               <option key={role.role_name} value={role.role_name}>
                 {role.role_name} ({role.access})
@@ -295,7 +302,7 @@ export default function MembershipsSearchList({
               !newMembership.roleName
             }
             className={styles.addMemberBtn}>
-            {adding ? "A adicionar..." : "Adicionar Membro"}
+            {adding ? dict.adding : dict.add_member}
           </button>
         </div>
         {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
@@ -303,28 +310,28 @@ export default function MembershipsSearchList({
       </section>
 
       <section className={styles.section}>
-        <h3>Membros Existentes</h3>
+        <h3>{dict.existing_members_title}</h3>
         <div className={styles.searchBar}>
           <input
             className={styles.input}
             type="text"
-            placeholder="Pesquisar por nome, ISTID, email, departamento ou cargo..."
+            placeholder={dict.search_placeholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <button
             className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
             onClick={() => setShowInactive(false)}>
-            Ativos
+            {dict.active}
           </button>
           <button
             className={`${styles.filterBtn} ${showInactive ? styles.active : ""}`}
             onClick={() => setShowInactive(true)}>
-            Mostrar Inativos
+            {dict.show_inactive}
           </button>
         </div>
         {filteredMemberships.length === 0 ? (
-          <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
+          <div className={styles.emptyMessage}>{dict.empty}</div>
         ) : (
           <div className={styles.membersList}>
             {filteredMemberships.map((membership) => (
@@ -340,11 +347,7 @@ export default function MembershipsSearchList({
                     onClick={() => {
                       if (membership.isActive) handlePhotoClick(membership.userNumber);
                     }}
-                    title={
-                      membership.isActive
-                        ? "Clique para alterar a foto"
-                        : "Só pode alterar fotos de membros ativos"
-                    }
+                    title={membership.isActive ? dict.change_photo : dict.change_photo_inactive}
                   />
                 </div>
                 <div className={styles.memberInfo}>
@@ -352,27 +355,31 @@ export default function MembershipsSearchList({
                     {membership.userName} ({membership.userNumber})
                   </div>
                   <div>
-                    <strong>Departamento:</strong> {membership.departmentName}
+                    <strong>{dict.department_label}</strong> {membership.departmentName}
                   </div>
                   <div>
-                    <strong>Cargo:</strong> {membership.roleName}
+                    <strong>{dict.role_label}</strong> {membership.roleName}
                   </div>
                   <div>
-                    <strong>Email:</strong>{" "}
+                    <strong>{dict.email_label}</strong>{" "}
                     {membership.isAnonymized ? (
-                      <span className={styles.deletedText}>Dados eliminados</span>
+                      <span className={styles.deletedText}>{dict.data_deleted}</span>
                     ) : (
                       membership.userEmail
                     )}
                   </div>
                   <div>
-                    <strong>Desde:</strong>{" "}
-                    {new Date(membership.startDate).toLocaleDateString("pt-PT")}
+                    <strong>{dict.since_label}</strong>{" "}
+                    {new Date(membership.startDate).toLocaleDateString(
+                      locale === "en" ? "en-GB" : "pt-PT"
+                    )}
                     {membership.endDate && (
                       <>
                         {" "}
-                        <strong>Até:</strong>{" "}
-                        {new Date(membership.endDate).toLocaleDateString("pt-PT")}
+                        <strong>{dict.until_label}</strong>{" "}
+                        {new Date(membership.endDate).toLocaleDateString(
+                          locale === "en" ? "en-GB" : "pt-PT"
+                        )}
                       </>
                     )}
                   </div>
@@ -381,10 +388,10 @@ export default function MembershipsSearchList({
                   <div className={styles.badgeGroup}>
                     <span
                       className={`${styles.badge} ${!membership.isActive ? styles.badgeInactive : ""}`}>
-                      {membership.isActive ? "Ativo" : "Inativo"}
+                      {membership.isActive ? dict.active_badge : dict.inactive_badge}
                     </span>
                     {membership.isAnonymized && (
-                      <span className={styles.anonymizedBadge}>Conta Eliminada</span>
+                      <span className={styles.anonymizedBadge}>{dict.account_deleted}</span>
                     )}
                   </div>
                   <button
@@ -396,7 +403,7 @@ export default function MembershipsSearchList({
                       )
                     }
                     className={styles.deleteBtn}>
-                    Remover
+                    {dict.remove}
                   </button>
                 </div>
               </div>

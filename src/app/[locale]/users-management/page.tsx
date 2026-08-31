@@ -6,18 +6,26 @@ import { GoPerson, GoShield } from "react-icons/go";
 import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
 import GlobalLoading from "@/app/loading";
-
-const sections = [
-  { id: "users", name: "Utilizadores", icon: <GoShield /> },
-  { id: "memberships", name: "Membros", icon: <GoPerson /> },
-];
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 interface PageProps {
+  params: LocaleParams;
   searchParams?: Promise<Record<string, string | string[]>>;
 }
 
-async function UsersManagementContent({ searchParams: searchParamsPromise }: PageProps) {
+async function UsersManagementContent({ params, searchParams: searchParamsPromise }: PageProps) {
   await requireRoles([UserRole._ADMIN]);
+
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale).admin;
+
+  const sections = [
+    { id: "users", name: dict.users_management.tab_users, icon: <GoShield /> },
+    { id: "memberships", name: dict.users_management.tab_memberships, icon: <GoPerson /> },
+  ];
+
   const searchParams = searchParamsPromise ? await searchParamsPromise : {};
   const sectionParam = searchParams?.section;
   const activeSection =
@@ -25,12 +33,17 @@ async function UsersManagementContent({ searchParams: searchParamsPromise }: Pag
       ? sectionParam
       : "users";
 
-  const content = activeSection === "memberships" ? <MembershipsManagement /> : <UsersManagement />;
+  const content =
+    activeSection === "memberships" ? (
+      <MembershipsManagement dict={dict.memberships_management} locale={locale} />
+    ) : (
+      <UsersManagement dict={dict.users_management} />
+    );
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>Gestão de Pessoas</h1>
+        <h1>{dict.users_management.page_title}</h1>
       </header>
       <nav className={styles.tabBar}>
         {sections.map((section) => (

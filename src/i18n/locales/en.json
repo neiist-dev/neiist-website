@@ -861,6 +861,9 @@
 
   "admin": {
     "users_management": {
+      "page_title": "People Management",
+      "tab_users": "Users",
+      "tab_memberships": "Members",
       "title": "Users Overview",
       "search_placeholder": "Search by name, ISTID, email, role or department...",
       "empty": "No users found.",
@@ -873,7 +876,9 @@
       "data_deleted": "Data deleted",
       "delete_title": "Delete user {name}",
       "delete_confirm": "Are you sure you want to delete user {name} ({istid})? This action will permanently erase their personal data and cannot be undone.",
-      "delete_error": "Error deleting user"
+      "delete_error": "Error deleting user",
+      "confirm_yes": "Yes",
+      "confirm_cancel": "Cancel"
     },
 
     "teams_management": {
@@ -980,7 +985,7 @@
       "empty": "No members found.",
       "change_photo": "Click to change photo",
       "change_photo_inactive": "Can only change photo of active members",
-      "department_label": "Department",
+      "department_label": "Department:",
       "role_label": "Role:",
       "email_label": "Email:",
       "since_label": "Since:",
@@ -989,6 +994,8 @@
       "inactive_badge": "Inactive",
       "remove": "Remove",
       "confirm_remove": "Are you sure you want to remove this member?",
+      "confirm_yes": "Yes",
+      "confirm_cancel": "Cancel",
       "account_deleted": "Account Deleted",
       "data_deleted": "Data deleted",
       "errors": {

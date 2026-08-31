@@ -7,6 +7,7 @@ import { Membership } from "@/types/memberships";
 import styles from "@/styles/components/admin/UsersSearchList.module.css";
 import { FaTrash } from "react-icons/fa";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Role {
   role_name: string;
@@ -25,10 +26,12 @@ export default function UsersSearchList({
   users,
   roles,
   isAdmin = false,
+  dict,
 }: {
   users: UserWithMemberships[];
   roles: Role[];
   isAdmin?: boolean;
+  dict: Dictionary["admin"]["users_management"];
 }) {
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
   const [search, setSearch] = useState("");
@@ -97,12 +100,12 @@ export default function UsersSearchList({
         method: "DELETE",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao eliminar utilizador");
+      if (!res.ok) throw new Error(data.error || dict.delete_error);
 
       setDeletedIds((prev) => new Set(prev).add(pendingDeleteUser.istid));
       setPendingDeleteUser(null);
     } catch (err: unknown) {
-      setDeleteError(err instanceof Error ? err.message : "Erro ao eliminar utilizador");
+      setDeleteError(err instanceof Error ? err.message : dict.delete_error);
     } finally {
       setIsDeleting(false);
     }
@@ -114,13 +117,13 @@ export default function UsersSearchList({
         className={styles.input}
         style={{ marginBottom: 16, width: "100%" }}
         type="text"
-        placeholder="Pesquisar por nome, ISTID, email, cargo ou departamento..."
+        placeholder={dict.search_placeholder}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
 
       {filteredUsers.length === 0 ? (
-        <p className={styles.emptyMessage}>Nenhum utilizador encontrado.</p>
+        <p className={styles.emptyMessage}>{dict.empty}</p>
       ) : (
         <div className={styles.itemsList}>
           {filteredUsers.map((user) => (
@@ -129,7 +132,7 @@ export default function UsersSearchList({
                 src={user.photo}
                 height={200}
                 width={200}
-                alt={`Foto de ${user.name}`}
+                alt={`${dict.photo_alt} ${user.name}`}
                 className={styles.userPhoto}
               />
               <div className={styles.itemContent}>
@@ -138,7 +141,7 @@ export default function UsersSearchList({
                     {user.name} <span className={styles.istid}>({user.istid})</span>
                     {user.isAnonymized && (
                       <span className={`${styles.accessBadge} ${styles.deleted}`}>
-                        Conta Eliminada
+                        {dict.account_deleted}
                       </span>
                     )}
                   </h4>
@@ -146,7 +149,7 @@ export default function UsersSearchList({
                     <button
                       type="button"
                       className={styles.btnDanger}
-                      title={`Eliminar utilizador ${user.name}`}
+                      title={dict.delete_title.replace("{name}", user.name)}
                       onClick={() => {
                         setDeleteError(null);
                         setPendingDeleteUser(user);
@@ -156,26 +159,26 @@ export default function UsersSearchList({
                   )}
                 </div>
                 <p className={styles.hideOnMobile}>
-                  <strong>Email:</strong>{" "}
+                  <strong>{dict.email_label}:</strong>{" "}
                   {user.isAnonymized ? (
-                    <span className={styles.deletedText}>Dados eliminados</span>
+                    <span className={styles.deletedText}>{dict.data_deleted}</span>
                   ) : (
                     user.email
                   )}
                 </p>
                 {user.phone && (
                   <p className={styles.hideOnMobile}>
-                    <strong>Telefone:</strong> {user.phone}
+                    <strong>{dict.phone_label}:</strong> {user.phone}
                   </p>
                 )}
                 {user.courses?.length > 0 && (
                   <p className={styles.hideOnMobile}>
-                    <strong>Cursos:</strong> {user.courses.join(", ")}
+                    <strong>{dict.courses_label}:</strong> {user.courses.join(", ")}
                   </p>
                 )}
                 {user.memberships?.length > 0 && (
                   <>
-                    <strong>Equipas/Órgãos:</strong>
+                    <strong>{dict.teams_label}:</strong>
                     <ul className={styles.membershipsList}>
                       {user.memberships.map((membership) => {
                         const accessLevel = getAccessLevelForRole(membership.roleName);
@@ -208,9 +211,13 @@ export default function UsersSearchList({
         open={pendingDeleteUser !== null}
         message={
           deleteError
-            ? `Erro: ${deleteError}`
-            : `Tens a certeza que pretendes eliminar o utilizador ${pendingDeleteUser?.name} (${pendingDeleteUser?.istid})? Esta ação irá apagar os seus dados pessoais de forma permanente e não pode ser revertida.`
+            ? `${dict.delete_error}: ${deleteError}`
+            : dict.delete_confirm
+                .replace("{name}", pendingDeleteUser?.name || "")
+                .replace("{istid}", pendingDeleteUser?.istid || "")
         }
+        confirmText={dict.confirm_yes}
+        cancelText={dict.confirm_cancel}
         onConfirm={handleDeleteConfirm}
         onCancel={() => {
           if (!isDeleting) {

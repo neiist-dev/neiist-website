@@ -62,12 +62,27 @@ export default async function DepartmentsManagementPage({
       </nav>
       <div className={styles.dashboard}>
         <section>
-          {activeTab === "teams" && <TeamsManagement />}
-          {activeTab === "bodies" && <AdminBodiesManagement />}
+          {activeTab === "teams" && (
+            <TeamsManagement
+              dict={dict.admin.teams_management}
+              addModalDict={dict.admin.add_department_modal}
+            />
+          )}
+          {activeTab === "bodies" && (
+            <AdminBodiesManagement
+              dict={dict.admin.bodies_management}
+              addModalDict={dict.admin.add_department_modal}
+            />
+          )}
           {activeTab === "aboutUs-order" && <AboutUsManager dict={dict.about_us_page} />}
         </section>
         <section id="roles-section">
-          {activeTab !== "aboutUs-order" && <RolesManagement initialDepartmentType={activeType} />}
+          {activeTab !== "aboutUs-order" && (
+            <RolesManagement
+              initialDepartmentType={activeType}
+              dict={dict.admin.roles_management}
+            />
+          )}
         </section>
       </div>
     </div>

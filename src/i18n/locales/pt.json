@@ -861,6 +861,9 @@
 
   "admin": {
     "users_management": {
+      "page_title": "Gestão de Pessoas",
+      "tab_users": "Utilizadores",
+      "tab_memberships": "Membros",
       "title": "Visualização de Utilizadores",
       "search_placeholder": "Pesquisar por nome, ISTID, email, cargo ou departamento...",
       "empty": "Nenhum utilizador encontrado.",
@@ -873,7 +876,9 @@
       "data_deleted": "Dados eliminados",
       "delete_title": "Eliminar utilizador {name}",
       "delete_confirm": "Tens a certeza que pretendes eliminar o utilizador {name} ({istid})? Esta ação irá apagar os seus dados pessoais de forma permanente e não pode ser revertida.",
-      "delete_error": "Erro ao eliminar utilizador"
+      "delete_error": "Erro ao eliminar utilizador",
+      "confirm_yes": "Sim",
+      "confirm_cancel": "Cancelar"
     },
 
     "teams_management": {
@@ -980,7 +985,7 @@
       "empty": "Nenhum membro encontrado.",
       "change_photo": "Clique para alterar a foto",
       "change_photo_inactive": "Só pode alterar fotos de membros ativos",
-      "department_label": "Departamento",
+      "department_label": "Departamento:",
       "role_label": "Cargo:",
       "email_label": "Email:",
       "since_label": "Desde:",
@@ -989,6 +994,8 @@
       "inactive_badge": "Inativo",
       "remove": "Remover",
       "confirm_remove": "Tem a certeza que quer remover este membro?",
+      "confirm_yes": "Sim",
+      "confirm_cancel": "Cancelar",
       "account_deleted": "Conta Eliminada",
       "data_deleted": "Dados eliminados",
       "errors": {
