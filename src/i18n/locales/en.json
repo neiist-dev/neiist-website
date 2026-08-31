@@ -1248,11 +1248,20 @@
     "since_label": "Since: {date}",
     "remove": "Remove",
     "confirm_remove": "Are you sure you want to remove this member?",
+    "confirm_yes": "Yes",
+    "confirm_cancel": "Cancel",
     "errors": {
-      "fetch_members": "Error updating members.",
+      "fetch_members": "Error refreshing members.",
       "add_member": "Error adding member.",
       "remove_member": "Error removing member."
     }
+  },
+
+  "photo_management": {
+    "title": "Team Members Photo Management",
+    "search_placeholder": "Search by name or ISTID...",
+    "empty": "No members found.",
+    "photo_tooltip": "Click to change photo"
   },
 
   "my_orders": {

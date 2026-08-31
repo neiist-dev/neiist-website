@@ -9,6 +9,8 @@ import {
   getAllValidDepartmentRoles,
 } from "@/lib/db/repositories/team.repository";
 import GlobalLoading from "@/app/loading";
+import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 interface Role {
   department_name: string;
@@ -17,9 +19,17 @@ interface Role {
   active: boolean;
 }
 
-async function TeamManagementContent() {
+interface PageProps {
+  params: LocaleParams;
+}
+
+async function TeamManagementContent({ params }: PageProps) {
   const { user } = await requireRoles([UserRole._ADMIN, UserRole._COORDINATOR]);
   const istid = user.istid;
+
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale).coordinator_management;
 
   const [users, memberships] = (await Promise.all([getAllUsers(), getAllMemberships()])) as [
     Awaited<ReturnType<typeof getAllUsers>>,
@@ -53,14 +63,16 @@ async function TeamManagementContent() {
       coordinatorTeams={uniqueCoordinatorTeams}
       memberships={teamMemberships}
       users={users}
+      dict={dict}
+      locale={locale}
     />
   );
 }
 
-export default function TeamManagementPage() {
+export default function TeamManagementPage(props: PageProps) {
   return (
     <Suspense fallback={<GlobalLoading />}>
-      <TeamManagementContent />
+      <TeamManagementContent {...props} />
     </Suspense>
   );
 }

@@ -1248,11 +1248,20 @@
     "since_label": "Desde: {date}",
     "remove": "Remover",
     "confirm_remove": "Tem a certeza que quer remover este membro?",
+    "confirm_yes": "Sim",
+    "confirm_cancel": "Cancelar",
     "errors": {
       "fetch_members": "Erro ao atualizar membros.",
       "add_member": "Erro ao adicionar membro.",
       "remove_member": "Erro ao remover membro."
     }
+  },
+
+  "photo_management": {
+    "title": "Gestão de Fotos dos Membros",
+    "search_placeholder": "Pesquisar por nome ou ISTID...",
+    "empty": "Nenhum membro encontrado.",
+    "photo_tooltip": "Clique para alterar a foto"
   },
 
   "my_orders": {

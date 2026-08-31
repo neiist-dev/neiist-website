@@ -6,15 +6,20 @@ import { Membership } from "@/types/memberships";
 import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 export default function CoordinatorTeamManagementSearch({
   coordinatorTeams,
   memberships: initialMemberships,
   users,
+  dict,
+  locale = "pt",
 }: {
   coordinatorTeams: string[];
   memberships: Membership[];
   users: Partial<User>[];
+  dict: Dictionary["coordinator_management"];
+  locale?: string;
 }) {
   const [selectedTeam, setSelectedTeam] = useState(coordinatorTeams[0] || "");
   const [memberships, setMemberships] = useState<Membership[]>([]);
@@ -90,7 +95,7 @@ export default function CoordinatorTeamManagementSearch({
         );
       }
     } catch {
-      setError("Erro ao atualizar membros.");
+      setError(dict.errors.fetch_members);
     } finally {
       setLoading(false);
     }
@@ -117,11 +122,11 @@ export default function CoordinatorTeamManagementSearch({
         // TODO: (SUCCESS) show success toast after the team member is added.
       } else {
         // TODO: (ERROR)
-        setError("Erro ao adicionar membro.");
+        setError(dict.errors.add_member);
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao adicionar membro.");
+      setError(dict.errors.add_member);
     } finally {
       setLoading(false);
     }
@@ -152,11 +157,11 @@ export default function CoordinatorTeamManagementSearch({
         // TODO: (SUCCESS) show success toast after the team member is removed.
       } else {
         // TODO: (ERROR)
-        setError("Erro ao remover membro.");
+        setError(dict.errors.remove_member);
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao remover membro.");
+      setError(dict.errors.remove_member);
     } finally {
       setLoading(false);
       setPendingRemove(null);
@@ -172,12 +177,14 @@ export default function CoordinatorTeamManagementSearch({
     <>
       <ConfirmDialog
         open={confirmOpen}
-        message="Tem a certeza que quer remover este membro?"
+        message={dict.confirm_remove}
+        confirmText={dict.confirm_yes}
+        cancelText={dict.confirm_cancel}
         onConfirm={confirmRemove}
         onCancel={cancelRemove}
       />
       <div className={styles.header}>
-        <h1 className={styles.title}>Gestão da Equipa</h1>
+        <h1 className={styles.title}>{dict.title}</h1>
         <select
           className={styles.teamSelector}
           value={selectedTeam}
@@ -191,14 +198,14 @@ export default function CoordinatorTeamManagementSearch({
         </select>
       </div>
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Adicionar Novo Membro</h3>
+        <h3 className={styles.sectionTitle}>{dict.add_member_title}</h3>
         <form className={styles.addMemberForm} onSubmit={handleAddMember}>
           <select
             className={styles.input}
             value={selectedUser}
             onChange={(event) => setSelectedUser(event.target.value)}
             disabled={loading}>
-            <option value="">Selecione um utilizador</option>
+            <option value="">{dict.select_user}</option>
             {users.map((user) => (
               <option key={user.istid} value={user.istid}>
                 {user.name} ({user.email})
@@ -210,7 +217,7 @@ export default function CoordinatorTeamManagementSearch({
             value={selectedRole}
             onChange={(event) => setSelectedRole(event.target.value)}
             disabled={loading}>
-            <option value="">Selecione um cargo</option>
+            <option value="">{dict.select_role}</option>
             {roles.map((role) => (
               <option key={role.role_name} value={role.role_name}>
                 {role.role_name}
@@ -221,16 +228,16 @@ export default function CoordinatorTeamManagementSearch({
             className={styles.addMemberBtn}
             type="submit"
             disabled={loading || !selectedUser || !selectedRole}>
-            Adicionar Membro
+            {dict.add_member}
           </button>
         </form>
         {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
         {error && <div className={styles.error}>{error}</div>}
       </section>
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Membros Existentes</h3>
+        <h3 className={styles.sectionTitle}>{dict.existing_members_title}</h3>
         {memberships.length === 0 ? (
-          <div className={styles.emptyMessage}>Nenhum membro encontrado.</div>
+          <div className={styles.emptyMessage}>{dict.empty}</div>
         ) : (
           <div className={styles.membersList}>
             {memberships.map((member) => (
@@ -246,14 +253,19 @@ export default function CoordinatorTeamManagementSearch({
                 <div className={styles.memberRole}>{member.roleName}</div>
                 <div className={styles.memberEmail}>{member.userEmail}</div>
                 <div className={styles.memberSince}>
-                  Desde: {new Date(member.startDate).toLocaleDateString("pt-PT")}
+                  {dict.since_label.replace(
+                    "{date}",
+                    new Date(member.startDate).toLocaleDateString(
+                      locale === "en" ? "en-GB" : "pt-PT"
+                    )
+                  )}
                 </div>
-                <span className={styles.badge}>Ativo</span>
+                <span className={styles.badge}>{dict.active_badge}</span>
                 <button
                   className={styles.deleteBtn}
                   onClick={() => handleRemoveMember(member.userNumber, member.roleName)}
                   disabled={loading}>
-                  Remover
+                  {dict.remove}
                 </button>
               </div>
             ))}
