@@ -9,6 +9,8 @@ import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/shop/DiscountCodeManagement.module.css";
 
@@ -70,23 +72,23 @@ export default function DiscountCodeManagement({
 }: DiscountCodesDashboardProps) {
   const router = useRouter();
   const [codes, setCodes] = useState(discountCodes);
-  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
   const usersByIstid = new Map(users.map((u) => [u.istid, u]));
   const productNamesById = new Map(products.map((p) => [p.id, p.name]));
 
-  const filteredCodes = codes.filter((code) => {
-    const query = search.trim().toLowerCase();
-    if (!query) return true;
-    return [
-      code.code,
-      code.discount_type,
-      formatUsers(code, usersByIstid, dict),
-      formatProducts(code, productNamesById, dict),
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(query);
+  const {
+    results: filteredCodes,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<DiscountCode>({
+    data: codes,
+    fields: [{ field: "code", boost: 4 }, "discount_type", "usersText", "productsText"],
+    extractField: (code, field) => {
+      if (field === "usersText") return formatUsers(code, usersByIstid, dict);
+      if (field === "productsText") return formatProducts(code, productNamesById, dict);
+      return undefined;
+    },
+    returnAllWhenEmpty: true,
   });
 
   const toggleCode = (id: number) => {
@@ -187,11 +189,11 @@ export default function DiscountCodeManagement({
       <div className={styles.listControls}>
         <div className={styles.searchWrapper}>
           <FaTag className={styles.searchIcon} />
-          <input
+          <Search
             className={`${styles.field} ${styles.searchInput}`}
             placeholder={dict.search_placeholder}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={setSearch}
           />
         </div>
       </div>

@@ -7,9 +7,9 @@ import * as TB from "react-icons/tb";
 import * as GI from "react-icons/gi";
 import * as HI from "react-icons/hi2";
 import * as BS from "react-icons/bs";
-import { useMemo, useState } from "react";
-import Fuse from "fuse.js";
 import { IconType } from "react-icons";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/activities/IconPicker.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -33,19 +33,17 @@ const ALL_ICONS = {
 const ICON_NAMES = Object.keys(ALL_ICONS);
 
 export default function IconPicker({ value, onChange, onClose, dict }: IconPickerProps) {
-  const [search, setSearch] = useState("");
-
-  const fuse = useMemo(() => {
-    return new Fuse(ICON_NAMES, {
-      includeScore: true,
-      threshold: 0.3,
-    });
-  }, []);
-
-  const filtered = useMemo(() => {
-    if (search.trim() === "") return ICON_NAMES;
-    return fuse.search(search).map((r) => r.item);
-  }, [search, fuse]);
+  const {
+    results: filtered,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<string>({
+    data: ICON_NAMES,
+    fields: ["self"],
+    extractField: (item) => item,
+    returnAllWhenEmpty: true,
+    limit: 60,
+  });
 
   const getIcon = (iconName: string): IconType => {
     return (ALL_ICONS[iconName as keyof typeof ALL_ICONS] as IconType) || FA.FaQuestionCircle;
@@ -65,12 +63,11 @@ export default function IconPicker({ value, onChange, onClose, dict }: IconPicke
             ✕
           </button>
         </div>
-        <input
-          type="text"
+        <Search
+          className={styles.search}
           placeholder={dict.search_placeholder}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className={styles.search}
+          onChange={setSearch}
         />
         <div className={styles.grid}>
           {filtered.slice(0, 40).map((iconName) => {

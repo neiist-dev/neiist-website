@@ -9,7 +9,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 interface VotingSessionsTableProps {
   sessions: VotingSession[];
   onRowClick: (_session: VotingSession) => void;
-  searchQuery: string;
+  searchQuery?: string;
   filters: {
     type: VotingType[];
     status: VotingStatus[];
@@ -27,7 +27,7 @@ interface VotingSessionsTableProps {
 export default function VotingSessionsTable({
   sessions,
   onRowClick,
-  searchQuery,
+  searchQuery = "",
   filters,
   onToggleTypeFilter,
   onToggleStatusFilter,
@@ -40,6 +40,7 @@ export default function VotingSessionsTable({
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
       const matchesSearch =
+        !searchQuery ||
         session.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         session.description?.toLowerCase().includes(searchQuery.toLowerCase());
 

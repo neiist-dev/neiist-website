@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Fuse from "fuse.js";
 import styles from "@/styles/components/shop/MyOrdersList.module.css";
 import { Order } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getOrderKindFromItems, getLocalizedOrderStatusLabel } from "@/utils/shop/orderKindUtils";
 import ColorfulText from "@/components/ColorfulText";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface MyOrdersListProps {
@@ -20,7 +21,6 @@ interface MyOrdersListProps {
 }
 
 export default function MyOrdersList({ orders, products, dict, basePath }: MyOrdersListProps) {
-  const [query, setQuery] = useState("");
   const anyDeadlineNear = useMemo(() => {
     if (!orders || orders.length === 0) return false;
     const now = new Date();
@@ -32,44 +32,26 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
     });
   }, [orders]);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse<Order>(orders ?? [], {
-        keys: [
-          { name: "order_number", weight: 4 },
-          { name: "status", weight: 3 },
-          { name: "items.product_name", weight: 2 },
-          { name: "items.variant_label", weight: 1 },
-        ],
-        threshold: 0.23,
-        ignoreLocation: true,
-        minMatchCharLength: 2,
-        shouldSort: true,
-      }),
+  const sortedOrders = useMemo(
+    () => (orders ?? []).slice().sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)),
     [orders]
   );
 
-  const filtered = useMemo(() => {
-    const list = orders ?? [];
-    const searchQuery = query.trim();
-    if (!searchQuery) {
-      return list.slice().sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-    }
-
-    const queryLower = searchQuery.toLowerCase();
-    const exactMatches = list.filter(
-      (order) =>
-        String(order.order_number).toLowerCase().includes(queryLower) ||
-        String(order.status).toLowerCase().includes(queryLower)
-    );
-
-    const fuseResults = fuse.search(searchQuery).map((r) => r.item);
-
-    const seen = new Set(exactMatches.map((o) => o.id));
-    const combined = [...exactMatches, ...fuseResults.filter((o) => !seen.has(o.id))];
-
-    return combined.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-  }, [orders, query, fuse]);
+  const {
+    results: filtered,
+    query,
+    setQuery,
+  } = useSearch<Order>({
+    data: sortedOrders,
+    fields: [{ field: "order_number", boost: 4 }, { field: "status", boost: 3 }, "itemsText"],
+    extractField: (order, field) => {
+      if (field === "itemsText") {
+        return order.items?.map((i) => `${i.product_name} ${i.variant_label || ""}`).join(" ");
+      }
+      return undefined;
+    },
+    returnAllWhenEmpty: true,
+  });
 
   const selectImage = (order: Order): string | undefined => {
     if (!order.items || order.items.length === 0) return undefined;
@@ -88,12 +70,11 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
 
       <div className={styles.searchRow}>
         <div className={styles.searchContainer}>
-          <input
-            type="text"
+          <Search
+            className={styles.searchInput}
             placeholder={dict.search_placeholder}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className={styles.searchInput}
+            onChange={setQuery}
             aria-label={dict.search_aria_label}
           />
         </div>

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { MdClose, MdSearch, MdChevronRight, MdChevronLeft } from "react-icons/md";
-import Fuse from "fuse.js";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
 import { checkRoles, UserRole, type User } from "@/types/user";
@@ -215,29 +214,14 @@ export default function NewOrderModal({
     "pos"
   ).requiresUserAssignment;
 
-  const productFuse = useMemo(
-    () =>
-      new Fuse(uniqueProducts, {
-        keys: [
-          { name: "name", weight: 3 },
-          { name: "category", weight: 1 },
-        ],
-        threshold: 0.25,
-        ignoreLocation: true,
-        minMatchCharLength: 2,
-        shouldSort: true,
-      }),
-    [uniqueProducts]
-  );
-
-  const filteredProducts = useMemo(
-    () =>
-      (productSearch
-        ? productFuse.search(productSearch).map((result) => result.item)
-        : uniqueProducts
-      ).slice(0, 15),
-    [productFuse, productSearch, uniqueProducts]
-  );
+  const filteredProducts = useMemo(() => {
+    const trimmed = productSearch.trim();
+    if (!trimmed) return uniqueProducts.slice(0, 15);
+    const norm = normalizeText(trimmed);
+    return uniqueProducts
+      .filter((p) => normalizeText(`${p.name} ${p.category || ""}`).includes(norm))
+      .slice(0, 15);
+  }, [productSearch, uniqueProducts]);
 
   const filteredUsers = useMemo(() => {
     if (!userSearch.trim()) return [];

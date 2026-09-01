@@ -1,11 +1,13 @@
+import { Suspense } from "react";
 import ProductForm from "@/components/shop/ProductForm";
 import { getAllCategories } from "@/lib/db/repositories/shop.repository";
 import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
+import GlobalLoading from "@/app/loading";
 
-export default async function NewProductPage({ params }: { params: LocaleParams }) {
+async function NewProductContent({ params }: { params: LocaleParams }) {
   await requireRoles([UserRole._ADMIN]);
 
   const { locale: rawLocale } = await params;
@@ -21,5 +23,13 @@ export default async function NewProductPage({ params }: { params: LocaleParams 
       categories={categories}
       dict={dict}
     />
+  );
+}
+
+export default function NewProductPage({ params }: { params: LocaleParams }) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <NewProductContent params={params} />
+    </Suspense>
   );
 }

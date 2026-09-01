@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/AdminBodiesSearchFilter.module.css";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface AdminBody {
@@ -18,29 +19,23 @@ export default function AdminBodiesSearchFilter({
   dict: Dictionary["admin"]["bodies_management"];
 }) {
   const [adminBodies] = useState<AdminBody[]>(initialAdminBodies);
-  const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(adminBodies, {
-        keys: ["name"],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [adminBodies]
-  );
-
-  const filteredAdminBodies = useMemo(() => {
-    let filtered = showInactive
+  const baseAdminBodies = useMemo(() => {
+    return showInactive
       ? adminBodies.filter((adminBody) => adminBody.active === false)
       : adminBodies.filter((adminBody) => adminBody.active !== false);
-    if (search.trim()) {
-      const results = fuse.search(search.trim());
-      filtered = filtered.filter((body) => results.some((r) => r.item.name === body.name));
-    }
-    return filtered;
-  }, [adminBodies, search, showInactive, fuse]);
+  }, [adminBodies, showInactive]);
+
+  const {
+    results: filteredAdminBodies,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<AdminBody>({
+    data: baseAdminBodies,
+    fields: ["name"],
+    returnAllWhenEmpty: true,
+  });
 
   const removeAdminBody = async (name: string) => {
     await fetch("/api/admin/admin-bodies", {
@@ -56,12 +51,11 @@ export default function AdminBodiesSearchFilter({
     <>
       <div className={styles.sectionTitle}>{dict.section_title}</div>
       <div className={styles.searchBar}>
-        <input
+        <Search
           className={styles.input}
-          type="text"
           placeholder={dict.search_placeholder}
           value={search}
-          onChange={(inputEvent) => setSearch(inputEvent.target.value)}
+          onChange={setSearch}
         />
         <button
           className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}

@@ -6,6 +6,9 @@ import { User } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import { useUser } from "@/context/UserContext";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import Search from "@/components/search/Search";
+import SearchSelect from "@/components/search/SearchSelect";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -13,13 +16,6 @@ interface Department {
   name: string;
   active: boolean;
 }
-
-const normalizeText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
 
 export default function MembershipsSearchList({
   memberships: initialMemberships,
@@ -35,7 +31,6 @@ export default function MembershipsSearchList({
   locale?: string;
 }) {
   const [memberships, setMemberships] = useState(initialMemberships);
-  const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
@@ -55,45 +50,36 @@ export default function MembershipsSearchList({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user, setUser } = useUser();
 
-  const filteredMemberships = useMemo(() => {
-    const base = memberships.filter((membership) =>
-      showInactive ? !membership.isActive : membership.isActive
-    );
+  const baseMemberships = useMemo(
+    () =>
+      memberships
+        .filter((membership) => (showInactive ? !membership.isActive : membership.isActive))
+        .sort((a, b) => a.userName.localeCompare(b.userName)),
+    [memberships, showInactive]
+  );
 
-    const rawQuery = search.trim();
-    if (!rawQuery) return base;
+  const activeUsers = useMemo(() => users.filter((u) => !u.isAnonymized), [users]);
 
-    const normalizedQuery = normalizeText(rawQuery);
+  const selectedUser = useMemo(
+    () => users.find((u) => u.istid === newMembership.userNumber) ?? null,
+    [users, newMembership.userNumber]
+  );
 
-    const istWithPrefix = /^ist\d+$/i.test(rawQuery);
-    const digitsOnly = /^\d{5,10}$/.test(rawQuery);
-
-    if (istWithPrefix || digitsOnly) {
-      const digits = rawQuery.replace(/[^0-9]/g, "");
-
-      const exact = base.filter(
-        (membership) => (membership.userNumber || "").replace(/[^0-9]/g, "") === digits
-      );
-      if (exact.length > 0) return exact;
-
-      return base.filter((membership) =>
-        (membership.userNumber || "").replace(/[^0-9]/g, "").startsWith(digits)
-      );
-    }
-
-    const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
-
-    return base
-      .filter((membership) => {
-        const searchableText = normalizeText(
-          `${membership.userName} ${membership.userEmail} ${membership.departmentName} ${membership.roleName}`
-        );
-        const textTokens = searchableText.split(/\s+/).filter(Boolean);
-
-        return queryTokens.every((qToken) => textTokens.some((token) => token.startsWith(qToken)));
-      })
-      .sort((a, b) => a.userName.localeCompare(b.userName));
-  }, [memberships, search, showInactive]);
+  const {
+    results: filteredMemberships,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<Membership>({
+    data: baseMemberships,
+    fields: [
+      { field: "userName", boost: 3 },
+      { field: "userNumber", boost: 4 },
+      { field: "userEmail", boost: 2 },
+      "departmentName",
+      "roleName",
+    ],
+    returnAllWhenEmpty: true,
+  });
 
   const handleDepartmentChange = async (departmentName: string) => {
     setNewMembership({ ...newMembership, departmentName, roleName: "" });
@@ -251,22 +237,20 @@ export default function MembershipsSearchList({
       <section className={styles.section}>
         <h3>{dict.add_member_title}</h3>
         <div className={styles.addMemberForm}>
-          <select
-            value={newMembership.userNumber}
-            onChange={(inputEvent) =>
-              setNewMembership({ ...newMembership, userNumber: inputEvent.target.value })
-            }
-            className={styles.input}
-            disabled={adding}>
-            <option value="">{dict.select_user}</option>
-            {users
-              .filter((user) => !user.isAnonymized)
-              .map((user) => (
-                <option key={user.istid} value={user.istid}>
-                  {user.name} ({user.istid}) - {user.email}
-                </option>
-              ))}
-          </select>
+          <SearchSelect<Partial<User>>
+            items={activeUsers}
+            fields={[
+              { field: "name", boost: 3 },
+              { field: "istid", boost: 4 },
+              { field: "email", boost: 2 },
+            ]}
+            placeholder={dict.select_user}
+            getItemKey={(u) => u.istid || ""}
+            getItemLabel={(u) => `${u.name} (${u.istid}) - ${u.email}`}
+            onSelect={(u) => setNewMembership((prev) => ({ ...prev, userNumber: u.istid || "" }))}
+            selectedItem={selectedUser}
+            disabled={adding}
+          />
           <select
             value={newMembership.departmentName}
             onChange={(inputEvent) => handleDepartmentChange(inputEvent.target.value)}
@@ -312,12 +296,11 @@ export default function MembershipsSearchList({
       <section className={styles.section}>
         <h3>{dict.existing_members_title}</h3>
         <div className={styles.searchBar}>
-          <input
+          <Search
             className={styles.input}
-            type="text"
             placeholder={dict.search_placeholder}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={setSearch}
           />
           <button
             className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}

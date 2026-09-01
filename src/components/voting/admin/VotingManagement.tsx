@@ -13,6 +13,8 @@ import DateFilter from "@/components/shop/DateFilter";
 import ActiveFilters from "@/components/shop/ActiveFilters";
 import MobileFiltersDrawer from "@/components/shop/MobileFiltersDrawer";
 import ColorfulText from "@/components/ColorfulText";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/voting/admin/VotingManagement.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -38,8 +40,17 @@ export default function VotingManagement({
 }: VotingManagementProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState("");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  const {
+    results: searchedSessions,
+    query: searchQuery,
+    setQuery: setSearchQuery,
+  } = useSearch<VotingSession>({
+    data: initialSessions,
+    fields: [{ field: "name", boost: 3 }, "description"],
+    returnAllWhenEmpty: true,
+  });
 
   const [filters, setFilters] = useState<FilterState>({
     dateRange: { start: null, end: null },
@@ -95,11 +106,11 @@ export default function VotingManagement({
             <div className={styles.searchIcon}>
               <FiSearch size={18} />
             </div>
-            <input
+            <Search
               type="text"
               placeholder={dict.search_placeholder}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
               className={styles.searchInput}
             />
             <button
@@ -151,8 +162,7 @@ export default function VotingManagement({
 
         <div className={styles.card}>
           <VotingSessionsTable
-            sessions={initialSessions}
-            searchQuery={searchQuery}
+            sessions={searchedSessions}
             filters={filters}
             onRowClick={handleRowClick}
             onToggleTypeFilter={() => setTypeFilterOpen(!typeFilterOpen)}

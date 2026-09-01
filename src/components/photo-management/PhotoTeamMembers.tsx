@@ -3,6 +3,8 @@
 import { useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import { useUser } from "@/context/UserContext";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -24,11 +26,6 @@ interface Department {
   active: boolean;
 }
 
-const normalize = (s: string) =>
-  s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[-_]/g, " ");
-
-const normalizeIstId = (s: string) => normalize(s).replace(/^ist/, "");
-
 export default function PhotoTeamMembers({
   membersByDepartment,
   dict,
@@ -37,41 +34,38 @@ export default function PhotoTeamMembers({
   departments: Department[];
   dict: Dictionary["photo_management"];
 }) {
-  const [search, setSearch] = useState("");
   const [editingPhotoIstid, setEditingPhotoIstid] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [members, setMembers] = useState(membersByDepartment);
   const { user, setUser } = useUser();
 
+  const allMembersList = useMemo(() => Object.values(members).flat(), [members]);
+
+  const {
+    results: searchedMembers,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<Membership>({
+    data: allMembersList,
+    fields: [
+      { field: "userName", boost: 3 },
+      { field: "userNumber", boost: 4 },
+      "departmentName",
+      "roleName",
+    ],
+    returnAllWhenEmpty: true,
+  });
+
   const filteredMembers = useMemo(() => {
-    const query = search.trim();
-    if (!query) return members;
-
-    const tokens = normalize(query).split(/\s+/);
-
-    if (tokens.length === 0) return members;
-
-    const allMembers = Object.values(members).flat();
-
-    const results = allMembers.filter((m) => {
-      const nameWords = normalize(m.userName).split(/\s+/);
-      const normId = normalizeIstId(m.userNumber);
-
-      return tokens.every(
-        (token) =>
-          nameWords.some((word) => word.startsWith(token)) ||
-          normId.includes(token) ||
-          normId.includes(normalizeIstId(token))
-      );
-    });
-
+    if (!search.trim()) return members;
+    const searchKeys = new Set(searchedMembers.map((m) => m.id));
     const grouped: Record<string, Membership[]> = {};
     Object.entries(members).forEach(([dept, memberships]) => {
-      const filtered = memberships.filter((m) => results.includes(m));
+      const filtered = memberships.filter((m) => searchKeys.has(m.id));
       if (filtered.length > 0) grouped[dept] = filtered;
     });
     return grouped;
-  }, [search, members]);
+  }, [search, searchedMembers, members]);
 
   const handlePhotoClick = (istid: string) => {
     setEditingPhotoIstid(istid);
@@ -125,12 +119,11 @@ export default function PhotoTeamMembers({
       />
       <div className={styles.section}>
         <div className={styles.searchBar}>
-          <input
+          <Search
             className={styles.input}
-            type="text"
             placeholder={dict.search_placeholder}
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={setSearch}
           />
         </div>
         {Object.keys(filteredMembers).length === 0 ? (

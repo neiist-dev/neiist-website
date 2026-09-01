@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import DiscountCodeForm from "@/components/shop/DiscountCodeForm";
 import { getAllProductsAdmin } from "@/lib/db/repositories/shop.repository";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
@@ -5,8 +6,9 @@ import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
+import GlobalLoading from "@/app/loading";
 
-export default async function NewDiscountPage({ params }: { params: LocaleParams }) {
+async function NewDiscountContent({ params }: { params: LocaleParams }) {
   await requireRoles([UserRole._ADMIN]);
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
@@ -21,5 +23,13 @@ export default async function NewDiscountPage({ params }: { params: LocaleParams
       backHref={`/${locale}/shop/manage/discounts`}
       dict={dict}
     />
+  );
+}
+
+export default function NewDiscountPage({ params }: { params: LocaleParams }) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <NewDiscountContent params={params} />
+    </Suspense>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, KeyboardEvent, useId } from "react";
-import Fuse from "fuse.js";
 import { FiChevronDown } from "react-icons/fi";
-import styles from "@/styles/components/MultiSelectDropdown.module.css";
 import { FaCheck } from "react-icons/fa6";
+import { normalizeText } from "@/hooks/useSearch";
+import styles from "@/styles/components/MultiSelectDropdown.module.css";
 
 export interface MultiSelectDropdownProps {
   availableItems: string[];
@@ -14,7 +14,6 @@ export interface MultiSelectDropdownProps {
   onItemCreate?: (_item: string) => void;
   placeholder?: string;
   label?: string;
-  fuseThreshold?: number;
   disabled?: boolean;
   id?: string;
 }
@@ -37,7 +36,6 @@ export default function MultiSelectDropdown({
   onItemCreate,
   placeholder = "Add or create item...",
   label,
-  fuseThreshold = 0.3,
   disabled = false,
   id,
 }: MultiSelectDropdownProps) {
@@ -46,7 +44,6 @@ export default function MultiSelectDropdown({
   const canCreate = typeof onItemCreate === "function";
 
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const [knownItems, setKnownItems] = useState<string[]>(availableItems);
 
@@ -60,22 +57,19 @@ export default function MultiSelectDropdown({
   const triggerRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const itemRefsRef = useRef<Array<HTMLDivElement | null>>([]);
-
-  const fuse = useMemo(
-    () =>
-      new Fuse(knownItems, {
-        threshold: fuseThreshold,
-        ignoreLocation: true,
-      }),
-    [knownItems, fuseThreshold]
-  );
+  const [query, setQuery] = useState("");
 
   const options = useMemo(() => {
     const q = query.trim();
-    const exists = q ? knownItems.some((t) => t.toLowerCase() === q.toLowerCase()) : false;
-    const results = q ? fuse.search(q).map((r) => r.item) : [...knownItems];
-    return canCreate && q && !exists ? [...results, `${CREATE_PREFIX}${q}`] : results;
-  }, [query, knownItems, fuse, canCreate]);
+    if (!q) return knownItems;
+    const tokens = normalizeText(q).split(/\s+/).filter(Boolean);
+    const exists = knownItems.some((t) => t.toLowerCase() === q.toLowerCase());
+    const results = knownItems.filter((item) => {
+      const normItem = normalizeText(item);
+      return tokens.every((token) => normItem.includes(token));
+    });
+    return canCreate && !exists ? [...results, `${CREATE_PREFIX}${q}`] : results;
+  }, [query, knownItems, canCreate]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -96,13 +90,14 @@ export default function MultiSelectDropdown({
         triggerRef.current &&
         !triggerRef.current.contains(e.target as Node)
       ) {
-        close();
+        setOpen(false);
+        setQuery("");
       }
     }
 
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+  }, [open, setQuery]);
 
   function openDropdown() {
     if (disabled) return;

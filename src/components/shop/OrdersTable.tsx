@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useCallback } from "react";
 import styles from "@/styles/components/shop/OrdersTable.module.css";
 import { Order } from "@/types/shop/order";
 import { getStatusCssClass } from "@/utils/shop/orderStatusUtils";
 import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types/shop/orderStatus";
 import { Product } from "@/types/shop/product";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import { FiSearch, FiCheck } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
-import Fuse from "fuse.js";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getOrderKindFromItems, getLocalizedOrderStatusLabel } from "@/utils/shop/orderKindUtils";
@@ -64,7 +65,6 @@ export default function OrdersTable({
   basePath,
 }: OrdersTableProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -90,25 +90,29 @@ export default function OrdersTable({
   const campusFilterRef = useRef<HTMLButtonElement>(null);
   const statusFilterRef = useRef<HTMLButtonElement>(null);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(orders || [], {
-        keys: [
-          { name: "order_number", weight: 4 },
-          { name: "user_istid", weight: 4 },
-          { name: "customer_name", weight: 3 },
-          { name: "customer_email", weight: 2 },
-          { name: "items.product_name", weight: 1.5 },
-          { name: "items.variant_label", weight: 0.8 },
-          { name: "campus", weight: 0.3 },
-        ],
-        threshold: 0.2,
-        ignoreLocation: true,
-        minMatchCharLength: 2,
-        shouldSort: true,
-      }),
-    [orders]
-  );
+  const {
+    results: searchedOrders,
+    query: searchQuery,
+    setQuery: setSearchQuery,
+  } = useSearch<Order>({
+    data: orders || [],
+    fields: [
+      { field: "order_number", boost: 4 },
+      { field: "user_istid", boost: 4 },
+      { field: "customer_name", boost: 3 },
+      { field: "customer_email", boost: 2 },
+      "campus",
+      "payment_reference",
+      "itemsText",
+    ],
+    extractField: (order, field) => {
+      if (field === "itemsText") {
+        return order.items?.map((i) => `${i.product_name} ${i.variant_label || ""}`).join(" ");
+      }
+      return undefined;
+    },
+    returnAllWhenEmpty: true,
+  });
 
   const productCascadeList = useMemo(
     () => buildProductCascadeList(orders, products),
@@ -135,27 +139,7 @@ export default function OrdersTable({
   }, [orders]);
 
   const filtered = useMemo(() => {
-    let list = orders || [];
-    if (searchQuery.trim()) {
-      const query = searchQuery.trim().toLowerCase();
-      const identifierMatches = orders.filter(
-        (order) =>
-          (order.customer_name?.toLowerCase().includes(query) ?? false) ||
-          (order.user_istid?.toLowerCase().includes(query) ?? false) ||
-          (order.customer_email?.toLowerCase().includes(query) ?? false) ||
-          (order.payment_reference?.toLocaleLowerCase().includes(query) ?? false) ||
-          order.order_number.toLowerCase().includes(query)
-      );
-
-      const fuseResults = fuse.search(searchQuery.trim()).map((result) => result.item);
-
-      if (identifierMatches.length > 0) {
-        const seen = new Set(identifierMatches.map((order) => order.id));
-        list = [...identifierMatches, ...fuseResults.filter((o) => !seen.has(o.id))];
-      } else {
-        list = fuseResults;
-      }
-    }
+    let list = searchedOrders;
 
     if (filters.statuses.length > 0)
       list = list.filter((order) => filters.statuses.includes(order.status));
@@ -176,7 +160,7 @@ export default function OrdersTable({
     if (end) list = list.filter((order) => new Date(order.created_at) <= new Date(end));
 
     return list;
-  }, [orders, searchQuery, fuse, filters]);
+  }, [searchedOrders, filters]);
 
   function toggleOrder(id: string): void {
     const s = new Set(selectedOrders);
@@ -193,14 +177,14 @@ export default function OrdersTable({
   const isAllSelected = selectedOrders.size === filtered.length && filtered.length > 0;
   const isSomeSelected = selectedOrders.size > 0 && selectedOrders.size < filtered.length;
 
-  function handleClearAll(): void {
+  const handleClearAll = useCallback((): void => {
     setFilters({
       dateRange: { start: null, end: null },
       products: [],
       campuses: [],
       statuses: [],
     });
-  }
+  }, []);
 
   function handleRowClick(orderId: number): void {
     router.push(`${basePath}/orders?orderId=${orderId}`);
@@ -359,9 +343,9 @@ export default function OrdersTable({
     }
   };
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     exportOrdersToExcel(filtered);
-  };
+  }, [filtered]);
 
   return (
     <>
@@ -373,11 +357,11 @@ export default function OrdersTable({
             <div className={styles.searchIcon}>
               <FiSearch size={18} />
             </div>
-            <input
+            <Search
               type="text"
               placeholder={dict.search_placeholder}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
               className={styles.searchInput}
             />
             <button

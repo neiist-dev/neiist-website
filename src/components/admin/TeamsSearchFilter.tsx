@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/TeamsSearchFilter.module.css";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Team {
@@ -19,31 +20,23 @@ export default function TeamsSearchFilter({
   dict: Dictionary["admin"]["teams_management"];
 }) {
   const [teams] = useState<Team[]>(initialTeams);
-  const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(teams, {
-        keys: ["name", "description"],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [teams]
-  );
-
-  const filteredTeams = useMemo(() => {
-    let filteredTeams = showInactive
+  const baseTeams = useMemo(() => {
+    return showInactive
       ? teams.filter((team) => team.active === false)
       : teams.filter((team) => team.active !== false);
-    if (search.trim()) {
-      const results = fuse.search(search.trim());
-      filteredTeams = filteredTeams.filter((team) =>
-        results.some((r) => r.item.name === team.name)
-      );
-    }
-    return filteredTeams;
-  }, [teams, search, showInactive, fuse]);
+  }, [teams, showInactive]);
+
+  const {
+    results: filteredTeams,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<Team>({
+    data: baseTeams,
+    fields: [{ field: "name", boost: 2 }, "description"],
+    returnAllWhenEmpty: true,
+  });
 
   const removeTeam = async (name: string) => {
     // TODO: show loading toast while the team is being deactivated.
@@ -60,12 +53,11 @@ export default function TeamsSearchFilter({
     <>
       <div className={styles.sectionTitle}>{dict.section_title}</div>
       <div className={styles.searchBar}>
-        <input
+        <Search
           className={styles.input}
-          type="text"
           placeholder={dict.search_placeholder}
           value={search}
-          onChange={(inputEvent) => setSearch(inputEvent.target.value)}
+          onChange={setSearch}
         />
         <button
           className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}

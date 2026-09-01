@@ -7,6 +7,8 @@ import { Membership } from "@/types/memberships";
 import styles from "@/styles/components/admin/UsersSearchList.module.css";
 import { FaTrash } from "react-icons/fa";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Role {
@@ -18,9 +20,6 @@ interface Role {
 interface UserWithMemberships extends User {
   memberships: Membership[];
 }
-
-const sanitizeString = (value: string) =>
-  value.trim().normalize("NFD").replace(/\p{M}/gu, "").replace(/[-_]/g, " ").toLowerCase();
 
 export default function UsersSearchList({
   users,
@@ -34,7 +33,6 @@ export default function UsersSearchList({
   dict: Dictionary["admin"]["users_management"];
 }) {
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
-  const [search, setSearch] = useState("");
   const [pendingDeleteUser, setPendingDeleteUser] = useState<UserWithMemberships | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -47,40 +45,27 @@ export default function UsersSearchList({
     [users, deletedIds]
   );
 
-  const filteredUsers = useMemo(() => {
-    const sanitizedSearch = sanitizeString(search);
-    if (!sanitizedSearch) return sortedUsers;
-
-    const digits = sanitizedSearch.replace(/[^0-9]/g, "");
-    const isIstid = /^ist\d+$/i.test(sanitizedSearch) || /^\d+$/.test(sanitizedSearch);
-
-    if (isIstid) {
-      const exactMatches = sortedUsers.filter((u) => u.istid.replace(/[^0-9]/g, "") === digits);
-      return exactMatches.length > 0
-        ? exactMatches
-        : sortedUsers.filter((u) => u.istid.replace(/[^0-9]/g, "").startsWith(digits));
-    }
-    const searchTerms = sanitizedSearch.split(/\s+/).filter(Boolean);
-
-    return sortedUsers.filter((user) => {
-      const userDataText = [
-        sanitizeString(user.name),
-        sanitizeString(user.istid),
-        user.istid.replace(/[^0-9]/g, ""),
-        user.email.toLowerCase(),
-        sanitizeString(user.courses?.join(" ") ?? ""),
-        sanitizeString(
-          user.memberships?.map((m) => `${m.departmentName} ${m.roleName}`).join(" ") ?? ""
-        ),
-      ].join(" ");
-
-      const userDataTokens = userDataText.split(/\s+/).filter(Boolean);
-
-      return searchTerms.every((searchTerm) =>
-        userDataTokens.some((userDataToken) => userDataToken.startsWith(searchTerm))
-      );
-    });
-  }, [search, sortedUsers]);
+  const {
+    results: filteredUsers,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<UserWithMemberships>({
+    data: sortedUsers,
+    fields: [
+      { field: "name", boost: 3 },
+      { field: "istid", boost: 4 },
+      { field: "email", boost: 2 },
+      "courses",
+      "membershipsText",
+    ],
+    extractField: (u, field) => {
+      if (field === "membershipsText") {
+        return u.memberships?.map((m) => `${m.departmentName} ${m.roleName}`).join(" ");
+      }
+      return undefined;
+    },
+    returnAllWhenEmpty: true,
+  });
 
   const getAccessLevelForRole = (roleName: string): string => {
     const role = roles.find((r) => r.role_name === roleName);
@@ -113,13 +98,12 @@ export default function UsersSearchList({
 
   return (
     <>
-      <input
+      <Search
         className={styles.input}
         style={{ marginBottom: 16, width: "100%" }}
-        type="text"
         placeholder={dict.search_placeholder}
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={setSearch}
       />
 
       {filteredUsers.length === 0 ? (

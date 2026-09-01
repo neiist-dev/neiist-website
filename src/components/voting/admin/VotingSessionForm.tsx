@@ -6,13 +6,14 @@ import { CalendarEvent } from "@/types/events";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { createVotingSessionAction } from "@/lib/votingSystem";
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+import SearchSelect from "@/components/search/SearchSelect";
 import ColorfulText from "@/components/ColorfulText";
 import { FiEdit3, FiClock, FiUsers, FiX } from "react-icons/fi";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import tagStyles from "@/styles/components/shop/VariantOptionsEditor.module.css";
 import styles from "@/styles/components/voting/admin/VotingSessionForm.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 
 interface VotingSessionFormProps {
   activities: CalendarEvent[];
@@ -183,9 +184,9 @@ export default function VotingSessionForm({
               placeholder={dict.search_activity}
             />
           ) : type === "users" ? (
-            <MultiSelectDropdown
+            <SearchSelect<string>
               id="user-picker"
-              availableItems={userOptions.map((o) => o.label)}
+              items={userOptions.map((o) => o.label)}
               selectedItems={selectedUserLabels}
               onChange={handleNomineeChange}
               multiSelect={true}

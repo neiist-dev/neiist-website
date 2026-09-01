@@ -11,7 +11,8 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { PiContactlessPayment } from "react-icons/pi";
 import { MdOutlineDiscount } from "react-icons/md";
 import ProductManagementCard from "./ProductManagementCard";
-import Fuse from "fuse.js";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 import ColorfulText from "../ColorfulText";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -35,7 +36,6 @@ export default function ShopManagement({
   basePath,
 }: ShopManagementProps) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -71,29 +71,23 @@ export default function ShopManagement({
   );
   const visibleProducts = showArchived ? archivedProducts : activeProducts;
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(visibleProducts, {
-        keys: ["name", "category", "description"],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [visibleProducts]
-  );
-
-  const filteredProducts = useMemo(() => {
-    let filtered = visibleProducts;
+  const baseProducts = useMemo(() => {
+    let list = visibleProducts;
     if (categoryFilter !== "all") {
-      filtered = filtered.filter((p) => p.category === categoryFilter);
+      list = list.filter((p) => p.category === categoryFilter);
     }
-    if (search.trim()) {
-      return fuse
-        .search(search.trim())
-        .map((r) => r.item)
-        .filter((p) => categoryFilter === "all" || p.category === categoryFilter);
-    }
-    return filtered;
-  }, [visibleProducts, search, categoryFilter, fuse]);
+    return list;
+  }, [visibleProducts, categoryFilter]);
+
+  const {
+    results: filteredProducts,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<Product>({
+    data: baseProducts,
+    fields: [{ field: "name", boost: 3 }, { field: "category", boost: 2 }, "description"],
+    returnAllWhenEmpty: true,
+  });
 
   const handleEdit = (productId: number) => {
     router.push(`${basePath || ""}/shop/manage/${productId}/edit`);
@@ -182,12 +176,7 @@ export default function ShopManagement({
         </div>
 
         <div className={styles.filters}>
-          <input
-            type="text"
-            placeholder={dict.search_placeholder}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Search placeholder={dict.search_placeholder} value={search} onChange={setSearch} />
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
             <option value="all">{dict.all_categories}</option>
             {categories.map((cat) => (

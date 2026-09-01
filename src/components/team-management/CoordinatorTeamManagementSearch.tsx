@@ -5,6 +5,7 @@ import { User } from "@/types/user";
 import { Membership } from "@/types/memberships";
 import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import SearchSelect from "@/components/search/SearchSelect";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -200,18 +201,22 @@ export default function CoordinatorTeamManagementSearch({
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>{dict.add_member_title}</h3>
         <form className={styles.addMemberForm} onSubmit={handleAddMember}>
-          <select
-            className={styles.input}
-            value={selectedUser}
-            onChange={(event) => setSelectedUser(event.target.value)}
-            disabled={loading}>
-            <option value="">{dict.select_user}</option>
-            {users.map((user) => (
-              <option key={user.istid} value={user.istid}>
-                {user.name} ({user.email})
-              </option>
-            ))}
-          </select>
+          <div style={{ flex: 1, minWidth: "12.5rem" }}>
+            <SearchSelect<Partial<User>>
+              items={users}
+              fields={[
+                { field: "name", boost: 3 },
+                { field: "istid", boost: 4 },
+                { field: "email", boost: 2 },
+              ]}
+              placeholder={dict.select_user}
+              getItemKey={(u) => u.istid || ""}
+              getItemLabel={(u) => `${u.name} (${u.istid})`}
+              onSelect={(u) => setSelectedUser(u.istid || "")}
+              selectedItem={users.find((u) => u.istid === selectedUser) ?? null}
+              disabled={loading}
+            />
+          </div>
           <select
             className={styles.input}
             value={selectedRole}

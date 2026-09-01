@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import ColorfulText from "@/components/ColorfulText";
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+import SearchSelect from "@/components/search/SearchSelect";
 import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
 import { DiscountBulkGenerateResponse, DiscountType } from "@/types/shop/discountCode";
@@ -32,6 +32,7 @@ import {
   renderDiscountCampaignEmailHtml,
 } from "@/utils/shop/discountEmail";
 import type { Dictionary } from "@/i18n/dictionaries";
+import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 
 interface DiscountCodeEditorProps {
   users: User[];
@@ -368,8 +369,9 @@ export default function DiscountCodeForm({
               <SectionTitle icon={<FaTicketAlt />}>{dict.section_discount}</SectionTitle>
 
               <Field label={dict.users_label} icon={<FaUsers />}>
-                <MultiSelectDropdown
-                  availableItems={userOptions}
+                <SearchSelect<string>
+                  items={userOptions}
+                  multiSelect={true}
                   selectedItems={creationDraft.selectedRecipients}
                   onChange={(items) =>
                     setCreationDraft((prev) => ({ ...prev, selectedRecipients: items }))

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import Fuse from "fuse.js";
+import Search from "@/components/search/Search";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/admin/RolesSearchFilter.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -31,7 +32,6 @@ export default function RolesSearchFilter({
 }) {
   const [roles, setRoles] = useState<Role[]>(initialRoles);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
-  const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [addDepartment, setAddDepartment] = useState<string>("");
@@ -165,38 +165,29 @@ export default function RolesSearchFilter({
     setPendingRemove(null);
   };
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(roles, {
-        keys: ["role_name", "access", "department"],
-        threshold: 0.4,
-        ignoreLocation: true,
-      }),
-    [roles]
-  );
-
-  const filteredRoles = useMemo(() => {
+  const baseRoles = useMemo(() => {
     let filtered = showInactive
       ? roles.filter((role) => !role.active)
       : roles.filter((role) => role.active);
-    if (search.trim()) {
-      const results = fuse.search(search.trim());
-      filtered = filtered.filter((roles) =>
-        results.some(
-          (role) =>
-            role.item.role_name === roles.role_name && role.item.department === roles.department
-        )
-      );
+    if (selectedDepartment) {
+      filtered = filtered.filter((r) => r.department === selectedDepartment);
     }
-    if (selectedDepartment === "") {
-      filtered = filtered.sort(
-        (a, b) =>
-          (a.department || "").localeCompare(b.department || "") ||
-          a.role_name.localeCompare(b.role_name)
-      );
-    }
-    return filtered;
-  }, [roles, search, showInactive, selectedDepartment, fuse]);
+    return filtered.sort(
+      (a, b) =>
+        (a.department || "").localeCompare(b.department || "") ||
+        a.role_name.localeCompare(b.role_name)
+    );
+  }, [roles, showInactive, selectedDepartment]);
+
+  const {
+    results: filteredRoles,
+    query: search,
+    setQuery: setSearch,
+  } = useSearch<Role>({
+    data: baseRoles,
+    fields: [{ field: "role_name", boost: 2 }, "access", "department"],
+    returnAllWhenEmpty: true,
+  });
 
   return (
     <>
@@ -233,12 +224,11 @@ export default function RolesSearchFilter({
               </option>
             ))}
           </select>
-          <input
+          <Search
             className={styles.input}
-            type="text"
             placeholder={dict.search_placeholder}
             value={search}
-            onChange={(inputEvent) => setSearch(inputEvent.target.value)}
+            onChange={setSearch}
           />
           <button
             className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
