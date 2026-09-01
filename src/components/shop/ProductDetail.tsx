@@ -17,12 +17,15 @@ import {
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface ProductDetailProps {
   product: Product;
+  dict: Dictionary["shop"];
+  basePath?: string;
 }
 
-export default function ProductDetail({ product }: ProductDetailProps) {
+export default function ProductDetail({ product, dict, basePath }: ProductDetailProps) {
   const router = useRouter();
   const isJantarDeCurso = isJantarDeCursoCategory(product.category);
   const unavailableToastId = `product-detail-unavailable-${product.id}`;
@@ -100,12 +103,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   }, [product]);
 
   const getVariantImageIndex = useCallback(
-    (variant?: (typeof product.variants)[0]): number => {
+    (variant?: Product["variants"][0]): number => {
       if (!variant?.images?.length) return 0;
       const idx = allImages.indexOf(variant.images[0]);
       return idx >= 0 ? idx : 0;
     },
-    [allImages, product]
+    [allImages]
   );
 
   const [imgIndex, setImgIndex] = useState(() => getVariantImageIndex(product.variants[0]));
@@ -128,8 +131,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   );
 
   const unavailableReason = useMemo(
-    () => getProductUnavailableReason(product, selectedVariant),
-    [product, selectedVariant]
+    () => getProductUnavailableReason(product, selectedVariant, dict),
+    [product, selectedVariant, dict]
   );
 
   const canBuy = !unavailableReason;
@@ -159,21 +162,23 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         JSON.stringify([{ product, variantId: selectedVariant?.id, quantity: 1 }])
       );
       window.dispatchEvent(new Event("cartUpdated"));
-      router.push("/shop/checkout");
+      router.push(`${basePath || ""}/shop/checkout`);
       return;
     }
 
     cart.push({ product, variantId: selectedVariant?.id, quantity: qty });
     localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event("cartUpdated"));
-    router.push("/shop");
+    router.push(`${basePath || ""}/shop`);
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.breadcrumbs}>
-        <span onClick={() => router.push("/shop")} className={styles.breadcrumbLink}>
-          Store
+        <span
+          onClick={() => router.push(`${basePath || ""}/shop`)}
+          className={styles.breadcrumbLink}>
+          {dict.breadcrumbs.shop}
         </span>
         <span className={styles.breadcrumbSeparator}>››</span>
         <span className={styles.breadcrumbCurrent}>{product.name}</span>
@@ -193,7 +198,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           ) : (
             <div className={`${styles.mainImage} ${styles.noImage}`}>
               <FiImage size={64} />
-              <span>Sem Imagem</span>
+              <span>{dict.no_image_label}</span>
             </div>
           )}
           {allImages.length > 1 && (
@@ -283,7 +288,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             );
           })}
 
-          <span className={styles.label}>Quantidade</span>
+          <span className={styles.label}>{dict.labels.quantity}</span>
           <div className={styles.qtyAndButton}>
             <div className={`${styles.quantity} ${isJantarDeCurso ? styles.quantityDisabled : ""}`}>
               <button onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={isJantarDeCurso}>
@@ -303,12 +308,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               }}>
               <button className={styles.addButton} onClick={addToCart} disabled={!canBuy}>
                 {isOrderNotStarted
-                  ? "Brevemente"
+                  ? dict.buttons.coming_soon
                   : isDeadlineExpired
-                    ? "Indisponível"
+                    ? dict.buttons.unavailable
                     : isJantarDeCurso
-                      ? "Comprar já"
-                      : "Adicionar ao Carrinho"}
+                      ? dict.buttons.buy_now
+                      : dict.buttons.add_to_cart}
               </button>
             </div>
           </div>
@@ -319,11 +324,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 <>
                   <details className={styles.detailsBlock}>
                     <summary>
-                      <span>Guia de Tamanhos</span>
+                      <span>{dict.size_guide_title}</span>
                       <FiChevronDown className={styles.detailIcon} aria-hidden />
                     </summary>
                     <p>
-                      Vê o nosso{" "}
+                      {dict.size_guide_text.split("{link}")[0]}
                       <a
                         href="#"
                         className={styles.sizeGuideLink}
@@ -331,15 +336,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                           e.preventDefault();
                           setShowSizeGuide(true);
                         }}>
-                        Guia de Tamanhos
-                      </a>{" "}
-                      para mais detalhes.
+                        {dict.size_guide_link}
+                      </a>
+                      {dict.size_guide_text.split("{link}")[1]}
                     </p>
                   </details>
                   <SizeGuideOverlay
                     open={showSizeGuide}
                     onClose={() => setShowSizeGuide(false)}
-                    title={product.name ? `Guia de Tamanhos ${product.name}` : undefined}
+                    title={product.name ? `${dict.size_guide_title} ${product.name}` : undefined}
                     customContent={product.size_guide}
                   />
                 </>
@@ -348,7 +353,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               {product.estimated_delivery && (
                 <details className={styles.detailsBlock}>
                   <summary>
-                    <span>Prazos de Entrega</span>
+                    <span>{dict.delivery_title}</span>
                     <FiChevronDown className={styles.detailIcon} aria-hidden />
                   </summary>
                   <p>{product.estimated_delivery}</p>

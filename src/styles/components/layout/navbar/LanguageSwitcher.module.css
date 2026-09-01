@@ -1,0 +1,39 @@
+.switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: inherit;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.lang {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--foreground-colour);
+  opacity: 0.6;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.lang:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.active {
+  opacity: 1;
+  color: var(--primary-colour);
+}
+
+.separator {
+  color: var(--foreground-colour);
+  opacity: 0.3;
+}

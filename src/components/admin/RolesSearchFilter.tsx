@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import Fuse from "fuse.js";
 import styles from "@/styles/components/admin/RolesSearchFilter.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface Role {
   role_name: string;
@@ -21,10 +22,12 @@ interface Department {
 export default function RolesSearchFilter({
   departments,
   initialRoles,
+  dict,
 }: {
   departments: Department[];
   initialDepartment: string;
   initialRoles: Role[];
+  dict: Dictionary["admin"]["roles_management"];
 }) {
   const [roles, setRoles] = useState<Role[]>(initialRoles);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
@@ -110,11 +113,11 @@ export default function RolesSearchFilter({
       } else {
         const error = await response.json();
         // TODO: (ERROR)
-        setError(error.error || "Erro ao adicionar cargo");
+        setError(error.error || dict.errors.add_role);
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao adicionar cargo");
+      setError(dict.errors.add_role);
     } finally {
       setLoading(false);
     }
@@ -147,11 +150,11 @@ export default function RolesSearchFilter({
       } else {
         const error = await response.json();
         // TODO: (ERROR)
-        setError(error.error || "Erro ao remover cargo");
+        setError(error.error || dict.errors.remove_role);
       }
     } catch {
       // TODO: (ERROR)
-      setError("Erro ao remover cargo");
+      setError(dict.errors.remove_role);
     } finally {
       setPendingRemove(null);
     }
@@ -201,20 +204,29 @@ export default function RolesSearchFilter({
         open={confirmOpen}
         message={
           pendingRemove
-            ? `Tem a certeza que quer remover o cargo "${pendingRemove.roleName}" do departamento "${selectedDepartment === "" ? pendingRemove.departmentName : selectedDepartment}"?`
+            ? dict.confirm_remove
+                .replace("{role}", pendingRemove.roleName)
+                .replace(
+                  "{department}",
+                  selectedDepartment === ""
+                    ? pendingRemove.departmentName || ""
+                    : selectedDepartment
+                )
             : ""
         }
+        confirmText={dict.confirm_dialog.confirm}
+        cancelText={dict.confirm_dialog.cancel}
         onConfirm={confirmRemove}
         onCancel={cancelRemove}
       />
       <section className={styles.section}>
-        <div className={styles.sectionTitle}>Cargos Existentes</div>
+        <div className={styles.sectionTitle}>{dict.existing_roles_title}</div>
         <div className={styles.filterBar}>
           <select
             value={selectedDepartment}
             onChange={(inputEvent) => setSelectedDepartment(inputEvent.target.value)}
             className={styles.select}>
-            <option value="">Todos</option>
+            <option value="">{dict.all}</option>
             {departments.map((dept) => (
               <option key={dept.name} value={dept.name}>
                 {dept.name}
@@ -224,7 +236,7 @@ export default function RolesSearchFilter({
           <input
             className={styles.input}
             type="text"
-            placeholder="Pesquisar cargo, nível de acesso ou departamento..."
+            placeholder={dict.search_placeholder}
             value={search}
             onChange={(inputEvent) => setSearch(inputEvent.target.value)}
           />
@@ -232,20 +244,18 @@ export default function RolesSearchFilter({
             className={`${styles.filterBtn} ${!showInactive ? styles.active : ""}`}
             onClick={() => setShowInactive(false)}
             type="button">
-            Ativos
+            {dict.active}
           </button>
           <button
             className={`${styles.filterBtn} ${showInactive ? styles.active : ""}`}
             onClick={() => setShowInactive(true)}
             type="button">
-            Mostrar Inativos
+            {dict.show_inactive}
           </button>
         </div>
         {filteredRoles.length === 0 ? (
           <div className={styles.emptyMessage}>
-            {selectedDepartment === ""
-              ? "Nenhum cargo encontrado."
-              : "Selecione um departamento para ver os cargos."}
+            {selectedDepartment === "" ? dict.empty_all : dict.empty_select}
           </div>
         ) : (
           <div className={styles.rolesList}>
@@ -263,14 +273,14 @@ export default function RolesSearchFilter({
                     {role.access}
                   </span>
                   <span className={`${styles.badge}${!role.active ? " " + styles.inactive : ""}`}>
-                    {role.active ? "Ativo" : "Inativo"}
+                    {role.active ? dict.active_badge : dict.inactive_badge}
                   </span>
                 </div>
                 {role.active && (
                   <button
                     onClick={() => handleRemoveClick(role.role_name, role.department)}
                     className={styles.deleteBtn}>
-                    Remover
+                    {dict.remove}
                   </button>
                 )}
               </div>
@@ -279,7 +289,7 @@ export default function RolesSearchFilter({
         )}
       </section>
       <section className={styles.section}>
-        <div className={styles.sectionTitle}>Adicionar Novo Cargo</div>
+        <div className={styles.sectionTitle}>{dict.add_role_title}</div>
         <form
           className={styles.addRoleForm}
           onSubmit={(inputEvent) => {
@@ -292,7 +302,7 @@ export default function RolesSearchFilter({
               onChange={(inputEvent) => setAddDepartment(inputEvent.target.value)}
               className={styles.select}
               disabled={loading}>
-              <option value="">Todos</option>
+              <option value="">{dict.all}</option>
               {departments.map((dept) => (
                 <option key={dept.name} value={dept.name}>
                   {dept.name}
@@ -305,7 +315,7 @@ export default function RolesSearchFilter({
               onChange={(inputEvent) =>
                 setNewRole({ ...newRole, roleName: inputEvent.target.value })
               }
-              placeholder="Nome do Cargo"
+              placeholder={dict.role_name_placeholder}
               className={styles.input}
               disabled={loading}
             />
@@ -314,17 +324,17 @@ export default function RolesSearchFilter({
               onChange={(inputEvent) => setNewRole({ ...newRole, access: inputEvent.target.value })}
               className={styles.select}
               disabled={loading}>
-              <option value="guest">Normal</option>
-              <option value="member">Membro</option>
-              <option value="shop_manager">Gestor de Loja</option>
-              <option value="coordinator">Coordenador</option>
-              <option value="admin">Administrador</option>
+              <option value="guest">{dict.access.guest}</option>
+              <option value="member">{dict.access.member}</option>
+              <option value="shop_manager">{dict.access.shop_manager}</option>
+              <option value="coordinator">{dict.access.coordinator}</option>
+              <option value="admin">{dict.access.admin}</option>
             </select>
             <button
               type="submit"
               disabled={loading || !newRole.roleName.trim() || !addDepartment}
               className={styles.addRoleBtn}>
-              {loading ? "A adicionar..." : "Adicionar Cargo"}
+              {loading ? dict.adding : dict.add_role}
             </button>
           </div>
           {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}

@@ -9,30 +9,40 @@ import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/shop/DiscountCodeManagement.module.css";
 
 interface DiscountCodesDashboardProps {
   users: User[];
   products: Product[];
   discountCodes: DiscountCode[];
+  basePath?: string;
+  dict: Dictionary["discount_codes"];
 }
 
-function getStatus(code: DiscountCode): { label: string; tone: "active" | "warning" | "muted" } {
+function getStatus(
+  code: DiscountCode,
+  dict: Dictionary["discount_codes"]
+): { label: string; tone: "active" | "warning" | "muted" } {
   const now = Date.now();
   const expiresAt = code.expires_at ? new Date(code.expires_at).getTime() : null;
-  if (!code.active) return { label: "Inativo", tone: "muted" };
+  if (!code.active) return { label: dict.status_inactive, tone: "muted" };
   if (expiresAt != null && !Number.isNaN(expiresAt) && expiresAt < now) {
-    return { label: "Expirado", tone: "warning" };
+    return { label: dict.status_expired, tone: "warning" };
   }
   if (code.max_uses != null && code.current_uses >= code.max_uses) {
-    return { label: "Esgotado", tone: "warning" };
+    return { label: dict.status_exhausted, tone: "warning" };
   }
-  return { label: "Ativo", tone: "active" };
+  return { label: dict.status_active, tone: "active" };
 }
 
-function formatUsers(code: DiscountCode, usersByIstid: Map<string, User>): string {
+function formatUsers(
+  code: DiscountCode,
+  usersByIstid: Map<string, User>,
+  dict: Dictionary["discount_codes"]
+): string {
   return code.valid_istids.length === 0
-    ? "Todos"
+    ? dict.all_users
     : code.valid_istids
         .map((istid) => {
           const u = usersByIstid.get(istid);
@@ -41,9 +51,13 @@ function formatUsers(code: DiscountCode, usersByIstid: Map<string, User>): strin
         .join(", ");
 }
 
-function formatProducts(code: DiscountCode, productNamesById: Map<number, string>): string {
+function formatProducts(
+  code: DiscountCode,
+  productNamesById: Map<number, string>,
+  dict: Dictionary["discount_codes"]
+): string {
   return code.valid_product_ids.length === 0
-    ? "Todos"
+    ? dict.all_products
     : code.valid_product_ids.map((id) => productNamesById.get(id) ?? String(id)).join(", ");
 }
 
@@ -51,6 +65,8 @@ export default function DiscountCodeManagement({
   users,
   products,
   discountCodes,
+  basePath,
+  dict,
 }: DiscountCodesDashboardProps) {
   const router = useRouter();
   const [codes, setCodes] = useState(discountCodes);
@@ -65,8 +81,8 @@ export default function DiscountCodeManagement({
     return [
       code.code,
       code.discount_type,
-      formatUsers(code, usersByIstid),
-      formatProducts(code, productNamesById),
+      formatUsers(code, usersByIstid, dict),
+      formatProducts(code, productNamesById, dict),
     ]
       .join(" ")
       .toLowerCase()
@@ -115,15 +131,21 @@ export default function DiscountCodeManagement({
       })
     );
     if (failures === 0) {
-      toast.success(`Códigos ${active ? "ativados" : "desativados"}.`, { closeButton: true });
+      toast.success(
+        dict.toast_updated.replace(
+          "{status}",
+          active ? dict.toast_activated : dict.toast_deactivated
+        ),
+        { closeButton: true }
+      );
     } else {
-      toast.error(`Falha em ${failures} código(s)`, { closeButton: true });
+      toast.error(dict.toast_error.replace("{count}", String(failures)), { closeButton: true });
     }
     setSelected(new Set());
   };
 
   const bulkDelete = async () => {
-    if (!window.confirm(`Eliminar ${selected.size} código(s)? Tem a certeza?`)) return;
+    if (!window.confirm(dict.delete_confirm.replace("{count}", String(selected.size)))) return;
     let failures = 0;
     await Promise.all(
       Array.from(selected).map(async (id) => {
@@ -141,9 +163,9 @@ export default function DiscountCodeManagement({
       })
     );
     if (failures === 0) {
-      toast.success("Códigos eliminados.", { closeButton: true });
+      toast.success(dict.toast_deleted, { closeButton: true });
     } else {
-      toast.error(`Falha em ${failures} código(s)`, { closeButton: true });
+      toast.error(dict.toast_error.replace("{count}", String(failures)), { closeButton: true });
     }
     setSelected(new Set());
   };
@@ -151,13 +173,13 @@ export default function DiscountCodeManagement({
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <ColorfulText className={styles.title} text="Códigos de Desconto" />
+        <ColorfulText className={styles.title} text={dict.title} />
         <div className={styles.headerActions}>
           <button
             type="button"
             className={styles.addBtn}
-            onClick={() => router.push("/shop/manage/discounts/new")}>
-            <FaPlus /> Novo código
+            onClick={() => router.push(`${basePath || ""}/shop/manage/discounts/new`)}>
+            <FaPlus /> {dict.new_code}
           </button>
         </div>
       </div>
@@ -167,7 +189,7 @@ export default function DiscountCodeManagement({
           <FaTag className={styles.searchIcon} />
           <input
             className={`${styles.field} ${styles.searchInput}`}
-            placeholder="Pesquisar código, ISTID, email ou produto..."
+            placeholder={dict.search_placeholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -177,18 +199,17 @@ export default function DiscountCodeManagement({
       {selected.size > 0 && (
         <div className={styles.bulkActions}>
           <span className={styles.bulkCount}>
-            {selected.size} código{selected.size !== 1 ? "s" : ""} selecionado
-            {selected.size !== 1 ? "s" : ""}
+            {selected.size} {selected.size === 1 ? dict.selected_singular : dict.selected_plural}
           </span>
           <div className={styles.bulkButtons}>
             <button
               type="button"
               className={styles.btnSecondary}
               onClick={() => bulkUpdate(!allSelectedActive)}>
-              {allSelectedActive ? "Desativar" : "Ativar"}
+              {allSelectedActive ? dict.deactivate : dict.activate}
             </button>
             <button type="button" className={styles.btnDanger} onClick={bulkDelete}>
-              Eliminar
+              {dict.delete}
             </button>
           </div>
         </div>
@@ -206,19 +227,19 @@ export default function DiscountCodeManagement({
                   {isSomeSelected && <span className={styles.indeterminateIcon}>−</span>}
                 </div>
               </th>
-              <th>Código</th>
-              <th>Utilizador</th>
-              <th>Tipo</th>
-              <th>Valor</th>
-              <th>Usos</th>
-              <th>Restrições</th>
-              <th>Expira</th>
-              <th>Estado</th>
+              <th>{dict.col_code}</th>
+              <th>{dict.col_user}</th>
+              <th>{dict.col_type}</th>
+              <th>{dict.col_value}</th>
+              <th>{dict.col_uses}</th>
+              <th>{dict.col_restrictions}</th>
+              <th>{dict.col_expires}</th>
+              <th>{dict.col_status}</th>
             </tr>
           </thead>
           <tbody>
             {filteredCodes.map((code) => {
-              const status = getStatus(code);
+              const status = getStatus(code, dict);
               return (
                 <tr key={code.id} onClick={() => toggleCode(code.id)} style={{ cursor: "pointer" }}>
                   <td className={styles.checkboxCell}>
@@ -230,8 +251,10 @@ export default function DiscountCodeManagement({
                   <td>
                     <strong>{code.code}</strong>
                   </td>
-                  <td>{formatUsers(code, usersByIstid)}</td>
-                  <td>{code.discount_type === "percentage" ? "Percentagem" : "Valor fixo"}</td>
+                  <td>{formatUsers(code, usersByIstid, dict)}</td>
+                  <td>
+                    {code.discount_type === "percentage" ? dict.type_percentage : dict.type_fixed}
+                  </td>
                   <td>
                     {code.discount_type === "percentage"
                       ? `${code.discount_value}%`
@@ -241,11 +264,11 @@ export default function DiscountCodeManagement({
                     {code.current_uses}
                     {code.max_uses != null ? ` / ${code.max_uses}` : ""}
                   </td>
-                  <td>{formatProducts(code, productNamesById)}</td>
+                  <td>{formatProducts(code, productNamesById, dict)}</td>
                   <td>
                     {code.expires_at
                       ? new Date(code.expires_at).toLocaleString("pt-PT")
-                      : "Sem limite"}
+                      : dict.no_limit}
                   </td>
                   <td>
                     <span className={`${styles.statusBadge} ${styles[status.tone]}`}>
@@ -258,7 +281,7 @@ export default function DiscountCodeManagement({
             {filteredCodes.length === 0 && (
               <tr>
                 <td colSpan={9} className={styles.emptyCell}>
-                  Nenhum código encontrado.
+                  {dict.empty}
                 </td>
               </tr>
             )}

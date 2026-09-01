@@ -10,19 +10,28 @@ import NeiistLogo from "@/components/layout/navbar/NeiistLogo";
 import ShoppingCart from "@/components/layout/navbar/ShoppingCart";
 import LoginButton from "@/components/layout/navbar/LoginButton";
 import UserMenu from "@/components/layout/navbar/UserMenu";
+import LanguageSwitcher from "@/components/layout/navbar/LanguageSwitcher";
 import styles from "@/styles/components/layout/navbar/NavBar.module.css";
-
 import { User } from "@/types/user";
+import { Dictionary } from "@/i18n/dictionaries";
+import { Locale } from "@/i18n/i18n-config";
 
-const navLinks = [
-  { name: "Sobre Nós", href: "/about-us" },
-  { name: "Atividades", href: "/activities" },
-  /*{ name: "Blog", href: "/blog" },*/
-  { name: "Loja", href: "/shop" },
-  /* { name: "Jantar de Curso", href: "/dinner" },*/
-];
+interface NavBarProps {
+  dict: Dictionary["navbar"];
+  basePath: string;
+  currentLocale: Locale;
+  authSlot?: React.ReactNode;
+}
 
-export function AuthWidget({ initialUser }: { initialUser?: User | null } = {}) {
+export function AuthWidget({
+  initialUser,
+  dict,
+  basePath,
+}: {
+  initialUser?: User | null;
+  dict: Dictionary["navbar"]["menu"];
+  basePath: string;
+}) {
   const { user, setUser } = useUser();
 
   useEffect(() => {
@@ -36,16 +45,28 @@ export function AuthWidget({ initialUser }: { initialUser?: User | null } = {}) 
     setUser(null);
   };
 
-  if (currentUser) return <UserMenu userData={currentUser} logout={handleLogout} />;
+  if (currentUser) {
+    return (
+      <UserMenu userData={currentUser} logout={handleLogout} dict={dict} basePath={basePath} />
+    );
+  }
 
   return <LoginButton onClick={login} />;
 }
 
-export default function NavBar({ authSlot }: { authSlot?: React.ReactNode } = {}) {
+export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavBarProps) {
   const router = useRouter();
   const [isSticky, setIsSticky] = useState(false);
   const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const navLinks = [
+    { name: dict.about_us, href: `${basePath}/about-us` },
+    { name: dict.activities, href: `${basePath}/activities` },
+    /*{ name: "Blog", href: `${basePath}/blog` },*/
+    { name: dict.shop, href: `${basePath}/shop` },
+    /* { name: dict.dinner, href: `${basePath}/dinner` },*/
+  ];
 
   useEffect(() => {
     const onScroll = () => setIsSticky(window.scrollY > 0);
@@ -102,14 +123,15 @@ export default function NavBar({ authSlot }: { authSlot?: React.ReactNode } = {}
   return (
     <header className={`${styles.header} ${isSticky ? styles.sticky : ""}`}>
       <nav className={styles.navigation}>
-        <Link href="/" className={styles.logo}>
+        <Link href={basePath} className={styles.logo}>
           <NeiistLogo />
         </Link>
         <div className={styles.navItems}>{renderNavItems()}</div>
       </nav>
       <div className={styles.actions}>
+        <LanguageSwitcher currentLocale={currentLocale} />
         <ShoppingCart />
-        {authSlot ?? <AuthWidget />}
+        {authSlot ?? <AuthWidget dict={dict.menu} basePath={basePath} />}
         <div className={styles.menuButton}>
           <Squash
             toggled={menuState === "open"}
@@ -124,7 +146,10 @@ export default function NavBar({ authSlot }: { authSlot?: React.ReactNode } = {}
         <div
           ref={menuRef}
           className={`${styles.menu} ${menuState === "closing" ? styles.slideOut : ""}`}>
-          <Link href="/" className={styles.logo} onClick={() => handleMobileNavClick("/")}>
+          <Link
+            href={basePath}
+            className={styles.logo}
+            onClick={() => handleMobileNavClick(basePath)}>
             <NeiistLogo />
           </Link>
           <nav className={styles.navItems}>{renderNavItems(handleMobileNavClick)}</nav>

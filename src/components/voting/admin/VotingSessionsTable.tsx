@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { VotingSession, VotingType, VotingStatus } from "@/types/voting";
 import { TbFilter } from "react-icons/tb";
 import styles from "@/styles/components/voting/admin/VotingSessionsTable.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingSessionsTableProps {
   sessions: VotingSession[];
@@ -20,19 +21,8 @@ interface VotingSessionsTableProps {
   typeFilterRef: React.RefObject<HTMLButtonElement | null>;
   statusFilterRef: React.RefObject<HTMLButtonElement | null>;
   dateFilterRef: React.RefObject<HTMLButtonElement | null>;
+  dict: Dictionary["voting_management"];
 }
-
-export const TYPE_LABELS: Record<VotingType, string> = {
-  activity: "Atividade",
-  users: "Utilizadores",
-  custom: "Outro",
-};
-
-export const STATUS_LABELS: Record<VotingStatus, string> = {
-  idle: "Pronto",
-  voting: "Aberta",
-  finished: "Fechada",
-};
 
 export default function VotingSessionsTable({
   sessions,
@@ -45,6 +35,7 @@ export default function VotingSessionsTable({
   typeFilterRef,
   statusFilterRef,
   dateFilterRef,
+  dict,
 }: VotingSessionsTableProps) {
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
@@ -80,10 +71,10 @@ export default function VotingSessionsTable({
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Título</th>
+            <th>{dict.table.title}</th>
             <th>
               <div className={styles.headerWithFilter}>
-                Tipo
+                {dict.table.type}
                 <button
                   ref={typeFilterRef}
                   className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -97,7 +88,7 @@ export default function VotingSessionsTable({
             </th>
             <th>
               <div className={styles.headerWithFilter}>
-                Período
+                {dict.table.period}
                 <button
                   ref={dateFilterRef}
                   className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -109,10 +100,10 @@ export default function VotingSessionsTable({
                 </button>
               </div>
             </th>
-            <th>Votos</th>
+            <th>{dict.table.voters}</th>
             <th>
               <div className={styles.headerWithFilter}>
-                Estado
+                {dict.table.status}
                 <button
                   ref={statusFilterRef}
                   className={`${styles.headerFilterBtn} ${styles.desktopOnly}`}
@@ -130,7 +121,7 @@ export default function VotingSessionsTable({
           {filteredSessions.length === 0 ? (
             <tr>
               <td colSpan={5} className={styles.empty}>
-                Nenhuma sessão encontrada.
+                {dict.table.empty}
               </td>
             </tr>
           ) : (
@@ -146,7 +137,7 @@ export default function VotingSessionsTable({
                 </td>
                 <td className={styles.cell}>
                   <span className={`${styles.badge} ${styles[session.type]}`}>
-                    {TYPE_LABELS[session.type]}
+                    {dict.types[session.type]}
                   </span>
                 </td>
                 <td className={styles.cell}>
@@ -159,7 +150,7 @@ export default function VotingSessionsTable({
                 </td>
                 <td className={styles.cell}>
                   <span className={`${styles.badge} ${styles[session.status]}`}>
-                    {STATUS_LABELS[session.status]}
+                    {dict.statuses[session.status]}
                   </span>
                 </td>
               </tr>

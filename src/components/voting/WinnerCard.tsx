@@ -2,19 +2,21 @@ import Image from "next/image";
 import { SessionResult } from "@/types/voting";
 import styles from "@/styles/components/voting/WinnerCard.module.css";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface WinnerCardProps {
   results: SessionResult[];
+  dict: Dictionary["voting"];
 }
 
-export default function WinnerCard({ results }: WinnerCardProps) {
+export default function WinnerCard({ results, dict }: WinnerCardProps) {
   const sortedResults = [...results].sort((a, b) => b.voteCount - a.voteCount);
   const topResults = sortedResults.slice(0, 3);
 
   if (!topResults.length || topResults[0].voteCount === 0) {
     return (
       <div className={styles.emptyState}>
-        <p>Não houve votos em nenhum dos candidatos.</p>
+        <p>{dict.no_votes_cast}</p>
       </div>
     );
   }
@@ -48,7 +50,7 @@ export default function WinnerCard({ results }: WinnerCardProps) {
             <div className={styles.infoWrap}>
               <h2 className={styles.name}>{getFirstAndLastName(result.nomineeName)}</h2>
               <p className={styles.votes}>
-                {result.voteCount} {result.voteCount === 1 ? "voto" : "votos"}
+                {result.voteCount} {result.voteCount === 1 ? dict.vote_singular : dict.vote_plural}
               </p>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { VotingNominee } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import styles from "@/styles/components/voting/VotingGrid.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingGridProps {
   sessionId: number;
@@ -14,6 +15,7 @@ interface VotingGridProps {
   nominees: VotingNominee[];
   selectedNomineeId?: string | null;
   onVote?: (_nomineeId: string) => Promise<void>;
+  dict: Dictionary["voting"];
 }
 
 const PAGE_SIZE = 12;
@@ -25,6 +27,7 @@ export default function VotingGrid({
   nominees,
   selectedNomineeId,
   onVote,
+  dict,
 }: VotingGridProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -48,8 +51,8 @@ export default function VotingGrid({
   return (
     <section className={styles.wrapper}>
       <header className={styles.header}>
-        <p className={styles.kicker}>Votação em curso</p>
-        <h1 className={styles.title}>{sessionName ?? "Seleciona o teu voto"}</h1>
+        <p className={styles.kicker}>{dict.voting_in_progress}</p>
+        <h1 className={styles.title}>{sessionName ?? dict.select_your_vote}</h1>
         {sessionDescription && <p className={styles.description}>{sessionDescription}</p>}
       </header>
 
@@ -58,7 +61,7 @@ export default function VotingGrid({
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Procurar por nome ou istID..."
+            placeholder={dict.search_nominee_placeholder}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -67,7 +70,9 @@ export default function VotingGrid({
           />
         </div>
         <p className={styles.count}>
-          A mostrar {visibleNominees.length} de {filteredNominees.length} candidatos
+          {dict.showing_nominees_count
+            .replace("{visible}", String(visibleNominees.length))
+            .replace("{total}", String(filteredNominees.length))}
         </p>
       </div>
 
@@ -101,7 +106,11 @@ export default function VotingGrid({
                   />
                   <div className={styles.overlay}>
                     <span className={styles.cta}>
-                      {isSelected ? "Voto atual" : selectedNomineeId ? "Mudar voto" : "Votar"}
+                      {isSelected
+                        ? dict.current_vote
+                        : selectedNomineeId
+                          ? dict.change_vote
+                          : dict.vote}
                     </span>
                   </div>
                 </div>
@@ -120,7 +129,7 @@ export default function VotingGrid({
             type="button"
             className={styles.loadMoreButton}
             onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}>
-            Mostrar mais candidatos
+            {dict.show_more_nominees}
           </button>
         </div>
       )}

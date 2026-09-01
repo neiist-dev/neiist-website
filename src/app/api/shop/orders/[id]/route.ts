@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { UserRole } from "@/types/user";
+import { UserRole, type User } from "@/types/user";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
-import { PAYMENT_METHODS } from "@/types/shop/payment";
-import type { User } from "@/types/user";
+import { isValidPaymentMethod } from "@/types/shop/payment";
 import { Order } from "@/types/shop/order";
 import {
   getPendingOrderEmailTemplate,
@@ -151,8 +150,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (filteredUpdates.payment_method !== undefined) {
-      const method = String(filteredUpdates.payment_method);
-      if (!Object.prototype.hasOwnProperty.call(PAYMENT_METHODS, method))
+      if (!isValidPaymentMethod(filteredUpdates.payment_method))
         return NextResponse.json({ error: "Invalid payment_method" }, { status: 400 });
     }
 

@@ -1,17 +1,38 @@
-export const PAYMENT_METHODS = {
-  cash: { label: "Numerário" },
-  "sumup-tpa": { label: "SumUp TPA" },
-  sumup: { label: "SumUp Card Online" },
-  "apple-pay": { label: "SumUp Apple Pay" },
-  "in-person": { label: "Em pessoa" },
-  mbway: { label: "MBWay" },
-  other: { label: "Outro" },
-} as const;
+export const PAYMENT_METHODS = [
+  "cash",
+  "sumup-tpa",
+  "sumup",
+  "apple-pay",
+  "in-person",
+  "mbway",
+  "other",
+] as const;
 
-export type PaymentMethod = keyof typeof PAYMENT_METHODS;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
-export function getPaymentLabel(method: PaymentMethod): string {
-  return PAYMENT_METHODS[method]?.label ?? method;
+export const PAYMENT_METHODS_SET: ReadonlySet<string> = new Set(PAYMENT_METHODS);
+
+export function isValidPaymentMethod(value: unknown): value is PaymentMethod {
+  return typeof value === "string" && PAYMENT_METHODS_SET.has(value);
+}
+
+export type PaymentMethodDict = Record<PaymentMethod, string>;
+
+export function getPaymentLabel(method: PaymentMethod, dict?: PaymentMethodDict): string {
+  if (dict && dict[method]) {
+    return dict[method];
+  }
+  return method;
+}
+
+export function getLocalizedPaymentMethods(
+  methods: ReadonlyArray<PaymentMethod>,
+  dict?: PaymentMethodDict
+): Array<{ id: PaymentMethod; label: string }> {
+  return methods.map((method) => ({
+    id: method,
+    label: getPaymentLabel(method, dict),
+  }));
 }
 
 export const ONLINE_PAYMENT_METHODS: ReadonlyArray<PaymentMethod> = ["sumup", "apple-pay"];

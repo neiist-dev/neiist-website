@@ -1,8 +1,9 @@
 "use client";
+
 import { useMemo, useState, useEffect } from "react";
 import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay, isBefore, startOfDay } from "date-fns";
-import { pt } from "date-fns/locale/pt";
+import { pt, enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import EventDetails from "@/components/activities/EventDetails";
 import { normalizeCalendarEvent } from "@/utils/calendarUtils";
@@ -16,19 +17,24 @@ import * as GI from "react-icons/gi";
 import * as HI from "react-icons/hi2";
 import * as BS from "react-icons/bs";
 import styles from "@/styles/components/activities/Calendar.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/i18n-config";
 
-const locales = { pt };
+const dateLocales = { pt, en: enUS };
 const localizer = dateFnsLocalizer({
   format,
   parse,
   startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
   getDay,
-  locales,
+  locales: dateLocales,
 });
 
 interface CalendarProps {
   events: CalendarEvent[];
   signedUpEventIds: string[];
+  initialSelectedEventId?: string;
+  dict: Dictionary["activities"];
+  currentLocale: Locale;
 }
 
 interface ReactBigCalendarEvent {
@@ -82,22 +88,24 @@ function mapToBigCalendarEvent(event: NormalizedCalendarEvent) {
 function CustomToolbar({
   label,
   onNavigate,
+  dict,
 }: {
   label: string;
   onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
+  dict: Dictionary["activities"]["toolbar"];
 }) {
   const [month, year] = label.split(" ");
 
   return (
     <div className={styles.header}>
       <button className={styles.todayButton} onClick={() => onNavigate("TODAY")}>
-        Hoje
+        {dict.today}
       </button>
       <div className={styles.navigationButtons}>
-        <button onClick={() => onNavigate("PREV")} aria-label="Previous Month">
+        <button onClick={() => onNavigate("PREV")} aria-label={dict.prev_month}>
           <FiChevronLeft />
         </button>
-        <button onClick={() => onNavigate("NEXT")} aria-label="Next Month">
+        <button onClick={() => onNavigate("NEXT")} aria-label={dict.next_month}>
           <FiChevronRight />
         </button>
       </div>
@@ -112,7 +120,9 @@ export default function Calendar({
   events,
   signedUpEventIds,
   initialSelectedEventId,
-}: CalendarProps & { initialSelectedEventId?: string }) {
+  dict,
+  currentLocale,
+}: CalendarProps) {
   const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
   const [signUps, setSignUps] = useState<Set<string>>(() => new Set(signedUpEventIds));
   const [eventList, setEventList] = useState<CalendarEvent[]>(events);
@@ -139,19 +149,24 @@ export default function Calendar({
       if (normalized) setSelectedEvent(normalized);
     }
   }, [initialSelectedEventId, normalizedEvents]);
+
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
     setEventList((prev) => prev.map((evt) => (evt.id === updatedEvent.id ? updatedEvent : evt)));
     setSelectedEvent((current) =>
       current && current.id === updatedEvent.id ? normalizeCalendarEvent(updatedEvent) : current
     );
   };
-  const components = {
-    toolbar: (props: {
-      label: string;
-      onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
-    }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} />,
-    event: IconEventsCard,
-  };
+
+  const components = useMemo(
+    () => ({
+      toolbar: (props: {
+        label: string;
+        onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
+      }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} dict={dict.toolbar} />,
+      event: IconEventsCard,
+    }),
+    [dict.toolbar]
+  );
 
   const dayPropGetter = (date: Date) => {
     const now = startOfDay(new Date());
@@ -192,7 +207,7 @@ export default function Calendar({
           components={components}
           dayPropGetter={dayPropGetter}
           eventPropGetter={eventPropGetter}
-          culture="pt"
+          culture={currentLocale}
         />
       </div>
 
@@ -215,6 +230,7 @@ export default function Calendar({
           onUpdate={(updatedEvent?: CalendarEvent) =>
             handleEventUpdate(updatedEvent ?? selectedEvent!.raw)
           }
+          dict={dict.details}
         />
       )}
     </>

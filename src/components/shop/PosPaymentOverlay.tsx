@@ -11,6 +11,7 @@ import { getOrderKindFromItems, getOrderKindRules } from "@/utils/shop/orderKind
 import type { SumUpReader } from "@/types/sumup";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import styles from "@/styles/components/shop/PosPaymentOverlay.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 type Props = {
   open: boolean;
@@ -23,6 +24,7 @@ type Props = {
   initialReaderId?: string;
   initialReaderName?: string;
   reopenOrderUrl?: string;
+  dict: Dictionary["pos_payment"];
 };
 
 type FlowState = "form" | "processing" | "success";
@@ -40,6 +42,7 @@ export default function PosPaymentOverlay({
   initialReaderId,
   initialReaderName,
   reopenOrderUrl,
+  dict,
 }: Props) {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(initialPaymentMethod ?? "cash");
@@ -77,7 +80,9 @@ export default function PosPaymentOverlay({
   const isExistingOrderPaymentFlow = initialPaymentMethod
     ? PENDING_PAYMENT_METHODS.has(initialPaymentMethod)
     : false;
-  const title = isExistingOrderPaymentFlow ? "Registar Pagamento" : "Finalizar Encomenda";
+  const title = isExistingOrderPaymentFlow
+    ? dict.title_register_payment
+    : dict.title_finalize_order;
 
   const availablePaymentMethods = useMemo(() => {
     const methods = getOrderKindRules(orderKind, "pos").paymentMethods;
@@ -119,7 +124,7 @@ export default function PosPaymentOverlay({
       })
       .catch((error) => {
         if (error?.name !== "AbortError") {
-          setError(error.message || "Falha ao carregar leitores");
+          setError(error.message || dict.error_load_readers);
         }
       })
       .finally(() => {
@@ -131,7 +136,7 @@ export default function PosPaymentOverlay({
     return () => {
       controller.abort();
     };
-  }, [open, paymentMethod, initialReaderId]);
+  }, [open, paymentMethod, initialReaderId, dict.error_load_readers]);
 
   useEffect(() => {
     if (!open) return;
@@ -178,13 +183,11 @@ export default function PosPaymentOverlay({
 
       const data = (await res.json().catch(() => null)) as { error?: string } | Order | null;
       if (!res.ok || !data || !("id" in data))
-        throw new Error(
-          (data as { error?: string } | null)?.error || "Falha ao atualizar encomenda"
-        );
+        throw new Error((data as { error?: string } | null)?.error || dict.error_update_order);
 
       return data;
     },
-    [order.id]
+    [order.id, dict.error_update_order]
   );
 
   const finalizePaidOrder = useCallback(
@@ -197,15 +200,15 @@ export default function PosPaymentOverlay({
 
       if (!res.ok) {
         const errorData = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(errorData?.error || "Falha ao finalizar encomenda");
+        throw new Error(errorData?.error || dict.error_finalize_order);
       }
 
       const data = (await res.json().catch(() => null)) as Order | null;
-      if (!data || !("id" in data)) throw new Error("Resposta inválida do servidor");
+      if (!data || !("id" in data)) throw new Error(dict.error_invalid_server_response);
 
       return data;
     },
-    [order.id]
+    [order.id, dict.error_finalize_order, dict.error_invalid_server_response]
   );
 
   const pollReaderTransactionPaid = useCallback(
@@ -235,8 +238,10 @@ export default function PosPaymentOverlay({
 
         setStatusMessage(
           txData?.status
-            ? `Leitor ${selectedReaderName}: ${String(txData.status).toLowerCase()}`
-            : "A aguardar confirmação do terminal..."
+            ? dict.reader_status
+                .replace("{name}", selectedReaderName)
+                .replace("{status}", String(txData.status).toLowerCase())
+            : dict.awaiting_terminal
         );
 
         await sleep(2500);
@@ -244,13 +249,13 @@ export default function PosPaymentOverlay({
 
       return { paid: false, transactionCode: null };
     },
-    [refreshOrder, selectedReaderName]
+    [refreshOrder, selectedReaderName, dict.reader_status, dict.awaiting_terminal]
   );
 
   const runTpaFlow = useCallback(async (): Promise<Order | null> => {
-    if (!selectedReaderId) throw new Error("Seleciona um leitor SumUp para continuar.");
+    if (!selectedReaderId) throw new Error(dict.select_reader_error);
 
-    setStatusMessage("A iniciar pagamento no terminal...");
+    setStatusMessage(dict.starting_payment);
 
     const createRes = await fetch(
       `/api/shop/sumup/readers/${encodeURIComponent(selectedReaderId)}/checkout`,
@@ -276,7 +281,7 @@ export default function PosPaymentOverlay({
             : "";
 
         if (existingClientTransactionId) {
-          setStatusMessage("Checkout já iniciado no terminal. A aguardar confirmação...");
+          setStatusMessage(dict.checkout_started);
           const pollResult = await pollReaderTransactionPaid(existingClientTransactionId);
 
           if (pollResult.paid) {
@@ -292,16 +297,16 @@ export default function PosPaymentOverlay({
             payment_method: "sumup-tpa",
             payment_reference: existingClientTransactionId,
           });
-          toast.info("Pagamento iniciado no terminal. A confirmação pode demorar alguns segundos.");
+          toast.info(dict.payment_initiated_toast);
           return pending;
         }
       }
 
-      const apiError = createData?.error || "Falha ao iniciar no terminal.";
+      const apiError = createData?.error || dict.failed_terminal;
       throw new Error(apiError);
     }
 
-    setStatusMessage("Pagamento enviado para o terminal. A aguardar confirmação...");
+    setStatusMessage(dict.payment_sent);
     const pollResult = await pollReaderTransactionPaid(createData.clientTransactionId);
 
     if (pollResult.paid) {
@@ -317,7 +322,7 @@ export default function PosPaymentOverlay({
       payment_method: "sumup-tpa",
       payment_reference: createData.clientTransactionId,
     });
-    toast.info("Pagamento iniciado no terminal. A confirmação pode demorar alguns segundos.");
+    toast.info(dict.payment_initiated_toast);
     return pending;
   }, [
     selectedReaderId,
@@ -326,6 +331,12 @@ export default function PosPaymentOverlay({
     pollReaderTransactionPaid,
     updateOrderFields,
     finalizePaidOrder,
+    dict.select_reader_error,
+    dict.starting_payment,
+    dict.checkout_started,
+    dict.payment_initiated_toast,
+    dict.failed_terminal,
+    dict.payment_sent,
   ]);
 
   const handleConfirm = useCallback(async () => {
@@ -335,7 +346,7 @@ export default function PosPaymentOverlay({
     setError(null);
     setIsSubmitting(true);
     setFlowState("processing");
-    setStatusMessage("A processar pagamento...");
+    setStatusMessage(dict.processing_payment);
     let succeeded = false;
 
     try {
@@ -351,12 +362,11 @@ export default function PosPaymentOverlay({
         updated = await finalizePaidOrder("cash");
       } else if (paymentMethod === "mbway") {
         const mbwayRef = order.mbway_number?.trim() ?? "";
-        if (!mbwayRef) throw new Error("MBWay number missing for this order");
+        if (!mbwayRef) throw new Error(dict.error_mbway_missing);
         await updateOrderFields({ payment_method: "mbway", payment_reference: mbwayRef });
         updated = await finalizePaidOrder(mbwayRef);
       } else if (paymentMethod === "other") {
-        if (!paymentReference.trim())
-          throw new Error("Preenche a referência de pagamento correspondente.");
+        if (!paymentReference.trim()) throw new Error(dict.fill_reference);
 
         const ref = paymentReference.trim();
         await updateOrderFields({
@@ -371,7 +381,7 @@ export default function PosPaymentOverlay({
       if (updated) {
         if (["paid", "ready", "delivered"].includes(updated.status)) {
           setCompletedOrder(updated);
-          setStatusMessage("Pagamento confirmado com sucesso.");
+          setStatusMessage(dict.payment_confirmed);
           setFlowState("success");
           succeeded = true;
         } else {
@@ -382,7 +392,7 @@ export default function PosPaymentOverlay({
         setFlowState("form");
       }
     } catch (error) {
-      setError((error as Error).message || "Falha ao processar pagamento.");
+      setError((error as Error).message || dict.error_payment);
       setFlowState("form");
     } finally {
       setIsSubmitting(false);
@@ -398,6 +408,11 @@ export default function PosPaymentOverlay({
     runTpaFlow,
     onOrderUpdatedAction,
     onCloseAction,
+    dict.processing_payment,
+    dict.error_mbway_missing,
+    dict.fill_reference,
+    dict.payment_confirmed,
+    dict.error_payment,
   ]);
 
   useEffect(() => {
@@ -448,12 +463,12 @@ export default function PosPaymentOverlay({
     paymentMethod === "in-person";
   const confirmationMessage =
     paymentMethod === "in-person"
-      ? "Confirmas que a encomenda fica pendente para pagamento presencial posterior?"
+      ? dict.confirm_in_person
       : paymentMethod === "cash"
-        ? "Confirmas que recebeste o pagamento em dinheiro e está correto?"
+        ? dict.confirm_cash
         : paymentMethod === "mbway"
-          ? "Confirmas que recebeste o pagamento por MBWay e está correto?"
-          : `Confirmas que recebeste o pagamento da referência "${paymentReference.trim() || "-"}" e está correto?`;
+          ? dict.confirm_mbway
+          : dict.confirm_reference.replace("{reference}", paymentReference.trim() || "-");
 
   if (flowState === "processing" || flowState === "success") {
     return (
@@ -462,18 +477,18 @@ export default function PosPaymentOverlay({
           flowState={flowState === "success" ? "success" : "processing"}
           title={
             flowState === "success"
-              ? "Encomenda Registada!"
+              ? dict.success_title
               : paymentMethod === "sumup-tpa"
-                ? "A processar no terminal"
-                : "A processar pagamento"
+                ? dict.processing_terminal_title
+                : dict.processing_payment_title
           }
           subtitle={
             flowState === "success"
-              ? "A tua encomenda foi registada. Pagamento confirmado com sucesso."
-              : statusMessage || "A aguardar confirmação..."
+              ? dict.success_subtitle
+              : statusMessage || dict.awaiting_subtitle
           }
           size={flowState === "success" ? 56 : 48}
-          actionLabel={flowState === "success" ? "Ver Encomendas" : undefined}
+          actionLabel={flowState === "success" ? dict.view_orders : undefined}
           onAction={flowState === "success" ? finalizeSuccess : undefined}
         />
       </div>
@@ -481,13 +496,13 @@ export default function PosPaymentOverlay({
   }
 
   return (
-    <div className={styles.backdrop} onClick={(e) => e.target === e.currentTarget && handleClose()}>
+    <div className={styles.overlay}>
       <div className={styles.modal}>
         <button
           className={styles.closeButton}
           type="button"
           onClick={handleClose}
-          aria-label="Fechar">
+          aria-label={dict.close_label}>
           <MdClose size={20} />
         </button>
 
@@ -496,7 +511,7 @@ export default function PosPaymentOverlay({
         {error ? <div className={styles.error}>{error}</div> : null}
 
         <label className={styles.label}>
-          Método de pagamento
+          {dict.method_label}
           <select
             className={styles.input}
             value={paymentMethod}
@@ -504,7 +519,7 @@ export default function PosPaymentOverlay({
             disabled={isSubmitting || lockPaymentMethod}>
             {availablePaymentMethods.map((method) => (
               <option key={method} value={method}>
-                {getPaymentLabel(method)}
+                {getPaymentLabel(method, dict.payment_methods)}
               </option>
             ))}
           </select>
@@ -512,11 +527,11 @@ export default function PosPaymentOverlay({
 
         {paymentMethod === "other" && (
           <label className={styles.label}>
-            Referência de pagamento
+            {dict.reference_label}
             <input
               className={styles.input}
               type="text"
-              placeholder="Identifica o meio alternativo de pagamento..."
+              placeholder={dict.reference_placeholder}
               value={paymentReference}
               onChange={(e) => setPaymentReference(e.target.value)}
               disabled={isSubmitting}
@@ -525,17 +540,18 @@ export default function PosPaymentOverlay({
         )}
         {paymentMethod === "mbway" && order.payment_method !== "mbway" && (
           <div className={styles.label}>
-            Enviar MBWay para: <strong>{order.mbway_number || "Número não disponível"}</strong>
+            {dict.mbway_send_to}{" "}
+            <strong>{order.mbway_number || dict.mbway_number_unavailable}</strong>
           </div>
         )}
 
         {paymentMethod === "sumup-tpa" ? (
           <>
             <label className={styles.label} htmlFor="sumup-reader-select">
-              Leitor SumUp
+              {dict.reader_label}
               {readersLoading ? (
                 <span style={{ fontSize: "0.95em", color: "#6b7280", marginLeft: 8 }}>
-                  A carregar leitores…
+                  {dict.loading_readers}
                 </span>
               ) : null}
             </label>
@@ -545,7 +561,7 @@ export default function PosPaymentOverlay({
               value={selectedReaderId}
               onChange={(e) => setSelectedReaderId(e.target.value)}
               disabled={readersLoading || isSubmitting}>
-              <option value="">Seleciona um leitor</option>
+              <option value="">{dict.select_reader}</option>
               {readers.map((reader: SumUpReader) => (
                 <option key={reader.id} value={reader.id}>
                   {reader.name || reader.id}
@@ -561,7 +577,7 @@ export default function PosPaymentOverlay({
             className={styles.cancelButton}
             onClick={handleClose}
             disabled={isSubmitting}>
-            Cancelar
+            {dict.cancel}
           </button>
           <button
             type="button"
@@ -575,7 +591,10 @@ export default function PosPaymentOverlay({
               void handleConfirm();
             }}
             disabled={isSubmitting}>
-            Confirmar {getPaymentLabel(paymentMethod)}
+            {dict.confirm_btn.replace(
+              "{method}",
+              getPaymentLabel(paymentMethod, dict.payment_methods)
+            )}
           </button>
         </div>
       </div>

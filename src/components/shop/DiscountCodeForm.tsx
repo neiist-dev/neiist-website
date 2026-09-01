@@ -31,10 +31,13 @@ import {
   getDefaultDiscountEmailIntroLine,
   renderDiscountCampaignEmailHtml,
 } from "@/utils/shop/discountEmail";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface DiscountCodeEditorProps {
   users: User[];
   products: Product[];
+  backHref?: string;
+  dict: Dictionary["discount_codes"]["form"];
 }
 
 type CreationDraft = {
@@ -55,7 +58,7 @@ const PREVIEW_RECIPIENT = {
   email: "email@exemplo.com",
 };
 
-function emptyCreationDraft(): CreationDraft {
+function emptyCreationDraft(dict: Dictionary["discount_codes"]["form"]): CreationDraft {
   return {
     selectedRecipients: [],
     externalEmails: "",
@@ -64,7 +67,7 @@ function emptyCreationDraft(): CreationDraft {
     selectedProducts: [],
     maxUses: "1",
     expiresAt: undefined,
-    emailSubject: "O teu código de desconto NEIIST",
+    emailSubject: dict.default_email_subject,
     emailIntroLine: getDefaultDiscountEmailIntroLine().trim(),
   };
 }
@@ -110,9 +113,14 @@ function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode
   );
 }
 
-export default function DiscountCodeForm({ users, products }: DiscountCodeEditorProps) {
+export default function DiscountCodeForm({
+  users,
+  products,
+  backHref,
+  dict,
+}: DiscountCodeEditorProps) {
   const router = useRouter();
-  const [creationDraft, setCreationDraft] = useState<CreationDraft>(emptyCreationDraft);
+  const [creationDraft, setCreationDraft] = useState<CreationDraft>(() => emptyCreationDraft(dict));
   const [isCreating, setIsCreating] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -193,8 +201,8 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
         }}>
         <div style={{ marginBottom: hasVariantsWithDifferentPrices ? "0.5rem" : "0" }}>
           <strong>{product.name}:</strong>{" "}
-          {hasVariantsWithDifferentPrices ? "Preço Base de " : "Passará de "}
-          {baseOriginal.toFixed(2)}€ para <strong>{baseNew.toFixed(2)}€</strong>.
+          {hasVariantsWithDifferentPrices ? dict.preview_base_price : dict.preview_will_go_from}
+          {baseOriginal.toFixed(2)}€ {dict.preview_to} <strong>{baseNew.toFixed(2)}€</strong>.
         </div>
         {hasVariantsWithDifferentPrices && (
           <ul
@@ -210,7 +218,8 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
               .map(([mod, names]) => {
                 const variantOriginal = baseOriginal + mod;
                 const variantNew = calcPrice(variantOriginal);
-                const labelStr = names.length > 3 ? `${names.length} variantes` : names.join(", ");
+                const labelStr =
+                  names.length > 3 ? `${names.length} ${dict.preview_variants}` : names.join(", ");
                 return (
                   <li key={mod}>
                     <em>{labelStr}</em>: {variantOriginal.toFixed(2)}€ ➜{" "}
@@ -255,19 +264,19 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
       : null;
 
     if (recipients.length === 0) {
-      toast.error("Indica pelo menos um utilizador ou email externo.", { closeButton: true });
+      toast.error(dict.error_no_recipients, { closeButton: true });
       return;
     }
     if (!Number.isFinite(discountValue) || discountValue < 0) {
-      toast.error("Indica um valor de desconto válido.", { closeButton: true });
+      toast.error(dict.error_invalid_value, { closeButton: true });
       return;
     }
     if (!Number.isInteger(maxUses) || maxUses <= 0) {
-      toast.error("O limite máximo de usos deve ser um número positivo.", { closeButton: true });
+      toast.error(dict.error_invalid_max_uses, { closeButton: true });
       return;
     }
     if (!creationDraft.emailSubject.trim() || !creationDraft.emailIntroLine.trim()) {
-      toast.error("O assunto e o texto do email são obrigatórios.", { closeButton: true });
+      toast.error(dict.error_missing_subject_or_body, { closeButton: true });
       return;
     }
 
@@ -297,7 +306,7 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
         | null;
 
       if (!response.ok) {
-        toast.error(data?.error ?? "Não foi possível gerar os códigos.", { closeButton: true });
+        toast.error(data?.error ?? dict.error_generate_failed, { closeButton: true });
         return;
       }
 
@@ -306,21 +315,26 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
 
       if (failedCount > 0) {
         toast.warning(
-          `Gerados ${generatedCodes.length} códigos com ${failedCount} falhas no envio.`,
+          dict.toast_generated_with_failures
+            .replace("{count}", String(generatedCodes.length))
+            .replace("{failed}", String(failedCount)),
           {
             closeButton: true,
           }
         );
       } else {
-        toast.success(`Gerados ${generatedCodes.length} códigos e enviados os emails.`, {
-          closeButton: true,
-        });
+        toast.success(
+          dict.toast_generated_success.replace("{count}", String(generatedCodes.length)),
+          {
+            closeButton: true,
+          }
+        );
       }
 
-      router.push("/shop/manage/discounts");
+      router.push(backHref || "/shop/manage/discounts");
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível gerar os códigos.", {
+      toast.error(error instanceof Error ? error.message : dict.error_generate_failed, {
         closeButton: true,
       });
     } finally {
@@ -339,31 +353,31 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
           <button
             type="button"
             className={styles.btnSecondary}
-            onClick={() => router.push("/shop/manage/discounts")}>
-            <FaArrowLeft /> Voltar
+            onClick={() => router.push(backHref || "/shop/manage/discounts")}>
+            <FaArrowLeft /> {dict.back}
           </button>
-          <ColorfulText className={styles.title} text="Códigos de Desconto" />
+          <ColorfulText className={styles.title} text={dict.title} />
           <button type="submit" className={styles.btnPrimary} disabled={isCreating}>
-            <FaPlus /> {isCreating ? "A gerar..." : "Gerar e Enviar"}
+            <FaPlus /> {isCreating ? dict.generating : dict.generate_btn}
           </button>
         </div>
 
         <div className={styles.grid}>
           <div className={styles.sectionCol}>
             <div className={styles.stackBlock}>
-              <SectionTitle icon={<FaTicketAlt />}>Novo Desconto</SectionTitle>
+              <SectionTitle icon={<FaTicketAlt />}>{dict.section_discount}</SectionTitle>
 
-              <Field label="Utilizadores" icon={<FaUsers />}>
+              <Field label={dict.users_label} icon={<FaUsers />}>
                 <MultiSelectDropdown
                   availableItems={userOptions}
                   selectedItems={creationDraft.selectedRecipients}
                   onChange={(items) =>
                     setCreationDraft((prev) => ({ ...prev, selectedRecipients: items }))
                   }
-                  placeholder="Selecionar utilizadores..."
+                  placeholder={dict.users_placeholder}
                 />
               </Field>
-              <Field label="Emails Externos" icon={<FaEnvelope />} iconAlignTop>
+              <Field label={dict.external_emails_label} icon={<FaEnvelope />} iconAlignTop>
                 <textarea
                   className={styles.field}
                   rows={2}
@@ -371,11 +385,11 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                   onChange={(e) =>
                     setCreationDraft((prev) => ({ ...prev, externalEmails: e.target.value }))
                   }
-                  placeholder="email1@exemplo.pt, email2@exemplo.pt..."
+                  placeholder={dict.external_emails_placeholder}
                 />
               </Field>
               <div className={styles.row}>
-                <Field label="Tipo" icon={<FaTag />}>
+                <Field label={dict.type_label} icon={<FaTag />}>
                   <select
                     className={styles.field}
                     value={creationDraft.discount_type}
@@ -385,12 +399,12 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                         discount_type: e.target.value as DiscountType,
                       }))
                     }>
-                    <option value="percentage">Percentagem</option>
-                    <option value="fixed">Valor fixo</option>
+                    <option value="percentage">{dict.type_percentage}</option>
+                    <option value="fixed">{dict.type_fixed}</option>
                   </select>
                 </Field>
                 <Field
-                  label="Valor"
+                  label={dict.value_label}
                   icon={
                     creationDraft.discount_type === "percentage" ? <FaPercent /> : <FaEuroSign />
                   }>
@@ -414,7 +428,7 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                 creationDraft.selectedProducts
               )}
               <div className={styles.row}>
-                <Field label="Max. usos por código" icon={<FaHashtag />}>
+                <Field label={dict.max_uses_label} icon={<FaHashtag />}>
                   <input
                     type="number"
                     min="1"
@@ -426,13 +440,13 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                     placeholder="1"
                   />
                 </Field>
-                <Field label="Expiração" icon={<FaCalendarAlt />}>
+                <Field label={dict.expiration_label} icon={<FaCalendarAlt />}>
                   <div className={styles.datePickerWrap} ref={datePickerRef}>
                     <input
                       className={styles.field}
                       type="text"
                       value={creationDraft.expiresAt?.toLocaleDateString("pt-PT") ?? ""}
-                      placeholder="Sem limite"
+                      placeholder={dict.no_limit}
                       readOnly
                       onClick={() => setShowDatePicker((prev) => !prev)}
                     />
@@ -460,14 +474,14 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                   </div>
                 </Field>
               </div>
-              <Field label="Produtos válidos" icon={<FaBox />}>
+              <Field label={dict.valid_products_label} icon={<FaBox />}>
                 <MultiSelectDropdown
                   availableItems={productOptions}
                   selectedItems={creationDraft.selectedProducts}
                   onChange={(items) =>
                     setCreationDraft((prev) => ({ ...prev, selectedProducts: items }))
                   }
-                  placeholder="Opcional (Todos)"
+                  placeholder={dict.valid_products_placeholder}
                 />
               </Field>
             </div>
@@ -475,8 +489,8 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
 
           <div className={styles.sectionCol}>
             <div className={styles.stackBlock}>
-              <SectionTitle icon={<FaEnvelope />}>Email a Enviar</SectionTitle>
-              <Field label="Assunto do email" icon={<FaHeading />}>
+              <SectionTitle icon={<FaEnvelope />}>{dict.section_email}</SectionTitle>
+              <Field label={dict.email_subject_label} icon={<FaHeading />}>
                 <input
                   type="text"
                   className={styles.field}
@@ -484,10 +498,10 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                   onChange={(e) =>
                     setCreationDraft((prev) => ({ ...prev, emailSubject: e.target.value }))
                   }
-                  placeholder="O teu código de desconto NEIIST"
+                  placeholder={dict.default_email_subject}
                 />
               </Field>
-              <Field label="Corpo do Email" icon={<FaAlignLeft />} iconAlignTop>
+              <Field label={dict.email_body_label} icon={<FaAlignLeft />} iconAlignTop>
                 <textarea
                   rows={10}
                   className={styles.field}
@@ -495,15 +509,12 @@ export default function DiscountCodeForm({ users, products }: DiscountCodeEditor
                   onChange={(e) =>
                     setCreationDraft((prev) => ({ ...prev, emailIntroLine: e.target.value }))
                   }
-                  placeholder="Olá {{name}},\n\nAqui tens o teu código de desconto: {{code}}"
+                  placeholder={dict.email_body_placeholder}
                 />
               </Field>
-              <span className={styles.hint}>
-                Variáveis: {"{{name}}"}, {"{{istid}}"}, {"{{code}}"}, {"{{discount}}"},{" "}
-                {"{{expiry}}"}.
-              </span>
+              <span className={styles.hint}>{dict.email_variables_hint}</span>
 
-              <SectionTitle icon={<FaEye />}>Pré-visualização</SectionTitle>
+              <SectionTitle icon={<FaEye />}>{dict.preview_title}</SectionTitle>
               <article
                 className={styles.previewEmail}
                 // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- safe: previewHtml is generated with strict HTML escaping

@@ -9,19 +9,27 @@ import ColorfulText from "@/components/ColorfulText";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
 import styles from "@/styles/pages/VotingPage.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingClientProps {
   initialGlobalState: GlobalVotingState;
   initialUserVotes: Record<number, string | null>;
   showLastResult: boolean;
+  dict: Dictionary["voting"];
 }
 
-const ConnectingView = ({ status }: { status: "connecting" | "error" }) => (
+const ConnectingView = ({
+  status,
+  dict,
+}: {
+  status: "connecting" | "error";
+  dict: Dictionary["voting"];
+}) => (
   <div className={styles.waitingPage}>
     <h1 className={styles.waitingTitle}>
-      A <span>{status === "connecting" ? "conectar..." : "reconectar..."}</span>
+      <span>{status === "connecting" ? dict.connecting : dict.reconnecting}</span>
     </h1>
-    <p className={styles.waitingSubtitle}>A estabelecer ligação ao servidor de votação.</p>
+    <p className={styles.waitingSubtitle}>{dict.connecting_subtitle}</p>
     <div className={styles.waitingDots}>
       <span />
       <span />
@@ -33,37 +41,48 @@ const ConnectingView = ({ status }: { status: "connecting" | "error" }) => (
 const LastResultsView = ({
   session,
   results = [],
+  dict,
 }: {
   session: { name: string; description?: string | null };
   results: GlobalVotingState["lastResults"];
+  dict: Dictionary["voting"];
 }) => (
   <div className={styles.resultPage}>
     <div className={styles.resultHeader}>
       <Link href="?" scroll={false} className={styles.backButton}>
-        <FaArrowLeft /> Voltar
+        <FaArrowLeft /> {dict.back}
       </Link>
-      <ColorfulText as="h1" className={styles.resultTitle} text="Últimos Resultados" chunk={true} />
+      <ColorfulText
+        as="h1"
+        className={styles.resultTitle}
+        text={dict.last_results_title}
+        chunk={true}
+      />
     </div>
     <div className={styles.resultContent}>
       <div className={styles.sessionInfo}>
         <h2 className={styles.sessionTitle}>{session.name}</h2>
         {session.description && <p className={styles.sessionDescription}>{session.description}</p>}
       </div>
-      <WinnerCard results={results.slice(0, 4)} />
+      <WinnerCard results={results.slice(0, 4)} dict={dict} />
     </div>
   </div>
 );
 
-const WaitingForNextSessionView = ({ hasLastSession }: { hasLastSession: boolean }) => (
+const WaitingForNextSessionView = ({
+  hasLastSession,
+  dict,
+}: {
+  hasLastSession: boolean;
+  dict: Dictionary["voting"];
+}) => (
   <div className={styles.waitingPage}>
     <h1 className={styles.waitingTitle}>
-      Aguarda pelo inicío da
+      {dict.waiting_title_prefix}
       <br />
-      <span>próxima votação</span>
+      <span>{dict.waiting_title_highlight}</span>
     </h1>
-    <p className={styles.waitingSubtitle}>
-      Quando a votação abrir a página vai atualizar automáticamente.
-    </p>
+    <p className={styles.waitingSubtitle}>{dict.waiting_subtitle}</p>
     <div className={styles.waitingDots}>
       <span />
       <span />
@@ -71,18 +90,18 @@ const WaitingForNextSessionView = ({ hasLastSession }: { hasLastSession: boolean
     </div>
     {hasLastSession && (
       <Link href="?view=lastresult" scroll={false} className={styles.lastResultButton}>
-        Ver resultados anteriores
+        {dict.view_previous_results}
       </Link>
     )}
   </div>
 );
 
-const VotesSubmittedView = () => (
+const VotesSubmittedView = ({ dict }: { dict: Dictionary["voting"] }) => (
   <div className={styles.waitingPage}>
     <h1 className={styles.waitingTitle}>
-      Votos <span>submetidos!</span>
+      {dict.votes_submitted_prefix} <span>{dict.votes_submitted_highlight}</span>
     </h1>
-    <p className={styles.waitingSubtitle}>Aguarda pela publicação dos resultados.</p>
+    <p className={styles.waitingSubtitle}>{dict.votes_submitted_subtitle}</p>
   </div>
 );
 
@@ -90,6 +109,7 @@ export default function VotingClient({
   initialGlobalState,
   initialUserVotes,
   showLastResult,
+  dict,
 }: VotingClientProps) {
   const [globalState, setGlobalState] = useState<GlobalVotingState>(initialGlobalState);
   const [userVotes, setUserVotes] = useState<Record<number, string | null>>(initialUserVotes);
@@ -151,16 +171,16 @@ export default function VotingClient({
   const lastResults = globalState.lastResults || [];
 
   if (connectionStatus !== "connected")
-    return <ConnectingView status={connectionStatus as "connecting" | "error"} />;
+    return <ConnectingView status={connectionStatus as "connecting" | "error"} dict={dict} />;
 
   if (activeVotingSessions.length === 0) {
     if (showLastResult && lastFinishedSession)
-      return <LastResultsView session={lastFinishedSession} results={lastResults} />;
+      return <LastResultsView session={lastFinishedSession} results={lastResults} dict={dict} />;
 
-    return <WaitingForNextSessionView hasLastSession={!!lastFinishedSession} />;
+    return <WaitingForNextSessionView hasLastSession={!!lastFinishedSession} dict={dict} />;
   }
 
-  if (unvotedSessions.length === 0) return <VotesSubmittedView />;
+  if (unvotedSessions.length === 0) return <VotesSubmittedView dict={dict} />;
 
   return (
     <div className={styles.activeSessions}>
@@ -172,6 +192,7 @@ export default function VotingClient({
           sessionDescription={session.sessionDescription}
           nominees={session.nominees}
           onVote={(nomineeId) => handleVote(session.sessionId, nomineeId)}
+          dict={dict}
         />
       ))}
     </div>

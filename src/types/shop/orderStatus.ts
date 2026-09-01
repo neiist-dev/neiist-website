@@ -2,6 +2,15 @@ import type { StatusLabel } from "./orderKind";
 
 export type OrderStatus = "pending" | "paid" | "ready" | "delivered" | "cancelled";
 
+export interface OrderStatusDict {
+  status: Record<OrderStatus, string>;
+  delivered_on?: string;
+  special_status?: {
+    jantar_pending_mbway: string;
+    jantar_confirmed: string;
+  };
+}
+
 export interface OrderStatusConfig {
   label: StatusLabel;
   cssClass: string;

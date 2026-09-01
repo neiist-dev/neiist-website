@@ -5,12 +5,14 @@ import { Order } from "@/types/shop/order";
 import { getCampusLocation, getCampusSchedule } from "@/utils/shop/shopUtils";
 import CampusScheduleOverlay from "@/components/shop/CampusScheduleOverlay";
 import styles from "@/styles/components/shop/PendingPaymentOverlay.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface PendingPaymentOverlayProps {
   order?: Order | null;
   paymentMethod?: string;
   onAction: () => void;
   actionLabel?: string;
+  dict: Dictionary["pending_payment"];
 }
 
 export default function PendingPaymentOverlay({
@@ -18,6 +20,7 @@ export default function PendingPaymentOverlay({
   paymentMethod,
   onAction,
   actionLabel,
+  dict,
 }: PendingPaymentOverlayProps) {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
@@ -33,59 +36,58 @@ export default function PendingPaymentOverlay({
             {isInPerson ? <IoIosWarning size={48} /> : <FaCheck size={36} />}
           </div>
 
-          <h2 className={styles.title}>
-            {isInPerson ? "Encomenda Pendente!" : "Encomenda Submetida!"}
-          </h2>
+          <h2 className={styles.title}>{isInPerson ? dict.title_pending : dict.title_submitted}</h2>
 
           <div className={styles.muted}>
             {isInPerson ? (
               paymentMethod === "mbway" ? (
                 <>
-                  Para a tua encomenda ser confirmada conclui o pagamento.
+                  {dict.mbway_intro}
                   <br />
                   {order ? (
                     <>
-                      Transfere €{order.total_amount.toFixed(2)} via MBWay para o número:
+                      {dict.mbway_transfer.replace("{amount}", order.total_amount.toFixed(2))}
                       <br />
-                      <strong>{order.mbway_number ?? "Número indisponível"}</strong>
+                      <strong>{order.mbway_number ?? dict.mbway_unavailable}</strong>
                       <br />
-                      <strong>Instruções:</strong> na descrição da transferência indica{" "}
-                      <strong>{order.order_number}</strong> para conseguirmos identificar o teu
-                      pagamento.
+                      {dict.mbway_instructions.replace(
+                        "{order_number}",
+                        String(order.order_number)
+                      )}
                       <br />
-                      Para mais informações por favor consulta o email.
+                      {dict.mbway_email_info}
                     </>
                   ) : (
-                    "A carregar os detalhes do pagamento..."
+                    dict.loading_details
                   )}
                 </>
               ) : (
                 <>
-                  Para a tua encomenda ser confirmada conclui o pagamento.
+                  {dict.in_person_intro}
                   <br />
-                  Presencialmente na {getCampusLocation(order?.campus)}
+                  {dict.in_person_location.replace("{location}", getCampusLocation(order?.campus))}
                   {order?.campus && getCampusSchedule(order.campus) && (
                     <button
                       type="button"
                       className={styles.scheduleButton}
                       onClick={() => setShowScheduleModal(true)}>
-                      <FaCalendarAlt size={13} /> Ver Horário da Sala
+                      <FaCalendarAlt size={13} /> {dict.view_schedule}
                     </button>
                   )}
                 </>
               )
             ) : (
               <>
-                Obrigado pela tua encomenda.
+                {dict.thanks_order}
                 <br />
-                Receberás um email de confirmação em breve.
+                {dict.confirmation_email}
               </>
             )}
           </div>
 
           <div className={styles.actionButtons}>
             <button type="button" onClick={onAction} className={styles.btnPrimary}>
-              {actionLabel || (isInPerson ? "Continuar" : "Ver Encomendas")}
+              {actionLabel || (isInPerson ? dict.continue : dict.view_orders)}
             </button>
           </div>
         </div>

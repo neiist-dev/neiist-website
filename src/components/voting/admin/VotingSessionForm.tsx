@@ -12,10 +12,15 @@ import { FiEdit3, FiClock, FiUsers, FiX } from "react-icons/fi";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import tagStyles from "@/styles/components/shop/VariantOptionsEditor.module.css";
 import styles from "@/styles/components/voting/admin/VotingSessionForm.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingSessionFormProps {
   activities: CalendarEvent[];
   users: User[];
+  dict: Dictionary["voting_management"]["form"];
+  typesDict: Dictionary["voting_management"]["types"];
+  locale?: string;
+  basePath?: string;
 }
 
 function toDateTimeLocalValue(date: Date | string | undefined): string {
@@ -25,7 +30,13 @@ function toDateTimeLocalValue(date: Date | string | undefined): string {
   return d.toISOString().slice(0, 16);
 }
 
-export default function VotingSessionForm({ activities, users }: VotingSessionFormProps) {
+export default function VotingSessionForm({
+  activities,
+  users,
+  dict,
+  typesDict,
+  basePath,
+}: VotingSessionFormProps) {
   const router = useRouter();
   const [type, setType] = useState<VotingType>("activity");
   const [name, setName] = useState("");
@@ -95,12 +106,12 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
         <button
           type="button"
           className={styles.btnSecondary}
-          onClick={() => router.push("/voting/manage")}>
-          <FaArrowLeft /> Voltar
+          onClick={() => router.push(`${basePath || ""}/voting/manage`)}>
+          <FaArrowLeft /> {dict.back}
         </button>
-        <ColorfulText as="h2" className={styles.title} text="Nova Sessão" chunk={true} />
+        <ColorfulText as="h2" className={styles.title} text={dict.title} chunk={true} />
         <button type="submit" form="voting-session-form" className={styles.btnPrimary}>
-          <FaPlus /> Criar Sessão
+          <FaPlus /> {dict.submit}
         </button>
       </header>
 
@@ -110,11 +121,11 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
         <div className={styles.col}>
           <div className={styles.sectionTitle}>
             <FiEdit3 className={styles.sectionTitleIcon} />
-            <span>Informação Básica</span>
+            <span>{dict.basic_info}</span>
           </div>
           <div className={styles.fieldWrap}>
             <label htmlFor="name" className={styles.label}>
-              Título
+              {dict.title_label}
             </label>
             <input
               id="name"
@@ -123,12 +134,12 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Ex: Eleições NEIIST"
+              placeholder={dict.title_placeholder}
             />
           </div>
           <div className={styles.fieldWrap}>
             <label htmlFor="description" className={styles.label}>
-              Descrição
+              {dict.desc_label}
             </label>
             <textarea
               id="description"
@@ -136,7 +147,7 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
               className={styles.textarea}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrição opcional..."
+              placeholder={dict.desc_placeholder}
             />
           </div>
         </div>
@@ -144,7 +155,7 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
         <div className={styles.col}>
           <div className={styles.sectionTitle}>
             <FiUsers className={styles.sectionTitleIcon} />
-            <span>Tipo de Votação</span>
+            <span>{dict.voting_type}</span>
           </div>
           <div className={styles.typeButtonsGroup}>
             {(["activity", "users", "custom"] as const).map((t) => (
@@ -153,14 +164,14 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
                 key={t}
                 className={`${styles.typeButton} ${type === t ? styles.typeButtonActive : ""}`}
                 onClick={() => handleTypeChange(t)}>
-                {t === "activity" ? "Atividade" : t === "users" ? "Utilizadores" : "Customizada"}
+                {typesDict[t]}
               </button>
             ))}
           </div>
 
           <div className={styles.sectionTitle}>
             <FiUsers className={styles.sectionTitleIcon} />
-            <span>{type === "activity" ? "Selecionar Atividade" : "Candidatos / Opções"}</span>
+            <span>{type === "activity" ? dict.select_activity : dict.candidates_options}</span>
           </div>
           {type === "activity" ? (
             <MultiSelectDropdown
@@ -169,7 +180,7 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
               selectedItems={selectedActivityId ? [selectedActivityLabel] : []}
               onChange={handleActivityChange}
               multiSelect={false}
-              placeholder="Procurar atividade..."
+              placeholder={dict.search_activity}
             />
           ) : type === "users" ? (
             <MultiSelectDropdown
@@ -178,7 +189,7 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
               selectedItems={selectedUserLabels}
               onChange={handleNomineeChange}
               multiSelect={true}
-              placeholder="Procurar utilizadores..."
+              placeholder={dict.search_users}
             />
           ) : (
             <div className={tagStyles.container}>
@@ -198,7 +209,7 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
               <input
                 type="text"
                 className={tagStyles.input}
-                placeholder="Adicionar opção (Enter)"
+                placeholder={dict.add_option_placeholder}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -229,12 +240,12 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
 
           <div className={styles.sectionTitle}>
             <FiClock className={styles.sectionTitleIcon} />
-            <span>Período da Votação</span>
+            <span>{dict.period_title}</span>
           </div>
           <div className={styles.dateGroup}>
             <div className={styles.fieldWrap}>
               <label htmlFor="startAt" className={styles.label}>
-                Início
+                {dict.start_label}
               </label>
               <input
                 id="startAt"
@@ -247,7 +258,7 @@ export default function VotingSessionForm({ activities, users }: VotingSessionFo
             </div>
             <div className={styles.fieldWrap}>
               <label htmlFor="endAt" className={styles.label}>
-                Fim
+                {dict.end_label}
               </label>
               <input
                 id="endAt"

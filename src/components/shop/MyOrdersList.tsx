@@ -8,11 +8,18 @@ import styles from "@/styles/components/shop/MyOrdersList.module.css";
 import { Order } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
-import { getOrderKindFromItems, getOrderStatusLabelForKind } from "@/utils/shop/orderKindUtils";
+import { getOrderKindFromItems, getLocalizedOrderStatusLabel } from "@/utils/shop/orderKindUtils";
+import ColorfulText from "@/components/ColorfulText";
+import type { Dictionary } from "@/i18n/dictionaries";
 
-type Props = { orders: Order[]; products: Product[] };
+interface MyOrdersListProps {
+  orders: Order[];
+  products: Product[];
+  dict: Dictionary["my_orders"];
+  basePath?: string;
+}
 
-export default function MyOrdersList({ orders, products }: Props) {
+export default function MyOrdersList({ orders, products, dict, basePath }: MyOrdersListProps) {
   const [query, setQuery] = useState("");
   const anyDeadlineNear = useMemo(() => {
     if (!orders || orders.length === 0) return false;
@@ -77,29 +84,24 @@ export default function MyOrdersList({ orders, products }: Props) {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-        <span className={styles.primary}>As mi</span>
-        <span className={styles.secondary}>nhas en</span>
-        <span className={styles.tertiary}>come</span>
-        <span className={styles.quaternary}>ndas</span>
-      </h1>
+      <ColorfulText as="h1" className={styles.title} text={dict.title} />
 
       <div className={styles.searchRow}>
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Procurar número, produto, estado ou data..."
+            placeholder={dict.search_placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className={styles.searchInput}
-            aria-label="Pesquisar encomendas"
+            aria-label={dict.search_aria_label}
           />
         </div>
       </div>
 
       {anyDeadlineNear && (
         <div className={styles.deadlineBanner} role="status">
-          Atenção: tens pelo menos uma encomenda com prazo de levantamento próximo.
+          {dict.deadline_banner}
         </div>
       )}
 
@@ -109,16 +111,18 @@ export default function MyOrdersList({ orders, products }: Props) {
             const img = selectImage(order);
             const productSummary = getCompactProductsSummary(order.items).join(" · ");
             const orderKind = getOrderKindFromItems(order.items).orderKind;
-            const statusLabel = order.delivered_at
-              ? `Entregue em ${new Date(order.delivered_at).toLocaleDateString("pt-PT")}`
-              : getOrderStatusLabelForKind(orderKind, order.status, order);
+            const statusLabel = getLocalizedOrderStatusLabel(orderKind, order, {
+              status: dict.status,
+              delivered_on: dict.delivered_on,
+              special_status: dict.special_status,
+            });
 
             return (
               <Link
                 key={order.id}
-                href={`/my-orders?orderId=${order.id}`}
+                href={`${basePath || ""}/my-orders?orderId=${order.id}`}
                 className={styles.orderCard}
-                aria-label={`Ver encomenda ${order.order_number}`}>
+                aria-label={dict.order_aria_label.replace("{number}", String(order.order_number))}>
                 <div className={styles.orderImageWrapper}>
                   <Image
                     src={img || "/default_user.png"}
@@ -138,7 +142,7 @@ export default function MyOrdersList({ orders, products }: Props) {
           })
         ) : (
           <div className={styles.emptyState}>
-            <p>Nenhuma encomenda encontrada.</p>
+            <p>{dict.empty}</p>
           </div>
         )}
       </div>

@@ -11,19 +11,24 @@ import {
 import { FiX, FiTrash2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingSessionDetailOverlayProps {
   session: VotingSession;
   results: SessionResult[];
+  dict: Dictionary["voting_management"];
+  locale?: string;
 }
 
-function formatDate(date?: Date | string) {
-  return date ? new Date(date).toLocaleString("pt-PT") : "—";
+function formatDate(date?: Date | string, locale = "pt") {
+  return date ? new Date(date).toLocaleString(locale === "en" ? "en-GB" : "pt-PT") : "—";
 }
 
 export default function VotingSessionDetailOverlay({
   session,
   results,
+  dict,
+  locale = "pt",
 }: VotingSessionDetailOverlayProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -76,12 +81,15 @@ export default function VotingSessionDetailOverlay({
       className={styles.container}
       onClick={(e) => e.target === e.currentTarget && handleClose()}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeButton} onClick={handleClose} aria-label="Fechar">
+        <button
+          className={styles.closeButton}
+          onClick={handleClose}
+          aria-label={dict.details.close}>
           <FiX size={32} />
         </button>
 
         <header className={styles.header}>
-          <h2>Detalhes da Sessão</h2>
+          <h2>{dict.details.header}</h2>
         </header>
 
         <div className={styles.name}>{session.name}</div>
@@ -90,45 +98,34 @@ export default function VotingSessionDetailOverlay({
 
         <div className={styles.infoGrid}>
           <div className={styles.infoItem}>
-            <label>Estado</label>
-            <p>
-              {session.status === "idle"
-                ? "Pronto"
-                : session.status === "voting"
-                  ? "Aberta"
-                  : "Fechada"}
-            </p>
+            <label>{dict.details.status}</label>
+            <p>{dict.statuses[session.status]}</p>
           </div>
           <div className={styles.infoItem}>
-            <label>Tipo</label>
-            <p>
-              {session.type === "activity"
-                ? "Atividade"
-                : session.type === "users"
-                  ? "Utilizadores"
-                  : "Customizada"}
-            </p>
+            <label>{dict.details.type}</label>
+            <p>{dict.types[session.type]}</p>
           </div>
           <div className={styles.infoItem}>
-            <label>Início</label>
-            <p>{formatDate(session.startAt)}</p>
+            <label>{dict.details.start}</label>
+            <p>{formatDate(session.startAt, locale)}</p>
           </div>
           <div className={styles.infoItem}>
-            <label>Fim</label>
-            <p>{formatDate(session.endAt)}</p>
+            <label>{dict.details.end}</label>
+            <p>{formatDate(session.endAt, locale)}</p>
           </div>
         </div>
 
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h3>
-              Resultados{session.status === "voting" ? " — Ao Vivo" : ""}{" "}
-              {results.length > 3 && "(Top 3)"}
+              {dict.details.results}
+              {session.status === "voting" ? ` — ${dict.details.live}` : ""}{" "}
+              {results.length > 3 && dict.details.top_3}
             </h3>
           </div>
 
           {results.length === 0 ? (
-            <p>Nenhum voto registado.</p>
+            <p>{dict.details.no_votes}</p>
           ) : (
             <div className={styles.candidateList}>
               {topResults.map((result) => {
@@ -137,7 +134,9 @@ export default function VotingSessionDetailOverlay({
                   <div key={result.nomineeId} className={styles.candidate}>
                     <div className={styles.candidateInfo}>
                       <span className={styles.candidateName}>{result.nomineeName}</span>
-                      <span className={styles.voteCount}>{result.voteCount} votos</span>
+                      <span className={styles.voteCount}>
+                        {result.voteCount} {dict.details.votes}
+                      </span>
                     </div>
                     <div className={styles.progressBar}>
                       <div className={styles.progressFill} style={{ width: `${percentage}%` }} />
@@ -147,7 +146,7 @@ export default function VotingSessionDetailOverlay({
               })}
               {results.length > 3 && (
                 <p className={styles.moreResults}>
-                  + {results.length - 3} outros candidatos não mostrados.
+                  {dict.details.more_results.replace("{count}", String(results.length - 3))}
                 </p>
               )}
             </div>
@@ -160,7 +159,7 @@ export default function VotingSessionDetailOverlay({
               type="button"
               className={styles.buttonPrimary}
               onClick={() => setPendingAction("start")}>
-              Abrir votação
+              {dict.details.start_action}
             </button>
           )}
 
@@ -169,7 +168,7 @@ export default function VotingSessionDetailOverlay({
               type="button"
               className={styles.buttonOutline}
               onClick={() => setPendingAction("finish")}>
-              Fechar votação
+              {dict.details.finish_action}
             </button>
           )}
 
@@ -178,14 +177,16 @@ export default function VotingSessionDetailOverlay({
             className={styles.buttonDanger}
             onClick={() => setPendingAction("delete")}>
             <FiTrash2 size={16} className={styles.buttonIcon} />
-            Eliminar
+            {dict.details.delete_action}
           </button>
         </div>
       </div>
 
       <ConfirmDialog
         open={pendingAction === "start"}
-        message="Tem a certeza que quer abrir esta votação?"
+        message={dict.details.confirm_start}
+        confirmText={dict.details.confirm_yes}
+        cancelText={dict.details.confirm_cancel}
         onConfirm={async () => {
           setPendingAction(null);
           await handleStartVoting();
@@ -195,7 +196,9 @@ export default function VotingSessionDetailOverlay({
 
       <ConfirmDialog
         open={pendingAction === "finish"}
-        message="Tem a certeza que quer fechar esta votação?"
+        message={dict.details.confirm_finish}
+        confirmText={dict.details.confirm_yes}
+        cancelText={dict.details.confirm_cancel}
         onConfirm={async () => {
           setPendingAction(null);
           await handleFinishVoting();
@@ -205,7 +208,9 @@ export default function VotingSessionDetailOverlay({
 
       <ConfirmDialog
         open={pendingAction === "delete"}
-        message="Tem a certeza que deseja eliminar esta sessão? Esta ação é irreversível."
+        message={dict.details.confirm_delete}
+        confirmText={dict.details.confirm_yes}
+        cancelText={dict.details.confirm_cancel}
         onConfirm={async () => {
           setPendingAction(null);
           await handleDelete();

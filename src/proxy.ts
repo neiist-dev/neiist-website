@@ -6,6 +6,7 @@ import { getRateLimitRule } from "@/lib/security/rateLimitRules";
 import { isBot, getClientIp } from "@/lib/security/botAgents";
 import { addSecurityHeaders } from "@/lib/security/securityHeaders";
 import { canAccess, protectedRoutes } from "@/lib/security/routePermissions";
+import { resolveLocaleRoute } from "@/i18n/i18n-config";
 
 const MARKDOWN_SITE = `# NEIIST — Núcleo Estudantil de Informática do IST
 
@@ -61,12 +62,14 @@ export async function proxy(req: NextRequest) {
     return response;
   }
 
+  const { locale, routePath, redirectResponse } = resolveLocaleRoute(req);
+
   const accessToken = req.cookies.get("access_token")?.value;
   const isAuthenticated = !!accessToken;
 
-  if (!isAuthenticated && protectedRoutes.some((r) => path.startsWith(r))) {
-    if (path !== "/api/auth/login") {
-      const returnUrl = req.nextUrl.pathname + req.nextUrl.search;
+  if (!isAuthenticated && protectedRoutes.some((r) => routePath.startsWith(r))) {
+    if (routePath !== "/api/auth/login") {
+      const returnUrl = `/${locale}${routePath}${req.nextUrl.search}`;
       const loginUrl = new URL("/api/auth/login", req.url);
       loginUrl.searchParams.set("returnUrl", returnUrl);
       const response = NextResponse.redirect(loginUrl);
@@ -83,9 +86,9 @@ export async function proxy(req: NextRequest) {
     const jwtUser = await verifyJWTWebCrypto(sessionToken);
     const roles = jwtUser?.roles || [UserRole._GUEST];
 
-    if (!canAccess(path, roles)) {
-      if (path !== "/unauthorized") {
-        const response = NextResponse.redirect(new URL("/unauthorized", req.url));
+    if (!canAccess(routePath, roles)) {
+      if (routePath !== "/unauthorized") {
+        const response = NextResponse.redirect(new URL(`/${locale}/unauthorized`, req.url));
         addSecurityHeaders(response);
         return response;
       }
@@ -93,6 +96,11 @@ export async function proxy(req: NextRequest) {
       addSecurityHeaders(response);
       return response;
     }
+  }
+
+  if (redirectResponse) {
+    addSecurityHeaders(redirectResponse);
+    return redirectResponse;
   }
 
   const response = NextResponse.next();

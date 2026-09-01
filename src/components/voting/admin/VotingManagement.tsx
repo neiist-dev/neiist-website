@@ -7,21 +7,22 @@ import { User } from "@/types/user";
 import { FiSearch, FiPlus } from "react-icons/fi";
 import { TbFilter } from "react-icons/tb";
 import { useRouter, useSearchParams } from "next/navigation";
-import VotingSessionsTable, {
-  TYPE_LABELS,
-  STATUS_LABELS,
-} from "@/components/voting/admin/VotingSessionsTable";
+import VotingSessionsTable from "@/components/voting/admin/VotingSessionsTable";
 import MultiSelectFilter from "@/components/shop/MultiSelectFilter";
 import DateFilter from "@/components/shop/DateFilter";
 import ActiveFilters from "@/components/shop/ActiveFilters";
 import MobileFiltersDrawer from "@/components/shop/MobileFiltersDrawer";
 import ColorfulText from "@/components/ColorfulText";
 import styles from "@/styles/components/voting/admin/VotingManagement.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingManagementProps {
   initialSessions: VotingSession[];
   activities: CalendarEvent[];
   users: User[];
+  dict: Dictionary["voting_management"];
+  locale?: string;
+  basePath?: string;
 }
 
 interface FilterState {
@@ -30,7 +31,11 @@ interface FilterState {
   status: VotingStatus[];
 }
 
-export default function VotingManagement({ initialSessions }: VotingManagementProps) {
+export default function VotingManagement({
+  initialSessions,
+  dict,
+  basePath,
+}: VotingManagementProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,7 +68,7 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
   }, [initialSessions]);
 
   const handleCreateNew = () => {
-    router.push("/voting/manage/new");
+    router.push(`${basePath || ""}/voting/manage/new`);
   };
 
   const handleRowClick = (session: VotingSession) => {
@@ -83,7 +88,7 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
   return (
     <>
       <section className={styles.container}>
-        <ColorfulText text={"Gestão de Votações"} className={styles.title} />
+        <ColorfulText text={dict.title} className={styles.title} />
 
         <div className={styles.controlsRow}>
           <div className={styles.searchContainer}>
@@ -92,7 +97,7 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
             </div>
             <input
               type="text"
-              placeholder="Procurar por título..."
+              placeholder={dict.search_placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -100,14 +105,14 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
             <button
               className={styles.mobileFilterBtn}
               onClick={() => setShowMobileFilters(true)}
-              title="Filtros">
+              title={dict.filters_button}>
               <TbFilter size={20} />
             </button>
           </div>
           <div className={styles.rightControls}>
             <button type="button" onClick={handleCreateNew} className={styles.newBtn}>
               <FiPlus />
-              Nova Sessão
+              {dict.new_session}
             </button>
           </div>
         </div>
@@ -121,15 +126,15 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
             filterGroups={[
               {
                 id: "type",
-                label: "Tipo",
+                label: dict.filter_type,
                 values: filters.type,
-                getDisplayValue: (t) => TYPE_LABELS[t as VotingType],
+                getDisplayValue: (t) => dict.types[t as VotingType],
               },
               {
                 id: "status",
-                label: "Estado",
+                label: dict.filter_status,
                 values: filters.status,
-                getDisplayValue: (s) => STATUS_LABELS[s as VotingStatus],
+                getDisplayValue: (s) => dict.statuses[s as VotingStatus],
               },
             ]}
             onRemoveValue={(groupId, value) => {
@@ -156,6 +161,7 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
             typeFilterRef={typeFilterRef}
             statusFilterRef={statusFilterRef}
             dateFilterRef={dateFilterRef}
+            dict={dict}
           />
         </div>
       </section>
@@ -178,8 +184,8 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
           selected={filters.type}
           onChange={(type) => setFilters((p) => ({ ...p, type: type as VotingType[] }))}
           buttonRef={typeFilterRef}
-          title="Tipo"
-          getLabel={(t) => TYPE_LABELS[t as VotingType]}
+          title={dict.filter_type}
+          getLabel={(t) => dict.types[t as VotingType]}
         />
       )}
 
@@ -191,8 +197,8 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
           selected={filters.status}
           onChange={(status) => setFilters((p) => ({ ...p, status: status as VotingStatus[] }))}
           buttonRef={statusFilterRef}
-          title="Estado"
-          getLabel={(s) => STATUS_LABELS[s as VotingStatus]}
+          title={dict.filter_status}
+          getLabel={(s) => dict.statuses[s as VotingStatus]}
         />
       )}
 
@@ -207,17 +213,17 @@ export default function VotingManagement({ initialSessions }: VotingManagementPr
         filterGroups={[
           {
             id: "type",
-            title: "Tipo",
+            title: dict.filter_type,
             options: availableTypes,
             selected: filters.type,
-            getLabel: (t) => TYPE_LABELS[t as VotingType],
+            getLabel: (t) => dict.types[t as VotingType],
           },
           {
             id: "status",
-            title: "Estado",
+            title: dict.filter_status,
             options: availableStatuses,
             selected: filters.status,
-            getLabel: (s) => STATUS_LABELS[s as VotingStatus],
+            getLabel: (s) => dict.statuses[s as VotingStatus],
           },
         ]}
       />

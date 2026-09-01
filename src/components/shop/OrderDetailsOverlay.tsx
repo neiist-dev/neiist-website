@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef, useMemo, type CSSProperties } from "react";
 import styles from "@/styles/components/shop/OrderDetailsOverlay.module.css";
@@ -9,12 +10,11 @@ import {
   getAllowedOrderStatusTransitions,
   getOrderProgressSteps,
   getOrderKindFromItems,
-  getOrderStatusLabelForKind,
+  getLocalizedOrderStatusLabel,
   canTransitionOrderStatus,
-  getOrderStatusLabelValue,
 } from "@/utils/shop/orderKindUtils";
-import { getPaymentLabel } from "@/types/shop/payment";
-import { getStatusLabel, getStatusCssClass } from "@/utils/shop/orderStatusUtils";
+import { getPaymentLabel, PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
+import { getStatusCssClass } from "@/utils/shop/orderStatusUtils";
 import { Product } from "@/types/shop/product";
 import { MdClose } from "react-icons/md";
 import { FaCalendarAlt, FaCheck, FaExclamationTriangle } from "react-icons/fa";
@@ -30,12 +30,12 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import NewOrderModal from "./NewOrderModal";
 import PosPaymentOverlay from "@/components/shop/PosPaymentOverlay";
 import CampusScheduleOverlay from "@/components/shop/CampusScheduleOverlay";
-import { PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
+import type { Dictionary } from "@/i18n/dictionaries";
 
-function getPaymentDisplay(order: Order) {
+function getPaymentDisplay(order: Order, dict: Dictionary["order_details"]) {
   if (!order.payment_method) return "";
 
-  const label = getPaymentLabel(order.payment_method);
+  const label = getPaymentLabel(order.payment_method, dict.payment_methods);
   return order.payment_method === "mbway" && order.mbway_number
     ? `${label} - ${order.mbway_number}`
     : label;
@@ -48,10 +48,13 @@ function hasPaymentReference(order: Order): boolean {
   return methodsWithRef.includes(order.payment_method) && !!order.payment_reference?.trim();
 }
 
-function getPaymentButtonLabel(paymentMethod?: Order["payment_method"]): string {
+function getPaymentButtonLabel(
+  dict: Dictionary["order_details"],
+  paymentMethod?: Order["payment_method"]
+): string {
   return paymentMethod && PENDING_PAYMENT_METHODS.has(paymentMethod)
-    ? "Registar Pagamento"
-    : "Finalizar Encomenda";
+    ? dict.register_payment
+    : dict.finalize_order;
 }
 
 interface OrderDetailOverlayProps {
@@ -62,6 +65,8 @@ interface OrderDetailOverlayProps {
   canEditNotes?: boolean;
   canEditItems?: boolean;
   products?: Product[];
+  dict: Dictionary["order_details"];
+  posPaymentDict: Dictionary["pos_payment"];
 }
 
 export default function OrderDetailOverlay({
@@ -72,6 +77,8 @@ export default function OrderDetailOverlay({
   canEditNotes = false,
   canEditItems = false,
   products = [],
+  dict,
+  posPaymentDict,
 }: OrderDetailOverlayProps) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -86,7 +93,7 @@ export default function OrderDetailOverlay({
   const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
-  const paymentButtonLabel = getPaymentButtonLabel(order?.payment_method);
+  const paymentButtonLabel = getPaymentButtonLabel(dict, order?.payment_method);
 
   useEffect(() => {
     setOrder(orders.find((o) => o.id === orderId) || null);
@@ -112,9 +119,9 @@ export default function OrderDetailOverlay({
   const showDeadlineToast = useCallback(() => {
     if (!order?.pickup_deadline) return;
     if (deadlineToastShownRef.current) return;
-    const formatted = new Date(order.pickup_deadline).toLocaleDateString("pt-PT");
+    const formatted = new Date(order.pickup_deadline).toLocaleDateString();
     const toastId = `pickup-deadline-${order.id}`;
-    toast.warning(`Prazo limite de levantamento: ${formatted}`, {
+    toast.warning(dict.pickup_toast.replace("{date}", formatted), {
       id: toastId,
       duration: Infinity,
       closeButton: true,
@@ -125,7 +132,7 @@ export default function OrderDetailOverlay({
       },
     });
     deadlineToastShownRef.current = true;
-  }, [order]);
+  }, [order, dict.pickup_toast]);
 
   useEffect(() => {
     deadlineToastShownRef.current = false;
@@ -164,9 +171,11 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      toast.success(`Estado atualizado para ${getStatusLabel(status)}.`, { closeButton: true });
+      toast.success(dict.confirm_status.replace("{status}", dict.status[status]), {
+        closeButton: true,
+      });
     } else {
-      toast.error("Erro ao atualizar estado.", { closeButton: true });
+      toast.error(dict.error_update_status, { closeButton: true });
     }
   };
 
@@ -177,9 +186,9 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      toast.success("Encomenda cancelada com sucesso.", { closeButton: true });
+      toast.success(dict.confirm_cancel, { closeButton: true });
     } else {
-      toast.error("Erro ao cancelar encomenda.", { closeButton: true });
+      toast.error(dict.error_cancel, { closeButton: true });
     }
   };
 
@@ -205,7 +214,7 @@ export default function OrderDetailOverlay({
     return (
       <div className={styles.backdrop}>
         <div className={styles.modal}>
-          <div style={{ textAlign: "center", padding: "2rem" }}>Encomenda não encontrada.</div>
+          <div style={{ textAlign: "center", padding: "2rem" }}>{dict.not_found}</div>
         </div>
       </div>
     );
@@ -213,7 +222,18 @@ export default function OrderDetailOverlay({
 
   const { orderKind } = getOrderKindFromItems(order.items);
   const progressSteps = getOrderProgressSteps(orderKind);
-  const getStepLabel = (step: OrderProgressStep) => getOrderStatusLabelValue(step.label, order);
+  const getStepLabel = (step: OrderProgressStep) => {
+    if (orderKind === "jantar_de_curso") {
+      if (step.key === "pending" && order.payment_method === "mbway")
+        return dict.special_status.jantar_pending_mbway;
+      if (step.key === "paid") return dict.special_status.jantar_confirmed;
+    }
+    if (step.key === "pending") return dict.step_pending;
+    if (step.key === "paid") return dict.step_paid;
+    if (step.key === "ready") return dict.step_ready;
+    if (step.key === "delivered") return dict.step_delivered;
+    return dict.status[step.key as OrderStatus];
+  };
   const activeStepIndex = progressSteps.findLastIndex((step) =>
     step.activeStatuses.includes(order.status)
   );
@@ -249,15 +269,15 @@ export default function OrderDetailOverlay({
         body: JSON.stringify({ notes: notesDraft }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error || "Erro ao guardar notas.");
+      if (!res.ok) throw new Error(data?.error || dict.error_save_notes);
 
       setOrder(data);
       setNotesEditing(false);
       router.refresh();
-      toast.success("Notas guardadas com sucesso.", { closeButton: true });
+      toast.success(dict.success_save_notes, { closeButton: true });
       return true;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao guardar notas.", {
+      toast.error(err instanceof Error ? err.message : dict.error_save_notes, {
         closeButton: true,
       });
       return false;
@@ -274,39 +294,42 @@ export default function OrderDetailOverlay({
               onClick={() => {
                 attemptClose();
               }}
-              aria-label="Fechar">
+              aria-label={dict.close_label}>
               <MdClose size={20} />
             </button>
 
             <div className={styles.header}>
-              <h2>Encomenda</h2>
+              <h2>{dict.order_title}</h2>
               <span className={`${styles.statusBadge} ${styles[getStatusCssClass(order.status)]}`}>
-                {getOrderStatusLabelForKind(orderKind, order.status, order)}
+                {getLocalizedOrderStatusLabel(orderKind, order, {
+                  status: dict.status,
+                  special_status: dict.special_status,
+                })}
               </span>
             </div>
 
             <div className={styles.orderNumber}>
               {order.order_number}
               <FaArrowRightLong />
-              {getPaymentDisplay(order)}
+              {getPaymentDisplay(order, dict)}
             </div>
 
             <div className={styles.infoGrid}>
               <div className={styles.infoColumn}>
                 <div className={styles.infoItem}>
-                  <label>Nome</label>
+                  <label>{dict.col_name}</label>
                   <p>{order.customer_name}</p>
                 </div>
               </div>
               <div className={styles.infoColumn}>
                 <div className={styles.infoItem}>
-                  <label>IST ID</label>
+                  <label>{dict.col_ist_id}</label>
                   <p>{order.user_istid}</p>
                 </div>
               </div>
               <div className={styles.infoColumn}>
                 <div className={styles.infoItem}>
-                  <label>Campus</label>
+                  <label>{dict.col_campus}</label>
                   <div className={styles.campusWrapper}>
                     <p>
                       {order.campus
@@ -319,10 +342,10 @@ export default function OrderDetailOverlay({
                           type="button"
                           className={styles.infoBubble}
                           onClick={() => setShowScheduleModal(true)}
-                          aria-label="Horário de funcionamento">
+                          aria-label={dict.col_campus}>
                           <FaCalendarAlt />
                         </button>
-                        <div className={styles.tooltip}>Horário de funcionamento</div>
+                        <div className={styles.tooltip}>{dict.col_campus}</div>
                       </div>
                     )}
                   </div>
@@ -331,20 +354,20 @@ export default function OrderDetailOverlay({
 
               <div className={styles.infoColumnWide}>
                 <div className={styles.infoItem}>
-                  <label>Email</label>
+                  <label>{dict.col_email}</label>
                   <p>{order.customer_email}</p>
                 </div>
               </div>
               <div className={styles.infoColumn}>
                 <div className={styles.infoItem}>
-                  <label>Telefone</label>
+                  <label>{dict.col_phone}</label>
                   <p>{order.customer_phone || "-"}</p>
                 </div>
               </div>
               {hasPaymentReference(order) && (
                 <div className={styles.infoColumn}>
                   <div className={styles.infoItemInline}>
-                    <label>Referência de Pagamento:</label>
+                    <label>{dict.payment_reference_label}</label>
                     <p>{order.payment_reference?.trim()}</p>
                   </div>
                 </div>
@@ -353,25 +376,25 @@ export default function OrderDetailOverlay({
 
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
-                <h3>Itens da Encomenda</h3>
+                <h3>{dict.items_title}</h3>
                 {canEditItems && (
                   <button
                     type="button"
                     className={styles.editItemsButton}
                     onClick={() => setShowEditOrderModal(true)}
-                    title="Editar itens da encomenda"
-                    aria-label="Editar itens da encomenda">
+                    title={dict.edit_items_label}
+                    aria-label={dict.edit_items_label}>
                     <FiEdit2 size={16} />
                   </button>
                 )}
               </div>
               <div className={styles.table}>
                 <div className={styles.tableHeader}>
-                  <span>Produto</span>
-                  <span>Variante</span>
-                  <span>Qtd</span>
-                  <span>Preço</span>
-                  <span>Total</span>
+                  <span>{dict.col_product}</span>
+                  <span>{dict.col_variant}</span>
+                  <span>{dict.col_qty}</span>
+                  <span>{dict.col_price}</span>
+                  <span>{dict.col_total}</span>
                 </div>
                 {order.items.map((item, idx) => {
                   const colorInfo = getColorFromOptions(
@@ -418,7 +441,7 @@ export default function OrderDetailOverlay({
                 })}
                 {order.discount_amount != null && Number(order.discount_amount) > 0 && (
                   <div className={styles.tableRow}>
-                    <span>Desconto</span>
+                    <span>{dict.discount_label}</span>
                     <span>{order.discount_code}</span>
                     <span>1</span>
                     <span>-{order.discount_amount.toFixed(2)}€</span>
@@ -426,7 +449,9 @@ export default function OrderDetailOverlay({
                   </div>
                 )}
               </div>
-              <div className={styles.totalRow}>Total: {order.total_amount.toFixed(2)}€</div>
+              <div className={styles.totalRow}>
+                {dict.total_label.replace("{amount}", order.total_amount.toFixed(2))}
+              </div>
             </div>
 
             <div className={styles.section}>
@@ -435,7 +460,7 @@ export default function OrderDetailOverlay({
                 onToggle={(e) => setNotesOpen((e.currentTarget as HTMLDetailsElement).open)}
                 open={notesOpen}>
                 <summary className={styles.notesSummary}>
-                  <span>Notas</span>
+                  <span>{dict.notes_title}</span>
                   <span className={styles.notesChevron}>
                     {notesOpen ? <FiChevronUp /> : <FiChevronDown />}
                   </span>
@@ -469,11 +494,11 @@ export default function OrderDetailOverlay({
                             setNotesEditing(true);
                           }
                         }}>
-                        {order.notes ? order.notes : "Adicionar notas"}
+                        {order.notes ? order.notes : dict.add_notes}
                       </div>
                     )
                   ) : (
-                    <div>{order.notes ? order.notes : "Adicionar notas"}</div>
+                    <div>{order.notes ? order.notes : dict.add_notes}</div>
                   )}
                 </div>
               </details>
@@ -483,7 +508,7 @@ export default function OrderDetailOverlay({
               <div className={styles.section}>
                 {canShowManageStatusActions && (
                   <>
-                    <h3>Estado</h3>
+                    <h3>{dict.status_title}</h3>
                     <div className={styles.actionButtons}>
                       {canSetPaid && (
                         <button
@@ -497,7 +522,7 @@ export default function OrderDetailOverlay({
                         <button
                           className={styles.buttonPrimary}
                           onClick={() => setPendingStatus("ready")}>
-                          Marcar como Pronto
+                          {dict.mark_ready}
                         </button>
                       )}
 
@@ -505,7 +530,7 @@ export default function OrderDetailOverlay({
                         <button
                           className={styles.buttonPrimary}
                           onClick={() => setPendingStatus("delivered")}>
-                          Marcar como Entregue
+                          {dict.mark_delivered}
                         </button>
                       )}
 
@@ -513,32 +538,37 @@ export default function OrderDetailOverlay({
                         <button
                           className={styles.buttonOutline}
                           onClick={() => setPendingStatus("cancelled")}>
-                          Cancelar Encomenda
+                          {dict.cancel_order}
                         </button>
                       )}
                     </div>
                   </>
                 )}
                 <p className={styles.timestamp}>
-                  Criada por {order.created_by || "-"} em{" "}
-                  {new Date(order.created_at).toLocaleString("pt-PT")}
+                  {dict.created_by
+                    .replace("{by}", order.created_by || "-")
+                    .replace("{date}", new Date(order.created_at).toLocaleString())}
                 </p>
                 {order.paid_at && (
                   <p className={styles.timestamp}>
-                    Pagamento verificado por {order.payment_checked_by} em{" "}
-                    {new Date(order.paid_at).toLocaleString("pt-PT")}
+                    {dict.payment_verified_by
+                      .replace("{by}", order.payment_checked_by || "-")
+                      .replace("{date}", new Date(order.paid_at).toLocaleString())}
                   </p>
                 )}
                 {order.pickup_deadline && (
                   <p className={styles.timestamp}>
-                    Prazo limite para levantamento em{" "}
-                    {new Date(order.pickup_deadline).toLocaleString("pt-PT")}
+                    {dict.pickup_deadline.replace(
+                      "{date}",
+                      new Date(order.pickup_deadline).toLocaleString()
+                    )}
                   </p>
                 )}
                 {order.delivered_at && (
                   <p className={styles.timestamp}>
-                    Entregue por {order.delivered_by} em{" "}
-                    {new Date(order.delivered_at).toLocaleString("pt-PT")}
+                    {dict.delivered_by
+                      .replace("{by}", order.delivered_by || "-")
+                      .replace("{date}", new Date(order.delivered_at).toLocaleString())}
                   </p>
                 )}
               </div>
@@ -576,7 +606,7 @@ export default function OrderDetailOverlay({
                     <button
                       className={styles.cancelButton}
                       onClick={() => setShowUserCancelConfirm(true)}>
-                      Cancelar Encomenda
+                      {dict.cancel_order}
                     </button>
                   )}
                 </div>
@@ -588,8 +618,8 @@ export default function OrderDetailOverlay({
               open={!!pendingStatus}
               message={
                 pendingStatus === "cancelled"
-                  ? "Tem a certeza que quer cancelar esta encomenda?"
-                  : `Tem a certeza que quer marcar como ${getStatusLabel(pendingStatus)}?`
+                  ? dict.confirm_cancel
+                  : dict.confirm_status.replace("{status}", dict.status[pendingStatus])
               }
               onConfirm={async () => {
                 await handleStatusChange(pendingStatus);
@@ -600,7 +630,7 @@ export default function OrderDetailOverlay({
           )}
           <ConfirmDialog
             open={showUserCancelConfirm}
-            message="Tem a certeza que quer cancelar esta encomenda?"
+            message={dict.confirm_cancel}
             onConfirm={async () => {
               setShowUserCancelConfirm(false);
               await handleUserCancel();
@@ -609,7 +639,7 @@ export default function OrderDetailOverlay({
           />
           <ConfirmDialog
             open={showSaveConfirm}
-            message="As notas foram alteradas. Deseja guardar as alterações?"
+            message={dict.confirm_save_notes}
             onConfirm={async () => {
               setShowSaveConfirm(false);
               const ok = await saveNotes();
@@ -644,6 +674,7 @@ export default function OrderDetailOverlay({
           order={order}
           initialPaymentMethod={order.payment_method}
           reopenOrderUrl={`${basePath}?orderId=${order.id}`}
+          dict={posPaymentDict}
           onCloseAction={() => setShowPaymentOverlay(false)}
           onOrderUpdatedAction={(updatedOrder) => {
             setOrder(updatedOrder);

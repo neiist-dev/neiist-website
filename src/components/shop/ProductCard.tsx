@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -6,8 +7,15 @@ import { FiImage } from "react-icons/fi";
 import { Product } from "@/types/shop/product";
 import { getProductTimingBadge } from "@/utils/shop/shopUtils";
 import styles from "@/styles/components/shop/ProductCard.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
-export default function ProductCard({ product }: { product: Product }) {
+interface ProductCardProps {
+  product: Product;
+  dict: Dictionary["shop"];
+  basePath?: string;
+}
+
+export default function ProductCard({ product, dict, basePath }: ProductCardProps) {
   const [imageIndex, setImageIndex] = useState(0);
 
   const images = [
@@ -18,10 +26,13 @@ export default function ProductCard({ product }: { product: Product }) {
   ];
 
   const currentImage = images[imageIndex];
-  const [badge] = useState(() => getProductTimingBadge(product));
+  const badge = getProductTimingBadge(product, {
+    coming_soon: dict.buttons.coming_soon,
+    unavailable: dict.buttons.unavailable,
+  });
 
   return (
-    <Link href={`/shop/${product.id}`} className={styles.card}>
+    <Link href={`${basePath || ""}/shop/${product.id}`} className={styles.card}>
       <div className={`${styles.imageWrapper} ${!currentImage ? styles.imageWrapperEmpty : ""}`}>
         {currentImage ? (
           <Image
@@ -35,7 +46,7 @@ export default function ProductCard({ product }: { product: Product }) {
         ) : (
           <div className={styles.placeholder}>
             <FiImage size={40} />
-            <span>Sem Imagem</span>
+            <span>{dict.no_image_label}</span>
           </div>
         )}
         {badge && <span className={styles.badge}>{badge}</span>}

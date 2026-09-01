@@ -27,14 +27,17 @@ import type {
 } from "@/types/events";
 import type { IconType } from "react-icons";
 import styles from "@/styles/components/activities/EventDetails.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 type CalendarEventWithOptionalCustom = CalendarEvent & { customIcon?: string };
+
 interface EventDetailsProps {
   event: NormalizedCalendarEvent;
   onClose: () => void;
   isSignedUp: boolean;
   onSignUpChange: (_eventId: string, _signedUp: boolean) => void;
   onUpdate: (_updatedEvent?: CalendarEvent) => void;
+  dict: Dictionary["activities"]["details"];
 }
 
 export default function EventDetails({
@@ -43,6 +46,7 @@ export default function EventDetails({
   isSignedUp,
   onSignUpChange,
   onUpdate,
+  dict,
 }: EventDetailsProps) {
   const router = useRouter();
   const { user } = useUser();
@@ -85,7 +89,7 @@ export default function EventDetails({
 
   const saveSettings = useCallback(async () => {
     if (!isAdmin || !hasChangesRef.current) return;
-    const saveToastId = toast.loading("Saving event settings...", {
+    const saveToastId = toast.loading(dict.saving_settings, {
       closeButton: true,
     });
     try {
@@ -124,18 +128,18 @@ export default function EventDetails({
         };
         onUpdate(patchedRaw);
         router.refresh();
-        toast.success("Event settings saved successfully.", {
+        toast.success(dict.settings_saved, {
           id: saveToastId,
           closeButton: true,
         });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save event settings.", {
+      toast.error(error instanceof Error ? error.message : dict.errors.save_settings, {
         id: saveToastId,
         closeButton: true,
       });
     }
-  }, [isAdmin, settings, event.id, event.raw, onUpdate, router]);
+  }, [isAdmin, settings, event.id, event.raw, onUpdate, router, dict]);
 
   const handleClose = useCallback(async () => {
     await saveSettings();
@@ -159,24 +163,21 @@ export default function EventDetails({
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      toast.warning("Por favor inicie sessão para se inscrever neste evento.", {
+      toast.warning(dict.please_login, {
         closeButton: true,
       });
       return;
     }
 
     if (!canSignUp && subscriberCount >= maxAttendeesNum) {
-      toast.error("Número máximo de participantes atingido.", { closeButton: true });
+      toast.error(dict.errors.sign_up, { closeButton: true });
       return;
     }
 
     setIsProcessing(true);
-    const signUpToastId = toast.loading(
-      signedUp ? "Cancelling sign-up..." : "Signing up for event...",
-      {
-        closeButton: true,
-      }
-    );
+    const signUpToastId = toast.loading(signedUp ? dict.cancelling_signup : dict.signing_up, {
+      closeButton: true,
+    });
     try {
       const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
@@ -190,17 +191,17 @@ export default function EventDetails({
         return;
       }
 
-      if (!res.ok) throw new Error("Failed to sign up");
+      if (!res.ok) throw new Error(dict.errors.sign_up);
       const data = await res.json();
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
-      toast.success(data.signedUp ? "Signed up successfully." : "Sign-up cancelled successfully.", {
+      toast.success(data.signedUp ? dict.signed_up : dict.signup_cancelled, {
         id: signUpToastId,
         closeButton: true,
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update sign-up.", {
+      toast.error(error instanceof Error ? error.message : dict.errors.update_signup, {
         id: signUpToastId,
         closeButton: true,
       });
@@ -210,7 +211,7 @@ export default function EventDetails({
   };
 
   const handleEmailAttendees = async () => {
-    const emailToastId = toast.loading("Preparing attendee email...", {
+    const emailToastId = toast.loading(dict.preparing_email, {
       closeButton: true,
     });
     try {
@@ -221,19 +222,19 @@ export default function EventDetails({
         window.location.reload();
         return;
       }
-      if (!res.ok) throw new Error("Failed to fetch attendees");
+      if (!res.ok) throw new Error(dict.errors.fetch_attendees);
       const data = await res.json();
       const emails = (data.subscribers as EventSubscriber[]).map((s) => s.email).join(",");
       window.open(
         `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
         "_blank"
       );
-      toast.success("Email draft opened successfully.", {
+      toast.success(dict.email_opened, {
         id: emailToastId,
         closeButton: true,
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to fetch attendee emails.", {
+      toast.error(error instanceof Error ? error.message : dict.errors.fetch_emails, {
         id: emailToastId,
         closeButton: true,
       });
@@ -243,7 +244,7 @@ export default function EventDetails({
   const handleShare = () => {
     const url = `${window.location.origin}/activities?eventId=${event.id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Link do evento copiado", {
+    toast.success(dict.link_copied, {
       closeButton: true,
     });
   };
@@ -253,7 +254,7 @@ export default function EventDetails({
       className={styles.modalOverlay}
       onClick={(e) => e.target === e.currentTarget && handleClose()}>
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={handleClose} aria-label="Fechar">
+        <button className={styles.closeButton} onClick={handleClose} aria-label={dict.close}>
           <IoClose size={32} />
         </button>
 
@@ -264,11 +265,8 @@ export default function EventDetails({
             style={{ cursor: isAdmin ? "pointer" : "default" }}>
             <EventIcon size={48} />
           </div>
-          <h2 className={styles.eventTitle}>{event.summary || "Untitled Event"}</h2>
-          <button
-            className={styles.shareButton}
-            onClick={handleShare}
-            title="Copiar link do evento">
+          <h2 className={styles.eventTitle}>{event.summary || dict.untitled_event}</h2>
+          <button className={styles.shareButton} onClick={handleShare} title={dict.share_title}>
             <IoShareOutline size={22} />
           </button>
         </div>
@@ -312,12 +310,12 @@ export default function EventDetails({
         {isAdmin && (
           <div className={styles.adminSection}>
             <label>
-              Descrição do evento
+              {dict.labels.description}
               <textarea
                 value={settings.description}
                 onChange={(e) => updateSetting("description", e.target.value)}
                 rows={4}
-                placeholder="Adicionar descrição..."
+                placeholder={dict.placeholders.description}
                 disabled={isProcessing}
               />
             </label>
@@ -329,13 +327,13 @@ export default function EventDetails({
                 onChange={(e) => updateSetting("signupEnabled", e.target.checked)}
                 disabled={isProcessing}
               />
-              <span>Permitir inscrições</span>
+              <span>{dict.labels.allow_signups}</span>
             </label>
 
             {settings.signupEnabled && (
               <>
                 <label>
-                  Data limite para inscrições
+                  {dict.labels.signup_deadline}
                   <input
                     type="datetime-local"
                     value={settings.signupDeadline}
@@ -345,13 +343,13 @@ export default function EventDetails({
                 </label>
 
                 <label>
-                  Número máximo de participantes
+                  {dict.labels.max_attendees}
                   <input
                     type="number"
                     min="1"
                     value={settings.maxAttendees}
                     onChange={(e) => updateSetting("maxAttendees", e.target.value)}
-                    placeholder="Sem limite"
+                    placeholder={dict.placeholders.no_limit}
                     disabled={isProcessing}
                   />
                 </label>
@@ -363,7 +361,7 @@ export default function EventDetails({
         <div className={styles.actionSection}>
           {isAdmin && subscriberCount > 0 && (
             <div className={styles.subscriberCount}>
-              {String(subscriberCount).padStart(2, "0")} Inscritos
+              {String(subscriberCount).padStart(2, "0")} {dict.labels.subscribers}
             </div>
           )}
 
@@ -372,16 +370,16 @@ export default function EventDetails({
             onClick={handleSignUp}
             disabled={isProcessing || !currentIstid}>
             {isProcessing
-              ? "A processar..."
+              ? dict.processing
               : !currentIstid
-                ? "Por favor inicie sessão para se inscrever"
+                ? dict.please_login
                 : signedUp
-                  ? "Cancelar inscrição"
-                  : "Sign Up"}
+                  ? dict.buttons.cancel_signup
+                  : dict.buttons.sign_up}
           </button>
           {isAdmin && subscriberCount > 0 && (
             <button onClick={handleEmailAttendees} className={styles.emailLink}>
-              Enviar email para todos os inscritos.
+              {dict.buttons.email_attendees}
             </button>
           )}
         </div>
@@ -392,6 +390,7 @@ export default function EventDetails({
           value={settings.customIcon}
           onChange={(icon) => updateSetting("customIcon", icon)}
           onClose={() => setShowIconPicker(false)}
+          dict={dict.icon_picker}
         />
       )}
     </div>
