@@ -15,6 +15,7 @@ export interface User {
   teams?: string[];
   github?: string;
   linkedin?: string;
+  isAnonymized?: boolean;
 }
 interface dbUser {
   istid: string;
@@ -89,6 +90,7 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     teams: dbUser.teams ?? [],
     github: dbUser.github ?? undefined,
     linkedin: dbUser.linkedin ?? undefined,
+    isAnonymized: dbUser.email?.endsWith("@deleted.neiist.pt") ?? false,
   };
 }
 

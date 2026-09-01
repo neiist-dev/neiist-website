@@ -180,6 +180,40 @@
   margin-top: 5rem;
 }
 
+.accountManagement {
+  margin-top: 5rem;
+}
+
+.dangerIcon {
+  color: #dc2626;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.dangerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  border-radius: 0.6rem;
+  padding: 0.3rem 1rem;
+  border: 2px solid #dc2626;
+  background: white;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dangerButton:hover {
+  background: #fee2e2;
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .cvUpload {
   display: block;
   border-radius: 1rem;
@@ -232,10 +266,11 @@
   right: 0;
   background: white;
   font-size: 0.95rem;
-  padding: 0.6rem 1rem;
+  padding: 0.8rem 1rem;
   border-radius: 0.6rem;
   box-shadow: 0 2px 8px rgba(60, 60, 60, 0.1);
-  white-space: nowrap;
+  width: max-content;
+  max-width: 300px;
   z-index: 10;
 }
 

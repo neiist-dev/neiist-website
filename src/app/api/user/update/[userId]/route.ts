@@ -4,9 +4,15 @@ import fs from "fs/promises";
 import path from "path";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateIstId, isValidEmail, isValidPhone } from "@/utils/apiValidationUtils";
-import { getUser, updateUser, updateUserPhoto } from "@/lib/db/repositories/user.repository";
+import {
+  getUser,
+  updateUser,
+  updateUserPhoto,
+  deleteUser,
+} from "@/lib/db/repositories/user.repository";
 import { serverCheckRoles } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sendEmail, getAccountDeletionTemplate } from "@/lib/email";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const userRoles = await serverCheckRoles([]);
@@ -140,6 +146,81 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
     return NextResponse.json({
       success: true,
       message: "Perfil atualizado com sucesso",
+    });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  const userRoles = await serverCheckRoles();
+  if (!userRoles.isAuthorized) return userRoles.error;
+
+  const [targetUserId, error] = validateIstId((await params).userId, "userId");
+  if (error) return error;
+
+  try {
+    const currentUser = userRoles.user;
+    if (!currentUser)
+      return NextResponse.json({ error: "Current user not found" }, { status: 404 });
+
+    const isAdmin = userRoles.roles.includes(UserRole._ADMIN);
+    const isSelfUpdate = currentUser.istid === targetUserId;
+
+    if (!isSelfUpdate && !isAdmin)
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+
+    const existingUser = await getUser(targetUserId);
+    if (!existingUser)
+      return NextResponse.json({ error: "Target user not found" }, { status: 404 });
+
+    try {
+      await sendEmail({
+        to: existingUser.email,
+        subject: "Confirmação de Eliminação de Conta - NEIIST",
+        html: getAccountDeletionTemplate(existingUser.name),
+      });
+    } catch (emailError) {
+      console.warn("Failed to send account deletion email:", emailError);
+    }
+
+    const { success, was_member: isMember } = await deleteUser(targetUserId);
+    if (!success)
+      return NextResponse.json({ error: "Falha ao eliminar utilizador" }, { status: 500 });
+
+    if (!isMember) {
+      try {
+        const filePath = path.join(process.cwd(), "data", "user_photos", `${targetUserId}.png`);
+        await fs.unlink(filePath);
+      } catch (unlinkError: unknown) {
+        if ((unlinkError as NodeJS.ErrnoException)?.code !== "ENOENT")
+          console.warn("Failed to delete user photo file:", unlinkError);
+      }
+    }
+
+    console.warn(
+      JSON.stringify({
+        event: "user_deleted",
+        target_istid: targetUserId,
+        deleted_by: currentUser.istid,
+        was_member: isMember,
+        initiated_by: isSelfUpdate ? "self" : "admin",
+        at: new Date().toISOString(),
+      })
+    );
+
+    revalidatePath("/about-us");
+    revalidatePath("/team-management");
+    revalidatePath("/profile");
+    revalidatePath("/photo-management");
+    revalidatePath("/users-management");
+
+    return NextResponse.json({
+      success: true,
+      message: "Utilizador eliminado com sucesso",
     });
   } catch (error) {
     return handleApiError(error);

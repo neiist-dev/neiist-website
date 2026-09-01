@@ -169,3 +169,25 @@ export const getEmailVerificationByUser = async (
   );
   return row ?? null;
 };
+
+export const deleteUser = async (
+  istid: string
+): Promise<{ success: boolean; was_member: boolean }> => {
+  const {
+    rows: [row],
+  } = await db_query<{ success: boolean; was_member: boolean }>(
+    `SELECT * FROM neiist.delete_user($1::VARCHAR(10))`,
+    [istid]
+  );
+  const success = row?.success ?? false;
+  if (success) {
+    revalidateTag("users", "max");
+    revalidateTag("memberships", "max");
+    revalidateTag("email_verifications", "max");
+  }
+  return { success, was_member: row?.was_member ?? false };
+};
+
+export const removeDeletedUserOrdersPII = async (): Promise<void> => {
+  await db_query(`SELECT neiist.remove_deleted_user_orders_pii()`);
+};

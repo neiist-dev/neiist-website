@@ -26,6 +26,7 @@ export interface Membership {
   isActive: boolean;
   userEmail: string;
   userPhoto: string;
+  isAnonymized?: boolean;
 }
 
 export interface dbMembership {
@@ -55,5 +56,6 @@ export function mapdbMembershipToMembership(
     isActive: raw.active,
     userEmail,
     userPhoto,
+    isAnonymized: userEmail.endsWith("@deleted.neiist.pt"),
   };
 }
