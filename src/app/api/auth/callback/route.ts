@@ -56,9 +56,8 @@ export async function GET(req: NextRequest) {
     }
 
     const postLogin = cookieStore.get("post_login_redirect")?.value;
-    const safeDestination = getSafeReturnUrl(postLogin, "/?login=true");
-    const baseUrl =
-      req.nextUrl.origin || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const safeDestination = getSafeReturnUrl(postLogin, "/");
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const redirectUrl = new URL(safeDestination, baseUrl);
 
     const response = NextResponse.redirect(redirectUrl);

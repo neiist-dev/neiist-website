@@ -1,7 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
-  const redirectUrl = new URL("/", process.env.NEXT_PUBLIC_BASE_URL);
+export async function POST(req: NextRequest) {
+  const forwardedHost = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const forwardedProto = req.headers.get("x-forwarded-proto") || "https";
+  const headerOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : null;
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    headerOrigin ||
+    req.nextUrl.origin ||
+    "http://localhost:3000";
+
+  const redirectUrl = new URL("/", baseUrl);
   redirectUrl.searchParams.set("t", Date.now().toString());
 
   const res = NextResponse.redirect(redirectUrl);
