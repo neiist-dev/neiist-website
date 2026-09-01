@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   getVotingSessions,
   getVotingSessionById,
@@ -12,13 +13,14 @@ import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
+import GlobalLoading from "@/app/loading";
 
 interface PageProps {
   params: LocaleParams;
   searchParams: Promise<{ sessionId?: string }>;
 }
 
-export default async function VotingManagePage({ params, searchParams }: PageProps) {
+async function VotingManageContent({ params, searchParams }: PageProps) {
   await requireRoles([UserRole._ADMIN]);
   const [{ locale: rawLocale }, searchParamsObj] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
@@ -61,5 +63,13 @@ export default async function VotingManagePage({ params, searchParams }: PagePro
         />
       ) : null}
     </>
+  );
+}
+
+export default function VotingManagePage({ params, searchParams }: PageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <VotingManageContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }

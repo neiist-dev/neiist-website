@@ -1254,7 +1254,9 @@
     "show_more_nominees": "Show more nominees",
     "no_votes_cast": "No votes were cast for any nominee.",
     "vote_singular": "vote",
-    "vote_plural": "votes"
+    "vote_plural": "votes",
+    "submitting_vote": "Submitting your vote...",
+    "vote_success": "Vote recorded successfully!"
   },
 
   "voting_management": {

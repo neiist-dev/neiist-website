@@ -1254,7 +1254,9 @@
     "show_more_nominees": "Mostrar mais candidatos",
     "no_votes_cast": "Não houve votos em nenhum dos candidatos.",
     "vote_singular": "voto",
-    "vote_plural": "votos"
+    "vote_plural": "votos",
+    "submitting_vote": "A submeter o teu voto...",
+    "vote_success": "Voto registado com sucesso!"
   },
 
   "voting_management": {

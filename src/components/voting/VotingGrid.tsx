@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { VotingNominee } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import Search from "@/components/search/Search";
+import CommandPalette from "@/components/search/CommandPalette";
+import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/voting/VotingGrid.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -14,7 +17,7 @@ interface VotingGridProps {
   sessionDescription?: string | null;
   nominees: VotingNominee[];
   selectedNomineeId?: string | null;
-  onVote?: (_nomineeId: string) => Promise<void>;
+  onVote?: (_nomineeId: string) => Promise<void> | void;
   dict: Dictionary["voting"];
 }
 
@@ -29,27 +32,53 @@ export default function VotingGrid({
   onVote,
   dict,
 }: VotingGridProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
-  const filteredNominees = useMemo(() => {
-    if (!searchQuery.trim()) return nominees;
-    const query = searchQuery.toLowerCase().trim();
-    return nominees.filter((nominee) => {
-      const displayName = getFirstAndLastName(nominee.name).toLowerCase();
-      return (
-        displayName.includes(query) ||
-        nominee.name.toLowerCase().includes(query) ||
-        nominee.id.toLowerCase().includes(query)
-      );
-    });
-  }, [searchQuery, nominees]);
+  const {
+    results: filteredNominees,
+    query: searchQuery,
+    setQuery: setSearchQuery,
+  } = useSearch<VotingNominee>({
+    data: nominees,
+    fields: [
+      { field: "name", boost: 3 },
+      { field: "id", boost: 4 },
+    ],
+    returnAllWhenEmpty: true,
+  });
 
   const visibleNominees = filteredNominees.slice(0, visibleCount);
   const hasMore = filteredNominees.length > visibleCount;
 
+  const handleCastVote = async (nomineeId: string) => {
+    if (onVote) {
+      await onVote(nomineeId);
+    } else {
+      const formData = new FormData();
+      formData.set("sessionId", String(sessionId));
+      formData.set("nomineeId", nomineeId);
+      await submitVoteAction(formData);
+    }
+  };
+
   return (
     <section className={styles.wrapper}>
+      <CommandPalette<VotingNominee>
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        placeholder={dict.search_nominee_placeholder}
+        groups={[
+          {
+            heading: sessionName ?? "Candidatos",
+            items: nominees,
+          },
+        ]}
+        getItemKey={(n) => n.id}
+        getItemLabel={(n) => `${getFirstAndLastName(n.name)} (${n.id})`}
+        onSelect={(n) => handleCastVote(n.id)}
+      />
+
       <header className={styles.header}>
         <p className={styles.kicker}>{dict.voting_in_progress}</p>
         <h1 className={styles.title}>{sessionName ?? dict.select_your_vote}</h1>
@@ -58,13 +87,12 @@ export default function VotingGrid({
 
       <div className={styles.toolbar}>
         <div className={styles.searchContainer}>
-          <input
-            type="text"
+          <Search
             className={styles.searchInput}
             placeholder={dict.search_nominee_placeholder}
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
+            onChange={(val) => {
+              setSearchQuery(val);
               setVisibleCount(PAGE_SIZE);
             }}
           />

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import VotingSessionForm from "@/components/voting/admin/VotingSessionForm";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
@@ -5,8 +6,9 @@ import { requireRoles } from "@/lib/auth";
 import { UserRole } from "@/types/user";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
+import GlobalLoading from "@/app/loading";
 
-export default async function NewVotingSessionPage({ params }: { params: LocaleParams }) {
+async function NewVotingSessionContent({ params }: { params: LocaleParams }) {
   await requireRoles([UserRole._ADMIN]);
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
@@ -23,5 +25,13 @@ export default async function NewVotingSessionPage({ params }: { params: LocaleP
       locale={locale}
       basePath={`/${locale}`}
     />
+  );
+}
+
+export default function NewVotingSessionPage({ params }: { params: LocaleParams }) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <NewVotingSessionContent params={params} />
+    </Suspense>
   );
 }

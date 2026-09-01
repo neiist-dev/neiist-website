@@ -6,7 +6,71 @@
   min-height: 85vh;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+}
+
+.sessionSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.arrowButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  padding: 0.35rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--foreground-colour);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.arrowButton:hover:not(:disabled) {
+  opacity: 0.75;
+}
+
+.arrowButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.sessionList {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.sessionTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--foreground-colour);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.sessionTab:hover:not(.selectedTab) {
+  background: color-mix(in srgb, var(--foreground-colour) 6%, transparent);
+}
+
+.selectedTab {
+  background: var(--primary-colour);
+  color: white;
 }
 
 .waitingPage {
@@ -177,5 +241,26 @@
   .backButton {
     position: static;
     align-self: flex-start;
+  }
+}
+
+.voteOverlayBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

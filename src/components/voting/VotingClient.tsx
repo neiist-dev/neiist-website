@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState, useOptimistic } from "react";
+import { useEffect, useState } from "react";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FaArrowLeft } from "react-icons/fa";
+import Link from "next/link";
 import { GlobalVotingState, VotingSyncPayload } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
 import VotingGrid from "@/components/voting/VotingGrid";
 import WinnerCard from "@/components/voting/WinnerCard";
 import ColorfulText from "@/components/ColorfulText";
-import Link from "next/link";
-import { FaArrowLeft } from "react-icons/fa";
+import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import styles from "@/styles/pages/VotingPage.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -113,23 +115,18 @@ export default function VotingClient({
 }: VotingClientProps) {
   const [globalState, setGlobalState] = useState<GlobalVotingState>(initialGlobalState);
   const [userVotes, setUserVotes] = useState<Record<number, string | null>>(initialUserVotes);
-  const [optimisticUserVotes, addOptimisticVote] = useOptimistic(
-    userVotes,
-    (state, newVote: { sessionId: number; nomineeId: string }) => ({
-      ...state,
-      [newVote.sessionId]: newVote.nomineeId,
-    })
-  );
-
+  const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">(
     "connecting"
   );
+  const [voteFlowState, setVoteFlowState] = useState<{
+    status: "processing" | "success";
+    nomineeName?: string;
+  } | null>(null);
 
   useEffect(() => {
     const source = new EventSource("/api/voting/sync");
-
     source.onopen = () => setConnectionStatus("connected");
-
     source.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data) as VotingSyncPayload;
@@ -139,62 +136,121 @@ export default function VotingClient({
         console.error("Failed to parse SSE payload", err);
       }
     };
-
     source.onerror = (err) => {
       console.error("VotingSync SSE Error:", err);
       setConnectionStatus("error");
     };
-
     return () => source.close();
   }, []);
 
+  const activeVotingSessions = globalState.activeSessions || [];
+  const unvotedSessions = activeVotingSessions.filter((s) => !userVotes[s.sessionId]);
+  const lastFinishedSession = globalState.lastFinishedSession;
+  const lastResults = globalState.lastResults || [];
+
+  const safeSessionIndex = Math.min(selectedSessionIndex, Math.max(0, unvotedSessions.length - 1));
+
   const handleVote = async (sessionId: number, nomineeId: string) => {
-    addOptimisticVote({ sessionId, nomineeId });
+    const session = activeVotingSessions.find((s) => s.sessionId === sessionId);
+    const nominee = session?.nominees.find((n) => n.id === nomineeId);
+
+    setVoteFlowState({ status: "processing", nomineeName: nominee?.name });
 
     try {
       const formData = new FormData();
       formData.append("sessionId", sessionId.toString());
       formData.append("nomineeId", nomineeId);
-
       await submitVoteAction(formData);
-      setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
+
+      setVoteFlowState({ status: "success", nomineeName: nominee?.name });
+
+      setTimeout(() => {
+        setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
+        setVoteFlowState(null);
+      }, 800);
     } catch (error) {
       console.error("Failed to submit vote:", error);
+      setVoteFlowState(null);
     }
   };
 
-  const activeVotingSessions = globalState.activeSessions || [];
-  const unvotedSessions = activeVotingSessions.filter(
-    (votingSession) => !optimisticUserVotes[votingSession.sessionId]
-  );
-  const lastFinishedSession = globalState.lastFinishedSession;
-  const lastResults = globalState.lastResults || [];
-
   if (connectionStatus !== "connected")
-    return <ConnectingView status={connectionStatus as "connecting" | "error"} dict={dict} />;
+    return <ConnectingView status={connectionStatus} dict={dict} />;
 
   if (activeVotingSessions.length === 0) {
     if (showLastResult && lastFinishedSession)
       return <LastResultsView session={lastFinishedSession} results={lastResults} dict={dict} />;
-
     return <WaitingForNextSessionView hasLastSession={!!lastFinishedSession} dict={dict} />;
   }
 
   if (unvotedSessions.length === 0) return <VotesSubmittedView dict={dict} />;
 
+  const currentSession = unvotedSessions[safeSessionIndex];
+
   return (
     <div className={styles.activeSessions}>
-      {unvotedSessions.map((session) => (
+      {voteFlowState && (
+        <div className={styles.voteOverlayBackdrop}>
+          <PaymentProcessingSpinner
+            flowState={voteFlowState.status}
+            title={
+              voteFlowState.status === "success"
+                ? (dict.vote_success ?? "Voto registado com sucesso!")
+                : (dict.submitting_vote ?? "A submeter o teu voto...")
+            }
+            subtitle={voteFlowState.nomineeName}
+            size={voteFlowState.status === "success" ? 56 : 48}
+          />
+        </div>
+      )}
+
+      {unvotedSessions.length > 1 && (
+        <nav className={styles.sessionSelector} aria-label="Sessões de votação">
+          <button
+            type="button"
+            className={styles.arrowButton}
+            onClick={() => setSelectedSessionIndex((prev) => Math.max(0, prev - 1))}
+            disabled={safeSessionIndex === 0}
+            aria-label="Sessão anterior">
+            <FiChevronLeft />
+          </button>
+
+          <div className={styles.sessionList}>
+            {unvotedSessions.map((session, idx) => (
+              <button
+                key={session.sessionId}
+                type="button"
+                className={`${styles.sessionTab} ${idx === safeSessionIndex ? styles.selectedTab : ""}`}
+                onClick={() => setSelectedSessionIndex(idx)}>
+                {session.sessionName || `Sessão ${idx + 1}`}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className={styles.arrowButton}
+            onClick={() =>
+              setSelectedSessionIndex((prev) => Math.min(unvotedSessions.length - 1, prev + 1))
+            }
+            disabled={safeSessionIndex >= unvotedSessions.length - 1}
+            aria-label="Próxima sessão">
+            <FiChevronRight />
+          </button>
+        </nav>
+      )}
+
+      {currentSession && (
         <VotingGrid
-          key={session.sessionId}
-          sessionId={session.sessionId}
-          sessionName={session.sessionName}
-          sessionDescription={session.sessionDescription}
-          nominees={session.nominees}
-          onVote={(nomineeId) => handleVote(session.sessionId, nomineeId)}
+          key={currentSession.sessionId}
+          sessionId={currentSession.sessionId}
+          sessionName={currentSession.sessionName}
+          sessionDescription={currentSession.sessionDescription}
+          nominees={currentSession.nominees}
+          onVote={(nomineeId) => handleVote(currentSession.sessionId, nomineeId)}
           dict={dict}
         />
-      ))}
+      )}
     </div>
   );
 }
