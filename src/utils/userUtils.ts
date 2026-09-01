@@ -1,5 +1,8 @@
-export const login = (customReturnUrl?: string) => {
-  const target = customReturnUrl || window.location.pathname + window.location.search;
+export const login = (customReturnUrl?: string | unknown) => {
+  const target =
+    typeof customReturnUrl === "string" && customReturnUrl.trim()
+      ? customReturnUrl.trim()
+      : window.location.pathname + window.location.search;
   const returnUrl = encodeURIComponent(target);
   window.location.href = `/api/auth/login?returnUrl=${returnUrl}`;
 };

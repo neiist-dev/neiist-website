@@ -63,6 +63,7 @@ export async function proxy(req: NextRequest) {
   }
 
   const { locale, routePath, redirectResponse } = resolveLocaleRoute(req);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.url;
 
   const accessToken = req.cookies.get("access_token")?.value;
   const isAuthenticated = !!accessToken;
@@ -70,7 +71,7 @@ export async function proxy(req: NextRequest) {
   if (!isAuthenticated && protectedRoutes.some((r) => routePath.startsWith(r))) {
     if (routePath !== "/api/auth/login") {
       const returnUrl = `/${locale}${routePath}${req.nextUrl.search}`;
-      const loginUrl = new URL("/api/auth/login", req.url);
+      const loginUrl = new URL("/api/auth/login", baseUrl);
       loginUrl.searchParams.set("returnUrl", returnUrl);
       const response = NextResponse.redirect(loginUrl);
       addSecurityHeaders(response);
@@ -88,7 +89,7 @@ export async function proxy(req: NextRequest) {
 
     if (!canAccess(routePath, roles)) {
       if (routePath !== "/unauthorized") {
-        const response = NextResponse.redirect(new URL(`/${locale}/unauthorized`, req.url));
+        const response = NextResponse.redirect(new URL(`/${locale}/unauthorized`, baseUrl));
         addSecurityHeaders(response);
         return response;
       }
