@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useCallback } from "react";
+import { useMemo, useRef, useState, useCallback, useTransition } from "react";
 import styles from "@/styles/components/shop/OrdersTable.module.css";
 import { Order } from "@/types/shop/order";
 import { getStatusCssClass } from "@/utils/shop/orderStatusUtils";
@@ -8,7 +8,7 @@ import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types/shop/orderStatus";
 import { Product } from "@/types/shop/product";
 import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
-import { FiSearch, FiCheck } from "react-icons/fi";
+import { FiSearch, FiCheck, FiArchive } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
@@ -48,6 +48,7 @@ interface OrdersTableProps {
   dict: Dictionary["orders_table"];
   posPaymentDict: Dictionary["pos_payment"];
   basePath: string;
+  isArchive?: boolean;
 }
 
 interface FilterState {
@@ -63,8 +64,10 @@ export default function OrdersTable({
   dict,
   posPaymentDict,
   basePath,
+  isArchive = false,
 }: OrdersTableProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -186,8 +189,16 @@ export default function OrdersTable({
     });
   }, []);
 
+  const handleArchiveToggle = () => {
+    startTransition(() => {
+      const url = isArchive ? `${basePath}/orders` : `${basePath}/orders?archive=true`;
+      router.push(url);
+    });
+  };
+
   function handleRowClick(orderId: number): void {
-    router.push(`${basePath}/orders?orderId=${orderId}`);
+    const archiveParam = isArchive ? "&archive=true" : "";
+    router.push(`${basePath}/orders?orderId=${orderId}${archiveParam}`);
   }
 
   function handleNewOrderSubmit(order?: Order): void {
@@ -350,7 +361,11 @@ export default function OrdersTable({
   return (
     <>
       <div className={styles.container}>
-        <ColorfulText as="h1" className={styles.title} text={dict.title} />
+        <ColorfulText
+          as="h1"
+          className={styles.title}
+          text={isArchive ? dict.archive_title : dict.title}
+        />
 
         <div className={styles.controlsRow}>
           <div className={styles.searchContainer}>
@@ -374,6 +389,14 @@ export default function OrdersTable({
           <div className={styles.rightControls}>
             <button className={styles.iconBtn} onClick={handleExport} title={dict.export_button}>
               <TbTableExport />
+            </button>
+            <button
+              type="button"
+              className={`${styles.archiveToggle} ${isArchive ? styles.active : ""}`}
+              onClick={handleArchiveToggle}
+              disabled={isPending}>
+              <FiArchive />
+              {dict.archive}
             </button>
             <button className={styles.newBtn} onClick={() => setShowNewOrderModal(true)}>
               {dict.new_order_button}
@@ -594,7 +617,7 @@ export default function OrdersTable({
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={9} style={{ padding: 20, textAlign: "center" }}>
-                      {dict.no_orders}
+                      {isArchive ? dict.no_archived_orders : dict.no_orders}
                     </td>
                   </tr>
                 )}
@@ -691,7 +714,7 @@ export default function OrdersTable({
         <PosPaymentOverlay
           open={!!newOrderPosPayment}
           order={newOrderPosPayment}
-          reopenOrderUrl={`${basePath}/orders?orderId=${newOrderPosPayment.id}`}
+          reopenOrderUrl={`${basePath}/orders?orderId=${newOrderPosPayment.id}${isArchive ? "&archive=true" : ""}`}
           dict={posPaymentDict}
           onCloseAction={() => setNewOrderPosPayment(null)}
           onOrderUpdatedAction={() => {

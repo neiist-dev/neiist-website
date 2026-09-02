@@ -142,9 +142,12 @@
 
   "orders_table": {
     "title": "Orders",
+    "archive_title": "Orders (Archive)",
+    "archive": "Archive",
     "search_placeholder": "Search...",
     "export_button": "Export",
     "new_order_button": "New Order",
+    "no_archived_orders": "No archived orders found.",
     "filters_title": "Filters",
     "send_email_selected": "Email selected customers",
     "send_email": "Send Email",

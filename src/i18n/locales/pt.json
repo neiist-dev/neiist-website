@@ -142,9 +142,12 @@
 
   "orders_table": {
     "title": "Encomendas",
+    "archive_title": "Encomendas (Arquivo)",
+    "archive": "Arquivo",
     "search_placeholder": "Procurar...",
     "export_button": "Exportar",
     "new_order_button": "Nova Encomenda",
+    "no_archived_orders": "Nenhuma encomenda arquivada encontrada.",
     "filters_title": "Filtros",
     "send_email_selected": "Enviar email aos selecionados",
     "send_email": "Enviar Email",

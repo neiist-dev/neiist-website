@@ -190,3 +190,11 @@ export function toggleCascadeSelection(
   if (!isChecked && !isIndeterminate) next.push(encode({ name: product.name, selections }));
   return next;
 }
+
+export function isCurrentAcademicYear(dateInput: string | Date, now = new Date()): boolean {
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return false;
+  const currentYear = now.getFullYear();
+  const startOfSchoolYear = new Date(now.getMonth() >= 8 ? currentYear : currentYear - 1, 8, 1);
+  return date >= startOfSchoolYear;
+}

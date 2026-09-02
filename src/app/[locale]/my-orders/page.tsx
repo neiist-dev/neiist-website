@@ -8,40 +8,43 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 interface PageProps {
-  params: LocaleParams;
+  params: Promise<LocaleParams>;
   searchParams: Promise<{ orderId?: string }>;
 }
 
 async function MyOrdersContent({ params, searchParams }: PageProps) {
-  const { locale: rawLocale } = await params;
-  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
-  const dictMyOrders = getDictionary(locale).my_orders;
-  const dictOrderDetails = getDictionary(locale).order_details;
-  const dictPosPayment = getDictionary(locale).pos_payment;
+  const [resolvedParams, resolvedSearch, auth] = await Promise.all([
+    params,
+    searchParams,
+    requireUser(),
+  ]);
 
-  const { orderId } = await searchParams;
-  const { user } = await requireUser();
+  const locale = isValidLocale(resolvedParams.locale) ? resolvedParams.locale : defaultLocale;
+  const dict = getDictionary(locale);
 
   const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
-  const myOrders = allOrders.filter((order) => order.user_istid === user.istid);
+  const myOrders = allOrders.filter((order) => order.user_istid === auth.user.istid);
+  const selectedOrderId = resolvedSearch.orderId ? Number(resolvedSearch.orderId) : null;
+  const selectedOrder = selectedOrderId
+    ? (myOrders.find((order) => order.id === selectedOrderId) ?? null)
+    : null;
 
   return (
     <>
       <MyOrdersList
         orders={myOrders}
         products={products}
-        dict={dictMyOrders}
+        dict={dict.my_orders}
         basePath={`/${locale}`}
       />
-      {orderId && (
+      {selectedOrder && (
         <OrderDetailOverlay
-          orderId={Number(orderId)}
-          orders={myOrders}
+          order={selectedOrder}
           canManage={false}
           basePath={`/${locale}/my-orders`}
           canEditNotes={true}
-          dict={dictOrderDetails}
-          posPaymentDict={dictPosPayment}
+          dict={dict.order_details}
+          posPaymentDict={dict.pos_payment}
         />
       )}
     </>

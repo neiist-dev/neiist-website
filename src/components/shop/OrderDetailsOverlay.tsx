@@ -58,8 +58,7 @@ function getPaymentButtonLabel(
 }
 
 interface OrderDetailOverlayProps {
-  orderId: number;
-  orders: Order[];
+  order: Order | null;
   canManage?: boolean;
   basePath: string;
   canEditNotes?: boolean;
@@ -70,8 +69,7 @@ interface OrderDetailOverlayProps {
 }
 
 export default function OrderDetailOverlay({
-  orderId,
-  orders,
+  order: initialOrder,
   canManage = false,
   basePath,
   canEditNotes = false,
@@ -81,7 +79,7 @@ export default function OrderDetailOverlay({
   posPaymentDict,
 }: OrderDetailOverlayProps) {
   const router = useRouter();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<Order | null>(initialOrder);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -96,8 +94,8 @@ export default function OrderDetailOverlay({
   const paymentButtonLabel = getPaymentButtonLabel(dict, order?.payment_method);
 
   useEffect(() => {
-    setOrder(orders.find((o) => o.id === orderId) || null);
-  }, [orderId, orders]);
+    setOrder(initialOrder);
+  }, [initialOrder]);
 
   useEffect(() => {
     setNotesDraft(order?.notes ?? "");
