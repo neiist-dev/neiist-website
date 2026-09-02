@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import pLimit from "p-limit";
 import { Client } from "@notionhq/client";
 import crypto from "crypto";
@@ -8,12 +8,14 @@ import type { NotionEvent } from "@/types/events";
 import { getCalendarClient, syncAllEventsToCalendar } from "@/lib/google/calendar";
 import { parseNotionPageToEvent, syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
-import { handleApiError } from "@/utils/apiErrorUtils";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
 
 const notion = new Client({ auth: NOTION_API_KEY });
+
+let isSyncRunning = false;
+let hasPendingSync = false;
 
 async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   const pages: NotionPage[] = [];
@@ -84,6 +86,32 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
   );
 }
 
+async function runCoalescedNotionSync() {
+  if (isSyncRunning) {
+    hasPendingSync = true;
+    console.warn("[Notion Webhook] Sync already in progress. Queued pending run.");
+    return;
+  }
+
+  isSyncRunning = true;
+
+  try {
+    do {
+      hasPendingSync = false;
+      const events = await fetchAllNotionEvents();
+      const stats = await syncAllEventsToGoogleCalendars(events);
+      const dbStats = await syncNotionEventsToDb(events);
+      console.warn(
+        `[Notion Webhook] Sync complete. GCal: ${stats.updated} updated, ${stats.deleted} deleted, ${stats.unchanged} unchanged. DB: ${dbStats.updated} updated, ${dbStats.deleted} deleted, ${dbStats.unchanged} unchanged.`
+      );
+    } while (hasPendingSync);
+  } catch (error) {
+    console.error("[Notion Webhook] Background sync failed:", error);
+  } finally {
+    isSyncRunning = false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const bodyText = await req.text();
   const verificationToken = process.env.VERIFICATION_TOKEN;
@@ -106,19 +134,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  try {
-    const events = await fetchAllNotionEvents();
-    const stats = await syncAllEventsToGoogleCalendars(events);
-    await syncNotionEventsToDb();
+  after(async () => {
+    await runCoalescedNotionSync();
+  });
 
-    return NextResponse.json({
-      ok: true,
-      synced: true,
-      eventCount: events.length,
-      stats,
-      message: `Synced: ${stats.updated} updated, ${stats.deleted} deleted, ${stats.unchanged} unchanged`,
-    });
-  } catch (error) {
-    return handleApiError(error);
-  }
+  return NextResponse.json({
+    ok: true,
+    queued: true,
+    message: "Sync scheduled",
+  });
 }

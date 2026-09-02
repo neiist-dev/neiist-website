@@ -94,12 +94,12 @@ export async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
   return pages.map(parseNotionPageToEvent);
 }
 
-export async function syncNotionEventsToDb(): Promise<{
+export async function syncNotionEventsToDb(prefetchedEvents?: NotionEvent[]): Promise<{
   updated: number;
   deleted: number;
   unchanged: number;
 }> {
-  const notionEvents = await fetchAllNotionEvents();
+  const notionEvents = prefetchedEvents ?? (await fetchAllNotionEvents());
   const dbEvents = await getActivitiesEventsFromDb();
   const filteredNotionEvents = notionEvents.filter((e) => e.public);
 
