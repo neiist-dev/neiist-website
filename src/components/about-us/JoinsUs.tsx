@@ -1,19 +1,24 @@
 import styles from "@/styles/components/about-us/JoinUs.module.css";
+import type { Dictionary } from "@/i18n/dictionaries";
 
-export default function JoinUs() {
-  const joinUsLink = "https://google.com";
+interface JoinUsProps {
+  dict: Dictionary["about_us_page"]["join_us"];
+}
 
+export default function JoinUs({ dict }: JoinUsProps) {
   return (
     <div className={styles.container}>
-      <h3 className={styles.title}>Junta-te a nós!</h3>
-      <p className={styles.descprition}>
-        O nosso recrutamento acontece duas vezes por ano, no inicio de cada semestre. O recrutamento
-        consiste de uma ronda de entrevistas, e para algumas equipas um pequeno desafio relacionado
-        com o trabalho da equipa espesífica. Conta-mos contigo!
-      </p>
-      <a href={joinUsLink} target="_blank" rel="noopener noreferrer" className={styles.apply}>
-        Candidata-te
-      </a>
+      <h2 className={styles.title}>{dict.title}</h2>
+      <p className={styles.description}>{dict.description}</p>
+      {dict.apply_link && (
+        <a
+          href={dict.apply_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.apply}>
+          {dict.apply}
+        </a>
+      )}
     </div>
   );
 }

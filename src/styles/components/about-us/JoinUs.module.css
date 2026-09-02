@@ -1,31 +1,49 @@
 .container {
-  background: var(--primary-colour);
-  padding: 2.5rem;
-  margin: 2rem 0;
   display: flex;
-  gap: 1.1rem;
   flex-direction: column;
-  justify-content: center;
+  gap: 1.2rem;
+  padding: 2rem 5rem 2.5rem;
+  box-sizing: border-box;
 }
 
 .title {
-  color: white;
-  font-size: 2rem;
+  font-weight: 800;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  color: #3f3f3f;
   margin: 0;
 }
 
-.descprition {
-  color: white;
+.description {
+  font-size: 1.15rem;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-line;
   margin: 0;
-  font-size: 1.3rem;
 }
 
 .apply {
-  background: transparent;
+  background: var(--primary-colour);
   color: white;
-  border: 2px solid #fff;
-  font-size: 1.3rem;
-  padding: 0.7rem 2rem;
-  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
   align-self: flex-start;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.apply:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1200px) {
+  .container {
+    padding: 1.5rem 3.5rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 2.5rem 2rem;
+  }
 }

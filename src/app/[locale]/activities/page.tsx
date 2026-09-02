@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Calendar from "@/components/activities/Calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { UserRole } from "@/types/user";
@@ -7,6 +8,12 @@ import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repositor
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
+import GlobalLoading from "@/app/loading";
+
+interface ActivitiesPageProps {
+  params: LocaleParams;
+  searchParams: Promise<{ eventId?: string }>;
+}
 
 async function getEventsAndSubscriptions() {
   const session = await getAuthenticatedUser();
@@ -28,13 +35,7 @@ async function getEventsAndSubscriptions() {
   return { events, signedUpEventIds, istid, isAdmin };
 }
 
-export default async function ActivitiesPage({
-  params,
-  searchParams,
-}: {
-  params: LocaleParams;
-  searchParams: Promise<{ eventId?: string }>;
-}) {
+async function ActivitiesContent({ params, searchParams }: ActivitiesPageProps) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
@@ -53,5 +54,13 @@ export default async function ActivitiesPage({
         currentLocale={locale}
       />
     </div>
+  );
+}
+
+export default function ActivitiesPage(props: ActivitiesPageProps) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <ActivitiesContent {...props} />
+    </Suspense>
   );
 }

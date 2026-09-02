@@ -5,6 +5,7 @@ import styles from "@/styles/pages/AboutUs.module.css";
 import MemberCard from "@/components/about-us/MemberCard";
 import YearSelector from "@/components/about-us/YearSelector";
 import Hero from "@/components/about-us/Hero";
+import JoinUs from "@/components/about-us/JoinsUs";
 import { Membership, Team } from "@/types/memberships";
 import { User } from "@/types/user";
 import {
@@ -169,7 +170,7 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
         description={dict.hero.description.replace("{count}", String(uniqueIstids.length))}
       />
 
-      <h2 className={styles.title} />
+      <JoinUs dict={dict.join_us} />
       <YearSelector
         years={allAcademicYears}
         selectedYear={selectedYear}
