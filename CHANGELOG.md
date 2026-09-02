@@ -1,5 +1,66 @@
 # neiist
 
+## [2.0.0](https://github.com/neiist-dev/neiist-website/compare/v1.16.1...v2.0.0) (2026-09-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate to pnpm, new db seed script and updated deployments
+
+### Features
+
+* **cache:** add revalidateTag to all mutation API routesupdateTag ([a3a96a1](https://github.com/neiist-dev/neiist-website/commit/a3a96a10c4d3a753461e9fd81f3e3bc05e3824cb))
+* **ci:** add lint, type check and formating to an action run ([d49db3b](https://github.com/neiist-dev/neiist-website/commit/d49db3b72220c4d00f948ee83cd81f8e63a8b7ca))
+* **db:** add sql batch functions (memberships, department roles, products) and stale order query ([a38f3ce](https://github.com/neiist-dev/neiist-website/commit/a38f3cebfe2e973b7173ff6ccaeab06b7683fa4c))
+* **dinner:** disable dinner page (only for admins, remove from nav) ([cbc45e7](https://github.com/neiist-dev/neiist-website/commit/cbc45e7fe8963b8b26f07f90ea8d7a2c7b8faee3))
+* **drive:** separated util for drive upload and jwt crypto fix ([aa01bf3](https://github.com/neiist-dev/neiist-website/commit/aa01bf378ea4a03e520f8d573eeb47938e046d56))
+* **error:** add error page, default error pages ([46d00ff](https://github.com/neiist-dev/neiist-website/commit/46d00ff94e177661591e9d571aa2d832dab579e5))
+* **i18n:** add cookie-based i18n (en, pt) with server-side dictionaries ([f0bfd19](https://github.com/neiist-dev/neiist-website/commit/f0bfd19382a4a58cc21ddeec706f2e789bd90fe3))
+* **joinUs:** add join us banner to about us page ([e34f0a0](https://github.com/neiist-dev/neiist-website/commit/e34f0a07a72e9c73b816a0f6bf23b33c472b28b5))
+* load google service accouts from env not from json files ([b173609](https://github.com/neiist-dev/neiist-website/commit/b17360982087fee3f3831fb9a336bd46498d558f))
+* **navbar:** language switcher on mobile is on the dropdwon menu ([8150103](https://github.com/neiist-dev/neiist-website/commit/8150103f8a656175cda76d76ec989b8484448cd5))
+* **orders:** add archive option (only show current academic year orders) ([1c4a182](https://github.com/neiist-dev/neiist-website/commit/1c4a182195855ae991477f254344e4f584ae67dd))
+* **permissions:** centralize all roles and permissions checks ([62ad383](https://github.com/neiist-dev/neiist-website/commit/62ad383a58a4459fd060e04ef61f22f2d61bd872))
+* **search:** new universal search, implemented with mini search engine ([a69122c](https://github.com/neiist-dev/neiist-website/commit/a69122c9bc89008bfd06bbc0d097f7496ba1fda0))
+* **shop:** add cascading flyout menu to filter product variants ([8c84070](https://github.com/neiist-dev/neiist-website/commit/8c84070c3a00807b96d21a05af4d376386826be8))
+* **shop:** add estimated delivery and customizable size SizeGuideEditor ([c5e6786](https://github.com/neiist-dev/neiist-website/commit/c5e678610389fad87972c2026f72aee6d276b57a))
+* **shop:** add order_start sql functions logic and UI updates ([8409e22](https://github.com/neiist-dev/neiist-website/commit/8409e2250a74e77ee4fef9f42928bda9b2fcfdd5))
+* **shop:** introduce campus schedule modal and unify pending payment overlays ([5a1eea0](https://github.com/neiist-dev/neiist-website/commit/5a1eea0046fe17b7e8ed3049d82f0114034abb9a))
+* **shop:** startup instrumentation for auto-cancel and db seeding ([3778099](https://github.com/neiist-dev/neiist-website/commit/3778099b55bcda195af2cdecef1206ea2c3b87d6))
+* update packages with security vulnerabilities ([141b9f8](https://github.com/neiist-dev/neiist-website/commit/141b9f832050197dfe030752cb57e86bd6c7cf22))
+* **user:** implement GDPR-compliant account deletion with order pii redaction ([4a7e820](https://github.com/neiist-dev/neiist-website/commit/4a7e820f6fbea77e8ce313359e5607bd26d3bb1c))
+* **voting:** better mobile ui, voting session tabs, vote feedback, and route suspense ([67e40cc](https://github.com/neiist-dev/neiist-website/commit/67e40cc55cc49460dd37d8281dda69b48456a383))
+* **votingSystem:** optimize SSE pub/sub architecture and fix stale state amnesia ([41154f9](https://github.com/neiist-dev/neiist-website/commit/41154f91d36e34e240d4f1cfdaf04261b83cc8e7))
+
+
+### Bug Fixes
+
+* **api:** nextjs pre-render breaking and using NextRequest to parse url ([e3dd516](https://github.com/neiist-dev/neiist-website/commit/e3dd5164270606381905e5c1d379de9952efaf82))
+* **api:** use correct base url on callback route fenix ([181420b](https://github.com/neiist-dev/neiist-website/commit/181420b802eafbabef699b04f6938484638a0aa4))
+* **app:** wrap user context in suspense and add app general loading spinner ([b500ed4](https://github.com/neiist-dev/neiist-website/commit/b500ed413130b3413812c0ca736d1e0a5125a739))
+* **auth:** await cookies() outside of try/catch block so it doesnt break ([59d4424](https://github.com/neiist-dev/neiist-website/commit/59d442420ca3f302b3fbc5a2bfd5d690fd0f3ed9))
+* **auth:** fix post-login destination redirects and refactor server auth helpers ([f2a77e4](https://github.com/neiist-dev/neiist-website/commit/f2a77e404e20435ae09a041fcea8b9425e4f1771)), closes [#678](https://github.com/neiist-dev/neiist-website/issues/678)
+* **auth:** migrate to standard Web Crypto API for JWT verification and signing ([9a8c83d](https://github.com/neiist-dev/neiist-website/commit/9a8c83d497c01085cd1a3857444d4ca95144f212))
+* **auth:** protect routes and server pages with requireRoles using new jwt, order PII Redaction ([8417213](https://github.com/neiist-dev/neiist-website/commit/8417213ed3c0f62d3cfcf9267a72f9ed90c115f4))
+* **calendar:** decouple notion webhook response from events sync to db ([de02d33](https://github.com/neiist-dev/neiist-website/commit/de02d3319c3d6de372ef40bc694a293124b76e00))
+* **ci:** generate nextjs types before running lint and type checker ([74f092f](https://github.com/neiist-dev/neiist-website/commit/74f092f5167147e22536ce55ae3c50b16c7ff554))
+* **ci:** make deploy workflow depend on the lint workflow ([99ab3bd](https://github.com/neiist-dev/neiist-website/commit/99ab3bd35be7abed9267bdd1b77cfaa844766919))
+* **ci:** stage deploy blocked until sucessful linting ([b4e0724](https://github.com/neiist-dev/neiist-website/commit/b4e07243e9468572497aef5c19d34a71cd6ec54c))
+* **deploy:** correct git tags fetching on the server ([ca2a9ec](https://github.com/neiist-dev/neiist-website/commit/ca2a9ec14cbfa2a37fbeacb1f67cc71a3c5755ca))
+* **layout:** replace self-loopback HTTP fetch with a server side call to ([311845a](https://github.com/neiist-dev/neiist-website/commit/311845a9db1f3b64d934acb8f4ba4bb3856eb2df))
+* **layout:** static render navbar only auth widget is dynamic ([7354025](https://github.com/neiist-dev/neiist-website/commit/7354025dc6ca1ce06ec562f4135223f476ddf650))
+* **login:** use correct base url on redirect ([6223f35](https://github.com/neiist-dev/neiist-website/commit/6223f357658ce85ff54e2e5c579622ef73324ec7))
+* navbar dropdown on 768px devices and icon picker search adjust ([0171143](https://github.com/neiist-dev/neiist-website/commit/01711437e6c32d4a069329f42e21cda43968aeeb))
+* **scripts:** manage manage-calendars, setup google and setup notion ([a1cb866](https://github.com/neiist-dev/neiist-website/commit/a1cb8662e23d1770969ebceb6c7f8f8e44a29ff9))
+* **shop:** prevent race condion and duplicate emails in order finalization ([87e11e2](https://github.com/neiist-dev/neiist-website/commit/87e11e269d150a477ac52a944532b8f9e8206971))
+* **sumup:** singleton client error handeling and overlay index ([fca7aa4](https://github.com/neiist-dev/neiist-website/commit/fca7aa48adc9b1b153ecfeaede73773e803e8d99))
+* **sumup:** verify exact cent amount match and currencybind ([d034dcf](https://github.com/neiist-dev/neiist-website/commit/d034dcf62a48fba583b3938d595ca3b4ad8b720d))
+
+
+### Miscellaneous Chores
+
+* migrate to pnpm, new db seed script and updated deployments ([55ff382](https://github.com/neiist-dev/neiist-website/commit/55ff382af397652d7d7119b306e2416d651cc847)), closes [#656](https://github.com/neiist-dev/neiist-website/issues/656)
+
 ## [1.16.1](https://github.com/neiist-dev/neiist-website/compare/v1.16.0...v1.16.1) (2026-05-20)
 
 
