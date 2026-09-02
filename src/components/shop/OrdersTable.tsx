@@ -714,7 +714,11 @@ export default function OrdersTable({
         <PosPaymentOverlay
           open={!!newOrderPosPayment}
           order={newOrderPosPayment}
-          reopenOrderUrl={`${basePath}/orders?orderId=${newOrderPosPayment.id}${isArchive ? "&archive=true" : ""}`}
+          initialPaymentMethod={newOrderPosPayment.payment_method}
+          reopenOrderUrl={
+            `${basePath}/orders?orderId=${newOrderPosPayment.id}` +
+            (isArchive ? "&archive=true" : "")
+          }
           dict={posPaymentDict}
           onCloseAction={() => setNewOrderPosPayment(null)}
           onOrderUpdatedAction={() => {

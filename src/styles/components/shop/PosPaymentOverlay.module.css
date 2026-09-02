@@ -94,6 +94,11 @@
   color: #fff;
 }
 
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .error {
   margin-bottom: 0.75rem;
   color: #b91c1c;

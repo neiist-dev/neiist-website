@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  validateSumUpCredentials,
-  getSumUpClient,
-  sumupErrorResponse,
-  getErrorStatus,
-} from "@/lib/sumup";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
 import { UserRole } from "@/types/user";
 import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/sumup";
 import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
@@ -25,8 +20,6 @@ export async function POST(
 
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
-
-  const client = getSumUpClient();
 
   const { readerId } = await params;
   const body = (await req.json()) as { orderId?: number | string };
@@ -54,12 +47,11 @@ export async function POST(
 
   let data: SumUpReaderCheckoutResponse;
   try {
-    data = await client.readers.createCheckout(SUMUP_MERCHANT_CODE!, readerId, payload);
-  } catch (error: unknown) {
-    return sumupErrorResponse("Failed to create reader checkout", getErrorStatus(error), {
-      readerId,
-      orderId,
-    });
+    data = await withSumUp((client) =>
+      client.readers.createCheckout(SUMUP_MERCHANT_CODE!, readerId, payload)
+    );
+  } catch (error) {
+    return sumupErrorResponse(error, undefined, { readerId, orderId });
   }
 
   const clientTransactionId = data.data?.client_transaction_id ?? null;

@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import SumUp from "@sumup/sdk";
 
-let _sumupClient: SumUp | null = null;
+export class SumUpAuthError extends Error {
+  constructor(message = "SumUp API key is invalid or expired") {
+    super(message);
+    this.name = "SumUpAuthError";
+  }
+}
+
+const globalForSumUp = globalThis as unknown as {
+  sumupClient: SumUp | undefined;
+};
+
 /**
  * Validates that required SumUp environment variables are set.
  * Returns error response if missing, otherwise null.
@@ -19,16 +29,31 @@ export function validateSumUpCredentials(): NextResponse | null {
 }
 
 /**
- * Creates if necessary and returns a SumUp client singleton.
- * Assumes credentials are already validated via validateSumUpCredentials().
+ * Returns a SumUp client singleton anchored to globalThis.
  */
-export function getSumUpClient(): SumUp {
-  if (!_sumupClient) {
+function getSumUpClient(): SumUp {
+  if (!globalForSumUp.sumupClient) {
     const apiKey = process.env.SUMUP_API_KEY;
-    if (!_sumupClient) throw new Error("SUMUP_API_KEY is missing");
-    _sumupClient = new SumUp({ apiKey });
+    if (!apiKey) throw new Error("SUMUP_API_KEY is missing");
+    globalForSumUp.sumupClient = new SumUp({ apiKey });
   }
-  return _sumupClient;
+  return globalForSumUp.sumupClient;
+}
+
+/**
+ * Runs an operation using the SumUp client singleton, translating 401/403 to SumUpAuthError.
+ */
+export async function withSumUp<T>(fn: (_client: SumUp) => Promise<T>): Promise<T> {
+  const client = getSumUpClient();
+  try {
+    return await fn(client);
+  } catch (err) {
+    const status = getErrorStatus(err);
+    if (status === 401 || status === 403) {
+      throw new SumUpAuthError("SumUp API key is invalid or expired");
+    }
+    throw err;
+  }
 }
 
 /**
@@ -48,25 +73,31 @@ export function getErrorStatus(err: unknown): number {
   return 500;
 }
 
-/**
- * Returns a standardized JSON error response for SumUp operations.
- * All SumUp route errors use this consistent format.
- */
 export function sumupErrorResponse(
-  message: string,
-  status: number = 400,
+  errOrMessage: unknown,
+  status?: number,
   details?: Record<string, unknown>
 ): NextResponse {
-  const body: Record<string, unknown> = {
-    error: message,
-    status,
-  };
-
-  if (details) {
-    body.details = details;
+  if (errOrMessage instanceof SumUpAuthError) {
+    return NextResponse.json(
+      { error: errOrMessage.message, status: 502, ...(details ? { details } : {}) },
+      { status: 502 }
+    );
   }
 
-  return NextResponse.json(body, { status });
+  const resolvedStatus =
+    status ?? (typeof errOrMessage === "string" ? 400 : getErrorStatus(errOrMessage));
+  const error =
+    typeof errOrMessage === "string"
+      ? errOrMessage
+      : errOrMessage instanceof Error
+        ? errOrMessage.message
+        : "SumUp request failed";
+
+  return NextResponse.json(
+    { error, status: resolvedStatus, ...(details ? { details } : {}) },
+    { status: resolvedStatus }
+  );
 }
 
 /**

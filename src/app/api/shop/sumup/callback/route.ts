@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
 import type { SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { getOrderById } from "@/lib/db/repositories/shop.repository";
@@ -19,13 +19,11 @@ export async function GET(req: NextRequest) {
   if (!Number.isInteger(orderId) || orderId <= 0) return sumupErrorResponse("Invalid orderId", 400);
   if (!checkoutId) return sumupErrorResponse("Missing checkout_id", 400);
 
-  const client = getSumUpClient();
-
   let checkout: SumUpCheckout;
   try {
-    checkout = await client.checkouts.get(checkoutId);
-  } catch {
-    return sumupErrorResponse("Failed to verify checkout", 502);
+    checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
+  } catch (err) {
+    return sumupErrorResponse(err);
   }
 
   const order = await getOrderById(orderId);
@@ -92,13 +90,11 @@ export async function POST(req: NextRequest) {
   const checkoutId = String(body?.id ?? "").trim();
   if (!checkoutId) return sumupErrorResponse("Missing checkout id", 400);
 
-  const client = getSumUpClient();
-
   let checkout: SumUpCheckout;
   try {
-    checkout = await client.checkouts.get(checkoutId);
-  } catch {
-    return sumupErrorResponse("Failed to verify checkout", 502);
+    checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
+  } catch (err) {
+    return sumupErrorResponse(err);
   }
 
   const order = await getOrderById(orderId);

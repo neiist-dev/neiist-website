@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   validateSumUpCredentials,
-  getSumUpClient,
+  withSumUp,
   sumupErrorResponse,
   getErrorStatus,
 } from "@/lib/sumup";
@@ -18,19 +18,18 @@ export async function GET(req: NextRequest) {
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
 
-  const client = getSumUpClient();
-
   const clientTransactionId = req.nextUrl.searchParams.get("clientTransactionId");
   if (!clientTransactionId) return sumupErrorResponse("Missing clientTransactionId", 400);
 
   let checkoutData: SumUpCheckout;
   try {
-    checkoutData = (await client.transactions.get(SUMUP_MERCHANT_CODE!, {
-      client_transaction_id: clientTransactionId,
-    })) as SumUpCheckout;
-  } catch (error: unknown) {
-    const status = getErrorStatus(error);
-    if (status === 404) {
+    checkoutData = (await withSumUp((client) =>
+      client.transactions.get(SUMUP_MERCHANT_CODE!, {
+        client_transaction_id: clientTransactionId,
+      })
+    )) as SumUpCheckout;
+  } catch (error) {
+    if (getErrorStatus(error) === 404) {
       return NextResponse.json({
         success: true,
         status: "pending",
@@ -39,7 +38,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return sumupErrorResponse("Failed to fetch transaction status", status, {
+    return sumupErrorResponse(error, undefined, {
       transactionId: clientTransactionId,
     });
   }

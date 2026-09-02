@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { UserRole } from "@/types/user";
 import {
   validateSumUpCredentials,
-  getSumUpClient,
+  withSumUp,
   getErrorStatus,
   sumupErrorResponse,
   formatSumUpError,
+  SumUpAuthError,
 } from "@/lib/sumup";
 import { serverCheckRoles } from "@/lib/auth";
 
@@ -24,15 +25,15 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ read
   const credentialCheck = validateSumUpCredentials();
   if (credentialCheck) return credentialCheck;
 
-  const client = getSumUpClient();
   const { readerId } = await params;
 
   if (!readerId) return sumupErrorResponse("readerId is required", 400);
 
   try {
-    await client.readers.delete(SUMUP_MERCHANT_CODE!, readerId);
+    await withSumUp((client) => client.readers.delete(SUMUP_MERCHANT_CODE!, readerId));
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof SumUpAuthError) return sumupErrorResponse(error);
     console.error("SumUp reader delete failed", {
       merchantCode: SUMUP_MERCHANT_CODE,
       readerId,
@@ -40,7 +41,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ read
     });
 
     try {
-      await client.readers.get(SUMUP_MERCHANT_CODE!, readerId);
+      await withSumUp((client) => client.readers.get(SUMUP_MERCHANT_CODE!, readerId));
 
       return sumupErrorResponse("Failed to delete reader", getErrorStatus(error), {
         details: formatSumUpError(error),

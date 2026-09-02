@@ -58,6 +58,16 @@ export interface SumUpReadersListResponse {
   [key: string]: unknown;
 }
 
+export interface SumUpReaderCallbackPayload {
+  event_type?: string;
+  payload?: {
+    order_id?: number | string;
+    client_transaction_id?: string;
+    checkout_id?: string;
+    status?: string;
+  };
+}
+
 export interface CreateCheckoutRequestBody {
   orderId?: number | string;
 }

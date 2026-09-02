@@ -77,23 +77,26 @@ export default function PosPaymentOverlay({
 
   const { orderKind } = useMemo(() => getOrderKindFromItems(order.items), [order.items]);
 
-  const isExistingOrderPaymentFlow = initialPaymentMethod
-    ? PENDING_PAYMENT_METHODS.has(initialPaymentMethod)
-    : false;
+  const isAlreadyInPerson =
+    order.payment_method === "in-person" || initialPaymentMethod === "in-person";
+  const isExistingOrderPaymentFlow =
+    (initialPaymentMethod ?? order.payment_method)
+      ? PENDING_PAYMENT_METHODS.has((initialPaymentMethod ?? order.payment_method)!)
+      : false;
   const title = isExistingOrderPaymentFlow
     ? dict.title_register_payment
     : dict.title_finalize_order;
 
   const availablePaymentMethods = useMemo(() => {
     const methods = getOrderKindRules(orderKind, "pos").paymentMethods;
-    if (isExistingOrderPaymentFlow) {
+    if (isExistingOrderPaymentFlow || isAlreadyInPerson) {
       return methods.filter(
         (method): method is Exclude<PaymentMethod, "in-person"> => method !== "in-person"
       );
     }
     const orderWithInPerson: PaymentMethod[] = ["cash", "in-person", "sumup-tpa", "mbway", "other"];
     return orderWithInPerson.filter((m) => methods.includes(m) || m === "in-person");
-  }, [orderKind, isExistingOrderPaymentFlow]);
+  }, [orderKind, isExistingOrderPaymentFlow, isAlreadyInPerson]);
 
   useEffect(() => {
     if (!open || paymentMethod !== "sumup-tpa") return;
@@ -103,7 +106,11 @@ export default function PosPaymentOverlay({
     setError(null);
 
     fetch("/api/shop/sumup/readers", { cache: "no-store", signal: controller.signal })
-      .then((response) => response.json())
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.error || dict.error_load_readers);
+        return data;
+      })
       .then((data) => {
         const nextReaders: SumUpReader[] = Array.isArray(data?.readers) ? data.readers : [];
         setReaders(nextReaders);
@@ -123,14 +130,10 @@ export default function PosPaymentOverlay({
         }
       })
       .catch((error) => {
-        if (error?.name !== "AbortError") {
-          setError(error.message || dict.error_load_readers);
-        }
+        if (error?.name !== "AbortError") setError(error.message || dict.error_load_readers);
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
-          setReadersLoading(false);
-        }
+        if (!controller.signal.aborted) setReadersLoading(false);
       });
 
     return () => {
@@ -354,6 +357,7 @@ export default function PosPaymentOverlay({
 
       if (paymentMethod === "in-person") {
         await updateOrderFields({ payment_method: "in-person" });
+        toast.info(dict.in_person_notice, { id: "in-person-notice" });
         onOrderUpdatedAction({ ...order, payment_method: "in-person", status: "pending" });
         onCloseAction();
         return;
@@ -413,6 +417,7 @@ export default function PosPaymentOverlay({
     dict.fill_reference,
     dict.payment_confirmed,
     dict.error_payment,
+    dict.in_person_notice,
   ]);
 
   useEffect(() => {
@@ -444,15 +449,22 @@ export default function PosPaymentOverlay({
   };
 
   const handleClose = useCallback(async () => {
-    if (!completedOrder) {
+    if (!completedOrder && order.payment_method !== "in-person") {
       try {
         await updateOrderFields({ payment_method: "in-person" });
+        toast.info(dict.in_person_notice, { id: "in-person-notice" });
       } catch (err) {
         console.warn("Failed to set payment method to in-person on close", err);
       }
     }
     onCloseAction();
-  }, [completedOrder, updateOrderFields, onCloseAction]);
+  }, [
+    completedOrder,
+    order.payment_method,
+    updateOrderFields,
+    onCloseAction,
+    dict.in_person_notice,
+  ]);
 
   if (!open) return null;
 
@@ -496,7 +508,7 @@ export default function PosPaymentOverlay({
   }
 
   return (
-    <div className={styles.overlay}>
+    <div className={styles.backdrop} onClick={(e) => e.target === e.currentTarget && handleClose()}>
       <div className={styles.modal}>
         <button
           className={styles.closeButton}
@@ -515,7 +527,14 @@ export default function PosPaymentOverlay({
           <select
             className={styles.input}
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+            onChange={(e) => {
+              const method = e.target.value as PaymentMethod;
+              setPaymentMethod(method);
+              setError(null);
+              if (method === "in-person") {
+                toast.info(dict.in_person_notice, { id: "in-person-notice" });
+              }
+            }}
             disabled={isSubmitting || lockPaymentMethod}>
             {availablePaymentMethods.map((method) => (
               <option key={method} value={method}>
@@ -533,7 +552,11 @@ export default function PosPaymentOverlay({
               type="text"
               placeholder={dict.reference_placeholder}
               value={paymentReference}
-              onChange={(e) => setPaymentReference(e.target.value)}
+              onChange={(e) => {
+                setPaymentReference(e.target.value);
+                setError(null);
+              }}
+              required
               disabled={isSubmitting}
             />
           </label>
@@ -583,6 +606,10 @@ export default function PosPaymentOverlay({
             type="button"
             className={styles.confirmButton}
             onClick={() => {
+              if (paymentMethod === "other" && !paymentReference.trim()) {
+                setError(dict.fill_reference);
+                return;
+              }
               if (paymentNeedsConfirmation) {
                 setShowConfirmDialog(true);
                 return;
@@ -590,7 +617,7 @@ export default function PosPaymentOverlay({
 
               void handleConfirm();
             }}
-            disabled={isSubmitting}>
+            disabled={isSubmitting || (paymentMethod === "other" && !paymentReference.trim())}>
             {dict.confirm_btn.replace(
               "{method}",
               getPaymentLabel(paymentMethod, dict.payment_methods)

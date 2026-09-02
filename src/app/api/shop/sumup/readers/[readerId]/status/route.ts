@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  validateSumUpCredentials,
-  getSumUpClient,
-  sumupErrorResponse,
-  getErrorStatus,
-} from "@/lib/sumup";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
 import { UserRole } from "@/types/user";
 import type { SumUpReaderStatus } from "@/types/sumup";
 import { serverCheckRoles } from "@/lib/auth";
@@ -25,17 +20,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ readerI
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
 
-  const client = getSumUpClient();
-
   const { readerId } = await params;
   if (!readerId) return sumupErrorResponse("readerId is required", 400);
 
-  let data: SumUpReaderStatus;
   try {
-    data = (await client.readers.get(SUMUP_MERCHANT_CODE!, readerId)) as SumUpReaderStatus;
-  } catch (error: unknown) {
-    return sumupErrorResponse("Failed to fetch reader status", getErrorStatus(error), { readerId });
+    const status = (await withSumUp((client) =>
+      client.readers.get(SUMUP_MERCHANT_CODE!, readerId)
+    )) as SumUpReaderStatus;
+    return NextResponse.json({ success: true, status });
+  } catch (error) {
+    return sumupErrorResponse(error, undefined, { readerId });
   }
-
-  return NextResponse.json({ success: true, status: data });
 }

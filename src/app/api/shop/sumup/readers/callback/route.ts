@@ -1,32 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpCheckout } from "@/types/sumup";
-import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
+import { withSumUp, sumupErrorResponse } from "@/lib/sumup";
+import type { SumUpCheckout, SumUpReaderCallbackPayload } from "@/types/sumup";
 import { getOrderById } from "@/lib/db/repositories/shop.repository";
-import { validateId } from "@/utils/apiValidationUtils";
+import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 
-type ReaderCheckoutStatusPayload = {
-  payload?: {
-    client_transaction_id?: string;
-    checkout_id?: string;
-    status?: string;
-  };
-};
-
 export async function POST(req: NextRequest) {
-  const [orderId, error] = validateId(req.nextUrl.searchParams.get("orderId"), "orderId");
-  if (error) return error;
-
-  let body: ReaderCheckoutStatusPayload;
+  let body: SumUpReaderCallbackPayload;
   try {
-    body = (await req.json()) as ReaderCheckoutStatusPayload;
+    body = (await req.json()) as SumUpReaderCallbackPayload;
   } catch {
-    return sumupErrorResponse("Invalid JSON payload", 400);
+    return sumupErrorResponse("Invalid payload", 400);
   }
 
-  const status = String(body?.payload?.status ?? "").toLowerCase();
+  const orderId = Number(body?.payload?.order_id);
+  const status = body?.event_type;
+
+  if (!Number.isInteger(orderId) || orderId <= 0)
+    return sumupErrorResponse("Invalid order_id", 400);
+
   const clientTransactionId = body?.payload?.client_transaction_id;
   const checkoutId = body?.payload?.checkout_id;
 
@@ -42,11 +35,12 @@ export async function POST(req: NextRequest) {
       let paymentReference = clientTransactionId ?? checkoutId ?? order.payment_reference;
 
       if (clientTransactionId && SUMUP_MERCHANT_CODE && process.env.SUMUP_API_KEY) {
-        const client = getSumUpClient();
         try {
-          const checkoutData = (await client.transactions.get(SUMUP_MERCHANT_CODE!, {
-            client_transaction_id: clientTransactionId,
-          })) as SumUpCheckout;
+          const checkoutData = (await withSumUp((client) =>
+            client.transactions.get(SUMUP_MERCHANT_CODE!, {
+              client_transaction_id: clientTransactionId,
+            })
+          )) as SumUpCheckout;
 
           const transactionCode = checkoutData?.transaction_code;
           if (transactionCode) paymentReference = transactionCode;

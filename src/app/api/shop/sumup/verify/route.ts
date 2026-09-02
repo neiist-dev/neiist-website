@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  validateSumUpCredentials,
-  getSumUpClient,
-  sumupErrorResponse,
-  formatSumUpError,
-} from "@/lib/sumup";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
 import type { ApplePayPaymentToken, VerifyCheckoutRequestBody, SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { getOrderById } from "@/lib/db/repositories/shop.repository";
@@ -32,8 +27,6 @@ export async function POST(req: NextRequest) {
 
     const credentialError = validateSumUpCredentials();
     if (credentialError) return credentialError;
-
-    const client = getSumUpClient();
 
     const order = await getOrderById(orderId);
     if (!order) return sumupErrorResponse("Order not found", 404);
@@ -68,11 +61,9 @@ export async function POST(req: NextRequest) {
 
     let checkout: SumUpCheckout;
     try {
-      checkout = await client.checkouts.get(checkoutId);
+      checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
     } catch (error) {
-      return sumupErrorResponse("Failed to retrieve checkout from payment provider", 502, {
-        details: formatSumUpError(error),
-      });
+      return sumupErrorResponse(error);
     }
 
     const status = String(checkout.status ?? "").toUpperCase();

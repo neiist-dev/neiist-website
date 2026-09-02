@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, getSumUpClient, sumupErrorResponse } from "@/lib/sumup";
+import {
+  validateSumUpCredentials,
+  withSumUp,
+  sumupErrorResponse,
+  SumUpAuthError,
+} from "@/lib/sumup";
 import type {
   CreateCheckoutResponse,
   CreateCheckoutRequestBody,
@@ -30,8 +35,6 @@ export async function POST(req: NextRequest) {
 
     const credentialError = validateSumUpCredentials();
     if (credentialError) return credentialError;
-
-    const client = getSumUpClient();
 
     const order = await getOrderById(orderId);
     if (!order) return sumupErrorResponse("Order not found", 404);
@@ -77,7 +80,7 @@ export async function POST(req: NextRequest) {
     };
 
     try {
-      const checkout = await client.checkouts.create(payload);
+      const checkout = await withSumUp((client) => client.checkouts.create(payload));
       const checkoutId = checkout.id;
 
       if (!checkoutId) return sumupErrorResponse("Unexpected response from payment service", 502);
@@ -95,6 +98,7 @@ export async function POST(req: NextRequest) {
       const response: CreateCheckoutResponse = { checkoutId };
       return NextResponse.json(response);
     } catch (error) {
+      if (error instanceof SumUpAuthError) return sumupErrorResponse(error);
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes("DUPLICATED_CHECKOUT")) {
         const latestOrder = await getOrderById(orderId);
