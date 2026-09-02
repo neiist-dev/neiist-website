@@ -40,7 +40,11 @@ export default function IconPicker({ value, onChange, onClose, dict }: IconPicke
   } = useSearch<string>({
     data: ICON_NAMES,
     fields: ["self"],
-    extractField: (item) => item,
+    extractField: (item) =>
+      item
+        .replace(/^[A-Z][a-z0-9]*/, (prefix) => `${prefix} `)
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2"),
     returnAllWhenEmpty: true,
     limit: 60,
   });

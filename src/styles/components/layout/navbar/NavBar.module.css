@@ -101,7 +101,7 @@
   align-items: center;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   .header {
     padding: 1rem 1.5rem 1rem 2rem;
   }

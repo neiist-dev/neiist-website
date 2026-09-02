@@ -5,6 +5,7 @@
   border-radius: 0.5rem;
   transition: color 0.3s ease;
   user-select: none;
+  white-space: nowrap;
 }
 
 .navLink:hover {
