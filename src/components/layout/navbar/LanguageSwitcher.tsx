@@ -4,7 +4,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { Locale } from "@/i18n/i18n-config";
 import styles from "@/styles/components/layout/navbar/LanguageSwitcher.module.css";
 
-export default function LanguageSwitcher({ currentLocale }: { currentLocale: Locale }) {
+interface LanguageSwitcherProps {
+  currentLocale: Locale;
+  onLocaleChange?: () => void;
+}
+
+export default function LanguageSwitcher({ currentLocale, onLocaleChange }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -12,6 +17,7 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: Loc
     if (newLocale === currentLocale) return;
 
     document.cookie = `locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+    onLocaleChange?.();
     router.push(pathname.replace(`/${currentLocale}`, `/${newLocale}`));
   };
 

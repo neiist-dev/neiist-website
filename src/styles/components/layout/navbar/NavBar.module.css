@@ -96,12 +96,21 @@
   }
 }
 
+.desktopOnly {
+  display: flex;
+  align-items: center;
+}
+
 @media (max-width: 767px) {
   .header {
     padding: 1rem 1.5rem 1rem 2rem;
   }
 
   .navItems {
+    display: none;
+  }
+
+  .desktopOnly {
     display: none;
   }
 

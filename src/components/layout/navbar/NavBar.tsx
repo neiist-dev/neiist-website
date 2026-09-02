@@ -129,7 +129,9 @@ export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavB
         <div className={styles.navItems}>{renderNavItems()}</div>
       </nav>
       <div className={styles.actions}>
-        <LanguageSwitcher currentLocale={currentLocale} />
+        <div className={styles.desktopOnly}>
+          <LanguageSwitcher currentLocale={currentLocale} />
+        </div>
         <ShoppingCart />
         {authSlot ?? <AuthWidget dict={dict.menu} basePath={basePath} />}
         <div className={styles.menuButton}>
@@ -152,7 +154,10 @@ export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavB
             onClick={() => handleMobileNavClick(basePath)}>
             <NeiistLogo />
           </Link>
-          <nav className={styles.navItems}>{renderNavItems(handleMobileNavClick)}</nav>
+          <nav className={styles.navItems}>
+            {renderNavItems(handleMobileNavClick)}
+            <LanguageSwitcher currentLocale={currentLocale} onLocaleChange={closeMenu} />
+          </nav>
         </div>
       )}
     </header>
