@@ -1,19 +1,33 @@
--- TODO: Add blog tables. Add getter functions.
-
 -- SCHEMA
 CREATE SCHEMA IF NOT EXISTS neiist;
 
 -- ROLES
-CREATE ROLE neiist_app_user WITH LOGIN PASSWORD 'neiist_app_user_password';
+CREATE ROLE neiist_app_user WITH LOGIN PASSWORD 'CHANGE_ME_TO_A_SECURE_PASSWORD';
+CREATE ROLE neiist_readonly WITH LOGIN PASSWORD 'CHANGE_ME_TO_A_SECURE_PASSWORD';
 
 -- PERMISSIONS
 GRANT USAGE ON SCHEMA neiist TO neiist_app_user;
+GRANT USAGE ON SCHEMA neiist TO neiist_readonly;
+
 REVOKE ALL ON ALL TABLES IN SCHEMA neiist FROM neiist_app_user;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA neiist FROM neiist_app_user;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA neiist TO neiist_app_user;
+
+REVOKE ALL ON ALL TABLES IN SCHEMA neiist FROM neiist_readonly;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA neiist FROM neiist_readonly;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA neiist FROM neiist_readonly;
+
+GRANT EXECUTE ON FUNCTION neiist.get_all_products() TO neiist_readonly;
+GRANT EXECUTE ON FUNCTION neiist.get_product(INTEGER) TO neiist_readonly;
+GRANT EXECUTE ON FUNCTION neiist.get_all_categories() TO neiist_readonly;
+
 ALTER DEFAULT PRIVILEGES IN SCHEMA neiist GRANT EXECUTE ON FUNCTIONS TO neiist_app_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON TABLES FROM neiist_app_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON SEQUENCES FROM neiist_app_user;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON TABLES FROM neiist_readonly;
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON SEQUENCES FROM neiist_readonly;
+ALTER DEFAULT PRIVILEGES IN SCHEMA neiist REVOKE ALL ON FUNCTIONS FROM neiist_readonly;
 
 -- ENUM TYPES
 CREATE TYPE neiist.user_access_enum AS ENUM (
