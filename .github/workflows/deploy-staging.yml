@@ -13,9 +13,12 @@ on:
         required: true
         default: 'main'
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
-    name: Deploy
+    name: Build & Deploy Staging
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     environment:
@@ -33,13 +36,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Upload Deployment Script
-        run: |
-          scp -o StrictHostKeyChecking=no scripts/deploy_staging.sh \
-              ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/deploy_staging.sh
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-              "chmod +x /home/neiist/deploy_staging.sh"
-
       - name: Determine Deploy Ref
         id: deploy_ref
         run: |
@@ -49,12 +45,58 @@ jobs:
             echo "REF=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
           fi
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Open SSH Tunnel to Staging Database
+        run: |
+          ssh -f -N -L 5432:127.0.0.1:5433 \
+              -o StrictHostKeyChecking=no \
+              -o ExitOnForwardFailure=yes \
+              -o ServerAliveInterval=15 \
+              -o ServerAliveCountMax=3 \
+              ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
+          echo "SSH_TUNNEL_ACTIVE=true" >> $GITHUB_ENV
+
+      - name: Build Standalone Release
+        env:
+          DATABASE_URL: postgresql://neiist_readonly:${{ secrets.STAGING_DB_READONLY_PASSWORD }}@127.0.0.1:5432/neiist
+          NEXT_PUBLIC_BASE_URL: https://staging.neiist.rnl.tecnico.ulisboa.pt
+        run: pnpm build
+
+      - name: Close SSH Tunnel
+        if: always()
+        run: |
+          pkill -f "ssh -f -N -L 5432:127.0.0.1" || true
+
+      - name: Package Standalone Artifact
+        run: |
+          cp -r .next/static .next/standalone/.next/
+          cp -r public .next/standalone/
+          tar -czf release-staging.tar.gz -C .next/standalone .
+
+      - name: Upload Artifacts to VPS
+        run: |
+          scp -o StrictHostKeyChecking=no release-staging.tar.gz scripts/deploy_staging.sh \
+              ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+              "chmod +x /home/neiist/deploy_staging.sh"
+
       - name: Deploy to Staging
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c 'bash ~/deploy_staging.sh ${{ env.REF }}'"
+          "su - neiist -c 'bash ~/deploy_staging.sh ${{ env.REF }} /home/neiist/release-staging.tar.gz'"
 
       - name: Confirm Staging Deployment
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c 'bash -lc \"pm2 jlist\"'" | jq -r '.[] | select(.name=="neiist_server_staging" or .name=="staging") | "🌿 " + .name + " → " + .pm2_env.status'
+          "su - neiist -c 'bash -lc \"pm2 jlist\"'" | jq -r '.[] | select(.name=="staging") | "🌿 " + .name + " → " + .pm2_env.status'
