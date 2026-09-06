@@ -28,7 +28,7 @@ function isImage(buffer: Buffer): boolean {
 async function uploadImages(
   imageUploads: Array<{ imageBase64: string; imageName: string }>
 ): Promise<string[]> {
-  const uploadDir = path.join(process.cwd(), "public", "products");
+  const uploadDir = path.join(process.cwd(), "data", "products");
   await fs.mkdir(uploadDir, { recursive: true });
   const uploadedPaths: string[] = [];
 
@@ -48,7 +48,7 @@ async function uploadImages(
     const imageName = path.basename(upload.imageName || `product-${Date.now()}.png`);
     const filePath = path.join(uploadDir, imageName);
     await fs.writeFile(filePath, buffer);
-    uploadedPaths.push(`/products/${imageName}`);
+    uploadedPaths.push(`/api/shop/photo/${imageName}`);
   }
 
   return uploadedPaths;

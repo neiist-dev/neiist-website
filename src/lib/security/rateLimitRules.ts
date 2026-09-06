@@ -19,6 +19,9 @@ export function getRateLimitRule(pathname: string): RateLimitRule | null {
   if (pathname.startsWith("/api/admin/")) {
     return { limit: 30, windowMs: MIN, useUser: true };
   }
+  if (pathname.startsWith("/api/user/photo/") || pathname.startsWith("/api/shop/photo/")) {
+    return null;
+  }
   if (pathname.startsWith("/api/")) {
     return { limit: 60, windowMs: MIN };
   }

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     const form = await req.formData();
     const files = form.getAll("files") as File[];
-    const uploadDir = path.join(process.cwd(), "public", "products");
+    const uploadDir = path.join(process.cwd(), "data", "products");
     await fs.mkdir(uploadDir, { recursive: true });
 
     const paths: string[] = [];
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       const safeName = path.basename(name);
       const filePath = path.join(uploadDir, safeName);
       await fs.writeFile(filePath, buffer);
-      paths.push(`/products/${safeName}`);
+      paths.push(`/api/shop/photo/${safeName}`);
     }
 
     return NextResponse.json({ paths } as { paths: string[] });

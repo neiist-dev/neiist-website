@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   transpilePackages: ["@neiist/ui"],
   cacheComponents: true,
   devIndicators: false,
@@ -24,8 +25,17 @@ const nextConfig: NextConfig = {
         hostname: "neiist.tecnico.ulisboa.pt",
         pathname: "/api/user/photo/:path*",
       },
+      {
+        protocol: "https",
+        hostname: "neiist.tecnico.ulisboa.pt",
+        pathname: "/api/shop/photo/:path*",
+      },
     ],
-    localPatterns: [{ pathname: "/api/user/photo/**" }, { pathname: "/**/**" }],
+    localPatterns: [
+      { pathname: "/api/user/photo/**" },
+      { pathname: "/api/shop/photo/**" },
+      { pathname: "/**/**" },
+    ],
   },
 };
 
