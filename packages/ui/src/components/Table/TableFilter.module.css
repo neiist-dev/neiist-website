@@ -1,0 +1,133 @@
+.dropdown {
+  inline-size: max-content;
+  min-inline-size: 17.5rem;
+  background: var(--ui-bg);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-popover);
+}
+
+.header {
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border-block-end: 1px solid var(--ui-border);
+}
+
+.title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-fg);
+  text-align: center;
+}
+
+.list {
+  max-height: 17.5rem;
+  overflow-y: auto;
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.625rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--ui-radius-sm);
+  cursor: pointer;
+  transition: background var(--ui-transition);
+}
+
+.listItem:hover {
+  background: var(--ui-bg-hover);
+}
+
+.listItem:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: -2px;
+}
+
+.checkboxFull {
+  inline-size: 100%;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding-block: 0.75rem 0.25rem;
+  padding-inline: 0.75rem;
+}
+
+.tab {
+  flex: 1;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--ui-radius-md);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: var(--ui-font-weight-semibold);
+  cursor: pointer;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--ui-fg-light);
+  transition: all var(--ui-transition);
+}
+
+.tab:hover {
+  background: var(--ui-bg-hover);
+  color: var(--ui-fg);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.tabActive {
+  flex: 1;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--ui-radius-md);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: var(--ui-font-weight-semibold);
+  cursor: pointer;
+  border: 1px solid var(--ui-primary);
+  background: var(--ui-primary);
+  color: var(--ui-text-on-colour);
+  transition: all var(--ui-transition);
+}
+
+.tabActive:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.calendarWrapper {
+  padding-block: 0.5rem 0.75rem;
+  padding-inline: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.footer {
+  display: flex;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border-block-start: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+}
+
+.footerBtn {
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listItem,
+  .tab,
+  .tabActive {
+    transition: none;
+  }
+}

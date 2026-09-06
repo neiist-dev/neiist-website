@@ -1,0 +1,106 @@
+.root {
+  position: relative;
+  inline-size: 100%;
+}
+
+.label {
+  display: block;
+  color: var(--ui-fg-light);
+  font-size: 0.95rem;
+  margin-block-end: 0.5rem;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  padding-block: 0.625rem;
+  padding-inline: 0.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ui-fg);
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-bg-hover);
+  border-radius: var(--ui-radius-md);
+  cursor: pointer;
+  transition:
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
+}
+
+.trigger:focus-visible,
+.triggerOpen {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 1px var(--ui-primary);
+}
+
+.trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--ui-bg-hover);
+}
+
+.placeholder {
+  color: var(--ui-fg-light);
+}
+
+.value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chevron {
+  color: var(--ui-fg-light);
+  transition: transform var(--ui-transition);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.popoverMenu {
+  padding: 4px;
+}
+
+.optionList {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--ui-radius-sm);
+  font-size: 0.85rem;
+  color: var(--ui-fg);
+  cursor: pointer;
+  transition: background var(--ui-transition);
+}
+
+.option:hover {
+  background: var(--ui-bg-hover);
+}
+
+.optionSelected {
+  color: var(--ui-primary);
+}
+
+.optionIcon {
+  width: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .chevron,
+  .option {
+    transition: none;
+  }
+}

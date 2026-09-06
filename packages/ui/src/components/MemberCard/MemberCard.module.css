@@ -1,0 +1,114 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  inline-size: min(100%, 15.625rem);
+  margin: 0;
+  padding: 0;
+  gap: 0.25rem;
+  container-type: inline-size;
+  container-name: memberCard;
+}
+
+.imageCard {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 180 / 200;
+  border-radius: 1.875rem;
+  overflow: hidden;
+  box-shadow: var(--ui-shadow-md);
+  cursor: pointer;
+}
+
+.cardImage {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: var(--ui-primary);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.imageCard:hover .overlay,
+.imageCard:focus-within .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.imageCard:hover .cardImage,
+.imageCard:focus-within .cardImage {
+  opacity: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.iconLink {
+  color: var(--ui-text-on-colour);
+  display: inline-flex;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.iconLink:hover,
+.iconLink:focus-visible {
+  transform: scale(1.15);
+}
+
+.icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.username {
+  margin: 0;
+  color: var(--ui-text-on-colour);
+  font-weight: var(--ui-font-weight-bold);
+  font-size: var(--ui-font-sm);
+  word-break: break-word;
+  text-align: center;
+  padding-block: 0;
+  padding-inline: 0.75rem;
+}
+
+.name {
+  text-align: center;
+  margin-block-start: 1rem;
+  margin-block-end: 0;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  font-size: var(--ui-font-lg);
+  line-height: 1.25;
+}
+
+.role {
+  text-align: center;
+  margin: 0;
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-fg-light);
+  font-size: var(--ui-font-sm);
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardImage,
+  .overlay,
+  .iconLink {
+    transition: none;
+  }
+}

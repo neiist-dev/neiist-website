@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  background: var(--ui-bg);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  box-sizing: border-box;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-fg-light);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tag {
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
+  border-color: color-mix(in srgb, var(--ui-primary) 25%, transparent);
+}

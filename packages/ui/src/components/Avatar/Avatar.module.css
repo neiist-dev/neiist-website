@@ -1,0 +1,46 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ui-secondary-light);
+  color: var(--ui-primary);
+  font-weight: var(--ui-font-weight-bold);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar > img,
+.avatar > svg,
+.avatar > picture {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  user-select: none;
+}
+
+.sm {
+  inline-size: 2rem;
+  block-size: 2rem;
+  font-size: 0.875rem;
+}
+
+.md {
+  inline-size: 3rem;
+  block-size: 3rem;
+  font-size: 1.25rem;
+}
+
+.lg {
+  inline-size: 4rem;
+  block-size: 4rem;
+  font-size: 1.5rem;
+}

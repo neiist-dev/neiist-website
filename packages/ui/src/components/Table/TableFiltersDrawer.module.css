@@ -1,0 +1,159 @@
+.dateTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-block-end: 1rem;
+}
+
+.tab {
+  flex: 1;
+  padding-block: 0.625rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-bg);
+  color: var(--ui-fg-light);
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: var(--ui-font-weight-semibold);
+  cursor: pointer;
+  transition: var(--ui-transition);
+}
+
+.tab:hover {
+  background: var(--ui-bg-hover);
+  color: var(--ui-fg);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.tabActive {
+  flex: 1;
+  padding-block: 0.625rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--ui-primary);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-primary);
+  color: var(--ui-text-on-colour);
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: var(--ui-font-weight-semibold);
+  cursor: pointer;
+  transition: var(--ui-transition);
+}
+
+.tabActive:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.calendarWrapper {
+  display: flex;
+  justify-content: center;
+  padding-block-end: 0.5rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block: 0.625rem;
+  padding-inline: 0.5rem;
+  background: var(--ui-bg);
+  border-radius: var(--ui-radius-sm);
+  transition: background var(--ui-transition);
+}
+
+.listItem:hover {
+  background: var(--ui-bg-hover);
+}
+
+.cascadeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block-start: 0.5rem;
+  padding-block-end: 0.625rem;
+  padding-inline: 0.25rem;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  background: transparent;
+  user-select: none;
+}
+
+.cascadeHeader:active {
+  opacity: 0.7;
+}
+
+.cascadeHeader:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.cascadeLevelLabel {
+  padding-block-start: 0.25rem;
+  padding-block-end: 0.5rem;
+  padding-inline: 0.25rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg-light);
+}
+
+.drillDownBtn {
+  background: transparent;
+  border: none;
+  color: var(--ui-fg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  cursor: pointer;
+  border-radius: var(--ui-radius-sm);
+  transition: color var(--ui-transition);
+}
+
+.drillDownBtn:hover {
+  color: var(--ui-primary);
+}
+
+.drillDownBtn:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.checkboxFull {
+  inline-size: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .tabActive,
+  .listItem,
+  .drillDownBtn {
+    transition: none;
+  }
+}

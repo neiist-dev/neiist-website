@@ -5,6 +5,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -13,23 +14,12 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@neiist/ui": ["./packages/ui/src"],
-      "@neiist/ui/*": ["./packages/ui/src/*"]
-    }
+      "@neiist/ui": ["./src/index.ts"]
+    },
+    "ignoreDeprecations": "6.0"
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", ".next", "out", "dist", "build"]
+  "include": ["src", "env.d.ts"],
+  "exclude": ["node_modules"]
 }

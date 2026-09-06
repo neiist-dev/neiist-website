@@ -1,0 +1,179 @@
+.tableWrapper {
+  container-type: inline-size;
+  container-name: tableContainer;
+  inline-size: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: transparent;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-border) transparent;
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  text-align: start;
+}
+
+.th {
+  padding-block: 0.875rem;
+  padding-inline: 1rem;
+  font-size: 0.875rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  border-block-end: 1px solid var(--ui-border);
+  white-space: nowrap;
+  background: var(--ui-bg);
+}
+
+.td {
+  padding-block: 0.875rem;
+  padding-inline: 1rem;
+  font-size: 0.875rem;
+  color: var(--ui-fg);
+  white-space: nowrap;
+}
+
+.tr {
+  transition: background-color var(--ui-transition);
+}
+
+.tr:not(:last-child) .td {
+  border-block-end: 1px solid var(--ui-border);
+}
+
+.tr:hover .td {
+  background: var(--ui-bg-hover);
+}
+
+.tr[data-selected="true"] .td,
+.tr.selected .td {
+  background: color-mix(in srgb, var(--ui-primary) 8%, var(--ui-bg));
+}
+
+.tr[data-selected="true"]:hover .td,
+.tr.selected:hover .td {
+  background: color-mix(in srgb, var(--ui-primary) 12%, var(--ui-bg));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tr {
+    transition: none;
+  }
+}
+
+@container tableContainer (max-width: 48rem) {
+  .responsiveCardsWrapper {
+    overflow-x: visible;
+  }
+
+  .responsiveCards {
+    display: block;
+  }
+
+  .responsiveCards thead {
+    display: none;
+  }
+
+  .responsiveCards tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .responsiveCards tbody .tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: var(--ui-shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .responsiveCards tbody .tr:hover .td {
+    background: transparent;
+  }
+
+  .responsiveCards tbody .tr[data-selected="true"] .td,
+  .responsiveCards tbody .tr.selected .td {
+    background: transparent;
+  }
+
+  .responsiveCards tbody .tr[data-selected="true"],
+  .responsiveCards tbody .tr.selected {
+    border-color: var(--ui-primary);
+    box-shadow:
+      0 0 0 1px var(--ui-primary),
+      var(--ui-shadow-sm);
+    background: color-mix(in srgb, var(--ui-primary) 4%, var(--ui-bg));
+  }
+
+  .responsiveCards tbody .tr[data-selected="true"] .cardHeaderCell,
+  .responsiveCards tbody .tr.selected .cardHeaderCell {
+    background: color-mix(in srgb, var(--ui-primary) 8%, var(--ui-bg));
+    border-bottom-color: color-mix(in srgb, var(--ui-primary) 20%, var(--ui-border));
+  }
+
+  .responsiveCards tbody .td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: 0.75rem;
+    padding-block: 0.625rem;
+    white-space: normal;
+    text-align: end;
+    min-block-size: 2.75rem;
+    box-sizing: border-box;
+  }
+
+  .responsiveCards tbody .tr .td:not(:last-child) {
+    border-block-end: 1px solid var(--ui-bg-hover);
+  }
+
+  .responsiveCards tbody .td::before {
+    content: attr(data-label);
+    font-weight: var(--ui-font-weight-bold);
+    font-size: 0.8125rem;
+    color: var(--ui-fg-light);
+    text-align: start;
+    margin-inline-end: 1rem;
+    flex-shrink: 0;
+  }
+
+  .responsiveCards tbody .td:not([data-label])::before,
+  .responsiveCards tbody .td[data-label=""]::before {
+    content: none;
+    display: none;
+  }
+
+  .responsiveCards tbody .cardHeaderCell {
+    order: -1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: var(--ui-font-weight-bold);
+    color: var(--ui-fg);
+    padding-inline: 0.75rem;
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--ui-border);
+    background: var(--ui-bg);
+    min-block-size: 2.75rem;
+    box-sizing: border-box;
+  }
+
+  .responsiveCards tbody .tr[data-selectable="true"] .cardHeaderCell {
+    padding-inline-end: 2.75rem;
+  }
+
+  .responsiveCards tbody .cardHeaderCell::before {
+    content: attr(data-label);
+    font-weight: var(--ui-font-weight-bold);
+    font-size: 0.8125rem;
+    color: var(--ui-fg-light);
+    margin-inline-end: 0.25rem;
+  }
+}

@@ -1,0 +1,8 @@
+.popover {
+  background: var(--ui-bg);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-popover);
+  position: fixed;
+  z-index: 9999;
+}

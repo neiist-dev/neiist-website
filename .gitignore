@@ -1,5 +1,5 @@
 # Dependencies
-/node_modules
+**/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,7 +11,8 @@
 # Build Output
 /.next/
 /out/
-/build
+**/build/
+**/dist/
 
 # Log Files
 npm-debug.log*
@@ -37,4 +38,3 @@ next-env.d.ts
 .DS_Store
 
 certificates
-/data

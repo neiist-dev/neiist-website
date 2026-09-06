@@ -1,0 +1,80 @@
+.root {
+  position: relative;
+  display: inline-block;
+}
+
+.menuList {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+  min-inline-size: 11rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--ui-radius-sm);
+  font-size: 0.875rem;
+  font-weight: var(--ui-font-weight-medium);
+  color: var(--ui-fg);
+  background: transparent;
+  border: none;
+  inline-size: 100%;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    background-color var(--ui-transition),
+    color var(--ui-transition);
+  user-select: none;
+}
+
+.item:hover:not(:disabled),
+.item:focus-visible:not(:disabled) {
+  background-color: var(--ui-bg-hover);
+}
+
+.item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.destructive {
+  color: var(--ui-danger);
+}
+
+.destructive:hover:not(:disabled),
+.destructive:focus-visible:not(:disabled) {
+  background-color: var(--ui-danger-subtle);
+  color: var(--ui-danger-hover);
+}
+
+.itemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.itemShortcut {
+  margin-inline-start: auto;
+  font-size: 0.75rem;
+  color: var(--ui-fg-light);
+}
+
+.divider {
+  block-size: 1px;
+  background-color: var(--ui-bg-hover);
+  margin-block: 0.25rem;
+  margin-inline: 0;
+  border: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+}

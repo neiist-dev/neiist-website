@@ -1,0 +1,81 @@
+.demoStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.membersGrid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cardsLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-inline-size: 46.875rem;
+}
+
+.actionBtn {
+  background: transparent;
+  border: none;
+  color: var(--ui-fg-light);
+  padding-block: 0.375rem;
+  padding-inline: 0.375rem;
+  border-radius: var(--ui-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background var(--ui-transition),
+    color var(--ui-transition);
+}
+
+.actionBtn:hover {
+  background: var(--ui-bg-hover);
+  color: var(--ui-fg);
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.roleTeam {
+  color: var(--ui-primary);
+  font-weight: 500;
+}
+
+.badgeSmall {
+  font-size: 0.75rem;
+  padding-block: 0.125rem;
+  padding-inline: 0.375rem;
+}
+
+.roleHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-block-start: 0.15rem;
+}
+
+.roleHistoryDates {
+  color: var(--ui-fg-light);
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionBtn {
+    transition: none;
+  }
+}

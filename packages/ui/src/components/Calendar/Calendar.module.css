@@ -1,0 +1,18 @@
+.calendar {
+  display: inline-block;
+  background: transparent;
+}
+
+.calendar :global(.rdp-root) {
+  --rdp-accent-color: var(--ui-primary);
+  --rdp-accent-background-color: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  --rdp-today-color: var(--ui-primary);
+  --rdp-selected-border: 2px solid var(--ui-primary);
+  font-family: inherit;
+  color: var(--ui-fg);
+}
+
+.calendar :global(.rdp-dropdown:focus-visible) {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}

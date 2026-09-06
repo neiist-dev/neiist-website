@@ -1,0 +1,66 @@
+.skeleton {
+  background-color: var(--ui-bg-hover);
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.variant-text {
+  block-size: 1em;
+  border-radius: var(--ui-radius-sm);
+  margin-block: 0.25em;
+}
+
+.variant-circular {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.variant-rectangular {
+  border-radius: 0;
+}
+
+.variant-rounded {
+  border-radius: var(--ui-radius-md);
+}
+
+.animation-pulse {
+  animation: pulse 1.5s ease-in-out 0.5s infinite;
+}
+
+.animation-wave::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--ui-shimmer-highlight), transparent);
+  animation: wave 1.6s linear 0.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animation-pulse,
+  .animation-wave::after {
+    animation: none;
+  }
+}

@@ -1,0 +1,64 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  border: 1px solid var(--ui-bg-hover);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-bg);
+  transition: var(--ui-transition);
+}
+
+.wrapper:focus-within {
+  border-color: var(--ui-primary);
+  box-shadow: var(--ui-ring-primary);
+}
+
+.icon {
+  color: var(--ui-fg-light);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--ui-fg);
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--ui-fg-light);
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  color: var(--ui-fg-light);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ui-radius-full);
+  transition: var(--ui-transition);
+  flex-shrink: 0;
+}
+
+.clearButton:hover {
+  background: var(--ui-bg-hover);
+  color: var(--ui-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrapper,
+  .clearButton {
+    transition: none;
+  }
+}

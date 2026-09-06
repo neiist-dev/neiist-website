@@ -1,0 +1,59 @@
+.card {
+  container-type: inline-size;
+  container-name: card;
+  background: var(--ui-bg);
+  border-radius: var(--ui-radius-lg);
+  position: relative;
+}
+
+.elevated {
+  box-shadow: var(--ui-shadow-md);
+  border: 1px solid var(--ui-bg-hover);
+}
+
+.flat {
+  border: 1px solid var(--ui-border);
+}
+
+.header {
+  padding-block: 1.25rem;
+  padding-inline: 1.5rem;
+  border-block-end: 1px solid var(--ui-bg-hover);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  margin: 0;
+  font-weight: var(--ui-font-weight-bold);
+  font-size: 1.125rem;
+  color: var(--ui-fg);
+}
+
+.description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ui-fg-light);
+}
+
+.body {
+  padding: 1.5rem;
+}
+
+.footer {
+  padding-block: 1rem;
+  padding-inline: 1.5rem;
+  border-block-start: 1px solid var(--ui-bg-hover);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

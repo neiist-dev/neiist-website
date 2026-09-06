@@ -1,0 +1,79 @@
+:root {
+  --ui-bg: var(--background-colour, #f2f2f7);
+  --ui-bg-hover: var(--background-colour-hover, #e7e7ee);
+  --ui-fg: var(--foreground-colour, #333333);
+  --ui-fg-light: var(--light-foreground-colour, #7b7b8b);
+  --ui-border: var(--border-colour, #d1d5db);
+
+  --ui-primary: var(--primary-colour, #2863fd);
+  --ui-primary-hover: var(--secondary-colour, #258be3);
+  --ui-secondary: var(--secondary-colour, #258be3);
+  --ui-secondary-light: var(--light-secondary-colour, #d4e6f6);
+  --ui-tertiary: var(--tertiary-colour, #34d1f9);
+  --ui-quaternary: var(--quaternary-colour, #5ee8fa);
+
+  --ui-hover: var(--hover, rgba(0, 0, 0, 0.05));
+  /* Typography */
+  --ui-font: var(--font-family, "Secular One", sans-serif);
+  --ui-font-weight-regular: var(--font-weight-regular, 400);
+  --ui-font-weight-medium: var(--font-weight-medium, 400);
+  --ui-font-weight-semibold: var(--font-weight-semibold, 400);
+  --ui-font-weight-bold: var(--font-weight-bold, 400);
+  --ui-font-weight-extrabold: var(--font-weight-extrabold, 400);
+
+  /* Font Sizes */
+  --ui-font-xs: var(--font-size-xs, 0.75rem);
+  --ui-font-sm: var(--font-size-sm, 0.875rem);
+  --ui-font-md: var(--font-size-md, 1rem);
+  --ui-font-lg: var(--font-size-lg, 1.125rem);
+  --ui-font-xl: var(--font-size-xl, 1.25rem);
+
+  /* Library specific layout/interaction tokens */
+  --ui-radius-sm: var(--radius-sm, 4px);
+  --ui-radius-md: var(--radius-md, 8px);
+  --ui-radius-lg: var(--radius-lg, 12px);
+  --ui-radius-full: var(--radius-full, 9999px);
+  --ui-transition: var(--transition, 0.2s ease-in-out);
+
+  /* Semantic Feedback Colors */
+  --ui-danger: var(--danger-colour, #ef4444);
+  --ui-danger-hover: var(--danger-hover-colour, #dc2626);
+  --ui-danger-subtle: rgba(239, 68, 68, 0.1);
+  --ui-success: var(--success-colour, #10b981);
+  --ui-success-hover: #059669;
+  --ui-success-subtle: rgba(16, 185, 129, 0.1);
+  --ui-warning: var(--warning-colour, #f59e0b);
+  --ui-warning-hover: #d97706;
+  --ui-warning-subtle: rgba(245, 158, 11, 0.1);
+  --ui-info: var(--info-colour, #3b82f6);
+  --ui-info-hover: #2563eb;
+  --ui-info-subtle: rgba(59, 130, 246, 0.1);
+  --ui-neutral: var(--neutral-colour, #64748b);
+  --ui-neutral-hover: var(--neutral-hover-colour, #475569);
+  --ui-text-on-colour: var(--text-on-colour, #ffffff);
+
+  /* Overlays, Shadows & Rings */
+  --ui-backdrop: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
+  --ui-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.1));
+  --ui-shadow-md: var(
+    --shadow-md,
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06)
+  );
+  --ui-shadow-lg: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.2));
+  --ui-shadow-popover: var(--shadow-popover, 0 10px 40px rgba(0, 0, 0, 0.1));
+  --ui-ring-danger: var(--ring-danger, 0 0 0 3px rgba(239, 68, 68, 0.2));
+  --ui-ring-primary: var(--ring-primary, 0 0 0 3px rgba(40, 99, 253, 0.1));
+  --ui-overlay-dark: rgba(0, 0, 0, 0.2);
+  --ui-shimmer-highlight: rgba(255, 255, 255, 0.15);
+}
+
+.dark {
+  --ui-border: var(--border-colour, #374151);
+  --ui-shadow-popover: var(--shadow-popover, 0 10px 40px rgba(0, 0, 0, 0.4));
+  --ui-danger-subtle: rgba(239, 68, 68, 0.2);
+  --ui-success-subtle: rgba(16, 185, 129, 0.2);
+  --ui-warning-subtle: rgba(245, 158, 11, 0.2);
+  --ui-info-subtle: rgba(59, 130, 246, 0.2);
+  --ui-primary-subtle: rgba(40, 99, 253, 0.2);
+}

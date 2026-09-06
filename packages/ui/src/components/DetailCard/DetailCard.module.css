@@ -1,0 +1,163 @@
+.card {
+  container-type: inline-size;
+  container-name: detailCard;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  box-shadow: var(--ui-shadow-sm);
+  transition:
+    box-shadow var(--ui-transition),
+    border-color var(--ui-transition);
+  position: relative;
+  inline-size: 100%;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  border-color: var(--ui-primary);
+  box-shadow: var(--ui-shadow-md);
+}
+
+.avatarContainer {
+  flex-shrink: 0;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border-radius: var(--ui-radius-md);
+  overflow: hidden;
+  background: var(--ui-bg-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImage {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.content {
+  flex: 1 1 18rem;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+}
+
+.identifier {
+  font-size: 0.875rem;
+  color: var(--ui-fg-light);
+  font-weight: var(--ui-font-weight-regular);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.metadataList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ui-fg);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.metaLabel {
+  font-weight: var(--ui-font-weight-semibold);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ui-fg-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.metaValue {
+  inline-size: 100%;
+  color: var(--ui-fg);
+  flex: 1;
+  min-inline-size: 0;
+  word-break: normal;
+}
+
+.tagsRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block-start: 0.25rem;
+}
+
+@container detailCard (min-width: 32rem) {
+  .card {
+    padding-block: 1.25rem;
+    padding-inline: 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .metaItem {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .metaLabel {
+    font-size: 0.9rem;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--ui-fg);
+  }
+
+  .metaValue {
+    inline-size: auto;
+    color: var(--ui-fg-light);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

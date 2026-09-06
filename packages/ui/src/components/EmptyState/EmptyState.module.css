@@ -1,0 +1,38 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding-block: 3rem;
+  padding-inline: 1rem;
+  background: var(--ui-bg);
+  border: 2px dashed var(--ui-fg-light);
+  border-radius: var(--ui-radius-lg);
+}
+
+.icon {
+  font-size: 3rem;
+  color: var(--ui-fg-light);
+  opacity: 0.5;
+  margin-block-end: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+}
+
+.description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ui-fg-light);
+  max-inline-size: 25rem;
+}
+
+.action {
+  margin-block-start: 0.5rem;
+}

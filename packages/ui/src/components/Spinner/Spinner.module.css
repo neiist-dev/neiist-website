@@ -1,0 +1,168 @@
+.iconRoot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.container {
+  background-color: var(--ui-bg);
+  border-radius: var(--ui-radius-lg);
+  padding-block: 2rem;
+  padding-inline: 1.5rem;
+  text-align: center;
+  max-inline-size: 32.5rem;
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: var(--ui-shadow-md);
+  border: 1px solid var(--ui-bg-hover);
+  container-type: inline-size;
+  container-name: spinnerCard;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.iconContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spinnerLayer {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.successIcon {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 50%;
+  background: var(--ui-primary);
+  color: var(--ui-text-on-colour);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.iconFadeIn {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.iconFadeOut {
+  opacity: 0;
+  transform: scale(0.6) rotate(-45deg);
+  pointer-events: none;
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+.title {
+  font-size: 1.375rem;
+  color: var(--ui-fg);
+  margin-block: 0;
+  line-height: 1.3;
+}
+
+.subtitle {
+  font-size: 0.935rem;
+  color: var(--ui-fg-light);
+  margin-block: 0;
+  line-height: 1.6;
+}
+
+.actionButton {
+  inline-size: 100%;
+  border: none;
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-primary);
+  color: var(--ui-text-on-colour);
+  padding-block: 0.75rem;
+  padding-inline: 1.5rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  font-weight: var(--ui-font-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity var(--ui-transition);
+}
+
+.actionButton:hover {
+  opacity: 0.9;
+}
+
+@container spinnerCard (min-width: 30rem) {
+  .container {
+    padding-block: 2.5rem;
+    padding-inline: 2rem;
+  }
+
+  .title {
+    font-size: 1.625rem;
+  }
+
+  .actionButton {
+    inline-size: auto;
+    min-inline-size: 11.25rem;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconLayer,
+  .actionButton {
+    transition: none;
+  }
+  .spinner {
+    animation: none;
+  }
+}

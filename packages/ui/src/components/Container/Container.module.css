@@ -1,0 +1,23 @@
+.container {
+  container-type: inline-size;
+  container-name: container;
+  inline-size: 100%;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.sm {
+  max-inline-size: 40rem;
+}
+
+.md {
+  max-inline-size: 48rem;
+}
+
+.lg {
+  max-inline-size: 64rem;
+}
+
+.xl {
+  max-inline-size: 80rem;
+}

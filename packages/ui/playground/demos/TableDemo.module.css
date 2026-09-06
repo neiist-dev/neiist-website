@@ -1,0 +1,42 @@
+.demoStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.controlsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-block-end: 1rem;
+}
+
+.controlsTitle {
+  margin-block-end: 0.5rem;
+}
+
+.filterIcon {
+  margin-inline-end: 0.35rem;
+}
+
+.selectedRowsSection {
+  padding-block-end: 0.5rem;
+}
+
+.selectedRowsText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ui-fg-light);
+}
+
+.subtleCell {
+  color: var(--ui-fg-light);
+  font-size: 0.85rem;
+}
+
+.productCell {
+  font-size: 0.875rem;
+  color: var(--ui-fg);
+}

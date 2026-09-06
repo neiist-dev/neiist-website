@@ -1,0 +1,21 @@
+.text {
+  margin-block: 0 1em;
+  margin-inline: 0;
+  line-height: 1.6;
+}
+.sm {
+  font-size: var(--ui-font-sm);
+}
+.md {
+  font-size: var(--ui-font-md);
+}
+.lg {
+  font-size: var(--ui-font-lg);
+}
+
+.default {
+  color: var(--ui-fg);
+}
+.muted {
+  color: var(--ui-fg-light);
+}

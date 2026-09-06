@@ -1,0 +1,167 @@
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+}
+
+.label {
+  display: block;
+  color: var(--ui-fg-light);
+  font-size: 0.95rem;
+  margin-block-end: 0.5rem;
+}
+
+.triggerWrap {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  gap: 0.5rem;
+  padding-block: 0;
+  padding-inline: 0.75rem;
+  border-radius: var(--ui-radius-md);
+  border: 1px solid var(--ui-bg-hover);
+  background: var(--ui-bg);
+  transition:
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
+}
+
+.triggerWrap:focus-within {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 1px var(--ui-primary);
+}
+
+.trigger {
+  flex: 1;
+  min-width: 0;
+  padding-block: 0.75rem;
+  padding-inline: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ui-fg);
+  outline: none;
+}
+
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chevronButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ui-fg-light);
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.chevronButton:disabled {
+  cursor: not-allowed;
+}
+
+.chevron {
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.optionList {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.empty {
+  padding-block: 10px;
+  padding-inline: 12px;
+  font-size: 0.8125rem;
+  color: var(--ui-fg-light);
+  font-family: inherit;
+  text-align: center;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 8px;
+  padding-inline: 12px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  color: var(--ui-fg);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.optionActive {
+  background: var(--ui-bg-hover);
+}
+
+.optionSelected {
+  color: var(--ui-primary);
+}
+
+.optionIcon {
+  width: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 24px;
+  margin-block-start: 12px;
+}
+
+.noTags {
+  font-size: 0.75rem;
+  color: var(--ui-fg-light);
+}
+
+.mobileSearchContainer {
+  display: none;
+}
+
+@media (max-width: 48rem) {
+  .mobileSearchContainer {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--ui-bg);
+    padding-block-end: 0.75rem;
+    margin-block-end: 0.5rem;
+    border-block-end: 1px solid var(--ui-border);
+  }
+
+  .optionList {
+    max-height: 50vh;
+  }
+
+  .option {
+    padding-block: 0.75rem;
+    padding-inline: 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .triggerWrap,
+  .chevron,
+  .option {
+    transition: none;
+  }
+}

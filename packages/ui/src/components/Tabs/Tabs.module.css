@@ -1,0 +1,78 @@
+.tabsContainer {
+  container-type: inline-size;
+  container-name: tabsWrapper;
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+}
+
+.tabBar {
+  padding-block: 0;
+  padding-inline: 1rem;
+  display: flex;
+  gap: 0;
+  margin: 0;
+  overflow-x: auto;
+  background: var(--ui-bg);
+}
+
+.tabButton {
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--ui-fg);
+  background: transparent;
+  font-weight: var(--ui-font-weight-regular);
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
+  cursor: pointer;
+  border: none;
+  border-block-end: 2px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    border-radius 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  background: var(--ui-bg-hover);
+  border-radius: 1.5rem;
+}
+
+.activeTab {
+  color: var(--ui-primary);
+  border-block-end-color: var(--ui-primary);
+}
+
+.tabContent {
+  padding-block: 1.5rem;
+  padding-inline: 0;
+}
+
+@container tabsWrapper (min-width: 30rem) {
+  .tabBar {
+    padding-inline: 2rem;
+  }
+
+  .tabButton {
+    flex-direction: row;
+    font-size: 1rem;
+    gap: 0.5rem;
+    padding-block: 1rem;
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabButton {
+    transition: none;
+  }
+}

@@ -1,0 +1,174 @@
+.dropdown {
+  inline-size: 17.5rem;
+  background: var(--ui-bg);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow-popover);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border-block-end: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+}
+
+.title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  text-align: center;
+}
+
+.cascadeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  text-align: start;
+  padding-block: 0.625rem;
+  padding-inline: 0.875rem;
+  background: var(--ui-bg);
+  border-block-end: 1px solid var(--ui-border);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.95rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  transition: background var(--ui-transition);
+}
+
+.cascadeHeader:hover {
+  background: var(--ui-bg-hover);
+}
+
+.cascadeHeader:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: -2px;
+}
+
+.backIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ui-fg);
+}
+
+.cascadeHeaderText {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cascadeLevelLabel {
+  padding-block-start: 0.5rem;
+  padding-block-end: 0.25rem;
+  padding-inline: 0.875rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg-light);
+  background: var(--ui-bg);
+}
+
+.list {
+  padding-block: 0.375rem;
+  padding-inline: 0.5rem;
+  max-height: 17.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.cascadeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 0.5rem;
+  padding-inline: 0.65rem;
+  border-radius: var(--ui-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--ui-transition);
+}
+
+.cascadeItem:hover {
+  background: var(--ui-bg-hover);
+}
+
+.cascadeItem:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: -2px;
+}
+
+.cascadeItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.cascadeItemLabel {
+  font-size: 0.9rem;
+  font-weight: var(--ui-font-weight-bold);
+  color: var(--ui-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cascadeSubtitle {
+  font-size: 0.8rem;
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-fg-light);
+  margin-inline-start: auto;
+  margin-inline-end: 0.375rem;
+}
+
+.cascadeArrow {
+  color: var(--ui-fg-light);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drillDownBtn {
+  background: transparent;
+  border: none;
+  color: var(--ui-fg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  cursor: pointer;
+  border-radius: var(--ui-radius-sm);
+  transition: color var(--ui-transition);
+}
+
+.drillDownBtn:hover {
+  color: var(--ui-primary);
+}
+
+.drillDownBtn:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cascadeItem,
+  .cascadeHeader {
+    transition: none;
+  }
+}

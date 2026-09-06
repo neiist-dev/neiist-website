@@ -1,0 +1,9 @@
+.formGroup {
+  margin-block-end: 1.5rem;
+}
+
+.actionGroup {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}

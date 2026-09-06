@@ -1,0 +1,84 @@
+.rowClickable {
+  cursor: pointer;
+}
+
+.emptyStateCell {
+  text-align: center;
+  padding-block: 3rem;
+  padding-inline: 1rem;
+  color: var(--ui-fg-light);
+  font-style: italic;
+}
+
+.checkboxCol {
+  inline-size: 3.125rem;
+  padding-inline-end: 0;
+  vertical-align: middle;
+}
+
+.headerWithFilter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.headerFilterBtn {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--ui-radius-sm);
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ui-fg-light);
+  transition:
+    transform var(--ui-transition),
+    background-color var(--ui-transition);
+  padding: 0;
+}
+
+.headerFilterBtn:hover {
+  transform: scale(1.1);
+  background-color: var(--ui-hover);
+}
+
+.headerFilterBtn:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headerFilterBtn {
+    transition: none;
+  }
+
+  .headerFilterBtn:hover {
+    transform: none;
+  }
+}
+
+@container tableContainer (max-width: 48rem) {
+  .checkboxCol {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    min-block-size: 2.75rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .emptyStateCell {
+    display: block;
+    text-align: center;
+    padding-block: 2.5rem;
+  }
+}

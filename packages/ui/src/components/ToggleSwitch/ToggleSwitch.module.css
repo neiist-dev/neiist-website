@@ -1,0 +1,72 @@
+.toggleSwitch {
+  position: relative;
+  display: inline-flex;
+  background-color: var(--ui-bg-hover);
+  border-radius: var(--ui-radius-full);
+  transition:
+    background-color var(--ui-transition),
+    opacity var(--ui-transition);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.size-sm {
+  inline-size: 2rem;
+  block-size: 1.125rem;
+}
+
+.size-md {
+  inline-size: 2.75rem;
+  block-size: 1.5rem;
+}
+
+.toggleSwitch:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 2px;
+}
+
+.toggleSwitch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggleSwitchActive {
+  background-color: var(--ui-primary);
+}
+
+.toggleKnob {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  background-color: var(--ui-text-on-colour);
+  border-radius: 50%;
+  transition: transform var(--ui-transition);
+  box-shadow: var(--ui-shadow-sm);
+}
+
+.size-sm .toggleKnob {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+}
+
+.size-md .toggleKnob {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+}
+
+.size-sm.toggleSwitchActive .toggleKnob {
+  transform: translateX(0.875rem);
+}
+
+.size-md.toggleSwitchActive .toggleKnob {
+  transform: translateX(1.25rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggleSwitch,
+  .toggleKnob {
+    transition: none;
+  }
+}

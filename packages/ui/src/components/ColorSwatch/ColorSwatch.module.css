@@ -1,0 +1,40 @@
+.swatch {
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.sm {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+}
+
+.md {
+  inline-size: 2rem;
+  block-size: 2rem;
+}
+
+.lg {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+}
+
+.swatch:hover {
+  transform: scale(1.1);
+}
+
+.active {
+  box-shadow:
+    0 0 0 2px var(--ui-bg),
+    0 0 0 4px var(--ui-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatch {
+    transition: none;
+  }
+}

@@ -1,0 +1,6 @@
+.demoCard {
+  margin-block-end: 2rem;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-bg-hover);
+  border-radius: var(--ui-radius-md);
+}

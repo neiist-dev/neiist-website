@@ -1,0 +1,24 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  inline-size: 100%;
+}
+
+.label {
+  font-weight: var(--ui-font-weight-bold);
+  font-size: 0.9rem;
+  color: var(--ui-fg);
+}
+
+.error {
+  font-size: 0.75rem;
+  color: var(--ui-danger);
+  font-weight: var(--ui-font-weight-semibold);
+}
+
+.description {
+  font-size: 0.875rem;
+  color: var(--ui-fg-light);
+  display: block;
+}

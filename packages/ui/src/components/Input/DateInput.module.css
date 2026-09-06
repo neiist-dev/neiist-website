@@ -1,0 +1,61 @@
+.container {
+  position: relative;
+  inline-size: 100%;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  gap: 0.5rem;
+  padding-inline: 0.75rem;
+  border: 2px solid var(--ui-fg-light);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-bg);
+  transition:
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
+}
+
+.wrapper:focus-within {
+  border-color: var(--ui-primary);
+}
+
+.input {
+  flex: 1;
+  min-inline-size: 0;
+  padding-block: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--ui-fg);
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.icon {
+  color: var(--ui-fg-light);
+  flex-shrink: 0;
+}
+
+.popoverCalendarWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.inlineCalendar {
+  margin-block-start: 1rem;
+  inline-size: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrapper {
+    transition: none;
+  }
+}
