@@ -1,9 +1,7 @@
-"use client";
-
 import React, { useId } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";
-import { RadioGroupContext } from "./Radio";
+import { RadioProps } from "./Radio";
 
 export interface RadioGroupProps extends Omit<React.ComponentPropsWithRef<"fieldset">, "onChange"> {
   name?: string;
@@ -33,34 +31,39 @@ export function RadioGroup({
   const defaultId = useId();
   const groupName = name || `radio-group-${defaultId}`;
 
-  const [internalValue, setInternalValue] = React.useState(defaultValue || "");
-  const currentValue = value !== undefined ? value : internalValue;
+  const renderedChildren = React.Children.map(children, (child) => {
+    if (!React.isValidElement<RadioProps>(child)) return child;
 
-  const handleChange = (val: string) => {
-    if (value === undefined) {
-      setInternalValue(val);
-    }
-    onChange?.(val);
-  };
+    const itemValue = child.props.value;
+    const isChecked = value !== undefined ? value === itemValue : child.props.checked;
+
+    const isDefaultChecked =
+      defaultValue !== undefined ? defaultValue === itemValue : child.props.defaultChecked;
+
+    return React.cloneElement(child, {
+      name: child.props.name ?? groupName,
+      checked: isChecked,
+      defaultChecked: isChecked !== undefined ? undefined : isDefaultChecked,
+      disabled: child.props.disabled ?? disabled,
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        child.props.onChange?.(event);
+        if (event.target.checked && onChange) {
+          onChange(itemValue);
+        }
+      },
+    });
+  });
 
   return (
-    <RadioGroupContext
-      value={{
-        name: groupName,
-        value: currentValue,
-        onChange: handleChange,
-        disabled,
-      }}>
-      <fieldset
-        ref={ref}
-        role="radiogroup"
-        aria-label={label}
-        className={cn(styles.group, styles[`group-${direction}`], className)}
-        {...props}>
-        {label && <legend className={styles.groupLabel}>{label}</legend>}
-        {children}
-        {error && <span className={styles.errorText}>{error}</span>}
-      </fieldset>
-    </RadioGroupContext>
+    <fieldset
+      ref={ref}
+      role="radiogroup"
+      aria-label={label}
+      className={cn(styles.group, styles[`group-${direction}`], className)}
+      {...props}>
+      {label && <legend className={styles.groupLabel}>{label}</legend>}
+      {renderedChildren}
+      {error && <span className={styles.errorText}>{error}</span>}
+    </fieldset>
   );
 }

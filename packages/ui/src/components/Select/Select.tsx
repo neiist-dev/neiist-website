@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect, ComponentPropsWithRef } from "react";
 import styles from "./Select.module.css";
 import { cn } from "../../utils/cn";

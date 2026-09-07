@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useCallback } from "react";
 
 export type ReactRef<T> = React.Ref<T> | undefined;

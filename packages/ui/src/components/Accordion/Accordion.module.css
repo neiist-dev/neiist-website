@@ -22,20 +22,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  inline-size: 100%;
   padding-block: 1rem;
   padding-inline: 1.25rem;
-  font-family: inherit;
   font-size: 1rem;
   font-weight: var(--ui-font-weight-semibold);
   color: var(--ui-fg);
-  background: transparent;
-  border: none;
   cursor: pointer;
-  text-align: start;
-  transition:
-    background-color var(--ui-transition),
-    color var(--ui-transition);
 }
 
 .trigger:hover:not(:disabled) {
@@ -45,6 +37,16 @@
 .trigger:focus-visible {
   outline: 2px solid var(--ui-primary);
   outline-offset: -2px;
+}
+
+.item:first-child .trigger {
+  border-start-start-radius: calc(var(--ui-radius-lg) - 1px);
+  border-start-end-radius: calc(var(--ui-radius-lg) - 1px);
+}
+
+.item:last-child:not([open]) .trigger {
+  border-end-start-radius: calc(var(--ui-radius-lg) - 1px);
+  border-end-end-radius: calc(var(--ui-radius-lg) - 1px);
 }
 
 .trigger:disabled {
@@ -59,62 +61,22 @@
   flex-shrink: 0;
 }
 
+.item[open] .chevron,
 .chevronOpen {
   transform: rotate(180deg);
-}
-
-.contentWrapper {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition:
-    grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0.3s step-end;
-  visibility: hidden;
-  overflow: hidden;
-}
-
-.contentWrapperOpen {
-  grid-template-rows: 1fr;
-  visibility: visible;
-  transition:
-    grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0.3s step-start;
-}
-
-.contentWrapperClosed {
-  grid-template-rows: 0fr;
-  visibility: hidden;
-}
-
-.contentInner {
-  min-block-size: 0;
-  overflow: hidden;
 }
 
 .contentBody {
   padding-block: 0 1.25rem;
   padding-inline: 1.25rem;
   font-size: 0.9rem;
-  line-height: 1.6;
   color: var(--ui-fg);
-  opacity: 0;
-  transform: translateY(-4px);
-  transition:
-    opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.contentWrapperOpen .contentBody {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .trigger,
   .chevron,
   .contentWrapper,
-  .contentWrapperOpen,
-  .contentWrapperClosed,
   .contentBody {
     transition: none;
     animation: none;

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import styles from "./Tabs.module.css";
 import { cn } from "../../utils/cn";

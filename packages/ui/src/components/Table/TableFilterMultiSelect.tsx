@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import styles from "./TableFilter.module.css";
 import { Checkbox } from "../Checkbox/Checkbox";

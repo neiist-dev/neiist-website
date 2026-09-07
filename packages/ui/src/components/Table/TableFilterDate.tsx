@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import styles from "./TableFilter.module.css";
 import { Calendar } from "../Calendar/Calendar";
