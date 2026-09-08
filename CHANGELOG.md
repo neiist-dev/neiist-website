@@ -1,5 +1,27 @@
 # neiist
 
+## [3.0.0](https://github.com/neiist-dev/neiist-website/compare/v2.0.0...v3.0.0) (2026-09-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deploy:** build on github actions, send only built artifact to
+
+### Features
+
+* add nextjs cache to build step on github action ([03591bc](https://github.com/neiist-dev/neiist-website/commit/03591bc7acc0bc90d02a7b514c10c2e42a2dca92))
+* **campuses:** add to about us page a campus room location tabs ([c8fdbd7](https://github.com/neiist-dev/neiist-website/commit/c8fdbd787aa61a5f8a21f0ff48d0afa4397dfa37))
+* **deploy:** build on github actions, send only built artifact to ([064667a](https://github.com/neiist-dev/neiist-website/commit/064667abec484c74b8d72ec5c3e82bf47aff7a48))
+* **homepage:** update copyright to 2026 remove Partnerships from home ([6dee5a0](https://github.com/neiist-dev/neiist-website/commit/6dee5a062ae4086d20f54e0fe777f33ad09076b7))
+* **shop:** image uploads api stored in data/ get route via filename ([4b34079](https://github.com/neiist-dev/neiist-website/commit/4b34079e3d656edfefca8b3ef42679d5c81d64c1))
+* **ui:** implement ui library @neiist/ui as a sub package ([6924125](https://github.com/neiist-dev/neiist-website/commit/692412589bfe909fe02185508fc0854581d426f5))
+* **ui:** separate client components from RSC ones, accordion refactor ([d578b3b](https://github.com/neiist-dev/neiist-website/commit/d578b3b0c2711513e0fa27fd13f1591149a44efe))
+
+
+### Bug Fixes
+
+* **ui-tabs:** animation and corner blue accent line ([1b8437f](https://github.com/neiist-dev/neiist-website/commit/1b8437faea9ffa1da2ed2a1926aaff2a3fd0da23))
+
 ## [2.0.0](https://github.com/neiist-dev/neiist-website/compare/v1.16.1...v2.0.0) (2026-09-02)
 
 
