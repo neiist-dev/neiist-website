@@ -1,5 +1,6 @@
 .activities {
-  padding: 1.5rem 6vw 0.25rem 6vw;
+  padding-block: 1.5rem 1rem;
+  padding-inline: 1.5rem;
   margin: 0 auto;
 }
 
@@ -124,9 +125,6 @@
 }
 
 @media (max-width: 768px) {
-  .activities {
-    padding: 1.5rem 2vw 1rem 2vw;
-  }
   .eventTitle {
     font-size: 1.7vw;
   }

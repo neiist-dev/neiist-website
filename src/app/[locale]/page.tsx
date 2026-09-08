@@ -1,8 +1,12 @@
 import Hero from "@/components/homepage/Hero";
 import Activities from "@/components/homepage/Activities";
-import Partnerships from "@/components/homepage/Partnerships";
+// import Partnerships from "@/components/homepage/Partnerships";
 import { getDictionary } from "@/i18n/dictionaries";
-import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
+import { defaultLocale, isValidLocale, locales, LocaleParams } from "@/i18n/i18n-config";
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
 async function HomePage({ params }: { params: LocaleParams }) {
   const { locale: rawLocale } = await params;
@@ -13,7 +17,7 @@ async function HomePage({ params }: { params: LocaleParams }) {
     <>
       <Hero dict={dict.hero} />
       <Activities dict={dict.activities} />
-      <Partnerships dict={dict.partnerships} />
+      {/* <Partnerships dict={dict.partnerships} /> */}
     </>
   );
 }

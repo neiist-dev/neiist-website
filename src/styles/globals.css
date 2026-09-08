@@ -27,6 +27,13 @@ body {
   font-family: var(--font-family);
   color: var(--foreground-colour);
   background: var(--background-colour);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 /* prettier-ignore */
