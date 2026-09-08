@@ -15,7 +15,7 @@ async function HomePage({ params }: { params: LocaleParams }) {
 
   return (
     <>
-      <Hero dict={dict.hero} />
+      <Hero dict={dict.hero} terminalDict={dict.terminal} locale={locale} />
       <Activities dict={dict.activities} />
       {/* <Partnerships dict={dict.partnerships} /> */}
     </>

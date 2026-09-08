@@ -176,6 +176,9 @@ importers:
       nodemailer:
         specifier: ^9.1.1
         version: 9.1.1
+      one-terminal:
+        specifier: ^1.2.1
+        version: 1.2.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       p-limit:
         specifier: ^7.3.2
         version: 7.3.2
@@ -2257,6 +2260,12 @@ packages:
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
+
+  one-terminal@1.2.1:
+    resolution: {integrity: sha512-soajIyM6eUjUwDSB1agKMsK7XEKG4ZLKwpKtjUxvYWgimixgTm3NhsvygPdoMplTuCzFdhOvFeyRc/VS1TEMGA==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -4873,6 +4882,11 @@ snapshots:
   object-assign@4.1.1: {}
 
   object-inspect@1.13.4: {}
+
+  one-terminal@1.2.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   optionator@0.9.4:
     dependencies:

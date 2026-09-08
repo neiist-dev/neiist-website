@@ -1,77 +1,152 @@
 .hero {
-  background: var(--background-colour);
+  background-color: var(--background-colour);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  width: 100%;
   overflow-x: hidden;
+  padding-inline: 1.5rem;
+  padding-block-start: clamp(1.5rem, 4vw, 2.5rem);
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.welcome {
+  font-size: clamp(1.125rem, 3vw, 1.5rem);
+  font-weight: 700;
+  color: var(--foreground-colour);
+  margin: 0;
+  line-height: 1.2;
 }
 
 .title {
+  font-size: clamp(1.625rem, 5vw, 2.25rem);
+  font-weight: 700;
   color: var(--foreground-colour);
-  font-size: clamp(1rem, 4vw, 3rem);
-  margin-top: 4rem;
-  text-align: center;
-  padding: 0 1rem;
+  margin: 0;
+  line-height: 1.22;
+  text-wrap: balance;
 }
 
-.primary {
-  color: var(--primary-colour);
+.terminalSection {
+  display: none;
 }
 
-.secondary {
-  color: var(--secondary-colour);
-}
-
-.tertiary {
-  color: var(--tertiary-colour);
-}
-
-.quaternary {
-  color: var(--quaternary-colour);
-}
-
-.subtitle {
-  margin-top: 0;
-  margin-bottom: 8rem;
-  color: var(--secondary-colour);
-  font-size: 1.25rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.heroImage {
-  display: flex;
+.terminalPlaceholder {
   width: 100%;
+  height: 100%;
+  border-radius: var(--ui-radius-lg, 12px);
+  background: #1e1e2e;
+}
+
+.campusFigure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(100% + 3rem);
+  margin-inline: -1.5rem;
+  margin-block: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.campusArt {
+  position: relative;
+  width: 100%;
+  display: flex;
 }
 
 .campusImage {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
   object-position: center;
   display: block;
+  user-select: none;
 }
 
 .student {
-  position: absolute;
-  bottom: 1.7vw;
-  left: 50%;
-  width: 16%;
-  max-width: clamp(5rem, 14vw, 10rem);
-  height: auto;
-  z-index: 2;
-}
-
-@media (max-width: 728px) {
-  .student {
-    bottom: 2vw;
-    width: 10%;
-    max-width: 4rem;
-  }
+  display: none;
 }
 
 .flipped {
   transform: scaleX(-1);
+}
+
+@media (min-width: 54rem) {
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    align-items: start;
+    gap: clamp(1rem, 2vw, 2.5rem);
+    padding-inline: 4vw;
+    padding-block-start: clamp(1rem, 2.5vh, 2rem);
+    min-height: calc(100dvh - 4rem);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 2;
+    align-self: start;
+    gap: 1rem;
+    pointer-events: auto;
+    padding-block-start: clamp(1.5rem, 3.5vh, 3rem);
+  }
+
+  .welcome {
+    font-size: clamp(1rem, 1.6vw, 1.5rem);
+  }
+
+  .title {
+    font-size: clamp(1.4rem, 2.2vw + 0.2rem, 2.5rem);
+  }
+
+  .terminalSection {
+    grid-column: 2;
+    grid-row: 1;
+    z-index: 2;
+    align-self: start;
+    display: flex;
+    width: 100%;
+    height: clamp(340px, 45vh, 480px);
+    pointer-events: auto;
+  }
+
+  .campusFigure {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    z-index: 1;
+    align-self: end;
+    display: block;
+    width: calc(100% + 8vw);
+    margin-inline: -4vw;
+    pointer-events: none;
+  }
+
+  .campusImage {
+    max-height: calc(100dvh - 4rem);
+    object-fit: contain;
+    object-position: bottom center;
+  }
+
+  .student {
+    display: block;
+    position: absolute;
+    bottom: 1.7vw;
+    left: 50%;
+    width: 16%;
+    max-width: clamp(5rem, 14vw, 10rem);
+    height: auto;
+    z-index: 2;
+    pointer-events: none;
+  }
 }

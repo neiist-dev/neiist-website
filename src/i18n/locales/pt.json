@@ -329,12 +329,51 @@
   },
 
   "hero": {
+    "welcome_prefix": "Bem-vindos ao",
     "title_prefix": "Núcleo Estudantil de ",
     "title_highlight": "Informática",
     "title_suffix": " do Instituto Superior Técnico",
     "campus_alt": "Campus do IST",
     "student_alt": "Estudante",
     "title": "Núcleo Estudantil de Informática do Instituto Superior Técnico"
+  },
+
+  "terminal": {
+    "welcome": "Bem-vindo ao terminal do NEIIST! \nO Núcleo Estudantil de Informática do IST apoia os estudantes de LEIC e MEIC.\n\nComandos úteis:\n  ls         - listar ficheiros e pastas\n  cd <dir>   - entrar numa pasta (ex: cd sobre, cd campi)\n  cat <file> - ler um ficheiro (ex: cat missao.txt)\n  clear      - limpar o ecrã\n  help       - ajuda do sistema\n\nExplora as pastas para conheceres as atividades, salas e cursos do NEIIST!",
+    "about": {
+      "mission": "O NEIIST (fundado em 2004) tem como missão apoiar e integrar os estudantes do Departamento de Engenharia Informática, aproximando alunos, professores, profissionais e empresas do setor das TI.",
+      "departments": "Departamentos do NEIIST:\n- Dev-Team: Desenvolvimento e manutenção das plataformas web e ferramentas.\n- Organização de Eventos: Workshops técnicos, game nights, hackathons e convívios.\n- Divulgação: Gestão de comunicação, redes sociais e imagem.\n- Contacto: Relações com empresas parceiras e patrocínios.\n- Fotografia: Cobertura fotográfica de eventos e atividades.\n- Visuais: Design gráfico e identidade visual.\n- Controlo & Qualidade: Melhoria contínua de processos e métricas.",
+      "bodies": "Órgãos Administrativos do NEIIST:\n- Direção (Presidência, Tesouraria, Secretariado e Vogais)\n- Mesa da Assembleia Geral (MAG)\n- Conselho Fiscal (CF)",
+      "statutes_label": "Abrir Estatutos do NEIIST (PDF)"
+    },
+    "campuses": {
+      "alameda": "📍 Campus Alameda\nLocalização: Pavilhão de Informática I, Sala 1-30 (3º Piso)\nHorário: Segunda a Sexta, 10:00 - 13:00 e 14:00 - 18:00\nServiços: Apoio ao estudante, levantamento de merch, espaço de convívio.",
+      "taguspark": "📍 Campus Taguspark\nLocalização: Edifício Central, Sala 1-18 (Gabinete 1 - 4.14)\nHorário: Segunda a Sexta, 10:00 - 17:00\nServiços: Apoio ao estudante, levantamento de merchandising, espaço de estudo."
+    },
+    "courses": {
+      "leic_a": "Licenciatura em Eng. Informática e de Computadores - Alameda",
+      "leic_t": "Licenciatura em Eng. Informática e de Computadores - Taguspark",
+      "meic_a": "Mestrado em Eng. Informática e de Computadores - Alameda",
+      "meic_t": "Mestrado em Eng. Informática e de Computadores - Taguspark",
+      "deic": "Doutoramento em Eng. Informática e de Computadores"
+    },
+    "activities": {
+      "events": "Atividades e Eventos organizados pelo NEIIST:\n- Workshops Técnicos: Git, Linux, Web Dev, Docker, IA e Segurança\n- Hackathons & Game Jams\n- Game Nights & Churrascos de convívio\n- Semanas Temáticas e Palestras com Empresas\n- Jantar de Curso de Informática",
+      "dinner_link": "Página do Jantar de Curso",
+      "calendar_link": "Ver Calendário de Atividades"
+    },
+    "shop": {
+      "catalog": "Merchandising oficial do NEIIST:\n- Hoodies & Sweats de Informática\n- T-shirts oficiais\n- Autocolantes e Stickers\n- Copos e Acessórios",
+      "shop_link": "Visitar a Loja Online do NEIIST"
+    },
+    "sinfo": "SINFO - Maior evento tecnológico de cariz não-lucrativo organizado exclusivamente por estudantes em Portugal. Sabe mais em https://sinfo.org",
+    "contacts": {
+      "info": "Contactos do NEIIST:\n- Email: neiist@tecnico.ulisboa.pt\n- Morada: Av. Rovisco Pais 1, 1049-001 Lisboa (Alameda) / Av. Prof. Dr. Cavaco Silva, 2744-016 Porto Salvo (Taguspark)",
+      "instagram": "Instagram: @NEIIST (https://instagram.com/NEIIST)",
+      "github": "GitHub: @neiist-dev (https://github.com/neiist-dev)",
+      "discord": "Discord e Links: https://linktr.ee/NEIIST",
+      "linkedin": "LinkedIn: NEIIST (https://www.linkedin.com/company/neiist/)"
+    }
   },
 
   "sinfo": {

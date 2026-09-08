@@ -1,28 +1,43 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
+import { useEffect, useState, useRef } from "react";
+import { cn } from "@neiist/ui";
 import hero from "@/assets/homepage/hero.png";
 import student from "@/assets/homepage/student.png";
 import styles from "@/styles/components/homepage/Hero.module.css";
-import { useEffect, useState, useRef } from "react";
-import { Dictionary } from "@/i18n/dictionaries";
 import ColorfulText from "@/components/ColorfulText";
+import type { Dictionary } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/i18n-config";
 
-export default function Hero({ dict }: { dict: Dictionary["hero"] }) {
+const HeroTerminal = dynamic(() => import("@/components/terminal/HeroTerminal"), {
+  ssr: false,
+  loading: () => <div className={styles.terminalPlaceholder} aria-hidden="true" />,
+});
+
+interface HeroProps {
+  dict: Dictionary["hero"];
+  terminalDict: Dictionary["terminal"];
+  locale: Locale;
+}
+
+export default function Hero({ dict, terminalDict, locale }: HeroProps) {
   const [studentMovementPosition, setStudentMovementPosition] = useState(50);
   const [isStudentFlipped, setIsStudentFlipped] = useState(false);
-  const campusRef = useRef<HTMLDivElement>(null);
+  const campusRef = useRef<HTMLElement>(null);
   const studentRef = useRef<HTMLImageElement>(null);
   const [showStudent, setShowStudent] = useState(false);
 
   useEffect(() => {
-    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    const handleResize = () => {
-      setShowStudent(!isTouch);
+    const checkDesktop = () => {
+      const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+      const isDesktop = window.innerWidth >= 864;
+      setShowStudent(!isTouch && isDesktop);
     };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
   useEffect(() => {
@@ -36,16 +51,10 @@ export default function Hero({ dict }: { dict: Dictionary["hero"] }) {
       const maxPercent = ((campusWidth - studentWidth) / campusWidth) * 100 + marginPercent;
 
       if (event.key === "ArrowLeft") {
-        setStudentMovementPosition((prev) => {
-          if (prev - 1 < minPercent) return maxPercent;
-          return prev - 1;
-        });
+        setStudentMovementPosition((prev) => (prev - 1 < minPercent ? maxPercent : prev - 1));
         setIsStudentFlipped(true);
       } else if (event.key === "ArrowRight") {
-        setStudentMovementPosition((prev) => {
-          if (prev + 1 > maxPercent) return minPercent;
-          return prev + 1;
-        });
+        setStudentMovementPosition((prev) => (prev + 1 > maxPercent ? minPercent : prev + 1));
         setIsStudentFlipped(false);
       }
     };
@@ -55,24 +64,35 @@ export default function Hero({ dict }: { dict: Dictionary["hero"] }) {
 
   return (
     <section className={styles.hero}>
-      <h1 className={styles.title}>
-        {dict.title_prefix}
-        <ColorfulText as="span" text={dict.title_highlight} />
-        {dict.title_suffix}
-      </h1>
-      <div ref={campusRef} className={styles.heroImage}>
-        <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
-        {showStudent && (
-          <Image
-            ref={studentRef}
-            src={student}
-            alt={dict.student_alt}
-            className={styles.student + (isStudentFlipped ? " " + styles.flipped : "")}
-            style={{ left: `${studentMovementPosition}%` }}
-            preload
-          />
-        )}
-      </div>
+      <header className={styles.header}>
+        {dict.welcome_prefix && <p className={styles.welcome}>{dict.welcome_prefix}</p>}
+        <h1 className={styles.title}>
+          {dict.title_prefix}
+          <ColorfulText as="span" text={dict.title_highlight} />
+          {dict.title_suffix}
+        </h1>
+      </header>
+
+      <aside className={styles.terminalSection} aria-label="Terminal">
+        <HeroTerminal locale={locale} dict={terminalDict} />
+      </aside>
+
+      <figure ref={campusRef} className={styles.campusFigure}>
+        <div className={styles.campusArt}>
+          <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
+
+          {showStudent && (
+            <Image
+              ref={studentRef}
+              src={student}
+              alt={dict.student_alt}
+              className={cn(styles.student, isStudentFlipped && styles.flipped)}
+              style={{ left: `${studentMovementPosition}%` }}
+              preload
+            />
+          )}
+        </div>
+      </figure>
     </section>
   );
 }

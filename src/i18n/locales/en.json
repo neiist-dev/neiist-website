@@ -329,12 +329,51 @@
   },
 
   "hero": {
-    "title_prefix": "Computer Science Student Branch at ",
-    "title_highlight": "Instituto Superior Técnico",
-    "title_suffix": "",
+    "welcome_prefix": "Welcome to the",
+    "title_prefix": "Computer Science ",
+    "title_highlight": "Student Branch",
+    "title_suffix": " at Instituto Superior Técnico",
     "campus_alt": "IST Campus",
     "student_alt": "Student",
     "title": "Computer Science Student Branch at Instituto Superior Técnico"
+  },
+
+  "terminal": {
+    "welcome": "Welcome to the NEIIST terminal! 🚀\nSupporting Computer Science students at Instituto Superior Técnico.\n\nUseful commands:\n  ls         - list files and folders\n  cd <dir>   - enter a directory (e.g. cd about, cd campuses)\n  cat <file> - read a file (e.g. cat mission.txt)\n  clear      - clear the screen\n  help       - system help\n\nExplore directories to learn about NEIIST activities, rooms, and courses!",
+    "about": {
+      "mission": "NEIIST (founded in 2004) is dedicated to supporting and integrating Computer Science students, fostering collaboration between students, faculty, professionals, and industry partners.",
+      "departments": "NEIIST Departments:\n- Dev-Team: Web platform development and tooling maintenance.\n- Event Organization: Technical workshops, game nights, hackathons, and socials.\n- Outreach: Communication management, social media, and branding.\n- External Relations: Corporate partnerships and sponsorships.\n- Photography: Event coverage and media archive.\n- Visuals: Graphic design and visual identity.\n- Quality Control: Continuous improvement and process optimization.",
+      "bodies": "Administrative Bodies:\n- Executive Board (President, Treasurer, Secretary, and Officers)\n- General Assembly Board (MAG)\n- Fiscal Council (CF)",
+      "statutes_label": "Open NEIIST Statutes (PDF)"
+    },
+    "campuses": {
+      "alameda": "📍 Alameda Campus\nLocation: Computer Science I Pavilion, Room 1-30 (3rd Floor)\nHours: Monday to Friday, 10:00 - 13:00 and 14:00 - 18:00\nServices: Student support, merch pickup, student lounge.",
+      "taguspark": "📍 Taguspark Campus\nLocation: Central Building, Room 1-18 (Office 1 - 4.14)\nHours: Monday to Friday, 10:00 - 17:00\nServices: Student support, merch pickup, study area."
+    },
+    "courses": {
+      "leic_a": "BSc in Computer Science and Engineering - Alameda",
+      "leic_t": "BSc in Computer Science and Engineering - Taguspark",
+      "meic_a": "MSc in Computer Science and Engineering - Alameda",
+      "meic_t": "MSc in Computer Science and Engineering - Taguspark",
+      "deic": "PhD in Computer Science and Engineering"
+    },
+    "activities": {
+      "events": "Activities & Events organized by NEIIST:\n- Technical Workshops: Git, Linux, Web Dev, Docker, AI, and Cybersecurity\n- Hackathons & Game Jams\n- Game Nights & Student Barbecues\n- Thematic Weeks and Company Talks\n- Computer Science Course Dinner",
+      "dinner_link": "Course Dinner Page",
+      "calendar_link": "View Activities Calendar"
+    },
+    "shop": {
+      "catalog": "Official NEIIST Merch:\n- Computer Science Hoodies & Sweats\n- Course T-shirts\n- Tech & Linux Stickers\n- Mugs & Accessories",
+      "shop_link": "Visit the NEIIST Online Shop"
+    },
+    "sinfo": "SINFO - The largest non-profit student-organized tech conference in Portugal. Learn more at https://sinfo.org",
+    "contacts": {
+      "info": "NEIIST Contacts:\n- Email: neiist@tecnico.ulisboa.pt\n- Address: Av. Rovisco Pais 1, 1049-001 Lisbon (Alameda) / Av. Prof. Dr. Cavaco Silva, 2744-016 Porto Salvo (Taguspark)",
+      "instagram": "Instagram: @NEIIST (https://instagram.com/NEIIST)",
+      "github": "GitHub: @neiist-dev (https://github.com/neiist-dev)",
+      "discord": "Discord & Links: https://linktr.ee/NEIIST",
+      "linkedin": "LinkedIn: NEIIST (https://www.linkedin.com/company/neiist/)"
+    }
   },
 
   "sinfo": {
