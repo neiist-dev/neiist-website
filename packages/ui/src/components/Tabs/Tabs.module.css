@@ -37,26 +37,20 @@
 }
 
 .tabButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   font-family: inherit;
+  font-weight: var(--ui-font-weight-regular);
   color: var(--ui-fg);
   background: transparent;
-  font-weight: var(--ui-font-weight-regular);
+  white-space: nowrap;
   cursor: pointer;
   border: none;
   border-block-end: 2px solid transparent;
-  transition:
-    background-color var(--ui-transition),
-    color var(--ui-transition),
-    border-color var(--ui-transition),
-    border-radius var(--ui-transition);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 0.5rem;
-  position: relative;
-  white-space: nowrap;
+  border-radius: 0.5rem 0.5rem 0 0;
+  transition: all var(--ui-transition);
 }
 
 .tabButton-sm {
@@ -90,7 +84,6 @@
 
 .tabButton:hover {
   background: var(--ui-bg-hover);
-  border-radius: var(--ui-radius-full);
 }
 
 .activeTab {
