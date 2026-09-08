@@ -595,7 +595,7 @@
     "courses_title": "CS & Eng. Degrees",
     "contacts_title": "Contacts",
     "powered_by": "Powered by:",
-    "copyright": "© 2025 NEIIST. All rights reserved."
+    "copyright": "© 2026 NEIIST. All rights reserved."
   },
 
   "about_us_page": {
@@ -613,6 +613,15 @@
       "description": "NEIIST is recruiting for the 1st Phase 26/27! Come develop your soft skills and contribute to our community by joining one of our teams External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nRegister until September 30th (23:59).",
       "apply": "Apply Now",
       "apply_link": "https://docs.google.com/forms/d/e/1FAIpQLSf_XLoqJ2crdiySnrlIUzvna4V-QHBHDeSfhpCfh27DVIfdKQ/viewform"
+    },
+
+    "campuses": {
+      "title": "Where to Find Us?",
+      "description": "NEIIST has student support rooms on both campuses of Instituto Superior Técnico. Come visit us to ask questions, pick up merchandise, or hang out!",
+      "alameda_title": "Alameda Campus",
+      "alameda_room": "Room 1-30, Computer Science Pavilion I (3rd Floor)",
+      "taguspark_title": "Taguspark Campus",
+      "taguspark_room": "Room 1-18, Central Building (Room 1 - 4.14)"
     },
 
     "year_selector": {

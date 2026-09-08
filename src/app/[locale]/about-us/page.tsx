@@ -6,6 +6,7 @@ import MemberCard from "@/components/about-us/MemberCard";
 import YearSelector from "@/components/about-us/YearSelector";
 import Hero from "@/components/about-us/Hero";
 import JoinUs from "@/components/about-us/JoinsUs";
+import Campuses from "@/components/about-us/Campuses";
 import { Membership, Team } from "@/types/memberships";
 import { User } from "@/types/user";
 import {
@@ -169,7 +170,7 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
         dict={dict.hero}
         description={dict.hero.description.replace("{count}", String(uniqueIstids.length))}
       />
-
+      <Campuses dict={dict.campuses} />
       <JoinUs dict={dict.join_us} />
       <YearSelector
         years={allAcademicYears}

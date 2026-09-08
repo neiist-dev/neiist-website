@@ -12,14 +12,37 @@ export interface TabItem {
   content: React.ReactNode;
 }
 
+export interface TabsClassNames {
+  root?: string;
+  tabBar?: string;
+  tabButton?: string;
+  tabContent?: string;
+}
+
 export interface TabsProps extends Omit<React.ComponentPropsWithRef<"div">, "onChange"> {
   tabs: TabItem[];
   value?: string;
   defaultValue?: string;
   onChange?: (_id: string) => void;
+  align?: "start" | "center" | "end";
+  size?: "sm" | "md" | "lg";
+  fullWidth?: boolean;
+  classNames?: TabsClassNames;
 }
 
-export function Tabs({ tabs, value, defaultValue, onChange, className, ref, ...props }: TabsProps) {
+export function Tabs({
+  tabs,
+  value,
+  defaultValue,
+  onChange,
+  align = "start",
+  size = "md",
+  fullWidth = false,
+  className,
+  classNames,
+  ref,
+  ...props
+}: TabsProps) {
   const [activeTab, setActiveTab] = useControllableState({
     prop: value,
     defaultProp: defaultValue || tabs[0]?.id,
@@ -33,8 +56,18 @@ export function Tabs({ tabs, value, defaultValue, onChange, className, ref, ...p
   const activeContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
   return (
-    <div ref={ref} className={cn(styles.tabsContainer, className)} {...props}>
-      <nav className={styles.tabBar} role="tablist">
+    <div
+      ref={ref}
+      className={cn(styles.tabsContainer, styles[`size-${size}`], className, classNames?.root)}
+      {...props}>
+      <nav
+        className={cn(
+          styles.tabBar,
+          styles[`align-${align}`],
+          fullWidth && styles.fullWidth,
+          classNames?.tabBar
+        )}
+        role="tablist">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -42,15 +75,21 @@ export function Tabs({ tabs, value, defaultValue, onChange, className, ref, ...p
               key={tab.id}
               role="tab"
               aria-selected={isActive}
-              className={cn(styles.tabButton, isActive && styles.activeTab)}
+              className={cn(
+                styles.tabButton,
+                styles[`tabButton-${size}`],
+                isActive && styles.activeTab,
+                fullWidth && styles.tabButtonFullWidth,
+                classNames?.tabButton
+              )}
               onClick={() => handleTabClick(tab.id)}>
-              {tab.icon && <span>{tab.icon}</span>}
-              {tab.name}
+              {tab.icon && <span className={styles.tabIcon}>{tab.icon}</span>}
+              <span>{tab.name}</span>
             </button>
           );
         })}
       </nav>
-      <div className={styles.tabContent} role="tabpanel">
+      <div className={cn(styles.tabContent, classNames?.tabContent)} role="tabpanel">
         {activeContent}
       </div>
     </div>

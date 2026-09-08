@@ -1,9 +1,7 @@
 .tabsContainer {
-  container-type: inline-size;
-  container-name: tabsWrapper;
   display: flex;
   flex-direction: column;
-  inline-size: 100%;
+  min-width: 0;
 }
 
 .tabBar {
@@ -14,37 +12,85 @@
   margin: 0;
   overflow-x: auto;
   background: var(--ui-bg);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabBar::-webkit-scrollbar {
+  display: none;
+}
+
+.align-start {
+  justify-content: flex-start;
+}
+
+.align-center {
+  justify-content: center;
+}
+
+.align-end {
+  justify-content: flex-end;
+}
+
+.fullWidth {
+  width: 100%;
 }
 
 .tabButton {
   font-family: inherit;
-  font-size: 0.8rem;
   color: var(--ui-fg);
   background: transparent;
   font-weight: var(--ui-font-weight-regular);
-  padding-block: 0.5rem;
-  padding-inline: 0.5rem;
   cursor: pointer;
   border: none;
   border-block-end: 2px solid transparent;
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    border-radius 0.2s ease;
+    background-color var(--ui-transition),
+    color var(--ui-transition),
+    border-color var(--ui-transition),
+    border-radius var(--ui-transition);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 0;
+  gap: 0.5rem;
   position: relative;
   white-space: nowrap;
 }
 
+.tabButton-sm {
+  font-size: var(--ui-font-sm);
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+}
+
+.tabButton-md {
+  font-size: var(--ui-font-md);
+  padding-block: 0.75rem;
+  padding-inline: 1.25rem;
+}
+
+.tabButton-lg {
+  font-size: var(--ui-font-lg);
+  padding-block: 1rem;
+  padding-inline: 1.75rem;
+}
+
+.tabButtonFullWidth {
+  flex: 1 1 0;
+}
+
+.tabIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .tabButton:hover {
   background: var(--ui-bg-hover);
-  border-radius: 1.5rem;
+  border-radius: var(--ui-radius-full);
 }
 
 .activeTab {
@@ -55,20 +101,6 @@
 .tabContent {
   padding-block: 1.5rem;
   padding-inline: 0;
-}
-
-@container tabsWrapper (min-width: 30rem) {
-  .tabBar {
-    padding-inline: 2rem;
-  }
-
-  .tabButton {
-    flex-direction: row;
-    font-size: 1rem;
-    gap: 0.5rem;
-    padding-block: 1rem;
-    padding-inline: 1.5rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

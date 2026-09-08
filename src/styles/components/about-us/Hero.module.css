@@ -25,7 +25,6 @@
 .description {
   font-size: 1.2rem;
   color: #333;
-  font-family: var(--font-family);
   text-align: justify;
   margin: 0;
 }

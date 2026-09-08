@@ -595,7 +595,7 @@
     "courses_title": "Cursos de EIC",
     "contacts_title": "Contactos",
     "powered_by": "Powered by:",
-    "copyright": "© 2025 NEIIST. Todos os direitos reservados."
+    "copyright": "© 2026 NEIIST. Todos os direitos reservados."
   },
 
   "about_us_page": {
@@ -613,6 +613,15 @@
       "description": "O NEIIST está a recrutar para a 1ª Fase 26/27! Vem desenvolver as tuas soft skills e contribuir para a nossa comunidade integrando uma das nossas equipas External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nInscreve-te até dia 30 de setembro (23H59).",
       "apply": "Candidata-te",
       "apply_link": "https://docs.google.com/forms/d/e/1FAIpQLSf_XLoqJ2crdiySnrlIUzvna4V-QHBHDeSfhpCfh27DVIfdKQ/viewform"
+    },
+
+    "campuses": {
+      "title": "Onde Estamos?",
+      "description": "O NEIIST dispõe de salas de apoio aos estudantes nos dois campi do Instituto Superior Técnico. Vem visitar-nos para esclarecer dúvidas, levantar merchandising ou conviver!",
+      "alameda_title": "Campus Alameda",
+      "alameda_room": "Sala 1-30, Pavilhão de Informática I (3º Piso)",
+      "taguspark_title": "Campus Taguspark",
+      "taguspark_room": "Sala 1-18, Edifício Central (Sala 1 - 4.14)"
     },
 
     "year_selector": {
