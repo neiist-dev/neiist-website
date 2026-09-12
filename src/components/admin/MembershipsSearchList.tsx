@@ -11,6 +11,7 @@ import SearchSelect from "@/components/search/SearchSelect";
 import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/admin/MembershipsSearchList.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner";
 
 interface Department {
   name: string;
@@ -33,7 +34,6 @@ export default function MembershipsSearchList({
   const [memberships, setMemberships] = useState(initialMemberships);
   const [showInactive, setShowInactive] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [error, setError] = useState("");
   const [newMembership, setNewMembership] = useState({
     userNumber: "",
     departmentName: "",
@@ -99,7 +99,6 @@ export default function MembershipsSearchList({
   };
 
   const addMembership = async () => {
-    setError("");
     if (!newMembership.userNumber || !newMembership.departmentName || !newMembership.roleName)
       return;
     setAdding(true);
@@ -121,15 +120,16 @@ export default function MembershipsSearchList({
         }
         setNewMembership({ userNumber: "", departmentName: "", roleName: "" });
         setRoles([]);
-        // TODO: (SUCCESS) show success toast after the member is added.
+        toast.success(dict.successes.add_member, 
+          { closeButton: true });
       } else {
         const error = await response.json();
-        // TODO: (ERROR)
-        setError(error.error || dict.errors.add_member);
+        toast.error(error.error || dict.errors.add_member, 
+          { closeButton: true });
       }
     } catch {
-      // TODO: (ERROR)
-      setError(dict.errors.add_member);
+      toast.error(dict.errors.add_member, 
+        {closeButton: true});
     } finally {
       setAdding(false);
     }
@@ -142,7 +142,6 @@ export default function MembershipsSearchList({
 
   const confirmRemove = async () => {
     if (!pendingRemove) return;
-    setError("");
     setConfirmOpen(false);
     try {
       const response = await fetch("/api/admin/memberships", {
@@ -160,15 +159,15 @@ export default function MembershipsSearchList({
           const data = await refreshed.json();
           setMemberships(Array.isArray(data) ? data : []);
         }
-        // TODO: (SUCCESS) show success toast after the member is removed.
+        toast.success(dict.successes.remove_member, 
+          { closeButton: true });
       } else {
         const error = await response.json();
-        // TODO: (ERROR)
-        setError(error.error || dict.errors.remove_member);
+        toast.error(error.error || dict.errors.remove_member , 
+          { closeButton: true });
       }
     } catch {
-      // TODO: (ERROR)
-      setError(dict.errors.remove_member);
+      toast.error(dict.errors.remove_member, { closeButton: true });
     } finally {
       setPendingRemove(null);
     }
@@ -205,9 +204,11 @@ export default function MembershipsSearchList({
         if (user && user.istid === istid) {
           setUser({ ...user, photo: newPhotoUrl });
         }
-        // TODO: (SUCCESS) show success toast after the member photo is updated.
+        toast.success(dict.successes.member_photo, 
+          { closeButton: true });
       } else {
-        // TODO: (ERROR) show error toast when updating the member photo fails.
+        toast.error(dict.errors.member_photo, 
+          { closeButton: true });
       }
       setEditingPhotoIstid(null);
     };
@@ -289,8 +290,6 @@ export default function MembershipsSearchList({
             {adding ? dict.adding : dict.add_member}
           </button>
         </div>
-        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-        {error && <div className={styles.error}>{error}</div>}
       </section>
 
       <section className={styles.section}>

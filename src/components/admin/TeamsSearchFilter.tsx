@@ -5,6 +5,7 @@ import styles from "@/styles/components/admin/TeamsSearchFilter.module.css";
 import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner";
 
 interface Team {
   name: string;
@@ -39,14 +40,30 @@ export default function TeamsSearchFilter({
   });
 
   const removeTeam = async (name: string) => {
-    // TODO: show loading toast while the team is being deactivated.
-    await fetch("/api/admin/teams", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    // TODO: show success toast after the team is deactivated, and an error toast if this request fails.
-    window.location.reload();
+    let toastId: string | number = "";
+    try {
+      toastId = toast.loading(dict.loading);
+      const res = await fetch("/api/admin/teams", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || dict.error_team_remove)
+      }
+
+      toast.dismiss(toastId)
+      toast.success(dict.error_team_remove, 
+        { closeButton: true, });
+      window.location.reload();
+    } catch(error) {
+      if (toastId) toast.dismiss(toastId);
+      toast.error(error instanceof Error ? error.message:
+        dict.error_team_remove, { closeButton: true }
+      );
+    }
   };
 
   return (

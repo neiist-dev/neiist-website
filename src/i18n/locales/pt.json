@@ -624,7 +624,8 @@
       "title": "Pré-visualização da Página Sobre nós",
       "no_member": "Sem membro",
       "photo_alt": "foto"
-    }
+    },
+    "order_saved_success": "Ordem guardada com sucesso."
   },
 
   "profile": {
@@ -640,6 +641,9 @@
     "linkedin_placeholder": "Username no LinkedIn",
     "confirm_remove_field": "Deseja remover o método de contacto {field}?",
     "confirm_change_field": "Deseja guardar a alteração de {field} para \"{value}\"?",
+    "change_success": "Alteração realizada com sucesso.",
+    "cv_upload_success": "CV enviado com sucesso.",
+    "cv_remove_success": "CV removido com sucesso.",
     "errors": {
       "verify_email": "Falha ao enviar email de verificação",
       "update": "Falha ao atualizar",
@@ -720,7 +724,9 @@
     "confirm_message_1": "Tem a certeza que deseja criar o utilizador",
     "confirm_message_2": "?",
     "error_required": "Por favor, preencha todos os campos.",
-    "error_create": "Falha ao criar utilizador"
+    "error_create": "Falha ao criar utilizador",
+    "success_new_user": "Novo utilizador criado com sucesso.",
+    "error_new_user": "Erro ao criar um novo utilizador."
   },
 
   "new_order_modal": {
@@ -834,7 +840,10 @@
       "empty": "Nenhuma equipa encontrada.",
       "inactive_badge": "Inativo",
       "deactivate_title": "Desativar equipa",
-      "deactivate": "Desativar"
+      "deactivate": "Desativar",
+      "loading": "A carregar...",
+      "success_team_remove": "Equipa removida com sucesso",
+      "error_team_remove": "Erro ao remover equipa"
     },
 
     "roles_management": {
@@ -865,6 +874,10 @@
         "add_role": "Erro ao adicionar cargo",
         "remove_role": "Erro ao remover cargo"
       },
+      "successes": {
+        "add_role": "Cargo adicionado com sucesso",
+        "remove_role": "Cargo removido com sucesso"
+      },
       "confirm_dialog": {
         "confirm": "Confirmar",
         "cancel": "Cancelar"
@@ -885,6 +898,7 @@
       "back": "Voltar",
       "creating": "A criar...",
       "create_department": "Criar Departamento",
+      "department_role_success": "Departmento ou cargo criado com sucesso.",
       "errors": {
         "create_department": "Erro ao criar departamento",
         "create_role": "Erro ao criar cargo",
@@ -911,7 +925,8 @@
       "empty": "Nenhum órgão administrativo encontrado.",
       "inactive_badge": "Inativo",
       "deactivate_title": "Desativar órgão",
-      "deactivate": "Desativar"
+      "deactivate": "Desativar",
+      "remove_admin_success": "Órgão administrativo removido com sucesso."
     },
 
     "memberships_management": {
@@ -944,7 +959,13 @@
       "data_deleted": "Dados eliminados",
       "errors": {
         "add_member": "Erro ao adicionar membro",
-        "remove_member": "Erro ao remover membro"
+        "remove_member": "Erro ao remover membro",
+        "member_photo": "Erro ao atualizar foto do membro"
+      },
+      "successes": {
+        "add_member": "Membro adicionado com sucesso",
+        "remove_member": "Membro removido com sucesso",
+        "member_photo": "Foto de membro atualizado com sucesso"
       }
     }
   },
@@ -1165,6 +1186,7 @@
     "error_update_order": "Falha ao atualizar encomenda",
     "error_finalize_order": "Falha ao finalizar encomenda",
     "error_invalid_server_response": "Resposta inválida do servidor",
+    "order_success": "Encomenda atualizada com sucesso",
     "reader_status": "Leitor {name}: {status}",
     "awaiting_terminal": "A aguardar confirmação do terminal...",
     "select_reader_error": "Seleciona um leitor SumUp para continuar.",
@@ -1183,7 +1205,9 @@
     "confirm_mbway": "Confirmas que recebeste o pagamento por MBWay e está correto?",
     "confirm_reference": "Confirmas que recebeste o pagamento com a referência/motivo \"{reference}\" e está correto?",
     "mbway_send_to": "Enviar MBWay para:",
-    "mbway_number_unavailable": "Número não disponível"
+    "mbway_number_unavailable": "Número não disponível",
+    "status_update_bulk": "A atualizar estado de encomenda grande...",
+    "status_update_success": "Estado atualizado com sucesso."
   },
 
   "coordinator_management": {
@@ -1204,6 +1228,10 @@
       "fetch_members": "Erro ao atualizar membros.",
       "add_member": "Erro ao adicionar membro.",
       "remove_member": "Erro ao remover membro."
+    },
+    "success": {
+      "add_member_success": "Membro de equipa adicionado com sucesso.",
+      "remove_member_success": "Membro de equipa removido com sucesso."
     }
   },
 
@@ -1211,7 +1239,9 @@
     "title": "Gestão de Fotos dos Membros",
     "search_placeholder": "Pesquisar por nome ou ISTID...",
     "empty": "Nenhum membro encontrado.",
-    "photo_tooltip": "Clique para alterar a foto"
+    "photo_tooltip": "Clique para alterar a foto",
+    "photo_update_success": "Foto atualizada com sucesso.",
+    "photo_update_error": "Erro ao atualizar a foto."
   },
 
   "my_orders": {
