@@ -1,5 +1,12 @@
 # neiist
 
+## [3.1.0](https://github.com/neiist-dev/neiist-website/compare/v3.0.0...v3.1.0) (2026-09-14)
+
+
+### Features
+
+* **ui:** refactor all components and clean up ([293b87b](https://github.com/neiist-dev/neiist-website/commit/293b87b7cd6de2df4f8d18a2ba0b1ff728c0edb0))
+
 ## [3.0.0](https://github.com/neiist-dev/neiist-website/compare/v2.0.0...v3.0.0) (2026-09-08)
 
 
