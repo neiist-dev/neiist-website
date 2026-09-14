@@ -15,12 +15,11 @@
   align-items: center;
   justify-content: space-between;
   inline-size: 100%;
-  padding-block: 0.625rem;
-  padding-inline: 0.75rem;
+  padding: 0.625rem 0.75rem;
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--ui-fg);
-  background: var(--ui-bg);
+  background: var(--ui-surface);
   border: 1px solid var(--ui-bg-hover);
   border-radius: var(--ui-radius-md);
   cursor: pointer;
@@ -72,12 +71,15 @@
 .option {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 8px 12px;
   border-radius: var(--ui-radius-sm);
   font-size: 0.85rem;
   color: var(--ui-fg);
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
   transition: background var(--ui-transition);
 }
 
@@ -95,12 +97,4 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .trigger,
-  .chevron,
-  .option {
-    transition: none;
-  }
 }

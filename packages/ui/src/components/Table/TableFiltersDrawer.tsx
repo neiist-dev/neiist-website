@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styles from "./TableFiltersDrawer.module.css";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { Drawer } from "../Drawer/Drawer";
@@ -51,8 +51,9 @@ export interface TableFiltersDrawerProps {
   onApply: (_result: { dateRange: DateFilterRange; categories: Record<string, string[]> }) => void;
 }
 
-export function TableFiltersDrawer({
-  isOpen,
+type DrawerFormProps = Omit<TableFiltersDrawerProps, "isOpen">;
+
+function TableFiltersDrawerContent({
   onClose,
   title,
   closeAriaLabel,
@@ -64,30 +65,24 @@ export function TableFiltersDrawer({
   applyLabel,
   locale,
   drillDownAriaLabel,
-  categories: initialCategories,
+  categories,
   onApply,
-}: TableFiltersDrawerProps) {
+}: DrawerFormProps) {
   const [internalDateRange, setInternalDateRange] = useState<DateFilterRange>(
     initialDateRange ?? { start: null, end: null }
   );
-  const [selectedMap, setSelectedMap] = useState<Record<string, string[]>>({});
+  const [selectedMap, setSelectedMap] = useState<Record<string, string[]>>(() => {
+    const map: Record<string, string[]> = {};
+    categories.forEach((cat) => {
+      map[cat.id] = [...cat.selected];
+    });
+    return map;
+  });
   const [dateMode, setDateMode] = useState<"until" | "range">("until");
   const [expandedSection, setExpandedSection] = useState<string | null>(
-    initialDateRange ? "date" : (initialCategories[0]?.id ?? null)
+    initialDateRange !== undefined ? "date" : (categories[0]?.id ?? null)
   );
   const [cascadeNav, setCascadeNav] = useState<Record<string, CascadeFilterOption[]>>({});
-
-  // Sync state on open
-  useEffect(() => {
-    if (isOpen) {
-      if (initialDateRange) setInternalDateRange(initialDateRange);
-      const map: Record<string, string[]> = {};
-      initialCategories.forEach((category) => {
-        map[category.id] = [...category.selected];
-      });
-      setSelectedMap(map);
-    }
-  }, [isOpen, initialDateRange, initialCategories]);
 
   const toggleCategoryOption = (catId: string, value: string) => {
     setSelectedMap((prev) => {
@@ -122,14 +117,14 @@ export function TableFiltersDrawer({
 
     let nextSelected: string[];
     if (isChecked) {
-      nextSelected = currentSelected.filter((id) => !leafIds.includes(id));
+      const leafSet = new Set(leafIds);
+      nextSelected = currentSelected.filter((id) => !leafSet.has(id));
     } else {
-      nextSelected = [...currentSelected];
+      const next = new Set(currentSelected);
       for (const id of leafIds) {
-        if (!nextSelected.includes(id)) {
-          nextSelected.push(id);
-        }
+        next.add(id);
       }
+      nextSelected = Array.from(next);
     }
 
     setSelectedMap((prev) => ({
@@ -141,7 +136,7 @@ export function TableFiltersDrawer({
   const handleClearAll = () => {
     setInternalDateRange({ start: null, end: null });
     const cleared: Record<string, string[]> = {};
-    initialCategories.forEach((category) => {
+    categories.forEach((category) => {
       cleared[category.id] = [];
     });
     setSelectedMap(cleared);
@@ -156,12 +151,19 @@ export function TableFiltersDrawer({
     onClose();
   };
 
+  const getCurrentCascadeOptions = (catId: string, baseOptions?: CascadeFilterOption[]) => {
+    const nav = cascadeNav[catId];
+    if (nav && nav.length > 0) return nav[nav.length - 1].children || [];
+
+    return baseOptions || [];
+  };
+
   const dateCount = internalDateRange.start || internalDateRange.end ? 1 : 0;
   const totalActiveCount =
     dateCount + Object.values(selectedMap).reduce((acc, items) => acc + items.length, 0);
 
   return (
-    <Drawer open={isOpen} onClose={onClose} position="right" size="md">
+    <>
       <Drawer.Header title={title} onClose={onClose} closeLabel={closeAriaLabel} />
       <Drawer.Body>
         <Accordion
@@ -185,7 +187,8 @@ export function TableFiltersDrawer({
                 <div className={styles.dateTabs} role="group" aria-label={dateFilterTitle}>
                   <button
                     type="button"
-                    className={dateMode === "until" ? styles.tabActive : styles.tab}
+                    className={styles.tab}
+                    data-active={dateMode === "until"}
                     aria-pressed={dateMode === "until"}
                     onClick={() => {
                       setDateMode("until");
@@ -195,7 +198,8 @@ export function TableFiltersDrawer({
                   </button>
                   <button
                     type="button"
-                    className={dateMode === "range" ? styles.tabActive : styles.tab}
+                    className={styles.tab}
+                    data-active={dateMode === "range"}
                     aria-pressed={dateMode === "range"}
                     onClick={() => setDateMode("range")}>
                     {rangeLabel}
@@ -231,8 +235,11 @@ export function TableFiltersDrawer({
             </Accordion.Item>
           )}
 
-          {initialCategories.map((category) => {
+          {categories.map((category) => {
             const currentSelected = selectedMap[category.id] || [];
+            const currentNav = cascadeNav[category.id] || [];
+            const currentParent = currentNav.length > 0 ? currentNav[currentNav.length - 1] : null;
+            const currentOptions = getCurrentCascadeOptions(category.id, category.cascadeOptions);
 
             return (
               <Accordion.Item key={category.id} value={category.id}>
@@ -249,34 +256,25 @@ export function TableFiltersDrawer({
                 <Accordion.Content>
                   {category.cascadeOptions && (
                     <>
-                      {cascadeNav[category.id]?.length > 0 && (
+                      {currentParent && (
                         <>
                           <button
                             type="button"
                             className={styles.cascadeHeader}
-                            onClick={() => handleCascadeBack(category.id)}>
+                            onClick={() => handleCascadeBack(category.id)}
+                            aria-label={`Voltar de ${currentParent.label}`}>
                             <MdChevronLeft size={20} />
-                            <span>
-                              {cascadeNav[category.id][cascadeNav[category.id].length - 1].label}
-                            </span>
+                            <span>{currentParent.label}</span>
                           </button>
-                          {cascadeNav[category.id][cascadeNav[category.id].length - 1]
-                            .levelLabel && (
+                          {currentParent.levelLabel && (
                             <div className={styles.cascadeLevelLabel}>
-                              {
-                                cascadeNav[category.id][cascadeNav[category.id].length - 1]
-                                  .levelLabel
-                              }
+                              {currentParent.levelLabel}
                             </div>
                           )}
                         </>
                       )}
                       <div className={styles.list}>
-                        {(cascadeNav[category.id]?.length > 0
-                          ? cascadeNav[category.id][cascadeNav[category.id].length - 1].children ||
-                            []
-                          : category.cascadeOptions
-                        ).map((option) => {
+                        {currentOptions.map((option) => {
                           const hasChildren = Boolean(
                             option.children && option.children.length > 0
                           );
@@ -349,6 +347,16 @@ export function TableFiltersDrawer({
           {totalActiveCount > 0 ? `${applyLabel} (${totalActiveCount})` : applyLabel}
         </Button>
       </Drawer.Footer>
+    </>
+  );
+}
+
+export function TableFiltersDrawer(props: TableFiltersDrawerProps) {
+  if (!props.isOpen) return null;
+
+  return (
+    <Drawer open={props.isOpen} onClose={props.onClose} position="right" size="md">
+      <TableFiltersDrawerContent {...props} />
     </Drawer>
   );
 }

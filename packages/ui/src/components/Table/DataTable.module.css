@@ -2,6 +2,10 @@
   cursor: pointer;
 }
 
+.rowSelectable {
+  --_card-header-end-pad: 2.75rem;
+}
+
 .emptyStateCell {
   text-align: center;
   padding-block: 3rem;
@@ -11,7 +15,7 @@
 }
 
 .checkboxCol {
-  inline-size: 3.125rem;
+  inline-size: 3rem;
   padding-inline-end: 0;
   vertical-align: middle;
 }
@@ -20,6 +24,14 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.headerWithFilter[data-align="center"] {
+  justify-content: center;
+}
+
+.headerWithFilter[data-align="end"] {
+  justify-content: end;
 }
 
 .headerFilterBtn {
@@ -49,17 +61,7 @@
   outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .headerFilterBtn {
-    transition: none;
-  }
-
-  .headerFilterBtn:hover {
-    transform: none;
-  }
-}
-
-@container tableContainer (max-width: 48rem) {
+@container table-wrapper (max-width: 48rem) {
   .checkboxCol {
     position: absolute;
     inset-block-start: 0;
@@ -78,7 +80,6 @@
 
   .emptyStateCell {
     display: block;
-    text-align: center;
     padding-block: 2.5rem;
   }
 }

@@ -3,6 +3,10 @@
   display: inline-block;
 }
 
+.trigger {
+  display: inline-flex;
+}
+
 .menuList {
   display: flex;
   flex-direction: column;
@@ -71,10 +75,4 @@
   margin-block: 0.25rem;
   margin-inline: 0;
   border: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .item {
-    transition: none;
-  }
 }

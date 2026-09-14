@@ -74,12 +74,10 @@ export function TableActiveFilters({
   const hasGroupFilters = filterGroups.some((group) => group.values.length > 0);
   const hasCustomTags = customTags.length > 0;
 
-  if (!hasDateFilter && !hasGroupFilters && !hasCustomTags) {
-    return null;
-  }
+  if (!hasDateFilter && !hasGroupFilters && !hasCustomTags) return null;
 
   return (
-    <div className={cn(styles.container, className)}>
+    <section role="region" aria-label={label} className={cn(styles.container, className)}>
       <span className={styles.label}>{label}</span>
       <div className={styles.tags}>
         {hasDateFilter && dateRange && (
@@ -122,6 +120,6 @@ export function TableActiveFilters({
           </Button>
         )}
       </div>
-    </div>
+    </section>
   );
 }

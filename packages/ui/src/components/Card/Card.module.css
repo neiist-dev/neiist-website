@@ -1,13 +1,11 @@
 .card {
-  container-type: inline-size;
-  container-name: card;
-  background: var(--ui-bg);
+  background: var(--ui-surface);
   border-radius: var(--ui-radius-lg);
   position: relative;
 }
 
 .elevated {
-  box-shadow: var(--ui-shadow-md);
+  box-shadow: var(--ui-shadow-sm);
   border: 1px solid var(--ui-bg-hover);
 }
 

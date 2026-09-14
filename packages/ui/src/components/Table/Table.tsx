@@ -16,15 +16,11 @@ export function TableRoot({
   ...props
 }: TableProps) {
   return (
-    <div
-      className={cn(
-        styles.tableWrapper,
-        responsive === "cards" && styles.responsiveCardsWrapper,
-        wrapperClassName
-      )}>
+    <div className={cn(styles.wrapper, wrapperClassName)}>
       <table
         ref={ref}
-        className={cn(styles.table, responsive === "cards" && styles.responsiveCards, className)}
+        data-responsive={responsive}
+        className={cn(styles.table, className)}
         {...props}>
         {children}
       </table>
@@ -60,8 +56,8 @@ export function TableRow({ children, className, selected, ref, ...props }: Table
   return (
     <tr
       ref={ref}
-      className={cn(styles.tr, selected && styles.selected, className)}
-      data-selected={selected ? "true" : undefined}
+      className={cn(styles.tr, className)}
+      aria-selected={selected || undefined}
       {...props}>
       {children}
     </tr>
@@ -85,7 +81,7 @@ export function TableCell({
     <td
       ref={ref}
       className={cn(styles.td, isCardHeader && styles.cardHeaderCell, className)}
-      data-label={dataLabel}
+      data-label={dataLabel || undefined}
       {...props}>
       {children}
     </td>

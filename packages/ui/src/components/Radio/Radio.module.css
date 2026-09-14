@@ -100,10 +100,3 @@
   color: var(--ui-danger);
   font-weight: var(--ui-font-weight-semibold);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .visualRadio,
-  .visualRadio::after {
-    transition: none;
-  }
-}

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import styles from "./TableFilter.module.css";
 import { Checkbox } from "../Checkbox/Checkbox";
 import { Popover } from "../Popover/Popover";
@@ -33,11 +33,16 @@ export function TableFilterMultiSelect({
   applyLabel,
   showFooter = false,
 }: TableFilterMultiSelectProps) {
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+
   const toggleOption = (value: string) => {
-    const newSelected = selected.includes(value)
-      ? selected.filter((v) => v !== value)
-      : [...selected, value];
-    onChange(newSelected);
+    const next = new Set(selected);
+    if (next.has(value)) {
+      next.delete(value);
+    } else {
+      next.add(value);
+    }
+    onChange(Array.from(next));
   };
 
   return (
@@ -53,9 +58,9 @@ export function TableFilterMultiSelect({
       <header className={styles.header}>
         <h3 className={styles.title}>{title}</h3>
       </header>
-      <div className={styles.list}>
+      <div className={styles.list} role="group" aria-label={title}>
         {options.map((option) => {
-          const isSelected = selected.includes(option);
+          const isSelected = selectedSet.has(option);
           return (
             <div key={option} className={styles.listItem}>
               <Checkbox

@@ -150,77 +150,7 @@ export function DrawerRoot({
 
   if (!open || !target) return null;
 
-  const childArray = React.Children.toArray(children);
-  const hasExplicitHeader = childArray.some(
-    (c) => React.isValidElement(c) && c.type === DrawerHeader
-  );
-  const hasExplicitBody = childArray.some((c) => React.isValidElement(c) && c.type === DrawerBody);
-  const hasExplicitFooter = childArray.some(
-    (c) => React.isValidElement(c) && c.type === DrawerFooter
-  );
-
-  const shouldRenderDefaultHeader = !hasExplicitHeader && Boolean(title || subtitle || badge);
-
-  let renderedContent: React.ReactNode;
-
-  if (hasExplicitBody) {
-    renderedContent = (
-      <>
-        {shouldRenderDefaultHeader && (
-          <DrawerHeader
-            title={title}
-            subtitle={subtitle}
-            badge={badge}
-            onClose={onClose}
-            closeLabel={closeLabel}
-          />
-        )}
-        {children}
-      </>
-    );
-  } else if (hasExplicitFooter) {
-    const bodyChildren: React.ReactNode[] = [];
-    const footerChildren: React.ReactNode[] = [];
-
-    childArray.forEach((child) => {
-      if (React.isValidElement(child) && child.type === DrawerFooter) {
-        footerChildren.push(child);
-      } else {
-        bodyChildren.push(child);
-      }
-    });
-
-    renderedContent = (
-      <>
-        {shouldRenderDefaultHeader && (
-          <DrawerHeader
-            title={title}
-            subtitle={subtitle}
-            badge={badge}
-            onClose={onClose}
-            closeLabel={closeLabel}
-          />
-        )}
-        <DrawerBody>{bodyChildren}</DrawerBody>
-        {footerChildren}
-      </>
-    );
-  } else if (shouldRenderDefaultHeader) {
-    renderedContent = (
-      <>
-        <DrawerHeader
-          title={title}
-          subtitle={subtitle}
-          badge={badge}
-          onClose={onClose}
-          closeLabel={closeLabel}
-        />
-        <DrawerBody>{children}</DrawerBody>
-      </>
-    );
-  } else {
-    renderedContent = children;
-  }
+  const hasDefaultHeader = Boolean(title || subtitle || badge);
 
   return createPortal(
     <div
@@ -234,7 +164,16 @@ export function DrawerRoot({
         ref={drawerRef}
         aria-label={typeof title === "string" ? title : undefined}
         onClick={(event) => event.stopPropagation()}>
-        {renderedContent}
+        {hasDefaultHeader && (
+          <DrawerHeader
+            title={title}
+            subtitle={subtitle}
+            badge={badge}
+            onClose={onClose}
+            closeLabel={closeLabel}
+          />
+        )}
+        {children}
       </aside>
     </div>,
     target

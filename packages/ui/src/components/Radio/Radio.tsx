@@ -1,6 +1,7 @@
-import React from "react";
+import React, { use } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";
+import { RadioGroupContext } from "./RadioGroup";
 
 export interface RadioProps extends Omit<React.ComponentPropsWithRef<"input">, "type"> {
   value: string;
@@ -21,17 +22,34 @@ export function Radio({
   ref,
   ...props
 }: RadioProps) {
+  const group = use(RadioGroupContext);
+
+  const radioName = name ?? group?.name;
+  const radioDisabled = disabled ?? group?.disabled;
+  const radioChecked = group?.value !== undefined ? group.value === value : checked;
+  const radioDefaultChecked =
+    radioChecked === undefined
+      ? group?.defaultValue !== undefined
+        ? group.defaultValue === value
+        : defaultChecked
+      : undefined;
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange?.(event);
+    if (event.target.checked) group?.onChange?.(value);
+  };
+
   return (
-    <label className={cn(styles.wrapper, disabled && styles.wrapperDisabled, className)}>
+    <label className={cn(styles.wrapper, radioDisabled && styles.wrapperDisabled, className)}>
       <input
         ref={ref}
         type="radio"
-        name={name}
+        name={radioName}
         value={value}
-        checked={checked}
-        defaultChecked={defaultChecked}
-        disabled={disabled}
-        onChange={onChange}
+        checked={radioChecked}
+        defaultChecked={radioDefaultChecked}
+        disabled={radioDisabled}
+        onChange={handleChange}
         className={styles.input}
         {...props}
       />

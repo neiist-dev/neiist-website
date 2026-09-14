@@ -7,11 +7,10 @@
   background: var(--ui-bg);
   border-radius: var(--ui-radius-lg);
   border: 1px solid var(--ui-border);
-  box-sizing: border-box;
 }
 
 .label {
-  font-size: 0.9rem;
+  font-size: var(--ui-font-sm);
   font-weight: var(--ui-font-weight-semibold);
   color: var(--ui-fg-light);
   white-space: nowrap;

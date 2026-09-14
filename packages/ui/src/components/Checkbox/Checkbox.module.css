@@ -3,14 +3,15 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  user-select: none;
 }
 
 .input {
   position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
   opacity: 0;
-  inline-size: 0;
-  block-size: 0;
-  margin: 0;
 }
 
 .visualBox {
@@ -21,19 +22,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   background: var(--ui-bg);
   transition:
     background-color var(--ui-transition),
     border-color var(--ui-transition);
-  flex-shrink: 0;
 }
 
-.checkIcon,
-.indeterminateIcon {
+.icon {
   display: none;
-  color: var(--ui-text-on-colour);
   inline-size: 0.875rem;
   block-size: 0.875rem;
+  color: var(--ui-text-on-colour);
 }
 
 .input:checked + .visualBox,
@@ -42,11 +42,8 @@
   border-color: var(--ui-primary);
 }
 
-.input:checked:not(:indeterminate) + .visualBox .checkIcon {
-  display: block;
-}
-
-.input:indeterminate + .visualBox .indeterminateIcon {
+.input:checked + .visualBox .icon,
+.input:indeterminate + .visualBox .icon {
   display: block;
 }
 
@@ -55,11 +52,7 @@
   outline-offset: 2px;
 }
 
-.input:disabled + .visualBox {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
+.input:disabled ~ .visualBox,
 .input:disabled ~ .label {
   opacity: 0.6;
   cursor: not-allowed;
@@ -67,14 +60,6 @@
 
 .label {
   font-size: 0.9rem;
-  color: var(--ui-fg);
   line-height: 1;
-  margin: 0;
-  user-select: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .visualBox {
-    transition: none;
-  }
+  color: var(--ui-fg);
 }

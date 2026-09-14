@@ -16,7 +16,6 @@ export interface MultiSelectProps {
   onItemCreate?: (_item: string) => void;
   placeholder?: string;
   label?: string;
-  fuseThreshold?: number;
   disabled?: boolean;
   id?: string;
   selectLabel?: string;
@@ -46,7 +45,6 @@ export function MultiSelect({
   onItemCreate,
   placeholder,
   label,
-  fuseThreshold: _fuseThreshold = 0.3,
   disabled = false,
   id,
   selectLabel,
@@ -300,9 +298,6 @@ export function MultiSelect({
                   event.stopPropagation();
                   handleOptionClick(opt);
                 }}>
-                <span className={styles.optionIcon}>
-                  {isSelected ? <FaCheck /> : isCreateOpt ? "+" : null}
-                </span>
                 <span>
                   {isCreateOpt
                     ? createLabel
@@ -310,6 +305,9 @@ export function MultiSelect({
                       : `"${getCreateName(opt)}"`
                     : opt}
                 </span>
+                {(isSelected || isCreateOpt) && (
+                  <span className={styles.optionIcon}>{isSelected ? <FaCheck /> : "+"}</span>
+                )}
               </div>
             );
           })}

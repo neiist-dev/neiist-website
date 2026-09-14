@@ -6,17 +6,12 @@
   max-inline-size: 100vw;
   inline-size: 100%;
   margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dialog:not([open]) {
-  display: none !important;
 }
 
 .dialog[open] {
   display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dialog::backdrop {
@@ -140,6 +135,7 @@
 .body {
   padding: 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
 }
 
@@ -215,14 +211,5 @@
   }
   to {
     transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dialog::backdrop,
-  .content,
-  .closeBtn {
-    animation: none;
-    transition: none;
   }
 }

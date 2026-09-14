@@ -73,9 +73,3 @@
   color: var(--ui-fg-light);
   font-size: 0.85rem;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .actionBtn {
-    transition: none;
-  }
-}

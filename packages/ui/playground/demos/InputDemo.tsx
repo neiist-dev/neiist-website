@@ -6,7 +6,7 @@ import { Input, Stack } from "@neiist/ui";
 const INPUT_STATES = [
   { placeholder: "Standard Input", props: {} },
   { placeholder: "Disabled Input", props: { disabled: true } },
-  { placeholder: "Error Input", props: { error: "true" } },
+  { placeholder: "Error Input", props: { error: "This field is required." } },
 ];
 
 export default function InputDemo() {

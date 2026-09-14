@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import styles from "./TableFilterCascade.module.css";
 import { Checkbox } from "../Checkbox/Checkbox";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
@@ -28,24 +28,24 @@ export interface TableFilterCascadeProps {
 }
 
 export function getCascadeLeafIds(option: CascadeFilterOption): string[] {
-  if (!option.children || option.children.length === 0) {
-    return [option.id];
-  }
+  if (!option.children || option.children.length === 0) return [option.id];
+
   return option.children.flatMap(getCascadeLeafIds);
 }
 
 export function getCascadeSelectionState(
   option: CascadeFilterOption,
-  selected: string[]
+  selected: string[] | Set<string>
 ): { isChecked: boolean; isIndeterminate: boolean } {
   const leafIds = getCascadeLeafIds(option);
-  if (leafIds.length === 0) {
-    return { isChecked: false, isIndeterminate: false };
-  }
-  const selectedCount = leafIds.filter((id) => selected.includes(id)).length;
-  const isChecked = selectedCount === leafIds.length;
-  const isIndeterminate = selectedCount > 0 && selectedCount < leafIds.length;
-  return { isChecked, isIndeterminate };
+  if (leafIds.length === 0) return { isChecked: false, isIndeterminate: false };
+
+  const selectedSet = selected instanceof Set ? selected : new Set(selected);
+  const selectedCount = leafIds.filter((id) => selectedSet.has(id)).length;
+  return {
+    isChecked: selectedCount === leafIds.length,
+    isIndeterminate: selectedCount > 0 && selectedCount < leafIds.length,
+  };
 }
 
 export function TableFilterCascade({
@@ -60,8 +60,8 @@ export function TableFilterCascade({
   className,
 }: TableFilterCascadeProps) {
   const [navStack, setNavStack] = useState<CascadeFilterOption[]>([]);
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
 
-  // When closed, reset drill-down state
   const handleClose = () => {
     setNavStack([]);
     onClose();
@@ -75,27 +75,22 @@ export function TableFilterCascade({
   };
 
   const handleDrillDown = (option: CascadeFilterOption) => {
-    if (option.children && option.children.length > 0) {
-      setNavStack((prev) => [...prev, option]);
-    }
+    if (option.children && option.children.length > 0) setNavStack((prev) => [...prev, option]);
   };
 
   const toggleOptionSelection = (option: CascadeFilterOption) => {
     const leafIds = getCascadeLeafIds(option);
-    const { isChecked } = getCascadeSelectionState(option, selected);
+    const { isChecked } = getCascadeSelectionState(option, selectedSet);
 
     if (isChecked) {
-      // Unselect all leaves
-      onChange(selected.filter((id) => !leafIds.includes(id)));
+      const leafSet = new Set(leafIds);
+      onChange(selected.filter((id) => !leafSet.has(id)));
     } else {
-      // Select all leaves
-      const newSelected = [...selected];
+      const next = new Set(selected);
       for (const id of leafIds) {
-        if (!newSelected.includes(id)) {
-          newSelected.push(id);
-        }
+        next.add(id);
       }
-      onChange(newSelected);
+      onChange(Array.from(next));
     }
   };
 
@@ -115,33 +110,37 @@ export function TableFilterCascade({
             <h3 className={styles.title}>{title}</h3>
           </header>
         ) : (
-          <>
-            <header>
-              <button type="button" className={styles.cascadeHeader} onClick={handleGoBack}>
-                <span className={styles.backIcon}>
-                  <MdChevronLeft size={20} />
-                </span>
-                <span className={styles.cascadeHeaderText}>{currentParent?.label}</span>
-              </button>
-            </header>
+          <header>
+            <button
+              type="button"
+              className={styles.cascadeHeader}
+              onClick={handleGoBack}
+              aria-label={`Voltar de ${currentParent?.label}`}>
+              <MdChevronLeft size={20} className={styles.backIcon} />
+              <span className={styles.cascadeHeaderText}>{currentParent?.label}</span>
+            </button>
             {currentParent?.levelLabel && (
               <div className={styles.cascadeLevelLabel}>{currentParent.levelLabel}</div>
             )}
-          </>
+          </header>
         )}
 
         <ul className={styles.list}>
           {currentOptions.map((option) => {
             const hasChildren = Boolean(option.children && option.children.length > 0);
-            const { isChecked, isIndeterminate } = getCascadeSelectionState(option, selected);
+            const { isChecked, isIndeterminate } = getCascadeSelectionState(option, selectedSet);
 
             return (
               <li key={option.id} className={styles.cascadeItem}>
-                <label className={styles.cascadeItemLeft}>
+                <div
+                  className={styles.cascadeItemLeft}
+                  onClick={() => toggleOptionSelection(option)}>
                   <Checkbox
                     checked={isChecked}
                     indeterminate={isIndeterminate}
                     onChange={() => toggleOptionSelection(option)}
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={option.label}
                   />
                   <span className={styles.cascadeItemLabel}>{option.label}</span>
                   {option.price != null && (
@@ -157,7 +156,7 @@ export function TableFilterCascade({
                   {option.subtitle && (
                     <span className={styles.cascadeSubtitle}>{option.subtitle}</span>
                   )}
-                </label>
+                </div>
 
                 {hasChildren && (
                   <button

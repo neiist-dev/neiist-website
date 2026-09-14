@@ -1,15 +1,13 @@
 .card {
-  container-type: inline-size;
-  container-name: detailCard;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 1rem;
-  background: var(--ui-bg);
+  gap: clamp(1rem, 2vw, 1.25rem);
+  background: var(--ui-surface);
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-lg);
-  padding-block: 1rem;
-  padding-inline: 1rem;
+  padding-block: clamp(1rem, 2vw, 1.25rem);
+  padding-inline: clamp(1rem, 2vw, 1.25rem);
   box-shadow: var(--ui-shadow-sm);
   transition:
     box-shadow var(--ui-transition),
@@ -29,19 +27,15 @@
 
 .avatarContainer {
   flex-shrink: 0;
-  inline-size: 3.5rem;
-  block-size: 3.5rem;
-  border-radius: var(--ui-radius-md);
-  overflow: hidden;
-  background: var(--ui-bg-hover);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .avatarImage {
-  inline-size: 100%;
-  block-size: 100%;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: 50%;
   object-fit: cover;
   display: block;
 }
@@ -92,6 +86,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  margin: 0;
+  padding: 0;
   font-size: 0.9rem;
   line-height: 1.5;
   color: var(--ui-fg);
@@ -99,27 +95,31 @@
 
 .metaItem {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
 }
 
 .metaLabel {
+  margin: 0;
+  padding: 0;
   font-weight: var(--ui-font-weight-semibold);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ui-fg-light);
+  font-size: 0.875rem;
+  color: var(--ui-fg);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .metaValue {
-  inline-size: 100%;
-  color: var(--ui-fg);
+  margin: 0;
+  padding: 0;
+  color: var(--ui-fg-light);
+  font-size: 0.875rem;
   flex: 1;
   min-inline-size: 0;
-  word-break: normal;
+  word-break: break-word;
 }
 
 .tagsRow {
@@ -128,36 +128,4 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-block-start: 0.25rem;
-}
-
-@container detailCard (min-width: 32rem) {
-  .card {
-    padding-block: 1.25rem;
-    padding-inline: 1.25rem;
-    gap: 1.25rem;
-  }
-
-  .metaItem {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 0.5rem;
-  }
-
-  .metaLabel {
-    font-size: 0.9rem;
-    text-transform: none;
-    letter-spacing: normal;
-    color: var(--ui-fg);
-  }
-
-  .metaValue {
-    inline-size: auto;
-    color: var(--ui-fg-light);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card {
-    transition: none;
-  }
 }

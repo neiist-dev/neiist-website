@@ -19,7 +19,7 @@ const DEMO_FIELDS: FieldItemConfig[] = [
   {
     label: "Password",
     error: "Password is too short.",
-    input: { type: "password", error: "true", defaultValue: "123" },
+    input: { type: "password", error: true, defaultValue: "123" },
   },
 ];
 

@@ -83,14 +83,14 @@ export const TableDemo = () => {
   const [dateFilterOpen, setDateFilterOpen] = useState(false);
   const [multiFilterOpen, setMultiFilterOpen] = useState(false);
   const [cascadeFilterOpen, setCascadeFilterOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
+  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>(() => ({
     start: null,
     end: new Date(2026, 8, 4),
-  });
+  }));
   const [selectedCampus, setSelectedCampus] = useState<string[]>(["Alameda"]);
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
 
   // Custom Column Ordering state
   const [columnOrder, setColumnOrder] = useState<string[]>([

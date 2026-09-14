@@ -1,8 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, { createContext, use, useRef, useState } from "react";
 import styles from "./DropdownMenu.module.css";
 import { cn } from "../../utils/cn";
+import { useMergedRef } from "../../utils/useMergedRef";
 import { Popover } from "../Popover/Popover";
 
 interface DropdownMenuContextValue {
@@ -20,30 +21,54 @@ export interface DropdownMenuProps extends React.ComponentPropsWithRef<"div"> {
   align?: "start" | "center" | "end";
 }
 
-export interface DropdownMenuChildProps {
-  onClick?: (_event: React.MouseEvent) => void;
-  ref?: React.Ref<HTMLElement>;
-  "aria-expanded"?: boolean;
-}
+export type DropdownMenuTriggerRenderProps = {
+  ref: React.Ref<HTMLElement>;
+  onClick: (_event: React.MouseEvent) => void;
+  "aria-expanded": boolean;
+};
 
-export interface DropdownMenuTriggerProps {
-  children: React.ReactElement<DropdownMenuChildProps>;
+export interface DropdownMenuTriggerProps extends Omit<
+  React.ComponentPropsWithRef<"div">,
+  "children"
+> {
+  children: React.ReactNode | ((_props: DropdownMenuTriggerRenderProps) => React.ReactNode);
   className?: string;
 }
 
-export function DropdownMenuTrigger({ children }: DropdownMenuTriggerProps) {
-  const ctx = useContext(DropdownMenuContext);
+export function DropdownMenuTrigger({
+  children,
+  className,
+  ref,
+  ...props
+}: DropdownMenuTriggerProps) {
+  const ctx = use(DropdownMenuContext);
   if (!ctx) throw new Error("DropdownMenuTrigger must be inside DropdownMenu");
 
-  return React.cloneElement(children, {
-    ref: ctx.anchorRef as React.Ref<HTMLElement>,
-    onClick: (event: React.MouseEvent) => {
-      event.stopPropagation();
-      children.props.onClick?.(event);
-      ctx.toggle();
-    },
-    "aria-expanded": ctx.isOpen,
-  });
+  const mergedRef = useMergedRef(ref, ctx.anchorRef as React.Ref<HTMLDivElement>);
+
+  const handleClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    ctx.toggle();
+  };
+
+  if (typeof children === "function") {
+    return children({
+      ref: mergedRef as React.Ref<HTMLElement>,
+      onClick: handleClick,
+      "aria-expanded": ctx.isOpen,
+    });
+  }
+
+  return (
+    <div
+      ref={mergedRef}
+      className={cn(styles.trigger, className)}
+      onClickCapture={handleClick}
+      aria-expanded={ctx.isOpen}
+      {...props}>
+      {children}
+    </div>
+  );
 }
 
 export interface DropdownMenuItemProps extends React.ComponentPropsWithRef<"button"> {
@@ -64,7 +89,7 @@ export function DropdownMenuItem({
   ref,
   ...props
 }: DropdownMenuItemProps) {
-  const ctx = useContext(DropdownMenuContext);
+  const ctx = use(DropdownMenuContext);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     onClick?.(event);
@@ -109,7 +134,7 @@ export function DropdownMenuContent({
   align = "start",
   mobileTitle = "Actions",
 }: DropdownMenuContentProps) {
-  const ctx = useContext(DropdownMenuContext);
+  const ctx = use(DropdownMenuContext);
   if (!ctx) throw new Error("DropdownMenuContent must be inside DropdownMenu");
 
   return (

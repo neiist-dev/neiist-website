@@ -46,18 +46,20 @@ export const DrawerDemo = () => {
           title="Member Management"
           subtitle="View and edit member profile information"
           badge={<Badge variant="primary">Active</Badge>}>
-          <Stack gap="md">
-            <Text>
-              This panel slides smoothly from the edge and provides clean focus trapping and escape
-              dismissal.
-            </Text>
-            <div>
-              <strong>Member ID:</strong> #2026-042
-            </div>
-            <div>
-              <strong>Program:</strong> Computer Science and Engineering
-            </div>
-          </Stack>
+          <Drawer.Body>
+            <Stack gap="md">
+              <Text>
+                This panel slides smoothly from the edge and provides clean focus trapping and
+                escape dismissal.
+              </Text>
+              <div>
+                <strong>Member ID:</strong> #2026-042
+              </div>
+              <div>
+                <strong>Program:</strong> Computer Science and Engineering
+              </div>
+            </Stack>
+          </Drawer.Body>
           <Drawer.Footer>
             <Button variant="ghost" onClick={() => setOpenRight(false)}>
               Cancel
@@ -81,13 +83,19 @@ export const DrawerDemo = () => {
           size="sm"
           onClose={() => setOpenLeft(false)}
           title="Navigation Menu">
-          <Stack gap="md">
-            {NAV_ITEMS.map((item) => (
-              <Button key={item} variant="ghost" fullWidth style={{ justifyContent: "flex-start" }}>
-                {item}
-              </Button>
-            ))}
-          </Stack>
+          <Drawer.Body>
+            <Stack gap="md">
+              {NAV_ITEMS.map((item) => (
+                <Button
+                  key={item}
+                  variant="ghost"
+                  fullWidth
+                  style={{ justifyContent: "flex-start" }}>
+                  {item}
+                </Button>
+              ))}
+            </Stack>
+          </Drawer.Body>
         </Drawer>
       </DemoCard>
     </Stack>

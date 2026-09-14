@@ -33,7 +33,7 @@
 }
 
 .fullWidth {
-  width: 100%;
+  inline-size: 100%;
 }
 
 .tabButton {
@@ -94,10 +94,4 @@
 .tabContent {
   padding-block: 1.5rem;
   padding-inline: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tabButton {
-    transition: none;
-  }
 }

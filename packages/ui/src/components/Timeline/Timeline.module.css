@@ -10,7 +10,6 @@
   position: relative;
   inline-size: 100%;
   container-type: inline-size;
-  container-name: timeline;
 }
 
 .timeline::before {
@@ -57,11 +56,10 @@
   align-items: center;
   justify-content: center;
   border: 2px solid var(--ui-bg);
-  box-sizing: border-box;
   transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease;
+    background-color var(--ui-transition),
+    border-color var(--ui-transition),
+    color var(--ui-transition);
 }
 
 .content {
@@ -111,11 +109,4 @@
   font-size: 0.75rem;
   color: var(--ui-fg-light);
   margin-block-start: 0.125rem;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .timeline::after,
-  .node {
-    transition: none;
-  }
 }

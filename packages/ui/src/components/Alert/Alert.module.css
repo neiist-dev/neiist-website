@@ -90,9 +90,3 @@
   color: var(--ui-fg);
   background: var(--ui-hover);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .closeButton {
-    transition: none;
-  }
-}

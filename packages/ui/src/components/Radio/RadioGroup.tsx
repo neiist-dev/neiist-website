@@ -1,7 +1,16 @@
-import React, { useId } from "react";
+import React, { createContext, useId } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";
-import { RadioProps } from "./Radio";
+
+export interface RadioGroupContextValue {
+  name: string;
+  value?: string;
+  defaultValue?: string;
+  disabled?: boolean;
+  onChange?: (_value: string) => void;
+}
+
+export const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
 
 export interface RadioGroupProps extends Omit<React.ComponentPropsWithRef<"fieldset">, "onChange"> {
   name?: string;
@@ -29,30 +38,7 @@ export function RadioGroup({
   ...props
 }: RadioGroupProps) {
   const defaultId = useId();
-  const groupName = name || `radio-group-${defaultId}`;
-
-  const renderedChildren = React.Children.map(children, (child) => {
-    if (!React.isValidElement<RadioProps>(child)) return child;
-
-    const itemValue = child.props.value;
-    const isChecked = value !== undefined ? value === itemValue : child.props.checked;
-
-    const isDefaultChecked =
-      defaultValue !== undefined ? defaultValue === itemValue : child.props.defaultChecked;
-
-    return React.cloneElement(child, {
-      name: child.props.name ?? groupName,
-      checked: isChecked,
-      defaultChecked: isChecked !== undefined ? undefined : isDefaultChecked,
-      disabled: child.props.disabled ?? disabled,
-      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-        child.props.onChange?.(event);
-        if (event.target.checked && onChange) {
-          onChange(itemValue);
-        }
-      },
-    });
-  });
+  const groupName = name ?? `radio-group-${defaultId}`;
 
   return (
     <fieldset
@@ -62,7 +48,18 @@ export function RadioGroup({
       className={cn(styles.group, styles[`group-${direction}`], className)}
       {...props}>
       {label && <legend className={styles.groupLabel}>{label}</legend>}
-      {renderedChildren}
+
+      <RadioGroupContext
+        value={{
+          name: groupName,
+          value,
+          defaultValue,
+          disabled,
+          onChange,
+        }}>
+        {children}
+      </RadioGroupContext>
+
       {error && <span className={styles.errorText}>{error}</span>}
     </fieldset>
   );

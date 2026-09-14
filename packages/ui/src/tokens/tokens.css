@@ -1,5 +1,6 @@
 :root {
   --ui-bg: var(--background-colour, #f2f2f7);
+  --ui-surface: var(--surface-colour, #ffffff);
   --ui-bg-hover: var(--background-colour-hover, #e7e7ee);
   --ui-fg: var(--foreground-colour, #333333);
   --ui-fg-light: var(--light-foreground-colour, #7b7b8b);
@@ -68,6 +69,20 @@
   --ui-shimmer-highlight: rgba(255, 255, 255, 0.15);
 }
 
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+[role="button"],
+summary {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .dark {
   --ui-border: var(--border-colour, #374151);
   --ui-shadow-popover: var(--shadow-popover, 0 10px 40px rgba(0, 0, 0, 0.4));
@@ -76,4 +91,18 @@
   --ui-warning-subtle: rgba(245, 158, 11, 0.2);
   --ui-info-subtle: rgba(59, 130, 246, 0.2);
   --ui-primary-subtle: rgba(40, 99, 253, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ui-transition: 0s;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
 }

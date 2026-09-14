@@ -102,8 +102,12 @@ export function Select({
                 }}
                 className={cn(styles.option, isSelected && styles.optionSelected)}
                 onClick={() => handleSelect(option.value)}>
-                <span className={styles.optionIcon}>{isSelected && <FaCheck />}</span>
                 <span>{option.label}</span>
+                {isSelected && (
+                  <span className={styles.optionIcon}>
+                    <FaCheck />
+                  </span>
+                )}
               </div>
             );
           })}

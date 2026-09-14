@@ -3,6 +3,7 @@ import styles from "./DetailCard.module.css";
 import { cn } from "../../utils/cn";
 
 export interface DetailCardMetaItem {
+  id?: string;
   label: React.ReactNode;
   value: React.ReactNode;
 }
@@ -74,12 +75,21 @@ export function DetailCard({
 
         {metadata && metadata.length > 0 && (
           <dl className={styles.metadataList}>
-            {metadata.map((item, index) => (
-              <div key={index} className={styles.metaItem}>
-                <dt className={styles.metaLabel}>{item.label}:</dt>
-                <dd className={styles.metaValue}>{item.value}</dd>
-              </div>
-            ))}
+            {metadata.map((item) => {
+              const itemKey =
+                item.id ??
+                (typeof item.label === "string"
+                  ? item.label
+                  : typeof item.value === "string"
+                    ? item.value
+                    : undefined);
+              return (
+                <div key={itemKey} className={styles.metaItem}>
+                  <dt className={styles.metaLabel}>{item.label}:</dt>
+                  <dd className={styles.metaValue}>{item.value}</dd>
+                </div>
+              );
+            })}
           </dl>
         )}
 

@@ -12,8 +12,8 @@ export interface PopoverProps {
   anchorRef: React.RefObject<HTMLElement | null>;
   children: React.ReactNode;
   className?: string;
-  width?: number | string; // Optional width for the popover
-  offset?: number; // Distance from the anchor
+  width?: number | string;
+  offset?: number;
   matchAnchorWidth?: boolean;
   mobileDrawerPosition?: "bottom" | "left" | "right";
   mobileDrawerTitle?: string;

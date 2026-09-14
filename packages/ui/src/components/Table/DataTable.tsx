@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import styles from "./DataTable.module.css";
 import { cn } from "../../utils/cn";
 import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
@@ -20,7 +20,9 @@ export interface ColumnDef<T> {
     _buttonRef: React.RefObject<HTMLButtonElement | null>
   ) => void;
   className?: string;
+  width?: number | string;
   minWidth?: number | string;
+  align?: "start" | "center" | "end";
 }
 
 export interface DataTableProps<T> {
@@ -29,7 +31,7 @@ export interface DataTableProps<T> {
   enableRowSelection?: boolean;
   selectedRowIds?: Set<string>;
   onSelectionChange?: (_selectedIds: Set<string>) => void;
-  getRowId: (_row: T) => string;
+  getRowId?: (_row: T) => string;
   columnOrder?: string[];
   responsive?: "cards" | "scroll";
   onRowClick?: (_row: T) => void;
@@ -63,11 +65,13 @@ function FilterButton({ onClick, ariaLabel = "Filter" }: FilterButtonProps) {
   );
 }
 
+const EMPTY_SET = new Set<string>();
+
 export function DataTable<T>({
   data,
   columns,
   enableRowSelection = false,
-  selectedRowIds = new Set(),
+  selectedRowIds = EMPTY_SET,
   onSelectionChange,
   getRowId,
   columnOrder,
@@ -77,39 +81,41 @@ export function DataTable<T>({
   className,
   wrapperClassName,
 }: DataTableProps<T>) {
-  const visibleColumns = columnOrder
-    ? columnOrder
-        .map((id) => columns.find((column) => column.id === id))
-        .filter((column): column is ColumnDef<T> => Boolean(column))
-    : columns;
+  const visibleColumns = useMemo(() => {
+    if (!columnOrder) return columns;
+    const colMap = new Map(columns.map((col) => [col.id, col]));
+    return columnOrder
+      .map((id) => colMap.get(id))
+      .filter((col): col is ColumnDef<T> => col !== undefined);
+  }, [columns, columnOrder]);
 
-  const headerColIndex = visibleColumns.findIndex((column) => column.isCardHeader);
-  const cardHeaderIndex = headerColIndex !== -1 ? headerColIndex : 0;
+  const cardHeaderIndex = useMemo(() => {
+    const idx = visibleColumns.findIndex((column) => column.isCardHeader);
+    return idx !== -1 ? idx : 0;
+  }, [visibleColumns]);
 
-  const isAllSelected = data.length > 0 && selectedRowIds.size === data.length;
-  const isSomeSelected = selectedRowIds.size > 0 && selectedRowIds.size < data.length;
+  const rowIds = useMemo(
+    () => data.map((row, index) => (getRowId ? getRowId(row) : String(index))),
+    [data, getRowId]
+  );
+
+  const isAllSelected = rowIds.length > 0 && rowIds.every((id) => selectedRowIds.has(id));
+  const isSomeSelected = selectedRowIds.size > 0 && !isAllSelected;
 
   const handleSelectAll = () => {
-    if (!onSelectionChange || !getRowId) return;
-
-    if (isAllSelected) {
-      onSelectionChange(new Set());
-    } else {
-      const allIds = new Set(data.map((row) => getRowId(row)));
-      onSelectionChange(allIds);
-    }
+    if (!onSelectionChange) return;
+    onSelectionChange(isAllSelected ? new Set() : new Set(rowIds));
   };
 
   const handleSelectRow = (rowId: string) => {
     if (!onSelectionChange) return;
-
-    const newSet = new Set(selectedRowIds);
-    if (newSet.has(rowId)) {
-      newSet.delete(rowId);
+    const next = new Set(selectedRowIds);
+    if (next.has(rowId)) {
+      next.delete(rowId);
     } else {
-      newSet.add(rowId);
+      next.add(rowId);
     }
-    onSelectionChange(newSet);
+    onSelectionChange(next);
   };
 
   return (
@@ -121,6 +127,7 @@ export function DataTable<T>({
               className={styles.checkboxCol}
               onClick={(event) => event.stopPropagation()}>
               <Checkbox
+                aria-label="Select all rows"
                 checked={isAllSelected || isSomeSelected}
                 indeterminate={isSomeSelected}
                 onChange={handleSelectAll}
@@ -128,28 +135,34 @@ export function DataTable<T>({
             </TableHeaderCell>
           )}
 
-          {visibleColumns.map((column) => (
-            <TableHeaderCell
-              key={column.id}
-              className={column.className}
-              style={column.minWidth ? { minWidth: column.minWidth } : undefined}>
-              {column.hasFilter ? (
-                <div className={styles.headerWithFilter}>
-                  {typeof column.header === "function" ? column.header({ column }) : column.header}
-                  {column.onFilterClick && (
-                    <FilterButton
-                      onClick={column.onFilterClick}
-                      ariaLabel={column.filterButtonAriaLabel}
-                    />
-                  )}
-                </div>
-              ) : typeof column.header === "function" ? (
-                column.header({ column })
-              ) : (
-                column.header
-              )}
-            </TableHeaderCell>
-          ))}
+          {visibleColumns.map((column) => {
+            const colWidth = column.width ?? column.minWidth;
+            return (
+              <TableHeaderCell
+                key={column.id}
+                className={column.className}
+                data-align={column.align}
+                style={colWidth ? { width: colWidth } : undefined}>
+                {column.hasFilter ? (
+                  <div className={styles.headerWithFilter} data-align={column.align}>
+                    {typeof column.header === "function"
+                      ? column.header({ column })
+                      : column.header}
+                    {column.onFilterClick && (
+                      <FilterButton
+                        onClick={column.onFilterClick}
+                        ariaLabel={column.filterButtonAriaLabel}
+                      />
+                    )}
+                  </div>
+                ) : typeof column.header === "function" ? (
+                  column.header({ column })
+                ) : (
+                  column.header
+                )}
+              </TableHeaderCell>
+            );
+          })}
         </TableRow>
       </TableHead>
       <TableBody>
@@ -163,21 +176,27 @@ export function DataTable<T>({
           </TableRow>
         ) : (
           data.map((row, rowIndex) => {
-            const rowId = getRowId ? getRowId(row) : String(rowIndex);
+            const rowId = rowIds[rowIndex];
             const isSelected = selectedRowIds.has(rowId);
 
             return (
               <TableRow
                 key={rowId}
                 selected={isSelected}
-                data-selectable={enableRowSelection ? "true" : undefined}
-                onClick={() => onRowClick && onRowClick(row)}
-                className={cn(onRowClick && styles.rowClickable, isSelected && styles.rowSelected)}>
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={cn(
+                  onRowClick && styles.rowClickable,
+                  enableRowSelection && styles.rowSelectable
+                )}>
                 {enableRowSelection && (
                   <TableCell
                     className={styles.checkboxCol}
                     onClick={(event) => event.stopPropagation()}>
-                    <Checkbox checked={isSelected} onChange={() => handleSelectRow(rowId)} />
+                    <Checkbox
+                      aria-label={`Select row ${rowId}`}
+                      checked={isSelected}
+                      onChange={() => handleSelectRow(rowId)}
+                    />
                   </TableCell>
                 )}
 
@@ -193,7 +212,7 @@ export function DataTable<T>({
                       className={column.className}
                       dataLabel={label}
                       isCardHeader={isHeader}
-                      style={column.minWidth ? { minWidth: column.minWidth } : undefined}>
+                      data-align={column.align}>
                       {column.cell(row)}
                     </TableCell>
                   );

@@ -4,10 +4,11 @@ import { Calendar, Stack, Button, type CalendarDateRange } from "@neiist/ui";
 import { pt } from "date-fns/locale";
 
 export const CalendarDemo = () => {
-  const [singleDate, setSingleDate] = useState<Date | undefined>(new Date());
-  const [rangeDate, setRangeDate] = useState<CalendarDateRange | undefined>({
-    from: new Date(),
-    to: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+  const [singleDate, setSingleDate] = useState<Date | undefined>(() => new Date());
+  const [rangeDate, setRangeDate] = useState<CalendarDateRange | undefined>(() => {
+    const from = new Date();
+    const to = new Date(from.getTime() + 4 * 24 * 60 * 60 * 1000);
+    return { from, to };
   });
 
   return (
