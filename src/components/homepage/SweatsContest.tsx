@@ -5,8 +5,14 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import styles from "@/styles/components/homepage/SweatsContest.module.css";
 import backgroundImage from "@/assets/background.png";
+import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner"
 
-export default function SweatsContest() {
+interface SweatsContestProps {
+  dict: Dictionary["sweats_contest"];
+}
+
+export default function SweatsContest({ dict }: SweatsContestProps) {
   const { user } = useUser();
   const [uploading, setUploading] = useState(false);
   const [buttonText, setButtonText] = useState("Submete um design!");
@@ -14,7 +20,8 @@ export default function SweatsContest() {
 
   const handleButtonClick = () => {
     if (!user) {
-      // TODO: (WARNING) show toast prompting the user to log in before submitting.
+      toast.warning(dict.login_warning, 
+        { closeButton: true });
       return;
     }
     fileInputRef.current?.click();
@@ -25,7 +32,8 @@ export default function SweatsContest() {
     if (!file) return;
 
     if (file.type !== "application/zip" && file.type !== "application/x-zip-compressed") {
-      // TODO: (ERROR)
+      toast.error(dict.errors.zip_only, 
+        { closeButton: true });
       setButtonText("Erro: Apenas ficheiros ZIP");
       setTimeout(() => setButtonText("Submete um design!"), 3000);
       return;
@@ -36,23 +44,27 @@ export default function SweatsContest() {
     const formData = new FormData();
     formData.append("file", file);
 
+    let toastId: string | number = "";
     try {
-      // TODO: (LOADING) show loading toast while the design submission is uploading.
+      toastId = toast.loading(dict.uploading);
       const response = await fetch("/api/user/sweats-contest", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        // TODO: (SUCCESS)
+        toast.success(dict.submitted, 
+          { closeButton: true });
         setButtonText("Design submetido");
       } else {
-        // TODO: (ERROR)
+        toast.error(dict.errors.upload, 
+          { closeButton: true });
         setButtonText("Erro ao submeter");
       }
     } catch (error) {
       setButtonText("Erro ao submeter");
-      // TODO: (ERROR)
+      toast.error(dict.errors.upload, 
+        { closeButton: true });
       console.error("Upload error:", error);
     } finally {
       setUploading(false);

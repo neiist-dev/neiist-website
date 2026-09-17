@@ -7,6 +7,7 @@ import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/photo-management/PhotoTeamMembers.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner"
 
 interface Membership {
   id: string;
@@ -97,9 +98,11 @@ export default function PhotoTeamMembers({
         if (user && user.istid === istid) {
           setUser({ ...user, photo: newPhotoUrl });
         }
-        // TODO: (SUCCESS) show success toast after the photo is updated.
+        toast.success(dict.photo_update_success, 
+          { closeButton: true });
       } else {
-        // TODO: (ERROR) show error toast when the photo update fails.
+        toast.error(dict.photo_update_error, 
+          { closeButton: true });
       }
       setEditingPhotoIstid(null);
     };

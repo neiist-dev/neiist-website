@@ -30,6 +30,7 @@ import ActiveFilters from "./ActiveFilters";
 import MobileFiltersDrawer from "./MobileFiltersDrawer";
 import ColorfulText from "@/components/ColorfulText";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner";
 
 function normalizeCampus(campus?: string): string {
   return campus ? campus.trim().toLowerCase() : "";
@@ -47,6 +48,8 @@ interface OrdersTableProps {
   products: Product[];
   dict: Dictionary["orders_table"];
   posPaymentDict: Dictionary["pos_payment"];
+  newOrderModalDict: Dictionary["new_order_modal"];
+  createUserModalDict: Dictionary["create_user_modal"];
   basePath: string;
   isArchive?: boolean;
 }
@@ -63,6 +66,8 @@ export default function OrdersTable({
   products,
   dict,
   posPaymentDict,
+  newOrderModalDict,
+  createUserModalDict,
   basePath,
   isArchive = false,
 }: OrdersTableProps) {
@@ -293,10 +298,11 @@ export default function OrdersTable({
       setSelectedOrders(new Set());
 
       if (failures.length) {
-        // TODO: (WARNING)
-        console.error(`Falha ao atualizar ${failures.length} encomenda(s)`);
+        toast.warning(posPaymentDict.error_update_order, 
+          { closeButton: true });
       } else {
-        // TODO: (SUCCESS)
+        toast.success(posPaymentDict.order_success, 
+          { closeButton: true });
         router.refresh();
       }
     } finally {
@@ -306,7 +312,7 @@ export default function OrdersTable({
 
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
-    // TODO: (LOADING) show loading toast while bulk order status updates are running.
+    const toastId = toast.loading(posPaymentDict.status_update_bulk)
     const orderIds = Array.from(selectedOrders)
       .map((id) => Number(id))
       .filter((n) => Number.isFinite(n));
@@ -343,11 +349,13 @@ export default function OrdersTable({
       }
       setSelectedOrders(new Set());
       router.refresh();
+      toast.dismiss(toastId);
       if (failures.length) {
-        // TODO: (WARNING)
-        console.warn("Some updates failed:", failures);
+        toast.warning(posPaymentDict.error_update_order, 
+          { closeButton: true });
       } else {
-        // TODO: (SUCCESS)
+        toast.success(posPaymentDict.status_update_success, 
+          { closeButton: true });
       }
     } finally {
       setBulkLoading(false);
@@ -707,6 +715,10 @@ export default function OrdersTable({
           onClose={() => setShowNewOrderModal(false)}
           onSubmit={handleNewOrderSubmit}
           products={products}
+          dict={{
+            new_order_modal: newOrderModalDict,
+            create_user_modal: createUserModalDict,
+          }}
         />
       )}
 

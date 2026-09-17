@@ -5,25 +5,28 @@ import styles from "@/styles/components/shop/CreateNewUserModal.module.css";
 import { MdClose } from "react-icons/md";
 import type { User } from "@/types/user";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner";
 
 interface CreateNewUserModalProps {
   onClose: () => void;
   onSubmit?: (_user: User) => void;
   initialIstId?: string;
+  dict: Dictionary["create_user_modal"];
 }
 
 const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
   onClose,
   onSubmit,
   initialIstId = "",
+  dict,
 }) => {
   const [istId, setIstId] = useState(initialIstId);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-
+  
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -42,13 +45,12 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
   const handleSubmit = async () => {
     if (!istId || !name || !email) {
-      // TODO: (ERROR)
-      setError("Por favor, preencha todos os campos.");
+      toast.error(dict.error_required, 
+        { closeButton: true });
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/admin/users", {
@@ -70,12 +72,12 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
       const newUser = await response.json();
       onSubmit?.(newUser);
-      // TODO: (SUCCESS) show success toast after the new user is created.
+      toast.success(dict.success_new_user, 
+        { closeButton: true });
       onClose();
     } catch (error) {
-      console.error("Error creating user:", error);
-      // TODO: (ERROR)
-      setError(error instanceof Error ? error.message : "Failed to create user");
+      toast.error(dict.error_new_user, 
+        { closeButton: true })
     } finally {
       setIsSubmitting(false);
     }
@@ -95,8 +97,6 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
         <h2>Novo Utilizador</h2>
 
-        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-        {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleConfirm}>
           <div className={styles.formGroup}>

@@ -9,6 +9,7 @@ import YearSelector from "@/components/about-us/YearSelector";
 import memberCardStyles from "@/styles/components/about-us/MemberCard.module.css";
 import styles from "@/styles/pages/AboutUs.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner"
 
 function getAcademicYearRange(year: string) {
   const [startYear, endYear] = year.split("/").map(Number);
@@ -138,7 +139,8 @@ export default function AboutUsEditor({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ departmentName, roles: newRoles }),
     });
-    // TODO: (SUCCESS) show success toast after the role order is saved, and an error toast if this request fails.
+    toast.success(dict.order_saved_success, 
+      { closeButton: true });
   }
 
   function handleDragEnd(departmentName: string, event: DragEndEvent) {

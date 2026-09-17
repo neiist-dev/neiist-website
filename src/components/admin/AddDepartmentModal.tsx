@@ -2,6 +2,7 @@
 import { useState } from "react";
 import styles from "@/styles/components/admin/AddDepartmentModal.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner";
 
 interface Role {
   roleName: string;
@@ -21,7 +22,6 @@ export default function AddDepartmentModal({
   const [deptDesc, setDeptDesc] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const addRole = (role: Role) => setRoles((prev) => [...prev, role]);
   const removeRole = (roleName: string) =>
@@ -29,7 +29,6 @@ export default function AddDepartmentModal({
 
   const handleCreate = async () => {
     setLoading(true);
-    setError("");
     try {
       const depRes = await fetch(
         departmentType === "team" ? "/api/admin/teams" : "/api/admin/admin-bodies",
@@ -45,8 +44,8 @@ export default function AddDepartmentModal({
       );
       if (!depRes.ok) {
         const err = await depRes.json();
-        // TODO: (ERROR)
-        setError(err.error || dict.errors.create_department);
+        toast.error(err.error || dict.errors.create_department,
+          { closeButton: true});
         setLoading(false);
         return;
       }
@@ -62,18 +61,19 @@ export default function AddDepartmentModal({
         });
         if (!roleRes.ok) {
           const err = await roleRes.json();
-          // TODO: (ERROR)
-          setError(err.error || dict.errors.create_role);
+          toast.error(err.error || dict.errors.create_role, 
+            { closeButton: true });
           setLoading(false);
           return;
         }
       }
       setLoading(false);
-      // TODO: (SUCCESS) show success toast after the department and roles are created.
+      toast.success(dict.department_role_success, 
+        { closeButton: true });
       window.location.reload();
     } catch {
-      // TODO: (ERROR)
-      setError(dict.errors.create_department_or_roles);
+      toast.error(dict.errors.create_department_or_roles, 
+        { closeButton: true });
       setLoading(false);
     }
   };
@@ -160,7 +160,6 @@ export default function AddDepartmentModal({
                     ))}
                   </ul>
                 </div>
-                {error && <div className={styles.error}>{error}</div>}
                 <div className={styles.actions}>
                   <button className={styles.button} onClick={() => setStep(1)} disabled={loading}>
                     {dict.back}

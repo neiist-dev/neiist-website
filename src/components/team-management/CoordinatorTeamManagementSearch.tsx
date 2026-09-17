@@ -8,6 +8,7 @@ import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import SearchSelect from "@/components/search/SearchSelect";
 import styles from "@/styles/components/team-management/CoordinatorTeamManagementSearch.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner";
 
 export default function CoordinatorTeamManagementSearch({
   coordinatorTeams,
@@ -28,7 +29,6 @@ export default function CoordinatorTeamManagementSearch({
     []
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -84,7 +84,6 @@ export default function CoordinatorTeamManagementSearch({
 
   async function refreshMemberships() {
     setLoading(true);
-    setError("");
     try {
       const response = await fetch("/api/admin/memberships");
       if (response.ok) {
@@ -96,7 +95,8 @@ export default function CoordinatorTeamManagementSearch({
         );
       }
     } catch {
-      setError(dict.errors.fetch_members);
+      toast.error(dict.errors.fetch_members, 
+        { closeButton: true });
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,6 @@ export default function CoordinatorTeamManagementSearch({
   async function handleAddMember(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
-    setError("");
     try {
       const response = await fetch("/api/admin/memberships", {
         method: "POST",
@@ -120,14 +119,15 @@ export default function CoordinatorTeamManagementSearch({
         await refreshMemberships();
         setSelectedUser("");
         setSelectedRole("");
-        // TODO: (SUCCESS) show success toast after the team member is added.
+        toast.success(dict.success.add_member_success, 
+          { closeButton: true });
       } else {
-        // TODO: (ERROR)
-        setError(dict.errors.add_member);
+        toast.error(dict.errors.add_member, 
+        { closeButton: true });
       }
     } catch {
-      // TODO: (ERROR)
-      setError(dict.errors.add_member);
+      toast.error(dict.errors.add_member, 
+        { closeButton: true });
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,6 @@ export default function CoordinatorTeamManagementSearch({
   async function confirmRemove() {
     if (!pendingRemove) return;
     setLoading(true);
-    setError("");
     setConfirmOpen(false);
     try {
       const response = await fetch("/api/admin/memberships", {
@@ -155,14 +154,15 @@ export default function CoordinatorTeamManagementSearch({
       });
       if (response.ok) {
         await refreshMemberships();
-        // TODO: (SUCCESS) show success toast after the team member is removed.
+        toast.success(dict.success.remove_member_success, 
+        { closeButton: true });
       } else {
-        // TODO: (ERROR)
-        setError(dict.errors.remove_member);
+        toast.error(dict.errors.remove_member, 
+        { closeButton: true });
       }
     } catch {
-      // TODO: (ERROR)
-      setError(dict.errors.remove_member);
+      toast.error(dict.errors.remove_member, 
+        { closeButton: true });
     } finally {
       setLoading(false);
       setPendingRemove(null);
@@ -236,8 +236,6 @@ export default function CoordinatorTeamManagementSearch({
             {dict.add_member}
           </button>
         </form>
-        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-        {error && <div className={styles.error}>{error}</div>}
       </section>
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>{dict.existing_members_title}</h3>

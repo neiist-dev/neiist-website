@@ -21,6 +21,7 @@ import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
+import { toast } from "sonner";
 import type { Dictionary } from "@/i18n/dictionaries";
 import ColorfulText from "@/components/ColorfulText";
 
@@ -56,14 +57,14 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+
 
   const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
 
   const handleDeleteAccount = async () => {
     if (!user || deleteLoading) return;
     setDeleteLoading(true);
-    setError("");
+    
     try {
       const res = await fetch(`/api/user/update/${user.istid}`, {
         method: "DELETE",
@@ -76,7 +77,8 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       window.location.href = "/";
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : dict.delete_account.error_generic);
+      toast.error(e instanceof Error ? e.message : dict.delete_account.error_generic, 
+        { closeButton: true});
       setShowDeleteConfirm(false);
       setDeleteLoading(false);
     }
@@ -120,7 +122,6 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const handleConfirmChange = async () => {
     if (!pendingChange || !user) return;
     setShowConfirmDialog(false);
-    setError("");
 
     try {
       const { field } = pendingChange;
@@ -136,7 +137,8 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || dict.errors.verify_email);
         }
-        // TODO: (SUCCESS) show success toast after the verification email request is sent.
+        toast.success(dict.change_success, 
+          { closeButton: true });
       } else {
         const res = await fetch(`/api/user/update/${user.istid}`, {
           method: "PUT",
@@ -156,7 +158,8 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         setUser(updated);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : dict.errors.update_profile);
+      toast.error(e instanceof Error ? e.message : dict.errors.update_profile, 
+        { closeButton: true})
     } finally {
       setPendingChange(null);
     }
@@ -165,8 +168,9 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const getCalendarData = async () => {
     if (calendarData) return calendarData;
     if (!user?.istid) return null;
+    let toastId: string | number = "";
     try {
-      // TODO: show loading toast while fetching calendar
+      toastId = toast.loading(dict.labels.loading);
       const response = await fetch(`/api/calendar/${user.istid}`);
       if (!response.ok) {
         throw new Error(dict.errors.fetch_calendar);
@@ -177,9 +181,12 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         webViewLink: data.webViewLink,
       };
       setCalendarData(links);
+      toast.dismiss(toastId);
       return links;
     } catch (e) {
-      setError(e instanceof Error ? e.message : dict.errors.get_calendar_link);
+      toast.dismiss(toastId)
+      toast.error(e instanceof Error ? e.message : dict.errors.get_calendar_link, 
+        { closeButton: true })
       return null;
     }
   };
@@ -187,7 +194,6 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const handleAddCalendar = async () => {
     if (!user?.istid || calendarLoading) return;
     setCalendarLoading(true);
-    setError("");
 
     try {
       const data = await getCalendarData();
@@ -202,7 +208,6 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const handleViewCalendar = async () => {
     if (!user?.istid || calendarLoading) return;
     setCalendarLoading(true);
-    setError("");
 
     try {
       const data = await getCalendarData();
@@ -217,12 +222,14 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const onCvUpload = async (file: File | null) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
-      setError(dict.errors.pdf_only);
+      toast.error(dict.errors.pdf_only, 
+        { closeButton: true });
       return;
     }
     setCvLoading(true);
+    let cvToastId: string | number = ""
     try {
-      // TODO: (LOADING) show loading toast while the CV upload is in progress.
+      cvToastId = toast.loading(dict.labels.loading)
       const form = new FormData();
       form.append("file", file);
       form.append("istid", user.istid);
@@ -230,9 +237,12 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
       if (!res.ok) throw new Error(dict.errors.cv_upload);
       setHasCV(true);
-      // TODO: (SUCCESS) show success toast after the CV is uploaded.
+      toast.success(dict.cv_upload_success, 
+        { closeButton: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : dict.errors.cv_upload_error);
+      if (typeof cvToastId != "undefined") toast.dismiss(cvToastId);
+      toast.error(e instanceof Error ? e.message: dict.errors.cv_upload_error, 
+        { closeButton: true });
     } finally {
       setCvLoading(false);
     }
@@ -244,9 +254,11 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
       if (!res.ok) throw new Error(dict.errors.cv_remove);
       setHasCV(false);
-      // TODO: (SUCCESS) show success toast after the CV is removed.
+      toast.success(dict.cv_remove_success, 
+        { closeButton: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : dict.errors.cv_remove_error);
+      toast.error(e instanceof Error ? e.message : dict.errors.cv_remove_error, 
+        { closeButton: true});
     } finally {
       setCvLoading(false);
     }
@@ -267,7 +279,8 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      setError(e instanceof Error ? e.message : dict.errors.cv_download);
+      toast.error(e instanceof Error ? e.message : dict.errors.cv_download, 
+        { closeButton: true });
     } finally {
       setCvLoading(false);
     }
@@ -498,8 +511,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
           </div>
         </div>
       </div>
-      {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-      {error && <p className={styles.error}>{error}</p>}
+
       <ConfirmDialog
         open={showConfirmDialog}
         message={

@@ -5,6 +5,7 @@ import styles from "@/styles/components/admin/AdminBodiesSearchFilter.module.css
 import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { toast } from "sonner"
 
 interface AdminBody {
   name: string;
@@ -43,7 +44,8 @@ export default function AdminBodiesSearchFilter({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
     });
-    // TODO: (SUCCESS) show success toast after the admin body is deactivated, and an error toast if this request fails.
+    toast.success(dict.remove_admin_success, 
+      { closeButton: true });
     window.location.reload();
   };
 
