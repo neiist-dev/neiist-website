@@ -1,12 +1,12 @@
 .card {
-  background: var(--ui-surface);
+  background: var(--ui-bg);
   border-radius: var(--ui-radius-lg);
   position: relative;
 }
 
 .elevated {
   box-shadow: var(--ui-shadow-sm);
-  border: 1px solid var(--ui-bg-hover);
+  border: 1px solid var(--ui-border);
 }
 
 .flat {
@@ -16,7 +16,7 @@
 .header {
   padding-block: 1.25rem;
   padding-inline: 1.5rem;
-  border-block-end: 1px solid var(--ui-bg-hover);
+  border-block-end: 1px solid var(--ui-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -49,7 +49,7 @@
 .footer {
   padding-block: 1rem;
   padding-inline: 1.5rem;
-  border-block-start: 1px solid var(--ui-bg-hover);
+  border-block-start: 1px solid var(--ui-border);
   display: flex;
   align-items: center;
   justify-content: flex-end;

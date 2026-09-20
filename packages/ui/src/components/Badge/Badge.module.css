@@ -9,6 +9,8 @@
   font-weight: var(--ui-font-weight-bold);
   border-radius: var(--ui-radius-full);
   white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .sm {
@@ -44,8 +46,8 @@
 }
 
 .outline {
-  background: var(--ui-bg);
-  border: 1px solid var(--ui-bg-hover);
+  background: transparent;
+  border: 1px solid var(--ui-border);
   color: var(--ui-fg);
   padding-block: 0.125rem;
   padding-inline: 0.5rem;

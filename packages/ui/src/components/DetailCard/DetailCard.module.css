@@ -3,7 +3,7 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: clamp(1rem, 2vw, 1.25rem);
-  background: var(--ui-surface);
+  background: var(--ui-bg);
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-lg);
   padding-block: clamp(1rem, 2vw, 1.25rem);

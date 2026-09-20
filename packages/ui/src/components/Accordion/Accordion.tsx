@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, use, useId, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import styles from "./Accordion.module.css";
@@ -40,22 +42,20 @@ export function AccordionItem({
   ref,
   ...props
 }: AccordionItemProps) {
-  const ctx = use(AccordionContext);
+  const context = use(AccordionContext);
 
   const isControlledOpen =
-    ctx && ctx.activeValue !== undefined && value !== undefined
-      ? Array.isArray(ctx.activeValue)
-        ? ctx.activeValue.includes(value)
-        : ctx.activeValue === value
+    context && context.activeValue !== undefined && value !== undefined
+      ? Array.isArray(context.activeValue)
+        ? context.activeValue.includes(value)
+        : context.activeValue === value
       : open;
 
-  const groupName = name ?? (ctx?.type === "single" ? ctx.groupId : undefined);
+  const groupName = name ?? (context?.type === "single" ? context.groupId : undefined);
 
   const handleToggle = (event: React.ToggleEvent<HTMLDetailsElement>) => {
     onToggle?.(event);
-    if (ctx && value !== undefined) {
-      ctx.onItemToggle(value, event.currentTarget.open);
-    }
+    if (context && value !== undefined) context.onItemToggle(value, event.currentTarget.open);
   };
 
   return (
@@ -121,7 +121,7 @@ export function AccordionRoot({
           : [];
       const nextList = isOpen
         ? [...currentList, itemValue]
-        : currentList.filter((v) => v !== itemValue);
+        : currentList.filter((value) => value !== itemValue);
       if (value === undefined) setInternalValue(nextList);
       onValueChange?.(nextList);
     }

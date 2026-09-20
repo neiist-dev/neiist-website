@@ -6,7 +6,7 @@ import { cn } from "../../utils/cn";
 export interface MemberCardProps extends React.ComponentPropsWithRef<"article"> {
   name: string;
   role: string;
-  image: string;
+  image?: React.ReactNode | string;
   imageAlt?: string;
   username?: string;
   githubUrl?: string;
@@ -45,10 +45,14 @@ export function MemberCard({
   return (
     <article ref={ref} className={cn(styles.container, className)} {...props}>
       <div className={styles.imageCard}>
-        {renderImage ? (
+        {React.isValidElement(image) ? (
+          image
+        ) : typeof image === "string" && renderImage ? (
           renderImage(image, imageAlt || "", styles.cardImage)
-        ) : (
+        ) : typeof image === "string" ? (
           <img src={image} alt={imageAlt} className={styles.cardImage} loading="lazy" />
+        ) : (
+          (image as React.ReactNode)
         )}
 
         <div className={styles.overlay}>

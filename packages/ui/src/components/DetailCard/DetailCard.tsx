@@ -10,7 +10,7 @@ export interface DetailCardMetaItem {
 
 export interface DetailCardProps extends Omit<React.ComponentPropsWithRef<"article">, "title"> {
   avatar?: React.ReactNode;
-  image?: string;
+  image?: React.ReactNode | string;
   imageAlt?: string;
   title: React.ReactNode;
   identifier?: React.ReactNode;
@@ -50,10 +50,14 @@ export function DetailCard({
         <div className={styles.avatarContainer}>
           {avatar ? (
             avatar
-          ) : renderImage ? (
-            renderImage(image!, imageAlt ?? "", styles.avatarImage)
-          ) : (
+          ) : React.isValidElement(image) ? (
+            image
+          ) : typeof image === "string" && renderImage ? (
+            renderImage(image, imageAlt ?? "", styles.avatarImage)
+          ) : typeof image === "string" ? (
             <img src={image} alt={imageAlt} className={styles.avatarImage} loading="lazy" />
+          ) : (
+            (image as React.ReactNode)
           )}
         </div>
       )}
