@@ -152,7 +152,7 @@ export function Popover({
   const content = (
     <div
       ref={containerRef}
-      className={cn(styles.popover, className)}
+      className={cn(styles.popover, "ui-scrollbar", className)}
       onClick={(event) => event.stopPropagation()}
       style={
         position

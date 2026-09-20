@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useId } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";

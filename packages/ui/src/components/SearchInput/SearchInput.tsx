@@ -1,3 +1,5 @@
+"use client";
+
 import { ComponentPropsWithRef } from "react";
 import styles from "./SearchInput.module.css";
 import { cn } from "../../utils/cn";

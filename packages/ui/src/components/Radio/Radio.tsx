@@ -1,3 +1,5 @@
+"use client";
+
 import React, { use } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";

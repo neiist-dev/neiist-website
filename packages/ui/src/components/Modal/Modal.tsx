@@ -74,7 +74,7 @@ export type ModalBodyProps = React.ComponentPropsWithRef<"div">;
 
 export function ModalBody({ children, className, ref, ...props }: ModalBodyProps) {
   return (
-    <div ref={ref} className={cn(styles.body, className)} {...props}>
+    <div ref={ref} className={cn(styles.body, "ui-scrollbar", className)} {...props}>
       {children}
     </div>
   );

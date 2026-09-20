@@ -67,7 +67,7 @@ export type DrawerBodyProps = React.ComponentPropsWithRef<"div">;
 
 export function DrawerBody({ children, className, ref, ...props }: DrawerBodyProps) {
   return (
-    <div ref={ref} className={cn(styles.body, className)} {...props}>
+    <div ref={ref} className={cn(styles.body, "ui-scrollbar", className)} {...props}>
       {children}
     </div>
   );

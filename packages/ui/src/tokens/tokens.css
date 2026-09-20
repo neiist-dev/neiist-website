@@ -55,11 +55,11 @@
 
   /* Overlays, Shadows & Rings */
   --ui-backdrop: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
-  --ui-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.1));
+  --ui-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.04));
   --ui-shadow-md: var(
     --shadow-md,
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06)
+    0 3px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03)
   );
   --ui-shadow-lg: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.2));
   --ui-shadow-popover: var(--shadow-popover, 0 10px 40px rgba(0, 0, 0, 0.1));
@@ -73,6 +73,43 @@
 *::before,
 *::after {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* NEIIST UI Scrollbar */
+.ui-scrollbar,
+[data-ui-scrollbar] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-border) transparent;
+}
+
+.ui-scrollbar::-webkit-scrollbar,
+[data-ui-scrollbar]::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ui-scrollbar::-webkit-scrollbar-track,
+[data-ui-scrollbar]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ui-scrollbar::-webkit-scrollbar-thumb,
+[data-ui-scrollbar]::-webkit-scrollbar-thumb {
+  background: var(--ui-border);
+  border-radius: var(--ui-radius-full);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.ui-scrollbar::-webkit-scrollbar-thumb:hover,
+[data-ui-scrollbar]::-webkit-scrollbar-thumb:hover {
+  background: var(--ui-fg-light);
+  background-clip: padding-box;
+}
+
+.ui-scrollbar::-webkit-scrollbar-corner,
+[data-ui-scrollbar]::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 button,

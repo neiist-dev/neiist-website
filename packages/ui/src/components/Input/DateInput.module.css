@@ -1,9 +1,11 @@
 .container {
+  box-sizing: border-box;
   position: relative;
   inline-size: 100%;
 }
 
 .wrapper {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   inline-size: 100%;
