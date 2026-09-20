@@ -1,8 +1,8 @@
-import { Membership, dbMembership, mapdbMembershipToMembership } from "@/types/memberships";
-import { User, UserRole, mapRoleToUserRole, mapdbUserToUser } from "@/types/user";
+import { User, dbUser, mapdbUserToUser } from "@/types/user";
 
 import { db_query } from "@/lib/db/connection";
 import { cacheTag, revalidateTag } from "next/cache";
+import { getUserMemberships, getDepartmentRoleOrders } from "./team.repository";
 
 export const createUser = async (user: Partial<User>): Promise<User | null> => {
   if (!user.istid || !user.name || !user.email) return null;
@@ -13,7 +13,6 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
     [user.istid, user.name, user.email, user.alternativeEmail, user.phone, user.photo, user.courses]
   );
   if (!newUser) return null;
-  newUser.roles = newUser.roles?.map(mapRoleToUserRole);
   const result = newUser ? mapdbUserToUser(newUser) : null;
   if (result) revalidateTag("users", "max");
   return result;
@@ -27,7 +26,6 @@ export const updateUser = async (istid: string, updates: Partial<User>): Promise
     JSON.stringify(updates),
   ]);
   if (!updatedUser) return null;
-  updatedUser.roles = updatedUser.roles?.map(mapRoleToUserRole);
   const result = updatedUser ? mapdbUserToUser(updatedUser) : null;
   if (result) revalidateTag("users", "max");
   return result;
@@ -44,27 +42,15 @@ export const getUser = async (istid: string): Promise<User | null> => {
   cacheTag("users");
   const {
     rows: [user],
-  } = await db_query<User>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
+  } = await db_query<dbUser>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
   if (!user) return null;
 
-  const dbMemberships = (
-    await db_query<dbMembership>("SELECT * FROM neiist.get_user_memberships($1::VARCHAR(10))", [
-      istid,
-    ])
-  ).rows;
-
-  const memberships: Membership[] = dbMemberships.map((raw, idx) =>
-    mapdbMembershipToMembership(raw, user.email, user.photo, idx)
-  );
+  const memberships = await getUserMemberships(istid, true);
 
   let positionName: string | null = memberships[0]?.roleName ?? null;
   const deptNames = Array.from(new Set(memberships.map((m) => m.departmentName).filter(Boolean)));
   if (deptNames.length > 0) {
-    const { rows: roleOrders } = await db_query<{
-      department_name: string;
-      role_name: string;
-      position: number;
-    }>("SELECT * FROM neiist.get_department_role_orders($1::text[])", [deptNames]);
+    const roleOrders = await getDepartmentRoleOrders(deptNames);
 
     const normalize = (s: string) =>
       s
@@ -82,9 +68,8 @@ export const getUser = async (istid: string): Promise<User | null> => {
         (role) => normalize(role.role_name) === normalize(membership.roleName)
       );
       if (found) {
-        if (!highest || found.position < highest.position) {
+        if (!highest || found.position < highest.position)
           highest = { roleName: membership.roleName, position: found.position };
-        }
       }
     }
     if (highest) positionName = highest.roleName;
@@ -92,33 +77,14 @@ export const getUser = async (istid: string): Promise<User | null> => {
 
   return {
     ...mapdbUserToUser(user),
-    positionName,
+    positionName: positionName ?? undefined,
   };
 };
 
 export const getAllUsers = async (): Promise<User[]> => {
   "use cache";
   cacheTag("users");
-  const { rows } = await db_query<User>("SELECT * FROM neiist.get_all_users()");
-  return rows.map(mapdbUserToUser);
-};
-
-export const getUsersByAccess = async (access: UserRole): Promise<User[]> => {
-  "use cache";
-  cacheTag("users");
-  const { rows } = await db_query<{
-    istid: string;
-    name: string;
-    email: string;
-    phone?: string | null;
-    courses?: string[];
-    photo_path?: string;
-    github?: string;
-    linkedin?: string;
-  }>(
-    "SELECT istid, name, email, phone, courses, photo_path, github, linkedin FROM neiist.get_users_by_access($1)",
-    [access]
-  );
+  const { rows } = await db_query<dbUser>("SELECT * FROM neiist.get_all_users()");
   return rows.map(mapdbUserToUser);
 };
 
