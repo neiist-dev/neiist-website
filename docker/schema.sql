@@ -546,7 +546,8 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
   access_label TEXT,
   teams TEXT[],
   github TEXT,
-  linkedin TEXT
+  linkedin TEXT,
+  department_permissions JSONB
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -560,35 +561,55 @@ BEGIN
     u.photo_path,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     COALESCE(derived_permissions.permissions_array, ARRAY[]::TEXT[]) AS permissions,
-    derived_label.top_label AS access_label,
+    derived_label.top_label::TEXT AS access_label,
     COALESCE(team_list.team_array, ARRAY[]::TEXT[]) AS teams,
     u.github,
-    u.linkedin
+    u.linkedin,
+    COALESCE(dept_perms.dept_perms_obj, '{}'::JSONB) AS department_permissions
   FROM neiist.users u
   LEFT JOIN (
     SELECT
       m.user_istid,
       array_agg(DISTINCT rp.permission_name::TEXT)
-        FILTER (WHERE rp.permission_name IS NOT NULL) AS permissions_array
+        FILTER (WHERE rp.permission_name IS NOT NULL AND rp.permission_name::TEXT NOT LIKE '%_dept') AS permissions_array
     FROM neiist.membership m
     JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
     LEFT JOIN neiist.role_permissions rp ON vdr.department_name = rp.department_name AND vdr.role_name = rp.role_name
     WHERE m.user_istid = u_istid
-      AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+      AND (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
       AND vdr.active = TRUE
     GROUP BY m.user_istid
   ) derived_permissions ON u.istid = derived_permissions.user_istid
+  LEFT JOIN (
+    SELECT
+      sub.user_istid,
+      jsonb_object_agg(sub.department_name, sub.perms) AS dept_perms_obj
+    FROM (
+      SELECT
+        m.user_istid,
+        m.department_name::TEXT AS department_name,
+        jsonb_agg(DISTINCT rp.permission_name::TEXT) FILTER (WHERE rp.permission_name IS NOT NULL) AS perms
+      FROM neiist.membership m
+      JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
+      LEFT JOIN neiist.role_permissions rp ON vdr.department_name = rp.department_name AND vdr.role_name = rp.role_name
+      WHERE m.user_istid = u_istid
+        AND (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
+        AND vdr.active = TRUE
+      GROUP BY m.user_istid, m.department_name
+    ) sub
+    GROUP BY sub.user_istid
+  ) dept_perms ON u.istid = dept_perms.user_istid
   LEFT JOIN (
     SELECT
       m.user_istid,
       CASE
         WHEN bool_or(vdr.access_label = 'admin') THEN 'admin'
         WHEN bool_or(vdr.access_label = 'coordinator') THEN 'coordinator'
-          END AS top_label
+      END AS top_label
     FROM neiist.membership m
     JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
     WHERE m.user_istid = u_istid
-      AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+      AND (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
       AND vdr.active = TRUE
     GROUP BY m.user_istid
   ) derived_label ON u.istid = derived_label.user_istid
@@ -598,7 +619,7 @@ BEGIN
       array_agg(DISTINCT m.department_name::TEXT) AS team_array
     FROM neiist.membership m
     WHERE m.user_istid = u_istid
-      AND (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+      AND (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
     GROUP BY m.user_istid
   ) team_list ON u.istid = team_list.user_istid
   WHERE u.istid = u_istid;
@@ -990,7 +1011,8 @@ RETURNS TABLE (
   access_label TEXT,
   teams TEXT[],
   github TEXT,
-  linkedin TEXT
+  linkedin TEXT,
+  department_permissions JSONB
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -1002,33 +1024,52 @@ BEGIN
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     u.photo_path,
     COALESCE(derived_permissions.permissions_array, ARRAY[]::TEXT[]) AS permissions,
-    derived_label.top_label AS access_label,
+    derived_label.top_label::TEXT AS access_label,
     COALESCE(user_teams.teams_array, ARRAY[]::TEXT[]) as teams,
     u.github,
-    u.linkedin
+    u.linkedin,
+    COALESCE(dept_perms.dept_perms_obj, '{}'::JSONB) AS department_permissions
   FROM neiist.users u
   LEFT JOIN (
     SELECT
       m.user_istid,
       array_agg(DISTINCT rp.permission_name::TEXT)
-        FILTER (WHERE rp.permission_name IS NOT NULL) AS permissions_array
+        FILTER (WHERE rp.permission_name IS NOT NULL AND rp.permission_name::TEXT NOT LIKE '%_dept') AS permissions_array
     FROM neiist.membership m
     JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
     LEFT JOIN neiist.role_permissions rp ON vdr.department_name = rp.department_name AND vdr.role_name = rp.role_name
-    WHERE (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+    WHERE (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
       AND vdr.active = TRUE
     GROUP BY m.user_istid
   ) derived_permissions ON u.istid = derived_permissions.user_istid
+  LEFT JOIN (
+    SELECT
+      sub.user_istid,
+      jsonb_object_agg(sub.department_name, sub.perms) AS dept_perms_obj
+    FROM (
+      SELECT
+        m.user_istid,
+        m.department_name::TEXT AS department_name,
+        jsonb_agg(DISTINCT rp.permission_name::TEXT) FILTER (WHERE rp.permission_name IS NOT NULL) AS perms
+      FROM neiist.membership m
+      JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
+      LEFT JOIN neiist.role_permissions rp ON vdr.department_name = rp.department_name AND vdr.role_name = rp.role_name
+      WHERE (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
+        AND vdr.active = TRUE
+      GROUP BY m.user_istid, m.department_name
+    ) sub
+    GROUP BY sub.user_istid
+  ) dept_perms ON u.istid = dept_perms.user_istid
   LEFT JOIN (
     SELECT
       m.user_istid,
       CASE
         WHEN bool_or(vdr.access_label = 'admin') THEN 'admin'
         WHEN bool_or(vdr.access_label = 'coordinator') THEN 'coordinator'
-          END AS top_label
+      END AS top_label
     FROM neiist.membership m
     JOIN neiist.valid_department_roles vdr ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
-    WHERE (m.to_date IS NULL OR m.to_date > CURRENT_DATE)
+    WHERE (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
       AND vdr.active = TRUE
     GROUP BY m.user_istid
   ) derived_label ON u.istid = derived_label.user_istid
@@ -1037,7 +1078,7 @@ BEGIN
       m.user_istid,
       array_agg(DISTINCT m.department_name::TEXT) as teams_array
     FROM neiist.membership m
-    WHERE m.to_date IS NULL OR m.to_date > CURRENT_DATE
+    WHERE m.to_date IS NULL OR m.to_date >= CURRENT_DATE
     GROUP BY m.user_istid
   ) user_teams ON u.istid = user_teams.user_istid
   ORDER BY
@@ -1306,27 +1347,7 @@ BEGIN
   FROM neiist.membership m
   JOIN neiist.users u ON m.user_istid = u.istid
   JOIN neiist.departments d ON m.department_name = d.name
-  ORDER BY d.display_order ASC, u.name, m.role_name;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Get user permissions based on active memberships
-CREATE OR REPLACE FUNCTION neiist.get_user_permissions(p_istid VARCHAR(10))
-RETURNS TABLE (
-  permission_name TEXT,
-  department_name TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT DISTINCT rp.permission_name::TEXT, m.department_name::TEXT
-  FROM neiist.membership m
-  JOIN neiist.role_permissions rp
-    ON m.department_name = rp.department_name AND m.role_name = rp.role_name
-  JOIN neiist.valid_department_roles vdr
-    ON m.department_name = vdr.department_name AND m.role_name = vdr.role_name
-  WHERE m.user_istid = p_istid
-    AND (m.to_date IS NULL OR m.to_date >= CURRENT_DATE)
-    AND vdr.active = TRUE;
+  ORDER BY d.display_order, u.name, m.role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1459,7 +1480,7 @@ BEGIN
   JOIN neiist.departments d ON m.department_name = d.name
   WHERE m.from_date <= v_end_date
     AND (m.to_date IS NULL OR m.to_date > v_start_date)
-  ORDER BY d.display_order ASC, u.name, m.role_name;
+  ORDER BY d.display_order, u.name, m.role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -4035,7 +4056,7 @@ BEGIN
   RETURN QUERY
   SELECT d.name::TEXT, d.department_type::TEXT, d.active, d.display_order
   FROM neiist.departments d
-  ORDER BY d.display_order ASC, d.name ASC;
+  ORDER BY d.display_order, d.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
