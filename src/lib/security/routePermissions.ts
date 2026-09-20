@@ -1,53 +1,44 @@
-import { UserRole, hasRequiredRole } from "@/types/user";
+import { UserRole, ROLE_HIERARCHY } from "@/types/roles";
 
-export const publicRoutes = ["/home", "/about-us", "/email-confirmation", "/shop", "/activities"];
-
-export const guestRoutes = ["/profile", "/my-orders", "/shop/cart", "/shop/checkout", "/voting"];
-export const memberRoutes = ["/orders"];
-export const coordRoutes = ["/team-management", "/photo-management"];
-export const adminRoutes = [
-  "/users-management",
-  "/departments-management",
-  "/shop/manage",
-  "/shop/pos",
-  "/voting/manage",
-  "/dinner",
+export const publicRoutes = [
+  "/home",
+  "/about-us",
+  "/email-confirmation",
+  "/shop",
+  "/activities",
+  "/unauthorized",
 ];
 
-export const protectedRoutes = [guestRoutes, memberRoutes, coordRoutes, adminRoutes].flat();
+export const ROUTE_TIERS: Record<string, UserRole> = {
+  "/profile": UserRole._GUEST,
+  "/my-orders": UserRole._GUEST,
+  "/shop/cart": UserRole._GUEST,
+  "/shop/checkout": UserRole._GUEST,
+  "/voting": UserRole._GUEST,
+  "/orders": UserRole._MEMBER,
+  "/management": UserRole._COORDINATOR,
+  "/shop/manage": UserRole._ADMIN,
+  "/shop/pos": UserRole._ADMIN,
+  "/voting/manage": UserRole._ADMIN,
+  "/dinner": UserRole._ADMIN,
+};
 
-const accessRules: [string[], UserRole[]][] = [
-  [adminRoutes, [UserRole._ADMIN]],
-  [coordRoutes, [UserRole._ADMIN, UserRole._COORDINATOR]],
-  [
-    memberRoutes,
-    [UserRole._ADMIN, UserRole._COORDINATOR, UserRole._SHOP_MANAGER, UserRole._MEMBER],
-  ],
-  [
-    guestRoutes,
-    [
-      UserRole._ADMIN,
-      UserRole._COORDINATOR,
-      UserRole._SHOP_MANAGER,
-      UserRole._MEMBER,
-      UserRole._GUEST,
-    ],
-  ],
-];
+export const protectedRoutes = Object.keys(ROUTE_TIERS);
 
 export function canAccess(path: string, roles: UserRole[]): boolean {
-  for (const [routes, allowed] of accessRules) {
-    if (routes.some((route) => path.startsWith(route))) {
-      return hasRequiredRole(roles, allowed);
-    }
-  }
+  const tier = Object.entries(ROUTE_TIERS).find(([route]) => path.startsWith(route))?.[1];
 
-  return (
-    path === "/" ||
-    publicRoutes
-      .slice(1)
-      .some(
+  if (!tier) {
+    // Public route
+    return (
+      path === "/" ||
+      publicRoutes.some(
         (route) => path === route || path.startsWith(route + "/") || path.startsWith(route + "?")
       )
-  );
+    );
+  }
+
+  const requiredLevel = ROLE_HIERARCHY[tier] ?? 0;
+  const userLevel = Math.max(0, ...roles.map((r) => ROLE_HIERARCHY[r] ?? 0));
+  return userLevel >= requiredLevel;
 }

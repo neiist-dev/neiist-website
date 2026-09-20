@@ -1,55 +1,74 @@
-import { UserRole, ROLE_HIERARCHY } from "@/types/user";
-import {
-  getAllMemberships,
-  getAllValidDepartmentRoles,
-} from "@/lib/db/repositories/team.repository";
+import type { User } from "@/types/user";
+import { UserRole } from "@/types/roles";
+import { Permission, PERMISSIONS } from "@/types/permissions";
 
-export const getRoleLevel = (role?: UserRole | string | null): number =>
-  role ? (ROLE_HIERARCHY[String(role).toLowerCase() as UserRole] ?? 0) : 0;
+/**
+ * Standard capability presets for user roles.
+ * UI presets
+ * Local development overrides (DEV_ISTID).
+ */
+export const ROLE_PRESETS: Record<UserRole, Permission[]> = {
+  [UserRole._ADMIN]: Object.keys(PERMISSIONS) as Permission[],
+  [UserRole._COORDINATOR]: [
+    "departments:read",
+    "roles:read",
+    "memberships:read",
+    "memberships:write_dept",
+    "photos:read",
+    "photos:write_dept",
+    "orders:read",
+    "orders:read_customer",
+    "voting:read",
+  ],
+  [UserRole._MEMBER]: ["orders:read_customer", "orders:create", "photos:read", "voting:read"],
+  [UserRole._GUEST]: [],
+};
 
-export const getMaxRoleLevel = (roles: UserRole[] = []): number =>
-  Math.max(0, ...roles.map(getRoleLevel));
+const ADMIN_LEVEL_PERMISSIONS: Permission[] = [
+  "users:delete",
+  "departments:delete",
+  "departments:write",
+  "roles:write",
+  "roles:delete",
+  "memberships:write_global",
+  "memberships:delete",
+];
 
-export async function canManageDepartment(
-  actorRoles: UserRole[] = [],
-  actorIstid: string = "",
-  targetDepartment: string = ""
-): Promise<boolean> {
-  if (actorRoles.includes(UserRole._ADMIN)) return true;
-  if (!actorRoles.includes(UserRole._COORDINATOR)) return false;
-  if (!targetDepartment || !actorIstid) return false;
+const COORDINATOR_LEVEL_PERMISSIONS: Permission[] = ["memberships:write_dept", "photos:write_dept"];
 
-  const targetDeptLower = targetDepartment.trim().toLowerCase();
-
-  const [memberships, validRoles] = await Promise.all([
-    getAllMemberships(),
-    getAllValidDepartmentRoles(),
-  ]);
-
-  const userMembership = memberships.find(
-    (membership) =>
-      membership.userNumber === actorIstid &&
-      membership.isActive &&
-      membership.departmentName.trim().toLowerCase() === targetDeptLower
-  );
-
-  if (!userMembership) return false;
-
-  const matchingRole = validRoles.find(
-    (role) =>
-      role.active &&
-      role.department_name.trim().toLowerCase() === targetDeptLower &&
-      role.role_name.trim().toLowerCase() === userMembership.roleName.trim().toLowerCase()
-  );
-
-  return matchingRole?.access?.toLowerCase() === "coordinator";
+export function deriveAccessLabel(permissions: Permission[]): "admin" | "coordinator" | null {
+  const set = new Set(permissions);
+  if (ADMIN_LEVEL_PERMISSIONS.some((p) => set.has(p))) return "admin";
+  if (COORDINATOR_LEVEL_PERMISSIONS.some((p) => set.has(p))) return "coordinator";
+  return null;
 }
 
-export function canAssignRoleAccess(
-  actorRoles: UserRole[] = [],
-  targetAccess?: UserRole | string | null
+export function hasPermission(
+  user: User | null | undefined,
+  permission: Permission,
+  context?: { department?: string }
 ): boolean {
-  if (actorRoles.includes(UserRole._ADMIN)) return true;
-  const target = getRoleLevel(targetAccess);
-  return target < getRoleLevel(UserRole._COORDINATOR) && getMaxRoleLevel(actorRoles) > target;
+  if (!user) return false;
+
+  // Global permission
+  if (user.permissions?.includes(permission)) return true;
+
+  // Explicit department context
+  if (context?.department) {
+    const deptPerms = user.departmentPermissions?.[context.department] ?? [];
+    return deptPerms.includes(permission);
+  }
+
+  if (user.departmentPermissions)
+    return Object.values(user.departmentPermissions).some((perms) => perms.includes(permission));
+
+  return false;
+}
+
+export function getDevOverridePermissions(devRole: string): Permission[] | undefined {
+  const normalized = devRole.toLowerCase();
+  if (normalized === "admin") return ROLE_PRESETS[UserRole._ADMIN];
+  if (normalized === "coordinator") return ROLE_PRESETS[UserRole._COORDINATOR];
+  if (normalized === "member") return ROLE_PRESETS[UserRole._MEMBER];
+  return undefined;
 }

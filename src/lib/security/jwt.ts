@@ -1,6 +1,6 @@
 import { cache } from "react";
 import crypto from "crypto";
-import { UserRole } from "@/types/user";
+import { UserRole } from "@/types/roles";
 
 export interface JwtPayload {
   istid: string;
