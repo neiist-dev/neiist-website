@@ -14,13 +14,14 @@ interface HeroProps {
   teamImage: string | StaticImageData;
   dict: Dictionary["about_us_page"]["hero"];
   description?: string;
+  locale?: string;
 }
 
 const iconMap: Record<string, React.ElementType> = {
   FiUsers,
 };
 
-export default function Hero({ teams, teamImage, dict, description }: HeroProps) {
+export default function Hero({ teams, teamImage, dict, description, locale }: HeroProps) {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setSelectedTeam(null);
@@ -106,7 +107,12 @@ export default function Hero({ teams, teamImage, dict, description }: HeroProps)
               />
             </button>
             <h3 className={styles.overlayTitle}>{selectedTeam.name}</h3>
-            <p className={styles.overlayDescription}>{selectedTeam.description}</p>
+            <p className={styles.overlayDescription}>
+              {typeof selectedTeam.description === "object"
+                ? (locale === "en" ? selectedTeam.description?.en : selectedTeam.description?.pt) ||
+                  ""
+                : (selectedTeam.description ?? "")}
+            </p>
           </div>
         </div>
       )}
