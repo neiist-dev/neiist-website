@@ -1,15 +1,14 @@
 import { Suspense } from "react";
 import SumUpReadersManagement from "@/components/shop/SumUpReadersManagement";
 import styles from "@/styles/pages/ShopPos.module.css";
-import { requireRoles } from "@/lib/auth";
-import { UserRole } from "@/types/user";
+import { requirePermission } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import ColorfulText from "@/components/ColorfulText";
 
 async function ShopPosContent({ params }: { params: LocaleParams }) {
-  await requireRoles([UserRole._ADMIN, UserRole._SHOP_MANAGER]);
+  await requirePermission("shop:write");
 
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;

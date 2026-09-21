@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import Calendar from "@/components/activities/Calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
-import { UserRole } from "@/types/user";
 import ColorfulText from "@/components/ColorfulText";
 import styles from "@/styles/pages/Activities.module.css";
 import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
@@ -18,7 +17,6 @@ interface ActivitiesPageProps {
 async function getEventsAndSubscriptions() {
   const session = await getAuthenticatedUser();
   const istid = session?.user.istid ?? null;
-  const isAdmin = session?.roles.includes(UserRole._ADMIN) ?? false;
 
   let events = await getActivitiesEventsFromDb();
 
@@ -32,7 +30,7 @@ async function getEventsAndSubscriptions() {
     ? events.filter((event) => event.subscribers?.includes(istid)).map((event) => event.id)
     : [];
 
-  return { events, signedUpEventIds, istid, isAdmin };
+  return { events, signedUpEventIds, istid };
 }
 
 async function ActivitiesContent({ params, searchParams }: ActivitiesPageProps) {
