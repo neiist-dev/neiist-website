@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import styles from "@/styles/components/Profile.module.css";
-import { User, UserRole } from "@/types/user";
-import { checkRoles } from "@/types/user";
+import { User } from "@/types/user";
+import { UserRole, checkRoles } from "@/types/roles";
 import {
   FiCalendar,
   FiInfo,
