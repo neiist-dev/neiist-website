@@ -1,19 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAllUsers, createUser } from "@/lib/db/repositories/user.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
+import { normalizeText, normalizeIstId, isIstIdQuery } from "@/utils/searchUtils";
+import MiniSearch from "minisearch";
+import type { User } from "@/types/user";
 
-export async function GET() {
-  const userRoles = await serverCheckRoles([
-    UserRole._MEMBER,
-    UserRole._COORDINATOR,
-    UserRole._ADMIN,
-  ]);
-  if (!userRoles.isAuthorized) {
-    return userRoles.error;
-  }
+let cachedUsersRef: User[] | null = null;
+let cachedIndex: MiniSearch<User> | null = null;
+let cachedUserMap: Map<string, User> | null = null;
+
+function getUserSearchIndex(allUsers: User[]) {
+  if (cachedIndex && cachedUserMap && cachedUsersRef === allUsers)
+    return { ms: cachedIndex, userMap: cachedUserMap };
+
+  const ms = new MiniSearch<User>({
+    idField: "istid",
+    fields: ["name", "email", "istid", "positionName", "teams", "courses"],
+    searchOptions: {
+      prefix: true,
+      fuzzy: 0.2,
+      combineWith: "AND",
+    },
+    extractField: (doc, fieldName) => {
+      const val = (doc as unknown as Record<string, unknown>)[fieldName];
+      if (Array.isArray(val)) return val.join(" ");
+      return val ? String(val) : "";
+    },
+    processTerm: (term) => normalizeText(term) || undefined,
+  });
+
+  ms.addAll(allUsers);
+  cachedUsersRef = allUsers;
+  cachedIndex = ms;
+  cachedUserMap = new Map(allUsers.map((u) => [u.istid, u]));
+
+  return { ms, userMap: cachedUserMap };
+}
+
+export async function GET(request: NextRequest) {
+  const auth = await verifyPermission("users:read");
+  if (auth.error) return auth.error;
+
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+    const searchParam = searchParams.get("search");
+
+    if (pageParam !== null || limitParam !== null || searchParam !== null) {
+      const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(limitParam || "50", 10) || 50));
+      const rawSearch = searchParam?.trim() || "";
+
+      const allUsers = await getAllUsers();
+      let filtered = allUsers;
+
+      if (rawSearch) {
+        if (isIstIdQuery(rawSearch)) {
+          const istDigits = normalizeIstId(rawSearch);
+          filtered = allUsers.filter(
+            (u) =>
+              normalizeIstId(u.istid).includes(istDigits) ||
+              u.istid.toLowerCase().includes(rawSearch.toLowerCase())
+          );
+        } else {
+          const { ms, userMap } = getUserSearchIndex(allUsers);
+          const hits = ms.search(normalizeText(rawSearch));
+          filtered = hits.map((hit) => userMap.get(hit.id as string)!).filter(Boolean);
+        }
+      }
+
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / limit) || 1;
+      const start = (page - 1) * limit;
+      const paginatedUsers = filtered.slice(start, start + limit);
+
+      return NextResponse.json({
+        users: paginatedUsers,
+        total,
+        page,
+        limit,
+        totalPages,
+      });
+    }
+
     const users = await getAllUsers();
     return NextResponse.json(users);
   } catch (error) {
@@ -22,14 +93,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const userRoles = await serverCheckRoles([
-    UserRole._COORDINATOR,
-    UserRole._SHOP_MANAGER,
-    UserRole._ADMIN,
-  ]);
-  if (!userRoles.isAuthorized) {
-    return userRoles.error;
-  }
+  const auth = await verifyPermission("users:write");
+  if (auth.error) return auth.error;
 
   try {
     const body = await request.json();
