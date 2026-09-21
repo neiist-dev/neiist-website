@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { UserRole, type User } from "@/types/user";
+import { type User } from "@/types/user";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
 import { isValidPaymentMethod } from "@/types/shop/payment";
@@ -16,26 +16,19 @@ import {
   getOrderById,
   getOrderByIdOrNumber,
 } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
-
-function isShopManagerOrAbove(roles: UserRole[]) {
-  return (
-    roles.includes(UserRole._ADMIN) ||
-    roles.includes(UserRole._COORDINATOR) ||
-    roles.includes(UserRole._SHOP_MANAGER)
-  );
-}
 
 function isOrderOwner(order: Order, user: User) {
   return order.user_istid === user.istid;
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const { user, roles } = userRoles;
+  const { user } = session;
 
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
@@ -43,17 +36,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const order = await getOrderByIdOrNumber(id);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-  if (!isOrderOwner(order, user!) && !isShopManagerOrAbove(roles ?? []))
+  if (!isOrderOwner(order, user) && !hasPermission(user, "orders:read"))
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
   return NextResponse.json(order);
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const { user, roles } = userRoles;
+  const { user } = session;
 
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
@@ -91,7 +84,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (Object.keys(filteredUpdates).length === 0)
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
 
-    const isShopOps = isShopManagerOrAbove(roles ?? []);
+    const canShopOps = hasPermission(user, "orders:write");
 
     const onlyNotes =
       Object.keys(filteredUpdates).length === 1 && filteredUpdates.notes !== undefined;
@@ -99,32 +92,36 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       Object.keys(filteredUpdates).length === 1 && filteredUpdates.payment_method === "in-person";
 
     if (onlyNotes) {
-      if (!isOrderOwner(order, user!) && !isShopOps)
+      if (!isOrderOwner(order, user) && !canShopOps) {
         return NextResponse.json(
           { error: "Insufficient permissions to edit notes" },
           { status: 403 }
         );
+      }
     } else if (onlyInPersonSwitch) {
-      if (!isOrderOwner(order, user!) && !isShopOps)
+      if (!isOrderOwner(order, user) && !canShopOps) {
         return NextResponse.json(
           { error: "Insufficient permissions to switch payment method" },
           { status: 403 }
         );
+      }
 
-      if (order.status !== "pending")
+      if (order.status !== "pending") {
         return NextResponse.json(
           { error: "Payment method can only be changed while order is pending" },
           { status: 400 }
         );
+      }
 
       filteredUpdates.payment_reference = "";
-    } else if (!isShopOps) {
+    } else if (!canShopOps) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     if (filteredUpdates.items !== undefined) {
-      if (!Array.isArray(filteredUpdates.items) || filteredUpdates.items.length === 0)
+      if (!Array.isArray(filteredUpdates.items) || filteredUpdates.items.length === 0) {
         return NextResponse.json({ error: "Items must be a non-empty array" }, { status: 400 });
+      }
 
       filteredUpdates.items = (filteredUpdates.items as Array<Record<string, unknown>>).map(
         (item, i) => {
@@ -154,8 +151,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         return NextResponse.json({ error: "Invalid payment_method" }, { status: 400 });
     }
 
-    const stockOverride =
-      (userRoles.roles?.includes(UserRole._ADMIN) ?? false) && body.stock_override === true;
+    const stockOverride = hasPermission(user, "orders:override") && body.stock_override === true;
 
     const updatedOrder = await updateOrder(
       orderId,
@@ -170,8 +166,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       if (
         !getOrderKindRules(getOrderKindFromItems(updatedOrder.items).orderKind)
           .customerEmailsEnabled
-      )
+      ) {
         return NextResponse.json(updatedOrder);
+      }
 
       try {
         await sendEmail({
@@ -206,12 +203,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([
-    UserRole._SHOP_MANAGER,
-    UserRole._COORDINATOR,
-    UserRole._ADMIN,
-  ]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  const { user } = session;
+
+  if (!hasPermission(user, "orders:write"))
+    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
@@ -228,7 +226,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const orderId = order.id;
 
   try {
-    await setOrderState(orderId, status, userRoles.user!.istid);
+    await setOrderState(orderId, status, user.istid);
     const updatedOrder = await getOrderById(orderId);
 
     if (updatedOrder?.customer_email) {
@@ -264,10 +262,10 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const { user, roles } = userRoles;
+  const { user } = session;
 
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
@@ -276,14 +274,10 @@ export async function DELETE(
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
   const orderId = order.id;
 
-  if (
-    !isOrderOwner(order, user!) &&
-    !roles?.some((role) => [UserRole._ADMIN, UserRole._COORDINATOR].includes(role))
-  ) {
+  if (!isOrderOwner(order, user) && !hasPermission(user, "orders:delete"))
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-  }
 
-  const updatedOrder = await setOrderState(orderId, "cancelled", user!.istid);
+  const updatedOrder = await setOrderState(orderId, "cancelled", user.istid);
   if (!updatedOrder) return NextResponse.json({ error: "Failed to cancel order" }, { status: 500 });
 
   revalidatePath("/orders");

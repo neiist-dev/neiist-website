@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
 import { sendEmail, getDiscountCampaignEmailTemplate } from "@/lib/email";
 import type {
   DiscountCodeInput,
@@ -13,7 +12,7 @@ import {
   getAllDiscountCodes,
   updateDiscountCode,
 } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 function normalizeString(value: unknown): string | null {
@@ -97,16 +96,16 @@ async function createCodeForRecipient(
 }
 
 export async function GET() {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:read");
+  if (auth.error) return auth.error;
 
   const codes = await getAllDiscountCodes();
   return NextResponse.json(codes);
 }
 
 export async function POST(request: NextRequest) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   const body = await request.json();
   const recipients = normalizeRecipients(body.recipients);
@@ -210,8 +209,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   const body = await request.json();
   const discountCodeId = Number(body.id ?? body.discount_code_id);
@@ -272,8 +271,8 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   const body = await request.json().catch(() => ({}));
   const discountCodeId = Number(body.id ?? body.discount_code_id);

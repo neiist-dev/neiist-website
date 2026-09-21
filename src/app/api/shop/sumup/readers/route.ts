@@ -7,9 +7,8 @@ import {
   formatSumUpError,
   SumUpAuthError,
 } from "@/lib/sumup";
-import { UserRole } from "@/types/user";
 import type { SumUpReadersListResponse } from "@/types/sumup";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 
@@ -23,24 +22,13 @@ type SumUpProblem = {
 
 function parseSumUpProblem(error: unknown): SumUpProblem | null {
   if (!error || typeof error !== "object") return null;
-
   const maybeError = error as { error?: SumUpProblem };
-  if (maybeError.error && typeof maybeError.error === "object") {
-    return maybeError.error;
-  }
-
+  if (maybeError.error && typeof maybeError.error === "object") return maybeError.error;
   return null;
 }
 
-async function authorize() {
-  const auth = await serverCheckRoles([UserRole._SHOP_MANAGER, UserRole._ADMIN]);
-  if (!auth.isAuthorized) return { error: auth.error };
-
-  return { success: true };
-}
-
 export async function GET() {
-  const auth = await authorize();
+  const auth = await verifyPermission("shop:write");
   if (auth.error) return auth.error;
 
   const credentialError = validateSumUpCredentials();
@@ -57,7 +45,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await authorize();
+  const auth = await verifyPermission("shop:write");
   if (auth.error) return auth.error;
 
   const credentialError = validateSumUpCredentials();
@@ -88,7 +76,6 @@ export async function POST(req: NextRequest) {
     const status = getErrorStatus(error);
     const problem = parseSumUpProblem(error);
     const detail = problem?.detail || problem?.title;
-
     return sumupErrorResponse(detail || "Failed to create reader", status, {
       details: formatSumUpError(error),
     });

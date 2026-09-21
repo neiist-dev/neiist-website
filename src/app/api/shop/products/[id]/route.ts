@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateId } from "@/utils/apiValidationUtils";
 import {
@@ -12,14 +11,12 @@ import {
   deleteProduct,
   deleteProductVariant,
 } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 function isImage(buffer: Buffer): boolean {
-  // JPEG magic: FF D8 FF
   const isJpeg =
     buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
-  // PNG magic: 89 50 4E 47 0D 0A 1A 0A
   const pngSig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const isPng = buffer.length >= 8 && buffer.subarray(0, 8).equals(pngSig);
   return isJpeg || isPng;
@@ -54,16 +51,28 @@ async function uploadImages(
   return uploadedPaths;
 }
 
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const [productId, error] = validateId((await params).id, "product ID");
+  if (error) return error;
+
+  try {
+    const product = await getProduct(productId);
+    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    return NextResponse.json(product);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   const [productId, error] = validateId((await params).id, "product ID");
   if (error) return error;
 
-  const body = await request.json();
-
   try {
+    const body = await request.json();
     let finalImages = body.images || [];
     if (Array.isArray(body.imageUploads) && body.imageUploads.length > 0) {
       const uploadedImages = await uploadImages(body.imageUploads);
@@ -138,8 +147,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       message: "Product updated successfully",
       product: updatedProduct,
     });
-  } catch (error) {
-    return handleApiError(error);
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
@@ -147,8 +156,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   const [productId, error] = validateId((await params).id, "product ID");
   if (error) return error;
@@ -177,14 +186,14 @@ export async function DELETE(
     revalidatePath(`/shop/${productId}`);
     revalidatePath("/dinner");
     return NextResponse.json({ message: "Product archived successfully" });
-  } catch (error) {
-    return handleApiError(error);
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   const [productId, error] = validateId((await params).id, "product ID");
   if (error) return error;
@@ -204,22 +213,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     revalidatePath(`/shop/${productId}`);
     revalidatePath("/dinner");
     return NextResponse.json({ message: "Product updated", product: updated });
-  } catch (error) {
-    return handleApiError(error);
-  }
-}
-
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const [productId, error] = validateId((await params).id, "product ID");
-  if (error) return error;
-
-  try {
-    const product = await getProduct(productId);
-
-    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
-
-    return NextResponse.json(product);
-  } catch (error) {
-    return handleApiError(error);
+  } catch (err) {
+    return handleApiError(err);
   }
 }
