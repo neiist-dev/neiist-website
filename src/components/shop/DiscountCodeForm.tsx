@@ -21,8 +21,8 @@ import {
 } from "react-icons/fa";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { MultiSelect } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
-import SearchSelect from "@/components/search/SearchSelect";
 import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
 import { DiscountBulkGenerateResponse, DiscountType } from "@/types/shop/discountCode";
@@ -32,7 +32,6 @@ import {
   renderDiscountCampaignEmailHtml,
 } from "@/utils/shop/discountEmail";
 import type { Dictionary } from "@/i18n/dictionaries";
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 
 interface DiscountCodeEditorProps {
   users: User[];
@@ -369,7 +368,7 @@ export default function DiscountCodeForm({
               <SectionTitle icon={<FaTicketAlt />}>{dict.section_discount}</SectionTitle>
 
               <Field label={dict.users_label} icon={<FaUsers />}>
-                <SearchSelect<string>
+                <MultiSelect
                   items={userOptions}
                   multiSelect={true}
                   selectedItems={creationDraft.selectedRecipients}
@@ -477,7 +476,7 @@ export default function DiscountCodeForm({
                 </Field>
               </div>
               <Field label={dict.valid_products_label} icon={<FaBox />}>
-                <MultiSelectDropdown
+                <MultiSelect
                   availableItems={productOptions}
                   selectedItems={creationDraft.selectedProducts}
                   onChange={(items) =>

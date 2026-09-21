@@ -6,14 +6,13 @@ import { CalendarEvent } from "@/types/events";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { createVotingSessionAction } from "@/lib/votingSystem";
-import SearchSelect from "@/components/search/SearchSelect";
+import { MultiSelect } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
 import { FiEdit3, FiClock, FiUsers, FiX } from "react-icons/fi";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import tagStyles from "@/styles/components/shop/VariantOptionsEditor.module.css";
 import styles from "@/styles/components/voting/admin/VotingSessionForm.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 
 interface VotingSessionFormProps {
   activities: CalendarEvent[];
@@ -175,16 +174,16 @@ export default function VotingSessionForm({
             <span>{type === "activity" ? dict.select_activity : dict.candidates_options}</span>
           </div>
           {type === "activity" ? (
-            <MultiSelectDropdown
+            <MultiSelect
               id="activity-picker"
-              availableItems={activityOptions.map((o) => o.label)}
+              items={activityOptions.map((o) => o.label)}
               selectedItems={selectedActivityId ? [selectedActivityLabel] : []}
               onChange={handleActivityChange}
               multiSelect={false}
               placeholder={dict.search_activity}
             />
           ) : type === "users" ? (
-            <SearchSelect<string>
+            <MultiSelect
               id="user-picker"
               items={userOptions.map((o) => o.label)}
               selectedItems={selectedUserLabels}

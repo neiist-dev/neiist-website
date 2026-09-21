@@ -1,54 +1,67 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import styles from "@/styles/components/shop/CreateNewUserModal.module.css";
-import { MdClose } from "react-icons/md";
+import React, { useState } from "react";
 import type { User } from "@/types/user";
-import ConfirmDialog from "@/components/layout/ConfirmDialog";
+import { Modal, Field, Input, Button, ConfirmDialog } from "@neiist/ui";
+import { toast } from "sonner";
+import styles from "@/styles/components/shop/CreateNewUserModal.module.css";
 
-interface CreateNewUserModalProps {
+export interface CreateNewUserModalDict {
+  title?: string;
+  istid_label?: string;
+  name_label?: string;
+  email_label?: string;
+  fill_all_fields?: string;
+  user_created_success?: string;
+  user_create_error?: string;
+  cancel?: string;
+  submit?: string;
+  submitting?: string;
+  confirm_title?: string;
+  confirm_message?: string;
+}
+
+export interface CreateNewUserModalProps {
   onClose: () => void;
   onSubmit?: (_user: User) => void;
   initialIstId?: string;
+  dict?: CreateNewUserModalDict;
 }
 
-const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
+export default function CreateNewUserModal({
   onClose,
   onSubmit,
   initialIstId = "",
-}) => {
+  dict,
+}: CreateNewUserModalProps) {
   const [istId, setIstId] = useState(initialIstId);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  const tTitle = dict?.title || "Novo Utilizador";
+  const tIstid = dict?.istid_label || "IST ID";
+  const tName = dict?.name_label || "Nome";
+  const tEmail = dict?.email_label || "Email";
+  const tCancel = dict?.cancel || "Cancelar";
+  const tSubmit = dict?.submit || "Guardar";
+  const tSubmitting = dict?.submitting || "A criar...";
+  const tConfirmTitle = dict?.confirm_title || "Criar Utilizador";
+  const tConfirmMsg =
+    dict?.confirm_message?.replace("{name}", name) ||
+    `Tem a certeza que deseja criar o utilizador ${name}?`;
+  const tFillFields = dict?.fill_all_fields || "Por favor, preencha todos os campos.";
+  const tCreated = dict?.user_created_success || `Utilizador ${name.trim()} criado com sucesso.`;
+  const tError = dict?.user_create_error || "Erro ao criar utilizador";
 
   const handleSubmit = async () => {
-    if (!istId || !name || !email) {
-      // TODO: (ERROR)
-      setError("Por favor, preencha todos os campos.");
+    if (!istId.trim() || !name.trim() || !email.trim()) {
+      toast.error(tFillFields);
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
       const response = await fetch("/api/admin/users", {
@@ -57,25 +70,24 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          istid: istId,
-          name,
-          email,
+          istid: istId.trim(),
+          name: name.trim(),
+          email: email.trim(),
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create user");
+        throw new Error(data.error || tError);
       }
 
-      const newUser = await response.json();
-      onSubmit?.(newUser);
-      // TODO: (SUCCESS) show success toast after the new user is created.
+      toast.success(tCreated);
+      onSubmit?.(data);
       onClose();
-    } catch (error) {
-      console.error("Error creating user:", error);
-      // TODO: (ERROR)
-      setError(error instanceof Error ? error.message : "Failed to create user");
+    } catch (err: unknown) {
+      console.error("Error creating user:", err);
+      toast.error(err instanceof Error ? err.message : tError);
     } finally {
       setIsSubmitting(false);
     }
@@ -83,86 +95,73 @@ const CreateNewUserModal: React.FC<CreateNewUserModalProps> = ({
 
   const handleConfirm = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!istId.trim() || !name.trim() || !email.trim()) {
+      toast.error(tFillFields);
+      return;
+    }
     setShowConfirm(true);
   };
 
   return (
-    <div className={styles.backdrop} onClick={handleBackdropClick}>
-      <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={onClose}>
-          <MdClose size={20} />
-        </button>
-
-        <h2>Novo Utilizador</h2>
-
-        {/* TODO: replace this inline error with a toast and remove this fallback once Sonner is implemented here. */}
-        {error && <div className={styles.error}>{error}</div>}
-
-        <form onSubmit={handleConfirm}>
-          <div className={styles.formGroup}>
-            <label>IST ID</label>
-            <input
+    <>
+      <Modal open onClose={onClose} title={tTitle} size="sm">
+        <form onSubmit={handleConfirm} className={styles.form}>
+          <Field label={tIstid}>
+            <Input
               type="text"
               placeholder="ist1119999"
               value={istId}
               onChange={(e) => setIstId(e.target.value)}
-              className={styles.input}
-              autoFocus
               disabled={isSubmitting}
+              autoFocus
             />
-          </div>
+          </Field>
 
-          <div className={styles.formGroup}>
-            <label>Nome</label>
-            <input
+          <Field label={tName}>
+            <Input
               type="text"
               placeholder="John Doe"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={styles.input}
               disabled={isSubmitting}
             />
-          </div>
+          </Field>
 
-          <div className={styles.formGroup}>
-            <label>Email</label>
-            <input
+          <Field label={tEmail}>
+            <Input
               type="email"
               placeholder="john.doe@tecnico.ulisboa.pt"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={styles.input}
               disabled={isSubmitting}
             />
-          </div>
+          </Field>
 
-          <div className={styles.buttonRow}>
-            <button
-              className={styles.buttonCancel}
-              onClick={onClose}
-              disabled={isSubmitting}
-              type="button">
-              Cancelar
-            </button>
-            <button className={styles.buttonSubmit} disabled={isSubmitting} type="submit">
-              {isSubmitting ? "A criar..." : "Guardar"}
-            </button>
+          <div className={styles.actions}>
+            <Button variant="outline" onClick={onClose} disabled={isSubmitting} type="button">
+              {tCancel}
+            </Button>
+            <Button variant="solid" color="primary" disabled={isSubmitting} type="submit">
+              {isSubmitting ? tSubmitting : tSubmit}
+            </Button>
           </div>
         </form>
-        {showConfirm && (
-          <ConfirmDialog
-            open={showConfirm}
-            message={`Tem a certeza que deseja criar o utilizador ${name}?`}
-            onConfirm={async () => {
-              setShowConfirm(false);
-              await handleSubmit();
-            }}
-            onCancel={() => setShowConfirm(false)}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
+      </Modal>
 
-export default CreateNewUserModal;
+      {showConfirm && (
+        <ConfirmDialog
+          open={showConfirm}
+          title={tConfirmTitle}
+          message={tConfirmMsg}
+          confirmLabel={tSubmit}
+          cancelLabel={tCancel}
+          onConfirm={async () => {
+            setShowConfirm(false);
+            await handleSubmit();
+          }}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+    </>
+  );
+}

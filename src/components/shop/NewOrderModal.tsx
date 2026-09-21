@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { MdClose, MdSearch, MdChevronRight, MdChevronLeft } from "react-icons/md";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
-import { checkRoles, UserRole, type User } from "@/types/user";
+import { type User } from "@/types/user";
+import { hasPermission } from "@/lib/security/permissions";
 import { Order, Campus } from "@/types/shop/order";
 import { Product, ProductVariant } from "@/types/shop/product";
 import {
@@ -18,6 +19,7 @@ import InputTextDialog from "@/components/layout/InputTextDialog";
 import { useUser } from "@/context/UserContext";
 import { validateDiscount } from "@/utils/shop/discountUtils";
 import { ErrorCode } from "@/types/errors";
+import { normalizeText } from "@/utils/searchUtils";
 
 interface Props {
   onClose: () => void;
@@ -114,13 +116,6 @@ const buildFallbackUser = (order: Order): User => ({
   roles: [],
 });
 
-const normalizeText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-
 export default function NewOrderModal({
   onClose,
   onSubmit,
@@ -162,7 +157,7 @@ export default function NewOrderModal({
   const [discountLoading, setDiscountLoading] = useState(false);
 
   const { user } = useUser();
-  const isAdmin = checkRoles(user, [UserRole._ADMIN]);
+  const canOverrideStock = hasPermission(user, "orders:override");
   const [showStockOverrideConfirm, setShowStockOverrideConfirm] = useState(false);
   const [stockOverrideMessage, setStockOverrideMessage] = useState<string | null>(null);
 
@@ -533,7 +528,7 @@ export default function NewOrderModal({
       const errorMessage =
         data?.error || (isEditMode ? "Failed to update order" : "Failed to create order");
 
-      if (!stockOverride && isAdmin && data?.code === ErrorCode.STOCK_OVERRIDE_REQUIRED)
+      if (!stockOverride && canOverrideStock && data?.code === ErrorCode.STOCK_OVERRIDE_REQUIRED)
         return { status: "stock_override", message: errorMessage };
 
       return { status: "error", message: errorMessage };
