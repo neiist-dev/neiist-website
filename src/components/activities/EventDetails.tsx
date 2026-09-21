@@ -17,8 +17,7 @@ import { getEventSettings } from "@/types/events";
 import Linkify from "linkify-react";
 import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
-import { UserRole } from "@/types/user";
-import { checkRoles } from "@/types/user";
+import { hasPermission } from "@/lib/security/permissions";
 import type {
   EventSettings,
   NormalizedCalendarEvent,
@@ -51,7 +50,7 @@ export default function EventDetails({
   const router = useRouter();
   const { user } = useUser();
   const currentIstid = user?.istid ?? undefined;
-  const isAdmin = checkRoles(user, [UserRole._ADMIN]);
+  const canManageActivities = hasPermission(user, "departments:write");
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [signedUp, setSignedUp] = useState(isSignedUp);
@@ -88,7 +87,7 @@ export default function EventDetails({
   useEffect(() => setSignedUp(isSignedUp), [isSignedUp]);
 
   const saveSettings = useCallback(async () => {
-    if (!isAdmin || !hasChangesRef.current) return;
+    if (!canManageActivities || !hasChangesRef.current) return;
     const saveToastId = toast.loading(dict.saving_settings, {
       closeButton: true,
     });
@@ -139,7 +138,7 @@ export default function EventDetails({
         closeButton: true,
       });
     }
-  }, [isAdmin, settings, event.id, event.raw, onUpdate, router, dict]);
+  }, [canManageActivities, settings, event.id, event.raw, onUpdate, router, dict]);
 
   const handleClose = useCallback(async () => {
     await saveSettings();
@@ -261,8 +260,8 @@ export default function EventDetails({
         <div className={styles.eventHeader}>
           <div
             className={styles.eventIcon}
-            onClick={isAdmin ? () => setShowIconPicker(true) : undefined}
-            style={{ cursor: isAdmin ? "pointer" : "default" }}>
+            onClick={canManageActivities ? () => setShowIconPicker(true) : undefined}
+            style={{ cursor: canManageActivities ? "pointer" : "default" }}>
             <EventIcon size={48} />
           </div>
           <h2 className={styles.eventTitle}>{event.summary || dict.untitled_event}</h2>
@@ -294,7 +293,7 @@ export default function EventDetails({
           )}
         </div>
 
-        {settings.description && !isAdmin && (
+        {settings.description && !canManageActivities && (
           <div className={styles.descriptionSection}>
             <Linkify
               options={{
@@ -307,7 +306,7 @@ export default function EventDetails({
           </div>
         )}
 
-        {isAdmin && (
+        {canManageActivities && (
           <div className={styles.adminSection}>
             <label>
               {dict.labels.description}
@@ -359,7 +358,7 @@ export default function EventDetails({
         )}
 
         <div className={styles.actionSection}>
-          {isAdmin && subscriberCount > 0 && (
+          {canManageActivities && subscriberCount > 0 && (
             <div className={styles.subscriberCount}>
               {String(subscriberCount).padStart(2, "0")} {dict.labels.subscribers}
             </div>
@@ -377,7 +376,7 @@ export default function EventDetails({
                   ? dict.buttons.cancel_signup
                   : dict.buttons.sign_up}
           </button>
-          {isAdmin && subscriberCount > 0 && (
+          {canManageActivities && subscriberCount > 0 && (
             <button onClick={handleEmailAttendees} className={styles.emailLink}>
               {dict.buttons.email_attendees}
             </button>
