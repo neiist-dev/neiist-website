@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 0.25rem;
   inline-size: 100%;
+  box-sizing: border-box;
 }
 
 .label {
@@ -12,6 +13,7 @@
 }
 
 .textarea {
+  box-sizing: border-box;
   inline-size: 100%;
   padding: 0.625rem 0.75rem;
   font-family: inherit;
