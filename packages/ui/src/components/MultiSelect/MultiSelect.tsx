@@ -1,19 +1,46 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, KeyboardEvent, useId } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  KeyboardEvent,
+  useId,
+  ReactNode,
+} from "react";
 import { FiChevronDown } from "react-icons/fi";
 import styles from "./MultiSelect.module.css";
 import { FaCheck } from "react-icons/fa6";
 import { Badge } from "../Badge/Badge";
+import { Avatar } from "../Avatar/Avatar";
 import { Popover } from "../Popover/Popover";
 import { SearchInput } from "../SearchInput/SearchInput";
 
-export interface MultiSelectProps {
-  availableItems: string[];
-  selectedItems: string[];
-  onChange: (_items: string[]) => void;
+export interface MultiSelectOption {
+  value: string;
+  label: string;
+  subtitle?: string;
+  avatar?: string;
+  [key: string]: unknown;
+}
+
+export type MultiSelectItem = string | MultiSelectOption;
+
+export interface MultiSelectProps<T = MultiSelectItem> {
+  availableItems?: T[];
+  items?: T[];
+  selectedItems?: (string | T)[];
+  selectedItem?: string | T | null;
+  onChange?: (_items: string[]) => void;
+  onSelect?: (_item: T) => void;
   multiSelect?: boolean;
   onItemCreate?: (_item: string) => void;
+  onSearch?: (_query: string, _signal: AbortSignal) => Promise<T[]>;
+  renderItem?: (_item: T, _isSelected: boolean) => ReactNode;
+  getItemKey?: (_item: T) => string;
+  getItemLabel?: (_item: T) => string;
   placeholder?: string;
   label?: string;
   disabled?: boolean;
@@ -22,28 +49,37 @@ export interface MultiSelectProps {
   searchPlaceholder?: string;
   clearSearchLabel?: string;
   noItemsLabel?: string;
+  emptyMessage?: string;
   createLabel?: string;
   noSelectionLabel?: string;
   mobileDrawerTitle?: string;
+  className?: string;
 }
 
-const CREATE_PREFIX = "__create__::";
-
-function isCreate(opt: string) {
-  return opt.startsWith(CREATE_PREFIX);
+function isOptionObject(item: unknown): item is MultiSelectOption {
+  return typeof item === "object" && item !== null;
 }
 
-function getCreateName(opt: string) {
-  return opt.replace(CREATE_PREFIX, "");
-}
+const normalize = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
-export function MultiSelect({
+export function MultiSelect<T = MultiSelectItem>({
   availableItems,
-  selectedItems,
+  items,
+  selectedItems = [],
+  selectedItem,
   onChange,
+  onSelect,
   multiSelect = true,
   onItemCreate,
-  placeholder,
+  onSearch,
+  renderItem,
+  getItemKey,
+  getItemLabel,
+  placeholder = "Select...",
   label,
   disabled = false,
   id,
@@ -51,10 +87,13 @@ export function MultiSelect({
   searchPlaceholder,
   clearSearchLabel,
   noItemsLabel,
+  emptyMessage,
   createLabel,
   noSelectionLabel,
   mobileDrawerTitle,
-}: MultiSelectProps) {
+  className,
+}: MultiSelectProps<T>) {
+  const initialItems = useMemo(() => items ?? availableItems ?? [], [items, availableItems]);
   const generatedId = useId();
   const triggerId = id ?? `input-form-trigger-${generatedId}`;
   const canCreate = typeof onItemCreate === "function";
@@ -62,106 +101,157 @@ export function MultiSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [knownItems, setKnownItems] = useState<string[]>(availableItems);
+  const [createdItems, setCreatedItems] = useState<T[]>([]);
+  const [asyncResults, setAsyncResults] = useState<T[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    setKnownItems((prev) => {
-      const merged = Array.from(new Set([...availableItems, ...prev]));
-      return merged.sort((a, b) => a.localeCompare(b));
-    });
-  }, [availableItems]);
+  const getKey = useCallback(
+    (item: T): string => {
+      if (getItemKey) return getItemKey(item);
+      if (isOptionObject(item)) {
+        const rec = item as Record<string, unknown>;
+        return String(
+          rec.value ?? rec.id ?? rec.key ?? rec.name ?? rec.label ?? JSON.stringify(item)
+        );
+      }
+      return String(item);
+    },
+    [getItemKey]
+  );
+
+  const getLabel = useCallback(
+    (item: T): string => {
+      if (getItemLabel) return getItemLabel(item);
+      if (isOptionObject(item)) {
+        const rec = item as Record<string, unknown>;
+        return String(rec.label ?? rec.name ?? rec.title ?? rec.value ?? rec.id ?? "");
+      }
+      return String(item);
+    },
+    [getItemLabel]
+  );
+
+  const allItems = useMemo(() => [...initialItems, ...createdItems], [initialItems, createdItems]);
 
   const triggerRef = useRef<HTMLInputElement>(null);
   const triggerWrapRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const options = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const exists = q ? knownItems.some((item) => item.toLowerCase() === q) : false;
-    const results = q
-      ? knownItems.filter((item) => item.toLowerCase().includes(q))
-      : [...knownItems];
-    return canCreate && q && !exists ? [...results, `${CREATE_PREFIX}${q}`] : results;
-  }, [query, knownItems, canCreate]);
 
+  // Async remote search effect
   useEffect(() => {
-    setActiveIndex(0);
-    itemsRef.current = [];
-  }, [open, query, options.length]);
-
-  useEffect(() => {
-    itemsRef.current[activeIndex]?.scrollIntoView({ block: "nearest" });
-  }, [activeIndex]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function handleClick(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        triggerWrapRef.current &&
-        !triggerWrapRef.current.contains(event.target as Node)
-      ) {
-        close();
+    if (!onSearch || !open) return;
+    const controller = new AbortController();
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await onSearch(query, controller.signal);
+        if (!controller.signal.aborted) {
+          setAsyncResults(res);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          console.error("MultiSelect onSearch error:", err);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSearching(false);
+        }
       }
-    }
+    }, 250);
 
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, onSearch, open]);
 
-  function openDropdown() {
-    if (disabled) return;
-    setOpen(true);
-  }
+  // Options filtering
+  const options = useMemo(() => {
+    const list = onSearch ? asyncResults : allItems;
+    const q = normalize(query.trim());
+    if (!q) return list;
 
-  function close() {
+    const tokens = q.split(/\s+/).filter(Boolean);
+    return list.filter((item) => {
+      const l = normalize(getLabel(item));
+      const sub = isOptionObject(item) && item.subtitle ? normalize(String(item.subtitle)) : "";
+      return tokens.every((token) => l.includes(token) || sub.includes(token));
+    });
+  }, [onSearch, asyncResults, query, allItems, getLabel]);
+
+  const trimmedQuery = query.trim();
+  const showCreateOption = Boolean(
+    canCreate &&
+    trimmedQuery &&
+    !(onSearch ? asyncResults : allItems).some(
+      (item) => normalize(getLabel(item)) === normalize(trimmedQuery)
+    )
+  );
+
+  const totalOptionsCount = options.length + (showCreateOption ? 1 : 0);
+  const safeActiveIndex = Math.min(activeIndex, Math.max(0, totalOptionsCount - 1));
+
+  useEffect(() => {
+    itemsRef.current[safeActiveIndex]?.scrollIntoView({ block: "nearest" });
+  }, [safeActiveIndex]);
+
+  const close = useCallback(() => {
     setOpen(false);
     setQuery("");
-  }
+    setActiveIndex(0);
+  }, []);
 
-  function selectItem(item: string) {
-    if (multiSelect) {
-      if (selectedItems.includes(item)) {
-        onChange(selectedItems.filter((existingItem) => existingItem !== item));
-      } else {
-        onChange([...selectedItems, item]);
-      }
-    } else {
-      onChange([item]);
-      close();
-    }
-  }
-
-  function createAndSelect(name: string) {
-    if (!canCreate) return;
-    const item = name.trim();
-    if (!item) return;
-
-    const isNew = !knownItems.some((x) => x.toLowerCase() === item.toLowerCase());
-    if (isNew) {
-      setKnownItems((prev) => [...prev, item].sort((a, b) => a.localeCompare(b)));
-      onItemCreate?.(item);
-    }
-
-    if (multiSelect) {
-      if (!selectedItems.includes(item)) {
-        onChange([...selectedItems, item]);
-      }
-      setQuery("");
-    } else {
-      onChange([item]);
-      close();
-    }
-  }
-
-  const removeSelected = (val: string, event?: React.MouseEvent) => {
-    event?.stopPropagation();
-    onChange(selectedItems.filter((item) => item !== val));
+  const openDropdown = () => {
+    if (disabled) return;
+    setOpen(true);
+    setActiveIndex(0);
   };
 
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  const selectedKeys = useMemo(() => {
+    if (!multiSelect && selectedItem !== undefined) {
+      if (!selectedItem) return [];
+      return [typeof selectedItem === "string" ? selectedItem : getKey(selectedItem)];
+    }
+    return selectedItems.map((sel) => (typeof sel === "string" ? sel : getKey(sel)));
+  }, [multiSelect, selectedItem, selectedItems, getKey]);
+
+  const selectItem = (item: T) => {
+    const key = getKey(item);
+    if (multiSelect) {
+      const isSel = selectedKeys.includes(key);
+      const updated = isSel ? selectedKeys.filter((k) => k !== key) : [...selectedKeys, key];
+      onChange?.(updated);
+    } else {
+      onSelect?.(item);
+      onChange?.([key]);
+      close();
+    }
+  };
+
+  const createAndSelect = (name: string) => {
+    if (!canCreate) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    onItemCreate?.(trimmed);
+    setCreatedItems((prev) => (prev.includes(trimmed as T) ? prev : [...prev, trimmed as T]));
+    if (multiSelect) {
+      if (!selectedKeys.includes(trimmed)) {
+        onChange?.([...selectedKeys, trimmed]);
+      }
+      setQuery("");
+      setActiveIndex(0);
+    } else {
+      close();
+    }
+  };
+
+  const removeSelected = (key: string, event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    onChange?.(selectedKeys.filter((k) => k !== key));
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     event.stopPropagation();
 
     if (!open && (event.key === "ArrowDown" || event.key === "Enter")) {
@@ -172,13 +262,15 @@ export function MultiSelect({
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, options.length - 1));
+      setActiveIndex((i) => (totalOptionsCount > 0 ? (i + 1) % totalOptionsCount : 0));
       return;
     }
 
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActiveIndex((i) => Math.max(i - 1, 0));
+      setActiveIndex((i) =>
+        totalOptionsCount > 0 ? (i - 1 + totalOptionsCount) % totalOptionsCount : 0
+      );
       return;
     }
 
@@ -190,30 +282,34 @@ export function MultiSelect({
 
     if (event.key === "Enter") {
       event.preventDefault();
-      const sel = options[activeIndex] ?? options[0];
-      if (!sel) {
-        const q = query.trim();
-        if (q && canCreate) createAndSelect(q);
-        return;
-      }
-      if (isCreate(sel)) {
-        createAndSelect(getCreateName(sel));
-      } else {
-        selectItem(sel);
+      if (showCreateOption && safeActiveIndex === options.length) {
+        createAndSelect(trimmedQuery);
+      } else if (options[safeActiveIndex]) {
+        selectItem(options[safeActiveIndex]);
+      } else if (showCreateOption) {
+        createAndSelect(trimmedQuery);
       }
     }
-  }
+  };
 
-  function handleOptionClick(opt: string) {
-    if (isCreate(opt)) {
-      createAndSelect(getCreateName(opt));
-    } else {
-      selectItem(opt);
+  const singleSelectedLabel = useMemo(() => {
+    if (multiSelect) return "";
+    if (selectedItem) return getLabel(selectedItem as T);
+    if (selectedItems.length > 0) {
+      const first = selectedItems[0];
+      if (typeof first === "string") {
+        const found = allItems.find((it) => getKey(it) === first);
+        return found ? getLabel(found) : first;
+      }
+      return getLabel(first as T);
     }
-  }
+    return "";
+  }, [multiSelect, selectedItem, selectedItems, allItems, getLabel, getKey]);
+
+  const inputValue = open ? query : singleSelectedLabel;
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${className || ""}`.trim()}>
       {label && (
         <label htmlFor={triggerId} className={styles.label}>
           {label}
@@ -227,15 +323,17 @@ export function MultiSelect({
           type="text"
           disabled={disabled}
           className={`${styles.trigger} ${open ? styles.triggerOpen : ""}`}
-          value={open ? query : multiSelect ? "" : (selectedItems[0] ?? "")}
-          placeholder={open ? searchPlaceholder : placeholder}
+          value={inputValue}
+          placeholder={open ? (searchPlaceholder ?? "Type to search...") : placeholder}
           onFocus={openDropdown}
           onClick={openDropdown}
           onChange={(event) => {
             if (!open) setOpen(true);
+            setActiveIndex(0);
             setQuery(event.target.value);
           }}
           onKeyDown={handleKeyDown}
+          autoComplete="off"
           spellCheck={false}
         />
         <button
@@ -245,7 +343,8 @@ export function MultiSelect({
             if (open) close();
             else openDropdown();
           }}
-          disabled={disabled}>
+          disabled={disabled}
+          aria-label="Toggle options">
           <FiChevronDown className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} />
         </button>
       </div>
@@ -265,72 +364,129 @@ export function MultiSelect({
           <div className={styles.mobileSearchContainer}>
             <SearchInput
               value={query}
-              onChange={setQuery}
+              onChange={(val) => {
+                setActiveIndex(0);
+                setQuery(val);
+              }}
               placeholder={searchPlaceholder ?? placeholder ?? "Search..."}
               clearLabel={clearSearchLabel}
               autoFocus
             />
           </div>
-          {options.length === 0 && <div className={styles.empty}>{noItemsLabel}</div>}
+
+          {options.length === 0 && !showCreateOption && (
+            <div className={styles.empty}>
+              {isSearching ? (
+                <span>Searching...</span>
+              ) : (
+                (noItemsLabel ?? emptyMessage ?? "No items found")
+              )}
+            </div>
+          )}
+
           {options.map((opt, i) => {
-            const isCreateOpt = isCreate(opt);
-            const isSelected = !isCreateOpt && selectedItems.includes(opt);
+            const key = getKey(opt);
+            const isSelected = selectedKeys.includes(key);
             const optionClassName = [
               styles.option,
-              i === activeIndex ? styles.optionActive : "",
+              i === safeActiveIndex ? styles.optionActive : "",
               isSelected ? styles.optionSelected : "",
             ]
               .filter(Boolean)
               .join(" ");
 
+            const labelText = getLabel(opt);
+            const subtitleText =
+              isOptionObject(opt) && opt.subtitle ? String(opt.subtitle) : undefined;
+            const avatarSrc = isOptionObject(opt) && opt.avatar ? String(opt.avatar) : undefined;
+
             return (
               <div
-                key={opt}
+                key={key}
                 ref={(el) => {
                   itemsRef.current[i] = el;
                 }}
                 className={optionClassName}
                 onMouseEnter={() => setActiveIndex(i)}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                }}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleOptionClick(opt);
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  selectItem(opt);
                 }}>
-                <span>
-                  {isCreateOpt
-                    ? createLabel
-                      ? `${createLabel} "${getCreateName(opt)}"`
-                      : `"${getCreateName(opt)}"`
-                    : opt}
-                </span>
-                {(isSelected || isCreateOpt) && (
-                  <span className={styles.optionIcon}>{isSelected ? <FaCheck /> : "+"}</span>
+                {renderItem ? (
+                  renderItem(opt, isSelected)
+                ) : (
+                  <div className={styles.optionContent}>
+                    {avatarSrc ? (
+                      <Avatar
+                        size="sm"
+                        fallback={labelText.slice(0, 1).toUpperCase()}
+                        image={
+                          <img src={avatarSrc} alt={labelText} className={styles.optionAvatarImg} />
+                        }
+                      />
+                    ) : null}
+                    <div className={styles.optionTextWrap}>
+                      <span className={styles.optionLabel}>{labelText}</span>
+                      {subtitleText && (
+                        <span className={styles.optionSubtitle}>{subtitleText}</span>
+                      )}
+                    </div>
+                  </div>
                 )}
+                <span className={styles.optionIcon}>{isSelected ? <FaCheck /> : null}</span>
               </div>
             );
           })}
+
+          {showCreateOption && (
+            <div
+              key="__create_item__"
+              ref={(el) => {
+                itemsRef.current[options.length] = el;
+              }}
+              className={[
+                styles.option,
+                safeActiveIndex === options.length ? styles.optionActive : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onMouseEnter={() => setActiveIndex(options.length)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={(e) => {
+                e.stopPropagation();
+                createAndSelect(trimmedQuery);
+              }}>
+              <span>
+                {createLabel ? `${createLabel} "${trimmedQuery}"` : `Create "${trimmedQuery}"`}
+              </span>
+              <span className={styles.optionIcon}>+</span>
+            </div>
+          )}
         </div>
       </Popover>
 
-      {multiSelect ? (
+      {multiSelect && (
         <div className={styles.badges}>
-          {selectedItems.length === 0 ? (
-            <span className={styles.noItems}>{noSelectionLabel}</span>
+          {selectedKeys.length === 0 ? (
+            <span className={styles.noTags}>{noSelectionLabel ?? "No items selected"}</span>
           ) : (
-            selectedItems.map((item) => (
-              <Badge
-                key={item}
-                variant="outline"
-                removable
-                onRemove={(event) => removeSelected(item, event)}>
-                {item}
-              </Badge>
-            ))
+            selectedKeys.map((key) => {
+              const matched = allItems.find((it) => getKey(it) === key);
+              const badgeLabel = matched ? getLabel(matched) : key;
+              return (
+                <Badge
+                  key={key}
+                  variant="outline"
+                  removable
+                  onRemove={(event) => removeSelected(key, event)}>
+                  {badgeLabel}
+                </Badge>
+              );
+            })
           )}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

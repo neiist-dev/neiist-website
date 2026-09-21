@@ -1,4 +1,5 @@
 .root {
+  box-sizing: border-box;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -13,11 +14,12 @@
 }
 
 .triggerWrap {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   inline-size: 100%;
   gap: 0.5rem;
-  padding: 0 0.75rem;
+  padding-inline: 0.75rem;
   border-radius: var(--ui-radius-md);
   border: 1px solid var(--ui-bg-hover);
   background: var(--ui-surface);
@@ -34,7 +36,7 @@
 .trigger {
   flex: 1;
   min-width: 0;
-  padding: 0.625rem 0;
+  padding-block: 0.625rem;
   border: none;
   background: transparent;
   font-family: inherit;
@@ -114,11 +116,47 @@
   flex-shrink: 0;
 }
 
+.optionContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.optionTextWrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.optionLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionSubtitle {
+  font-size: 0.75rem;
+  color: var(--ui-fg-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionAvatarImg {
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .badges {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  min-height: 24px;
+  min-block-size: 1.5rem;
   margin-block-start: 12px;
 }
 
@@ -144,7 +182,7 @@
   }
 
   .optionList {
-    max-height: 50vh;
+    max-block-size: 50vh;
   }
 
   .option {
