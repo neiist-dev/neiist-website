@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
+import { UserRole } from "@/types/roles";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { rateLimit } from "@/lib/security/rateLimitUtils";
 import { getRateLimitRule } from "@/lib/security/rateLimitRules";

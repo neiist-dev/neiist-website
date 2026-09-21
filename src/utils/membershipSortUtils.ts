@@ -38,10 +38,5 @@ export function compareMembershipsByActiveAndHierarchy(
   ctx: SortHierarchyContext
 ): number {
   if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
-  if (ctx.roleTierMap) {
-    const weightA = ctx.roleTierMap.get(`${a.departmentName}-${a.roleName}`) ?? 4000;
-    const weightB = ctx.roleTierMap.get(`${b.departmentName}-${b.roleName}`) ?? 4000;
-    if (weightA !== weightB) return weightB - weightA;
-  }
   return compareMembershipsByHierarchy(a, b, ctx);
 }

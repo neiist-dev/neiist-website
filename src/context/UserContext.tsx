@@ -1,11 +1,15 @@
 "use client";
-import React, { createContext, use, useState, useEffect } from "react";
+import React, { createContext, use, useState, useEffect, useCallback } from "react";
 import { User } from "@/types/user";
 import { fetchUserData } from "@/utils/userUtils";
+
+import { Permission } from "@/types/permissions";
+import { hasPermission } from "@/lib/security/permissions";
 
 interface UserContextType {
   user: User | null;
   setUser: (_user: User | null) => void;
+  hasPermission: (_permission: Permission, _context?: { department?: string }) => boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -57,7 +61,15 @@ export function UserProvider({
     };
   }, [initialUser]);
 
-  return <UserContext value={{ user, setUser }}>{children}</UserContext>;
+  const checkPermission = useCallback(
+    (permission: Permission, context?: { department?: string }) =>
+      hasPermission(user, permission, context),
+    [user]
+  );
+
+  return (
+    <UserContext value={{ user, setUser, hasPermission: checkPermission }}>{children}</UserContext>
+  );
 }
 
 export function useUser() {
