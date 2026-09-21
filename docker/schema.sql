@@ -900,30 +900,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update membership dates
-CREATE OR REPLACE FUNCTION neiist.update_membership(
-  p_user_istid VARCHAR(10),
-  p_department_name TEXT,
-  p_role_name TEXT,
-  p_old_from_date DATE,
-  p_new_from_date DATE,
-  p_new_to_date DATE
-) RETURNS VOID AS $$
-BEGIN
-  UPDATE neiist.membership
-  SET from_date = p_new_from_date,
-    to_date = p_new_to_date
-  WHERE user_istid = p_user_istid
-    AND department_name = p_department_name
-    AND role_name = p_role_name
-    AND from_date = p_old_from_date;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Registo de mandato não encontrado.';
-  END IF;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Conclude membership
 CREATE OR REPLACE FUNCTION neiist.conclude_membership(
   p_user_istid VARCHAR(10),
@@ -963,38 +939,6 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Registo de mandato não encontrado para remoção.';
   END IF;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Get available roles for a department
-CREATE OR REPLACE FUNCTION neiist.get_department_roles(u_department_name TEXT)
-RETURNS TABLE (
-  role_name TEXT,
-  active BOOLEAN,
-  access_label TEXT,
-  permissions TEXT[]
-) AS $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM neiist.departments WHERE name = u_department_name) THEN
-    RAISE EXCEPTION 'O departamento "%" não existe.', u_department_name;
-  END IF;
-
-  RETURN QUERY
-  SELECT
-    vdr.role_name::TEXT,
-    vdr.active,
-    vdr.access_label::TEXT,
-    COALESCE(
-      array_agg(rp.permission_name::TEXT ORDER BY rp.permission_name)
-        FILTER (WHERE rp.permission_name IS NOT NULL),
-      ARRAY[]::TEXT[]
-    ) AS permissions
-  FROM neiist.valid_department_roles vdr
-  LEFT JOIN neiist.role_permissions rp
-    ON vdr.department_name = rp.department_name AND vdr.role_name = rp.role_name
-  WHERE vdr.department_name = u_department_name
-  GROUP BY vdr.role_name, vdr.active, vdr.access_label
-  ORDER BY vdr.role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1286,8 +1230,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Get all valid department roles (useful for admin interface)
-CREATE OR REPLACE FUNCTION neiist.get_all_valid_department_roles()
+-- Get all department roles (useful for admin interface)
+CREATE OR REPLACE FUNCTION neiist.get_all_department_roles()
 RETURNS TABLE (
   department_name TEXT,
   department_type TEXT,
@@ -1348,23 +1292,6 @@ BEGIN
   JOIN neiist.users u ON m.user_istid = u.istid
   JOIN neiist.departments d ON m.department_name = d.name
   ORDER BY d.display_order, u.name, m.role_name;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Get role permissions
-CREATE OR REPLACE FUNCTION neiist.get_role_permissions(
-  p_department_name TEXT,
-  p_role_name TEXT
-)
-RETURNS TABLE (
-  permission_name TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT rp.permission_name::TEXT
-  FROM neiist.role_permissions rp
-  WHERE rp.department_name = p_department_name
-    AND rp.role_name = p_role_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1481,18 +1408,6 @@ BEGIN
   WHERE m.from_date <= v_end_date
     AND (m.to_date IS NULL OR m.to_date > v_start_date)
   ORDER BY d.display_order, u.name, m.role_name;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Get hierarchy for a department
-CREATE OR REPLACE FUNCTION neiist.get_department_role_order(
-  p_department TEXT
-) RETURNS TABLE(role_name TEXT, "position" INTEGER) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT department_role_order.role_name, department_role_order."position"
-  FROM neiist.department_role_order
-  WHERE department_role_order.department_name = p_department;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
