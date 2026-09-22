@@ -209,7 +209,8 @@ export function DataTable<T>({
                   return (
                     <TableCell
                       key={column.id}
-                      className={column.className}
+                      className={cn(column.className, column.id === "actions" && styles.actionsCol)}
+                      data-actions={column.id === "actions" || undefined}
                       dataLabel={label}
                       isCardHeader={isHeader}
                       data-align={column.align}>

@@ -135,6 +135,7 @@ export function ModalRoot({
   }, [onClose]);
 
   const handleBackdropClick = (event: React.MouseEvent<HTMLDialogElement>) => {
+    event.stopPropagation();
     if (closeOnBackdropClick && event.target === internalDialogRef.current) {
       onClose();
     }

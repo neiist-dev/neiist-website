@@ -112,12 +112,18 @@
     min-block-size: 2.75rem;
   }
 
-  .table[data-responsive="cards"] .tr .td:not(:last-child) {
+  .table[data-responsive="cards"] .tr .td {
     border-block-end: 1px solid var(--ui-bg-hover);
   }
 
-  .table[data-responsive="cards"] .td[data-label]::before,
-  .table[data-responsive="cards"] .cardHeaderCell[data-label]::before {
+  .table[data-responsive="cards"] .tr .td:last-child,
+  .table[data-responsive="cards"] .tr .td:has(+ [data-actions]),
+  .table[data-responsive="cards"] .tr .td[data-actions] {
+    border: none;
+    border-block-end: none;
+  }
+
+  .table[data-responsive="cards"] .td:not(.cardHeaderCell)[data-label]::before {
     content: attr(data-label);
     font-weight: var(--ui-font-weight-bold);
     font-size: var(--ui-font-xs);
@@ -131,18 +137,16 @@
     order: -1;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
+    text-align: start;
     gap: 0.5rem;
     font-size: var(--ui-font-sm);
     font-weight: var(--ui-font-weight-bold);
     color: var(--ui-fg);
     padding: 0.75rem;
-    padding-inline-end: var(--_card-header-end-pad, 0.75rem);
+    padding-inline-end: var(--_card-header-end-pad, 3rem);
     border-block-end: 1px solid var(--ui-border);
     background: var(--ui-bg);
-    min-block-size: 2.75rem;
-  }
-
-  .table[data-responsive="cards"] .cardHeaderCell[data-label]::before {
-    margin-inline-end: 0.25rem;
+    min-block-size: 3rem;
   }
 }
