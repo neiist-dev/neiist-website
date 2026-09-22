@@ -60,8 +60,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validPaymentMethods = PAYMENT_METHODS_SET;
     const orderSource = parseOrderSource(body.order_source);
+    const isPos = orderSource === "pos" || orderSource === "mobile-pos";
     const guestCheckout = body.guest_checkout === true;
-    const canUseGuestCheckout = hasPermission(user, "orders:create") && orderSource === "pos";
+    const canUseGuestCheckout =
+      isPos && hasPermission(user, "users:write") && hasPermission(user, "orders:override");
 
     if (!Array.isArray(body.items) || body.items.length === 0)
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
@@ -85,9 +87,9 @@ export async function POST(request: NextRequest) {
     const userAssignmentRequired = orderRules.requiresUserAssignment;
     const orderUserIstid = guestCheckout
       ? undefined
-      : userAssignmentRequired
-        ? body.user_istid
-        : undefined;
+      : isPos
+        ? body.user_istid || user.istid
+        : user.istid;
 
     if (isMixedInvalid) {
       return NextResponse.json(
@@ -193,8 +195,8 @@ export async function POST(request: NextRequest) {
     if (!order) return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
 
     if (orderUserIstid && body.customer_phone) {
-      const user = await getUser(orderUserIstid);
-      if (user && user.phone !== body.customer_phone)
+      const targetUser = await getUser(orderUserIstid);
+      if (targetUser && targetUser.phone !== body.customer_phone)
         await updateUser(orderUserIstid, { phone: body.customer_phone });
     }
 
