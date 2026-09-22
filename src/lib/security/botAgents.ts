@@ -36,9 +36,14 @@ export function isBot(request: NextRequest): boolean {
 }
 
 export function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
+
+  const xff = request.headers.get("x-forwarded-for");
+  if (xff) {
+    const client = xff.split(",")[0]?.trim();
+    if (client) return client;
+  }
+
+  return "unknown";
 }
