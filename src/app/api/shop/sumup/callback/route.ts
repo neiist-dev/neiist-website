@@ -29,6 +29,9 @@ export async function GET(req: NextRequest) {
   const order = await getOrderById(orderId);
   if (!order) return sumupErrorResponse("Order not found", 404);
 
+  if (order.payment_reference && order.payment_reference !== checkoutId)
+    return sumupErrorResponse("Checkout id does not match order", 400);
+
   const status = String(checkout.status ?? "")
     .trim()
     .toUpperCase();
