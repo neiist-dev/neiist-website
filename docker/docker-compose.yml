@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
-      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sq
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
 
 volumes:
   db:
