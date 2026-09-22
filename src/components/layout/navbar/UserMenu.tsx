@@ -1,12 +1,13 @@
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
-import { GoSignOut, GoPeople, GoPerson, GoOrganization } from "react-icons/go";
+import { GoSignOut, GoPerson, GoOrganization } from "react-icons/go";
 import { LuFileText, LuShoppingBag, LuPackage, LuVote } from "react-icons/lu";
-import { FiCamera } from "react-icons/fi";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
-import { User, UserRole, checkRoles } from "@/types/user";
+import { User } from "@/types/user";
+import { Permission } from "@/types/permissions";
+import { hasPermission } from "@/lib/security/permissions";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { Dictionary } from "@/i18n/dictionaries";
 
@@ -21,9 +22,8 @@ interface MenuPage {
   href: string;
   label: string;
   icon: IconType;
-  roles: UserRole[];
-  adminOnly?: boolean;
-  coordinatorOnly?: boolean;
+  permission?: Permission;
+  check?: (_user: User) => boolean;
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict, basePath }) => {
@@ -61,95 +61,52 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict, basePath })
     setTimeout(logout, 100);
   };
 
-  const isPhotoCoord =
-    checkRoles(userData, [UserRole._COORDINATOR]) &&
-    userData.teams?.some((team) => team.toLowerCase().includes("fotografia"));
-
   const menuPages: MenuPage[] = [
     {
       href: `${basePath}/profile`,
       label: dict.profile,
       icon: GoPerson,
-      roles: [
-        UserRole._GUEST,
-        UserRole._MEMBER,
-        UserRole._SHOP_MANAGER,
-        UserRole._COORDINATOR,
-        UserRole._ADMIN,
-      ],
     },
     {
       href: `${basePath}/my-orders`,
       label: dict.my_orders,
       icon: LuPackage,
-      roles: [
-        UserRole._GUEST,
-        UserRole._MEMBER,
-        UserRole._SHOP_MANAGER,
-        UserRole._COORDINATOR,
-        UserRole._ADMIN,
-      ],
     },
     {
       href: `${basePath}/orders`,
       label: dict.manage_orders,
       icon: LuFileText,
-      roles: [UserRole._SHOP_MANAGER, UserRole._COORDINATOR, UserRole._ADMIN],
+      permission: "orders:read",
     },
     {
-      href: `${basePath}/team-management`,
-      label: dict.manage_team,
-      icon: GoPeople,
-      roles: [UserRole._COORDINATOR],
-      coordinatorOnly: true,
+      href: `${basePath}/management`,
+      label: dict.management,
+      icon: GoOrganization,
+      check: (user) =>
+        hasPermission(user, "memberships:read") ||
+        hasPermission(user, "memberships:write_dept") ||
+        hasPermission(user, "departments:read") ||
+        hasPermission(user, "roles:read"),
     },
-    ...(isPhotoCoord
-      ? [
-          {
-            href: `${basePath}/photo-management`,
-            label: dict.manage_photos,
-            icon: FiCamera,
-            roles: [UserRole._COORDINATOR],
-            coordinatorOnly: true,
-          },
-        ]
-      : []),
     {
       href: `${basePath}/shop/manage`,
       label: dict.manage_shop,
       icon: LuShoppingBag,
-      roles: [UserRole._ADMIN],
-      adminOnly: true,
+      permission: "shop:write",
     },
     {
       href: `${basePath}/voting/manage`,
       label: dict.manage_voting,
       icon: LuVote,
-      roles: [UserRole._ADMIN],
-      adminOnly: true,
-    },
-    {
-      href: `${basePath}/users-management`,
-      label: dict.manage_users,
-      icon: GoPeople,
-      roles: [UserRole._ADMIN],
-      adminOnly: true,
-    },
-    {
-      href: `${basePath}/departments-management`,
-      label: dict.manage_departments,
-      icon: GoOrganization,
-      roles: [UserRole._ADMIN],
-      adminOnly: true,
+      permission: "voting:write",
     },
   ];
 
   const getAvailablePages = () => {
-    return menuPages.filter((p) => {
-      if (p.adminOnly) return checkRoles(userData, [UserRole._ADMIN]);
-      if (p.coordinatorOnly) return checkRoles(userData, [UserRole._COORDINATOR]);
-      if (!p.roles || p.roles.length === 0) return true;
-      return checkRoles(userData, p.roles);
+    return menuPages.filter((permission) => {
+      if (permission.permission) return hasPermission(userData, permission.permission);
+      if (permission.check) return permission.check(userData);
+      return true;
     });
   };
 
@@ -173,7 +130,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict, basePath })
       {isMenuVisible && (
         <div
           className={`${styles.profileDropdown} ${menuState === "closing" ? styles.slideOut : ""}`}
-          onClick={(e) => e.stopPropagation()}>
+          onClick={(event) => event.stopPropagation()}>
           {availablePages.map((page) => (
             <UserMenuItem
               key={page.href + page.label}
