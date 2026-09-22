@@ -1,0 +1,154 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--foreground-colour);
+  overflow-wrap: anywhere;
+}
+
+.header span {
+  font-size: 0.875rem;
+  color: var(--light-foreground-colour);
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-block-start: 0.4rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 0.75rem 1.5rem;
+  padding-block: 0.25rem 0.5rem;
+}
+
+.gridItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-inline-size: 0;
+}
+
+.gridItemFull {
+  grid-column: 1 / -1;
+}
+
+.gridItem > span:first-child {
+  font-size: 0.875rem;
+  color: var(--light-foreground-colour);
+}
+
+.gridItem > span:last-child,
+.gridItem > a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--foreground-colour);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.gridItem > a {
+  color: var(--primary-colour);
+}
+
+.gridItem > a:hover {
+  text-decoration: underline;
+}
+
+.scrollArea {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-block-size: 320px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  margin-block-start: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--light-foreground-colour);
+  margin: 0 0 0.5rem 0;
+}
+
+.mandatesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mandateCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.mandateCard:hover {
+  border-color: var(--primary-colour);
+}
+
+.mandateInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-inline-size: 0;
+}
+
+.mandateRoleLine {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.mandateRoleLine strong {
+  color: var(--primary-colour);
+}
+
+.mandateRoleLine span {
+  color: var(--foreground-colour);
+}
+
+.mandateRoleLine em {
+  font-style: normal;
+  color: var(--light-foreground-colour);
+  font-size: 0.65rem;
+}
+
+.mandateDates {
+  font-size: 0.8rem;
+  color: var(--light-foreground-colour);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  padding-block: 2rem;
+}

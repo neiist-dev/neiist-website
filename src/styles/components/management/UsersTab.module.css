@@ -1,0 +1,51 @@
+.usersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 1.25rem;
+  padding-block: 0.5rem 1.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.roleTag strong {
+  color: var(--primary-colour);
+}
+
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-block-start: 1px solid #d1d5db;
+  margin-block-start: 1rem;
+}
+
+.paginationBar > span {
+  font-size: 0.875rem;
+  color: var(--light-foreground-colour);
+}
+
+.paginationActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageIndicator {
+  font-size: 0.875rem;
+  color: var(--foreground-colour);
+  padding-inline: 0.5rem;
+}

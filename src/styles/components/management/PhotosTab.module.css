@@ -1,0 +1,59 @@
+.hiddenFileInput {
+  display: none;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.photoCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--background-colour);
+  border: 1px solid #d1d5db;
+  gap: 0.5rem;
+  block-size: 100%;
+  overflow: hidden;
+}
+
+.photoCard h4 {
+  font-size: 1rem;
+  color: var(--foreground-colour);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.photoCard p {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  margin: 0;
+}
+
+.badges {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  inline-size: 100%;
+  margin-block-start: 0.25rem;
+}
+
+.badges strong {
+  color: var(--primary-colour);
+}
+
+.cardAction {
+  margin-block-start: auto;
+  padding-block-start: 0.5rem;
+}
+
+.cardAction svg {
+  margin-inline-end: 0.35rem;
+}
