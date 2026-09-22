@@ -6,8 +6,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-block-end: 1.25rem;
   inline-size: 100%;
 }
@@ -16,8 +15,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  flex: 1 1 300px;
+  flex: 1;
   min-inline-size: 0;
 }
 
@@ -29,15 +27,32 @@
 }
 
 .searchInputWrapper {
-  flex: 1 1 240px;
+  flex: 2;
   min-inline-size: 0;
-  max-inline-size: 400px;
+  max-inline-size: 28rem;
 }
 
 .selectWrapper {
-  flex: 0 1 200px;
-  min-inline-size: 170px;
-  max-inline-size: 100%;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+@media (max-width: 768px) {
+  .toolbar,
+  .filterGroup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .searchInputWrapper {
+    max-inline-size: 100%;
+  }
+
+  .actionGroup > * {
+    inline-size: 100%;
+    justify-content: center;
+  }
 }
 
 .emptyState {
@@ -151,6 +166,8 @@
 .tableUserInfo {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: start;
 }
 
 .tableUserName {

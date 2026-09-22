@@ -257,6 +257,7 @@ export default function DepartmentsTab({
       {
         id: "name",
         header: tDict.name_column,
+        isCardHeader: true,
         cell: (row) => (
           <div className={styles.tableRowNameGroup}>
             <span className={row.active ? styles.tableRowNameActive : styles.tableRowNameInactive}>

@@ -292,6 +292,7 @@ export default function MembershipsTab({
       {
         id: "user",
         header: mDict.member_column,
+        isCardHeader: true,
         cell: (row) => (
           <div className={styles.tableUserCell}>
             <MemberAvatar name={row.userName} photo={row.userPhoto} size="sm" />

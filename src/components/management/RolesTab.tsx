@@ -234,6 +234,7 @@ export default function RolesTab({
       {
         id: "role_name",
         header: rDict.role_column,
+        isCardHeader: true,
         cell: (row) => (
           <div className={styles.tableRowNameGroup}>
             <span className={row.active ? styles.tableRowNameActive : styles.tableRowNameInactive}>
