@@ -3251,7 +3251,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.set_order_state(
   p_order_id INTEGER,
   p_status neiist.shop_order_status_enum,
-  p_user_istid VARCHAR(10) DEFAULT NULL
+  p_user_istid VARCHAR(10) DEFAULT NULL,
+  p_payment_reference TEXT DEFAULT NULL
 ) RETURNS TABLE (
   id INTEGER,
   order_number TEXT,
@@ -3278,14 +3279,17 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   status TEXT
 ) AS $$
 BEGIN
+  PERFORM 1 FROM neiist.orders WHERE id = p_order_id FOR UPDATE;
+
   UPDATE neiist.orders o
   SET status = p_status,
+      payment_reference = COALESCE(p_payment_reference, o.payment_reference),
       paid_at = CASE WHEN p_status = 'paid' THEN NOW() ELSE o.paid_at END,
-        payment_checked_by = CASE WHEN p_status = 'paid' THEN COALESCE(p_user_istid, o.payment_checked_by) ELSE o.payment_checked_by END,
-        delivered_at = CASE WHEN p_status = 'delivered' THEN NOW() ELSE o.delivered_at END,
-        delivered_by = CASE WHEN p_status = 'delivered' THEN COALESCE(p_user_istid, o.delivered_by) ELSE o.delivered_by END,
-        updated_at = NOW(),
-        updated_by = COALESCE(p_user_istid, o.updated_by)
+      payment_checked_by = CASE WHEN p_status = 'paid' THEN COALESCE(p_user_istid, o.payment_checked_by) ELSE o.payment_checked_by END,
+      delivered_at = CASE WHEN p_status = 'delivered' THEN NOW() ELSE o.delivered_at END,
+      delivered_by = CASE WHEN p_status = 'delivered' THEN COALESCE(p_user_istid, o.delivered_by) ELSE o.delivered_by END,
+      updated_at = NOW(),
+      updated_by = COALESCE(p_user_istid, o.updated_by)
   WHERE o.id = p_order_id;
 
   RETURN QUERY

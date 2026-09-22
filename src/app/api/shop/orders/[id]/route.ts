@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { type User } from "@/types/user";
-import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
+import {
+  getOrderKindRules,
+  getOrderKindFromItems,
+  canTransitionOrderStatus,
+} from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
 import { isValidPaymentMethod } from "@/types/shop/payment";
 import { Order } from "@/types/shop/order";
@@ -224,6 +228,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const order = await getOrderByIdOrNumber(id);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
   const orderId = order.id;
+
+  const { orderKind } = getOrderKindFromItems(order.items);
+  if (!canTransitionOrderStatus(orderKind, order.status, status)) {
+    return NextResponse.json(
+      { error: `Transição de estado inválida: de ${order.status} para ${status}` },
+      { status: 400 }
+    );
+  }
 
   try {
     await setOrderState(orderId, status, user.istid);
