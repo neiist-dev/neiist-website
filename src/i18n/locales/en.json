@@ -803,8 +803,7 @@
       "tab_departments": "Departments & Bodies",
       "tab_memberships_admin": "Memberships & Mandates",
       "tab_memberships_coord": "Team Members",
-      "tab_roles": "Roles & Permissions",
-      "tab_photos": "Member Photos"
+      "tab_roles": "Roles & Permissions"
     },
     "users_management": {
       "tab_users": "Users",
@@ -1002,7 +1001,9 @@
       "active": "Active",
       "show_inactive": "Show Inactive",
       "empty": "No members found.",
-      "change_photo": "Click to change photo",
+      "change_photo": "Change Photo",
+      "photo_updated": "Photo updated successfully",
+      "photo_error": "Failed to update photo",
       "member_column": "Member",
       "department_column": "Department",
       "role_column": "Role",
@@ -1282,19 +1283,6 @@
     "confirm_reference": "Do you confirm you received payment for reference/reason \"{reference}\" and it is correct?",
     "mbway_send_to": "Send MBWay to:",
     "mbway_number_unavailable": "Number not available"
-  },
-
-  "photo_management": {
-    "title": "Team Members Photo Management",
-    "search_placeholder": "Search by name or ISTID...",
-    "clear_search": "Clear search",
-    "select_year": "Select Year",
-    "all_departments": "All Departments",
-    "change_photo": "Change Photo",
-    "photo_change_for": "Change photo for {name}",
-    "photo_updated": "Photo updated successfully",
-    "photo_error": "Failed to update photo",
-    "empty": "No members found."
   },
 
   "my_orders": {

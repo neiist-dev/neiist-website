@@ -1,3 +1,7 @@
+.hiddenFileInput {
+  display: none;
+}
+
 .toolbar {
   display: flex;
   justify-content: space-between;

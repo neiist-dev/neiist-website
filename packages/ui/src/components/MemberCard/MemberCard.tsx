@@ -17,10 +17,10 @@ export interface MemberCardProps extends React.ComponentPropsWithRef<"article"> 
   renderImage?: (_src: string, _alt: string, _className: string) => React.ReactNode;
 }
 
-const toGithubUrl = (url?: string) =>
+export const toGithubUrl = (url?: string) =>
   !url ? undefined : url.startsWith("http") ? url : `https://github.com/${url}`;
 
-const toLinkedinUrl = (url?: string) =>
+export const toLinkedinUrl = (url?: string) =>
   !url ? undefined : url.startsWith("http") ? url : `https://www.linkedin.com/in/${url}`;
 
 export function MemberCard({

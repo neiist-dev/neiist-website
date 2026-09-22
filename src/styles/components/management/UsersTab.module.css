@@ -1,9 +1,25 @@
 .usersGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1.25rem;
   padding-block: 0.5rem 1.5rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
   transition: opacity 0.2s ease;
+}
+
+.usersGrid > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .usersGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .loading {
@@ -14,8 +30,9 @@
 .roleTag {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   flex-wrap: wrap;
+  word-break: break-word;
 }
 
 .roleTag strong {

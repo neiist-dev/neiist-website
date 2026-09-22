@@ -12,7 +12,6 @@ import MembershipsTab from "@/components/management/MembershipsTab";
 import DepartmentsTab from "@/components/management/DepartmentsTab";
 import RolesTab from "@/components/management/RolesTab";
 import UsersTab from "@/components/management/UsersTab";
-import PhotosTab from "@/components/management/PhotosTab";
 import styles from "@/styles/pages/Management.module.css";
 
 export interface ManagementConsoleProps {
@@ -64,6 +63,11 @@ export default function ManagementConsole({
     hasPermission(currentUser, "memberships:write_global") ||
     hasPermission(currentUser, "memberships:write_dept");
 
+  const canManagePhotos =
+    canManageMemberships ||
+    hasPermission(currentUser, "photos:write_global") ||
+    hasPermission(currentUser, "photos:write_dept");
+
   const canManageDepartments =
     hasPermission(currentUser, "departments:write") ||
     hasPermission(currentUser, "departments:delete");
@@ -107,6 +111,7 @@ export default function ManagementConsole({
             roles={roles}
             rolePositions={rolePositions}
             canManageMemberships={canManageMemberships}
+            canManagePhotos={canManagePhotos}
             coordinatorDepartments={coordinatorDepartments}
             dict={dict}
           />
@@ -171,27 +176,6 @@ export default function ManagementConsole({
       });
     }
 
-    // Photos tab
-    if (
-      hasPermission(currentUser, "photos:read") ||
-      hasPermission(currentUser, "photos:write_dept") ||
-      hasPermission(currentUser, "photos:write_global")
-    ) {
-      items.push({
-        id: "photos",
-        name: dict.admin.management.tab_photos,
-        content: (
-          <PhotosTab
-            memberships={memberships}
-            departments={departments}
-            academicYears={academicYears}
-            currentAcademicYear={currentAcademicYear}
-            dict={dict}
-          />
-        ),
-      });
-    }
-
     return items;
   }, [
     currentUser,
@@ -204,6 +188,7 @@ export default function ManagementConsole({
     roles,
     rolePositions,
     canManageMemberships,
+    canManagePhotos,
     coordinatorDepartments,
     dict,
     teams,

@@ -1,8 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Modal, Button, Badge, Card, DropdownMenu, Spinner } from "@neiist/ui";
-import { FiMoreVertical, FiCalendar, FiTrash2 } from "react-icons/fi";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Modal,
+  Button,
+  Badge,
+  Card,
+  DropdownMenu,
+  Spinner,
+  toGithubUrl,
+  toLinkedinUrl,
+} from "@neiist/ui";
+import { FiMoreVertical, FiCalendar, FiTrash2, FiCamera } from "react-icons/fi";
+import { toast } from "sonner";
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import type { User } from "@/types/user";
 import type { Membership } from "@/types/memberships";
@@ -15,6 +25,8 @@ interface MemberDetailModalProps {
   membership: Membership | null;
   selectedYear: string;
   canManage: boolean;
+  canManagePhotos?: boolean;
+  onPhotoUpdated?: (_userNumber: string, _photoUrl: string) => void;
   onClose: () => void;
   onConclude: (_membership: Membership) => void;
   onDelete: (_membership: Membership) => void;
@@ -25,6 +37,8 @@ export default function MemberDetailModal({
   membership,
   selectedYear: _selectedYear,
   canManage,
+  canManagePhotos = false,
+  onPhotoUpdated,
   onClose,
   onConclude,
   onDelete,
@@ -33,6 +47,8 @@ export default function MemberDetailModal({
   const [user, setUser] = useState<User | null>(null);
   const [mandates, setMandates] = useState<Membership[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const mDict = dict.admin.memberships_management;
 
@@ -72,6 +88,44 @@ export default function MemberDetailModal({
     [mandates]
   );
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !membership?.userNumber) return;
+
+    setIsUploadingPhoto(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = (reader.result as string).split(",")[1];
+        const res = await fetch(`/api/user/update/${membership.userNumber}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photo: base64 }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || mDict.photo_error || "Failed to update photo");
+        }
+
+        const newPhotoUrl = `/api/user/photo/${membership.userNumber}?custom&t=${Date.now()}`;
+        if (user) {
+          setUser({ ...user, photo: newPhotoUrl });
+        }
+        onPhotoUpdated?.(membership.userNumber, newPhotoUrl);
+        toast.success(mDict.photo_updated || "Photo updated successfully");
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
+        );
+      } finally {
+        setIsUploadingPhoto(false);
+        if (photoInputRef.current) photoInputRef.current.value = "";
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (!membership) return null;
 
   const displayName = user?.name || membership.userName;
@@ -81,17 +135,36 @@ export default function MemberDetailModal({
   return (
     <Modal open={!!membership} onClose={onClose} title={mDict.member_profile_title} size="lg">
       <div className={styles.modalForm}>
+        <input
+          type="file"
+          accept="image/*"
+          ref={photoInputRef}
+          className={styles.hiddenFileInput}
+          onChange={handlePhotoUpload}
+        />
         <div className={detailStyles.header}>
-          <MemberAvatar name={displayName} photo={displayPhoto} size="lg" />
+          <button
+            type="button"
+            className={detailStyles.photoWrapper}
+            onClick={() => canManagePhotos && photoInputRef.current?.click()}
+            title={canManagePhotos ? mDict.change_photo : undefined}
+            aria-label={canManagePhotos ? mDict.change_photo : undefined}
+            disabled={!canManagePhotos || isUploadingPhoto}>
+            <MemberAvatar name={displayName} photo={displayPhoto} size="lg" />
+            {canManagePhotos && (
+              <div className={detailStyles.photoOverlay}>
+                <FiCamera size={26} />
+              </div>
+            )}
+          </button>
           <div className={detailStyles.headerInfo}>
             <h3>{displayName}</h3>
             <span>{displayIstId}</span>
             <div className={detailStyles.badges}>
-              <Badge variant="primary" size="sm">
-                {membership.departmentName}
-              </Badge>
-              <Badge variant="outline" size="sm">
-                {membership.roleName}
+              <Badge variant="outline" size="sm" className={detailStyles.roleBadge}>
+                <strong className={detailStyles.badgeDept}>{membership.departmentName}</strong>
+                <span>•</span>
+                <span>{membership.roleName}</span>
               </Badge>
             </div>
           </div>
@@ -129,7 +202,10 @@ export default function MemberDetailModal({
               {membership.linkedin && (
                 <div className={detailStyles.gridItem}>
                   <span>LinkedIn</span>
-                  <a href={membership.linkedin} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={toLinkedinUrl(membership.linkedin)}
+                    target="_blank"
+                    rel="noopener noreferrer">
                     {membership.linkedin}
                   </a>
                 </div>
@@ -137,7 +213,10 @@ export default function MemberDetailModal({
               {membership.github && (
                 <div className={detailStyles.gridItem}>
                   <span>GitHub</span>
-                  <a href={membership.github} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={toGithubUrl(membership.github)}
+                    target="_blank"
+                    rel="noopener noreferrer">
                     {membership.github}
                   </a>
                 </div>

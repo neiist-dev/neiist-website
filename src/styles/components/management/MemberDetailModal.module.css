@@ -4,6 +4,42 @@
   gap: 1rem;
 }
 
+.photoWrapper {
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.photoWrapper:disabled {
+  cursor: default;
+}
+
+.photoOverlay {
+  position: absolute;
+  inset: 0;
+  background: var(--primary-colour);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 50%;
+}
+
+.photoWrapper:hover:not(:disabled) .photoOverlay,
+.photoWrapper:focus-visible:not(:disabled) .photoOverlay {
+  opacity: 0.9;
+}
+
 .headerInfo {
   display: flex;
   flex-direction: column;
@@ -31,6 +67,17 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-block-start: 0.4rem;
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badgeDept {
+  color: var(--primary-colour);
+  font-weight: 700;
 }
 
 .grid {

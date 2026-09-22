@@ -803,8 +803,7 @@
       "tab_departments": "Departamentos e Órgãos",
       "tab_memberships_admin": "Membros e Mandatos",
       "tab_memberships_coord": "Membros da Equipa",
-      "tab_roles": "Cargos e Permissões",
-      "tab_photos": "Fotos dos Membros"
+      "tab_roles": "Cargos e Permissões"
     },
     "users_management": {
       "tab_users": "Utilizadores",
@@ -1002,7 +1001,9 @@
       "active": "Ativos",
       "show_inactive": "Mostrar Inativos",
       "empty": "Nenhum membro encontrado.",
-      "change_photo": "Clique para alterar a foto",
+      "change_photo": "Alterar Foto",
+      "photo_updated": "Foto atualizada com sucesso",
+      "photo_error": "Erro ao atualizar foto",
       "member_column": "Membro",
       "department_column": "Departamento",
       "role_column": "Cargo",
@@ -1282,19 +1283,6 @@
     "confirm_reference": "Confirmas que recebeste o pagamento com a referência/motivo \"{reference}\" e está correto?",
     "mbway_send_to": "Enviar MBWay para:",
     "mbway_number_unavailable": "Número não disponível"
-  },
-
-  "photo_management": {
-    "title": "Gestão de Fotos dos Membros",
-    "search_placeholder": "Pesquisar por nome ou ISTID...",
-    "clear_search": "Limpar pesquisa",
-    "select_year": "Selecionar Ano",
-    "all_departments": "Todos os Departamentos",
-    "change_photo": "Alterar Foto",
-    "photo_change_for": "Alterar foto de {name}",
-    "photo_updated": "Foto atualizada com sucesso",
-    "photo_error": "Erro ao atualizar foto",
-    "empty": "Nenhum membro encontrado."
   },
 
   "my_orders": {

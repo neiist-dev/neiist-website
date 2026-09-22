@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -16,7 +16,7 @@ import {
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import { useSearch } from "@/hooks/useSearch";
 import { FaPlus } from "react-icons/fa";
-import { FiMoreVertical, FiCalendar, FiTrash2, FiFileText } from "react-icons/fi";
+import { FiMoreVertical, FiCalendar, FiTrash2, FiFileText, FiCamera } from "react-icons/fi";
 import { toast } from "sonner";
 import { ROLE_HIERARCHY, RoleItem, mapAccessLabelToUserRole } from "@/types/roles";
 import {
@@ -57,6 +57,7 @@ interface MembershipsTabProps {
   roles?: RoleItem[];
   rolePositions?: Record<string, number>;
   canManageMemberships: boolean;
+  canManagePhotos?: boolean;
   coordinatorDepartments: string[];
   dict: Dictionary;
 }
@@ -70,6 +71,7 @@ export default function MembershipsTab({
   roles = [],
   rolePositions: propRolePositions,
   canManageMemberships,
+  canManagePhotos = false,
   coordinatorDepartments,
   dict,
 }: MembershipsTabProps) {
@@ -86,7 +88,66 @@ export default function MembershipsTab({
     action: "conclude" | "delete";
   } | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingPhotoIstid, setEditingPhotoIstid] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
   const mDict = dict.admin.memberships_management;
+
+  const handlePhotoUpdated = (userNumber: string, newPhotoUrl: string) => {
+    setMemberships((prev) =>
+      prev.map((member) =>
+        member.userNumber === userNumber ? { ...member, userPhoto: newPhotoUrl } : member
+      )
+    );
+    if (selectedMembership && selectedMembership.userNumber === userNumber) {
+      setSelectedMembership((prev) => (prev ? { ...prev, userPhoto: newPhotoUrl } : null));
+    }
+  };
+
+  const triggerPhotoUpload = (istid: string) => {
+    setEditingPhotoIstid(istid);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
+  };
+
+  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingPhotoIstid) return;
+
+    setIsUploadingPhoto(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = (reader.result as string).split(",")[1];
+        const res = await fetch(`/api/user/update/${editingPhotoIstid}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photo: base64 }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || mDict.photo_error || "Failed to update photo");
+        }
+
+        const newPhotoUrl = `/api/user/photo/${editingPhotoIstid}?custom&t=${Date.now()}`;
+        handlePhotoUpdated(editingPhotoIstid, newPhotoUrl);
+        toast.success(mDict.photo_updated || "Photo updated successfully");
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
+        );
+      } finally {
+        setIsUploadingPhoto(false);
+        setEditingPhotoIstid(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     setMemberships(initialMemberships);
@@ -285,6 +346,14 @@ export default function MembershipsTab({
                 onClick={() => setSelectedMembership(row)}>
                 {mDict.view_details}
               </DropdownMenu.Item>
+              {canManagePhotos && (
+                <DropdownMenu.Item
+                  icon={<FiCamera size={14} />}
+                  disabled={isUploadingPhoto}
+                  onClick={() => triggerPhotoUpload(row.userNumber)}>
+                  {mDict.change_photo}
+                </DropdownMenu.Item>
+              )}
               {canManageMemberships && row.isActive && (
                 <DropdownMenu.Item
                   icon={<FiCalendar size={14} />}
@@ -308,11 +377,18 @@ export default function MembershipsTab({
         ),
       },
     ],
-    [canManageMemberships, mDict]
+    [canManageMemberships, canManagePhotos, isUploadingPhoto, mDict]
   );
 
   return (
     <section aria-label={mDict.title}>
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        className={styles.hiddenFileInput}
+        onChange={handlePhotoFileChange}
+      />
       <div className={styles.toolbar}>
         <div className={styles.filterGroup}>
           <div className={styles.searchInputWrapper}>
@@ -387,6 +463,8 @@ export default function MembershipsTab({
           membership={selectedMembership}
           selectedYear={selectedYear}
           canManage={canManageMemberships}
+          canManagePhotos={canManagePhotos}
+          onPhotoUpdated={handlePhotoUpdated}
           onClose={() => setSelectedMembership(null)}
           onConclude={(membership) =>
             setPendingAction({ membership: membership, action: "conclude" })
