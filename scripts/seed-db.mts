@@ -11,13 +11,6 @@ const adminConnString = "postgresql://admin:admin@localhost:5432/neiist";
 async function seedInitialData(client: Client) {
   console.log("Seeding default organization bodies, teams, and categories...");
 
-  // Admin Bodies
-  await client.query(`
-    SELECT neiist.add_admin_body('Direção');
-    SELECT neiist.add_admin_body('Mesa da Assembleia Geral');
-    SELECT neiist.add_admin_body('Conselho Fiscal');
-  `);
-
   // Departments (Admin Bodies & Teams)
   await client.query(`
     SELECT neiist.add_department('Direção', 'admin_body');
@@ -33,11 +26,53 @@ async function seedInitialData(client: Client) {
     SELECT neiist.add_department('Visuais', 'team', jsonb_build_object('pt', 'O trabalho da equipa de Visuais consiste na criação de cartazes, banners, panfletos e outros materiais visuais para ajudar à divulgação de eventos organizados pelo NEIIST, para garantir que estes chegam ao maior número possível de alunos. Os membros da equipa produzem o material pedido e recebem feedback da equipa, antes de o enviar para os organizadores do evento que pedem as alterações necessárias, se for esse o caso.', 'en', 'The Visuals team crafts graphic identities, posters, banners, and visual assets to promote all student branch activities.'));
   `);
 
-  // Department Roles (no access argument)
+  // Valid Department Roles & Access Labels
   await client.query(`
-    SELECT neiist.add_valid_department_role('Direção', 'Presidente');
-    SELECT neiist.add_valid_department_role('Direção', 'Vice-Presidente');
-    SELECT neiist.add_valid_department_role('Dev-Team', 'Coordenador');
+    -- Direção
+    SELECT neiist.add_valid_department_role('Direção', 'Presidente', 'admin');
+    SELECT neiist.add_valid_department_role('Direção', 'Vice-Presidente', 'admin');
+    SELECT neiist.add_valid_department_role('Direção', 'Vogal', 'admin');
+    SELECT neiist.add_valid_department_role('Direção', 'Diretora de Atividades (Alameda)', 'coordinator');
+    SELECT neiist.add_valid_department_role('Direção', 'Diretor de Atividades (Taguspark)', 'coordinator');
+    SELECT neiist.add_valid_department_role('Direção', 'Diretora SINFO');
+    SELECT neiist.add_valid_department_role('Direção', 'Tesoureiro');
+
+    -- Mesa da Assembleia Geral
+    SELECT neiist.add_valid_department_role('Mesa da Assembleia Geral', 'Presidente', 'admin');
+    SELECT neiist.add_valid_department_role('Mesa da Assembleia Geral', 'Vice-Presidente', 'coordinator');
+    SELECT neiist.add_valid_department_role('Mesa da Assembleia Geral', 'Secretário');
+
+    -- Conselho Fiscal
+    SELECT neiist.add_valid_department_role('Conselho Fiscal', 'Presidente', 'coordinator');
+    SELECT neiist.add_valid_department_role('Conselho Fiscal', 'Membro');
+
+    -- Controlo & Qualidade
+    SELECT neiist.add_valid_department_role('Controlo & Qualidade', 'Coordenador', 'coordinator');
+    SELECT neiist.add_valid_department_role('Controlo & Qualidade', 'Membro');
+
+    -- Contacto
+    SELECT neiist.add_valid_department_role('Contacto', 'Coordenador', 'coordinator');
+    SELECT neiist.add_valid_department_role('Contacto', 'Membro');
+
+    -- Dev-Team
+    SELECT neiist.add_valid_department_role('Dev-Team', 'Coordenador', 'admin');
+    SELECT neiist.add_valid_department_role('Dev-Team', 'Membro');
+
+    -- Divulgação
+    SELECT neiist.add_valid_department_role('Divulgação', 'Coordenador', 'coordinator');
+    SELECT neiist.add_valid_department_role('Divulgação', 'Membro');
+
+    -- Fotografia
+    SELECT neiist.add_valid_department_role('Fotografia', 'Coordenador', 'coordinator');
+    SELECT neiist.add_valid_department_role('Fotografia', 'Membro');
+
+    -- Organização de Eventos
+    SELECT neiist.add_valid_department_role('Organização de Eventos', 'Coordenador', 'coordinator');
+    SELECT neiist.add_valid_department_role('Organização de Eventos', 'Membro');
+
+    -- Visuais
+    SELECT neiist.add_valid_department_role('Visuais', 'Coordenador', 'coordinator');
+    SELECT neiist.add_valid_department_role('Visuais', 'Membro');
   `);
 
   // Categories
@@ -45,18 +80,44 @@ async function seedInitialData(client: Client) {
     INSERT INTO neiist.categories (id, name) VALUES (1, 'Vestuário') ON CONFLICT DO NOTHING;
     INSERT INTO neiist.categories (id, name) VALUES (2, 'Stickers') ON CONFLICT DO NOTHING;
     INSERT INTO neiist.categories (id, name) VALUES (3, 'Merch') ON CONFLICT DO NOTHING;
+    SELECT setval(pg_get_serial_sequence('neiist.categories', 'id'), COALESCE(MAX(id), 1)) FROM neiist.categories;
   `);
 
-  // Role Permissions for Admin roles
+  // Role Permissions
   await client.query(`
-    -- Admin roles: Direção (Presidente, Vice-Presidente) and Dev-Team (Coordenador) receive all permissions
+    -- Admin roles receive all permissions
     INSERT INTO neiist.role_permissions (department_name, role_name, permission_name)
     SELECT vdr.department_name, vdr.role_name, unnest(enum_range(NULL::neiist.permission_enum))
     FROM neiist.valid_department_roles vdr
-    WHERE (
-      (vdr.department_name = 'Direção' AND vdr.role_name IN ('Presidente', 'Vice-Presidente'))
-      OR (vdr.department_name = 'Dev-Team' AND vdr.role_name = 'Coordenador')
-    )
+    WHERE vdr.access_label = 'admin'
+    ON CONFLICT (department_name, role_name, permission_name) DO NOTHING;
+
+    -- Coordinator roles receive coordinator permissions
+    INSERT INTO neiist.role_permissions (department_name, role_name, permission_name)
+    SELECT vdr.department_name, vdr.role_name, unnest(ARRAY[
+      'departments:read', 'roles:read', 'memberships:read',
+      'memberships:write_dept', 'photos:read', 'photos:write_dept',
+      'orders:read', 'orders:read_customer', 'voting:read'
+    ]::neiist.permission_enum[])
+    FROM neiist.valid_department_roles vdr
+    WHERE vdr.access_label = 'coordinator'
+    ON CONFLICT (department_name, role_name, permission_name) DO NOTHING;
+
+    -- Fotografia coordinator gets global photo write permission
+    INSERT INTO neiist.role_permissions (department_name, role_name, permission_name)
+    SELECT vdr.department_name, vdr.role_name, 'photos:write_global'::neiist.permission_enum
+    FROM neiist.valid_department_roles vdr
+    WHERE LOWER(vdr.department_name) LIKE '%fotografia%'
+      AND vdr.access_label = 'coordinator'
+    ON CONFLICT (department_name, role_name, permission_name) DO NOTHING;
+
+    -- Member roles receive member permissions
+    INSERT INTO neiist.role_permissions (department_name, role_name, permission_name)
+    SELECT vdr.department_name, vdr.role_name, unnest(ARRAY[
+      'orders:read_customer', 'orders:create', 'photos:read', 'voting:read'
+    ]::neiist.permission_enum[])
+    FROM neiist.valid_department_roles vdr
+    WHERE vdr.access_label IS NULL
     ON CONFLICT (department_name, role_name, permission_name) DO NOTHING;
   `);
 
