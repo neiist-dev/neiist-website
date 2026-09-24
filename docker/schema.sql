@@ -646,7 +646,8 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   access_label TEXT,
   teams TEXT[],
   github TEXT,
-  linkedin TEXT
+  linkedin TEXT,
+  department_permissions JSONB
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   INSERT INTO neiist.users (istid, name, email, photo_path, github, linkedin)
@@ -1048,7 +1049,8 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
   access_label TEXT,
   teams TEXT[],
   github TEXT,
-  linkedin TEXT
+  linkedin TEXT,
+  department_permissions JSONB
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   -- Update users table fields
