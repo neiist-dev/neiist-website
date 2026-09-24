@@ -1055,13 +1055,13 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
 BEGIN
   -- Update users table fields
   IF p_updates ? 'name' THEN
-    UPDATE neiist.users SET name = p_updates->>'name' WHERE istid = p_istid;
+    UPDATE neiist.users SET name = p_updates->>'name' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'email' THEN
-    UPDATE neiist.users SET email = p_updates->>'email' WHERE istid = p_istid;
+    UPDATE neiist.users SET email = p_updates->>'email' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'photo' THEN
-    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE istid = p_istid;
+    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'github' THEN
     UPDATE neiist.users SET github = p_updates->>'github' WHERE neiist.users.istid = p_istid;
@@ -2270,46 +2270,46 @@ CREATE OR REPLACE FUNCTION neiist.update_discount_code(
   updated_at TIMESTAMPTZ
 ) AS $$
 BEGIN
-  UPDATE neiist.discount_codes
+  UPDATE neiist.discount_codes dc
   SET
-    code = COALESCE(UPPER(BTRIM(NULLIF(p_updates->>'code', ''))), code),
-    discount_type = COALESCE(NULLIF(p_updates->>'discount_type', ''), discount_type),
-    discount_value = COALESCE(ROUND(NULLIF(p_updates->>'discount_value', '')::NUMERIC, 2), discount_value),
+    code = COALESCE(UPPER(BTRIM(NULLIF(p_updates->>'code', ''))), dc.code),
+    discount_type = COALESCE(NULLIF(p_updates->>'discount_type', ''), dc.discount_type),
+    discount_value = COALESCE(ROUND(NULLIF(p_updates->>'discount_value', '')::NUMERIC, 2), dc.discount_value),
     valid_product_ids = CASE
       WHEN p_updates ? 'valid_product_ids' THEN (
         SELECT COALESCE(array_agg(value::INTEGER), '{}'::INTEGER[])
         FROM jsonb_array_elements_text(COALESCE(p_updates->'valid_product_ids', '[]'::jsonb)) AS value
       )
-      ELSE valid_product_ids
+      ELSE dc.valid_product_ids
     END,
     valid_istids = CASE
       WHEN p_updates ? 'valid_istids' THEN (
         SELECT COALESCE(array_agg(value::TEXT), '{}'::TEXT[])
         FROM jsonb_array_elements_text(COALESCE(p_updates->'valid_istids', '[]'::jsonb)) AS value
       )
-      ELSE valid_istids
+      ELSE dc.valid_istids
     END,
-    max_uses = COALESCE(NULLIF(p_updates->>'max_uses', '')::INTEGER, max_uses),
+    max_uses = COALESCE(NULLIF(p_updates->>'max_uses', '')::INTEGER, dc.max_uses),
     expires_at = CASE
       WHEN p_updates ? 'expires_at' THEN NULLIF(p_updates->>'expires_at', '')::TIMESTAMPTZ
-      ELSE expires_at
+      ELSE dc.expires_at
     END,
-    active = COALESCE(NULLIF(p_updates->>'active', '')::BOOLEAN, active),
+    active = COALESCE(NULLIF(p_updates->>'active', '')::BOOLEAN, dc.active),
     updated_at = NOW()
-  WHERE id = p_discount_code_id
+  WHERE dc.id = p_discount_code_id
   RETURNING
-    discount_codes.id,
-    discount_codes.code,
-    discount_codes.discount_type,
-    discount_codes.discount_value,
-    discount_codes.valid_product_ids,
-    discount_codes.valid_istids,
-    discount_codes.max_uses,
-    discount_codes.current_uses,
-    discount_codes.expires_at,
-    discount_codes.active,
-    discount_codes.created_at,
-    discount_codes.updated_at
+    dc.id,
+    dc.code,
+    dc.discount_type,
+    dc.discount_value,
+    dc.valid_product_ids,
+    dc.valid_istids,
+    dc.max_uses,
+    dc.current_uses,
+    dc.expires_at,
+    dc.active,
+    dc.created_at,
+    dc.updated_at
   INTO
     id,
     code,
@@ -3301,7 +3301,7 @@ CREATE OR REPLACE FUNCTION neiist.set_order_state(
   status TEXT
 ) AS $$
 BEGIN
-  PERFORM 1 FROM neiist.orders WHERE id = p_order_id FOR UPDATE;
+  PERFORM 1 FROM neiist.orders WHERE neiist.orders.id = p_order_id FOR UPDATE;
 
   UPDATE neiist.orders o
   SET status = p_status,
