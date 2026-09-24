@@ -1182,14 +1182,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Get all departments
 CREATE OR REPLACE FUNCTION neiist.get_all_departments()
 RETURNS TABLE (
-  name VARCHAR(30),
+  name TEXT,
   active BOOLEAN,
-  department_type VARCHAR(20),
+  department_type TEXT,
   display_order INTEGER
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT d.name, d.active, d.department_type, d.display_order
+  SELECT d.name::TEXT, d.active, d.department_type::TEXT, d.display_order
   FROM neiist.departments d
   ORDER BY d.display_order, d.name;
 END;
@@ -1198,33 +1198,33 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Get all teams
 CREATE OR REPLACE FUNCTION neiist.get_all_teams()
 RETURNS TABLE (
-  name VARCHAR(30),
+  name TEXT,
   description JSONB,
   active BOOLEAN,
   display_order INTEGER
 ) AS $$
 BEGIN
-    RETURN QUERY
-    SELECT t.name, t.description, d.active, d.display_order
-    FROM neiist.teams t
-    JOIN neiist.departments d ON t.name = d.name
-    ORDER BY d.display_order, t.name;
+  RETURN QUERY
+  SELECT t.name::TEXT, t.description, d.active, d.display_order
+  FROM neiist.teams t
+  JOIN neiist.departments d ON t.name = d.name
+  ORDER BY d.display_order, t.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Get all admin bodies
 CREATE OR REPLACE FUNCTION neiist.get_all_admin_bodies()
 RETURNS TABLE (
-  name VARCHAR(30),
+  name TEXT,
   active BOOLEAN,
   display_order INTEGER
 ) AS $$
 BEGIN
-    RETURN QUERY
-    SELECT ab.name, d.active, d.display_order
-    FROM neiist.admin_bodies ab
-    JOIN neiist.departments d ON ab.name = d.name
-    ORDER BY d.display_order, ab.name;
+  RETURN QUERY
+  SELECT ab.name::TEXT, d.active, d.display_order
+  FROM neiist.admin_bodies ab
+  JOIN neiist.departments d ON ab.name = d.name
+  ORDER BY d.display_order, ab.name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -1300,6 +1300,13 @@ CREATE OR REPLACE FUNCTION neiist.set_role_permissions(
   p_permissions TEXT[]
 ) RETURNS VOID AS $$
 BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM neiist.valid_department_roles
+    WHERE department_name = p_department_name AND role_name = p_role_name AND active = TRUE
+  ) THEN
+    RAISE EXCEPTION 'O cargo "%" no departamento "%" não existe ou não está ativo.', p_role_name, p_department_name;
+  END IF;
+
   DELETE FROM neiist.role_permissions
   WHERE department_name = p_department_name
     AND role_name = p_role_name;
@@ -1378,6 +1385,10 @@ DECLARE
   v_start_date DATE;
   v_end_date DATE;
 BEGIN
+  IF p_academic_year !~ '^\d{4}/\d{4}$' THEN
+    RAISE EXCEPTION 'Formato de ano letivo inválido. Esperado YYYY/YYYY (ex: 2024/2025).';
+  END IF;
+
   v_start_year := SPLIT_PART(p_academic_year, '/', 1)::INT;
   v_end_year := SPLIT_PART(p_academic_year, '/', 2)::INT;
   v_start_date := TO_DATE(v_start_year::TEXT || '-09-01', 'YYYY-MM-DD');
@@ -1406,6 +1417,19 @@ BEGIN
   WHERE m.from_date <= v_end_date
     AND (m.to_date IS NULL OR m.to_date > v_start_date)
   ORDER BY d.display_order, u.name, m.role_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get hierarchy for a department
+CREATE OR REPLACE FUNCTION neiist.get_department_role_order(
+    p_department TEXT
+) RETURNS TABLE(role_name TEXT, "position" INTEGER) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT dro.role_name::TEXT, dro.position
+    FROM neiist.department_role_order dro
+    WHERE dro.department_name = p_department
+    ORDER BY dro.position;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -3672,7 +3696,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- GET BATCH DEPARTMENT ROLE ORDERS
-CREATE OR REPLACE FUNCTION neiist.get_department_role_orders(p_departments text[])
+CREATE OR REPLACE FUNCTION neiist.get_department_role_orders(p_departments TEXT[])
 RETURNS TABLE (
   department_name TEXT,
   role_name TEXT,
@@ -3680,9 +3704,10 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
   RETURN QUERY
-  SELECT dro.department_name, dro.role_name, dro.position
+  SELECT dro.department_name::TEXT, dro.role_name::TEXT, dro.position
   FROM neiist.department_role_order dro
-  WHERE dro.department_name = ANY(p_departments);
+  WHERE dro.department_name = ANY(p_departments)
+  ORDER BY dro.department_name, dro.position;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
