@@ -174,8 +174,9 @@ export default function VotingClient({
     }
   };
 
-  if (connectionStatus !== "connected")
-    return <ConnectingView status={connectionStatus} dict={dict} />;
+  if (connectionStatus === "error")
+    // ##alterado
+    return <ConnectingView status={connectionStatus} dict={dict} />; // ##alterado
 
   if (activeVotingSessions.length === 0) {
     if (showLastResult && lastFinishedSession)
