@@ -1,5 +1,53 @@
 # neiist
 
+## [3.1.0](https://github.com/neiist-dev/neiist-website/compare/v3.0.0...v3.1.0) (2026-09-26)
+
+
+### Features
+
+* **about-us:** use new db memberships and academic year filtering, new ([359e533](https://github.com/neiist-dev/neiist-website/commit/359e53399f4e8e114881f5d59215e89c5f5a0c66))
+* **actions:** replace all api route logic for teams and members ([d619a04](https://github.com/neiist-dev/neiist-website/commit/d619a04336576d26abd18eba225e2f954caa227d))
+* **api:** migrate user, voting and calendar endpoints to RBAC ([e6c1a06](https://github.com/neiist-dev/neiist-website/commit/e6c1a06951fce9614a24bc3008dd36f724913a17))
+* **api:** update shop and payment endpoints to the new RBAC permissions ([70892fc](https://github.com/neiist-dev/neiist-website/commit/70892fc202686d656eb07926e8b981f4c5d0f72e))
+* **db:** db repositories updated to support the new rbac system and new ([de2bd27](https://github.com/neiist-dev/neiist-website/commit/de2bd277228d9308286ada23cd68779f97320c9d))
+* **db:** implement RBAC permissions system, enforce ISTID as VARCHAR(10) and schema cleanup ([44f1dc8](https://github.com/neiist-dev/neiist-website/commit/44f1dc8b9ce38ac3229f8d5fa5e3d0a0dec304c1))
+* **db:** user permissions functions refactor into global and department ([700c9bd](https://github.com/neiist-dev/neiist-website/commit/700c9bdccf47b739e979226d57a050fc7e76739e))
+* **EventDetails:** implement new RBAC permissions system ([3afc11e](https://github.com/neiist-dev/neiist-website/commit/3afc11e755255b52571f5e5146a92a35564f9e01))
+* **home:** new cloud component for hero homepage and SweatsContest ([c9a678e](https://github.com/neiist-dev/neiist-website/commit/c9a678e9d1fe5ad6434eb815f5456afe3aa236c9))
+* **management:** new integrated teams and member, users management ([c7886c7](https://github.com/neiist-dev/neiist-website/commit/c7886c7af53f402f21e1aafb30277ad1368d072b))
+* **management:** photos member change integrated into members tabs not ([7d9c5e7](https://github.com/neiist-dev/neiist-website/commit/7d9c5e7b404822d892ddeb1d4b983517297dce11))
+* **pages:** update permissions checks to use new RBAC system ([f7560be](https://github.com/neiist-dev/neiist-website/commit/f7560be2b1d2f737d4f46b9a9dfe0fa7e624dbd2))
+* **permissions:** types for rbac permissions system, multilang ([f58c47d](https://github.com/neiist-dev/neiist-website/commit/f58c47d1263017ee0435975dd57f7574f0846ac4))
+* **profile:** update to use new RBAC permissions system ([8e089df](https://github.com/neiist-dev/neiist-website/commit/8e089dfe92cd4d4ae1c9a5172994977b2749b682))
+* **search:** new reusable search utilities, server search hook ([8827bad](https://github.com/neiist-dev/neiist-website/commit/8827bad5ad0719628c37b7abb549771c4a73d30e))
+* **ui:** allow usage of Next/Image or other ReactNodes objects ([c3cd8ab](https://github.com/neiist-dev/neiist-website/commit/c3cd8abfcfda43859d375e08f323612b2b6d3229))
+* **ui:** custom scrollbar for overlay, modals and popup mobile cards ([9c3121c](https://github.com/neiist-dev/neiist-website/commit/9c3121c81b5345adda7d55bc6f1fff27021bf61a))
+* **ui:** refactor all components and clean up ([293b87b](https://github.com/neiist-dev/neiist-website/commit/293b87b7cd6de2df4f8d18a2ba0b1ff728c0edb0))
+* update user menu to new permissions system and add @neiist/ui ([eafc058](https://github.com/neiist-dev/neiist-website/commit/eafc058cc21e6d7756b6d41fe32f265a3e7be110))
+* **user:** update user context to use new permissions system ([e210c63](https://github.com/neiist-dev/neiist-website/commit/e210c638c2216ea7a25941a460548ec562e66bb2))
+* **utis:** new academic year utils functions, memberships sorting with ([767b25e](https://github.com/neiist-dev/neiist-website/commit/767b25ea34dfccebf576c6f416a3bac2d030aaa7))
+
+
+### Bug Fixes
+
+* **db:** add missing column to functions table return ([0200342](https://github.com/neiist-dev/neiist-website/commit/0200342559af202c6a7f7cc4d2f744854df40266))
+* **db:** correct permission order to read only user ([0881edd](https://github.com/neiist-dev/neiist-website/commit/0881edd67d21279f6ab6e04b59ff6cb93348523f))
+* **db:** function return tables and ids ([8fdcf0e](https://github.com/neiist-dev/neiist-website/commit/8fdcf0e172163adec45d34571f065793eb85257b))
+* **db:** function table return types ([05c6077](https://github.com/neiist-dev/neiist-website/commit/05c60777b2db373fa7f4be79e2cd9643761dad6d))
+* **mobile:** improve mobile UX of MembershipsTab and RolesTab on mobile ([1a851fa](https://github.com/neiist-dev/neiist-website/commit/1a851faa53d0151d69075872eaf5e2b2f7992c65))
+* **notion:** webhook fails if no token for verification exists ([e5e874b](https://github.com/neiist-dev/neiist-website/commit/e5e874b803d0e8686ecc65d09acc8304c60f787a))
+* pages that require services accounts now fail gracefully ([ddd155c](https://github.com/neiist-dev/neiist-website/commit/ddd155cf17b6c4bda16d1d0669a0f882d54a0bf8))
+* **search:** memoize minisearch indexing correctly and ist prefix search ([b73af96](https://github.com/neiist-dev/neiist-website/commit/b73af96c448452dcf91aefcaa3bcfedb4ed131d4))
+* **security:** proxy matcher for api routes and spoofing on rate limit ([1780db6](https://github.com/neiist-dev/neiist-website/commit/1780db6f01f650a6974e34d94af8e1950dd9337b))
+* **security:** validate sumup checkout id on reader callback, and shop ([d20b70f](https://github.com/neiist-dev/neiist-website/commit/d20b70f341e6b6c2804ccdbc400fa9b7e67bcc16))
+* **seed:** correct seed and init to use the new db struct and new ([1b41872](https://github.com/neiist-dev/neiist-website/commit/1b418722b2d933ed1cd77081faf54695f1734648))
+* **setup:** pnpm setup is now reserved use bootstrap, update docs and ([2906d98](https://github.com/neiist-dev/neiist-website/commit/2906d9850971a419f1ec32322bc83b52124957b8))
+* **shop:** enforce one payment per order and move status transitions and ([cfc6930](https://github.com/neiist-dev/neiist-website/commit/cfc69306532aa322922dddb4e3ffe65889a15ed8))
+* **shop:** only auth user on pos (orders table) can create ordes for ([5680280](https://github.com/neiist-dev/neiist-website/commit/568028040cb5cbcdae59d5f8c5995e1fbcd58e75))
+* **ui:** box sizing and border boz to Textarea prevent overflow ([9d04bdc](https://github.com/neiist-dev/neiist-website/commit/9d04bdcf96857b9486a837662f7913ce209e07b4))
+* **ui:** multi select with proper search action callback and debounce ([8cc9731](https://github.com/neiist-dev/neiist-website/commit/8cc9731771f8be565d41f930e00fbefa906ce1cc))
+* **ui:** propagation of events on modals in complex components and ([41a86ed](https://github.com/neiist-dev/neiist-website/commit/41a86ed4e6875e29475e6720cebf7ed64b7d3156))
+
 ## [4.0.0](https://github.com/neiist-dev/neiist-website/compare/v3.0.0...v3.1.0) (2026-09-24)
 
 
