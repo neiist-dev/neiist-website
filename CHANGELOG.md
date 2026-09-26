@@ -1,5 +1,13 @@
 # neiist
 
+## [4.1.1](https://github.com/neiist-dev/neiist-website/compare/v4.1.0...v4.1.1) (2026-09-26)
+
+
+### Bug Fixes
+
+* **management:** on roles and permissions tabs only show active ([3c6b850](https://github.com/neiist-dev/neiist-website/commit/3c6b850080f33a41aa0baab463ee2dadbb072694))
+* **shop:** empty state for shop all products are achived ([0f9db5c](https://github.com/neiist-dev/neiist-website/commit/0f9db5cbf2125f9b5dd7642c83f01861c0bc6235))
+
 ## [3.1.0](https://github.com/neiist-dev/neiist-website/compare/v3.0.0...v3.1.0) (2026-09-26)
 
 
