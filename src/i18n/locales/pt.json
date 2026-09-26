@@ -373,6 +373,9 @@
   "shop": {
     "title": "Loja",
     "subtitle": "Os produtos que representam o teu curso!",
+    "empty_title": "Sem produtos disponíveis",
+    "empty_subtitle": "De momento não existem produtos à venda. Fica atento às próximas novidades!",
+    "empty_button": "Voltar à Página Inicial",
     "not_found": "Produto não encontrado",
     "no_image_label": "Sem Imagem",
     "size_guide_title": "Guia de Tamanhos",

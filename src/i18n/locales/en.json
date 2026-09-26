@@ -373,6 +373,9 @@
   "shop": {
     "title": "Shop",
     "subtitle": "The products representing your degree!",
+    "empty_title": "No products available",
+    "empty_subtitle": "There are currently no products for sale. Stay tuned for upcoming releases!",
+    "empty_button": "Back to Home",
     "not_found": "Product not found",
     "no_image_label": "No Image",
     "size_guide_title": "Size Guide",
