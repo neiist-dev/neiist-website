@@ -343,16 +343,29 @@
   },
 
   "sweats_contest": {
+    "badge": "EM BREVE",
     "title": "Concurso de Design de Sweats",
+    "participate": "Participar",
     "description_start": "Queres criar a próxima sweat especial de EIC?",
     "description_link": "aqui",
     "description_end": "o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
+    "description": "Queres criar a próxima sweat especial de EIC? Consulta o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
+    "rules_link_text": "regulamento",
+    "rules_prefix": "Consulta o",
+    "rules_suffix": "e submete o teu ficheiro ZIP.",
+    "rules_button": "Consultar Regulamento",
+    "card_title": "Submeter Proposta",
     "button": "Submete um design!",
     "uploading": "A submeter...",
     "submitted": "Design submetido",
     "login_warning": "Por favor faça login para submeter um design",
+    "accept_terms": "Li e aceito o regulamento",
+    "share_name": "Autorizo partilhar o meu nome",
+    "file_helper": "Apenas ficheiros .ZIP (máx. 15MB)",
+    "choose_file_error": "Por favor escolhe um ficheiro ZIP.",
     "errors": {
       "zip_only": "Erro: Apenas ficheiros ZIP",
+      "file_too_large": "O ficheiro é demasiado grande (máx. 15MB)",
       "upload": "Erro ao submeter"
     }
   },

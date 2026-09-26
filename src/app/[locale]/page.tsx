@@ -1,6 +1,7 @@
 import Hero from "@/components/homepage/Hero";
 import Activities from "@/components/homepage/Activities";
 // import Partnerships from "@/components/homepage/Partnerships";
+import SweatsContest from "@/components/homepage/SweatsContest";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, locales, LocaleParams } from "@/i18n/i18n-config";
 
@@ -15,7 +16,7 @@ async function HomePage({ params }: { params: LocaleParams }) {
 
   return (
     <>
-      <Hero dict={dict.hero} />
+      <Hero dict={dict.hero} announcement={<SweatsContest dict={dict.sweats_contest} />} />
       <Activities dict={dict.activities} />
       {/* <Partnerships dict={dict.partnerships} /> */}
     </>

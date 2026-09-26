@@ -343,16 +343,29 @@
   },
 
   "sweats_contest": {
+    "badge": "COMING SOON",
     "title": "Sweatshirt Design Contest",
+    "participate": "Participate",
     "description_start": "Want to create the next special edition CS sweatshirt?",
     "description_link": "here",
     "description_end": "the rules, submit your design, and get a chance to win a sweatshirt!",
+    "description": "Want to create the next special edition CS sweatshirt? Check the rules, submit your design, and get a chance to win a sweatshirt!",
+    "rules_link_text": "rules",
+    "rules_prefix": "Check the",
+    "rules_suffix": "and submit your ZIP file.",
+    "rules_button": "View Contest Rules",
+    "card_title": "Submit Proposal",
     "button": "Submit a design!",
     "uploading": "Submitting...",
     "submitted": "Design submitted",
     "login_warning": "Please log in to submit a design",
+    "accept_terms": "I accept the contest rules",
+    "share_name": "I authorize sharing my name",
+    "file_helper": "ZIP files only (max. 15MB)",
+    "choose_file_error": "Please choose a ZIP file.",
     "errors": {
       "zip_only": "Error: ZIP files only",
+      "file_too_large": "File is too large (max 15MB)",
       "upload": "Error submitting"
     }
   },
