@@ -85,8 +85,7 @@ export default function RolesTab({
     const q = search.trim().toLowerCase();
     const filtered = activeDepartmentRoles.filter((role) => {
       if (q && !role.role_name.toLowerCase().includes(q)) return false;
-      if (!showInactive && !role.active) return false;
-      return true;
+      return !(!showInactive && !role.active);
     });
 
     return filtered.sort((a, b) => {

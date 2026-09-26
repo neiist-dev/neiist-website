@@ -89,6 +89,7 @@ export default function ManagementConsole({
 
   const tabs: TabItem[] = useMemo(() => {
     const items: TabItem[] = [];
+    const activeDepartments = departments.filter((department) => department.active);
 
     // Memberships tab
     if (
@@ -146,7 +147,7 @@ export default function ManagementConsole({
         name: dict.admin.management.tab_roles,
         content: (
           <RolesTab
-            departments={departments}
+            departments={activeDepartments}
             initialRoles={roles}
             initialRolePositions={rolePositions}
             academicYears={academicYears}
