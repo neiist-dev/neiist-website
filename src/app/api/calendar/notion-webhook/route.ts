@@ -35,6 +35,7 @@ async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
 
 async function getExistingNEIISTCalendars() {
   const calendar = getCalendarClient();
+  if (!calendar) return [];
   const response = await calendar.calendarList.list();
   const calendars = response.data.items || [];
   return calendars.filter((cal) => cal.summary?.startsWith("NEIIST-"));
@@ -53,7 +54,7 @@ async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
   });
 
   const usersWithCalendars = allUsers.filter(
-    (u) => u.email && u.istid && calendarByIstid.has(u.istid)
+    (user) => user.email && user.istid && calendarByIstid.has(user.istid)
   );
 
   const limit = pLimit(2);

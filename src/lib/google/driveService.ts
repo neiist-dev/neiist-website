@@ -19,6 +19,8 @@ async function listDriveFiles({
   if (!folderId) return [];
 
   const drive = getDriveClient();
+  if (!drive) return [];
+
   const baseQuery = `'${folderId}' in parents and trashed=false`;
   const q = queryFilter ? `${baseQuery} and ${queryFilter}` : baseQuery;
 
@@ -51,6 +53,7 @@ async function deleteDriveFile(fileId: string): Promise<boolean> {
   if (!fileId) return false;
   try {
     const drive = getDriveClient();
+    if (!drive) return false;
     await drive.files.delete({ fileId, supportsAllDrives: true });
     return true;
   } catch (err) {
@@ -63,6 +66,7 @@ async function downloadDriveFile(fileId: string): Promise<Buffer | null> {
   if (!fileId) return null;
   try {
     const drive = getDriveClient();
+    if (!drive) return null;
     const res = await drive.files.get(
       { fileId, alt: "media", supportsAllDrives: true },
       { responseType: "arraybuffer" }
@@ -85,9 +89,9 @@ async function uploadDriveFile({
   mimeType: string;
   buffer: Buffer;
 }): Promise<{ fileId: string; link?: string }> {
-  if (!folderId) throw new Error("Missing Google Drive folder ID");
-
   const drive = getDriveClient();
+  if (!drive || !folderId) throw new Error("Google Drive is not configured");
+
   const bufferStream = new Readable();
   bufferStream.push(buffer);
   bufferStream.push(null);
