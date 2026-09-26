@@ -1,5 +1,17 @@
 # neiist
 
+## [3.2.0](https://github.com/neiist-dev/neiist-website/compare/v3.1.0...v3.2.0) (2026-09-26)
+
+
+### Features
+
+* **home:** new cloud component for hero homepage and SweatsContest ([95708a0](https://github.com/neiist-dev/neiist-website/commit/95708a025268eb7f0007d7a131a5b48084aa0e3f))
+
+
+### Bug Fixes
+
+* pages that require services accounts now fail gracefully ([546a8ab](https://github.com/neiist-dev/neiist-website/commit/546a8ab41a2d7a8645be2db224bf3794d03ade0c))
+
 ## [3.1.0](https://github.com/neiist-dev/neiist-website/compare/v3.0.0...v3.1.0) (2026-09-24)
 
 
