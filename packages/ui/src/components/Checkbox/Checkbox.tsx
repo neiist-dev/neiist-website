@@ -6,7 +6,7 @@ import styles from "./Checkbox.module.css";
 import { cn } from "../../utils/cn";
 
 export interface CheckboxProps extends Omit<ComponentPropsWithRef<"input">, "type"> {
-  label?: string;
+  label?: React.ReactNode;
   indeterminate?: boolean;
 }
 

@@ -178,7 +178,8 @@ export async function deleteOldestSweatsSubmission(
 
 export async function uploadSweatsSubmission(
   username: string,
-  buffer: Buffer
+  buffer: Buffer,
+  shareName: boolean = false
 ): Promise<{
   fileId: string;
   link?: string;
@@ -190,7 +191,8 @@ export async function uploadSweatsSubmission(
     await deleteOldestSweatsSubmission(existingSubmissions);
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").split(".")[0];
-  const filename = `${username}_${timestamp}.zip`;
+  const suffix = shareName ? "share" : "noshare";
+  const filename = `${username}_${timestamp}_${suffix}.zip`;
 
   const uploadResult = await uploadDriveFile({
     folderId: SWEATS_FOLDER_ID,

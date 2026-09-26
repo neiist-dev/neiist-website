@@ -14,28 +14,11 @@
   padding: 0 1rem;
 }
 
-.primary {
-  color: var(--primary-colour);
-}
-
-.secondary {
-  color: var(--secondary-colour);
-}
-
-.tertiary {
-  color: var(--tertiary-colour);
-}
-
-.quaternary {
-  color: var(--quaternary-colour);
-}
-
 .subtitle {
   margin-top: 0;
   margin-bottom: 8rem;
   color: var(--secondary-colour);
   font-size: 1.25rem;
-  font-weight: 600;
   text-align: center;
 }
 
@@ -43,7 +26,7 @@
   display: flex;
   width: 100%;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .campusImage {
@@ -52,6 +35,18 @@
   object-fit: cover;
   object-position: center;
   display: block;
+}
+
+.announcementSlot {
+  position: absolute;
+  top: clamp(2rem, 4.5vw, 5.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  display: flex;
+  justify-content: center;
 }
 
 .student {
@@ -64,7 +59,12 @@
   z-index: 2;
 }
 
-@media (max-width: 728px) {
+@media (max-width: 768px) {
+  .announcementSlot {
+    top: clamp(1rem, 3vw, 1.75rem);
+    z-index: 10;
+  }
+
   .student {
     bottom: 2vw;
     width: 10%;
