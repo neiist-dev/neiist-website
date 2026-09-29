@@ -30,10 +30,14 @@ export async function POST(req: NextRequest) {
     return res.cookies.set(name, "", { ...defaults, ...opts });
   };
 
-  del("access_token");
-  del("session");
-  del("refresh_token");
-  del("fenix_oauth_state");
+  const cookiesToDelete = [
+    "access_token",
+    "session",
+    "refresh_token",
+    "fenix_oauth_state",
+  ];
+
+  cookiesToDelete.forEach((cookie) => del(cookie));
 
   return res;
 }
