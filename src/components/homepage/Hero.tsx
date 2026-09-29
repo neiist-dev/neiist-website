@@ -78,23 +78,21 @@ export default function Hero({ dict, terminalDict, locale, announcement }: HeroP
         <HeroTerminal locale={locale} dict={terminalDict} />
       </aside>
 
-      <figure ref={campusRef} className={styles.campusFigure}>
-        <div className={styles.campusArt}>
-          <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
+      <figure ref={campusRef} className={styles.campus}>
+        <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
 
-          {announcement && <div className={styles.announcementSlot}>{announcement}</div>}
+        {announcement && <div className={styles.announcementSlot}>{announcement}</div>}
 
-          {showStudent && (
-            <Image
-              ref={studentRef}
-              src={student}
-              alt={dict.student_alt}
-              className={cn(styles.student, isStudentFlipped && styles.flipped)}
-              style={{ left: `${studentMovementPosition}%` }}
-              preload
-            />
-          )}
-        </div>
+        {showStudent && (
+          <Image
+            ref={studentRef}
+            src={student}
+            alt={dict.student_alt}
+            className={cn(styles.student, isStudentFlipped && styles.flipped)}
+            style={{ left: `${studentMovementPosition}%` }}
+            preload
+          />
+        )}
       </figure>
     </section>
   );
