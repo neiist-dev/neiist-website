@@ -1,5 +1,12 @@
 # neiist
 
+## [4.2.1](https://github.com/neiist-dev/neiist-website/compare/v4.2.0...v4.2.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **room:** correct the neiist room location and made privacy policy only ([9e538fe](https://github.com/neiist-dev/neiist-website/commit/9e538fe52cc8ec6b5dbd514730798e9c52a295cd))
+
 ## [4.2.0](https://github.com/neiist-dev/neiist-website/compare/v4.1.1...v4.2.0) (2026-09-29)
 
 
