@@ -33,4 +33,3 @@ export function getUserSearchIndex(allUsers: User[]) {
 
     return { ms, userMap: cachedUserMap };
 }
-
