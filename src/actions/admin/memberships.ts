@@ -10,8 +10,9 @@ import {
   getUserMemberships,
 } from "@/lib/db/repositories/team.repository";
 import { getUser } from "@/lib/db/repositories/user.repository";
-import type { Membership } from "@/types/memberships";
+import type { Membership, MembershipParams } from "@/types/memberships";
 import type { User } from "@/types/user";
+import { resolveMembershipParams } from "@/utils/membershipUtils";
 
 export async function getYearMembershipsAction(year: string) {
   const auth = await verifyPermission("memberships:read");
@@ -49,30 +50,11 @@ export async function addMembershipAction(params: {
   return { success: true };
 }
 
-export async function concludeMembershipAction(params: {
-  membershipId?: string;
-  userNumber?: string;
-  departmentName?: string;
-  roleName?: string;
-  fromDate?: string;
-}) {
-  let userNumber = params.userNumber;
-  let departmentName = params.departmentName;
-  let roleName = params.roleName;
-  let fromDate = params.fromDate;
+export async function concludeMembershipAction(params: MembershipParams) {
+  const resolved = resolveMembershipParams(params);
+  if (!resolved) throw new Error("Missing membership details to conclude");
 
-  if ((!userNumber || !departmentName || !roleName || !fromDate) && params.membershipId) {
-    const parts = params.membershipId.split("-");
-    if (parts.length >= 4) {
-      userNumber = parts[0];
-      fromDate = parts.slice(-3).join("-");
-      departmentName = parts[1];
-      roleName = parts.slice(2, -3).join("-");
-    }
-  }
-
-  if (!userNumber || !departmentName || !roleName || !fromDate)
-    throw new Error("Missing membership details to conclude");
+  const { userNumber, departmentName, roleName, fromDate } = resolved;
 
   const auth = await verifyPermission(["memberships:write_global", "memberships:write_dept"], {
     department: departmentName,
@@ -90,30 +72,11 @@ export async function concludeMembershipAction(params: {
   return { success: true };
 }
 
-export async function deleteMembershipAction(params: {
-  membershipId?: string;
-  userNumber?: string;
-  departmentName?: string;
-  roleName?: string;
-  fromDate?: string;
-}) {
-  let userNumber = params.userNumber;
-  let departmentName = params.departmentName;
-  let roleName = params.roleName;
-  let fromDate = params.fromDate;
+export async function deleteMembershipAction(params: MembershipParams) {
+  const resolved = resolveMembershipParams(params);
+  if (!resolved) throw new Error("Missing membership details to delete");
 
-  if ((!userNumber || !departmentName || !roleName || !fromDate) && params.membershipId) {
-    const parts = params.membershipId.split("-");
-    if (parts.length >= 4) {
-      userNumber = parts[0];
-      fromDate = parts.slice(-3).join("-");
-      departmentName = parts[1];
-      roleName = parts.slice(2, -3).join("-");
-    }
-  }
-
-  if (!userNumber || !departmentName || !roleName || !fromDate)
-    throw new Error("Missing membership details to delete");
+  const { userNumber, departmentName, roleName, fromDate } = resolved;
 
   const auth = await verifyPermission("memberships:delete", {
     department: departmentName,

@@ -28,6 +28,21 @@ export interface Membership {
   linkedin?: string;
 }
 
+export interface MembershipParams {
+  membershipId?: string;
+  userNumber?: string;
+  departmentName?: string;
+  roleName?: string;
+  fromDate?: string;
+}
+
+export interface ParsedMembershipId {
+  userNumber: string;
+  departmentName: string;
+  roleName: string;
+  fromDate: string;
+}
+
 export interface dbMembership {
   user_istid: string;
   user_name: string;
