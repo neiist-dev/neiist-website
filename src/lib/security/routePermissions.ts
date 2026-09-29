@@ -7,7 +7,6 @@ export const publicRoutes = [
   "/shop",
   "/activities",
   "/unauthorized",
-  "/privacy",
 ];
 
 export const ROUTE_TIERS: Record<string, UserRole> = {
@@ -22,6 +21,7 @@ export const ROUTE_TIERS: Record<string, UserRole> = {
   "/shop/pos": UserRole._ADMIN,
   "/voting/manage": UserRole._ADMIN,
   "/dinner": UserRole._ADMIN,
+  "/privacy": UserRole._ADMIN, //Being evaluated by administration
 };
 
 export const protectedRoutes = Object.keys(ROUTE_TIERS);
