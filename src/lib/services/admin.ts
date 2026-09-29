@@ -34,16 +34,3 @@ export function getUserSearchIndex(allUsers: User[]) {
     return { ms, userMap: cachedUserMap };
 }
 
-export function isValidEmail(email: string) {
-    const trimmedEmail = email.trim();
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailPattern.test(trimmedEmail)) return trimmedEmail;
-    return false;
-}
-
-export function isValidIstId(istid: string) {
-    const trimmedIstId = istid.trim();
-    const istIdPattern = /^ist\d+$/i;
-    if (istIdPattern.test(trimmedIstId)) return trimmedIstId;
-    return false;
-}

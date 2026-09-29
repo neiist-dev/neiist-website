@@ -3,7 +3,8 @@ import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAllUsers, createUser } from "@/lib/db/repositories/user.repository";
 import { verifyPermission } from "@/lib/auth";
 import { normalizeText, normalizeIstId, isIstIdQuery } from "@/utils/searchUtils";
-import { getUserSearchIndex, isValidEmail, isValidIstId } from "@/lib/services/admin";
+import { getUserSearchIndex } from "@/lib/services/admin";
+import { isValidIstId, isValidEmail } from "@/utils/apiValidationUtils";
 
 export async function GET(request: NextRequest) {
   const auth = await verifyPermission("users:read");

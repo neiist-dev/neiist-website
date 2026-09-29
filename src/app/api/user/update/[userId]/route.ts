@@ -46,11 +46,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
     const updates: Partial<User> = {};
 
     if (updateData.alternativeEmail !== undefined) {
-      let email: string | null = updateData.alternativeEmail;
-      if (typeof email !== "string") email = null;
+      const email = typeof updateData.alternativeEmail === "string"
+        ? updateData.alternativeEmail.trim()
+        : "";
 
-      email = email?.trim?.() ?? null;
-      if (email === null || email === "") {
+      if (!email) {
         updates.alternativeEmail = null;
       } else if (isValidEmail(email)) {
         updates.alternativeEmail = email;
