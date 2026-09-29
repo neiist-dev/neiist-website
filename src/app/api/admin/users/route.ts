@@ -3,7 +3,7 @@ import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAllUsers, createUser } from "@/lib/db/repositories/user.repository";
 import { verifyPermission } from "@/lib/auth";
 import { normalizeText, normalizeIstId, isIstIdQuery } from "@/utils/searchUtils";
-import { getUserSearchIndex } from "@/lib/services/admin";
+import { getUserSearchIndex, isValidEmail, isValidIstId } from "@/lib/services/admin";
 
 export async function GET(request: NextRequest) {
   const auth = await verifyPermission("users:read");
@@ -73,21 +73,24 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const istIdPattern = /^ist\d+$/i;
-    if (!istIdPattern.test(istid.trim())) {
+
+    const validIstId = isValidIstId(istid);
+    if (!validIstId) {
       return NextResponse.json(
         { error: "Invalid IST ID format. Must be in format: istXXXXXX" },
         { status: 400 }
       );
     }
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email.trim())) {
+
+    const validEmail = isValidEmail(email);
+    if (!validEmail) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
+
     const newUser = await createUser({
-      istid: istid.trim(),
+      istid: validIstId,
       name: name.trim(),
-      email: email.trim(),
+      email: validEmail,
     });
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
