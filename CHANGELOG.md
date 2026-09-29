@@ -1,5 +1,18 @@
 # neiist
 
+## [4.2.0](https://github.com/neiist-dev/neiist-website/compare/v4.1.1...v4.2.0) (2026-09-29)
+
+
+### Features
+
+* **main:** add privacy policy page and link to it on the footer ([4461984](https://github.com/neiist-dev/neiist-website/commit/44619841a2eb0d30fda2cad20245da386579bd61))
+
+
+### Bug Fixes
+
+* **ui:** heading now supports custom color via param ([db87999](https://github.com/neiist-dev/neiist-website/commit/db87999e8771896b4e27c8ba49858c95c491ddf3))
+* update regulamento_sweats_concurso ([a2d8c62](https://github.com/neiist-dev/neiist-website/commit/a2d8c62118af981da09066496bd561a45e4fa87d))
+
 ## [4.1.1](https://github.com/neiist-dev/neiist-website/compare/v4.1.0...v4.1.1) (2026-09-26)
 
 
