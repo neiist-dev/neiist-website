@@ -598,11 +598,12 @@
     "about_title": "Sobre o Núcleo",
     "team_link": "Equipa",
     "estatutos_link": "Estatutos",
+    "privacy_policy_link": "Política de Privacidade",
     "address": "Av. Rovisco Pais 1, 1049-001 Lisboa",
     "courses_title": "Cursos de EIC",
     "contacts_title": "Contactos",
     "powered_by": "Powered by:",
-    "copyright": "© 2026 NEIIST. Todos os direitos reservados."
+    "copyright": "© 2026 NEIIST"
   },
 
   "about_us_page": {
@@ -1437,5 +1438,229 @@
     "default_message": "Ocorreu um erro ao carregar esta página.",
     "retry_button": "Tentar novamente",
     "help_text": "Precisa de ajuda? Contacte a equipa NEIIST em"
+  },
+
+  "privacy_policy_page": {
+    "title": "Política de Privacidade",
+    "last_updated_label": "Última atualização",
+    "last_updated_date": "28 de setembro de 2026",
+    "intro": "A presente Política de Privacidade explica como o NEIIST (Núcleo Estudantil de Informática do IST) trata os dados pessoais recolhidos através deste site e serviços associados, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD).",
+    "sections": [
+      {
+        "type": "controller",
+        "id": "controller",
+        "title": "1. Identidade do Responsável pelo Tratamento",
+        "intro": "O responsável pelo tratamento é:",
+        "organization": "NEIIST (Núcleo Estudantil de Informática do IST)",
+        "address": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa",
+        "email_label": "Email de contacto para assuntos de proteção de dados",
+        "email": "neiist@tecnico.ulisboa.pt",
+        "dpo_note": "Enquanto associação de estudantes, o NEIIST não é obrigado a designar um Encarregado da Proteção de Dados (DPO) formal, tendo no entanto designado o contacto acima para todos os assuntos relacionados com dados pessoais.",
+        "complaint_text": "Tem o direito de apresentar reclamação junto da autoridade de controlo portuguesa:",
+        "authority_name": "CNPD (Comissão Nacional de Proteção de Dados)",
+        "authority_url": "https://www.cnpd.pt"
+      },
+      {
+        "type": "table",
+        "id": "data-collected",
+        "title": "2. Dados Recolhidos e Motivo",
+        "headers": ["Dados", "Finalidade", "Fundamento Lícito"],
+        "rows": [
+          {
+            "data": "IST ID, nome, email institucional, fotografia de perfil do Fénix",
+            "purpose": "Criação e gestão de conta através da autenticação Fénix",
+            "legal_basis": "Execução de contrato (Art.º 6.º, n.º 1, al. b), RGPD)"
+          },
+          {
+            "data": "Campos de perfil opcionais (email alternativo, telemóvel, GitHub, LinkedIn, curso)",
+            "purpose": "Enriquecimento do perfil. O preenchimento do GitHub e LinkedIn é sugerido aos membros, mas a decisão de os fornecer é estritamente facultativa",
+            "legal_basis": "Consentimento (Art.º 6.º, n.º 1, al. a), RGPD)"
+          },
+          {
+            "data": "Fotografia de membro e de equipa personalizada",
+            "purpose": "Identificação pública dos membros na página institucional e materiais de divulgação; a captação e utilização de fotografias da equipa são solicitadas e autorizadas no momento da adesão",
+            "legal_basis": "Consentimento (Art.º 6.º, n.º 1, al. a), RGPD)"
+          },
+          {
+            "data": "Currículo (CV) e histórico profissional/académico",
+            "purpose": "Partilha com empresas parceiras (ex: eventos, feiras de emprego) ou processos de recrutamento interno",
+            "legal_basis": "Consentimento (Art.º 6.º, n.º 1, al. a), RGPD)"
+          },
+          {
+            "data": "Encomendas na loja (nome, email, telemóvel, NIF, campus, artigos, método/referência de pagamento)",
+            "purpose": "Processamento de encomendas e manutenção de registos financeiros",
+            "legal_basis": "Execução de contrato (Art.º 6.º, n.º 1, al. b)) e obrigação jurídica (Art.º 6.º, n.º 1, al. c))"
+          },
+          {
+            "data": "Inscrições em eventos",
+            "purpose": "Gestão de participação",
+            "legal_basis": "Interesse legítimo (Art.º 6.º, n.º 1, al. f))"
+          },
+          {
+            "data": "Participação em votações",
+            "purpose": "Realização de eleições/decisões internas",
+            "legal_basis": "Interesse legítimo (Art.º 6.º, n.º 1, al. f)); os votos individuais são anonimizados assim que a sessão de votação é encerrada"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "retention",
+        "title": "3. Prazos de Conservação",
+        "items": [
+          {
+            "label": "Conta ativa",
+            "text": "os dados são mantidos enquanto a conta existir."
+          },
+          {
+            "label": "Eliminação de conta de não-membro",
+            "text": "todos os dados pessoais são imediata e permanentemente apagados."
+          },
+          {
+            "label": "Eliminação de conta de membro",
+            "text": "nome e fotografia de membro são conservados por tempo indeterminado para fins de arquivo histórico/associativo (Art.º 17.º, n.º 3, al. d), RGPD). Todas as restantes Informações Pessoalmente Identificáveis (email, telemóvel, links sociais) são imediatamente apagadas."
+          },
+          {
+            "label": "Dados financeiros de encomendas (nome, email, NIF)",
+            "text": "conservados durante 10 anos ao abrigo da legislação fiscal portuguesa (Lei Geral Tributária, Art.º 52.º), sendo depois automaticamente anonimizados."
+          },
+          {
+            "label": "Tokens de verificação de email",
+            "text": "eliminados após utilização ou expiração."
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "third-parties",
+        "title": "4. Terceiros e Integrações",
+        "intro": "Partilhamos dados com as seguintes categorias de destinatários, estritamente na medida do necessário à prestação dos nossos serviços:",
+        "items": [
+          {
+            "label": "Fénix (IST / Técnico Lisboa)",
+            "text": "identidade e fotografia de perfil obtidas no momento do login. Aplica-se a própria política de privacidade do Técnico Lisboa."
+          },
+          {
+            "label": "Google (Gmail / Google Drive)",
+            "text": "utilizado para envio de emails transacionais e armazenamento de CVs, ao abrigo do Acordo de Tratamento de Dados (DPA) da Google."
+          },
+          {
+            "label": "SumUp",
+            "text": "processamento de pagamentos online, ao abrigo do DPA da SumUp. O NEIIST não recolhe, não processa e não armazena quaisquer dados de cartões de crédito, débito ou outros dados bancários sensíveis. Os dados de pagamento são inseridos direta e exclusivamente no sistema seguro da SumUp, recebendo o NEIIST apenas a confirmação, comprovativo e código de referência de que a transação foi concluída com sucesso."
+          },
+          {
+            "label": "Notion",
+            "text": "fonte de dados do calendário de eventos, em modo de apenas leitura; não são enviados dados pessoais dos utilizadores."
+          },
+          {
+            "label": "Grafana / Grafana Alloy (Grafana Labs)",
+            "text": "registos (logs) de infraestrutura e aplicações, incluindo eventos estruturados de auditoria de eliminação de contas, ao abrigo do DPA da Grafana Labs."
+          }
+        ],
+        "subsections": [
+          {
+            "title": "Transferências Internacionais de Dados",
+            "paragraphs": [
+              "A utilização de alguns dos serviços de terceiros acima indicados (como a Google e a Grafana Labs) pode implicar a transferência de dados pessoais para fora do Espaço Económico Europeu (EEE), designadamente para os Estados Unidos da América.",
+              "Estas transferências internacionais de dados encontram-se devidamente salvaguardadas e em estrita conformidade com o RGPD, estando cobertas por garantias adequadas:"
+            ],
+            "items": [
+              "Quadro de Privacidade de Dados UE-EUA (EU-U.S. Data Privacy Framework); e/ou",
+              "Cláusulas Contratuais-Tipo (Standard Contractual Clauses, SCC) aprovadas pela Comissão Europeia."
+            ]
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "rights",
+        "title": "5. Direitos dos Utilizadores",
+        "intro": "Nos termos do RGPD, tem direito a:",
+        "items": [
+          {
+            "label": "Direito de acesso (Art.º 15.º)",
+            "text": "solicitar uma cópia de todos os dados que detemos sobre si."
+          },
+          {
+            "label": "Direito de retificação (Art.º 16.º)",
+            "text": "corrigir dados inexatos, disponível em self-service na sua página de perfil."
+          },
+          {
+            "label": "Direito ao apagamento (Art.º 17.º)",
+            "text": "eliminar a sua conta em self-service. Nota: para membros, os registos de arquivo (nome/fotografia) podem ser conservados, com base no fundamento lícito descrito na Secção 3."
+          },
+          {
+            "label": "Direito à limitação do tratamento (Art.º 18.º)",
+            "text": "solicitar que o tratamento dos seus dados seja limitado enquanto um litígio é resolvido."
+          },
+          {
+            "label": "Direito à portabilidade dos dados (Art.º 20.º)",
+            "text": "solicitar os seus dados num formato estruturado e de leitura automática."
+          },
+          {
+            "label": "Direito de oposição (Art.º 21.º)",
+            "text": "opor-se ao tratamento efetuado com fundamento em interesse legítimo."
+          },
+          {
+            "label": "Direito de retirar o consentimento",
+            "text": "quando o tratamento tiver por base o seu consentimento (ex.: campos opcionais do perfil ou submissão de CVs), tem o direito de retirar esse consentimento em qualquer momento, sem comprometer a licitude do tratamento efetuado com base no consentimento previamente dado."
+          }
+        ],
+        "outro": "Para exercer qualquer um destes direitos, contacte neiist@tecnico.ulisboa.pt."
+      },
+      {
+        "type": "list",
+        "id": "security",
+        "title": "6. Segurança e Autenticação",
+        "items": [
+          {
+            "text": "Não são armazenadas palavras-passe, sendo a autenticação totalmente delegada no Fénix do IST (OAuth)."
+          },
+          {
+            "text": "Os servidores e bases de dados estão alojados na UE, pelo IST."
+          },
+          {
+            "text": "O acesso a funções administrativas requer autenticação do IST e atribuição explícita de funções por um administrador."
+          },
+          {
+            "text": "Os eventos de eliminação de conta são registados para fins de segurança e responsabilização (accountability)."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "cookies",
+        "title": "7. Cookies e Armazenamento Local",
+        "paragraphs": [
+          "O nosso website utiliza apenas cookies e tecnologias de armazenamento local (local storage ou session storage) estritamente necessários para fins técnicos e operacionais de segurança, designadamente para manter e gerir a sessão de autenticação delegada no Fénix do IST (OAuth).",
+          "Por se tratarem exclusivamente de cookies e identificadores técnicos indispensáveis à prestação do serviço expressamente solicitado pelo utilizador, não é legalmente necessária a recolha de consentimento prévio através de faixa (banner) de cookies, nos termos da legislação aplicável (Diretiva Privacidade e Comunicações Eletrónicas e RGPD). O NEIIST não utiliza cookies para fins de rastreio publicitário (tracking), perfilagem comercial ou analítica invasiva de terceiros."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "membership",
+        "title": "8. Adesão e Registos Históricos",
+        "paragraphs": [
+          "A adesão ao NEIIST não é de inscrição aberta, passando os candidatos por um processo formal de entrevista e seleção. Durante este processo, esta Política de Privacidade é-lhes apresentada e são explicadas todas as condições relativas ao tratamento e conservação de dados, incluindo o pedido e recolha de autorização para a realização e utilização de fotografias da equipa, bem como a conservação por tempo indeterminado do nome e fotografia no registo histórico e associativo do NEIIST.",
+          "Ao aderir ao NEIIST, os membros aceitam estas condições como parte do acordo de adesão. Informações detalhadas podem ser solicitadas através de neiist@tecnico.ulisboa.pt."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "changes",
+        "title": "9. Alterações a esta Política",
+        "paragraphs": [
+          "Esta Política de Privacidade pode ser atualizada periodicamente. Alterações relevantes serão comunicadas aos utilizadores registados por email ou através de aviso neste site."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "contact",
+        "title": "10. Contacto",
+        "paragraphs": [
+          "Para questões relativas a esta política ou aos seus dados pessoais, contacte-nos através de neiist@tecnico.ulisboa.pt, ou apresente reclamação junto da CNPD (https://www.cnpd.pt)."
+        ]
+      }
+    ]
   }
 }

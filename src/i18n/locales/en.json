@@ -598,11 +598,12 @@
     "about_title": "About NEIIST",
     "team_link": "Team",
     "estatutos_link": "Bylaws",
+    "privacy_policy_link": "Privacy Policy",
     "address": "Av. Rovisco Pais 1, 1049-001 Lisbon",
     "courses_title": "CS & Eng. Degrees",
     "contacts_title": "Contacts",
     "powered_by": "Powered by:",
-    "copyright": "© 2026 NEIIST. All rights reserved."
+    "copyright": "© 2026 NEIIST"
   },
 
   "about_us_page": {
@@ -1437,5 +1438,229 @@
     "default_message": "An error occurred while loading this page.",
     "retry_button": "Try again",
     "help_text": "Need help? Contact the NEIIST team at"
+  },
+
+  "privacy_policy_page": {
+    "title": "Privacy Policy",
+    "last_updated_label": "Last updated",
+    "last_updated_date": "September 28, 2026",
+    "intro": "This Privacy Policy explains how NEIIST (Núcleo Estudantil de Informática do IST) processes personal data collected through this website and related services, in accordance with the General Data Protection Regulation (GDPR).",
+    "sections": [
+      {
+        "type": "controller",
+        "id": "controller",
+        "title": "1. Data Controller",
+        "intro": "The data controller is:",
+        "organization": "NEIIST (Núcleo Estudantil de Informática do IST)",
+        "address": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa",
+        "email_label": "Contact email for data protection matters",
+        "email": "neiist@tecnico.ulisboa.pt",
+        "dpo_note": "NEIIST, as a student association, is not required to appoint a formal Data Protection Officer (DPO), but has designated the above contact for all data protection matters.",
+        "complaint_text": "You have the right to lodge a complaint with the Portuguese supervisory authority:",
+        "authority_name": "CNPD (Comissão Nacional de Proteção de Dados)",
+        "authority_url": "https://www.cnpd.pt"
+      },
+      {
+        "type": "table",
+        "id": "data-collected",
+        "title": "2. What Data We Collect and Why",
+        "headers": ["Data", "Purpose", "Legal Basis"],
+        "rows": [
+          {
+            "data": "IST ID, name, institutional email, Fénix profile photo",
+            "purpose": "Account creation and management via Fénix authentication",
+            "legal_basis": "Performance of a contract (Art. 6(1)(b) GDPR)"
+          },
+          {
+            "data": "Optional profile fields (alternative email, phone, GitHub, LinkedIn, degree)",
+            "purpose": "Enhancing your profile. Members are encouraged to fill in GitHub and LinkedIn, but providing them is strictly optional",
+            "legal_basis": "Consent (Art. 6(1)(a) GDPR)"
+          },
+          {
+            "data": "Custom member and team photograph",
+            "purpose": "Identifying members on the website and team communication materials; the taking and use of team photographs are requested and authorized at enrollment time",
+            "legal_basis": "Consent (Art. 6(1)(a) GDPR)"
+          },
+          {
+            "data": "Curriculum Vitae (CV) and professional/academic history",
+            "purpose": "Sharing with partner companies (e.g., events, job fairs) or internal recruitment processes",
+            "legal_basis": "Consent (Art. 6(1)(a) GDPR)"
+          },
+          {
+            "data": "Shop orders (name, email, phone, tax number/NIF, campus, items, payment method/reference)",
+            "purpose": "Order fulfilment and financial record-keeping",
+            "legal_basis": "Performance of a contract (Art. 6(1)(b)) and legal obligation (Art. 6(1)(c))"
+          },
+          {
+            "data": "Event registrations",
+            "purpose": "Managing attendance",
+            "legal_basis": "Legitimate interest (Art. 6(1)(f))"
+          },
+          {
+            "data": "Voting participation",
+            "purpose": "Enabling internal elections/decisions",
+            "legal_basis": "Legitimate interest (Art. 6(1)(f)); individual votes are anonymised once the voting session closes"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "retention",
+        "title": "3. Retention Periods",
+        "items": [
+          {
+            "label": "Active account",
+            "text": "data is kept for as long as the account exists."
+          },
+          {
+            "label": "Non-member account deletion",
+            "text": "all personal data is immediately and permanently erased."
+          },
+          {
+            "label": "Member account deletion",
+            "text": "name and member photograph are retained indefinitely for historical/associative record purposes (Art. 17(3)(d) GDPR). All other personally identifiable information (email, phone, social links) is immediately erased."
+          },
+          {
+            "label": "Financial data from orders (name, email, NIF)",
+            "text": "retained for 10 years under Portuguese tax law (Lei Geral Tributária, Art. 52), after which it is automatically anonymised."
+          },
+          {
+            "label": "Email verification tokens",
+            "text": "deleted upon use or expiry."
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "third-parties",
+        "title": "4. Third Parties and Integrations",
+        "intro": "We share data with the following categories of recipients, strictly as needed to provide our services:",
+        "items": [
+          {
+            "label": "Fénix (IST / Técnico Lisboa)",
+            "text": "identity and profile photo obtained at login. Técnico Lisboa's own privacy policy applies to this data."
+          },
+          {
+            "label": "Google (Gmail / Google Drive)",
+            "text": "used for transactional emails and CV storage, under Google's Data Processing Agreement (DPA)."
+          },
+          {
+            "label": "SumUp",
+            "text": "online payment processing, under SumUp's DPA. NEIIST does not collect, process, or store credit card numbers, debit card details, or any sensitive banking information. Payment data is entered directly and securely into SumUp's platform, and NEIIST receives only a transaction receipt, confirmation, and reference code that the payment was successful."
+          },
+          {
+            "label": "Notion",
+            "text": "read-only source for the events calendar; no personal user data is sent to Notion."
+          },
+          {
+            "label": "Grafana / Grafana Alloy (Grafana Labs)",
+            "text": "infrastructure and application logs, including structured audit events for account deletions, under Grafana Labs' DPA."
+          }
+        ],
+        "subsections": [
+          {
+            "title": "International Data Transfers",
+            "paragraphs": [
+              "The use of some third-party services listed above (such as Google and Grafana Labs) may involve personal data transfers outside the European Economic Area (EEA), notably to the United States.",
+              "These international data transfers are fully safeguarded and strictly compliant with the GDPR, covered by appropriate safeguards:"
+            ],
+            "items": [
+              "EU-U.S. Data Privacy Framework; and/or",
+              "Standard Contractual Clauses (Standard Contractual Clauses, SCC) approved by the European Commission."
+            ]
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "rights",
+        "title": "5. Your Rights",
+        "intro": "Under the GDPR, you have the right to:",
+        "items": [
+          {
+            "label": "Access (Art. 15)",
+            "text": "request a copy of all data we hold about you."
+          },
+          {
+            "label": "Rectification (Art. 16)",
+            "text": "correct inaccurate data, available via self-service on your profile page."
+          },
+          {
+            "label": "Erasure (Art. 17)",
+            "text": "delete your account via self-service. Note that for members, archival records (name/photo) may be retained on the legal basis described in Section 3."
+          },
+          {
+            "label": "Restriction of processing (Art. 18)",
+            "text": "request that processing be limited while a dispute is resolved."
+          },
+          {
+            "label": "Data portability (Art. 20)",
+            "text": "request your data in a machine-readable format."
+          },
+          {
+            "label": "Object (Art. 21)",
+            "text": "object to processing carried out on the basis of legitimate interest."
+          },
+          {
+            "label": "Withdraw consent",
+            "text": "where processing is based on your consent (such as optional profile fields or CV submission), you have the right to withdraw your consent at any time, without affecting the lawfulness of processing based on consent before its withdrawal."
+          }
+        ],
+        "outro": "To exercise any of these rights, contact neiist@tecnico.ulisboa.pt."
+      },
+      {
+        "type": "list",
+        "id": "security",
+        "title": "6. Security and Authentication",
+        "items": [
+          {
+            "text": "We do not store passwords; authentication is fully delegated to IST's Fénix system (OAuth)."
+          },
+          {
+            "text": "Servers and databases are hosted within the EU by IST."
+          },
+          {
+            "text": "Access to administrative functions requires IST authentication and explicit role assignment by an administrator."
+          },
+          {
+            "text": "Account deletion events are logged for security and accountability purposes."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "cookies",
+        "title": "7. Cookies and Local Storage",
+        "paragraphs": [
+          "Our website uses only cookies and local storage technologies (local storage or session storage) that are strictly necessary for technical operation and security, specifically to manage and keep active the authentication session delegated to IST's Fénix system (OAuth).",
+          "Because these cookies and identifiers are purely technical and essential to provide the service requested by the user, they do not require prior consent via a cookie banner under applicable legislation (ePrivacy Directive and GDPR). NEIIST does not use cookies for advertising, third-party tracking, or intrusive analytics."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "membership",
+        "title": "8. Membership and Historical Records",
+        "paragraphs": [
+          "Joining NEIIST is not open enrolment; candidates go through a formal interview and selection process. During this process, this Privacy Policy is presented to them, and all conditions regarding data processing and retention are explained, including requesting and giving authorization for taking and using custom team photographs, as well as their indefinite retention along with names in NEIIST's historical and associative records.",
+          "By joining NEIIST, members accept these conditions as part of the membership agreement. Full details are available on request from neiist@tecnico.ulisboa.pt."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "changes",
+        "title": "9. Changes to This Policy",
+        "paragraphs": [
+          "We may update this Privacy Policy from time to time. Material changes will be communicated to registered users via email or a notice on this website."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "contact",
+        "title": "10. Contact",
+        "paragraphs": [
+          "For any questions about this policy or your personal data, contact us at neiist@tecnico.ulisboa.pt, or lodge a complaint with the CNPD (https://www.cnpd.pt)."
+        ]
+      }
+    ]
   }
 }
