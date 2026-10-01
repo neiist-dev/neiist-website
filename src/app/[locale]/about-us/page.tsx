@@ -6,7 +6,7 @@ import styles from "@/styles/pages/AboutUs.module.css";
 import { MemberCard } from "@neiist/ui";
 import YearSelector from "@/components/about-us/YearSelector";
 import Hero from "@/components/about-us/Hero";
-import JoinUs from "@/components/about-us/JoinsUs";
+// import JoinUs from "@/components/about-us/JoinsUs";
 import Campuses from "@/components/about-us/Campuses";
 import { Membership, Team, Description } from "@/types/memberships";
 import {
@@ -110,7 +110,7 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
         locale={locale}
       />
       <Campuses dict={dict.campuses} />
-      <JoinUs dict={dict.join_us} />
+      {/*<JoinUs dict={dict.join_us} /> */}
       <YearSelector
         years={allAcademicYears}
         selectedYear={selectedYear}
