@@ -1,5 +1,12 @@
 # neiist
 
+## [4.2.2](https://github.com/neiist-dev/neiist-website/compare/v4.2.1...v4.2.2) (2026-10-01)
+
+
+### Bug Fixes
+
+* **join-us:** remove banner for join us as recuitment windows as closed ([6e49bdd](https://github.com/neiist-dev/neiist-website/commit/6e49bdd5f6cffb1285e0d74357196bb68d00623e))
+
 ## [4.2.1](https://github.com/neiist-dev/neiist-website/compare/v4.2.0...v4.2.1) (2026-09-29)
 
 
