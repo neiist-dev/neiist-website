@@ -54,7 +54,7 @@
   --ui-text-on-colour: var(--text-on-colour, #ffffff);
 
   /* Overlays, Shadows & Rings */
-  --ui-backdrop: var(--backdrop-bg, rgba(0, 0, 0, 0.4));
+  --ui-backdrop: var(--backdrop-bg, rgba(0, 0, 0, 0.5));
   --ui-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.04));
   --ui-shadow-md: var(
     --shadow-md,

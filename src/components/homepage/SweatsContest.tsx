@@ -112,18 +112,20 @@ export default function SweatsContest({ dict = pt.sweats_contest }: SweatsContes
         }
         size="md">
         <div className={styles.modalBody}>
-          <Checkbox
-            checked={acceptedTerms}
-            onChange={(event) => setAcceptedTerms(event.target.checked)}
-            label={dict.accept_terms}
-            disabled={uploading}
-          />
-          <Checkbox
-            checked={shareName}
-            onChange={(event) => setShareName(event.target.checked)}
-            label={dict.share_name}
-            disabled={uploading}
-          />
+          <div className={styles.checkboxGroup}>
+            <Checkbox
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+              label={dict.accept_terms}
+              disabled={uploading}
+            />
+            <Checkbox
+              checked={shareName}
+              onChange={(event) => setShareName(event.target.checked)}
+              label={dict.share_name}
+              disabled={uploading}
+            />
+          </div>
 
           <input
             ref={fileInputRef}
@@ -133,17 +135,19 @@ export default function SweatsContest({ dict = pt.sweats_contest }: SweatsContes
             style={{ display: "none" }}
           />
 
-          <Button
-            variant="solid"
-            color="primary"
-            onClick={handleButtonClick}
-            disabled={isSubmitDisabled}
-            loading={uploading}
-            fullWidth>
-            {uploading ? dict.uploading : dict.button}
-          </Button>
+          <div className={styles.actions}>
+            <Button
+              variant="solid"
+              color="primary"
+              onClick={handleButtonClick}
+              disabled={isSubmitDisabled}
+              loading={uploading}
+              fullWidth>
+              {uploading ? dict.uploading : dict.button}
+            </Button>
 
-          <p className={styles.fileHint}>{dict.file_helper}</p>
+            <p className={styles.fileHint}>{dict.file_helper}</p>
+          </div>
         </div>
       </Modal>
     </>
