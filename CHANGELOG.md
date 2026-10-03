@@ -1,5 +1,12 @@
 # neiist
 
+## [4.2.3](https://github.com/neiist-dev/neiist-website/compare/v4.2.2...v4.2.3) (2026-10-03)
+
+
+### Bug Fixes
+
+* **ui:** modal sizes and close button ([f7436fa](https://github.com/neiist-dev/neiist-website/commit/f7436fa54527a1e1181f378567a76a34afd835d9))
+
 ## [4.2.2](https://github.com/neiist-dev/neiist-website/compare/v4.2.1...v4.2.2) (2026-10-01)
 
 
