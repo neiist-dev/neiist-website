@@ -124,13 +124,9 @@ export async function GET(request: NextRequest) {
         }
       });
     },
-    cancel() {
-      try {
-        dbBroadcaster.setMaxListeners(Math.max(0, dbBroadcaster.getMaxListeners() - 1));
-      } catch {
-        // Ignore
-      }
-    },
+
+    // ##alterado: removida a manipulação de maxListeners durante o cancelamento
+    cancel() {},
   });
 
   return new Response(stream, {
