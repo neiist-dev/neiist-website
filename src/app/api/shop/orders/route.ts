@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
 import { PAYMENT_METHODS_SET, PENDING_PAYMENT_METHODS, PaymentMethod } from "@/types/shop/payment";
 import { OrderSource } from "@/types/shop/orderKind";
 import { getOrderKindRules, getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
@@ -14,7 +13,8 @@ import {
   getUserOrderedProductsInCategory,
 } from "@/lib/db/repositories/shop.repository";
 import { getUser, updateUser } from "@/lib/db/repositories/user.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
+import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
 
 function parseOrderSource(value: string): OrderSource {
@@ -29,16 +29,22 @@ function parseOrderSource(value: string): OrderSource {
 }
 
 export async function GET() {
-  const userRoles = await serverCheckRoles([
-    UserRole._SHOP_MANAGER,
-    UserRole._COORDINATOR,
-    UserRole._ADMIN,
-  ]);
-
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("orders:read");
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   try {
     const orders = await getAllOrders();
+    const canReadCustomer = hasPermission(user, "orders:read_customer");
+    if (!canReadCustomer) {
+      const redactedOrders = orders.map((order) => ({
+        ...order,
+        customer_email: null,
+        customer_phone: null,
+        nif: null,
+      }));
+      return NextResponse.json(redactedOrders);
+    }
     return NextResponse.json(orders);
   } catch (error) {
     return handleApiError(error);
@@ -46,24 +52,24 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("orders:create");
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   try {
     const body = await request.json();
     const validPaymentMethods = PAYMENT_METHODS_SET;
     const orderSource = parseOrderSource(body.order_source);
+    const isPos = orderSource === "pos" || orderSource === "mobile-pos";
     const guestCheckout = body.guest_checkout === true;
     const canUseGuestCheckout =
-      (userRoles.roles?.includes(UserRole._ADMIN) ?? false) && orderSource === "pos";
+      isPos && hasPermission(user, "users:write") && hasPermission(user, "orders:override");
 
-    if (!Array.isArray(body.items) || body.items.length === 0) {
+    if (!Array.isArray(body.items) || body.items.length === 0)
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
-    }
 
-    if (guestCheckout && !canUseGuestCheckout) {
+    if (guestCheckout && !canUseGuestCheckout)
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
 
     const hasExplicitPaymentMethod =
       typeof body.payment_method === "string" && validPaymentMethods.has(body.payment_method);
@@ -81,9 +87,9 @@ export async function POST(request: NextRequest) {
     const userAssignmentRequired = orderRules.requiresUserAssignment;
     const orderUserIstid = guestCheckout
       ? undefined
-      : userAssignmentRequired
-        ? body.user_istid
-        : undefined;
+      : isPos
+        ? body.user_istid || user.istid
+        : user.istid;
 
     if (isMixedInvalid) {
       return NextResponse.json(
@@ -167,8 +173,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Telemóvel do cliente obrigatorio" }, { status: 400 });
     }
 
-    const stockOverride =
-      (userRoles.roles?.includes(UserRole._ADMIN) ?? false) && body.stock_override === true;
+    const stockOverride = hasPermission(user, "orders:override") && body.stock_override === true;
 
     const order = await newOrder(
       {
@@ -181,7 +186,7 @@ export async function POST(request: NextRequest) {
         notes: body.notes ?? null,
         payment_method: paymentMethod,
         payment_reference: body.payment_reference ?? "",
-        created_by: userRoles.user!.istid,
+        created_by: user.istid,
         items: body.items,
         discount_code: typeof body.discount_code === "string" ? body.discount_code : undefined,
       },
@@ -190,8 +195,8 @@ export async function POST(request: NextRequest) {
     if (!order) return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
 
     if (orderUserIstid && body.customer_phone) {
-      const user = await getUser(orderUserIstid);
-      if (user && user.phone !== body.customer_phone)
+      const targetUser = await getUser(orderUserIstid);
+      if (targetUser && targetUser.phone !== body.customer_phone)
         await updateUser(orderUserIstid, { phone: body.customer_phone });
     }
 

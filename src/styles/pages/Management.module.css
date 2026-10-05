@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding-block: clamp(1rem, 2.5vw, 2rem);
+  padding-inline: clamp(1rem, 3vw, 2.5rem);
+  inline-size: 100%;
+  min-block-size: calc(100vh - 120px);
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin: 0;
+}

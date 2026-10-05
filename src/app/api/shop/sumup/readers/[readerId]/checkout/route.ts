@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import { UserRole } from "@/types/user";
 import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/sumup";
 import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 
@@ -15,8 +14,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ readerId: string }> }
 ) {
-  const auth = await serverCheckRoles([UserRole._SHOP_MANAGER, UserRole._ADMIN]);
-  if (!auth.isAuthorized) return auth.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
@@ -64,7 +64,7 @@ export async function POST(
         updated_at: new Date().toISOString(),
       },
       false,
-      auth.user?.istid ?? "system"
+      user.istid ?? "system"
     );
   }
 

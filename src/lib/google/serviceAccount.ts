@@ -9,13 +9,15 @@ function parseServiceAccountCredentials(value: string): object {
   return JSON.parse(Buffer.from(accountCredentials, "base64").toString("utf8"));
 }
 
-/*
+/**
  * Get Google Service Account Credentials
- *
- * */
-export function getServiceAccount(envName: string): object {
+ */
+export function getServiceAccount(envName: string): object | null {
   const envValue = process.env[envName];
-  if (!envValue) throw new Error("Missing env for Google Service Account");
+  if (!envValue) {
+    console.warn(`[Google] Missing env: ${envName}`);
+    return null;
+  }
 
   return parseServiceAccountCredentials(envValue);
 }

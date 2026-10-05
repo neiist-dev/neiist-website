@@ -6,7 +6,7 @@ import { cn } from "../../utils/cn";
 export interface MemberCardProps extends React.ComponentPropsWithRef<"article"> {
   name: string;
   role: string;
-  image: string;
+  image?: React.ReactNode | string;
   imageAlt?: string;
   username?: string;
   githubUrl?: string;
@@ -17,10 +17,10 @@ export interface MemberCardProps extends React.ComponentPropsWithRef<"article"> 
   renderImage?: (_src: string, _alt: string, _className: string) => React.ReactNode;
 }
 
-const toGithubUrl = (url?: string) =>
+export const toGithubUrl = (url?: string) =>
   !url ? undefined : url.startsWith("http") ? url : `https://github.com/${url}`;
 
-const toLinkedinUrl = (url?: string) =>
+export const toLinkedinUrl = (url?: string) =>
   !url ? undefined : url.startsWith("http") ? url : `https://www.linkedin.com/in/${url}`;
 
 export function MemberCard({
@@ -45,10 +45,14 @@ export function MemberCard({
   return (
     <article ref={ref} className={cn(styles.container, className)} {...props}>
       <div className={styles.imageCard}>
-        {renderImage ? (
+        {React.isValidElement(image) ? (
+          image
+        ) : typeof image === "string" && renderImage ? (
           renderImage(image, imageAlt || "", styles.cardImage)
-        ) : (
+        ) : typeof image === "string" ? (
           <img src={image} alt={imageAlt} className={styles.cardImage} loading="lazy" />
+        ) : (
+          (image as React.ReactNode)
         )}
 
         <div className={styles.overlay}>

@@ -3,13 +3,13 @@ import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/s
 import type { ApplePayPaymentToken, VerifyCheckoutRequestBody, SumUpCheckout } from "@/types/sumup";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 import { getOrderById } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await serverCheckRoles([]);
-    if (!auth.isAuthorized) return auth.error;
+    const auth = await verifyPermission("orders:create");
+    if (auth.error) return auth.error;
 
     let checkoutId: string;
     let orderId: number;

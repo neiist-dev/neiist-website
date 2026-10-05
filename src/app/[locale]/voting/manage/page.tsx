@@ -9,8 +9,7 @@ import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import AdminVotingSync from "@/components/voting/AdminVotingSync";
 import VotingManagement from "@/components/voting/admin/VotingManagement";
 import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
-import { requireRoles } from "@/lib/auth";
-import { UserRole } from "@/types/user";
+import { requirePermission } from "@/lib/auth";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import GlobalLoading from "@/app/loading";
@@ -21,7 +20,7 @@ interface PageProps {
 }
 
 async function VotingManageContent({ params, searchParams }: PageProps) {
-  await requireRoles([UserRole._ADMIN]);
+  await requirePermission("voting:read");
   const [{ locale: rawLocale }, searchParamsObj] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).voting_management;

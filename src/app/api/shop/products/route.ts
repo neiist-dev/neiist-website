@@ -2,10 +2,9 @@ import fs from "fs/promises";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { addProduct, addProductVariants, getProduct } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 
 function isImage(buffer: Buffer): boolean {
   // JPEG magic: FF D8 FF
@@ -28,7 +27,6 @@ async function uploadImages(
     if (!upload || typeof upload.imageBase64 !== "string" || upload.imageBase64.trim() === "")
       continue;
 
-    // Accept both raw base64 and data URLs like: data:image/png;base64,...
     const rawBase64 = upload.imageBase64.includes(",")
       ? (upload.imageBase64.split(",").pop() ?? "")
       : upload.imageBase64;
@@ -47,8 +45,8 @@ async function uploadImages(
 }
 
 export async function POST(request: NextRequest) {
-  const permissionCheck = await serverCheckRoles([UserRole._ADMIN]);
-  if (!permissionCheck.isAuthorized) return permissionCheck.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   try {
     const body = await request.json();
@@ -76,7 +74,6 @@ export async function POST(request: NextRequest) {
     if (!newProduct)
       return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
 
-    // Build a map of group images: "optType::optVal" -> string[]
     const groupImagePaths: Record<string, string[]> = {};
     if (body.group_image_uploads && typeof body.group_image_uploads === "object") {
       for (const [key, groupData] of Object.entries(
@@ -108,13 +105,12 @@ export async function POST(request: NextRequest) {
           variantImages = [...variantImages, ...uploadedVariantImages];
         }
 
-        // Apply group images to variants that have no images of their own
         if (variantImages.length === 0) {
           for (const [optType, optVal] of Object.entries(variant.options || {})) {
             const key = `${optType}::${optVal}`;
             if (groupImagePaths[key]?.length > 0) {
               variantImages = groupImagePaths[key];
-              break; // use first matching group's images
+              break;
             }
           }
         }

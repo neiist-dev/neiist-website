@@ -6,8 +6,8 @@ export default function StackDemo() {
   return (
     <DemoCard title="Stack Component">
       <Stack direction="row" gap="md" align="center" wrap>
-        {["var(--ui-primary)", "var(--ui-secondary)", "var(--ui-primary)"].map((bg, idx) => (
-          <div key={idx} style={{ background: bg, width: 50, height: 50, borderRadius: "8px" }} />
+        {["var(--ui-primary)", "var(--ui-secondary)", "var(--ui-tertiary)"].map((bg) => (
+          <div key={bg} style={{ background: bg, width: 50, height: 50, borderRadius: "8px" }} />
         ))}
       </Stack>
     </DemoCard>

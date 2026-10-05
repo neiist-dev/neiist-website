@@ -1,26 +1,14 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { use } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";
+import { RadioGroupContext } from "./RadioGroup";
 
-interface RadioGroupContextValue {
-  name?: string;
-  value?: string;
-  onChange?: (_value: string) => void;
-  disabled?: boolean;
-}
-
-export const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
-
-export interface RadioProps extends Omit<
-  React.ComponentPropsWithRef<"input">,
-  "type" | "onChange"
-> {
+export interface RadioProps extends Omit<React.ComponentPropsWithRef<"input">, "type"> {
   value: string;
   label?: React.ReactNode;
   description?: React.ReactNode;
-  onChange?: (_event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function Radio({
@@ -30,32 +18,39 @@ export function Radio({
   className,
   disabled,
   checked,
+  defaultChecked,
   onChange,
+  name,
   ref,
   ...props
 }: RadioProps) {
-  const group = useContext(RadioGroupContext);
+  const group = use(RadioGroupContext);
 
-  const isChecked = group?.value !== undefined ? group.value === value : checked;
-  const isDisabled = disabled ?? group?.disabled ?? false;
-  const name = props.name ?? group?.name;
+  const radioName = name ?? group?.name;
+  const radioDisabled = disabled ?? group?.disabled;
+  const radioChecked = group?.value !== undefined ? group.value === value : checked;
+  const radioDefaultChecked =
+    radioChecked === undefined
+      ? group?.defaultValue !== undefined
+        ? group.defaultValue === value
+        : defaultChecked
+      : undefined;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(event);
-    if (group?.onChange) {
-      group.onChange(value);
-    }
+    if (event.target.checked) group?.onChange?.(value);
   };
 
   return (
-    <label className={cn(styles.wrapper, isDisabled && styles.wrapperDisabled, className)}>
+    <label className={cn(styles.wrapper, radioDisabled && styles.wrapperDisabled, className)}>
       <input
         ref={ref}
         type="radio"
-        name={name}
+        name={radioName}
         value={value}
-        checked={isChecked}
-        disabled={isDisabled}
+        checked={radioChecked}
+        defaultChecked={radioDefaultChecked}
+        disabled={radioDisabled}
         onChange={handleChange}
         className={styles.input}
         {...props}

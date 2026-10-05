@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateSumUpCredentials, sumupErrorResponse } from "@/lib/sumup";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 
 type ApplePaySessionRequestBody = {
   checkoutId?: string;
@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
     if (!checkoutId || !validationUrl)
       return sumupErrorResponse("Missing checkoutId or validationUrl", 400);
 
-    const auth = await serverCheckRoles([]);
-    if (!auth.isAuthorized) return auth.error;
+    const auth = await verifyPermission("orders:create");
+    if (auth.error) return auth.error;
 
     const credentialError = validateSumUpCredentials();
     if (credentialError) return credentialError;

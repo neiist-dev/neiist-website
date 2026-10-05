@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import { Calendar } from "../Calendar/Calendar";
 import { Popover } from "../Popover/Popover";

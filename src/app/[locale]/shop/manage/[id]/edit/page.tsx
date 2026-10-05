@@ -2,8 +2,7 @@ import { Suspense } from "react";
 import ProductForm from "@/components/shop/ProductForm";
 import { redirect } from "next/navigation";
 import { getAllCategories, getProduct } from "@/lib/db/repositories/shop.repository";
-import { requireRoles } from "@/lib/auth";
-import { UserRole } from "@/types/user";
+import { requirePermission } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
 import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 
@@ -14,7 +13,7 @@ interface PageProps {
 }
 
 async function EditProductContent({ params }: PageProps) {
-  await requireRoles([UserRole._ADMIN]);
+  await requirePermission("shop:write");
   const { locale: rawLocale, id } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).shop.product_form;

@@ -57,10 +57,3 @@
     transform: translateX(100%);
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .animation-pulse,
-  .animation-wave::after {
-    animation: none;
-  }
-}

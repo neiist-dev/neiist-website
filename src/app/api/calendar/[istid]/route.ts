@@ -70,6 +70,8 @@ export async function GET(
       alternativeEmail
     );
 
+    if (!calendarId) return NextResponse.json({ addCalendarLink: "", webViewLink: "" });
+
     const events = await fetchAllNotionEvents();
     const synced = await syncEventsToCalendarBatched(
       calendarId,

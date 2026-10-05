@@ -4,11 +4,17 @@ import Image from "next/image";
 import hero from "@/assets/homepage/hero.png";
 import student from "@/assets/homepage/student.png";
 import styles from "@/styles/components/homepage/Hero.module.css";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Dictionary } from "@/i18n/dictionaries";
 import ColorfulText from "@/components/ColorfulText";
 
-export default function Hero({ dict }: { dict: Dictionary["hero"] }) {
+export default function Hero({
+  dict,
+  announcement,
+}: {
+  dict: Dictionary["hero"];
+  announcement?: React.ReactNode;
+}) {
   const [studentMovementPosition, setStudentMovementPosition] = useState(50);
   const [isStudentFlipped, setIsStudentFlipped] = useState(false);
   const campusRef = useRef<HTMLDivElement>(null);
@@ -62,6 +68,7 @@ export default function Hero({ dict }: { dict: Dictionary["hero"] }) {
       </h1>
       <div ref={campusRef} className={styles.heroImage}>
         <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} preload />
+        {announcement && <div className={styles.announcementSlot}>{announcement}</div>}
         {showStudent && (
           <Image
             ref={studentRef}

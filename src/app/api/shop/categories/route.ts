@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAllCategories, addCategory } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
+export async function GET() {
+  try {
+    const categories = await getAllCategories(true);
+    return NextResponse.json({ categories });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
 export async function POST(request: NextRequest) {
-  const userRoles = await serverCheckRoles([UserRole._ADMIN]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("shop:write");
+  if (auth.error) return auth.error;
 
   try {
     const { name } = await request.json();
@@ -30,15 +38,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    return handleApiError(error);
-  }
-}
-
-export async function GET() {
-  try {
-    const categories = await getAllCategories(true);
-    return NextResponse.json({ categories });
   } catch (error) {
     return handleApiError(error);
   }

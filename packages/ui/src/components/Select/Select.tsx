@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect, ComponentPropsWithRef } from "react";
 import styles from "./Select.module.css";
 import { cn } from "../../utils/cn";
@@ -100,8 +102,12 @@ export function Select({
                 }}
                 className={cn(styles.option, isSelected && styles.optionSelected)}
                 onClick={() => handleSelect(option.value)}>
-                <span className={styles.optionIcon}>{isSelected && <FaCheck />}</span>
                 <span>{option.label}</span>
+                {isSelected && (
+                  <span className={styles.optionIcon}>
+                    <FaCheck />
+                  </span>
+                )}
               </div>
             );
           })}

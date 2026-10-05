@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { DayPicker, DayPickerProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";

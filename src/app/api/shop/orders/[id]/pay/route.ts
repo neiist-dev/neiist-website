@@ -1,36 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
-import { UserRole } from "@/types/user";
 import { getOrderById, getOrderByIdOrNumber } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userRoles = await serverCheckRoles([
-    UserRole._SHOP_MANAGER,
-    UserRole._COORDINATOR,
-    UserRole._ADMIN,
-  ]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("orders:write");
+  if (auth.error) return auth.error;
+  const { user } = auth;
 
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "Invalid order identifier" }, { status: 400 });
 
-  const body = await request.json();
-  const { paymentReference } = body;
-  if (!paymentReference)
-    return NextResponse.json({ error: "Payment reference is required" }, { status: 400 });
-
-  const order = await getOrderByIdOrNumber(id);
-  if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-  const orderId = order.id;
-
   try {
+    const body = await request.json();
+    const { paymentReference } = body;
+    if (!paymentReference)
+      return NextResponse.json({ error: "Payment reference is required" }, { status: 400 });
+
+    const order = await getOrderByIdOrNumber(id);
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    const orderId = order.id;
+
     const result = await finalizePaidOrder({
       orderId,
       paymentReference,
-      paymentCheckedBy: userRoles.user!.istid,
+      paymentCheckedBy: user.istid,
     });
 
     if (!result.success)

@@ -26,9 +26,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint -c ../../config/eslint/eslint.config.mjs .",
-    "lint:fix": "eslint -c ../../config/eslint/eslint.config.mjs --fix .",
-    "type:check": "tsc --noEmit"
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "type:check": "tsc --noEmit",
+    "format": "prettier --config ../../config/prettier/.prettierrc.json --ignore-path ../../config/prettier/.prettierignore --write .",
+    "format:check": "prettier --config ../../config/prettier/.prettierrc.json --ignore-path ../../config/prettier/.prettierignore --check ."
   },
   "devDependencies": {
     "@types/react": "19.2.18",

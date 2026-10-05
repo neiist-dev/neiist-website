@@ -4,67 +4,80 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
-import { hasRequiredRole, mapRoleToUserRole, UserRole, User } from "@/types/user";
+import { User } from "@/types/user";
+import { UserRole } from "@/types/roles";
+import { Permission } from "@/types/permissions";
+import { hasPermission } from "@/lib/security/permissions";
+
+import { SESSION_COOKIE_NAME } from "@/lib/security/authSession";
 
 export interface AuthSession {
   user: User;
   roles: UserRole[];
 }
 
-export type ApiAuthResult =
-  ({ isAuthorized: true } & AuthSession) | { isAuthorized: false; error: NextResponse };
+export type AuthResult =
+  | { user: User; session: AuthSession; error?: undefined }
+  | { error: NextResponse; user?: undefined; session?: undefined };
 
-export const getAuthenticatedUser = cache(
-  async function getAuthenticatedUser(): Promise<AuthSession | null> {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get("session")?.value;
-    const jwtUser = await verifyJWTWebCrypto(sessionToken);
-    if (!jwtUser?.istid) return null;
+export type PermissionMatchMode = "all" | "any";
 
-    try {
-      const user = await getUser(jwtUser.istid);
-      if (!user) return null;
+export interface VerifyPermissionOptions {
+  department?: string;
+  match?: PermissionMatchMode;
+}
 
-      const roles: UserRole[] = user.roles?.map((r) => mapRoleToUserRole(r)) || [UserRole._GUEST];
-      return { user, roles };
-    } catch (err) {
-      console.error("[Auth] Database error during session lookup:", err);
-      return null;
-    }
+export const getAuthenticatedUser = cache(async (): Promise<AuthSession | null> => {
+  const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  if (!token) return null;
+
+  try {
+    const payload = await verifyJWTWebCrypto(token);
+    if (!payload?.istid) return null;
+
+    const user = await getUser(payload.istid as string);
+    if (!user) return null;
+
+    const roles = user.roles && user.roles.length > 0 ? user.roles : [UserRole._GUEST];
+    return { user, roles };
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return null;
   }
-);
+});
 
-export async function requireUser(): Promise<AuthSession> {
+export async function verifyPermission(
+  permission: Permission | Permission[],
+  options?: VerifyPermissionOptions
+): Promise<AuthResult> {
   const session = await getAuthenticatedUser();
-  if (!session) redirect("/api/auth/login");
+  if (!session)
+    return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
+
+  const permissions = Array.isArray(permission) ? permission : [permission];
+  const isAuthorized = (p: Permission): boolean =>
+    hasPermission(session.user, p, { department: options?.department });
+
+  const authorized =
+    options?.match === "any" ? permissions.some(isAuthorized) : permissions.every(isAuthorized);
+
+  if (!authorized)
+    return { error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }) };
+
+  return { user: session.user, session };
+}
+
+export async function requireUser(redirectPath = "/unauthorized"): Promise<AuthSession> {
+  const session = await getAuthenticatedUser();
+  if (!session) redirect(redirectPath);
   return session;
 }
 
-export async function requireRoles(
-  required: [UserRole, ...UserRole[]] | UserRole[],
+export async function requirePermission(
+  permission: Permission,
   redirectPath = "/unauthorized"
 ): Promise<AuthSession> {
-  if (required.length === 0) return requireUser();
   const session = await requireUser();
-  if (!hasRequiredRole(session.roles, required)) redirect(redirectPath);
+  if (!hasPermission(session.user, permission)) redirect(redirectPath);
   return session;
-}
-
-export async function serverCheckRoles(required: UserRole[] = []): Promise<ApiAuthResult> {
-  const session = await getAuthenticatedUser();
-  if (!session) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }),
-    };
-  }
-
-  if (required.length > 0 && !hasRequiredRole(session.roles, required)) {
-    return {
-      isAuthorized: false,
-      error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }),
-    };
-  }
-
-  return { isAuthorized: true, user: session.user, roles: session.roles };
 }

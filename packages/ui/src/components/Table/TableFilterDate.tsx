@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import styles from "./TableFilter.module.css";
 import { Calendar } from "../Calendar/Calendar";
@@ -60,7 +62,8 @@ export function TableFilterDate({
       <div className={styles.tabs} role="group" aria-label={titleLabel}>
         <button
           type="button"
-          className={mode === "until" ? styles.tabActive : styles.tab}
+          className={styles.tab}
+          data-active={mode === "until"}
           aria-pressed={mode === "until"}
           onClick={() => {
             setMode("until");
@@ -70,7 +73,8 @@ export function TableFilterDate({
         </button>
         <button
           type="button"
-          className={mode === "range" ? styles.tabActive : styles.tab}
+          className={styles.tab}
+          data-active={mode === "range"}
           aria-pressed={mode === "range"}
           onClick={() => setMode("range")}>
           {rangeLabel}

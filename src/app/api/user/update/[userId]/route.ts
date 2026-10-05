@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { User, UserRole } from "@/types/user";
+import type { User } from "@/types/user";
 import fs from "fs/promises";
 import path from "path";
 import { handleApiError } from "@/utils/apiErrorUtils";
@@ -10,13 +10,14 @@ import {
   updateUserPhoto,
   deleteUser,
 } from "@/lib/db/repositories/user.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
 import { sendEmail, getAccountDeletionTemplate } from "@/lib/email";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
-  const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
   const [targetUserId, error] = validateIstId((await params).userId, "userId");
   if (error) return error;
@@ -24,24 +25,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
   const updateData = await request.json();
 
   try {
-    const currentUser = userRoles.user;
-    if (!currentUser)
-      return NextResponse.json({ error: "Current user not found" }, { status: 404 });
-
-    const currentUserRoles = userRoles.roles || [UserRole._GUEST];
-    const isAdmin = currentUserRoles.includes(UserRole._ADMIN);
-    const isPhotoCoord =
-      currentUserRoles.includes(UserRole._COORDINATOR) &&
-      currentUser.teams?.some((team) => team.toLowerCase().includes("fotografia"));
-
-    const isSelfUpdate = currentUser.istid === targetUserId;
-
-    if (!isSelfUpdate && !(isAdmin || isPhotoCoord))
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-
+    const currentUser = session.user;
     const existingUser = await getUser(targetUserId);
     if (!existingUser)
       return NextResponse.json({ error: "Target user not found" }, { status: 404 });
+
+    const isSelfUpdate = currentUser.istid === targetUserId;
+    const canWriteUsers = hasPermission(currentUser, "users:write");
+    const canWritePhotosGlobal = hasPermission(currentUser, "photos:write_global");
+    const canWritePhotosDept =
+      hasPermission(currentUser, "photos:write_dept") &&
+      existingUser.teams?.some((team) =>
+        hasPermission(currentUser, "photos:write_dept", { department: team })
+      );
+    const canWritePhoto = canWritePhotosGlobal || canWritePhotosDept;
+
+    if (!isSelfUpdate && !canWriteUsers && !canWritePhoto)
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
     const updates: Partial<User> = {};
 
@@ -90,7 +90,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
 
     if (updateData.linkedin !== undefined) updates.linkedin = updateData.linkedin?.trim() || null;
 
-    if (isAdmin) {
+    if (canWriteUsers) {
       if (updateData.name !== undefined) {
         const name = updateData.name.trim();
         if (name.length > 0) {
@@ -113,7 +113,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
         updates.courses = updateData.courses;
     }
 
-    if (updateData.photo !== undefined && (isAdmin || isPhotoCoord)) {
+    if (updateData.photo !== undefined && canWritePhoto) {
       if (updateData.photo && updateData.photo !== existingUser.photo) {
         try {
           const buffer = Buffer.from(updateData.photo, "base64");
@@ -121,7 +121,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
           await fs.mkdir(photoDir, { recursive: true });
           const filePath = path.join(photoDir, `${targetUserId}.png`);
           await fs.writeFile(filePath, buffer);
-          // Save custom photo path to DB
           await updateUserPhoto(
             targetUserId,
             `/api/user/photo/${targetUserId}?custom&v=${Date.now()}`
@@ -139,10 +138,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
     }
 
     revalidatePath("/about-us");
-    revalidatePath("/team-management");
+    revalidatePath("/management");
     revalidatePath("/profile");
-    revalidatePath("/photo-management");
-    revalidatePath("/users-management");
     return NextResponse.json({
       success: true,
       message: "Perfil atualizado com sucesso",
@@ -156,21 +153,20 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const userRoles = await serverCheckRoles();
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const session = await getAuthenticatedUser();
+  if (!session) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
 
   const [targetUserId, error] = validateIstId((await params).userId, "userId");
   if (error) return error;
 
   try {
-    const currentUser = userRoles.user;
-    if (!currentUser)
-      return NextResponse.json({ error: "Current user not found" }, { status: 404 });
-
-    const isAdmin = userRoles.roles.includes(UserRole._ADMIN);
+    const currentUser = session.user;
+    const canDeleteUsers = hasPermission(currentUser, "users:delete");
     const isSelfUpdate = currentUser.istid === targetUserId;
 
-    if (!isSelfUpdate && !isAdmin)
+    if (!isSelfUpdate && !canDeleteUsers)
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
     const existingUser = await getUser(targetUserId);
@@ -213,10 +209,8 @@ export async function DELETE(
     );
 
     revalidatePath("/about-us");
-    revalidatePath("/team-management");
+    revalidatePath("/management");
     revalidatePath("/profile");
-    revalidatePath("/photo-management");
-    revalidatePath("/users-management");
 
     return NextResponse.json({
       success: true,

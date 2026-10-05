@@ -1,18 +1,23 @@
+"use client";
+
 import { ComponentPropsWithRef } from "react";
 import styles from "./SearchInput.module.css";
 import { cn } from "../../utils/cn";
 import { FiSearch, FiX } from "react-icons/fi";
 
-export interface SearchInputProps extends Omit<ComponentPropsWithRef<"input">, "onChange"> {
-  value: string;
-  onChange: (_value: string) => void;
+export interface SearchInputProps extends Omit<
+  ComponentPropsWithRef<"input">,
+  "onChange" | "value"
+> {
+  value?: string;
+  onChange?: (_value: string) => void;
   onClear?: () => void;
   className?: string;
   clearLabel?: string;
 }
 
 export function SearchInput({
-  value,
+  value = "",
   onChange,
   onClear,
   className,
@@ -21,7 +26,7 @@ export function SearchInput({
   ...props
 }: SearchInputProps) {
   const handleClear = () => {
-    onChange("");
+    onChange?.("");
     if (onClear) onClear();
   };
 
@@ -33,7 +38,7 @@ export function SearchInput({
         type="text"
         className={styles.input}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => onChange?.(event.target.value)}
         {...props}
       />
       {value && (

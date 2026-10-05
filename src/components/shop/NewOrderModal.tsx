@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { MdClose, MdSearch, MdChevronRight, MdChevronLeft } from "react-icons/md";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import styles from "@/styles/components/shop/NewOrderModal.module.css";
-import { checkRoles, UserRole, type User } from "@/types/user";
+import { type User } from "@/types/user";
+import { hasPermission } from "@/lib/security/permissions";
 import { Order, Campus } from "@/types/shop/order";
 import { Product, ProductVariant } from "@/types/shop/product";
 import {
@@ -20,6 +21,7 @@ import { validateDiscount } from "@/utils/shop/discountUtils";
 import { ErrorCode } from "@/types/errors";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { toast } from "sonner";
+import { normalizeText } from "@/utils/searchUtils";
 
 interface Props {
   onClose: () => void;
@@ -120,13 +122,6 @@ const buildFallbackUser = (order: Order): User => ({
   roles: [],
 });
 
-const normalizeText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-
 export default function NewOrderModal({
   onClose,
   onSubmit,
@@ -168,7 +163,7 @@ export default function NewOrderModal({
   const [discountLoading, setDiscountLoading] = useState(false);
 
   const { user } = useUser();
-  const isAdmin = checkRoles(user, [UserRole._ADMIN]);
+  const canOverrideStock = hasPermission(user, "orders:override");
   const [showStockOverrideConfirm, setShowStockOverrideConfirm] = useState(false);
   const [stockOverrideMessage, setStockOverrideMessage] = useState<string | null>(null);
 
@@ -539,7 +534,7 @@ export default function NewOrderModal({
       const errorMessage =
         data?.error || (isEditMode ? "Failed to update order" : "Failed to create order");
 
-      if (!stockOverride && isAdmin && data?.code === ErrorCode.STOCK_OVERRIDE_REQUIRED)
+      if (!stockOverride && canOverrideStock && data?.code === ErrorCode.STOCK_OVERRIDE_REQUIRED)
         return { status: "stock_override", message: errorMessage };
 
       return { status: "error", message: errorMessage };
@@ -551,36 +546,30 @@ export default function NewOrderModal({
 
   const handleSubmit = async (stockOverride = false) => {
     if (!selectedProducts.length) {
-      toast.error(dict.new_order_modal.errors.no_products, 
-        { closeButton: true });
+      toast.error(dict.new_order_modal.errors.no_products, { closeButton: true });
       return;
     }
     if (!isEditMode && !campus) {
-      toast.error(dict.new_order_modal.errors.no_campus, 
-        { closeButton: true });
+      toast.error(dict.new_order_modal.errors.no_campus, { closeButton: true });
       return;
     }
     if (selectedOrderClassification.isMixedInvalid) {
-      toast.error(dict.new_order_modal.errors.mixed_invalid,
-        { closeButton: true});
+      toast.error(dict.new_order_modal.errors.mixed_invalid, { closeButton: true });
       return;
     }
 
     const guestCheckout = !selectedUser;
     if (guestCheckout) {
       if (isUserRequiredForSelectedOrder && !guestName.trim()) {
-        toast.error(dict.new_order_modal.errors.guest_name, 
-          { closeButton: true });
+        toast.error(dict.new_order_modal.errors.guest_name, { closeButton: true });
         return;
       }
       if (isUserRequiredForSelectedOrder && !guestEmail.trim()) {
-        toast.error(dict.new_order_modal.errors.guest_email, 
-          { closeButton: true });
+        toast.error(dict.new_order_modal.errors.guest_email, { closeButton: true });
         return;
       }
       if (isUserRequiredForSelectedOrder && !phone.trim()) {
-        toast.error(dict.new_order_modal.errors.guest_phone, 
-          { closeButton: true });
+        toast.error(dict.new_order_modal.errors.guest_phone, { closeButton: true });
         return;
       }
     }
@@ -597,8 +586,7 @@ export default function NewOrderModal({
       }
 
       if (orderResponse.status === "error") {
-        toast.error(orderResponse.message, 
-          { closeButton: true });
+        toast.error(orderResponse.message, { closeButton: true });
         return;
       }
 
@@ -1018,8 +1006,7 @@ export default function NewOrderModal({
             placeholder="Nome do cliente"
             onConfirm={(value) => {
               if (!value) {
-                toast.error(dict.new_order_modal.errors.guest_name, 
-                  { closeButton: true});
+                toast.error(dict.new_order_modal.errors.guest_name, { closeButton: true });
                 return;
               }
               setGuestName(value);
@@ -1039,8 +1026,7 @@ export default function NewOrderModal({
             type="email"
             onConfirm={(value) => {
               if (!value) {
-                toast.error(dict.new_order_modal.errors.guest_email, 
-                  { closeButton: true });
+                toast.error(dict.new_order_modal.errors.guest_email, { closeButton: true });
                 return;
               }
               setGuestEmail(value);
@@ -1060,8 +1046,7 @@ export default function NewOrderModal({
             type="tel"
             onConfirm={(value) => {
               if (!value) {
-                toast.error(dict.new_order_modal.errors.guest_phone, 
-                  { closeButton: true });
+                toast.error(dict.new_order_modal.errors.guest_phone, { closeButton: true });
                 return;
               }
               setPhone(value);

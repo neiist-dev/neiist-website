@@ -1,30 +1,41 @@
-import { ComponentPropsWithRef, useRef, useEffect } from "react";
+"use client";
+
+import { RefObject, ComponentPropsWithRef, useEffect, useRef } from "react";
+import { FiCheck, FiMinus } from "react-icons/fi";
 import styles from "./Checkbox.module.css";
 import { cn } from "../../utils/cn";
-import { useMergedRef } from "../../utils/useMergedRef";
-import { FiCheck, FiMinus } from "react-icons/fi";
 
 export interface CheckboxProps extends Omit<ComponentPropsWithRef<"input">, "type"> {
-  label?: string;
+  label?: React.ReactNode;
   indeterminate?: boolean;
 }
 
-export function Checkbox({ label, className, indeterminate, ref, ...props }: CheckboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const mergedRef = useMergedRef(inputRef, ref);
+export function Checkbox({
+  label,
+  className,
+  indeterminate = false,
+  ref,
+  ...props
+}: CheckboxProps) {
+  const localRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.indeterminate = indeterminate || false;
-    }
+    if (localRef.current) localRef.current.indeterminate = indeterminate;
   }, [indeterminate]);
+
+  useEffect(() => {
+    if (typeof ref === "function") {
+      ref(localRef.current);
+    } else if (ref) {
+      (ref as RefObject<HTMLInputElement | null>).current = localRef.current;
+    }
+  }, [ref]);
 
   return (
     <label className={cn(styles.wrapper, className)}>
-      <input type="checkbox" ref={mergedRef} className={styles.input} {...props} />
+      <input {...props} ref={localRef} type="checkbox" className={styles.input} />
       <span className={styles.visualBox}>
-        <FiCheck className={styles.checkIcon} />
-        <FiMinus className={styles.indeterminateIcon} />
+        {indeterminate ? <FiMinus className={styles.icon} /> : <FiCheck className={styles.icon} />}
       </span>
       {label && <span className={styles.label}>{label}</span>}
     </label>

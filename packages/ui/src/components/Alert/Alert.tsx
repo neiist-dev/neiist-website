@@ -1,3 +1,5 @@
+"use client";
+
 import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 import styles from "./Alert.module.css";
 import { cn } from "../../utils/cn";

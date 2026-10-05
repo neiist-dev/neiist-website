@@ -1,9 +1,7 @@
 .dropdown {
   inline-size: 17.5rem;
   background: var(--ui-bg);
-  border-radius: var(--ui-radius-lg);
-  border: 1px solid var(--ui-border);
-  box-shadow: var(--ui-shadow-popover);
+  border-radius: inherit;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -18,7 +16,7 @@
 
 .title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--ui-font-sm);
   font-weight: var(--ui-font-weight-bold);
   color: var(--ui-fg);
   text-align: center;
@@ -28,7 +26,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
+  inline-size: 100%;
   border: none;
   font-family: inherit;
   text-align: start;
@@ -38,10 +36,10 @@
   border-block-end: 1px solid var(--ui-border);
   cursor: pointer;
   user-select: none;
-  font-size: 0.95rem;
+  font-size: var(--ui-font-sm);
   font-weight: var(--ui-font-weight-bold);
   color: var(--ui-fg);
-  transition: background var(--ui-transition);
+  transition: background-color var(--ui-transition);
 }
 
 .cascadeHeader:hover {
@@ -54,9 +52,6 @@
 }
 
 .backIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
   color: var(--ui-fg);
 }
@@ -69,10 +64,9 @@
 }
 
 .cascadeLevelLabel {
-  padding-block-start: 0.5rem;
-  padding-block-end: 0.25rem;
+  padding-block: 0.5rem 0.25rem;
   padding-inline: 0.875rem;
-  font-size: 0.72rem;
+  font-size: var(--ui-font-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: var(--ui-font-weight-bold);
@@ -83,7 +77,7 @@
 .list {
   padding-block: 0.375rem;
   padding-inline: 0.5rem;
-  max-height: 17.5rem;
+  max-block-size: 17.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -94,21 +88,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-block: 0.5rem;
-  padding-inline: 0.65rem;
+  padding-block: 0.375rem;
+  padding-inline: 0.5rem;
   border-radius: var(--ui-radius-sm);
-  cursor: pointer;
   user-select: none;
-  transition: background var(--ui-transition);
+  transition: background-color var(--ui-transition);
 }
 
 .cascadeItem:hover {
   background: var(--ui-bg-hover);
-}
-
-.cascadeItem:focus-visible {
-  outline: 2px solid var(--ui-primary);
-  outline-offset: -2px;
 }
 
 .cascadeItemLeft {
@@ -117,11 +105,12 @@
   gap: 0.625rem;
   flex: 1;
   min-inline-size: 0;
+  cursor: pointer;
 }
 
 .cascadeItemLabel {
-  font-size: 0.9rem;
-  font-weight: var(--ui-font-weight-bold);
+  font-size: var(--ui-font-sm);
+  font-weight: var(--ui-font-weight-medium);
   color: var(--ui-fg);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -129,8 +118,8 @@
 }
 
 .cascadeSubtitle {
-  font-size: 0.8rem;
-  font-weight: var(--ui-font-weight-semibold);
+  font-size: var(--ui-font-xs);
+  font-weight: var(--ui-font-weight-normal);
   color: var(--ui-fg-light);
   margin-inline-start: auto;
   margin-inline-end: 0.375rem;
@@ -139,9 +128,6 @@
 .cascadeArrow {
   color: var(--ui-fg-light);
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .drillDownBtn {
@@ -164,11 +150,4 @@
 .drillDownBtn:focus-visible {
   outline: 2px solid var(--ui-primary);
   outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cascadeItem,
-  .cascadeHeader {
-    transition: none;
-  }
 }

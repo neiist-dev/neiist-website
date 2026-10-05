@@ -298,11 +298,9 @@ export default function OrdersTable({
       setSelectedOrders(new Set());
 
       if (failures.length) {
-        toast.warning(posPaymentDict.error_update_order, 
-          { closeButton: true });
+        toast.warning(posPaymentDict.error_update_order, { closeButton: true });
       } else {
-        toast.success(posPaymentDict.order_success, 
-          { closeButton: true });
+        toast.success(posPaymentDict.order_success, { closeButton: true });
         router.refresh();
       }
     } finally {
@@ -312,7 +310,7 @@ export default function OrdersTable({
 
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
-    const toastId = toast.loading(posPaymentDict.status_update_bulk)
+    const toastId = toast.loading(posPaymentDict.status_update_bulk);
     const orderIds = Array.from(selectedOrders)
       .map((id) => Number(id))
       .filter((n) => Number.isFinite(n));
@@ -351,11 +349,9 @@ export default function OrdersTable({
       router.refresh();
       toast.dismiss(toastId);
       if (failures.length) {
-        toast.warning(posPaymentDict.error_update_order, 
-          { closeButton: true });
+        toast.warning(posPaymentDict.error_update_order, { closeButton: true });
       } else {
-        toast.success(posPaymentDict.status_update_success, 
-          { closeButton: true });
+        toast.success(posPaymentDict.status_update_success, { closeButton: true });
       }
     } finally {
       setBulkLoading(false);

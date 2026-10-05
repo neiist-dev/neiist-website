@@ -6,7 +6,7 @@ import {
   getSessionNominees,
   getSessionResults,
 } from "@/lib/db/repositories/voting.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 
 let statePromise: Promise<GlobalVotingState> | null = null;
 let eventIdCounter = 0;
@@ -64,8 +64,8 @@ function getGlobalVotingState(): Promise<GlobalVotingState> {
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await serverCheckRoles([]);
-  if (!auth.isAuthorized) return auth.error;
+  const auth = await verifyPermission("voting:read");
+  if (auth.error) return auth.error;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({

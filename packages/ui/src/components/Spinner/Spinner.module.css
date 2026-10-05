@@ -9,8 +9,8 @@
 .container {
   background-color: var(--ui-bg);
   border-radius: var(--ui-radius-lg);
-  padding-block: 2rem;
-  padding-inline: 1.5rem;
+  padding-block: clamp(2rem, 5cqi, 2.5rem);
+  padding-inline: clamp(1.5rem, 5cqi, 2rem);
   text-align: center;
   max-inline-size: 32.5rem;
   inline-size: 100%;
@@ -21,7 +21,6 @@
   box-shadow: var(--ui-shadow-md);
   border: 1px solid var(--ui-bg-hover);
   container-type: inline-size;
-  container-name: spinnerCard;
 }
 
 .wrapper {
@@ -120,12 +119,7 @@
   opacity: 0.9;
 }
 
-@container spinnerCard (min-width: 30rem) {
-  .container {
-    padding-block: 2.5rem;
-    padding-inline: 2rem;
-  }
-
+@container (min-width: 30rem) {
   .title {
     font-size: 1.625rem;
   }
@@ -154,15 +148,5 @@
   }
   100% {
     transform: scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .iconLayer,
-  .actionButton {
-    transition: none;
-  }
-  .spinner {
-    animation: none;
   }
 }

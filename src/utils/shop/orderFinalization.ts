@@ -3,7 +3,7 @@ import { Order } from "@/types/shop/order";
 import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
 import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
 import { getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
-import { getOrderById, updateOrder, setOrderState } from "@/lib/db/repositories/shop.repository";
+import { getOrderById, setOrderState } from "@/lib/db/repositories/shop.repository";
 import { signUpToEvent } from "@/lib/db/repositories/event.repository";
 
 const AFTER_PURCHASE_ACTIONS = {
@@ -43,20 +43,10 @@ export async function finalizePaidOrder({
     const reference = String(paymentReference ?? "").trim();
     if (!reference) return { success: false, error: "Missing payment reference", statusCode: 400 };
 
-    const statusUpdate = await setOrderState(orderId, "paid", paymentCheckedBy);
+    const paymentRef = order.payment_method === "cash" ? undefined : reference;
+    const statusUpdate = await setOrderState(orderId, "paid", paymentCheckedBy, paymentRef);
     if (!statusUpdate)
       return { success: false, error: "Failed to update order status", statusCode: 500 };
-
-    if (statusUpdate.payment_method !== "cash") {
-      const updateTransactionCode = await updateOrder(
-        orderId,
-        { payment_reference: reference },
-        false,
-        paymentCheckedBy
-      );
-      if (!updateTransactionCode)
-        return { success: false, error: "Failed to update payment reference", statusCode: 500 };
-    }
 
     const { orderKind } = getOrderKindFromItems(statusUpdate.items);
     const orderRules = getOrderKindRules(orderKind, "other");

@@ -66,6 +66,8 @@ interface OrderDetailOverlayProps {
   products?: Product[];
   dict: Dictionary["order_details"];
   posPaymentDict: Dictionary["pos_payment"];
+  newOrderModalDict: Dictionary["new_order_modal"];
+  createUserModalDict: Dictionary["create_user_modal"];
 }
 
 export default function OrderDetailOverlay({
@@ -77,6 +79,8 @@ export default function OrderDetailOverlay({
   products = [],
   dict,
   posPaymentDict,
+  newOrderModalDict,
+  createUserModalDict,
 }: OrderDetailOverlayProps) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(initialOrder);
@@ -657,6 +661,10 @@ export default function OrderDetailOverlay({
           mode="edit"
           orderToEdit={order}
           products={products}
+          dict={{
+            new_order_modal: newOrderModalDict,
+            create_user_modal: createUserModalDict,
+          }}
           onClose={() => setShowEditOrderModal(false)}
           onSubmit={(updatedOrder) => {
             if (updatedOrder) setOrder(updatedOrder);

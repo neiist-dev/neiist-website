@@ -8,12 +8,9 @@
       "profile": "Perfil",
       "my_orders": "As Minhas Encomendas",
       "manage_orders": "Gerir Encomendas",
-      "manage_team": "Gerir Equipa",
-      "manage_photos": "Gerir Fotos Membros",
+      "management": "Gerir Equipas e Membros",
       "manage_shop": "Gerir Loja",
       "manage_voting": "Gerir Votações",
-      "manage_users": "Gerir Membros e Utilizadores",
-      "manage_departments": "Gerir Departamentos",
       "logout": "Sair",
       "user_photo_alt": "Foto do utilizador"
     }
@@ -346,16 +343,29 @@
   },
 
   "sweats_contest": {
+    "badge": "EM BREVE",
     "title": "Concurso de Design de Sweats",
+    "participate": "Participar",
     "description_start": "Queres criar a próxima sweat especial de EIC?",
     "description_link": "aqui",
     "description_end": "o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
+    "description": "Queres criar a próxima sweat especial de EIC? Consulta o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
+    "rules_link_text": "regulamento",
+    "rules_prefix": "Consulta o",
+    "rules_suffix": "e submete o teu ficheiro ZIP.",
+    "rules_button": "Consultar Regulamento",
+    "card_title": "Submeter Proposta",
     "button": "Submete um design!",
     "uploading": "A submeter...",
     "submitted": "Design submetido",
     "login_warning": "Por favor faça login para submeter um design",
+    "accept_terms": "Li e aceito o regulamento",
+    "share_name": "Autorizo partilhar o meu nome",
+    "file_helper": "Apenas ficheiros .ZIP (máx. 15MB)",
+    "choose_file_error": "Por favor escolhe um ficheiro ZIP.",
     "errors": {
       "zip_only": "Erro: Apenas ficheiros ZIP",
+      "file_too_large": "O ficheiro é demasiado grande (máx. 15MB)",
       "upload": "Erro ao submeter"
     }
   },
@@ -363,6 +373,9 @@
   "shop": {
     "title": "Loja",
     "subtitle": "Os produtos que representam o teu curso!",
+    "empty_title": "Sem produtos disponíveis",
+    "empty_subtitle": "De momento não existem produtos à venda. Fica atento às próximas novidades!",
+    "empty_button": "Voltar à Página Inicial",
     "not_found": "Produto não encontrado",
     "no_image_label": "Sem Imagem",
     "size_guide_title": "Guia de Tamanhos",
@@ -460,12 +473,6 @@
     "categories": {
       "Vestuário": "Vestuário"
     }
-  },
-
-  "users_management_page": {
-    "title": "Gestão de Pessoas",
-    "tab_users": "Utilizadores",
-    "tab_memberships": "Membros"
   },
 
   "activities": {
@@ -591,11 +598,12 @@
     "about_title": "Sobre o Núcleo",
     "team_link": "Equipa",
     "estatutos_link": "Estatutos",
+    "privacy_policy_link": "Política de Privacidade",
     "address": "Av. Rovisco Pais 1, 1049-001 Lisboa",
     "courses_title": "Cursos de EIC",
     "contacts_title": "Contactos",
     "powered_by": "Powered by:",
-    "copyright": "© 2025 NEIIST. Todos os direitos reservados."
+    "copyright": "© 2026 NEIIST"
   },
 
   "about_us_page": {
@@ -610,9 +618,18 @@
 
     "join_us": {
       "title": "Junta-te a Nós!",
-      "description": "O NEIIST está a recrutar para a 1ª Fase 26/27! Vem desenvolver as tuas soft skills e contribuir para a nossa comunidade integrando uma das nossas equipas External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nInscreve-te até dia 30 de setembro (23H59).",
+      "description": "O NEIIST está a recrutar para a _ª Fase 2_/2_! Vem desenvolver as tuas soft skills e contribuir para a nossa comunidade integrando uma das nossas equipas External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nInscreve-te até dia __ de _ (23H59).",
       "apply": "Candidata-te",
-      "apply_link": "https://docs.google.com/forms/d/e/1FAIpQLSf_XLoqJ2crdiySnrlIUzvna4V-QHBHDeSfhpCfh27DVIfdKQ/viewform"
+      "apply_link": ""
+    },
+
+    "campuses": {
+      "title": "Onde Estamos?",
+      "description": "O NEIIST dispõe de salas de apoio aos estudantes nos dois campi do Instituto Superior Técnico. Vem visitar-nos para esclarecer dúvidas, levantar merchandising ou conviver!",
+      "alameda_title": "Campus Alameda",
+      "alameda_room": "Sala 3-03, Pavilhão de Informática I (3º Piso)",
+      "taguspark_title": "Campus Taguspark",
+      "taguspark_room": "Sala 1 - 4.14 Edifício Central (Entrada do Aquário)"
     },
 
     "year_selector": {
@@ -800,79 +817,153 @@
     "apply": "Aplicar"
   },
 
-  "departments_management": {
-    "teams": "Equipas",
-    "bodies": "Órgãos Administrativos",
-    "title": "Gestão de Departamentos",
-    "teams_management": "Gestão de Equipas",
-    "bodies_management": "Gestão dos Órgãos Administrativos",
-    "edit_about_us": "Editar Página Sobre Nós"
-  },
-
   "admin": {
-    "users_management": {
-      "page_title": "Gestão de Pessoas",
+    "management": {
+      "title": "Gerir Equipas e Membros",
+      "subtitle_admin": "Gestão de membros, departamentos, mandatos e permissões do NEIIST.",
+      "subtitle_coord": "Gestão de membros e mandatos da tua equipa.",
       "tab_users": "Utilizadores",
-      "tab_memberships": "Membros",
+      "tab_departments": "Departamentos e Órgãos",
+      "tab_memberships_admin": "Membros e Mandatos",
+      "tab_memberships_coord": "Membros da Equipa",
+      "tab_roles": "Cargos e Permissões"
+    },
+    "users_management": {
+      "tab_users": "Utilizadores",
       "title": "Visualização de Utilizadores",
       "search_placeholder": "Pesquisar por nome, ISTID, email, cargo ou departamento...",
+      "clear_search": "Limpar pesquisa",
       "empty": "Nenhum utilizador encontrado.",
       "photo_alt": "Foto de",
       "email_label": "Email",
       "phone_label": "Telefone",
       "courses_label": "Cursos",
       "teams_label": "Equipas/Órgãos",
-      "account_deleted": "Conta Eliminada",
       "data_deleted": "Dados eliminados",
       "delete_title": "Eliminar utilizador {name}",
       "delete_confirm": "Tens a certeza que pretendes eliminar o utilizador {name} ({istid})? Esta ação irá apagar os seus dados pessoais de forma permanente e não pode ser revertida.",
       "delete_error": "Erro ao eliminar utilizador",
+      "delete_account": "Eliminar Conta",
+      "options_aria": "Ações do utilizador",
+      "options_title": "Ações do Utilizador",
+      "pagination_info": "{start}–{end} de {total} utilizadores",
+      "prev_page": "Anterior",
+      "next_page": "Seguinte",
       "confirm_yes": "Sim",
       "confirm_cancel": "Cancelar"
     },
 
     "teams_management": {
-      "title": "Gestão de Equipas",
-      "section_title": "Equipas Existentes",
-      "search_placeholder": "Pesquisar equipa...",
+      "title": "Gestão de Departamentos",
+      "search_placeholder": "Pesquisar departamento...",
+      "clear_search": "Limpar pesquisa",
       "active": "Ativos",
       "show_inactive": "Mostrar Inativos",
-      "empty": "Nenhuma equipa encontrada.",
+      "empty": "Nenhum departamento encontrado.",
       "inactive_badge": "Inativo",
-      "deactivate_title": "Desativar equipa",
-      "deactivate": "Desativar",
-      "loading": "A carregar...",
-      "success_team_remove": "Equipa removida com sucesso",
-      "error_team_remove": "Erro ao remover equipa"
+      "active_badge": "Ativo",
+      "order_column": "Ordem",
+      "name_column": "Nome",
+      "type_column": "Tipo",
+      "type_team": "Equipa",
+      "type_admin_body": "Órgão Administrativo",
+      "options_aria": "Opções do departamento",
+      "options_title": "Opções do Departamento",
+      "view_details": "Ver Detalhes",
+      "add_department": "Adicionar Departamento",
+      "add_department_title": "Adicionar Novo Departamento",
+      "order_up": "Mover para cima",
+      "order_down": "Mover para baixo",
+      "about_us_order": "Ordem no Sobre Nós",
+      "dept_type_label": "Tipo de Departamento",
+      "dept_name_label": "Nome do Departamento",
+      "dept_name_placeholder_team": "ex.: SysAdmin",
+      "dept_name_placeholder_body": "ex.: Mesa da AG",
+      "desc_pt_label": "Descrição (Português)",
+      "desc_en_label": "Descrição (Inglês)",
+      "desc_pt_placeholder": "Descrição da equipa em português",
+      "desc_en_placeholder": "Missão / descrição da equipa em inglês",
+      "create_department": "Criar Departamento",
+      "create_success": "Departamento criado com sucesso",
+      "create_error": "Erro ao criar departamento",
+      "update_success": "Descrição da equipa atualizada com sucesso",
+      "update_error": "Erro ao atualizar descrição",
+      "reorder_failed": "Erro ao guardar ordem dos departamentos",
+      "dept_deactivated": "Departamento \"{name}\" desativado",
+      "dept_reactivated": "Departamento \"{name}\" reativado",
+      "dept_deleted": "Departamento \"{name}\" eliminado",
+      "process_error": "Erro ao processar ação",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "deactivate": "Desativar Departamento",
+      "reactivate": "Reativar Departamento",
+      "delete": "Eliminar Permanentemente",
+      "confirm_delete_title": "Eliminar Departamento Permanentemente",
+      "confirm_delete_msg": "Tem a certeza de que deseja eliminar permanentemente o departamento \"{name}\"? Esta ação é irreversível.",
+      "confirm_deactivate_title": "Desativar {name}",
+      "confirm_deactivate_msg": "Tem a certeza de que deseja desativar o departamento \"{name}\"? Ele deixará de aparecer na página Sobre Nós e os mandatos em curso serão concluídos.",
+      "confirm_reactivate_title": "Reativar {name}",
+      "confirm_reactivate_msg": "Tem a certeza de que deseja reativar o departamento \"{name}\"? Ele voltará a estar ativo e visível na organização."
     },
 
     "roles_management": {
       "title": "Gestão de Cargos",
-      "existing_roles_title": "Cargos Existentes",
       "all": "Todos",
       "search_placeholder": "Pesquisar cargo, nível de acesso ou departamento...",
+      "clear_search": "Limpar pesquisa",
+      "select_department": "Selecionar Departamento",
       "active": "Ativos",
       "show_inactive": "Mostrar Inativos",
       "empty_all": "Nenhum cargo encontrado.",
       "empty_select": "Selecione um departamento para ver os cargos.",
-      "active_badge": "Ativo",
       "inactive_badge": "Inativo",
+      "active_badge": "Ativo",
+      "order_column": "Ordem",
+      "role_column": "Cargo",
+      "access_level_column": "Nível de Acesso",
+      "permissions_column": "Permissões",
+      "permissions_count": "{count} permissões",
+      "active_permissions_count": "{count} de {total} permissões ativas",
+      "options_aria": "Opções do cargo",
+      "options_title": "Opções do Cargo",
+      "manage_permissions": "Gerir Permissões",
+      "deactivate_role": "Desativar Cargo",
+      "reactivate_role": "Reativar Cargo",
+      "delete_role": "Eliminar Permanentemente",
+      "order_up": "Mover para cima",
+      "order_down": "Mover para baixo",
+      "presets": "Predefinições",
+      "presets_member": "Membro Padrão",
+      "presets_coordinator": "Coordenador de Equipa",
+      "presets_admin": "Administrador Total",
+      "presets_select_all": "Selecionar Todas",
+      "presets_clear_all": "Limpar Todas",
+      "save_permissions": "Guardar Permissões",
+      "permissions_saved": "Permissões guardadas com sucesso",
+      "permissions_title": "Permissões: {role}",
+      "role_added_success": "Cargo adicionado com sucesso",
+      "reorder_failed": "Erro ao reordenar cargos",
+      "role_deleted": "Cargo \"{role}\" eliminado",
+      "role_deactivated": "Cargo \"{role}\" desativado",
+      "reactivate_hint": "Para reativar, selecione o cargo no modal de adicionar",
+      "cancel": "Cancelar",
       "remove": "Remover",
       "add_role_title": "Adicionar Novo Cargo",
       "role_name_placeholder": "Nome do Cargo",
-      "adding": "A adicionar...",
+      "role_name_required": "Nome do cargo é obrigatório",
       "add_role": "Adicionar Cargo",
       "confirm_remove": "Tem a certeza que quer remover o cargo \"{role}\" do departamento \"{department}\"?",
       "access": {
         "guest": "Normal",
         "member": "Membro",
-        "shop_manager": "Gestor de Loja",
         "coordinator": "Coordenador",
         "admin": "Administrador"
       },
       "errors": {
         "add_role": "Erro ao adicionar cargo",
-        "remove_role": "Erro ao remover cargo"
+        "remove_role": "Erro remover cargo",
+        "save_permissions": "Erro ao guardar permissões"
       },
       "successes": {
         "add_role": "Cargo adicionado com sucesso",
@@ -881,91 +972,105 @@
       "confirm_dialog": {
         "confirm": "Confirmar",
         "cancel": "Cancelar"
-      }
-    },
-
-    "add_department_modal": {
-      "add_team_button": "Adicionar Nova Equipa",
-      "add_body_button": "Adicionar Novo Órgão",
-      "new_team_title": "Nova Equipa",
-      "new_body_title": "Novo Órgão Administrativo",
-      "team_name_placeholder": "Nome da equipa",
-      "body_name_placeholder": "Nome do órgão",
-      "team_desc_placeholder": "Descrição da equipa",
-      "next": "Próximo",
-      "add_roles_title": "Adicionar Cargos",
-      "remove": "Remover",
-      "back": "Voltar",
-      "creating": "A criar...",
-      "create_department": "Criar Departamento",
-      "department_role_success": "Departmento ou cargo criado com sucesso.",
-      "errors": {
-        "create_department": "Erro ao criar departamento",
-        "create_role": "Erro ao criar cargo",
-        "create_department_or_roles": "Erro ao criar departamento ou cargos"
       },
-      "role_form": {
-        "role_name_placeholder": "Nome do Cargo",
-        "add_role": "Adicionar Cargo",
-        "access": {
-          "guest": "Normal",
-          "member": "Membro",
-          "coordinator": "Coordenador",
-          "admin": "Administrador"
-        }
+      "permission_categories": {
+        "users": "Utilizadores e RGPD",
+        "departments": "Departamentos e Órgãos",
+        "roles": "Cargos e Posições",
+        "memberships": "Mandatos e Membros",
+        "photos": "Fotografias de Membros",
+        "shop": "Catálogo da Loja",
+        "orders": "Encomendas e Balcão",
+        "voting": "Assembleias Gerais e Cadernos"
+      },
+      "permissions": {
+        "users:read": "Ver lista e detalhes de utilizadores",
+        "users:write": "Criar e editar dados de utilizadores",
+        "users:delete": "Eliminar / anonimizar utilizadores (RGPD)",
+        "departments:read": "Ver departamentos e órgãos",
+        "departments:write": "Criar e editar departamentos e órgãos",
+        "departments:delete": "Desativar departamentos e órgãos",
+        "roles:read": "Ver posições e hierarquias de departamentos",
+        "roles:write": "Criar, editar e ordenar posições",
+        "roles:delete": "Desativar posições",
+        "memberships:read": "Ver mandatos de membros",
+        "memberships:write_global": "Gerir mandatos de todos os departamentos",
+        "memberships:write_dept": "Gerir mandatos dos seus departamentos",
+        "memberships:delete": "Remover registos de mandatos",
+        "photos:read": "Ver fotografias de membros",
+        "photos:write_global": "Gerir fotos de todos os departamentos",
+        "photos:write_dept": "Gerir fotos dos seus departamentos",
+        "shop:read": "Ver catálogo da loja e stock",
+        "shop:write": "Gerir produtos, categorias e stock",
+        "orders:read": "Ver encomendas e histórico de compras",
+        "orders:read_customer": "Ver encomendas próprias de cliente",
+        "orders:create": "Criar novas encomendas",
+        "orders:write": "Gerir estado e pagamentos de encomendas",
+        "orders:delete": "Cancelar e eliminar encomendas",
+        "orders:override": "Substituir limites de stock e restrições de encomenda",
+        "voting:read": "Ver assembleias gerais e cadernos eleitorais",
+        "voting:write": "Gerir cadernos eleitorais e votações"
       }
-    },
-
-    "bodies_management": {
-      "title": "Gestão dos Órgãos Administrativos",
-      "section_title": "Órgãos Administrativos Existentes",
-      "search_placeholder": "Pesquisar órgão administrativo...",
-      "active": "Ativos",
-      "show_inactive": "Mostrar Inativos",
-      "empty": "Nenhum órgão administrativo encontrado.",
-      "inactive_badge": "Inativo",
-      "deactivate_title": "Desativar órgão",
-      "deactivate": "Desativar",
-      "remove_admin_success": "Órgão administrativo removido com sucesso."
     },
 
     "memberships_management": {
       "title": "Gestão de Membros",
-      "add_member_title": "Adicionar Novo Membro",
-      "select_user": "Selecione um utilizador",
+      "add_mandate_button": "Adicionar Mandato",
+      "add_mandate_title": "Adicionar Mandato a Membro",
       "select_department": "Selecione um departamento",
       "select_role": "Selecione um cargo",
-      "adding": "A adicionar...",
+      "select_year": "Selecionar Ano",
+      "all_departments": "Todos os Departamentos",
       "add_member": "Adicionar Membro",
-      "existing_members_title": "Membros Existentes",
-      "search_placeholder": "Pesquisar por nome, ISTID, email, departamento ou cargo...",
+      "create_user": "Criar utilizador",
+      "search_placeholder": "Pesquisar membro, ISTID, departamento...",
+      "clear_search": "Limpar pesquisa",
       "active": "Ativos",
       "show_inactive": "Mostrar Inativos",
       "empty": "Nenhum membro encontrado.",
-      "change_photo": "Clique para alterar a foto",
-      "change_photo_inactive": "Só pode alterar fotos de membros ativos",
-      "department_label": "Departamento:",
-      "role_label": "Cargo:",
+      "change_photo": "Alterar Foto",
+      "photo_updated": "Foto atualizada com sucesso",
+      "photo_error": "Erro ao atualizar foto",
+      "member_column": "Membro",
+      "department_column": "Departamento",
+      "role_column": "Cargo",
+      "status_column": "Estado",
+      "options_aria": "Opções de mandato",
+      "options_title": "Opções de Mandato",
+      "view_details": "Ver Detalhes",
+      "conclude_mandate": "Concluir Mandato",
+      "delete_mandate": "Eliminar Mandato",
+      "confirm_conclude_title": "Concluir Mandato",
+      "confirm_conclude_msg": "Tens a certeza que pretendes concluir este mandato?",
+      "confirm_delete_title": "Eliminar Mandato",
+      "confirm_delete_msg": "Tens a certeza que pretendes eliminar permanentemente este mandato?",
+      "conclude_success": "Mandato concluído com sucesso",
+      "delete_success": "Mandato eliminado com sucesso",
+      "process_error": "Erro ao processar mandato",
+      "member_placeholder": "Pesquisar membro por nome ou ISTID...",
+      "member_required_error": "Por favor preenche todos os campos obrigatórios (membro, departamento, cargo)",
+      "member_added_success": "Mandato adicionado com sucesso",
+      "start_date": "Data de Início",
+      "end_date": "Data de Fim",
+      "active_mandates": "Mandatos Ativos",
+      "previous_mandates": "Mandatos Anteriores",
+      "present": "Presente",
+      "member_profile_title": "Perfil do Membro e Mandatos",
+      "primary_email": "Email Principal",
+      "alt_email": "Email Alternativo",
+      "phone": "Telefone",
+      "courses": "Cursos",
       "email_label": "Email:",
-      "since_label": "Desde:",
-      "until_label": "Até:",
       "active_badge": "Ativo",
       "inactive_badge": "Inativo",
+      "concluded_badge": "Concluído",
       "remove": "Remover",
       "confirm_remove": "Tem a certeza que quer remover este membro?",
       "confirm_yes": "Sim",
       "confirm_cancel": "Cancelar",
-      "account_deleted": "Conta Eliminada",
       "data_deleted": "Dados eliminados",
       "errors": {
-        "add_member": "Erro ao adicionar membro",
-        "remove_member": "Erro ao remover membro",
-        "member_photo": "Erro ao atualizar foto do membro"
-      },
-      "successes": {
-        "add_member": "Membro adicionado com sucesso",
-        "remove_member": "Membro removido com sucesso",
-        "member_photo": "Foto de membro atualizado com sucesso"
+        "add_member": "Erro ao adicionar membro"
       }
     }
   },
@@ -1210,40 +1315,6 @@
     "status_update_success": "Estado atualizado com sucesso."
   },
 
-  "coordinator_management": {
-    "title": "Gestão da Equipa",
-    "add_member_title": "Adicionar Novo Membro",
-    "select_user": "Selecione um utilizador",
-    "select_role": "Selecione um cargo",
-    "add_member": "Adicionar Membro",
-    "existing_members_title": "Membros Existentes",
-    "empty": "Nenhum membro encontrado.",
-    "active_badge": "Ativo",
-    "since_label": "Desde: {date}",
-    "remove": "Remover",
-    "confirm_remove": "Tem a certeza que quer remover este membro?",
-    "confirm_yes": "Sim",
-    "confirm_cancel": "Cancelar",
-    "errors": {
-      "fetch_members": "Erro ao atualizar membros.",
-      "add_member": "Erro ao adicionar membro.",
-      "remove_member": "Erro ao remover membro."
-    },
-    "success": {
-      "add_member_success": "Membro de equipa adicionado com sucesso.",
-      "remove_member_success": "Membro de equipa removido com sucesso."
-    }
-  },
-
-  "photo_management": {
-    "title": "Gestão de Fotos dos Membros",
-    "search_placeholder": "Pesquisar por nome ou ISTID...",
-    "empty": "Nenhum membro encontrado.",
-    "photo_tooltip": "Clique para alterar a foto",
-    "photo_update_success": "Foto atualizada com sucesso.",
-    "photo_update_error": "Erro ao atualizar a foto."
-  },
-
   "my_orders": {
     "title": "As Minhas Encomendas",
     "search_placeholder": "Procurar número, produto, estado ou data...",
@@ -1380,5 +1451,229 @@
     "default_message": "Ocorreu um erro ao carregar esta página.",
     "retry_button": "Tentar novamente",
     "help_text": "Precisa de ajuda? Contacte a equipa NEIIST em"
+  },
+
+  "privacy_policy_page": {
+    "title": "Política de Privacidade",
+    "last_updated_label": "Última atualização",
+    "last_updated_date": "28 de setembro de 2026",
+    "intro": "A presente Política de Privacidade explica como o NEIIST (Núcleo Estudantil de Informática do IST) trata os dados pessoais recolhidos através deste site e serviços associados, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD).",
+    "sections": [
+      {
+        "type": "controller",
+        "id": "controller",
+        "title": "1. Identidade do Responsável pelo Tratamento",
+        "intro": "O responsável pelo tratamento é:",
+        "organization": "NEIIST (Núcleo Estudantil de Informática do IST)",
+        "address": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa",
+        "email_label": "Email de contacto para assuntos de proteção de dados",
+        "email": "neiist@tecnico.ulisboa.pt",
+        "dpo_note": "Enquanto Associação Juvenil, o NEIIST não é obrigado a designar um Encarregado da Proteção de Dados (DPO) formal, tendo, no entanto, designado o contacto acima para todos os assuntos relacionados com dados pessoais.",
+        "complaint_text": "Tem o direito de apresentar reclamação junto da autoridade de controlo portuguesa:",
+        "authority_name": "CNPD (Comissão Nacional de Proteção de Dados)",
+        "authority_url": "https://www.cnpd.pt"
+      },
+      {
+        "type": "table",
+        "id": "data-collected",
+        "title": "2. Dados Recolhidos e Motivo",
+        "headers": ["Dados", "Finalidade", "Fundamento Lícito"],
+        "rows": [
+          {
+            "data": "IST ID, nome, email institucional, fotografia de perfil do Fénix",
+            "purpose": "Criação e gestão de conta através da autenticação Fénix",
+            "legal_basis": "Execução de contrato (Art.º 6.º, n.º 1, al. b), RGPD)"
+          },
+          {
+            "data": "Campos de perfil opcionais (email alternativo, telemóvel, GitHub, LinkedIn, curso)",
+            "purpose": "Enriquecimento do perfil. O preenchimento do GitHub e LinkedIn é sugerido aos membros, mas a decisão de os fornecer é estritamente facultativa",
+            "legal_basis": "Consentimento (Art.º 6.º, n.º 1, al. a), RGPD)"
+          },
+          {
+            "data": "Fotografia de membro e de equipa personalizada",
+            "purpose": "Identificação pública dos membros na página institucional e materiais de divulgação; a captação e utilização de fotografias da equipa são solicitadas e autorizadas no momento da adesão",
+            "legal_basis": "Consentimento (Art.º 6.º, n.º 1, al. a), RGPD)"
+          },
+          {
+            "data": "Currículo (CV) e histórico profissional/académico",
+            "purpose": "Partilha com empresas parceiras (ex: eventos, feiras de emprego) ou processos de recrutamento interno",
+            "legal_basis": "Consentimento (Art.º 6.º, n.º 1, al. a), RGPD)"
+          },
+          {
+            "data": "Encomendas na loja (nome, email, telemóvel, NIF, campus, artigos, método/referência de pagamento)",
+            "purpose": "Processamento de encomendas e manutenção de registos financeiros",
+            "legal_basis": "Execução de contrato (Art.º 6.º, n.º 1, al. b)) e obrigação jurídica (Art.º 6.º, n.º 1, al. c))"
+          },
+          {
+            "data": "Inscrições em eventos",
+            "purpose": "Gestão de participação",
+            "legal_basis": "Interesse legítimo (Art.º 6.º, n.º 1, al. f))"
+          },
+          {
+            "data": "Participação em votações",
+            "purpose": "Realização de eleições/decisões internas",
+            "legal_basis": "Interesse legítimo (Art.º 6.º, n.º 1, al. f)); os votos individuais são anonimizados assim que a sessão de votação é encerrada"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "retention",
+        "title": "3. Prazos de Conservação",
+        "items": [
+          {
+            "label": "Conta ativa",
+            "text": "os dados são mantidos enquanto a conta existir."
+          },
+          {
+            "label": "Eliminação de conta de não-membro",
+            "text": "todos os dados pessoais são imediata e permanentemente apagados."
+          },
+          {
+            "label": "Eliminação de conta de membro",
+            "text": "nome e fotografia de membro são conservados por tempo indeterminado para fins de arquivo histórico/associativo (Art.º 17.º, n.º 3, al. d), RGPD). Todas as restantes Informações Pessoalmente Identificáveis (email, telemóvel, links sociais) são imediatamente apagadas."
+          },
+          {
+            "label": "Dados financeiros de encomendas (nome, email, NIF)",
+            "text": "conservados durante 10 anos ao abrigo da legislação fiscal portuguesa (Lei Geral Tributária, Art.º 52.º), sendo depois automaticamente anonimizados."
+          },
+          {
+            "label": "Tokens de verificação de email",
+            "text": "eliminados após utilização ou expiração."
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "third-parties",
+        "title": "4. Terceiros e Integrações",
+        "intro": "Partilhamos dados com as seguintes categorias de destinatários, estritamente na medida do necessário à prestação dos nossos serviços:",
+        "items": [
+          {
+            "label": "Fénix (IST / Técnico Lisboa)",
+            "text": "identidade e fotografia de perfil obtidas no momento do login. Aplica-se a própria política de privacidade do Técnico Lisboa."
+          },
+          {
+            "label": "Google (Gmail / Google Drive)",
+            "text": "utilizado para envio de emails transacionais e armazenamento de CVs, ao abrigo do Acordo de Tratamento de Dados (DPA) da Google."
+          },
+          {
+            "label": "SumUp",
+            "text": "processamento de pagamentos online, ao abrigo do DPA da SumUp. O NEIIST não recolhe, não processa e não armazena quaisquer dados de cartões de crédito, débito ou outros dados bancários sensíveis. Os dados de pagamento são inseridos direta e exclusivamente no sistema seguro da SumUp, recebendo o NEIIST apenas a confirmação, comprovativo e código de referência de que a transação foi concluída com sucesso."
+          },
+          {
+            "label": "Notion",
+            "text": "fonte de dados do calendário de eventos, em modo de apenas leitura; não são enviados dados pessoais dos utilizadores."
+          },
+          {
+            "label": "Grafana / Grafana Alloy (Grafana Labs)",
+            "text": "registos (logs) de infraestrutura e aplicações, incluindo eventos estruturados de auditoria de eliminação de contas, ao abrigo do DPA da Grafana Labs."
+          }
+        ],
+        "subsections": [
+          {
+            "title": "Transferências Internacionais de Dados",
+            "paragraphs": [
+              "A utilização de alguns dos serviços de terceiros acima indicados (como a Google e a Grafana Labs) pode implicar a transferência de dados pessoais para fora do Espaço Económico Europeu (EEE), designadamente para os Estados Unidos da América.",
+              "Estas transferências internacionais de dados encontram-se devidamente salvaguardadas e em estrita conformidade com o RGPD, estando cobertas por garantias adequadas:"
+            ],
+            "items": [
+              "Quadro de Privacidade de Dados UE-EUA (EU-U.S. Data Privacy Framework); e/ou",
+              "Cláusulas Contratuais-Tipo (Standard Contractual Clauses, SCC) aprovadas pela Comissão Europeia."
+            ]
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "rights",
+        "title": "5. Direitos dos Utilizadores",
+        "intro": "Nos termos do RGPD, tem direito a:",
+        "items": [
+          {
+            "label": "Direito de acesso (Art.º 15.º)",
+            "text": "solicitar uma cópia de todos os dados que detemos sobre si."
+          },
+          {
+            "label": "Direito de retificação (Art.º 16.º)",
+            "text": "corrigir dados inexatos, disponível em self-service na sua página de perfil."
+          },
+          {
+            "label": "Direito ao apagamento (Art.º 17.º)",
+            "text": "eliminar a sua conta em self-service. Nota: para membros, os registos de arquivo (nome/fotografia) podem ser conservados, com base no fundamento lícito descrito na Secção 3."
+          },
+          {
+            "label": "Direito à limitação do tratamento (Art.º 18.º)",
+            "text": "solicitar que o tratamento dos seus dados seja limitado enquanto um litígio é resolvido."
+          },
+          {
+            "label": "Direito à portabilidade dos dados (Art.º 20.º)",
+            "text": "solicitar os seus dados num formato estruturado e de leitura automática."
+          },
+          {
+            "label": "Direito de oposição (Art.º 21.º)",
+            "text": "opor-se ao tratamento efetuado com fundamento em interesse legítimo."
+          },
+          {
+            "label": "Direito de retirar o consentimento",
+            "text": "quando o tratamento tiver por base o seu consentimento (ex.: campos opcionais do perfil ou submissão de CVs), tem o direito de retirar esse consentimento em qualquer momento, sem comprometer a licitude do tratamento efetuado com base no consentimento previamente dado."
+          }
+        ],
+        "outro": "Para exercer qualquer um destes direitos, contacte neiist@tecnico.ulisboa.pt."
+      },
+      {
+        "type": "list",
+        "id": "security",
+        "title": "6. Segurança e Autenticação",
+        "items": [
+          {
+            "text": "Não são armazenadas palavras-passe, sendo a autenticação totalmente delegada no Fénix do IST (OAuth)."
+          },
+          {
+            "text": "Os servidores e bases de dados estão alojados na UE, pelo IST."
+          },
+          {
+            "text": "O acesso a funções administrativas requer autenticação do IST e atribuição explícita de funções por um administrador."
+          },
+          {
+            "text": "Os eventos de eliminação de conta são registados para fins de segurança e responsabilização (accountability)."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "cookies",
+        "title": "7. Cookies e Armazenamento Local",
+        "paragraphs": [
+          "O nosso website utiliza apenas cookies e tecnologias de armazenamento local (local storage ou session storage) estritamente necessários para fins técnicos e operacionais de segurança, designadamente para manter e gerir a sessão de autenticação delegada no Fénix do IST (OAuth).",
+          "Por se tratarem exclusivamente de cookies e identificadores técnicos indispensáveis à prestação do serviço expressamente solicitado pelo utilizador, não é legalmente necessária a recolha de consentimento prévio através de faixa (banner) de cookies, nos termos da legislação aplicável (Diretiva Privacidade e Comunicações Eletrónicas e RGPD). O NEIIST não utiliza cookies para fins de rastreio publicitário (tracking), perfilagem comercial ou analítica invasiva de terceiros."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "membership",
+        "title": "8. Adesão e Registos Históricos",
+        "paragraphs": [
+          "A adesão ao NEIIST não é de inscrição aberta, passando os candidatos por um processo formal de entrevista e seleção. Durante este processo, esta Política de Privacidade é-lhes apresentada e são explicadas todas as condições relativas ao tratamento e conservação de dados, incluindo o pedido e recolha de autorização para a realização e utilização de fotografias da equipa, bem como a conservação por tempo indeterminado do nome e fotografia no registo histórico e associativo do NEIIST.",
+          "Ao aderir ao NEIIST, os membros aceitam estas condições como parte do acordo de adesão. Informações detalhadas podem ser solicitadas através de neiist@tecnico.ulisboa.pt."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "changes",
+        "title": "9. Alterações a esta Política",
+        "paragraphs": [
+          "Esta Política de Privacidade pode ser atualizada periodicamente. Alterações relevantes serão comunicadas aos utilizadores registados por email ou através de aviso neste site."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "contact",
+        "title": "10. Contacto",
+        "paragraphs": [
+          "Para questões relativas a esta política ou aos seus dados pessoais, contacte-nos através de neiist@tecnico.ulisboa.pt, ou apresente reclamação junto da CNPD (https://www.cnpd.pt)."
+        ]
+      }
+    ]
   }
 }

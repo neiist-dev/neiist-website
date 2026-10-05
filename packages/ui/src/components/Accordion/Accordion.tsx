@@ -1,15 +1,9 @@
-import React, { createContext, use, useState } from "react";
+"use client";
+
+import React, { createContext, use, useId, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import styles from "./Accordion.module.css";
 import { cn } from "../../utils/cn";
-
-interface AccordionContextValue {
-  type: "single" | "multiple";
-  expandedValues: Set<string>;
-  toggleItem: (_value: string) => void;
-}
-
-const AccordionContext = createContext<AccordionContextValue | null>(null);
 
 export interface AccordionProps extends React.ComponentPropsWithRef<"div"> {
   type?: "single" | "multiple";
@@ -17,105 +11,84 @@ export interface AccordionProps extends React.ComponentPropsWithRef<"div"> {
   defaultValue?: string | string[];
   onValueChange?: (_value: string | string[]) => void;
   variant?: "default" | "flush";
+  children: React.ReactNode;
 }
 
-export interface AccordionItemProps extends React.ComponentPropsWithRef<"div"> {
-  value: string;
+export interface AccordionItemProps extends React.ComponentPropsWithRef<"details"> {
+  value?: string;
+  name?: string;
+  open?: boolean;
   disabled?: boolean;
+  children: React.ReactNode;
 }
 
-interface ItemContextValue {
-  value: string;
-  disabled?: boolean;
-  isOpen: boolean;
+interface AccordionContextValue {
+  type: "single" | "multiple";
+  activeValue?: string | string[];
+  groupId: string;
+  onItemToggle: (_value: string, _isOpen: boolean) => void;
 }
 
-const ItemContext = createContext<ItemContextValue | null>(null);
+const AccordionContext = createContext<AccordionContextValue | null>(null);
 
 export function AccordionItem({
-  value,
-  disabled = false,
   children,
   className,
+  value,
+  name,
+  open,
+  disabled,
+  onToggle,
   ref,
   ...props
 }: AccordionItemProps) {
-  const accordionContext = use(AccordionContext);
-  if (!accordionContext) throw new Error("AccordionItem must be inside Accordion");
+  const context = use(AccordionContext);
 
-  const isOpen = accordionContext.expandedValues.has(value);
+  const isControlledOpen =
+    context && context.activeValue !== undefined && value !== undefined
+      ? Array.isArray(context.activeValue)
+        ? context.activeValue.includes(value)
+        : context.activeValue === value
+      : open;
 
-  return (
-    <ItemContext value={{ value, disabled, isOpen }}>
-      <div
-        ref={ref}
-        className={cn(styles.item, className)}
-        data-state={isOpen ? "open" : "closed"}
-        {...props}>
-        {children}
-      </div>
-    </ItemContext>
-  );
-}
+  const groupName = name ?? (context?.type === "single" ? context.groupId : undefined);
 
-export type AccordionTriggerProps = React.ComponentPropsWithRef<"button">;
-
-export function AccordionTrigger({
-  children,
-  className,
-  onClick,
-  ref,
-  ...props
-}: AccordionTriggerProps) {
-  const accordionContext = use(AccordionContext);
-  const item = use(ItemContext);
-
-  if (!accordionContext || !item) throw new Error("AccordionTrigger must be inside AccordionItem");
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onClick?.(event);
-    if (!item.disabled) {
-      accordionContext.toggleItem(item.value);
-    }
+  const handleToggle = (event: React.ToggleEvent<HTMLDetailsElement>) => {
+    onToggle?.(event);
+    if (context && value !== undefined) context.onItemToggle(value, event.currentTarget.open);
   };
 
   return (
-    <button
+    <details
       ref={ref}
-      type="button"
-      disabled={item.disabled}
-      aria-expanded={item.isOpen}
-      data-state={item.isOpen ? "open" : "closed"}
-      className={cn(styles.trigger, className)}
-      onClick={handleClick}
+      className={cn(styles.item, className)}
+      name={groupName}
+      open={isControlledOpen}
+      aria-disabled={disabled}
+      onToggle={handleToggle}
       {...props}>
+      {children}
+    </details>
+  );
+}
+
+export type AccordionTriggerProps = React.ComponentPropsWithRef<"summary">;
+
+export function AccordionTrigger({ children, className, ref, ...props }: AccordionTriggerProps) {
+  return (
+    <summary ref={ref} className={cn(styles.trigger, className)} {...props}>
       <span>{children}</span>
-      <FiChevronDown className={cn(styles.chevron, item.isOpen && styles.chevronOpen)} />
-    </button>
+      <FiChevronDown className={styles.chevron} aria-hidden="true" />
+    </summary>
   );
 }
 
 export type AccordionContentProps = React.ComponentPropsWithRef<"div">;
 
 export function AccordionContent({ children, className, ref, ...props }: AccordionContentProps) {
-  const item = use(ItemContext);
-  if (!item) throw new Error("AccordionContent must be inside AccordionItem");
-
   return (
-    <div
-      ref={ref}
-      role="region"
-      data-state={item.isOpen ? "open" : "closed"}
-      aria-hidden={!item.isOpen}
-      className={cn(
-        styles.contentWrapper,
-        item.isOpen ? styles.contentWrapperOpen : styles.contentWrapperClosed
-      )}>
-      <div className={styles.contentInner}>
-        <div className={cn(styles.contentBody, className)} {...props}>
-          {children}
-        </div>
-      </div>
+    <div ref={ref} className={cn(styles.contentWrapper, className)} {...props}>
+      <div className={styles.contentBody}>{children}</div>
     </div>
   );
 }
@@ -131,42 +104,37 @@ export function AccordionRoot({
   ref,
   ...props
 }: AccordionProps) {
-  const toSet = (val?: string | string[]): Set<string> => {
-    if (!val) return new Set();
-    return new Set(Array.isArray(val) ? val : [val]);
-  };
+  const generatedGroupId = useId();
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const activeValue = value !== undefined ? value : internalValue;
 
-  const [internalSet, setInternalSet] = useState<Set<string>>(() => toSet(defaultValue));
-
-  const expandedValues = value !== undefined ? toSet(value) : internalSet;
-
-  const toggleItem = (itemVal: string) => {
-    const next = new Set(expandedValues);
+  const handleItemToggle = (itemValue: string, isOpen: boolean) => {
     if (type === "single") {
-      if (next.has(itemVal)) {
-        next.clear();
-      } else {
-        next.clear();
-        next.add(itemVal);
-      }
+      const next = isOpen ? itemValue : activeValue === itemValue ? "" : (activeValue as string);
+      if (value === undefined) setInternalValue(next);
+      onValueChange?.(next);
     } else {
-      if (next.has(itemVal)) {
-        next.delete(itemVal);
-      } else {
-        next.add(itemVal);
-      }
-    }
-
-    if (value === undefined) setInternalSet(next);
-
-    if (onValueChange) {
-      const array = Array.from(next);
-      onValueChange(type === "single" ? array[0] || "" : array);
+      const currentList = Array.isArray(activeValue)
+        ? activeValue
+        : activeValue
+          ? [activeValue]
+          : [];
+      const nextList = isOpen
+        ? [...currentList, itemValue]
+        : currentList.filter((value) => value !== itemValue);
+      if (value === undefined) setInternalValue(nextList);
+      onValueChange?.(nextList);
     }
   };
 
   return (
-    <AccordionContext value={{ type, expandedValues, toggleItem }}>
+    <AccordionContext
+      value={{
+        type,
+        activeValue,
+        groupId: generatedGroupId,
+        onItemToggle: handleItemToggle,
+      }}>
       <div ref={ref} className={cn(styles.accordion, styles[variant], className)} {...props}>
         {children}
       </div>

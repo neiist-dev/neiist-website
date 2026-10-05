@@ -12,7 +12,7 @@ import type {
 } from "@/types/sumup";
 import { formatVariantLabel } from "@/lib/email";
 import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -20,8 +20,8 @@ const CHECKOUT_TTL_MINUTES = 15;
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await serverCheckRoles([]);
-    if (!auth.isAuthorized) return auth.error;
+    const auth = await verifyPermission("orders:create");
+    if (auth.error) return auth.error;
 
     let orderId: number;
     try {

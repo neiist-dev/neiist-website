@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import styles from "./Modal.module.css";
 import { cn } from "../../utils/cn";
 import { useMergedRef } from "../../utils/useMergedRef";
+import { FiX } from "react-icons/fi";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "full" | "auto";
 
@@ -18,6 +19,7 @@ export interface ModalProps extends Omit<React.ComponentPropsWithRef<"dialog">, 
   className?: string;
   closeOnBackdropClick?: boolean;
   closeLabel?: string;
+  showCloseButton?: boolean;
 }
 
 export interface ModalHeaderProps extends Omit<React.ComponentPropsWithRef<"header">, "title"> {
@@ -62,8 +64,8 @@ export function ModalHeader({
       )}
 
       {showCloseButton && onClose && (
-        <button className={styles.closeBtn} onClick={onClose} aria-label={closeLabel}>
-          &times;
+        <button className={styles.closeBtn} onClick={onClose} aria-label={closeLabel} type="button">
+          <FiX size={24} />
         </button>
       )}
     </header>
@@ -74,7 +76,7 @@ export type ModalBodyProps = React.ComponentPropsWithRef<"div">;
 
 export function ModalBody({ children, className, ref, ...props }: ModalBodyProps) {
   return (
-    <div ref={ref} className={cn(styles.body, className)} {...props}>
+    <div ref={ref} className={cn(styles.body, "ui-scrollbar", className)} {...props}>
       {children}
     </div>
   );
@@ -101,6 +103,7 @@ export function ModalRoot({
   className,
   closeOnBackdropClick = true,
   closeLabel = "Close",
+  showCloseButton = true,
   ref,
   ...props
 }: ModalProps) {
@@ -135,6 +138,7 @@ export function ModalRoot({
   }, [onClose]);
 
   const handleBackdropClick = (event: React.MouseEvent<HTMLDialogElement>) => {
+    event.stopPropagation();
     if (closeOnBackdropClick && event.target === internalDialogRef.current) {
       onClose();
     }
@@ -153,6 +157,7 @@ export function ModalRoot({
                 subtitle={subtitle}
                 badge={badge}
                 onClose={onClose}
+                showCloseButton={showCloseButton}
                 closeLabel={closeLabel}
               />
               <ModalBody>{children}</ModalBody>

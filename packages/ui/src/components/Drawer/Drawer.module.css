@@ -105,9 +105,6 @@
   cursor: pointer;
   padding: 0.5rem;
   border-radius: var(--ui-radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: var(--ui-transition);
 }
 
@@ -202,15 +199,5 @@
   }
   to {
     transform: translateX(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .overlay,
-  .right,
-  .left,
-  .closeButton {
-    animation: none;
-    transition: none;
   }
 }

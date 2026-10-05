@@ -9,9 +9,10 @@ const BATCH_DELAY_MS = 10;
 
 let _calendarClient: ReturnType<typeof google.calendar> | null = null;
 
-export function getCalendarClient() {
+export function getCalendarClient(): ReturnType<typeof google.calendar> | null {
   if (!_calendarClient) {
     const serviceAccountKey = getServiceAccount("GOOGLE_SERVICE_ACCOUNT_KEY");
+    if (!serviceAccountKey) return null;
     const auth = new google.auth.GoogleAuth({ credentials: serviceAccountKey, scopes: SCOPES });
     _calendarClient = google.calendar({ version: "v3", auth });
   }
@@ -93,6 +94,7 @@ function buildGoogleCalendarDates(event: NotionEvent) {
 
 async function findCalendarByIstid(istid: string): Promise<string | null> {
   const calendar = getCalendarClient();
+  if (!calendar) return null;
 
   try {
     const response = await calendar.calendarList.list();
@@ -114,8 +116,9 @@ export async function createUserCalendar(
   istid: string,
   userName: string,
   alternativeEmail?: string
-) {
+): Promise<string | null> {
   const calendar = getCalendarClient();
+  if (!calendar) return null;
   const displayName = getFirstAndLastName(userName);
 
   const response = await calendar.calendars.insert({
@@ -177,10 +180,12 @@ export async function getOrCreateUserCalendar(
   istid: string,
   userName: string,
   alternativeEmail?: string
-) {
+): Promise<string | null> {
+  const calendar = getCalendarClient();
+  if (!calendar) return null;
+
   const existingCalendarId = await findCalendarByIstid(istid);
   if (existingCalendarId) {
-    const calendar = getCalendarClient();
     try {
       // Ensure calendar is public
       try {
@@ -287,6 +292,7 @@ export async function getOrCreateUserCalendar(
 async function getExistingCalendarEvents(calendarId: string): Promise<Map<string, string>> {
   const calendar = getCalendarClient();
   const eventMap = new Map<string, string>();
+  if (!calendar) return eventMap;
 
   try {
     const response = await calendar.events.list({
@@ -321,6 +327,7 @@ export async function syncEventToCalendar(
   alternativeEmail?: string
 ) {
   const calendar = getCalendarClient();
+  if (!calendar) return;
 
   const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
   const shouldInclude =
@@ -490,6 +497,8 @@ export async function syncAllEventsToCalendar(
 
 export async function deleteEventFromCalendar(calendarId: string, eventId: string) {
   const calendar = getCalendarClient();
+  if (!calendar) return;
+
   const googleEventId = eventId.replace(/-/g, "").substring(0, 64);
 
   try {
@@ -502,10 +511,12 @@ export async function deleteEventFromCalendar(calendarId: string, eventId: strin
   }
 }
 
-export async function getAddCalendarLink(calendarId: string) {
+export async function getAddCalendarLink(calendarId: string | null | undefined) {
+  if (!calendarId) return "";
   return `https://calendar.google.com/calendar/u/0?cid=${encodeURIComponent(calendarId)}&mode=WEEK`;
 }
 
-export async function getCalendarWebLink(calendarId: string) {
+export async function getCalendarWebLink(calendarId: string | null | undefined) {
+  if (!calendarId) return "";
   return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}`;
 }

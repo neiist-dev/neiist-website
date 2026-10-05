@@ -4,24 +4,31 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import styles from "@/styles/components/homepage/SweatsContest.module.css";
-import backgroundImage from "@/assets/background.png";
-import type { Dictionary } from "@/i18n/dictionaries";
-import { toast } from "sonner"
+import CloudAnnouncement from "@/components/homepage/CloudAnnouncement";
+import { Alert, Button, Checkbox, Modal } from "@neiist/ui";
+import { Dictionary } from "@/i18n/dictionaries";
+import pt from "@/i18n/locales/pt.json";
 
 interface SweatsContestProps {
-  dict: Dictionary["sweats_contest"];
+  dict?: Dictionary["sweats_contest"];
 }
 
-export default function SweatsContest({ dict }: SweatsContestProps) {
+export default function SweatsContest({ dict = pt.sweats_contest }: SweatsContestProps) {
   const { user } = useUser();
+  const [isOpen, setIsOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [buttonText, setButtonText] = useState("Submete um design!");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [shareName, setShareName] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
     if (!user) {
-      toast.warning(dict.login_warning, 
-        { closeButton: true });
+      setIsOpen(false);
+      Alert.warning(dict.login_warning);
+      return;
+    }
+    if (!acceptedTerms) {
+      Alert.warning(dict.accept_terms);
       return;
     }
     fileInputRef.current?.click();
@@ -32,39 +39,41 @@ export default function SweatsContest({ dict }: SweatsContestProps) {
     if (!file) return;
 
     if (file.type !== "application/zip" && file.type !== "application/x-zip-compressed") {
-      toast.error(dict.errors.zip_only, 
-        { closeButton: true });
-      setButtonText("Erro: Apenas ficheiros ZIP");
-      setTimeout(() => setButtonText("Submete um design!"), 3000);
+      Alert.error(dict.errors.zip_only);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 15 * 1024 * 1024) {
+      Alert.error(dict.errors.file_too_large);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     setUploading(true);
+    Alert.info(dict.uploading);
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("shareName", String(shareName));
 
-    let toastId: string | number = "";
     try {
-      toastId = toast.loading(dict.uploading);
       const response = await fetch("/api/user/sweats-contest", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        toast.success(dict.submitted, 
-          { closeButton: true });
-        setButtonText("Design submetido");
+        Alert.success(dict.submitted);
+        setIsOpen(false);
+        setAcceptedTerms(false);
+        setShareName(false);
       } else {
-        toast.error(dict.errors.upload, 
-          { closeButton: true });
-        setButtonText("Erro ao submeter");
+        const data = await response.json().catch(() => null);
+        Alert.error(data?.error || dict.errors.upload);
       }
     } catch (error) {
-      setButtonText("Erro ao submeter");
-      toast.error(dict.errors.upload, 
-        { closeButton: true });
+      Alert.error(dict.errors.upload);
       console.error("Upload error:", error);
     } finally {
       setUploading(false);
@@ -74,36 +83,73 @@ export default function SweatsContest({ dict }: SweatsContestProps) {
     }
   };
 
+  const isSubmitDisabled = uploading || !acceptedTerms;
+
   return (
-    <div className={styles.container} style={{ backgroundImage: `url(${backgroundImage.src})` }}>
-      <h3 className={styles.title}>Concurso de Design de Sweats</h3>
-      <p className={styles.descprition}>
-        Queres criar a próxima sweat especial de EIC?
-        <br />
-        Consulta{" "}
-        <Link
-          className={styles.link}
-          href="/regulamento_sweats_concurso.pdf"
-          target="_blank"
-          rel="noopener noreferrer">
-          aqui
-        </Link>{" "}
-        o regulamento, submete o teu design e habilita-te a ganhar uma sweat!
-      </p>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".zip"
-        onChange={handleFileChange}
-        style={{ display: "none" }}
+    <>
+      <CloudAnnouncement
+        title={dict.title}
+        actionText={dict.participate}
+        onClick={() => setIsOpen(true)}
       />
-      <button
-        onClick={handleButtonClick}
-        disabled={uploading || !user}
-        className={`${styles.apply} ${!user || uploading ? styles.disabled : ""}`}>
-        {uploading ? "A submeter..." : buttonText}
-      </button>
-      {!user && <p className={styles.loginWarning}>Por favor faça login para submeter um design</p>}
-    </div>
+
+      <Modal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={dict.title}
+        subtitle={
+          <span>
+            {dict.rules_prefix}{" "}
+            <Link
+              href="/regulamento_sweats_concurso.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.rulesLink}>
+              {dict.rules_link_text}
+            </Link>{" "}
+            {dict.rules_suffix}
+          </span>
+        }
+        size="md">
+        <div className={styles.modalBody}>
+          <div className={styles.checkboxGroup}>
+            <Checkbox
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+              label={dict.accept_terms}
+              disabled={uploading}
+            />
+            <Checkbox
+              checked={shareName}
+              onChange={(event) => setShareName(event.target.checked)}
+              label={dict.share_name}
+              disabled={uploading}
+            />
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".zip"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+          />
+
+          <div className={styles.actions}>
+            <Button
+              variant="solid"
+              color="primary"
+              onClick={handleButtonClick}
+              disabled={isSubmitDisabled}
+              loading={uploading}
+              fullWidth>
+              {uploading ? dict.uploading : dict.button}
+            </Button>
+
+            <p className={styles.fileHint}>{dict.file_helper}</p>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

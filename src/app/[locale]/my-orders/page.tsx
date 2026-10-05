@@ -45,6 +45,8 @@ async function MyOrdersContent({ params, searchParams }: PageProps) {
           canEditNotes={true}
           dict={dict.order_details}
           posPaymentDict={dict.pos_payment}
+          newOrderModalDict={dict.new_order_modal}
+          createUserModalDict={dict.create_user_modal}
         />
       )}
     </>

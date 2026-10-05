@@ -5,8 +5,6 @@
   margin: 0;
   padding: 0;
   gap: 0.25rem;
-  container-type: inline-size;
-  container-name: memberCard;
 }
 
 .imageCard {
@@ -103,12 +101,4 @@
   color: var(--ui-fg-light);
   font-size: var(--ui-font-sm);
   line-height: 1.4;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cardImage,
-  .overlay,
-  .iconLink {
-    transition: none;
-  }
 }

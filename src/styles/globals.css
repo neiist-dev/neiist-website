@@ -8,6 +8,7 @@
   --secondary-colour: #258be3;
   --tertiary-colour: #34d1f9;
   --quaternary-colour: #5ee8fa;
+  --foreground-colour-rgb: rgb(51, 51, 51);
   --hover: rgba(0, 0, 0, 0.05);
   --font-family: "Secular One";
   --light-foreground-colour: #7b7b8b;
@@ -27,6 +28,13 @@ body {
   font-family: var(--font-family);
   color: var(--foreground-colour);
   background: var(--background-colour);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 /* prettier-ignore */

@@ -63,10 +63,3 @@
 .size-md.toggleSwitchActive .toggleKnob {
   transform: translateX(1.25rem);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .toggleSwitch,
-  .toggleKnob {
-    transition: none;
-  }
-}

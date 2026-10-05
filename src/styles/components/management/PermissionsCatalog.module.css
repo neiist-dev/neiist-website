@@ -1,0 +1,57 @@
+.toolbarRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-start: 0.5rem;
+  margin-block-end: 0.25rem;
+}
+
+.toolbarRow > span {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+}
+
+.toolbarRow svg {
+  margin-inline-end: 0.35rem;
+}
+
+.permsTableWrapper {
+  max-block-size: 38vh;
+  min-block-size: 180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+}
+
+.permsTable {
+  inline-size: 100%;
+  table-layout: fixed;
+}
+
+.permsTable td {
+  white-space: normal;
+  overflow-wrap: break-word;
+  padding: 0.5rem 0.75rem;
+}
+
+.permsTable .checkboxCell {
+  inline-size: 44px;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.permTitle {
+  color: var(--foreground-colour);
+  line-height: 1.3;
+}
+
+.permCode {
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: var(--light-foreground-colour);
+}

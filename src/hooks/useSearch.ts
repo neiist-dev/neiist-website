@@ -1,21 +1,8 @@
-import { useState, useMemo, useCallback, useDeferredValue } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, useRef } from "react";
 import MiniSearch, { SearchOptions } from "minisearch";
+import { normalizeText, isIstIdQuery, normalizeIstId } from "@/utils/searchUtils";
 
-export const normalizeText = (value: string): string =>
-  value
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .replace(/[-_]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const IST_PREFIX_REG = /^ist\d*/i;
-
-export const isIstIdQuery = (query: string): boolean => IST_PREFIX_REG.test(query.trim());
-
-export const normalizeIstId = (value: string): string =>
-  value.replace(/^ist/i, "").replace(/\D/g, "");
+export { normalizeText, isIstIdQuery, normalizeIstId };
 
 export type SearchField<T> =
   | (T extends object ? keyof T : string)
@@ -72,18 +59,28 @@ export function useSearch<T>(options: UseSearchOptions<T>): UseSearchResult<T> {
   const [query, setQuery] = useState("");
   const allData = useMemo(() => staticData ?? [], [staticData]);
 
+  const extractFieldRef = useRef(extractField);
+  extractFieldRef.current = extractField;
+
+  const fieldsKey = JSON.stringify(fields);
+
   const fieldNames = useMemo(
-    () => fields.map((f) => (typeof f === "object" ? String(f.field) : String(f))),
-    [fields]
+    () =>
+      (JSON.parse(fieldsKey) as SearchField<T>[]).map((f) =>
+        typeof f === "object" && f !== null ? String(f.field) : String(f)
+      ),
+    [fieldsKey]
   );
 
   const boostMap = useMemo(() => {
     const map: Record<string, number> = {};
-    fields.forEach((f) => {
-      if (typeof f === "object" && f.boost !== undefined) map[String(f.field)] = f.boost;
+    (JSON.parse(fieldsKey) as SearchField<T>[]).forEach((f) => {
+      if (typeof f === "object" && f !== null && f.boost !== undefined) {
+        map[String(f.field)] = f.boost;
+      }
     });
     return map;
-  }, [fields]);
+  }, [fieldsKey]);
 
   const istFieldKey = useMemo(() => {
     return (
@@ -110,9 +107,9 @@ export function useSearch<T>(options: UseSearchOptions<T>): UseSearchResult<T> {
         if (fieldName === "__mini_search_id__")
           return doc.__mini_search_id__ != null ? String(doc.__mini_search_id__) : "";
 
-        if (extractField) {
+        if (extractFieldRef.current) {
           const rawItem = (doc.self !== undefined ? doc.self : doc) as T;
-          const custom = extractField(rawItem, fieldName);
+          const custom = extractFieldRef.current(rawItem, fieldName);
           if (custom !== undefined)
             return Array.isArray(custom)
               ? custom.map((c) => String(c ?? "")).join(" ")
@@ -143,7 +140,7 @@ export function useSearch<T>(options: UseSearchOptions<T>): UseSearchResult<T> {
     }
 
     return ms;
-  }, [allData, boostMap, fieldNames, fuzzy, extractField]);
+  }, [allData, boostMap, fieldNames, fuzzy]);
 
   const deferredQuery = useDeferredValue(query);
 

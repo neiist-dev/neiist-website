@@ -29,7 +29,7 @@ import { Category } from "@/types/shop/category";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 import { isColorKey, joinNameHex, splitNameHex } from "@/utils/shop/shopUtils";
 import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOptionsEditor";
-import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+import { MultiSelect } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
 import ToggleSwitch from "@/components/ToggleSwitch";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
@@ -641,7 +641,7 @@ export default function ProductForm({
               </Field>
 
               <Field label={dict.category_label} icon={<FaFolder />}>
-                <MultiSelectDropdown
+                <MultiSelect
                   availableItems={categoryOptions}
                   selectedItems={form.category ? [form.category] : []}
                   onChange={(items) => updateForm({ category: items[0] ?? "" })}
@@ -668,7 +668,7 @@ export default function ProductForm({
               <SectionTitle icon={<FaBox />}>{dict.stock_title}</SectionTitle>
 
               <Field label={dict.stock_type_label} icon={<FaLayerGroup />}>
-                <MultiSelectDropdown
+                <MultiSelect
                   availableItems={[dict.stock_limited, dict.stock_on_demand]}
                   selectedItems={[
                     form.stock_type === "on_demand" ? dict.stock_on_demand : dict.stock_limited,

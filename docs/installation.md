@@ -34,9 +34,13 @@ This guide will help you get a local copy up and running follow these simple ste
    git clone https://github.com/<your-github-username>/neiist-website.git
    cd neiist-website
    ```
+4. Setup pnpm version on the repo with Corepack:
+   ```sh
+   corepack install
+   ```
 4. **Run the automated setup**:
    ```sh
-   pnpm setup
+   pnpm bootstrap
    ```
    *This will install dependencies, generate your `.env`, boot the Docker database, setup Git hooks, and seed your local Admin user interactively, and optionally quickly setup Google Service Accounts and Notion.*
 

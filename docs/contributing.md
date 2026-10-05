@@ -1,6 +1,6 @@
 # Contributing to NEIIST
 
-Thank you for your interest in contributing to the NEIIST (Núcleo Estudantil de Informática do Instituto Superior Técnico) open-source projects! We welcome contributions from everyone, whether you're a student, alumni, or part of the broader community. This guide will help you get started with contributing to our projects.
+Thank you for your interest in contributing to the NEIIST (Núcleo Estudantil de Informática do Instituto Superior Técnico) open-source projects! We welcome contributions from all members and students, whether you're a current or alumni. This guide will help you get started with contributing to our projects.
 
 ## Table of Contents
 

@@ -71,9 +71,3 @@
 .container:focus-within .right {
   transform: translate(0, -50%);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .tooltip {
-    transition: none;
-  }
-}

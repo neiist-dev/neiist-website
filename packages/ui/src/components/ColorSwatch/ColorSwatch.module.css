@@ -32,9 +32,3 @@
     0 0 0 2px var(--ui-bg),
     0 0 0 4px var(--ui-primary);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .swatch {
-    transition: none;
-  }
-}

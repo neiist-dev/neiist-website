@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/user";
+import { UserRole } from "@/types/roles";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { rateLimit } from "@/lib/security/rateLimitUtils";
 import { getRateLimitRule } from "@/lib/security/rateLimitRules";
@@ -19,6 +19,7 @@ Associação de estudantes de Informática do Instituto Superior Técnico, Lisbo
 - [Atividades](https://neiist.tecnico.ulisboa.pt/activities)
 - [Loja](https://neiist.tecnico.ulisboa.pt/shop)
 - [Jantar](https://neiist.tecnico.ulisboa.pt/dinner)
+- [Política de Privacidade](https://neiist.tecnico.ulisboa.pt/privacy)
 `;
 
 export async function proxy(req: NextRequest) {
@@ -110,5 +111,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|favicon\\.ico|static/|images/|image/|.*\\..*$).*)"],
+  matcher: ["/((?!_next/|favicon\\.ico|static/|images/|image/|(?!api/).*\\..*$).*)"],
 };

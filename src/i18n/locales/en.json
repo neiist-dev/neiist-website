@@ -8,12 +8,9 @@
       "profile": "Profile",
       "my_orders": "My Orders",
       "manage_orders": "Manage Orders",
-      "manage_team": "Manage Team",
-      "manage_photos": "Manage Member Photos",
+      "management": "Manage Organization",
       "manage_shop": "Manage Shop",
       "manage_voting": "Manage Voting",
-      "manage_users": "Manage Members & Users",
-      "manage_departments": "Manage Departments",
       "logout": "Log Out",
       "user_photo_alt": "User photo"
     }
@@ -346,16 +343,29 @@
   },
 
   "sweats_contest": {
+    "badge": "COMING SOON",
     "title": "Sweatshirt Design Contest",
+    "participate": "Participate",
     "description_start": "Want to create the next special edition CS sweatshirt?",
     "description_link": "here",
     "description_end": "the rules, submit your design, and get a chance to win a sweatshirt!",
+    "description": "Want to create the next special edition CS sweatshirt? Check the rules, submit your design, and get a chance to win a sweatshirt!",
+    "rules_link_text": "rules",
+    "rules_prefix": "Check the",
+    "rules_suffix": "and submit your ZIP file.",
+    "rules_button": "View Contest Rules",
+    "card_title": "Submit Proposal",
     "button": "Submit a design!",
     "uploading": "Submitting...",
     "submitted": "Design submitted",
     "login_warning": "Please log in to submit a design",
+    "accept_terms": "I accept the contest rules",
+    "share_name": "I authorize sharing my name",
+    "file_helper": "ZIP files only (max. 15MB)",
+    "choose_file_error": "Please choose a ZIP file.",
     "errors": {
       "zip_only": "Error: ZIP files only",
+      "file_too_large": "File is too large (max 15MB)",
       "upload": "Error submitting"
     }
   },
@@ -363,6 +373,9 @@
   "shop": {
     "title": "Shop",
     "subtitle": "The products representing your degree!",
+    "empty_title": "No products available",
+    "empty_subtitle": "There are currently no products for sale. Stay tuned for upcoming releases!",
+    "empty_button": "Back to Home",
     "not_found": "Product not found",
     "no_image_label": "No Image",
     "size_guide_title": "Size Guide",
@@ -460,12 +473,6 @@
     "categories": {
       "Vestuário": "Apparel"
     }
-  },
-
-  "users_management_page": {
-    "title": "People Management",
-    "tab_users": "Users",
-    "tab_memberships": "Members"
   },
 
   "activities": {
@@ -591,11 +598,12 @@
     "about_title": "About NEIIST",
     "team_link": "Team",
     "estatutos_link": "Bylaws",
+    "privacy_policy_link": "Privacy Policy",
     "address": "Av. Rovisco Pais 1, 1049-001 Lisbon",
     "courses_title": "CS & Eng. Degrees",
     "contacts_title": "Contacts",
     "powered_by": "Powered by:",
-    "copyright": "© 2025 NEIIST. All rights reserved."
+    "copyright": "© 2026 NEIIST"
   },
 
   "about_us_page": {
@@ -613,6 +621,15 @@
       "description": "NEIIST is recruiting for the 1st Phase 26/27! Come develop your soft skills and contribute to our community by joining one of our teams External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nRegister until September 30th (23:59).",
       "apply": "Apply Now",
       "apply_link": "https://docs.google.com/forms/d/e/1FAIpQLSf_XLoqJ2crdiySnrlIUzvna4V-QHBHDeSfhpCfh27DVIfdKQ/viewform"
+    },
+
+    "campuses": {
+      "title": "Where to Find Us?",
+      "description": "NEIIST has student support rooms on both campuses of Instituto Superior Técnico. Come visit us to ask questions, pick up merchandise, or hang out!",
+      "alameda_title": "Alameda Campus",
+      "alameda_room": "Room 3-03, Computer Science Pavilion I (3rd Floor)",
+      "taguspark_title": "Taguspark Campus",
+      "taguspark_room": "Room 1 - 4.14, Central Building (Aquarium Entrance)"
     },
 
     "year_selector": {
@@ -800,79 +817,153 @@
     "apply": "Apply"
   },
 
-  "departments_management": {
-    "teams": "Teams",
-    "bodies": "Administrative Bodies",
-    "title": "Departments Management",
-    "teams_management": "Teams Management",
-    "bodies_management": "Administrative Bodies Management",
-    "edit_about_us": "Edit About Us Page"
-  },
-
   "admin": {
-    "users_management": {
-      "page_title": "People Management",
+    "management": {
+      "title": "Manage Organization",
+      "subtitle_admin": "Manage members, departments, mandates, and permissions for NEIIST.",
+      "subtitle_coord": "Manage members and mandates for your team.",
       "tab_users": "Users",
-      "tab_memberships": "Members",
+      "tab_departments": "Departments & Bodies",
+      "tab_memberships_admin": "Memberships & Mandates",
+      "tab_memberships_coord": "Team Members",
+      "tab_roles": "Roles & Permissions"
+    },
+    "users_management": {
+      "tab_users": "Users",
       "title": "Users Overview",
       "search_placeholder": "Search by name, ISTID, email, role or department...",
+      "clear_search": "Clear search",
       "empty": "No users found.",
       "photo_alt": "Photo of",
       "email_label": "Email",
       "phone_label": "Phone",
       "courses_label": "Courses",
       "teams_label": "Teams/Bodies",
-      "account_deleted": "Account Deleted",
       "data_deleted": "Data deleted",
       "delete_title": "Delete user {name}",
       "delete_confirm": "Are you sure you want to delete user {name} ({istid})? This action will permanently erase their personal data and cannot be undone.",
       "delete_error": "Error deleting user",
+      "delete_account": "Delete Account",
+      "options_aria": "User actions",
+      "options_title": "User Actions",
+      "pagination_info": "{start}–{end} of {total} users",
+      "prev_page": "Previous",
+      "next_page": "Next",
       "confirm_yes": "Yes",
       "confirm_cancel": "Cancel"
     },
 
     "teams_management": {
-      "title": "Teams Management",
-      "section_title": "Existing Teams",
-      "search_placeholder": "Search team...",
+      "title": "Departments Management",
+      "search_placeholder": "Search department...",
+      "clear_search": "Clear search",
       "active": "Active",
       "show_inactive": "Show Inactive",
-      "empty": "No teams found.",
+      "empty": "No departments found.",
       "inactive_badge": "Inactive",
-      "deactivate_title": "Deactivate team",
-      "deactivate": "Deactivate",
-      "loading": "Loading...",
-      "success_team_remove": "Team removed successfully",
-      "error_team_remove": "Error while removing team"
+      "active_badge": "Active",
+      "order_column": "Order",
+      "name_column": "Name",
+      "type_column": "Type",
+      "type_team": "Team",
+      "type_admin_body": "Administrative Body",
+      "options_aria": "Department options",
+      "options_title": "Department Actions",
+      "view_details": "View Details",
+      "add_department": "Add Department",
+      "add_department_title": "Add New Department",
+      "order_up": "Move Up",
+      "order_down": "Move Down",
+      "about_us_order": "About Us Order",
+      "dept_type_label": "Department Type",
+      "dept_name_label": "Department Name",
+      "dept_name_placeholder_team": "e.g. SysAdmin",
+      "dept_name_placeholder_body": "e.g. Mesa da AG",
+      "desc_pt_label": "Description (Portuguese)",
+      "desc_en_label": "Description (English)",
+      "desc_pt_placeholder": "Team description in Portuguese",
+      "desc_en_placeholder": "Team mission / description in English",
+      "create_department": "Create Department",
+      "create_success": "Department created successfully",
+      "create_error": "Failed to create department",
+      "update_success": "Team description updated successfully",
+      "update_error": "Failed to update description",
+      "reorder_failed": "Failed to save department order",
+      "dept_deactivated": "Department \"{name}\" deactivated",
+      "dept_reactivated": "Department \"{name}\" reactivated",
+      "dept_deleted": "Department \"{name}\" deleted",
+      "process_error": "Error processing action",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "deactivate": "Deactivate Department",
+      "reactivate": "Reactivate Department",
+      "delete": "Delete Permanently",
+      "confirm_delete_title": "Delete Department Permanently",
+      "confirm_delete_msg": "Are you sure you want to permanently delete department \"{name}\"? This action cannot be undone.",
+      "confirm_deactivate_title": "Deactivate {name}",
+      "confirm_deactivate_msg": "Are you sure you want to deactivate department \"{name}\"? It will be hidden from the About Us page and ongoing mandates will be concluded.",
+      "confirm_reactivate_title": "Reactivate {name}",
+      "confirm_reactivate_msg": "Are you sure you want to reactivate department \"{name}\"? It will become active and visible in the organization again."
     },
 
     "roles_management": {
       "title": "Roles Management",
-      "existing_roles_title": "Existing Roles",
       "all": "All",
       "search_placeholder": "Search role, access level or department...",
+      "clear_search": "Clear search",
+      "select_department": "Select Department",
       "active": "Active",
       "show_inactive": "Show Inactive",
       "empty_all": "No roles found.",
       "empty_select": "Select a department to view roles.",
-      "active_badge": "Active",
       "inactive_badge": "Inactive",
+      "active_badge": "Active",
+      "order_column": "Order",
+      "role_column": "Role",
+      "access_level_column": "Access Level",
+      "permissions_column": "Permissions",
+      "permissions_count": "{count} permissions",
+      "active_permissions_count": "{count} of {total} permissions active",
+      "options_aria": "Role options",
+      "options_title": "Role Actions",
+      "manage_permissions": "Manage Permissions",
+      "deactivate_role": "Deactivate Role",
+      "reactivate_role": "Reactivate Role",
+      "delete_role": "Delete Permanently",
+      "order_up": "Move Up",
+      "order_down": "Move Down",
+      "presets": "Presets",
+      "presets_member": "Standard Member",
+      "presets_coordinator": "Team Coordinator",
+      "presets_admin": "Full Administrator",
+      "presets_select_all": "Select All",
+      "presets_clear_all": "Clear All",
+      "save_permissions": "Save Permissions",
+      "permissions_saved": "Permissions saved successfully",
+      "permissions_title": "Permissions: {role}",
+      "role_added_success": "Role added successfully",
+      "reorder_failed": "Failed to reorder roles",
+      "role_deleted": "Role \"{role}\" deleted",
+      "role_deactivated": "Role \"{role}\" deactivated",
+      "reactivate_hint": "To reactivate, select the role in the add modal",
+      "cancel": "Cancel",
       "remove": "Remove",
       "add_role_title": "Add New Role",
       "role_name_placeholder": "Role Name",
-      "adding": "Adding...",
+      "role_name_required": "Role name is required",
       "add_role": "Add Role",
       "confirm_remove": "Are you sure you want to remove role \"{role}\" from department \"{department}\"?",
       "access": {
         "guest": "Standard",
         "member": "Member",
-        "shop_manager": "Shop Manager",
         "coordinator": "Coordinator",
         "admin": "Admin"
       },
       "errors": {
         "add_role": "Error adding role",
-        "remove_role": "Error removing role"
+        "remove_role": "Error removing role",
+        "save_permissions": "Failed to save permissions"
       },
       "successes": {
         "add_role": "Role added successfully",
@@ -881,91 +972,105 @@
       "confirm_dialog": {
         "confirm": "Confirm",
         "cancel": "Cancel"
-      }
-    },
-
-    "add_department_modal": {
-      "add_team_button": "Add New Team",
-      "add_body_button": "Add New Body",
-      "new_team_title": "New Team",
-      "new_body_title": "New Administrative Body",
-      "team_name_placeholder": "Team name",
-      "body_name_placeholder": "Body name",
-      "team_desc_placeholder": "Team description",
-      "next": "Next",
-      "add_roles_title": "Add Roles",
-      "remove": "Remove",
-      "back": "Back",
-      "creating": "Creating...",
-      "create_department": "Create Department",
-      "department_role_success": "Department or role created successfully.",
-      "errors": {
-        "create_department": "Error creating department",
-        "create_role": "Error creating role",
-        "create_department_or_roles": "Error creating department or roles"
       },
-      "role_form": {
-        "role_name_placeholder": "Role Name",
-        "add_role": "Add Role",
-        "access": {
-          "guest": "Standard",
-          "member": "Member",
-          "coordinator": "Coordinator",
-          "admin": "Admin"
-        }
+      "permission_categories": {
+        "users": "Users & GDPR",
+        "departments": "Departments & Administrative Bodies",
+        "roles": "Roles & Positions",
+        "memberships": "Memberships & Mandates",
+        "photos": "Member Photos",
+        "shop": "Shop Catalog Management",
+        "orders": "Orders & Counter Sales",
+        "voting": "General Assemblies & Voting"
+      },
+      "permissions": {
+        "users:read": "View user list and details",
+        "users:write": "Create and edit user details",
+        "users:delete": "Delete / anonymize users (GDPR)",
+        "departments:read": "View departments and administrative bodies",
+        "departments:write": "Create and edit departments and administrative bodies",
+        "departments:delete": "Deactivate departments and administrative bodies",
+        "roles:read": "View department roles and hierarchy",
+        "roles:write": "Create, edit, and reorder roles",
+        "roles:delete": "Deactivate roles",
+        "memberships:read": "View member mandates",
+        "memberships:write_global": "Manage mandates across all departments",
+        "memberships:write_dept": "Manage mandates within own departments",
+        "memberships:delete": "Delete mandate records",
+        "photos:read": "View member photos",
+        "photos:write_global": "Manage photos across all departments",
+        "photos:write_dept": "Manage photos within own departments",
+        "shop:read": "View shop catalog and stock",
+        "shop:write": "Manage products, categories, and stock",
+        "orders:read": "View orders and purchase history",
+        "orders:read_customer": "View personal customer orders",
+        "orders:create": "Create new orders",
+        "orders:write": "Manage order statuses and payments",
+        "orders:delete": "Cancel and delete orders",
+        "orders:override": "Override stock limits and order validation constraints",
+        "voting:read": "View general assemblies and electoral rolls",
+        "voting:write": "Manage electoral rolls and voting"
       }
-    },
-
-    "bodies_management": {
-      "title": "Administrative Bodies Management",
-      "section_title": "Existing Administrative Bodies",
-      "search_placeholder": "Search administrative body...",
-      "active": "Active",
-      "show_inactive": "Show Inactive",
-      "empty": "No administrative bodies found.",
-      "inactive_badge": "Inactive",
-      "deactivate_title": "Deactivate body",
-      "deactivate": "Deactivate",
-      "remove_admin_success": "Admin body removed successfully."
     },
 
     "memberships_management": {
       "title": "Memberships Management",
-      "add_member_title": "Add New Member",
-      "select_user": "Select a user",
+      "add_mandate_button": "Add Member Mandate",
+      "add_mandate_title": "Add Member Mandate",
       "select_department": "Select a department",
       "select_role": "Select a role",
-      "adding": "Adding...",
+      "select_year": "Select Year",
+      "all_departments": "All Departments",
       "add_member": "Add Member",
-      "existing_members_title": "Existing Members",
-      "search_placeholder": "Search by name, ISTID, email, department or role...",
+      "create_user": "Create user",
+      "search_placeholder": "Search member, ISTID, department...",
+      "clear_search": "Clear search",
       "active": "Active",
       "show_inactive": "Show Inactive",
       "empty": "No members found.",
-      "change_photo": "Click to change photo",
-      "change_photo_inactive": "Can only change photo of active members",
-      "department_label": "Department:",
-      "role_label": "Role:",
+      "change_photo": "Change Photo",
+      "photo_updated": "Photo updated successfully",
+      "photo_error": "Failed to update photo",
+      "member_column": "Member",
+      "department_column": "Department",
+      "role_column": "Role",
+      "status_column": "Status",
+      "options_aria": "Mandate options",
+      "options_title": "Mandate Options",
+      "view_details": "View Details",
+      "conclude_mandate": "Conclude Mandate",
+      "delete_mandate": "Delete Mandate",
+      "confirm_conclude_title": "Conclude Mandate",
+      "confirm_conclude_msg": "Are you sure you want to conclude this mandate?",
+      "confirm_delete_title": "Delete Mandate",
+      "confirm_delete_msg": "Are you sure you want to permanently delete this mandate?",
+      "conclude_success": "Mandate concluded successfully",
+      "delete_success": "Mandate deleted successfully",
+      "process_error": "Error processing mandate",
+      "member_placeholder": "Search member by name or ISTID...",
+      "member_required_error": "Please fill in all required fields (member, department, role)",
+      "member_added_success": "Membership added successfully",
+      "start_date": "Start Date",
+      "end_date": "End Date",
+      "active_mandates": "Active Mandates",
+      "previous_mandates": "Previous Mandates",
+      "present": "Present",
+      "member_profile_title": "Member Profile & Mandates",
+      "primary_email": "Primary Email",
+      "alt_email": "Alternative Email",
+      "phone": "Phone",
+      "courses": "Courses",
       "email_label": "Email:",
-      "since_label": "Since:",
-      "until_label": "Until:",
       "active_badge": "Active",
       "inactive_badge": "Inactive",
+      "concluded_badge": "Concluded",
       "remove": "Remove",
       "confirm_remove": "Are you sure you want to remove this member?",
       "confirm_yes": "Yes",
       "confirm_cancel": "Cancel",
-      "account_deleted": "Account Deleted",
       "data_deleted": "Data deleted",
       "errors": {
-        "add_member": "Error adding member",
-        "remove_member": "Error removing member",
-        "member_photo": "Error updating member photo"
-      },
-      "successes": {
-        "add_member": "Member added successfully",
-        "remove_member": "Member removed successfully",
-        "member_photo": "Member photo updated successfully"
+        "add_member": "Error adding member"
       }
     }
   },
@@ -1210,40 +1315,6 @@
     "status_update_success": "Status updated successfully."
   },
 
-  "coordinator_management": {
-    "title": "Team Management",
-    "add_member_title": "Add New Member",
-    "select_user": "Select a user",
-    "select_role": "Select a role",
-    "add_member": "Add Member",
-    "existing_members_title": "Existing Members",
-    "empty": "No members found.",
-    "active_badge": "Active",
-    "since_label": "Since: {date}",
-    "remove": "Remove",
-    "confirm_remove": "Are you sure you want to remove this member?",
-    "confirm_yes": "Yes",
-    "confirm_cancel": "Cancel",
-    "errors": {
-      "fetch_members": "Error refreshing members.",
-      "add_member": "Error adding member.",
-      "remove_member": "Error removing member."
-    },
-    "success": {
-      "add_member_success": "Team member added successfully.",
-      "remove_member_success": "Team member removed successfully."
-    }
-  },
-
-  "photo_management": {
-    "title": "Team Members Photo Management",
-    "search_placeholder": "Search by name or ISTID...",
-    "empty": "No members found.",
-    "photo_tooltip": "Click to change photo",
-    "photo_update_success": "Photo updated successfully.",
-    "photo_update_error": "Error while updating photo."
-  },
-
   "my_orders": {
     "title": "My Orders",
     "search_placeholder": "Search number, product, status or date...",
@@ -1380,5 +1451,229 @@
     "default_message": "An error occurred while loading this page.",
     "retry_button": "Try again",
     "help_text": "Need help? Contact the NEIIST team at"
+  },
+
+  "privacy_policy_page": {
+    "title": "Privacy Policy",
+    "last_updated_label": "Last updated",
+    "last_updated_date": "September 28, 2026",
+    "intro": "This Privacy Policy explains how NEIIST (Núcleo Estudantil de Informática do IST) processes personal data collected through this website and related services, in accordance with the General Data Protection Regulation (GDPR).",
+    "sections": [
+      {
+        "type": "controller",
+        "id": "controller",
+        "title": "1. Data Controller",
+        "intro": "The data controller is:",
+        "organization": "NEIIST (Núcleo Estudantil de Informática do IST)",
+        "address": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa",
+        "email_label": "Contact email for data protection matters",
+        "email": "neiist@tecnico.ulisboa.pt",
+        "dpo_note": "NEIIST, as a youth association, is not required to appoint a formal Data Protection Officer (DPO), but has designated the above contact for all data protection matters.",
+        "complaint_text": "You have the right to lodge a complaint with the Portuguese supervisory authority:",
+        "authority_name": "CNPD (Comissão Nacional de Proteção de Dados)",
+        "authority_url": "https://www.cnpd.pt"
+      },
+      {
+        "type": "table",
+        "id": "data-collected",
+        "title": "2. What Data We Collect and Why",
+        "headers": ["Data", "Purpose", "Legal Basis"],
+        "rows": [
+          {
+            "data": "IST ID, name, institutional email, Fénix profile photo",
+            "purpose": "Account creation and management via Fénix authentication",
+            "legal_basis": "Performance of a contract (Art. 6(1)(b) GDPR)"
+          },
+          {
+            "data": "Optional profile fields (alternative email, phone, GitHub, LinkedIn, degree)",
+            "purpose": "Enhancing your profile. Members are encouraged to fill in GitHub and LinkedIn, but providing them is strictly optional",
+            "legal_basis": "Consent (Art. 6(1)(a) GDPR)"
+          },
+          {
+            "data": "Custom member and team photograph",
+            "purpose": "Identifying members on the website and team communication materials; the taking and use of team photographs are requested and authorized at enrollment time",
+            "legal_basis": "Consent (Art. 6(1)(a) GDPR)"
+          },
+          {
+            "data": "Curriculum Vitae (CV) and professional/academic history",
+            "purpose": "Sharing with partner companies (e.g., events, job fairs) or internal recruitment processes",
+            "legal_basis": "Consent (Art. 6(1)(a) GDPR)"
+          },
+          {
+            "data": "Shop orders (name, email, phone, tax number/NIF, campus, items, payment method/reference)",
+            "purpose": "Order fulfilment and financial record-keeping",
+            "legal_basis": "Performance of a contract (Art. 6(1)(b)) and legal obligation (Art. 6(1)(c))"
+          },
+          {
+            "data": "Event registrations",
+            "purpose": "Managing attendance",
+            "legal_basis": "Legitimate interest (Art. 6(1)(f))"
+          },
+          {
+            "data": "Voting participation",
+            "purpose": "Enabling internal elections/decisions",
+            "legal_basis": "Legitimate interest (Art. 6(1)(f)); individual votes are anonymised once the voting session closes"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "retention",
+        "title": "3. Retention Periods",
+        "items": [
+          {
+            "label": "Active account",
+            "text": "data is kept for as long as the account exists."
+          },
+          {
+            "label": "Non-member account deletion",
+            "text": "all personal data is immediately and permanently erased."
+          },
+          {
+            "label": "Member account deletion",
+            "text": "name and member photograph are retained indefinitely for historical/associative record purposes (Art. 17(3)(d) GDPR). All other personally identifiable information (email, phone, social links) is immediately erased."
+          },
+          {
+            "label": "Financial data from orders (name, email, NIF)",
+            "text": "retained for 10 years under Portuguese tax law (Lei Geral Tributária, Art. 52), after which it is automatically anonymised."
+          },
+          {
+            "label": "Email verification tokens",
+            "text": "deleted upon use or expiry."
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "third-parties",
+        "title": "4. Third Parties and Integrations",
+        "intro": "We share data with the following categories of recipients, strictly as needed to provide our services:",
+        "items": [
+          {
+            "label": "Fénix (IST / Técnico Lisboa)",
+            "text": "identity and profile photo obtained at login. Técnico Lisboa's own privacy policy applies to this data."
+          },
+          {
+            "label": "Google (Gmail / Google Drive)",
+            "text": "used for transactional emails and CV storage, under Google's Data Processing Agreement (DPA)."
+          },
+          {
+            "label": "SumUp",
+            "text": "online payment processing, under SumUp's DPA. NEIIST does not collect, process, or store credit card numbers, debit card details, or any sensitive banking information. Payment data is entered directly and securely into SumUp's platform, and NEIIST receives only a transaction receipt, confirmation, and reference code that the payment was successful."
+          },
+          {
+            "label": "Notion",
+            "text": "read-only source for the events calendar; no personal user data is sent to Notion."
+          },
+          {
+            "label": "Grafana / Grafana Alloy (Grafana Labs)",
+            "text": "infrastructure and application logs, including structured audit events for account deletions, under Grafana Labs' DPA."
+          }
+        ],
+        "subsections": [
+          {
+            "title": "International Data Transfers",
+            "paragraphs": [
+              "The use of some third-party services listed above (such as Google and Grafana Labs) may involve personal data transfers outside the European Economic Area (EEA), notably to the United States.",
+              "These international data transfers are fully safeguarded and strictly compliant with the GDPR, covered by appropriate safeguards:"
+            ],
+            "items": [
+              "EU-U.S. Data Privacy Framework; and/or",
+              "Standard Contractual Clauses (Standard Contractual Clauses, SCC) approved by the European Commission."
+            ]
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "rights",
+        "title": "5. Your Rights",
+        "intro": "Under the GDPR, you have the right to:",
+        "items": [
+          {
+            "label": "Access (Art. 15)",
+            "text": "request a copy of all data we hold about you."
+          },
+          {
+            "label": "Rectification (Art. 16)",
+            "text": "correct inaccurate data, available via self-service on your profile page."
+          },
+          {
+            "label": "Erasure (Art. 17)",
+            "text": "delete your account via self-service. Note that for members, archival records (name/photo) may be retained on the legal basis described in Section 3."
+          },
+          {
+            "label": "Restriction of processing (Art. 18)",
+            "text": "request that processing be limited while a dispute is resolved."
+          },
+          {
+            "label": "Data portability (Art. 20)",
+            "text": "request your data in a machine-readable format."
+          },
+          {
+            "label": "Object (Art. 21)",
+            "text": "object to processing carried out on the basis of legitimate interest."
+          },
+          {
+            "label": "Withdraw consent",
+            "text": "where processing is based on your consent (such as optional profile fields or CV submission), you have the right to withdraw your consent at any time, without affecting the lawfulness of processing based on consent before its withdrawal."
+          }
+        ],
+        "outro": "To exercise any of these rights, contact neiist@tecnico.ulisboa.pt."
+      },
+      {
+        "type": "list",
+        "id": "security",
+        "title": "6. Security and Authentication",
+        "items": [
+          {
+            "text": "We do not store passwords; authentication is fully delegated to IST's Fénix system (OAuth)."
+          },
+          {
+            "text": "Servers and databases are hosted within the EU by IST."
+          },
+          {
+            "text": "Access to administrative functions requires IST authentication and explicit role assignment by an administrator."
+          },
+          {
+            "text": "Account deletion events are logged for security and accountability purposes."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "cookies",
+        "title": "7. Cookies and Local Storage",
+        "paragraphs": [
+          "Our website uses only cookies and local storage technologies (local storage or session storage) that are strictly necessary for technical operation and security, specifically to manage and keep active the authentication session delegated to IST's Fénix system (OAuth).",
+          "Because these cookies and identifiers are purely technical and essential to provide the service requested by the user, they do not require prior consent via a cookie banner under applicable legislation (ePrivacy Directive and GDPR). NEIIST does not use cookies for advertising, third-party tracking, or intrusive analytics."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "membership",
+        "title": "8. Membership and Historical Records",
+        "paragraphs": [
+          "Joining NEIIST is not open enrolment; candidates go through a formal interview and selection process. During this process, this Privacy Policy is presented to them, and all conditions regarding data processing and retention are explained, including requesting and giving authorization for taking and using custom team photographs, as well as their indefinite retention along with names in NEIIST's historical and associative records.",
+          "By joining NEIIST, members accept these conditions as part of the membership agreement. Full details are available on request from neiist@tecnico.ulisboa.pt."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "changes",
+        "title": "9. Changes to This Policy",
+        "paragraphs": [
+          "We may update this Privacy Policy from time to time. Material changes will be communicated to registered users via email or a notice on this website."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "contact",
+        "title": "10. Contact",
+        "paragraphs": [
+          "For any questions about this policy or your personal data, contact us at neiist@tecnico.ulisboa.pt, or lodge a complaint with the CNPD (https://www.cnpd.pt)."
+        ]
+      }
+    ]
   }
 }

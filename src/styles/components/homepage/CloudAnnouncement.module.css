@@ -1,0 +1,155 @@
+.cloud {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.55em 1.45em;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  color: var(--foreground-colour);
+  font-size: clamp(0.95rem, 0.75rem + 0.65vw, 1.45rem);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  animation: float 4s ease-in-out infinite;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  background: #ffffff;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.cloud::before {
+  inline-size: 1.9em;
+  block-size: 1.9em;
+  inset-block-start: -0.75em;
+  inset-inline-start: 1.9em;
+  border-block-start: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-inline-start: 1.5px solid rgba(0, 0, 0, 0.12);
+}
+
+.cloud::after {
+  inline-size: 2.65em;
+  block-size: 2.65em;
+  inset-block-start: -1.1em;
+  inset-inline-start: 3.25em;
+  border-block-start: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-inline-end: 1.5px solid rgba(0, 0, 0, 0.12);
+}
+
+.cloud:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-colour);
+  box-shadow: 0 6px 24px rgba(40, 99, 253, 0.2);
+}
+
+.cloud:hover::before,
+.cloud:hover::after {
+  border-color: var(--primary-colour);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.pulse {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 0.85em;
+  block-size: 0.85em;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.pulseDot {
+  inline-size: 0.55em;
+  block-size: 0.55em;
+  border-radius: 9999px;
+  background: var(--primary-colour);
+}
+
+.pulseRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--primary-colour);
+  animation: pulseRing 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.cloudTitle {
+  z-index: 1;
+}
+
+.cloudCta {
+  color: var(--primary-colour);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.9em;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .cloud {
+    font-size: 0.775rem;
+    padding: 0.45rem 1.15rem;
+    gap: 0.55rem;
+  }
+
+  .cloud::before {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    inset-block-start: -0.55rem;
+    inset-inline-start: 1.5rem;
+  }
+
+  .cloud::after {
+    inline-size: 2.05rem;
+    block-size: 2.05rem;
+    inset-block-start: -0.85rem;
+    inset-inline-start: 2.6rem;
+  }
+
+  .pulse {
+    inline-size: 0.7rem;
+    block-size: 0.7rem;
+  }
+
+  .pulseDot {
+    inline-size: 0.45rem;
+    block-size: 0.45rem;
+  }
+
+  .cloudCta {
+    font-size: 0.75rem;
+  }
+}

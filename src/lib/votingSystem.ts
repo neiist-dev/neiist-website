@@ -2,8 +2,6 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { UserRole } from "@/types/user";
-import { VotingSession, VotingType } from "@/types/voting";
 import {
   addVotingSession,
   deleteVotingSession,
@@ -12,7 +10,8 @@ import {
   submitVote,
   updateVotingSession,
 } from "@/lib/db/repositories/voting.repository";
-import { serverCheckRoles } from "@/lib/auth";
+import type { VotingSession, VotingType } from "@/types/voting";
+import { requirePermission, requireUser } from "@/lib/auth";
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
@@ -89,8 +88,7 @@ function revalidateVotes() {
 }
 
 export async function createVotingSessionAction(formData: FormData): Promise<void> {
-  const auth = await serverCheckRoles([UserRole._ADMIN]);
-  if (!auth.isAuthorized) throw new Error("Insufficient permissions");
+  await requirePermission("voting:write");
 
   const sessionData = extractVotingSessionData(formData);
   await addVotingSession(sessionData);
@@ -100,8 +98,7 @@ export async function createVotingSessionAction(formData: FormData): Promise<voi
 }
 
 export async function updateVotingSessionAction(formData: FormData): Promise<void> {
-  const auth = await serverCheckRoles([UserRole._ADMIN]);
-  if (!auth.isAuthorized) throw new Error("Insufficient permissions");
+  await requirePermission("voting:write");
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
   const sessionData = extractVotingSessionData(formData);
@@ -113,8 +110,7 @@ export async function updateVotingSessionAction(formData: FormData): Promise<voi
 }
 
 export async function deleteVotingSessionAction(formData: FormData): Promise<void> {
-  const auth = await serverCheckRoles([UserRole._ADMIN]);
-  if (!auth.isAuthorized) throw new Error("Insufficient permissions");
+  await requirePermission("voting:write");
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
   await deleteVotingSession(sessionId);
@@ -122,8 +118,7 @@ export async function deleteVotingSessionAction(formData: FormData): Promise<voi
 }
 
 export async function startVotingAction(formData: FormData): Promise<void> {
-  const auth = await serverCheckRoles([UserRole._ADMIN]);
-  if (!auth.isAuthorized) throw new Error("Insufficient permissions");
+  await requirePermission("voting:write");
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
 
@@ -132,8 +127,7 @@ export async function startVotingAction(formData: FormData): Promise<void> {
 }
 
 export async function finishVotingAction(formData: FormData): Promise<void> {
-  const auth = await serverCheckRoles([UserRole._ADMIN]);
-  if (!auth.isAuthorized) throw new Error("Insufficient permissions");
+  await requirePermission("voting:write");
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
 
@@ -142,12 +136,11 @@ export async function finishVotingAction(formData: FormData): Promise<void> {
 }
 
 export async function submitVoteAction(formData: FormData): Promise<void> {
-  const auth = await serverCheckRoles([]);
-  if (!auth.isAuthorized || !auth.user) throw new Error("Not authenticated");
+  const { user } = await requireUser();
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
   const nomineeId = requireString(formData.get("nomineeId"), "nomineeId");
 
-  await submitVote(sessionId, auth.user.istid, nomineeId);
+  await submitVote(sessionId, user.istid, nomineeId);
   revalidateVotes();
 }

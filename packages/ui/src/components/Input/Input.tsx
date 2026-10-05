@@ -4,13 +4,15 @@ import { cn } from "../../utils/cn";
 
 export interface InputProps extends React.ComponentPropsWithRef<"input"> {
   label?: string;
-  error?: string;
+  error?: boolean | string;
   helperText?: string;
 }
 
 export function Input({ label, error, helperText, className, id, ref, ...props }: InputProps) {
   const generatedId = useId();
   const inputId = id || generatedId;
+  const hasError = Boolean(error);
+  const errorMessage = typeof error === "string" ? error : undefined;
 
   return (
     <div className={cn(styles.wrapper, className)}>
@@ -22,11 +24,12 @@ export function Input({ label, error, helperText, className, id, ref, ...props }
       <input
         ref={ref}
         id={inputId}
-        className={cn(styles.input, !!error && styles.hasError)}
+        aria-invalid={hasError || undefined}
+        className={cn(styles.input, hasError && styles.hasError)}
         {...props}
       />
-      {error && <span className={styles.errorText}>{error}</span>}
-      {!error && helperText && <span className={styles.helperText}>{helperText}</span>}
+      {errorMessage && <span className={styles.errorText}>{errorMessage}</span>}
+      {!errorMessage && helperText && <span className={styles.helperText}>{helperText}</span>}
     </div>
   );
 }

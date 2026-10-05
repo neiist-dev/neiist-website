@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Popover.module.css";
@@ -10,8 +12,8 @@ export interface PopoverProps {
   anchorRef: React.RefObject<HTMLElement | null>;
   children: React.ReactNode;
   className?: string;
-  width?: number | string; // Optional width for the popover
-  offset?: number; // Distance from the anchor
+  width?: number | string;
+  offset?: number;
   matchAnchorWidth?: boolean;
   mobileDrawerPosition?: "bottom" | "left" | "right";
   mobileDrawerTitle?: string;
@@ -150,7 +152,7 @@ export function Popover({
   const content = (
     <div
       ref={containerRef}
-      className={cn(styles.popover, className)}
+      className={cn(styles.popover, "ui-scrollbar", className)}
       onClick={(event) => event.stopPropagation()}
       style={
         position

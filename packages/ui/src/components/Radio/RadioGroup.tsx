@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useId } from "react";
+import React, { createContext, useId } from "react";
 import styles from "./Radio.module.css";
 import { cn } from "../../utils/cn";
-import { RadioGroupContext } from "./Radio";
+
+export interface RadioGroupContextValue {
+  name: string;
+  value?: string;
+  defaultValue?: string;
+  disabled?: boolean;
+  onChange?: (_value: string) => void;
+}
+
+export const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);
 
 export interface RadioGroupProps extends Omit<React.ComponentPropsWithRef<"fieldset">, "onChange"> {
   name?: string;
@@ -31,36 +40,29 @@ export function RadioGroup({
   ...props
 }: RadioGroupProps) {
   const defaultId = useId();
-  const groupName = name || `radio-group-${defaultId}`;
-
-  const [internalValue, setInternalValue] = React.useState(defaultValue || "");
-  const currentValue = value !== undefined ? value : internalValue;
-
-  const handleChange = (val: string) => {
-    if (value === undefined) {
-      setInternalValue(val);
-    }
-    onChange?.(val);
-  };
+  const groupName = name ?? `radio-group-${defaultId}`;
 
   return (
-    <RadioGroupContext
-      value={{
-        name: groupName,
-        value: currentValue,
-        onChange: handleChange,
-        disabled,
-      }}>
-      <fieldset
-        ref={ref}
-        role="radiogroup"
-        aria-label={label}
-        className={cn(styles.group, styles[`group-${direction}`], className)}
-        {...props}>
-        {label && <legend className={styles.groupLabel}>{label}</legend>}
+    <fieldset
+      ref={ref}
+      role="radiogroup"
+      aria-label={label}
+      className={cn(styles.group, styles[`group-${direction}`], className)}
+      {...props}>
+      {label && <legend className={styles.groupLabel}>{label}</legend>}
+
+      <RadioGroupContext
+        value={{
+          name: groupName,
+          value,
+          defaultValue,
+          disabled,
+          onChange,
+        }}>
         {children}
-        {error && <span className={styles.errorText}>{error}</span>}
-      </fieldset>
-    </RadioGroupContext>
+      </RadioGroupContext>
+
+      {error && <span className={styles.errorText}>{error}</span>}
+    </fieldset>
   );
 }

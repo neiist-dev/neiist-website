@@ -174,7 +174,12 @@ export default function Footer({ dict, basePath }: FooterProps) {
       </div>
 
       <div className={styles.bottom}>
-        <p className={styles.copyright}>{dict.copyright}</p>
+        <p className={styles.copyright}>
+          {dict.copyright} ·{" "}
+          <Link className={styles.link} href={`${basePath}/privacy`}>
+            {dict.privacy_policy_link}
+          </Link>
+        </p>
         <div className={styles.socialIcons}>
           {socialIcons.map(({ href, icon, ariaLabel }) => (
             <Link

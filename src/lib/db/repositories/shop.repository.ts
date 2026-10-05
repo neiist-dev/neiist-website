@@ -363,14 +363,16 @@ export const updateOrder = async (
 export const setOrderState = async (
   orderId: number,
   status: OrderStatus,
-  user_istid?: string
+  user_istid?: string,
+  paymentReference?: string
 ): Promise<Order | null> => {
   const {
     rows: [row],
-  } = await db_query<dbOrder>(`SELECT * FROM neiist.set_order_state($1,$2,$3)`, [
+  } = await db_query<dbOrder>(`SELECT * FROM neiist.set_order_state($1,$2,$3,$4)`, [
     orderId,
     status,
     user_istid ?? null,
+    paymentReference ?? null,
   ]);
   const result = row ? mapdbOrderToOrder(row) : null;
   if (result) revalidateTag("orders", "max");

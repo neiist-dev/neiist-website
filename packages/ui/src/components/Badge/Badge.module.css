@@ -9,16 +9,15 @@
   font-weight: var(--ui-font-weight-bold);
   border-radius: var(--ui-radius-full);
   white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .sm {
-  box-sizing: border-box;
-  min-inline-size: 1.25rem;
-  block-size: 1.25rem;
-  aspect-ratio: 1;
-  padding-inline: 0.125rem;
-  padding-block: 0;
-  line-height: 1;
+  padding-block: 0.15rem;
+  padding-inline: 0.55rem;
+  font-size: var(--ui-font-xs, 0.75rem);
+  line-height: 1.25;
 }
 
 .primary {
@@ -47,8 +46,8 @@
 }
 
 .outline {
-  background: var(--ui-bg);
-  border: 1px solid var(--ui-bg-hover);
+  background: transparent;
+  border: 1px solid var(--ui-border);
   color: var(--ui-fg);
   padding-block: 0.125rem;
   padding-inline: 0.5rem;
@@ -65,7 +64,7 @@
   color: inherit;
   opacity: 0.6;
   border-radius: var(--ui-radius-sm);
-  transition: opacity 0.2s;
+  transition: opacity var(--ui-transition);
 }
 
 .removeBtn:hover {
@@ -76,10 +75,4 @@
   outline: 2px solid currentColor;
   outline-offset: 1px;
   opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .removeBtn {
-    transition: none;
-  }
 }

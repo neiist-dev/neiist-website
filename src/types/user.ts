@@ -1,4 +1,7 @@
 import { devOverrideRole } from "@/utils/userUtils";
+import { getDevOverridePermissions } from "@/lib/security/permissions";
+import { Permission } from "@/types/permissions";
+import { UserRole, mapRoleToUserRole, mapAccessLabelToUserRole } from "@/types/roles";
 
 export interface User {
   istid: string;
@@ -11,13 +14,15 @@ export interface User {
   photo: string;
   courses: string[];
   roles: UserRole[];
+  permissions?: Permission[];
+  departmentPermissions?: Record<string, Permission[]>;
   positionName?: string;
   teams?: string[];
   github?: string;
   linkedin?: string;
   isAnonymized?: boolean;
 }
-interface dbUser {
+export interface dbUser {
   istid: string;
   name: string;
   email: string;
@@ -26,56 +31,48 @@ interface dbUser {
   preferred_contact_method?: "email" | "alternativeEmail" | "phone";
   photo_path?: string;
   courses?: string[];
-  roles?: string[];
+  permissions?: Permission[];
+  access_label?: "admin" | "coordinator" | null;
+  department_permissions?: Record<string, Permission[]>;
   teams?: string[];
   github?: string;
   linkedin?: string;
 }
 
-export enum UserRole {
-  _ADMIN = "admin",
-  _COORDINATOR = "coordinator",
-  _SHOP_MANAGER = "shop_manager",
-  _MEMBER = "member",
-  _GUEST = "guest",
-}
-
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  [UserRole._ADMIN]: 100,
-  [UserRole._COORDINATOR]: 80,
-  [UserRole._SHOP_MANAGER]: 60,
-  [UserRole._MEMBER]: 40,
-  [UserRole._GUEST]: 0,
-};
-
-export function mapRoleToUserRole(role: string): UserRole {
-  switch (role.toLowerCase()) {
-    case "member":
-      return UserRole._MEMBER;
-    case "coordinator":
-      return UserRole._COORDINATOR;
-    case "shop_manager":
-      return UserRole._SHOP_MANAGER;
-    case "admin":
-      return UserRole._ADMIN;
-    default:
-      return UserRole._GUEST;
+function getDevOverrides(dbUser: dbUser, initialRoles: UserRole[]) {
+  const devRole = devOverrideRole(dbUser.istid);
+  if (!devRole) {
+    return {
+      roles: initialRoles,
+      permissions: dbUser.permissions ?? [],
+      departmentPermissions: dbUser.department_permissions ?? {},
+    };
   }
+
+  const roles = [mapRoleToUserRole(devRole)];
+  let permissions = getDevOverridePermissions(devRole) ?? dbUser.permissions ?? [];
+  let departmentPermissions = dbUser.department_permissions ?? {};
+
+  if (devRole.toLowerCase() === "coordinator") {
+    const coordPerms: Permission[] = ["memberships:write_dept", "photos:write_dept"];
+    const overriddenDeptPerms = { ...departmentPermissions };
+    for (const team of dbUser.teams ?? []) {
+      overriddenDeptPerms[team] = Array.from(
+        new Set([...(overriddenDeptPerms[team] ?? []), ...coordPerms])
+      );
+    }
+    departmentPermissions = overriddenDeptPerms;
+    permissions = permissions.filter((p) => !p.endsWith("_dept"));
+  }
+
+  return { roles, permissions, departmentPermissions };
 }
 
 export function mapdbUserToUser(dbUser: dbUser): User {
-  // If userRoles empty, user is guest.
-  let userRoles: UserRole[];
-  if (!dbUser.roles || dbUser.roles.length === 0) {
-    userRoles = [UserRole._GUEST];
-  } else {
-    userRoles = dbUser.roles.map(mapRoleToUserRole);
-  }
-  // DEV permissions level override
-  const devRole = devOverrideRole(dbUser.istid);
-  if (devRole) {
-    userRoles = [mapRoleToUserRole(devRole)];
-  }
+  const hasActiveMembership = (dbUser.teams ?? []).length > 0;
+  const initialRoles = [mapAccessLabelToUserRole(dbUser.access_label, hasActiveMembership)];
+  const { roles, permissions, departmentPermissions } = getDevOverrides(dbUser, initialRoles);
+
   return {
     istid: dbUser.istid,
     name: dbUser.name,
@@ -86,21 +83,12 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
     photo: dbUser.photo_path ?? `/api/user/photo/${dbUser.istid}`,
     courses: dbUser.courses ?? [],
-    roles: userRoles,
+    roles,
+    permissions,
+    departmentPermissions,
     teams: dbUser.teams ?? [],
     github: dbUser.github ?? undefined,
     linkedin: dbUser.linkedin ?? undefined,
     isAnonymized: dbUser.email?.endsWith("@deleted.neiist.pt") ?? false,
   };
-}
-
-export function hasRequiredRole(userRoles: UserRole[], required: UserRole[]) {
-  if (!required || required.length === 0) return true;
-  return userRoles.some((role) => required.includes(role));
-}
-
-export function checkRoles(user: User | null | undefined, required: UserRole[]) {
-  if (!required || required.length === 0) return true;
-  const roles: UserRole[] = user?.roles?.map((r) => mapRoleToUserRole(r)) || [UserRole._GUEST];
-  return hasRequiredRole(roles, required);
 }

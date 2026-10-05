@@ -12,11 +12,14 @@
   border-radius: var(--ui-radius-md);
   background: var(--ui-bg);
   color: var(--ui-fg-light);
-  font-size: 0.875rem;
+  font-size: var(--ui-font-sm);
   font-family: inherit;
   font-weight: var(--ui-font-weight-semibold);
   cursor: pointer;
-  transition: var(--ui-transition);
+  transition:
+    background-color var(--ui-transition),
+    color var(--ui-transition),
+    border-color var(--ui-transition);
 }
 
 .tab:hover {
@@ -29,24 +32,10 @@
   outline-offset: 2px;
 }
 
-.tabActive {
-  flex: 1;
-  padding-block: 0.625rem;
-  padding-inline: 0.75rem;
-  border: 1px solid var(--ui-primary);
-  border-radius: var(--ui-radius-md);
+.tab[data-active="true"] {
+  border-color: var(--ui-primary);
   background: var(--ui-primary);
   color: var(--ui-text-on-colour);
-  font-size: 0.875rem;
-  font-family: inherit;
-  font-weight: var(--ui-font-weight-semibold);
-  cursor: pointer;
-  transition: var(--ui-transition);
-}
-
-.tabActive:focus-visible {
-  outline: 2px solid var(--ui-primary);
-  outline-offset: 2px;
 }
 
 .calendarWrapper {
@@ -56,7 +45,7 @@
 }
 
 .sectionTitle {
-  font-size: 1rem;
+  font-size: var(--ui-font-md);
   font-weight: var(--ui-font-weight-bold);
   color: var(--ui-fg);
   display: flex;
@@ -75,11 +64,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-block: 0.625rem;
+  padding-block: 0.5rem;
   padding-inline: 0.5rem;
-  background: var(--ui-bg);
   border-radius: var(--ui-radius-sm);
-  transition: background var(--ui-transition);
+  transition: background-color var(--ui-transition);
 }
 
 .listItem:hover {
@@ -90,13 +78,12 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding-block-start: 0.5rem;
-  padding-block-end: 0.625rem;
+  padding-block: 0.5rem 0.625rem;
   padding-inline: 0.25rem;
   border: none;
   font-family: inherit;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: var(--ui-font-sm);
   font-weight: var(--ui-font-weight-bold);
   color: var(--ui-fg);
   background: transparent;
@@ -113,10 +100,9 @@
 }
 
 .cascadeLevelLabel {
-  padding-block-start: 0.25rem;
-  padding-block-end: 0.5rem;
+  padding-block: 0.25rem 0.5rem;
   padding-inline: 0.25rem;
-  font-size: 0.72rem;
+  font-size: var(--ui-font-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: var(--ui-font-weight-bold);
@@ -147,13 +133,4 @@
 
 .checkboxFull {
   inline-size: 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tab,
-  .tabActive,
-  .listItem,
-  .drillDownBtn {
-    transition: none;
-  }
 }

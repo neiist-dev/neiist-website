@@ -1,8 +1,13 @@
 import Hero from "@/components/homepage/Hero";
 import Activities from "@/components/homepage/Activities";
-import Partnerships from "@/components/homepage/Partnerships";
+// import Partnerships from "@/components/homepage/Partnerships";
+import SweatsContest from "@/components/homepage/SweatsContest";
 import { getDictionary } from "@/i18n/dictionaries";
-import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
+import { defaultLocale, isValidLocale, locales, LocaleParams } from "@/i18n/i18n-config";
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
 async function HomePage({ params }: { params: LocaleParams }) {
   const { locale: rawLocale } = await params;
@@ -11,9 +16,9 @@ async function HomePage({ params }: { params: LocaleParams }) {
 
   return (
     <>
-      <Hero dict={dict.hero} />
+      <Hero dict={dict.hero} announcement={<SweatsContest dict={dict.sweats_contest} />} />
       <Activities dict={dict.activities} />
-      <Partnerships dict={dict.partnerships} />
+      {/* <Partnerships dict={dict.partnerships} /> */}
     </>
   );
 }

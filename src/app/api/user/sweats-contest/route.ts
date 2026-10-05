@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { uploadSweatsSubmission } from "@/lib/google/driveService";
 
-const CONTEST_ACTIVE = false;
+const CONTEST_ACTIVE = true;
 
 async function getUsernameFromCookies(): Promise<string | null> {
   const reqCookies = await cookies();
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData();
   const file = formData.get("file");
+  const shareName = formData.get("shareName") === "true";
 
   if (!file || !(file instanceof Blob))
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await uploadSweatsSubmission(username, buffer);
+    const result = await uploadSweatsSubmission(username, buffer, shareName);
     return NextResponse.json({
       success: true,
       ...result,

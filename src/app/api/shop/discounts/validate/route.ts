@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateDiscountCode } from "@/lib/db/repositories/shop.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { serverCheckRoles } from "@/lib/auth";
+import { verifyPermission } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
-  const userRoles = await serverCheckRoles([]);
-  if (!userRoles.isAuthorized) return userRoles.error;
+  const auth = await verifyPermission("orders:create");
+  if (auth.error) return auth.error;
 
   try {
     const body = await request.json();
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payload inválido" }, { status: 400 });
 
     const code = typeof body.code === "string" ? body.code.trim() : "";
-    const userIstid = userRoles.user.istid;
+    const userIstid = auth.user.istid;
 
     const result = await validateDiscountCode(code, userIstid, body.cart_items);
     if (!result) {

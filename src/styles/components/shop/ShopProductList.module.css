@@ -4,22 +4,19 @@
   margin: 0 4rem;
 }
 
-.primary {
-  color: var(--primary-colour);
-}
-.secondary {
-  color: var(--secondary-colour);
-}
-.tertiary {
-  color: var(--tertiary-colour);
-}
-.quaternary {
-  color: var(--quaternary-colour);
-}
-
 .subTitle {
   color: var(--light-foreground-colour);
   font-size: 1.1rem;
+}
+
+.emptyContainer {
+  margin: 3rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.emptyContainer :global(section) {
+  width: 100%;
 }
 
 .grid {

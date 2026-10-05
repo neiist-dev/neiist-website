@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpCheckout, SumUpReaderCallbackPayload } from "@/types/sumup";
+import type { SumUpReaderCallbackPayload } from "@/types/sumup";
 import { getOrderById } from "@/lib/db/repositories/shop.repository";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 
@@ -31,21 +31,27 @@ export async function POST(req: NextRequest) {
     if (["paid", "ready", "delivered"].includes(order.status))
       return NextResponse.json({ success: true, alreadyProcessed: true });
 
+    if (!clientTransactionId || order.payment_reference !== clientTransactionId)
+      return sumupErrorResponse("Transaction id does not match order", 400);
+
     if (status === "successful") {
       let paymentReference = clientTransactionId ?? checkoutId ?? order.payment_reference;
 
       if (clientTransactionId && SUMUP_MERCHANT_CODE && process.env.SUMUP_API_KEY) {
         try {
-          const checkoutData = (await withSumUp((client) =>
+          const transaction = await withSumUp((client) =>
             client.transactions.get(SUMUP_MERCHANT_CODE!, {
               client_transaction_id: clientTransactionId,
             })
-          )) as SumUpCheckout;
+          );
 
-          const transactionCode = checkoutData?.transaction_code;
-          if (transactionCode) paymentReference = transactionCode;
+          if (transaction?.status !== "SUCCESSFUL")
+            return sumupErrorResponse("Payment transaction is not successful", 400);
+
+          if (transaction?.transaction_code) paymentReference = transaction.transaction_code;
         } catch (error) {
-          console.warn("Reader callback could not resolve transaction_code", error);
+          console.error("Reader callback could not verify transaction with SumUp", error);
+          return sumupErrorResponse("Failed to verify transaction with SumUp", 502);
         }
       }
 

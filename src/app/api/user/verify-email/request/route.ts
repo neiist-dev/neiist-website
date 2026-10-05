@@ -3,25 +3,26 @@ import crypto from "crypto";
 import { sendEmail, getEmailVerificationTemplate } from "@/lib/email";
 import { addEmailVerification } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { serverCheckRoles } from "@/lib/auth";
-import { UserRole } from "@/types/user";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/security/permissions";
 import { isValidEmail } from "@/utils/apiValidationUtils";
 
 export async function POST(request: Request) {
-  const auth = await serverCheckRoles([]);
-  if (!auth.isAuthorized) return auth.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const { user } = session;
 
   try {
     const { istid, alternativeEmail } = await request.json();
     if (!istid || !alternativeEmail || !isValidEmail(alternativeEmail))
       return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
 
-    const isAdmin = auth.roles?.includes(UserRole._ADMIN);
-    if (auth.user?.istid !== istid && !isAdmin)
+    const canManageUsers = hasPermission(user, "users:write");
+    if (user.istid !== istid && !canManageUsers)
       return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min life for the token
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
     await addEmailVerification(istid, alternativeEmail, token, expiresAt);
     const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/verify-email/confirm?token=${token}`;

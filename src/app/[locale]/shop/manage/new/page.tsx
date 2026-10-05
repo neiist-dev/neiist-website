@@ -1,14 +1,13 @@
 import { Suspense } from "react";
 import ProductForm from "@/components/shop/ProductForm";
 import { getAllCategories } from "@/lib/db/repositories/shop.repository";
-import { requireRoles } from "@/lib/auth";
-import { UserRole } from "@/types/user";
+import { requirePermission } from "@/lib/auth";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
 import GlobalLoading from "@/app/loading";
 
 async function NewProductContent({ params }: { params: LocaleParams }) {
-  await requireRoles([UserRole._ADMIN]);
+  await requirePermission("shop:write");
 
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
