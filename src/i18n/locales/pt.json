@@ -335,6 +335,22 @@
     "title": "Núcleo Estudantil de Informática do Instituto Superior Técnico"
   },
 
+  "game": {
+    "play": "Jogar",
+    "play_label": "Jogar Campus Runner",
+    "score": "Pontos",
+    "best": "HI",
+    "game_over": "Fim de Jogo",
+    "restart": "Recomeçar",
+    "exit": "Sair do jogo",
+    "start_hint": "Carrega em Espaço ou toca para começar",
+    "controls_desktop": "Espaço/↑ saltar · ↓ baixar · Esc sair",
+    "controls_touch": "Toca para saltar · desliza para baixo para baixar",
+    "canvas_label": "Campus Runner: um jogo de corrida pelo campus do IST",
+    "final_score": "Fim de jogo. Pontos: {score}. Melhor: {best}.",
+    "secret_mode": "Código secreto desbloqueado: sem obstáculos"
+  },
+
   "terminal": {
     "welcome": "Bem-vindo ao terminal do NEIIST! \nO Núcleo Estudantil de Informática do IST apoia os estudantes de LEIC e MEIC.\n\nComandos úteis:\n  ls         - listar ficheiros e pastas\n  cd <dir>   - entrar numa pasta (ex: cd sobre, cd campi)\n  cat <file> - ler um ficheiro (ex: cat missao.txt)\n  clear      - limpar o ecrã\n  help       - ajuda do sistema\n\nExplora as pastas para conheceres as atividades, salas e cursos do NEIIST!",
     "about": {

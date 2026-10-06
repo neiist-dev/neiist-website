@@ -85,6 +85,7 @@
   position: absolute;
   bottom: 1.7vw;
   left: 50%;
+  transform: translateX(-50%);
   width: 16%;
   max-width: clamp(5rem, 14vw, 10rem);
   height: auto;
@@ -92,8 +93,35 @@
   pointer-events: none;
 }
 
-.flipped {
-  transform: scaleX(-1);
+.campus {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.playSlot {
+  position: absolute;
+  left: 50%;
+  /* Sits in the gap between the two buildings on small screens */
+  bottom: 5vw;
+  transform: translateX(-50%);
+  z-index: 3;
+  pointer-events: auto;
+}
+
+/* Fills the screen below the sticky navbar and centres the game */
+.playing {
+  min-height: calc(100dvh - 4rem);
+  padding-block: 0;
+  justify-content: center;
+  scroll-margin-top: 4rem;
+}
+
+.playing .campus {
+  height: clamp(220px, 45dvh, 360px);
+  cursor: default;
 }
 
 @media (min-width: 768px) {
@@ -131,7 +159,18 @@
     grid-row: 1;
     align-self: end;
     z-index: 1;
-    pointer-events: none;
+    pointer-events: auto;
+  }
+
+  /* Wide and short like the original dino game, so the field doesn't become mostly empty sky */
+  .playing .campus {
+    height: min(calc(100dvh - 4rem), 30vw);
+    align-self: center;
+  }
+
+  .playSlot {
+    /* Just above the student's head */
+    bottom: calc(1.7vw + min(16vw, clamp(5rem, 14vw, 10rem)) * 0.92);
   }
 
   .announcementSlot {

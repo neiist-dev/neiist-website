@@ -335,6 +335,22 @@
     "title": "Computer Science Student Branch at Instituto Superior Técnico"
   },
 
+  "game": {
+    "play": "Play",
+    "play_label": "Play Campus Runner",
+    "score": "Score",
+    "best": "HI",
+    "game_over": "Game Over",
+    "restart": "Restart",
+    "exit": "Exit game",
+    "start_hint": "Press Space or tap to start",
+    "controls_desktop": "Space/↑ jump · ↓ duck · Esc exit",
+    "controls_touch": "Tap to jump · swipe down to duck",
+    "canvas_label": "Campus Runner: a running game across the IST campus",
+    "final_score": "Game over. Score: {score}. Best: {best}.",
+    "secret_mode": "Cheat code unlocked: no obstacles"
+  },
+
   "terminal": {
     "welcome": "Welcome to the NEIIST terminal! \nSupporting Computer Science students at Instituto Superior Técnico.\n\nUseful commands:\n  ls         - list files and folders\n  cd <dir>   - enter a directory (e.g. cd about, cd campuses)\n  cat <file> - read a file (e.g. cat mission.txt)\n  clear      - clear the screen\n  help       - system help\n\nExplore directories to learn about NEIIST activities, rooms, and courses!",
     "about": {

@@ -19,6 +19,7 @@ async function HomePage({ params }: { params: LocaleParams }) {
       <Hero
         dict={dict.hero}
         terminalDict={dict.terminal}
+        gameDict={dict.game}
         locale={locale}
         announcement={<SweatsContest dict={dict.sweats_contest} />}
       />
