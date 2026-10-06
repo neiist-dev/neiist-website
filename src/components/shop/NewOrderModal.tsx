@@ -20,7 +20,7 @@ import { useUser } from "@/context/UserContext";
 import { validateDiscount } from "@/utils/shop/discountUtils";
 import { ErrorCode } from "@/types/errors";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import { normalizeText } from "@/utils/searchUtils";
 
 interface Props {
@@ -546,30 +546,30 @@ export default function NewOrderModal({
 
   const handleSubmit = async (stockOverride = false) => {
     if (!selectedProducts.length) {
-      toast.error(dict.new_order_modal.errors.no_products, { closeButton: true });
+      Alert.error(dict.new_order_modal.errors.no_products);
       return;
     }
     if (!isEditMode && !campus) {
-      toast.error(dict.new_order_modal.errors.no_campus, { closeButton: true });
+      Alert.error(dict.new_order_modal.errors.no_campus);
       return;
     }
     if (selectedOrderClassification.isMixedInvalid) {
-      toast.error(dict.new_order_modal.errors.mixed_invalid, { closeButton: true });
+      Alert.error(dict.new_order_modal.errors.mixed_invalid);
       return;
     }
 
     const guestCheckout = !selectedUser;
     if (guestCheckout) {
       if (isUserRequiredForSelectedOrder && !guestName.trim()) {
-        toast.error(dict.new_order_modal.errors.guest_name, { closeButton: true });
+        Alert.error(dict.new_order_modal.errors.guest_name);
         return;
       }
       if (isUserRequiredForSelectedOrder && !guestEmail.trim()) {
-        toast.error(dict.new_order_modal.errors.guest_email, { closeButton: true });
+        Alert.error(dict.new_order_modal.errors.guest_email);
         return;
       }
       if (isUserRequiredForSelectedOrder && !phone.trim()) {
-        toast.error(dict.new_order_modal.errors.guest_phone, { closeButton: true });
+        Alert.error(dict.new_order_modal.errors.guest_phone);
         return;
       }
     }
@@ -586,7 +586,7 @@ export default function NewOrderModal({
       }
 
       if (orderResponse.status === "error") {
-        toast.error(orderResponse.message, { closeButton: true });
+        Alert.error(orderResponse.message);
         return;
       }
 
@@ -1006,7 +1006,7 @@ export default function NewOrderModal({
             placeholder="Nome do cliente"
             onConfirm={(value) => {
               if (!value) {
-                toast.error(dict.new_order_modal.errors.guest_name, { closeButton: true });
+                Alert.error(dict.new_order_modal.errors.guest_name);
                 return;
               }
               setGuestName(value);
@@ -1026,7 +1026,7 @@ export default function NewOrderModal({
             type="email"
             onConfirm={(value) => {
               if (!value) {
-                toast.error(dict.new_order_modal.errors.guest_email, { closeButton: true });
+                Alert.error(dict.new_order_modal.errors.guest_email);
                 return;
               }
               setGuestEmail(value);
@@ -1046,7 +1046,7 @@ export default function NewOrderModal({
             type="tel"
             onConfirm={(value) => {
               if (!value) {
-                toast.error(dict.new_order_modal.errors.guest_phone, { closeButton: true });
+                Alert.error(dict.new_order_modal.errors.guest_phone);
                 return;
               }
               setPhone(value);

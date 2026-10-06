@@ -15,7 +15,7 @@ import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
 import { getEventSettings } from "@/types/events";
 import Linkify from "linkify-react";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import { useUser } from "@/context/UserContext";
 import { hasPermission } from "@/lib/security/permissions";
 import type {
@@ -88,9 +88,7 @@ export default function EventDetails({
 
   const saveSettings = useCallback(async () => {
     if (!canManageActivities || !hasChangesRef.current) return;
-    const saveToastId = toast.loading(dict.saving_settings, {
-      closeButton: true,
-    });
+    Alert.info(dict.saving_settings);
     try {
       const res = await fetch("/api/calendar/activities", {
         method: "POST",
@@ -127,16 +125,10 @@ export default function EventDetails({
         };
         onUpdate(patchedRaw);
         router.refresh();
-        toast.success(dict.settings_saved, {
-          id: saveToastId,
-          closeButton: true,
-        });
+        Alert.success(dict.settings_saved);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : dict.errors.save_settings, {
-        id: saveToastId,
-        closeButton: true,
-      });
+      Alert.error(error instanceof Error ? error.message : dict.errors.save_settings);
     }
   }, [canManageActivities, settings, event.id, event.raw, onUpdate, router, dict]);
 
@@ -162,21 +154,17 @@ export default function EventDetails({
 
   const handleSignUp = async () => {
     if (!currentIstid) {
-      toast.warning(dict.please_login, {
-        closeButton: true,
-      });
+      Alert.warning(dict.please_login);
       return;
     }
 
     if (!canSignUp && subscriberCount >= maxAttendeesNum) {
-      toast.error(dict.errors.sign_up, { closeButton: true });
+      Alert.error(dict.errors.sign_up);
       return;
     }
 
     setIsProcessing(true);
-    const signUpToastId = toast.loading(signedUp ? dict.cancelling_signup : dict.signing_up, {
-      closeButton: true,
-    });
+    const SignUpAlertId = Alert.loading(signedUp ? dict.cancelling_signup : dict.signing_up);
     try {
       const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
@@ -195,24 +183,17 @@ export default function EventDetails({
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
-      toast.success(data.signedUp ? dict.signed_up : dict.signup_cancelled, {
-        id: signUpToastId,
-        closeButton: true,
-      });
+      Alert.success(data.signedUp ? dict.signed_up : dict.signup_cancelled);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : dict.errors.update_signup, {
-        id: signUpToastId,
-        closeButton: true,
-      });
+      Alert.error(error instanceof Error ? error.message : dict.errors.update_signup);
     } finally {
+      Alert.dismiss(SignUpAlertId);
       setIsProcessing(false);
     }
   };
 
   const handleEmailAttendees = async () => {
-    const emailToastId = toast.loading(dict.preparing_email, {
-      closeButton: true,
-    });
+    Alert.info(dict.preparing_email);
     try {
       const res = await fetch(`/api/calendar/activities?eventId=${event.id}`, {
         credentials: "include",
@@ -228,24 +209,16 @@ export default function EventDetails({
         `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
         "_blank"
       );
-      toast.success(dict.email_opened, {
-        id: emailToastId,
-        closeButton: true,
-      });
+      Alert.success(dict.email_opened);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : dict.errors.fetch_emails, {
-        id: emailToastId,
-        closeButton: true,
-      });
+      Alert.error(error instanceof Error ? error.message : dict.errors.fetch_emails);
     }
   };
 
   const handleShare = () => {
     const url = `${window.location.origin}/activities?eventId=${event.id}`;
     navigator.clipboard.writeText(url);
-    toast.success(dict.link_copied, {
-      closeButton: true,
-    });
+    Alert.success(dict.link_copied);
   };
 
   return (

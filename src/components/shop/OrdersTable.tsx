@@ -30,7 +30,7 @@ import ActiveFilters from "./ActiveFilters";
 import MobileFiltersDrawer from "./MobileFiltersDrawer";
 import ColorfulText from "@/components/ColorfulText";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 
 function normalizeCampus(campus?: string): string {
   return campus ? campus.trim().toLowerCase() : "";
@@ -298,9 +298,9 @@ export default function OrdersTable({
       setSelectedOrders(new Set());
 
       if (failures.length) {
-        toast.warning(posPaymentDict.error_update_order, { closeButton: true });
+        Alert.warning(posPaymentDict.error_update_order);
       } else {
-        toast.success(posPaymentDict.order_success, { closeButton: true });
+        Alert.success(posPaymentDict.order_success);
         router.refresh();
       }
     } finally {
@@ -310,7 +310,7 @@ export default function OrdersTable({
 
   const doBulkStatusChange = async (status: OrderStatus) => {
     setBulkLoading(true);
-    const toastId = toast.loading(posPaymentDict.status_update_bulk);
+    const toastId = Alert.info(posPaymentDict.status_update_bulk);
     const orderIds = Array.from(selectedOrders)
       .map((id) => Number(id))
       .filter((n) => Number.isFinite(n));
@@ -347,11 +347,11 @@ export default function OrdersTable({
       }
       setSelectedOrders(new Set());
       router.refresh();
-      toast.dismiss(toastId);
+      Alert.dismiss(toastId);
       if (failures.length) {
-        toast.warning(posPaymentDict.error_update_order, { closeButton: true });
+        Alert.warning(posPaymentDict.error_update_order);
       } else {
-        toast.success(posPaymentDict.status_update_success, { closeButton: true });
+        Alert.success(posPaymentDict.status_update_success);
       }
     } finally {
       setBulkLoading(false);

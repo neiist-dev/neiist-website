@@ -16,7 +16,7 @@ import {
 } from "@/utils/shop/shopUtils";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
 import ReactMarkdown from "react-markdown";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface ProductDetailProps {
@@ -32,7 +32,7 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
 
   useEffect(() => {
     return () => {
-      toast.dismiss(unavailableToastId);
+      Alert.dismiss(unavailableToastId);
     };
   }, [unavailableToastId]);
 
@@ -152,7 +152,7 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
 
   const addToCart = () => {
     if (unavailableReason) {
-      toast.error(unavailableReason, { id: unavailableToastId, duration: Infinity });
+      Alert.error(unavailableReason, { duration: Infinity });
       return;
     }
     const cart: CartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");

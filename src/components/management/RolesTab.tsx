@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
+  Alert,
   DataTable,
   ColumnDef,
   SearchInput,
@@ -16,7 +17,6 @@ import {
 } from "@neiist/ui";
 import { FaPlus, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { FiMoreVertical, FiTrash2, FiSliders, FiRotateCcw } from "react-icons/fi";
-import { toast } from "sonner";
 import { UserRole, RoleItem, mapAccessLabelToUserRole } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Membership } from "@/types/memberships";
@@ -137,7 +137,7 @@ export default function RolesTab({
           roles: reorderedList.map((r) => r.role_name),
         });
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : rDict.reorder_failed);
+        Alert.error(err instanceof Error ? err.message : rDict.reorder_failed);
         setRolePositions(rolePositions);
       }
     },
@@ -164,7 +164,7 @@ export default function RolesTab({
               )
           )
         );
-        toast.success(rDict.role_deleted.replace("{role}", role.role_name));
+        Alert.success(rDict.role_deleted.replace("{role}", role.role_name));
       } else {
         setAllRoles((prev) =>
           prev.map((role) =>
@@ -174,11 +174,11 @@ export default function RolesTab({
               : role
           )
         );
-        toast.success(rDict.role_deactivated.replace("{role}", role.role_name));
+        Alert.success(rDict.role_deactivated.replace("{role}", role.role_name));
       }
       setPendingRemove(null);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : rDict.errors.remove_role);
+      Alert.error(err instanceof Error ? err.message : rDict.errors.remove_role);
     }
   };
 
@@ -311,7 +311,7 @@ export default function RolesTab({
                   <DropdownMenu.Item
                     icon={<FiRotateCcw size={14} />}
                     onClick={() => {
-                      toast.info(rDict.reactivate_hint);
+                      Alert.info(rDict.reactivate_hint);
                     }}>
                     {rDict.reactivate_role}
                   </DropdownMenu.Item>

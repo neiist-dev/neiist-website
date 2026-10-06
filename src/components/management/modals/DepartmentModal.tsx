@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Modal, Button, Input, Textarea } from "@neiist/ui";
-import { toast } from "sonner";
+import { Alert, Modal, Button, Input, Textarea } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
 import { addDepartmentAction } from "@/actions/admin/department";
@@ -35,14 +34,14 @@ export default function DepartmentModal({ open, onClose, onSuccess, dict }: Depa
         description: type === "team" ? { pt: descPt.trim(), en: descEn.trim() } : undefined,
       });
 
-      toast.success(tDict.create_success);
+      Alert.success(tDict.create_success);
       setName("");
       setDescPt("");
       setDescEn("");
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : tDict.create_error);
+      Alert.error(err instanceof Error ? err.message : tDict.create_error);
     } finally {
       setIsSubmitting(false);
     }

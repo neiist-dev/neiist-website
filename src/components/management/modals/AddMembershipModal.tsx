@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Modal, Button, DateInput, Field, MultiSelect } from "@neiist/ui";
+import { Alert, Modal, Button, DateInput, Field, MultiSelect } from "@neiist/ui";
 import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import { format, parse, isValid } from "date-fns";
 import { pt } from "date-fns/locale";
-import { toast } from "sonner";
 import type { User } from "@/types/user";
 import type { RoleItem } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -64,7 +63,7 @@ export default function AddMembershipModal({
   const handleSubmit = async (formEvent: React.FormEvent) => {
     formEvent.preventDefault();
     if (!selectedUser || !selectedDeptName || !selectedRoleName) {
-      toast.error(mDict.member_required_error);
+      Alert.error(mDict.member_required_error);
       return;
     }
 
@@ -78,11 +77,11 @@ export default function AddMembershipModal({
         toDate: toDate || undefined,
       });
 
-      toast.success(mDict.member_added_success);
+      Alert.success(mDict.member_added_success);
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : mDict.errors.add_member);
+      Alert.error(err instanceof Error ? err.message : mDict.errors.add_member);
     } finally {
       setIsSubmitting(false);
     }

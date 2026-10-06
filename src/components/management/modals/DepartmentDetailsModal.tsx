@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Badge, Textarea } from "@neiist/ui";
+import { Alert, Modal, Button, Badge, Textarea } from "@neiist/ui";
 import { FiEdit2 } from "react-icons/fi";
-import { toast } from "sonner";
 import type { Description } from "@/types/memberships";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
@@ -71,11 +70,11 @@ export default function DepartmentDetailsModal({
         description: updated,
       });
 
-      toast.success(tDict.update_success);
+      Alert.success(tDict.update_success);
       onUpdated(department.name, updated);
       setIsEditing(false);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : tDict.update_error);
+      Alert.error(err instanceof Error ? err.message : tDict.update_error);
     } finally {
       setIsSaving(false);
     }

@@ -7,7 +7,7 @@ import { useServerSearch } from "@/hooks/useServerSearch";
 import { FiMoreVertical, FiTrash2 } from "react-icons/fi";
 import { useUser } from "@/context/UserContext";
 import MemberAvatar from "@/components/layout/MemberAvatar";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
 import userStyles from "@/styles/components/management/UsersTab.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -72,10 +72,10 @@ export default function UsersTab({ users, totalUsers, dict }: UsersTabProps) {
       await deleteUserAction(pendingDeleteUser.istid);
       setUserList((prev) => prev.filter((user) => user.istid !== pendingDeleteUser.istid));
       setTotal((prev) => Math.max(0, prev - 1));
-      toast.success(uDict.data_deleted || "User deleted successfully");
+      Alert.success(uDict.data_deleted || "User deleted successfully");
       setPendingDeleteUser(null);
     } catch (err: unknown) {
-      toast.error(
+      Alert.error(
         err instanceof Error ? err.message : uDict.delete_error || "Failed to delete user"
       );
     } finally {

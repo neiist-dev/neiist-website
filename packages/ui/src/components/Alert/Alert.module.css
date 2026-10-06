@@ -49,6 +49,24 @@
   color: var(--ui-primary);
 }
 
+.loading {
+  border-inline-start: 4px solid var(--ui-fg-light);
+}
+
+.loading .variantIcon {
+  color: var(--ui-fg-light);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .content {
   flex: 1;
   min-inline-size: 0;

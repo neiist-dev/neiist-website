@@ -21,7 +21,7 @@ import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 import ColorfulText from "@/components/ColorfulText";
 
@@ -76,9 +76,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       window.location.href = "/";
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : dict.delete_account.error_generic, {
-        closeButton: true,
-      });
+      Alert.error(e instanceof Error ? e.message : dict.delete_account.error_generic);
       setShowDeleteConfirm(false);
       setDeleteLoading(false);
     }
@@ -137,7 +135,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || dict.errors.verify_email);
         }
-        toast.success(dict.change_success, { closeButton: true });
+        Alert.success(dict.change_success);
       } else {
         const res = await fetch(`/api/user/update/${user.istid}`, {
           method: "PUT",
@@ -157,9 +155,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         setUser(updated);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : dict.errors.update_profile, {
-        closeButton: true,
-      });
+      Alert.error(e instanceof Error ? e.message : dict.errors.update_profile);
     } finally {
       setPendingChange(null);
     }
@@ -168,9 +164,9 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const getCalendarData = async () => {
     if (calendarData) return calendarData;
     if (!user?.istid) return null;
-    let toastId: string | number = "";
+    let alertId: string | number = "";
     try {
-      toastId = toast.loading(dict.labels.loading);
+      alertId = Alert.loading(dict.labels.loading);
       const response = await fetch(`/api/calendar/${user.istid}`);
       if (!response.ok) {
         throw new Error(dict.errors.fetch_calendar);
@@ -181,13 +177,11 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         webViewLink: data.webViewLink,
       };
       setCalendarData(links);
-      toast.dismiss(toastId);
+      Alert.dismiss(alertId);
       return links;
     } catch (e) {
-      toast.dismiss(toastId);
-      toast.error(e instanceof Error ? e.message : dict.errors.get_calendar_link, {
-        closeButton: true,
-      });
+      Alert.dismiss(alertId);
+      Alert.error(e instanceof Error ? e.message : dict.errors.get_calendar_link);
       return null;
     }
   };
@@ -223,13 +217,13 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const onCvUpload = async (file: File | null) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
-      toast.error(dict.errors.pdf_only, { closeButton: true });
+      Alert.error(dict.errors.pdf_only);
       return;
     }
     setCvLoading(true);
-    let cvToastId: string | number = "";
+    let cvAlertId: string | number = "";
     try {
-      cvToastId = toast.loading(dict.labels.loading);
+      cvAlertId = Alert.loading(dict.labels.loading);
       const form = new FormData();
       form.append("file", file);
       form.append("istid", user.istid);
@@ -237,12 +231,11 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
       if (!res.ok) throw new Error(dict.errors.cv_upload);
       setHasCV(true);
-      toast.success(dict.cv_upload_success, { closeButton: true });
+      Alert.dismiss(cvAlertId);
+      Alert.success(dict.cv_upload_success);
     } catch (e) {
-      if (typeof cvToastId != "undefined") toast.dismiss(cvToastId);
-      toast.error(e instanceof Error ? e.message : dict.errors.cv_upload_error, {
-        closeButton: true,
-      });
+      Alert.dismiss(cvAlertId);
+      Alert.error(e instanceof Error ? e.message : dict.errors.cv_upload_error);
     } finally {
       setCvLoading(false);
     }
@@ -254,11 +247,9 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       const res = await fetch("/api/user/cv-bank", { method: "DELETE" });
       if (!res.ok) throw new Error(dict.errors.cv_remove);
       setHasCV(false);
-      toast.success(dict.cv_remove_success, { closeButton: true });
+      Alert.success(dict.cv_remove_success);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : dict.errors.cv_remove_error, {
-        closeButton: true,
-      });
+      Alert.error(e instanceof Error ? e.message : dict.errors.cv_remove_error);
     } finally {
       setCvLoading(false);
     }
@@ -279,7 +270,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : dict.errors.cv_download, { closeButton: true });
+      Alert.error(e instanceof Error ? e.message : dict.errors.cv_download);
     } finally {
       setCvLoading(false);
     }
