@@ -353,15 +353,61 @@
 
   "terminal": {
     "welcome": "Bem-vindo ao terminal do NEIIST! \nO Núcleo Estudantil de Informática do IST apoia os estudantes de LEIC e MEIC.\n\nComandos úteis:\n  ls         - listar ficheiros e pastas\n  cd <dir>   - entrar numa pasta (ex: cd sobre, cd campi)\n  cat <file> - ler um ficheiro (ex: cat missao.txt)\n  clear      - limpar o ecrã\n  help       - ajuda do sistema\n\nExplora as pastas para conheceres as atividades, salas e cursos do NEIIST!",
+    "fs": {
+      "about": "sobre",
+      "mission": "missao.txt",
+      "departments": "departamentos",
+      "bodies": "orgaos_sociais.txt",
+      "statutes": "estatutos.txt",
+      "campuses": "campi",
+      "courses": "cursos",
+      "activities": "atividades",
+      "dinner": "jantar_curso.txt",
+      "calendar": "calendario.txt",
+      "shop": "loja",
+      "catalog": "catalogo.txt",
+      "shop_link": "loja.txt",
+      "contacts": "contactos",
+      "contacts_info": "contactos.txt"
+    },
     "about": {
       "mission": "O NEIIST (fundado em 2004) tem como missão apoiar e integrar os estudantes do Departamento de Engenharia Informática, aproximando alunos, professores, profissionais e empresas do setor das TI.",
-      "departments": "Departamentos do NEIIST:\n- Dev-Team: Desenvolvimento e manutenção das plataformas web e ferramentas.\n- Organização de Eventos: Workshops técnicos, game nights, hackathons e convívios.\n- Divulgação: Gestão de comunicação, redes sociais e imagem.\n- Contacto: Relações com empresas parceiras e patrocínios.\n- Fotografia: Cobertura fotográfica de eventos e atividades.\n- Visuais: Design gráfico e identidade visual.\n- Controlo & Qualidade: Melhoria contínua de processos e métricas.",
+      "departments": [
+        {
+          "file": "dev-team.txt",
+          "content": "Dev-Team\nDesenvolvimento e manutenção das plataformas web e ferramentas do NEIIST."
+        },
+        {
+          "file": "organizacao_eventos.txt",
+          "content": "Organização de Eventos\nWorkshops técnicos, game nights, hackathons e convívios."
+        },
+        {
+          "file": "divulgacao.txt",
+          "content": "Divulgação\nGestão de comunicação, redes sociais e imagem do NEIIST."
+        },
+        {
+          "file": "contacto.txt",
+          "content": "Contacto\nRelações com empresas parceiras e patrocínios."
+        },
+        {
+          "file": "fotografia.txt",
+          "content": "Fotografia\nCobertura fotográfica de eventos e atividades."
+        },
+        {
+          "file": "visuais.txt",
+          "content": "Visuais\nDesign gráfico e identidade visual do NEIIST."
+        },
+        {
+          "file": "controlo_qualidade.txt",
+          "content": "Controlo & Qualidade\nMelhoria contínua de processos e métricas."
+        }
+      ],
       "bodies": "Órgãos Administrativos do NEIIST:\n- Direção (Presidência, Tesouraria, Secretariado e Vogais)\n- Mesa da Assembleia Geral (MAG)\n- Conselho Fiscal (CF)",
       "statutes_label": "Abrir Estatutos do NEIIST (PDF)"
     },
     "campuses": {
-      "alameda": "Campus Alameda\nLocalização: Pavilhão de Informática I, Sala 3-03 (3º Piso)\nHorário: Segunda a Sexta, 10:00 - 13:00 e 14:00 - 18:00\nServiços: Apoio ao estudante, levantamento de merch, espaço de convívio.",
-      "taguspark": "Campus Taguspark\nLocalização: Edifício Central, Sala 1 - 4.14 (Entrada do Aquário)\nHorário: Segunda a Sexta, 10:00 - 17:00\nServiços: Apoio ao estudante, levantamento de merchandising, espaço de estudo."
+      "alameda": "Campus Alameda\nLocalização: Pavilhão de Informática I, Sala 3-03 (3º Piso)\nHorário: Segunda a Sexta, 10:00 - 13:00 e 14:00 - 18:00\nServiços: Apoio ao estudante, levantamento de merch, espaço de convívio.\nGoogle Maps: PVQ6+5V Lisboa",
+      "taguspark": "Campus Taguspark\nLocalização: Edifício Central, Sala 1 - 4.14 (Entrada do Aquário)\nHorário: Segunda a Sexta, 10:00 - 17:00\nServiços: Apoio ao estudante, levantamento de merchandising, espaço de estudo.\nGoogle Maps: PMPW+RW Porto Salvo"
     },
     "courses": {
       "leic_a": "Licenciatura em Eng. Informática e de Computadores - Alameda",
@@ -371,7 +417,24 @@
       "deic": "Doutoramento em Eng. Informática e de Computadores"
     },
     "activities": {
-      "events": "Atividades e Eventos organizados pelo NEIIST:\n- Workshops Técnicos: Git, Linux, Web Dev, Docker, IA e Segurança\n- Hackathons & Game Jams\n- Game Nights & Churrascos de convívio\n- Semanas Temáticas e Palestras com Empresas\n- Jantar de Curso de Informática",
+      "events": [
+        {
+          "file": "workshops.txt",
+          "content": "Workshops Técnicos\nSessões práticas sobre Git, Linux, Web Dev, Docker, IA e Segurança."
+        },
+        {
+          "file": "hackathons.txt",
+          "content": "Hackathons & Game Jams\nCompetições de programação e desenvolvimento de jogos em equipa."
+        },
+        {
+          "file": "convivios.txt",
+          "content": "Convívios\nGame Nights e Churrascos para juntar a comunidade de Informática."
+        },
+        {
+          "file": "palestras.txt",
+          "content": "Semanas Temáticas & Palestras\nPalestras com empresas e semanas dedicadas a temas da área."
+        }
+      ],
       "dinner_link": "Página do Jantar de Curso",
       "calendar_link": "Ver Calendário de Atividades"
     },

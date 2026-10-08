@@ -353,15 +353,61 @@
 
   "terminal": {
     "welcome": "Welcome to the NEIIST terminal! \nSupporting Computer Science students at Instituto Superior Técnico.\n\nUseful commands:\n  ls         - list files and folders\n  cd <dir>   - enter a directory (e.g. cd about, cd campuses)\n  cat <file> - read a file (e.g. cat mission.txt)\n  clear      - clear the screen\n  help       - system help\n\nExplore directories to learn about NEIIST activities, rooms, and courses!",
+    "fs": {
+      "about": "about",
+      "mission": "mission.txt",
+      "departments": "departments",
+      "bodies": "administrative_bodies.txt",
+      "statutes": "statutes.txt",
+      "campuses": "campuses",
+      "courses": "courses",
+      "activities": "activities",
+      "dinner": "course_dinner.txt",
+      "calendar": "calendar.txt",
+      "shop": "shop",
+      "catalog": "catalog.txt",
+      "shop_link": "shop.txt",
+      "contacts": "contacts",
+      "contacts_info": "contacts.txt"
+    },
     "about": {
       "mission": "NEIIST (founded in 2004) is dedicated to supporting and integrating Computer Science students, fostering collaboration between students, faculty, professionals, and industry partners.",
-      "departments": "NEIIST Departments:\n- Dev-Team: Web platform development and tooling maintenance.\n- Event Organization: Technical workshops, game nights, hackathons, and socials.\n- Outreach: Communication management, social media, and branding.\n- External Relations: Corporate partnerships and sponsorships.\n- Photography: Event coverage and media archive.\n- Visuals: Graphic design and visual identity.\n- Quality Control: Continuous improvement and process optimization.",
+      "departments": [
+        {
+          "file": "dev-team.txt",
+          "content": "Dev-Team\nDevelopment and maintenance of NEIIST's web platforms and tooling."
+        },
+        {
+          "file": "event_organization.txt",
+          "content": "Event Organization\nTechnical workshops, game nights, hackathons, and socials."
+        },
+        {
+          "file": "outreach.txt",
+          "content": "Outreach\nCommunication management, social media, and NEIIST's branding."
+        },
+        {
+          "file": "external_relations.txt",
+          "content": "External Relations\nCorporate partnerships and sponsorships."
+        },
+        {
+          "file": "photography.txt",
+          "content": "Photography\nEvent coverage and media archive."
+        },
+        {
+          "file": "visuals.txt",
+          "content": "Visuals\nGraphic design and NEIIST's visual identity."
+        },
+        {
+          "file": "quality_control.txt",
+          "content": "Quality Control\nContinuous improvement and process optimization."
+        }
+      ],
       "bodies": "Administrative Bodies:\n- Executive Board (President, Treasurer, Secretary, and Officers)\n- General Assembly Board (MAG)\n- Fiscal Council (CF)",
       "statutes_label": "Open NEIIST Statutes (PDF)"
     },
     "campuses": {
-      "alameda": "Alameda Campus\nLocation: Computer Science I Pavilion, Room 3-03 (3rd Floor)\nHours: Monday to Friday, 10:00 - 13:00 and 14:00 - 18:00\nServices: Student support, merch pickup, student lounge.",
-      "taguspark": "Taguspark Campus\nLocation: Central Building, Room 1 - 4.14 (Aquarium Entrance)\nHours: Monday to Friday, 10:00 - 17:00\nServices: Student support, merch pickup, study area."
+      "alameda": "Alameda Campus\nLocation: Computer Science I Pavilion, Room 3-03 (3rd Floor)\nHours: Monday to Friday, 10:00 - 13:00 and 14:00 - 18:00\nServices: Student support, merch pickup, student lounge.\nGoogle Maps: PVQ6+5V Lisbon",
+      "taguspark": "Taguspark Campus\nLocation: Central Building, Room 1 - 4.14 (Aquarium Entrance)\nHours: Monday to Friday, 10:00 - 17:00\nServices: Student support, merch pickup, study area.\nGoogle Maps: PMPW+RW Porto Salvo"
     },
     "courses": {
       "leic_a": "BSc in Computer Science and Engineering - Alameda",
@@ -371,7 +417,24 @@
       "deic": "PhD in Computer Science and Engineering"
     },
     "activities": {
-      "events": "Activities & Events organized by NEIIST:\n- Technical Workshops: Git, Linux, Web Dev, Docker, AI, and Cybersecurity\n- Hackathons & Game Jams\n- Game Nights & Student Barbecues\n- Thematic Weeks and Company Talks\n- Computer Science Course Dinner",
+      "events": [
+        {
+          "file": "workshops.txt",
+          "content": "Technical Workshops\nHands-on sessions on Git, Linux, Web Dev, Docker, AI, and Cybersecurity."
+        },
+        {
+          "file": "hackathons.txt",
+          "content": "Hackathons & Game Jams\nTeam programming and game development competitions."
+        },
+        {
+          "file": "socials.txt",
+          "content": "Socials\nGame Nights and Student Barbecues to bring the Computer Science community together."
+        },
+        {
+          "file": "talks.txt",
+          "content": "Thematic Weeks & Talks\nCompany talks and weeks dedicated to topics in the field."
+        }
+      ],
       "dinner_link": "Course Dinner Page",
       "calendar_link": "View Activities Calendar"
     },
