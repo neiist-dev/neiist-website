@@ -124,7 +124,14 @@
   cursor: default;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 864px) {
+  .playSlot {
+    /* Just above the student's head */
+    bottom: calc(1.7vw + min(16vw, clamp(5rem, 14vw, 10rem)) * 0.92);
+  }
+}
+
+@media (min-width: 1180px) {
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
@@ -168,16 +175,11 @@
     align-self: center;
   }
 
-  .playSlot {
-    /* Just above the student's head */
-    bottom: calc(1.7vw + min(16vw, clamp(5rem, 14vw, 10rem)) * 0.92);
-  }
-
   .announcementSlot {
     left: clamp(1.5rem, 4vw, 4vw);
     right: auto;
     margin-inline: 0;
-    max-width: calc(45% - 2rem);
+    max-width: calc(100% / 2.15 - 2rem);
     justify-content: flex-start;
   }
 }

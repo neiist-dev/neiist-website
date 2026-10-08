@@ -12,6 +12,12 @@
   line-height: 1.45;
   white-space: pre-wrap;
   color-scheme: dark;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.terminalWrapper [style*="break-all"] {
+  word-break: normal !important;
 }
 
 .terminalWrapper * {

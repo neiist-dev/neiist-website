@@ -16,7 +16,7 @@ export default function HeroTerminal({ locale, dict }: HeroTerminalProps) {
   const vfs = useMemo(() => getTerminalVfs(locale, dict), [locale, dict]);
 
   return (
-    <aside className={styles.terminalWrapper} aria-label="Terminal">
+    <div className={styles.terminalWrapper}>
       <Terminal
         fileStructure={vfs}
         theme="dracula"
@@ -24,6 +24,6 @@ export default function HeroTerminal({ locale, dict }: HeroTerminalProps) {
         prompt="guest@~:$ "
         welcomeMessage={dict.welcome}
       />
-    </aside>
+    </div>
   );
 }
