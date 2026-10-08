@@ -406,8 +406,8 @@
       "statutes_label": "Open NEIIST Statutes (PDF)"
     },
     "campuses": {
-      "alameda": "Alameda Campus\nLocation: Computer Science I Pavilion, Room 3-03 (3rd Floor)\nHours: Monday to Friday, 10:00 - 13:00 and 14:00 - 18:00\nServices: Student support, merch pickup, student lounge.\nGoogle Maps: PVQ6+5V Lisbon",
-      "taguspark": "Taguspark Campus\nLocation: Central Building, Room 1 - 4.14 (Aquarium Entrance)\nHours: Monday to Friday, 10:00 - 17:00\nServices: Student support, merch pickup, study area.\nGoogle Maps: PMPW+RW Porto Salvo"
+      "alameda": "Alameda Campus\nLocation: Computer Science I Pavilion, Room 3-03 (3rd Floor)",
+      "taguspark": "Taguspark Campus\nLocation: Central Building, Room 1 - 4.14 (Aquarium Entrance)"
     },
     "courses": {
       "leic_a": "BSc in Computer Science and Engineering - Alameda",

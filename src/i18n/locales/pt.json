@@ -406,8 +406,8 @@
       "statutes_label": "Abrir Estatutos do NEIIST (PDF)"
     },
     "campuses": {
-      "alameda": "Campus Alameda\nLocalização: Pavilhão de Informática I, Sala 3-03 (3º Piso)\nHorário: Segunda a Sexta, 10:00 - 13:00 e 14:00 - 18:00\nServiços: Apoio ao estudante, levantamento de merch, espaço de convívio.\nGoogle Maps: PVQ6+5V Lisboa",
-      "taguspark": "Campus Taguspark\nLocalização: Edifício Central, Sala 1 - 4.14 (Entrada do Aquário)\nHorário: Segunda a Sexta, 10:00 - 17:00\nServiços: Apoio ao estudante, levantamento de merchandising, espaço de estudo.\nGoogle Maps: PMPW+RW Porto Salvo"
+      "alameda": "Campus Alameda\nLocalização: Pavilhão de Informática I, Sala 3-03 (3º Piso)",
+      "taguspark": "Campus Taguspark\nLocalização: Edifício Central, Sala 1 - 4.14 (Entrada do Aquário)"
     },
     "courses": {
       "leic_a": "Licenciatura em Eng. Informática e de Computadores - Alameda",
