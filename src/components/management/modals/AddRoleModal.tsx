@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Modal, Button, Input, Select, Checkbox, Table, DropdownMenu } from "@neiist/ui";
+import { Alert, Modal, Button, Input, Select, Checkbox, Table, DropdownMenu } from "@neiist/ui";
 import { FiSliders, FiUser, FiUsers, FiShield, FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 import { PERMISSIONS, Permission } from "@/types/permissions";
 import { ROLE_PRESETS } from "@/lib/security/permissions";
 import { UserRole } from "@/types/roles";
-import { toast } from "sonner";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
 import permStyles from "@/styles/components/management/PermissionsCatalog.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -56,7 +55,7 @@ export default function AddRoleModal({
   const handleSubmit = async (formEvent: React.FormEvent) => {
     formEvent.preventDefault();
     if (!selectedDept || !roleName.trim()) {
-      toast.error(rDict.role_name_required);
+      Alert.error(rDict.role_name_required);
       return;
     }
 
@@ -68,11 +67,11 @@ export default function AddRoleModal({
         permissions,
       });
 
-      toast.success(rDict.role_added_success);
+      Alert.success(rDict.role_added_success);
       onSuccess(selectedDept, roleName.trim(), permissions);
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : rDict.errors.add_role);
+      Alert.error(err instanceof Error ? err.message : rDict.errors.add_role);
     } finally {
       setIsSubmitting(false);
     }

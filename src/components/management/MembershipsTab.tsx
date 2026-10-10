@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  Alert,
   DataTable,
   ColumnDef,
   SearchInput,
@@ -17,7 +18,6 @@ import MemberAvatar from "@/components/layout/MemberAvatar";
 import { useSearch } from "@/hooks/useSearch";
 import { FaPlus } from "react-icons/fa";
 import { FiMoreVertical, FiCalendar, FiTrash2, FiFileText, FiCamera } from "react-icons/fi";
-import { toast } from "sonner";
 import { ROLE_HIERARCHY, RoleItem, mapAccessLabelToUserRole } from "@/types/roles";
 import {
   compareMembershipsByHierarchy,
@@ -135,9 +135,9 @@ export default function MembershipsTab({
 
         const newPhotoUrl = `/api/user/photo/${editingPhotoIstid}?custom&t=${Date.now()}`;
         handlePhotoUpdated(editingPhotoIstid, newPhotoUrl);
-        toast.success(mDict.photo_updated || "Photo updated successfully");
+        Alert.success(mDict.photo_updated || "Photo updated successfully");
       } catch (err: unknown) {
-        toast.error(
+        Alert.error(
           err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
         );
       } finally {
@@ -261,7 +261,7 @@ export default function MembershipsTab({
           roleName: membership.roleName,
           fromDate: membership.startDate,
         });
-        toast.success(mDict.conclude_success);
+        Alert.success(mDict.conclude_success);
         setMemberships((prev) =>
           prev.map((membership) =>
             membership.id === membership.id
@@ -277,13 +277,13 @@ export default function MembershipsTab({
           roleName: membership.roleName,
           fromDate: membership.startDate,
         });
-        toast.success(mDict.delete_success);
+        Alert.success(mDict.delete_success);
         setMemberships((prev) => prev.filter((membership) => membership.id !== membership.id));
       }
       setSelectedMembership(null);
       setPendingAction(null);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : mDict.process_error);
+      Alert.error(err instanceof Error ? err.message : mDict.process_error);
     }
   };
 

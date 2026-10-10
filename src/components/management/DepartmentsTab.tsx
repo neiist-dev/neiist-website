@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
+  Alert,
   DataTable,
   ColumnDef,
   DropdownMenu,
@@ -15,7 +16,6 @@ import {
 } from "@neiist/ui";
 import { FaPlus, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { FiMoreVertical, FiFileText, FiTrash2, FiRotateCcw } from "react-icons/fi";
-import { toast } from "sonner";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Description } from "@/types/memberships";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
@@ -136,7 +136,7 @@ export default function DepartmentsTab({
       try {
         await reorderDepartmentsAction(newOrdered);
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : tDict.reorder_failed);
+        Alert.error(err instanceof Error ? err.message : tDict.reorder_failed);
         // Revert on error
         setOrderedDeptNames(orderedDeptNames);
       }
@@ -172,7 +172,7 @@ export default function DepartmentsTab({
     try {
       if (type === "deactivate") {
         await deactivateDepartmentAction(dept.name);
-        toast.success(tDict.dept_deactivated.replace("{name}", dept.name));
+        Alert.success(tDict.dept_deactivated.replace("{name}", dept.name));
         setDepartments((prev) =>
           prev.map((department) =>
             department.name === dept.name ? { ...department, active: false } : department
@@ -181,7 +181,7 @@ export default function DepartmentsTab({
         setOrderedDeptNames((prev) => prev.filter((name) => name !== dept.name));
       } else if (type === "reactivate") {
         await reactivateDepartmentAction(dept.name);
-        toast.success(tDict.dept_reactivated.replace("{name}", dept.name));
+        Alert.success(tDict.dept_reactivated.replace("{name}", dept.name));
         setDepartments((prev) =>
           prev.map((department) =>
             department.name === dept.name ? { ...department, active: true } : department
@@ -190,14 +190,14 @@ export default function DepartmentsTab({
         setOrderedDeptNames((prev) => [...prev, dept.name]);
       } else if (type === "delete") {
         await deleteDepartmentAction(dept.name);
-        toast.success(tDict.dept_deleted.replace("{name}", dept.name));
+        Alert.success(tDict.dept_deleted.replace("{name}", dept.name));
         setDepartments((prev) => prev.filter((department) => department.name !== dept.name));
         setOrderedDeptNames((prev) => prev.filter((name) => name !== dept.name));
       }
       setSelectedDepartment(null);
       setPendingAction(null);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : tDict.process_error);
+      Alert.error(err instanceof Error ? err.message : tDict.process_error);
     }
   };
 

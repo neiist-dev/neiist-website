@@ -18,7 +18,7 @@ import { getStatusCssClass } from "@/utils/shop/orderStatusUtils";
 import { Product } from "@/types/shop/product";
 import { MdClose } from "react-icons/md";
 import { FaCalendarAlt, FaCheck, FaExclamationTriangle } from "react-icons/fa";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import { FiChevronDown, FiChevronUp, FiEdit2 } from "react-icons/fi";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import {
@@ -66,6 +66,8 @@ interface OrderDetailOverlayProps {
   products?: Product[];
   dict: Dictionary["order_details"];
   posPaymentDict: Dictionary["pos_payment"];
+  newOrderModalDict: Dictionary["new_order_modal"];
+  createUserModalDict: Dictionary["create_user_modal"];
 }
 
 export default function OrderDetailOverlay({
@@ -77,6 +79,8 @@ export default function OrderDetailOverlay({
   products = [],
   dict,
   posPaymentDict,
+  newOrderModalDict,
+  createUserModalDict,
 }: OrderDetailOverlayProps) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(initialOrder);
@@ -118,16 +122,8 @@ export default function OrderDetailOverlay({
     if (!order?.pickup_deadline) return;
     if (deadlineToastShownRef.current) return;
     const formatted = new Date(order.pickup_deadline).toLocaleDateString();
-    const toastId = `pickup-deadline-${order.id}`;
-    toast.warning(dict.pickup_toast.replace("{date}", formatted), {
-      id: toastId,
+    Alert.warning(dict.pickup_toast.replace("{date}", formatted), {
       duration: Infinity,
-      closeButton: true,
-      dismissible: true,
-      style: {
-        color: "red",
-        border: "2px solid var(--danger-colour, red)",
-      },
     });
     deadlineToastShownRef.current = true;
   }, [order, dict.pickup_toast]);
@@ -169,11 +165,9 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      toast.success(dict.confirm_status.replace("{status}", dict.status[status]), {
-        closeButton: true,
-      });
+      Alert.success(dict.confirm_status.replace("{status}", dict.status[status]));
     } else {
-      toast.error(dict.error_update_status, { closeButton: true });
+      Alert.error(dict.error_update_status);
     }
   };
 
@@ -184,9 +178,9 @@ export default function OrderDetailOverlay({
       const updated = await res.json();
       setOrder(updated);
       router.refresh();
-      toast.success(dict.confirm_cancel, { closeButton: true });
+      Alert.success(dict.confirm_cancel);
     } else {
-      toast.error(dict.error_cancel, { closeButton: true });
+      Alert.error(dict.error_cancel);
     }
   };
 
@@ -272,12 +266,10 @@ export default function OrderDetailOverlay({
       setOrder(data);
       setNotesEditing(false);
       router.refresh();
-      toast.success(dict.success_save_notes, { closeButton: true });
+      Alert.success(dict.success_save_notes);
       return true;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : dict.error_save_notes, {
-        closeButton: true,
-      });
+      Alert.error(err instanceof Error ? err.message : dict.error_save_notes);
       return false;
     }
   };
@@ -657,6 +649,10 @@ export default function OrderDetailOverlay({
           mode="edit"
           orderToEdit={order}
           products={products}
+          dict={{
+            new_order_modal: newOrderModalDict,
+            create_user_modal: createUserModalDict,
+          }}
           onClose={() => setShowEditOrderModal(false)}
           onSubmit={(updatedOrder) => {
             if (updatedOrder) setOrder(updatedOrder);

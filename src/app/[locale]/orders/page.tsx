@@ -48,6 +48,8 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
         orders={orders}
         products={products}
         dict={dict.orders_table}
+        newOrderModalDict={dict.new_order_modal}
+        createUserModalDict={dict.create_user_modal}
         posPaymentDict={dict.pos_payment}
         basePath={`/${locale}`}
         isArchive={isArchive}
@@ -62,6 +64,8 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
           products={products}
           dict={dict.order_details}
           posPaymentDict={dict.pos_payment}
+          newOrderModalDict={dict.new_order_modal}
+          createUserModalDict={dict.create_user_modal}
         />
       )}
     </>

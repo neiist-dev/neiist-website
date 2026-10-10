@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
+  Alert,
   Modal,
   Button,
   Badge,
@@ -12,7 +13,6 @@ import {
   toLinkedinUrl,
 } from "@neiist/ui";
 import { FiMoreVertical, FiCalendar, FiTrash2, FiCamera } from "react-icons/fi";
-import { toast } from "sonner";
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import type { User } from "@/types/user";
 import type { Membership } from "@/types/memberships";
@@ -113,9 +113,9 @@ export default function MemberDetailModal({
           setUser({ ...user, photo: newPhotoUrl });
         }
         onPhotoUpdated?.(membership.userNumber, newPhotoUrl);
-        toast.success(mDict.photo_updated || "Photo updated successfully");
+        Alert.success(mDict.photo_updated || "Photo updated successfully");
       } catch (err: unknown) {
-        toast.error(
+        Alert.error(
           err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
         );
       } finally {

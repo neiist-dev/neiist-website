@@ -23,13 +23,12 @@ import {
   FaTruck,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Product, ProductVariant } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import styles from "@/styles/components/shop/ProductForm.module.css";
 import { isColorKey, joinNameHex, splitNameHex } from "@/utils/shop/shopUtils";
 import VariantOptionsEditor, { variantValue } from "@/components/shop/VariantOptionsEditor";
-import { MultiSelect } from "@neiist/ui";
+import { Alert, MultiSelect } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
 import ToggleSwitch from "@/components/ToggleSwitch";
 import SizeGuideOverlay from "@/components/shop/SizeGuideOverlay";
@@ -496,13 +495,13 @@ export default function ProductForm({
         updateForm({ category: data.category.name });
       }
     } catch {
-      toast.error(dict.error_create_category);
+      Alert.error(dict.error_create_category);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.category) return toast.error(dict.error_required_fields);
+    if (!form.name.trim() || !form.category) return Alert.error(dict.error_required_fields);
     setUploading(true);
     try {
       const currentVariantIds = new Set(
@@ -561,7 +560,7 @@ export default function ProductForm({
       if (res.ok) router.replace(backHref);
       else throw new Error((await res.json()).error);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : dict.error_save);
+      Alert.error(err instanceof Error ? err.message : dict.error_save);
     } finally {
       setUploading(false);
     }

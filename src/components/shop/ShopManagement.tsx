@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useOptimistic } from "react";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import { useRouter } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import { FiPackage, FiArchive } from "react-icons/fi";
@@ -141,10 +141,10 @@ export default function ShopManagement({
 
       if (!response.ok) {
         const data = await response.json();
-        toast.error(data?.error ?? dict.error_generic);
+        Alert.error(data?.error ?? dict.error_generic);
       }
     } catch {
-      toast.error(dict.error_generic);
+      Alert.error(dict.error_generic);
     }
   };
 

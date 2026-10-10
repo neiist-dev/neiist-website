@@ -641,7 +641,8 @@
       "title": "About Us Page Preview",
       "no_member": "No member",
       "photo_alt": "photo"
-    }
+    },
+    "order_saved_success": "Order saved successfully."
   },
 
   "profile": {
@@ -657,6 +658,9 @@
     "linkedin_placeholder": "LinkedIn username",
     "confirm_remove_field": "Do you want to remove the contact method {field}?",
     "confirm_change_field": "Do you want to save the change for {field} to \"{value}\"?",
+    "change_success": "Changed successfully.",
+    "cv_upload_success": "CV uploaded successfully.",
+    "cv_remove_success": "CV removed successfully.",
     "errors": {
       "verify_email": "Failed to send verification email",
       "update": "Failed to update",
@@ -737,7 +741,9 @@
     "confirm_message_1": "Are you sure you want to create user",
     "confirm_message_2": "?",
     "error_required": "Please fill in all fields.",
-    "error_create": "Failed to create user"
+    "error_create": "Failed to create user",
+    "success_new_user": "New user created successfully.",
+    "error_new_user": "Error while creating a new user"
   },
 
   "new_order_modal": {
@@ -958,6 +964,10 @@
         "add_role": "Error adding role",
         "remove_role": "Error removing role",
         "save_permissions": "Failed to save permissions"
+      },
+      "successes": {
+        "add_role": "Role added successfully",
+        "remove_role": "Role removed successfully"
       },
       "confirm_dialog": {
         "confirm": "Confirm",
@@ -1281,6 +1291,7 @@
     "error_update_order": "Failed to update order",
     "error_finalize_order": "Failed to finalize order",
     "error_invalid_server_response": "Invalid server response",
+    "order_success": "Order updated successfully",
     "reader_status": "Reader {name}: {status}",
     "awaiting_terminal": "Awaiting terminal confirmation...",
     "select_reader_error": "Select a SumUp reader to continue.",
@@ -1299,7 +1310,9 @@
     "confirm_mbway": "Do you confirm MBWay payment was received and is correct?",
     "confirm_reference": "Do you confirm you received payment for reference/reason \"{reference}\" and it is correct?",
     "mbway_send_to": "Send MBWay to:",
-    "mbway_number_unavailable": "Number not available"
+    "mbway_number_unavailable": "Number not available",
+    "status_update_bulk": "Updating status of bulk order...",
+    "status_update_success": "Status updated successfully."
   },
 
   "my_orders": {

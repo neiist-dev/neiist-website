@@ -8,7 +8,7 @@ import { DiscountCode } from "@/types/shop/discountCode";
 import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -133,15 +133,14 @@ export default function DiscountCodeManagement({
       })
     );
     if (failures === 0) {
-      toast.success(
+      Alert.success(
         dict.toast_updated.replace(
           "{status}",
           active ? dict.toast_activated : dict.toast_deactivated
-        ),
-        { closeButton: true }
+        )
       );
     } else {
-      toast.error(dict.toast_error.replace("{count}", String(failures)), { closeButton: true });
+      Alert.error(dict.toast_error.replace("{count}", String(failures)));
     }
     setSelected(new Set());
   };
@@ -165,9 +164,9 @@ export default function DiscountCodeManagement({
       })
     );
     if (failures === 0) {
-      toast.success(dict.toast_deleted, { closeButton: true });
+      Alert.success(dict.toast_deleted);
     } else {
-      toast.error(dict.toast_error.replace("{count}", String(failures)), { closeButton: true });
+      Alert.error(dict.toast_error.replace("{count}", String(failures)));
     }
     setSelected(new Set());
   };

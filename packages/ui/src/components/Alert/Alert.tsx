@@ -4,9 +4,9 @@ import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 import styles from "./Alert.module.css";
 import { cn } from "../../utils/cn";
 
-import { FiCheckCircle, FiAlertCircle, FiAlertTriangle, FiInfo } from "react-icons/fi";
+import { FiCheckCircle, FiAlertCircle, FiAlertTriangle, FiInfo, FiLoader } from "react-icons/fi";
 
-export type AlertVariant = "success" | "error" | "warning" | "info";
+export type AlertVariant = "success" | "error" | "warning" | "info" | "loading";
 
 export interface AlertOptions {
   description?: string;
@@ -30,6 +30,7 @@ const variantIcons: Record<
   error: FiAlertCircle,
   warning: FiAlertTriangle,
   info: FiInfo,
+  loading: FiLoader,
 };
 
 function Toast({ id, title, description, variant, closeLabel = "Close" }: ToastProps) {
@@ -67,7 +68,9 @@ function createToast(variant: AlertVariant) {
           closeLabel={options?.closeLabel}
         />
       ),
-      { duration: options?.duration }
+      {
+        duration: variant === "loading" && !options?.duration ? Infinity : options?.duration,
+      }
     );
 }
 
@@ -76,6 +79,8 @@ export const Alert = {
   error: createToast("error"),
   info: createToast("info"),
   warning: createToast("warning"),
+  loading: createToast("loading"),
+  dismiss: (id?: string | number) => sonnerToast.dismiss(id),
 };
 
 export interface ToasterProps {

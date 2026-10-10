@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MdClose } from "react-icons/md";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { Order } from "@/types/shop/order";
 import { getPaymentLabel, PaymentMethod, PENDING_PAYMENT_METHODS } from "@/types/shop/payment";
@@ -300,7 +300,7 @@ export default function PosPaymentOverlay({
             payment_method: "sumup-tpa",
             payment_reference: existingClientTransactionId,
           });
-          toast.info(dict.payment_initiated_toast);
+          Alert.info(dict.payment_initiated_toast);
           return pending;
         }
       }
@@ -325,7 +325,7 @@ export default function PosPaymentOverlay({
       payment_method: "sumup-tpa",
       payment_reference: createData.clientTransactionId,
     });
-    toast.info(dict.payment_initiated_toast);
+    Alert.info(dict.payment_initiated_toast);
     return pending;
   }, [
     selectedReaderId,
@@ -357,7 +357,7 @@ export default function PosPaymentOverlay({
 
       if (paymentMethod === "in-person") {
         await updateOrderFields({ payment_method: "in-person" });
-        toast.info(dict.in_person_notice, { id: "in-person-notice" });
+        Alert.info(dict.in_person_notice);
         onOrderUpdatedAction({ ...order, payment_method: "in-person", status: "pending" });
         onCloseAction();
         return;
@@ -452,7 +452,7 @@ export default function PosPaymentOverlay({
     if (!completedOrder && order.payment_method !== "in-person") {
       try {
         await updateOrderFields({ payment_method: "in-person" });
-        toast.info(dict.in_person_notice, { id: "in-person-notice" });
+        Alert.info(dict.in_person_notice);
       } catch (err) {
         console.warn("Failed to set payment method to in-person on close", err);
       }
@@ -532,7 +532,7 @@ export default function PosPaymentOverlay({
               setPaymentMethod(method);
               setError(null);
               if (method === "in-person") {
-                toast.info(dict.in_person_notice, { id: "in-person-notice" });
+                Alert.info(dict.in_person_notice);
               }
             }}
             disabled={isSubmitting || lockPaymentMethod}>

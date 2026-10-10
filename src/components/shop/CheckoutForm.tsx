@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ShopCheckoutOverlay from "@/components/shop/ShopCheckoutOverlay";
-import { toast } from "sonner";
+import { Alert } from "@neiist/ui";
 import styles from "@/styles/components/shop/CheckoutForm.module.css";
 
 import { Campus } from "@/types/shop/order";
@@ -115,7 +115,7 @@ export default function CheckoutForm({
     const code = discountCode.trim();
     if (!code) {
       setAppliedDiscount(null);
-      toast.error("Indica um código de desconto.", { closeButton: true });
+      Alert.error("Indica um código de desconto.");
       return;
     }
 
@@ -129,7 +129,7 @@ export default function CheckoutForm({
 
       if (!result.valid) {
         setAppliedDiscount(null);
-        toast.error(result.error ?? "Código de desconto inválido.", { closeButton: true });
+        Alert.error(result.error ?? "Código de desconto inválido.");
         return;
       }
 
@@ -139,9 +139,7 @@ export default function CheckoutForm({
       });
     } catch (err) {
       setAppliedDiscount(null);
-      toast.error(err instanceof Error ? err.message : "Não foi possível validar o código.", {
-        closeButton: true,
-      });
+      Alert.error(err instanceof Error ? err.message : "Não foi possível validar o código.");
     } finally {
       setDiscountLoading(false);
     }
@@ -180,28 +178,24 @@ export default function CheckoutForm({
 
   const handleSubmit = async (selectedPayment: PaymentMethod | null = payment) => {
     if (!campus) {
-      toast.error(dict.error_no_campus, { closeButton: true });
+      Alert.error(dict.error_no_campus);
       return;
     }
 
     if (isMixedInvalid) {
-      toast.error(dict.error_mixed_invalid, {
-        closeButton: true,
-      });
+      Alert.error(dict.error_mixed_invalid);
       return;
     }
 
     if (!selectedPayment || !allowedPaymentMethods.includes(selectedPayment)) {
-      toast.error(dict.error_no_payment, { closeButton: true });
+      Alert.error(dict.error_no_payment);
       return;
     }
     setLoading(true);
     try {
       await createOrder(selectedPayment, true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : dict.error_submit, {
-        closeButton: true,
-      });
+      Alert.error(err instanceof Error ? err.message : dict.error_submit);
     } finally {
       setLoading(false);
     }
@@ -209,23 +203,23 @@ export default function CheckoutForm({
 
   const handleApplePayDirect = () => {
     if (!campus) {
-      toast.error(dict.error_no_campus, { closeButton: true });
+      Alert.error(dict.error_no_campus);
       return;
     }
 
     if (typeof window === "undefined" || !window.isSecureContext) {
-      toast.error(dict.error_apple_pay_context, { closeButton: true });
+      Alert.error(dict.error_apple_pay_context);
       return;
     }
 
     if (typeof window.ApplePaySession === "undefined") {
-      toast.error(dict.error_apple_pay_unavailable, { closeButton: true });
+      Alert.error(dict.error_apple_pay_unavailable);
       return;
     }
 
     const ApplePaySession = window.ApplePaySession;
     if (!ApplePaySession.canMakePayments()) {
-      toast.error(dict.error_apple_pay_device, { closeButton: true });
+      Alert.error(dict.error_apple_pay_device);
       return;
     }
 
@@ -286,9 +280,7 @@ export default function CheckoutForm({
         session.completeMerchantValidation(merchantSession);
       } catch (error) {
         session.abort();
-        toast.error(error instanceof Error ? error.message : dict.error_apple_pay_failed, {
-          closeButton: true,
-        });
+        Alert.error(error instanceof Error ? error.message : dict.error_apple_pay_failed);
         setLoading(false);
       }
     };
@@ -315,15 +307,11 @@ export default function CheckoutForm({
           router.push(`${basePath || ""}/my-orders?orderId=${createdOrderId}`);
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
-          toast.error(data?.error || dict.error_apple_pay_failure, {
-            closeButton: true,
-          });
+          Alert.error(data?.error || dict.error_apple_pay_failure);
         }
       } catch (error) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
-        toast.error(error instanceof Error ? error.message : dict.error_apple_pay_processing, {
-          closeButton: true,
-        });
+        Alert.error(error instanceof Error ? error.message : dict.error_apple_pay_processing);
       } finally {
         setLoading(false);
       }

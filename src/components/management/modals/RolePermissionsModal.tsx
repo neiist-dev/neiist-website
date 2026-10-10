@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Table, Checkbox, DropdownMenu } from "@neiist/ui";
+import { Alert, Modal, Button, Table, Checkbox, DropdownMenu } from "@neiist/ui";
 import { FiSliders, FiUser, FiUsers, FiShield, FiCheckSquare, FiRotateCcw } from "react-icons/fi";
 import { PERMISSIONS, Permission } from "@/types/permissions";
 import { ROLE_PRESETS } from "@/lib/security/permissions";
 import { UserRole, RoleItem } from "@/types/roles";
-import { toast } from "sonner";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
 import permStyles from "@/styles/components/management/PermissionsCatalog.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -66,11 +65,11 @@ export default function RolePermissionsModal({
         permissions: workingPermissions,
       });
 
-      toast.success(rDict.permissions_saved);
+      Alert.success(rDict.permissions_saved);
       onSaved(departmentName, role.role_name, workingPermissions, res.access_label || null);
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : rDict.errors.save_permissions);
+      Alert.error(err instanceof Error ? err.message : rDict.errors.save_permissions);
     } finally {
       setIsSaving(false);
     }

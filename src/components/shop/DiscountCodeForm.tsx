@@ -19,9 +19,8 @@ import {
   FaUsers,
   FaArrowLeft,
 } from "react-icons/fa";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { MultiSelect } from "@neiist/ui";
+import { Alert, MultiSelect } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
 import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
@@ -264,19 +263,19 @@ export default function DiscountCodeForm({
       : null;
 
     if (recipients.length === 0) {
-      toast.error(dict.error_no_recipients, { closeButton: true });
+      Alert.error(dict.error_no_recipients);
       return;
     }
     if (!Number.isFinite(discountValue) || discountValue < 0) {
-      toast.error(dict.error_invalid_value, { closeButton: true });
+      Alert.error(dict.error_invalid_value);
       return;
     }
     if (!Number.isInteger(maxUses) || maxUses <= 0) {
-      toast.error(dict.error_invalid_max_uses, { closeButton: true });
+      Alert.error(dict.error_invalid_max_uses);
       return;
     }
     if (!creationDraft.emailSubject.trim() || !creationDraft.emailIntroLine.trim()) {
-      toast.error(dict.error_missing_subject_or_body, { closeButton: true });
+      Alert.error(dict.error_missing_subject_or_body);
       return;
     }
 
@@ -306,7 +305,7 @@ export default function DiscountCodeForm({
         | null;
 
       if (!response.ok) {
-        toast.error(data?.error ?? dict.error_generate_failed, { closeButton: true });
+        Alert.error(data?.error ?? dict.error_generate_failed);
         return;
       }
 
@@ -314,29 +313,21 @@ export default function DiscountCodeForm({
       const failedCount = data?.failed_count ?? 0;
 
       if (failedCount > 0) {
-        toast.warning(
+        Alert.warning(
           dict.toast_generated_with_failures
             .replace("{count}", String(generatedCodes.length))
-            .replace("{failed}", String(failedCount)),
-          {
-            closeButton: true,
-          }
+            .replace("{failed}", String(failedCount))
         );
       } else {
-        toast.success(
-          dict.toast_generated_success.replace("{count}", String(generatedCodes.length)),
-          {
-            closeButton: true,
-          }
+        Alert.success(
+          dict.toast_generated_success.replace("{count}", String(generatedCodes.length))
         );
       }
 
       router.push(backHref || "/shop/manage/discounts");
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : dict.error_generate_failed, {
-        closeButton: true,
-      });
+      Alert.error(error instanceof Error ? error.message : dict.error_generate_failed);
     } finally {
       setIsCreating(false);
     }

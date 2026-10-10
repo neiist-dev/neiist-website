@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import type { User } from "@/types/user";
-import { Modal, Field, Input, Button, ConfirmDialog } from "@neiist/ui";
-import { toast } from "sonner";
+import { Alert, Modal, Field, Input, Button, ConfirmDialog } from "@neiist/ui";
 import styles from "@/styles/components/shop/CreateNewUserModal.module.css";
 
 export interface CreateNewUserModalDict {
@@ -57,7 +56,7 @@ export default function CreateNewUserModal({
 
   const handleSubmit = async () => {
     if (!istId.trim() || !name.trim() || !email.trim()) {
-      toast.error(tFillFields);
+      Alert.error(tFillFields);
       return;
     }
 
@@ -82,12 +81,12 @@ export default function CreateNewUserModal({
         throw new Error(data.error || tError);
       }
 
-      toast.success(tCreated);
+      Alert.success(tCreated);
       onSubmit?.(data);
       onClose();
     } catch (err: unknown) {
       console.error("Error creating user:", err);
-      toast.error(err instanceof Error ? err.message : tError);
+      Alert.error(err instanceof Error ? err.message : tError);
     } finally {
       setIsSubmitting(false);
     }
@@ -96,7 +95,7 @@ export default function CreateNewUserModal({
   const handleConfirm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!istId.trim() || !name.trim() || !email.trim()) {
-      toast.error(tFillFields);
+      Alert.error(tFillFields);
       return;
     }
     setShowConfirm(true);
