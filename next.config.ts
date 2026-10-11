@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   experimental: {
     typedEnv: true,
     optimizePackageImports: [
+      "@neiist/ui",
       "react-icons",
       "date-fns",
       "@dnd-kit/core",

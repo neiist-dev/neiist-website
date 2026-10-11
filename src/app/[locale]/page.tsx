@@ -16,7 +16,13 @@ async function HomePage({ params }: { params: LocaleParams }) {
 
   return (
     <>
-      <Hero dict={dict.hero} announcement={<SweatsContest dict={dict.sweats_contest} />} />
+      <Hero
+        dict={dict.hero}
+        terminalDict={dict.terminal}
+        gameDict={dict.game}
+        locale={locale}
+        announcement={<SweatsContest dict={dict.sweats_contest} />}
+      />
       <Activities dict={dict.activities} />
       {/* <Partnerships dict={dict.partnerships} /> */}
     </>

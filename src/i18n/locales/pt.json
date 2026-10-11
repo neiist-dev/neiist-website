@@ -326,12 +326,130 @@
   },
 
   "hero": {
+    "welcome_prefix": "Bem-vindos ao",
     "title_prefix": "Núcleo Estudantil de ",
     "title_highlight": "Informática",
     "title_suffix": " do Instituto Superior Técnico",
     "campus_alt": "Campus do IST",
     "student_alt": "Estudante",
     "title": "Núcleo Estudantil de Informática do Instituto Superior Técnico"
+  },
+
+  "game": {
+    "play": "Jogar",
+    "play_label": "Jogar Campus Runner",
+    "score": "Pontos",
+    "best": "HI",
+    "game_over": "Fim de Jogo",
+    "restart": "Recomeçar",
+    "exit": "Sair do jogo",
+    "start_hint": "Carrega em Espaço ou toca para começar",
+    "controls_desktop": "Espaço/↑ saltar · ↓ baixar · Esc sair",
+    "controls_touch": "Toca para saltar · desliza para baixo para baixar",
+    "canvas_label": "Campus Runner: um jogo de corrida pelo campus do IST",
+    "final_score": "Fim de jogo. Pontos: {score}. Melhor: {best}.",
+    "secret_mode": "Código secreto desbloqueado: sem obstáculos"
+  },
+
+  "terminal": {
+    "welcome": "Bem-vindo ao terminal do NEIIST! \nO Núcleo Estudantil de Informática do IST apoia os estudantes de LEIC e MEIC.\n\nComandos úteis:\n  ls         - listar ficheiros e pastas\n  cd <dir>   - entrar numa pasta (ex: cd sobre, cd campi)\n  cat <file> - ler um ficheiro (ex: cat missao.txt)\n  clear      - limpar o ecrã\n  help       - ajuda do sistema\n\nExplora as pastas para conheceres as atividades, salas e cursos do NEIIST!",
+    "fs": {
+      "about": "sobre",
+      "mission": "missao.txt",
+      "departments": "departamentos",
+      "bodies": "orgaos_sociais.txt",
+      "statutes": "estatutos.txt",
+      "campuses": "campi",
+      "courses": "cursos",
+      "activities": "atividades",
+      "dinner": "jantar_curso.txt",
+      "calendar": "calendario.txt",
+      "shop": "loja",
+      "catalog": "catalogo.txt",
+      "shop_link": "loja.txt",
+      "contacts": "contactos",
+      "contacts_info": "contactos.txt"
+    },
+    "about": {
+      "mission": "O NEIIST (fundado em 2004) tem como missão apoiar e integrar os estudantes do Departamento de Engenharia Informática, aproximando alunos, professores, profissionais e empresas do setor das TI.",
+      "departments": [
+        {
+          "file": "dev-team.txt",
+          "content": "Dev-Team\nDesenvolvimento e manutenção das plataformas web e ferramentas do NEIIST."
+        },
+        {
+          "file": "organizacao_eventos.txt",
+          "content": "Organização de Eventos\nWorkshops técnicos, game nights, hackathons e convívios."
+        },
+        {
+          "file": "divulgacao.txt",
+          "content": "Divulgação\nGestão de comunicação, redes sociais e imagem do NEIIST."
+        },
+        {
+          "file": "contacto.txt",
+          "content": "Contacto\nRelações com empresas parceiras e patrocínios."
+        },
+        {
+          "file": "fotografia.txt",
+          "content": "Fotografia\nCobertura fotográfica de eventos e atividades."
+        },
+        {
+          "file": "visuais.txt",
+          "content": "Visuais\nDesign gráfico e identidade visual do NEIIST."
+        },
+        {
+          "file": "controlo_qualidade.txt",
+          "content": "Controlo & Qualidade\nMelhoria contínua de processos e métricas."
+        }
+      ],
+      "bodies": "Órgãos Administrativos do NEIIST:\n- Direção (Presidência, Tesouraria, Secretariado e Vogais)\n- Mesa da Assembleia Geral (MAG)\n- Conselho Fiscal (CF)",
+      "statutes_label": "Abrir Estatutos do NEIIST (PDF)"
+    },
+    "campuses": {
+      "alameda": "Campus Alameda\nLocalização: Pavilhão de Informática I, Sala 3-03 (3º Piso)",
+      "taguspark": "Campus Taguspark\nLocalização: Edifício Central, Sala 1 - 4.14 (Entrada do Aquário)"
+    },
+    "courses": {
+      "leic_a": "Licenciatura em Eng. Informática e de Computadores - Alameda",
+      "leic_t": "Licenciatura em Eng. Informática e de Computadores - Taguspark",
+      "meic_a": "Mestrado em Eng. Informática e de Computadores - Alameda",
+      "meic_t": "Mestrado em Eng. Informática e de Computadores - Taguspark",
+      "deic": "Doutoramento em Eng. Informática e de Computadores"
+    },
+    "activities": {
+      "events": [
+        {
+          "file": "workshops.txt",
+          "content": "Workshops Técnicos\nSessões práticas sobre Git, Linux, Web Dev, Docker, IA e Segurança."
+        },
+        {
+          "file": "hackathons.txt",
+          "content": "Hackathons & Game Jams\nCompetições de programação e desenvolvimento de jogos em equipa."
+        },
+        {
+          "file": "convivios.txt",
+          "content": "Convívios\nGame Nights e Churrascos para juntar a comunidade de Informática."
+        },
+        {
+          "file": "palestras.txt",
+          "content": "Semanas Temáticas & Palestras\nPalestras com empresas e semanas dedicadas a temas da área."
+        }
+      ],
+      "dinner_link": "Página do Jantar de Curso",
+      "calendar_link": "Ver Calendário de Atividades"
+    },
+    "shop": {
+      "catalog": "Merchandising oficial do NEIIST:\n- Hoodies & Sweats de Informática\n- T-shirts oficiais\n- Autocolantes e Stickers\n- Copos e Acessórios",
+      "shop_link": "Visitar a Loja Online do NEIIST"
+    },
+    "sinfo": "SINFO - Maior evento tecnológico de cariz não-lucrativo organizado exclusivamente por estudantes em Portugal. Sabe mais em https://sinfo.org",
+    "contacts": {
+      "info": "Contactos do NEIIST:\n- Email: neiist@tecnico.ulisboa.pt\n- Morada: Av. Rovisco Pais 1, 1049-001 Lisboa (Alameda) / Av. Prof. Dr. Cavaco Silva, 2744-016 Porto Salvo (Taguspark)",
+      "instagram": "Instagram: @NEIIST (https://instagram.com/NEIIST)",
+      "github": "GitHub: @neiist-dev (https://github.com/neiist-dev)",
+      "discord": "Discord e Links: https://linktr.ee/NEIIST",
+      "linkedin": "LinkedIn: NEIIST (https://www.linkedin.com/company/neiist/)"
+    }
   },
 
   "sinfo": {
