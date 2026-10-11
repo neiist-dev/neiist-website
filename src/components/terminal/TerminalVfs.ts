@@ -1,78 +1,248 @@
-import type { DirectoryNode, FileNode, FSNode } from "one-terminal";
+import type { DirectoryNode } from "one-terminal";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/i18n-config";
-
-const text = (content: string): FileNode => ({
-  kind: "file",
-  fileType: "text",
-  content,
-});
-
-const link = (href: string, label: string): FileNode => ({
-  kind: "file",
-  fileType: "link",
-  href,
-  label,
-});
-
-const dir = (entries: Record<string, FSNode>): DirectoryNode => ({
-  kind: "directory",
-  entries,
-});
-
-const filesFrom = (items: { file: string; content: string }[]): Record<string, FileNode> =>
-  Object.fromEntries(items.map(({ file, content }) => [file, text(content)]));
 
 export function getTerminalVfs(locale: Locale, dict: Dictionary["terminal"]): DirectoryNode {
   const { fs } = dict;
 
-  const aboutDir = dir({
-    [fs.mission]: text(dict.about.mission),
-    [fs.departments]: dir(filesFrom(dict.about.departments)),
-    [fs.bodies]: text(dict.about.bodies),
-    [fs.statutes]: link("/estatutos.pdf", dict.about.statutes_label),
-  });
+  const departmentEntries: DirectoryNode["entries"] = Object.fromEntries(
+    dict.about.departments.map((dept) => [
+      dept.file,
+      { kind: "file", fileType: "text", content: dept.content },
+    ])
+  );
 
-  const campusDir = dir({
-    "alameda.txt": text(dict.campuses.alameda),
-    "taguspark.txt": text(dict.campuses.taguspark),
-  });
+  const eventEntries: DirectoryNode["entries"] = Object.fromEntries(
+    dict.activities.events.map((event) => [
+      event.file,
+      { kind: "file", fileType: "text", content: event.content },
+    ])
+  );
 
-  const courseDir = dir({
-    "leic-a.txt": link("https://fenix.tecnico.ulisboa.pt/cursos/leic-a", dict.courses.leic_a),
-    "leic-t.txt": link("https://fenix.tecnico.ulisboa.pt/cursos/leic-t", dict.courses.leic_t),
-    "meic-a.txt": link("https://fenix.tecnico.ulisboa.pt/cursos/meic-a", dict.courses.meic_a),
-    "meic-t.txt": link("https://fenix.tecnico.ulisboa.pt/cursos/meic-t", dict.courses.meic_t),
-    "deic.txt": link("https://fenix.tecnico.ulisboa.pt/cursos/deic", dict.courses.deic),
-  });
-
-  const activityDir = dir({
-    ...filesFrom(dict.activities.events),
-    [fs.dinner]: link(`/${locale}/dinner`, dict.activities.dinner_link),
-    [fs.calendar]: link(`/${locale}/activities`, dict.activities.calendar_link),
-  });
-
-  const shopDir = dir({
-    [fs.catalog]: text(dict.shop.catalog),
-    [fs.shop_link]: link(`/${locale}/shop`, dict.shop.shop_link),
-  });
-
-  const contactDir = dir({
-    [fs.contacts_info]: text(dict.contacts.info),
-    "instagram.txt": link("https://instagram.com/NEIIST", dict.contacts.instagram),
-    "github.txt": link("https://github.com/neiist-dev", dict.contacts.github),
-    "discord.txt": link("https://linktr.ee/NEIIST", dict.contacts.discord),
-    "linkedin.txt": link("https://www.linkedin.com/company/neiist/", dict.contacts.linkedin),
-  });
-
-  return dir({
-    "README.md": text(dict.welcome),
-    [fs.about]: aboutDir,
-    [fs.campuses]: campusDir,
-    [fs.courses]: courseDir,
-    [fs.activities]: activityDir,
-    [fs.shop]: shopDir,
-    [fs.contacts]: contactDir,
-    "sinfo.txt": link("https://sinfo.org", dict.sinfo),
-  });
+  return {
+    kind: "directory",
+    entries: {
+      home: {
+        kind: "directory",
+        entries: {
+          neiist: {
+            kind: "directory",
+            entries: {
+              "README.md": {
+                kind: "file",
+                fileType: "text",
+                content: dict.welcome,
+              },
+              ".bashrc": {
+                kind: "file",
+                fileType: "text",
+                content: "# ~/.bashrc\nexport USER=guest\nalias ll='ls -la'",
+              },
+              ".profile": {
+                kind: "file",
+                fileType: "text",
+                content: '# ~/.profile\nPATH="/usr/bin:$PATH"',
+              },
+              [fs.about]: {
+                kind: "directory",
+                entries: {
+                  [fs.mission]: {
+                    kind: "file",
+                    fileType: "text",
+                    content: dict.about.mission,
+                  },
+                  [fs.departments]: {
+                    kind: "directory",
+                    entries: departmentEntries,
+                  },
+                  [fs.bodies]: {
+                    kind: "file",
+                    fileType: "text",
+                    content: dict.about.bodies,
+                  },
+                  [fs.statutes]: {
+                    kind: "file",
+                    fileType: "link",
+                    href: "/estatutos.pdf",
+                    label: dict.about.statutes_label,
+                  },
+                },
+              },
+              [fs.campuses]: {
+                kind: "directory",
+                entries: {
+                  "alameda.txt": {
+                    kind: "file",
+                    fileType: "text",
+                    content: dict.campuses.alameda,
+                  },
+                  "taguspark.txt": {
+                    kind: "file",
+                    fileType: "text",
+                    content: dict.campuses.taguspark,
+                  },
+                },
+              },
+              [fs.courses]: {
+                kind: "directory",
+                entries: {
+                  "leic-a.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://fenix.tecnico.ulisboa.pt/cursos/leic-a",
+                    label: dict.courses.leic_a,
+                  },
+                  "leic-t.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://fenix.tecnico.ulisboa.pt/cursos/leic-t",
+                    label: dict.courses.leic_t,
+                  },
+                  "meic-a.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://fenix.tecnico.ulisboa.pt/cursos/meic-a",
+                    label: dict.courses.meic_a,
+                  },
+                  "meic-t.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://fenix.tecnico.ulisboa.pt/cursos/meic-t",
+                    label: dict.courses.meic_t,
+                  },
+                  "deic.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://fenix.tecnico.ulisboa.pt/cursos/deic",
+                    label: dict.courses.deic,
+                  },
+                },
+              },
+              [fs.activities]: {
+                kind: "directory",
+                entries: {
+                  ...eventEntries,
+                  [fs.dinner]: {
+                    kind: "file",
+                    fileType: "link",
+                    href: `/${locale}/dinner`,
+                    label: dict.activities.dinner_link,
+                  },
+                  [fs.calendar]: {
+                    kind: "file",
+                    fileType: "link",
+                    href: `/${locale}/activities`,
+                    label: dict.activities.calendar_link,
+                  },
+                },
+              },
+              [fs.shop]: {
+                kind: "directory",
+                entries: {
+                  [fs.catalog]: {
+                    kind: "file",
+                    fileType: "text",
+                    content: dict.shop.catalog,
+                  },
+                  [fs.shop_link]: {
+                    kind: "file",
+                    fileType: "link",
+                    href: `/${locale}/shop`,
+                    label: dict.shop.shop_link,
+                  },
+                },
+              },
+              [fs.contacts]: {
+                kind: "directory",
+                entries: {
+                  [fs.contacts_info]: {
+                    kind: "file",
+                    fileType: "text",
+                    content: dict.contacts.info,
+                  },
+                  "instagram.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://instagram.com/NEIIST",
+                    label: dict.contacts.instagram,
+                  },
+                  "github.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://github.com/neiist-dev",
+                    label: dict.contacts.github,
+                  },
+                  "discord.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://linktr.ee/NEIIST",
+                    label: dict.contacts.discord,
+                  },
+                  "linkedin.txt": {
+                    kind: "file",
+                    fileType: "link",
+                    href: "https://www.linkedin.com/company/neiist/",
+                    label: dict.contacts.linkedin,
+                  },
+                },
+              },
+              "sinfo.txt": {
+                kind: "file",
+                fileType: "link",
+                href: "https://sinfo.org",
+                label: dict.sinfo,
+              },
+            },
+          },
+        },
+      },
+      etc: {
+        kind: "directory",
+        entries: {
+          motd: {
+            kind: "file",
+            fileType: "text",
+            content:
+              "Welcome to NEIIST Terminal! Type 'help' for available commands or 'game' to play.",
+          },
+          hosts: {
+            kind: "file",
+            fileType: "text",
+            content: "127.0.0.1 localhost\n127.0.1.1 neiist.tecnico.ulisboa.pt",
+          },
+        },
+      },
+      var: {
+        kind: "directory",
+        entries: {
+          log: {
+            kind: "directory",
+            entries: {
+              syslog: {
+                kind: "file",
+                fileType: "text",
+                content: "Terminal initialized successfully.",
+              },
+            },
+          },
+        },
+      },
+      tmp: {
+        kind: "directory",
+        entries: {
+          ".keep": {
+            kind: "file",
+            fileType: "text",
+            content: "Temporary files live here.",
+          },
+        },
+      },
+      "README-root.txt": {
+        kind: "file",
+        fileType: "text",
+        content:
+          "You are at the root of the virtual file system. NEIIST files are located at /home/neiist.",
+      },
+    },
+  };
 }

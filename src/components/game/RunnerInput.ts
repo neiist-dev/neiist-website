@@ -1,4 +1,4 @@
-import type { InputState } from "./RunnerEngine";
+import type { InputState } from "@/components/game/RunnerEngine";
 
 const JUMP_KEYS = new Set([" ", "Spacebar", "ArrowUp", "w", "W"]);
 const DUCK_KEYS = new Set(["ArrowDown", "s", "S"]);
@@ -58,14 +58,17 @@ export function attachInput(
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
+    if (!surface.contains(document.activeElement)) return;
+
     if (event.key === "Escape") {
       event.preventDefault();
       handlers.onExit();
       return;
     }
-    if (event.target instanceof HTMLButtonElement && (event.key === " " || event.key === "Enter")) {
+
+    if (event.target instanceof HTMLButtonElement && (event.key === " " || event.key === "Enter"))
       return;
-    }
+
     if (
       event.target instanceof HTMLElement &&
       (event.target.isContentEditable || event.target.matches("input, textarea, select"))
@@ -90,6 +93,8 @@ export function attachInput(
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
+    if (!surface.contains(document.activeElement)) return;
+
     if (JUMP_KEYS.has(event.key)) input.jumpHeld = false;
     else if (DUCK_KEYS.has(event.key)) input.duckHeld = false;
   };
@@ -131,8 +136,8 @@ export function attachInput(
     input.duckHeld = false;
   };
 
-  window.addEventListener("keydown", onKeyDown, { capture: true });
-  window.addEventListener("keyup", onKeyUp, { capture: true });
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
   window.addEventListener("blur", onBlur);
   surface.addEventListener("pointerdown", onPointerDown);
   surface.addEventListener("pointermove", onPointerMove);
@@ -141,8 +146,8 @@ export function attachInput(
 
   return () => {
     clearTimeout(tapHoldTimer);
-    window.removeEventListener("keydown", onKeyDown, { capture: true });
-    window.removeEventListener("keyup", onKeyUp, { capture: true });
+    window.removeEventListener("keydown", onKeyDown);
+    window.removeEventListener("keyup", onKeyUp);
     window.removeEventListener("blur", onBlur);
     surface.removeEventListener("pointerdown", onPointerDown);
     surface.removeEventListener("pointermove", onPointerMove);

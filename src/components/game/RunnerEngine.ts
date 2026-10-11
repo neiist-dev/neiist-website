@@ -1,5 +1,3 @@
-// Pure game logic, no DOM. Distances are in world units (WORLD_H tall); velocities are per 60fps frame.
-
 export const WORLD_H = 150;
 export const GROUND_Y = 130;
 export const MIN_WORLD_W = 300;
@@ -65,7 +63,6 @@ export interface Rect {
 export interface Obstacle {
   kind: ObstacleKind;
   x: number;
-  /** Top edge. */
   y: number;
   w: number;
   h: number;
@@ -173,14 +170,12 @@ export function intersects(a: Rect, b: Rect): boolean {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-/** Forgiving collision: both hitboxes are shrunk so near-misses don't count. */
 export function collides(player: Player, obstacle: Obstacle): boolean {
   const p = inset(playerRect(player), 0.15, 0.08);
   const o = inset(obstacleRect(obstacle), 0.12, 0.12);
   return intersects(p, o);
 }
 
-/** Minimum and maximum spacing after an obstacle, growing with speed so it stays jumpable. */
 export function gapRange(obstacle: Pick<Obstacle, "w" | "group">, speed: number): [number, number] {
   const min = Math.round(obstacle.w * obstacle.group * speed + BASE_GAP * GAP_COEFFICIENT);
   return [min, Math.round(min * MAX_GAP_FACTOR)];
@@ -243,7 +238,7 @@ function updatePlayer(state: GameState, input: InputState, frames: number): void
   if (!player.jumping) return;
 
   const risen = player.jumpStartY - player.y;
-  // Releasing the jump key early gives a shorter hop
+
   if (!input.jumpHeld && !player.falling && risen >= MIN_JUMP_HEIGHT && player.vy < DROP_VELOCITY) {
     player.vy = DROP_VELOCITY;
     player.falling = true;
@@ -262,17 +257,19 @@ function updatePlayer(state: GameState, input: InputState, frames: number): void
 }
 
 function updateObstacles(state: GameState, frames: number): void {
-  for (const obstacle of state.obstacles) {
+  for (const obstacle of state.obstacles)
     obstacle.x -= (state.speed + obstacle.speedOffset) * frames;
+
+  for (let i = state.obstacles.length - 1; i >= 0; i--) {
+    const o = state.obstacles[i];
+    if (o.x + o.w * o.group <= -10) state.obstacles.splice(i, 1);
   }
-  state.obstacles = state.obstacles.filter((o) => o.x + o.w * o.group > -10);
 
   if (state.noObstacles || state.time < CLEAR_TIME_MS) return;
 
   const last = state.obstacles[state.obstacles.length - 1];
-  if (!last || last.x + last.w * last.group + last.gap < state.worldW) {
+  if (!last || last.x + last.w * last.group + last.gap < state.worldW)
     state.obstacles.push(spawnObstacle(state));
-  }
 }
 
 export function update(state: GameState, input: InputState, dtMs: number): boolean {

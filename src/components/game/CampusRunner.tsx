@@ -5,7 +5,7 @@ import { FiRotateCcw, FiX } from "react-icons/fi";
 import { Button } from "@neiist/ui";
 import styles from "@/styles/components/game/CampusRunner.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { loadAssets, type Assets } from "./RunnerAssets";
+import { loadAssets, type Assets } from "@/components/game/RunnerAssets";
 import {
   canRestart,
   createGame,
@@ -16,10 +16,11 @@ import {
   update,
 } from "./RunnerEngine";
 import { attachInput } from "./RunnerInput";
-import { computeView, draw } from "./RunnerRenderer";
+import { computeView, draw, type RenderContext } from "./RunnerRenderer";
 
 const BEST_SCORE_KEY = "neiist:runner:best";
 const MAX_FRAME_MS = 50;
+const FIXED_DT = 1000 / 60; // Exact physics step for deterministic simulation across refresh rates
 
 type Phase = "running" | "paused" | "over";
 
@@ -64,18 +65,16 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     const ctx = canvas?.getContext("2d");
     if (!container || !canvas || !ctx) return;
 
-    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+    const coarseTouch = window.matchMedia("(pointer: coarse)").matches;
+    setIsTouch(coarseTouch);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Take focus away from the terminal (or anything else) so game keys only reach the game
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     container.focus({ preventScroll: true });
 
     let cancelled = false;
     let assets: Assets = {};
-    loadAssets().then((loaded) => {
-      if (!cancelled) assets = loaded;
-    });
+    const renderCtx: RenderContext = {};
 
     let best = readBest();
     let view = computeView(1, 1, 1, reducedMotion);
@@ -84,6 +83,7 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     let paused = false;
     let last = performance.now();
     let frame = 0;
+    let accumulator = 0;
 
     const resize = () => {
       const rect = container.getBoundingClientRect();
@@ -119,6 +119,7 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     const resume = () => {
       paused = false;
       last = performance.now();
+      accumulator = 0;
       setPhase("running");
     };
 
@@ -150,19 +151,35 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     const loop = (now: number) => {
       const dt = Math.min(now - last, MAX_FRAME_MS);
       last = now;
-      if (!paused && update(state, input, dt)) {
-        const score = getScore(state);
-        if (score > best) {
-          best = score;
-          writeBest(best);
+
+      if (!paused) {
+        accumulator += dt;
+        while (accumulator >= FIXED_DT) {
+          if (update(state, input, FIXED_DT)) {
+            const score = getScore(state);
+            if (score > best) {
+              best = score;
+              writeBest(best);
+            }
+            setResult({ score, best });
+            setPhase("over");
+            break;
+          }
+          accumulator -= FIXED_DT;
         }
-        setResult({ score, best });
-        setPhase("over");
       }
-      draw(ctx, state, assets, view, best, { best: dict.best });
+
+      draw(ctx, state, assets, view, best, { best: dict.best }, coarseTouch, renderCtx);
       frame = requestAnimationFrame(loop);
     };
-    frame = requestAnimationFrame(loop);
+
+    loadAssets().then((loaded) => {
+      if (cancelled) return;
+      assets = loaded;
+      last = performance.now();
+      accumulator = 0;
+      frame = requestAnimationFrame(loop);
+    });
 
     return () => {
       cancelled = true;
@@ -171,6 +188,11 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
       detachInput();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("blur", pause);
+      if (renderCtx.bgCanvas) {
+        renderCtx.bgCanvas.width = 0;
+        renderCtx.bgCanvas.height = 0;
+        renderCtx.bgCanvas = undefined;
+      }
     };
   }, [dict.best]);
 

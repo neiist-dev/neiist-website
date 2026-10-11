@@ -1,4 +1,4 @@
-import type { Assets, Sprite } from "./RunnerAssets";
+import type { Assets, Sprite } from "@/components/game/RunnerAssets";
 import {
   FRAME_MS,
   GROUND_Y,
@@ -19,7 +19,7 @@ const GROUND_COLOURS = ["#2863fd", "#258be3", "#34d1f9", "#5ee8fa"];
 /** World units per pixel of the art cut from hero.png (344 px of it span the world above the ground). */
 const HERO_PIXEL = GROUND_Y / 344;
 const BACKGROUND_ALPHA = 0.35;
-/** Pixel columns of Alameda and Taguspark in campus-skyline.png. */
+/** Pixel columns of Alameda and TagusPark in campus-skyline.png. */
 const SKYLINE_BUILDINGS = { left: { sx: 40, sw: 580 }, right: { sx: 770, sw: 400 } };
 const SKYLINE_PARALLAX = 0.02;
 /** Keeps the buildings from overlapping on small screens. */
@@ -100,8 +100,8 @@ const MILESTONE = 100;
 const MILESTONE_FLASH_MS = 800;
 /** Trail length at full speed, in frames of travel. */
 const BLUR_FRAMES = 0.9;
-/** Several faint, close copies read as a smear instead of a strobe. */
-const BLUR_SAMPLES = 5;
+/** Cap samples to 2 on desktop to save fill rate; disabled entirely on touch screens. */
+const BLUR_SAMPLES = 2;
 const BLUR_ALPHA = 0.35;
 
 export interface View {
@@ -113,14 +113,14 @@ export interface View {
   reducedMotion: boolean;
 }
 
+export interface RenderContext {
+  bgCanvas?: HTMLCanvasElement;
+}
+
 /** Target horizontal look-ahead: Chrome-dino-like 600 units on desktop, never under 300 on phones. */
 const MAX_VISIBLE_W = 600;
 const CSS_PX_PER_UNIT_MIN = 2;
 
-/**
- * Scale by height so the playfield never stretches, but guarantee enough horizontal look-ahead
- * on narrow screens by adding extra sky instead.
- */
 export function computeView(cssW: number, cssH: number, dpr: number, reducedMotion: boolean): View {
   const minVisibleW = Math.min(Math.max(cssW / CSS_PX_PER_UNIT_MIN, MIN_WORLD_W), MAX_VISIBLE_W);
   const cssScale = Math.min(cssH / WORLD_H, cssW / minVisibleW);
@@ -132,14 +132,12 @@ export function computeView(cssW: number, cssH: number, dpr: number, reducedMoti
   };
 }
 
-/** Zero at the starting speed, so the blur builds up as the game accelerates. */
-function blurLength(state: GameState, view: View, parallax = 1): number {
-  if (view.reducedMotion || state.status !== "running") return 0;
+function blurLength(state: GameState, view: View, isTouch: boolean, parallax = 1): number {
+  if (view.reducedMotion || state.status !== "running" || isTouch) return 0;
   const intensity = Math.max(0, (state.speed - START_SPEED) / (MAX_SPEED - START_SPEED));
   return state.speed * BLUR_FRAMES * intensity * parallax;
 }
 
-/** Draws faint copies trailing to the right (everything scrolls left), then the sharp one on top. */
 function withMotionBlur(
   ctx: CanvasRenderingContext2D,
   length: number,
@@ -186,12 +184,12 @@ function drawRepeating(
   for (let x = -(offset % span) - span; x < view.width; x += span) drawAt(x);
 }
 
-/** Everything behind the ground, drawn opaque so nearer layers hide farther ones. */
 function drawBackground(
   ctx: CanvasRenderingContext2D,
   state: GameState,
   assets: Assets,
-  view: View
+  view: View,
+  isTouch: boolean
 ): void {
   const distance = view.reducedMotion ? 0 : state.distance;
 
@@ -200,7 +198,7 @@ function drawBackground(
     const w = clouds.frameW * HERO_PIXEL;
     const h = clouds.h * HERO_PIXEL;
     for (const cloud of CLOUDS) {
-      withMotionBlur(ctx, blurLength(state, view, cloud.parallax), (dx) => {
+      withMotionBlur(ctx, blurLength(state, view, isTouch, cloud.parallax), (dx) => {
         drawRepeating(ctx, view, CLOUD_SPAN, distance * cloud.parallax, (base) =>
           drawSprite(ctx, clouds, cloud.variant, { x: base + cloud.x + dx, y: cloud.y, w, h })
         );
@@ -208,35 +206,30 @@ function drawBackground(
     }
   }
 
-  // The current scene fades in over the previous one
   const leg = state.distance / BIOME_DISTANCE;
   const current = Math.floor(leg) % BIOMES.length;
   const previous = (current + BIOMES.length - 1) % BIOMES.length;
   const fade = leg < 1 ? 1 : Math.min(1, (state.distance % BIOME_DISTANCE) / BIOME_FADE);
-  const biomes =
-    fade < 1
-      ? [
-          { index: previous, alpha: 1 - fade },
-          { index: current, alpha: fade },
-        ]
-      : [{ index: current, alpha: 1 }];
 
   const scenery = assets.scenery;
   if (scenery) {
     const w = scenery.frameW * BACKDROP_PIXEL;
     const h = scenery.h * BACKDROP_PIXEL;
-    for (const { index, alpha } of biomes) {
-      ctx.globalAlpha = SCENERY_ALPHA * alpha;
+    if (fade < 1) {
+      ctx.globalAlpha = SCENERY_ALPHA * (1 - fade);
       drawRepeating(ctx, view, w, distance * SCENERY_PARALLAX, (x) =>
-        drawSprite(ctx, scenery, index, { x, y: GROUND_Y - h, w, h })
+        drawSprite(ctx, scenery, previous, { x, y: GROUND_Y - h, w, h })
       );
     }
+    ctx.globalAlpha = SCENERY_ALPHA * (fade < 1 ? fade : 1);
+    drawRepeating(ctx, view, w, distance * SCENERY_PARALLAX, (x) =>
+      drawSprite(ctx, scenery, current, { x, y: GROUND_Y - h, w, h })
+    );
     ctx.globalAlpha = 1;
   }
 
   const skyline = assets.skyline;
   if (skyline) {
-    // Like the hero, Alameda starts at the left edge and Taguspark at the right; they don't repeat
     const h = skyline.h * HERO_PIXEL;
     const { left, right } = SKYLINE_BUILDINGS;
     const leftW = left.sw * HERO_PIXEL;
@@ -256,31 +249,37 @@ function drawBackground(
   if (props) {
     const w = props.frameW * BACKDROP_PIXEL;
     const h = props.h * BACKDROP_PIXEL;
-    for (const { index, alpha } of biomes) {
+    const blur = blurLength(state, view, isTouch, PROP_PARALLAX);
+
+    const drawBiomeProps = (biomeIndex: number, alpha: number) => {
       ctx.globalAlpha = alpha;
-      withMotionBlur(ctx, blurLength(state, view, PROP_PARALLAX), (dx) => {
+      withMotionBlur(ctx, blur, (dx) => {
         drawRepeating(ctx, view, PROP_SPAN, distance * PROP_PARALLAX, (base) => {
-          for (const { x, prop } of BIOMES[index]) {
+          for (const { x, prop } of BIOMES[biomeIndex]) {
             drawSprite(ctx, props, prop, { x: base + x + dx, y: GROUND_Y - h, w, h });
           }
         });
       });
+    };
+
+    if (fade < 1) {
+      drawBiomeProps(previous, 1 - fade);
     }
+    drawBiomeProps(current, fade < 1 ? fade : 1);
     ctx.globalAlpha = 1;
   }
 }
 
-let backgroundLayer: HTMLCanvasElement | null = null;
-
-/** Renders the background off-screen, then fades it in one go so overlapping layers don't show through. */
 function drawFadedBackground(
   ctx: CanvasRenderingContext2D,
   state: GameState,
   assets: Assets,
-  view: View
+  view: View,
+  isTouch: boolean,
+  renderCtx: RenderContext
 ): void {
-  backgroundLayer ??= document.createElement("canvas");
-  const layer = backgroundLayer;
+  renderCtx.bgCanvas ??= document.createElement("canvas");
+  const layer = renderCtx.bgCanvas;
   if (layer.width !== ctx.canvas.width || layer.height !== ctx.canvas.height) {
     layer.width = ctx.canvas.width;
     layer.height = ctx.canvas.height;
@@ -292,7 +291,7 @@ function drawFadedBackground(
   layerCtx.clearRect(0, 0, layer.width, layer.height);
   layerCtx.setTransform(ctx.getTransform());
   layerCtx.imageSmoothingEnabled = false;
-  drawBackground(layerCtx, state, assets, view);
+  drawBackground(layerCtx, state, assets, view, isTouch);
 
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -301,7 +300,12 @@ function drawFadedBackground(
   ctx.restore();
 }
 
-function drawGround(ctx: CanvasRenderingContext2D, state: GameState, view: View): void {
+function drawGround(
+  ctx: CanvasRenderingContext2D,
+  state: GameState,
+  view: View,
+  isTouch: boolean
+): void {
   const bandH = WORLD_H - GROUND_Y;
   const blockW = view.width / GROUND_COLOURS.length;
   GROUND_COLOURS.forEach((colour, i) => {
@@ -312,10 +316,9 @@ function drawGround(ctx: CanvasRenderingContext2D, state: GameState, view: View)
   ctx.fillStyle = INK;
   ctx.fillRect(0, GROUND_Y, view.width, 1.5);
 
-  // Scrolling dashes at full game speed so obstacles feel planted on the ground
   const period = 47;
   const offset = state.distance % period;
-  withMotionBlur(ctx, blurLength(state, view), (dx) => {
+  withMotionBlur(ctx, blurLength(state, view, isTouch), (dx) => {
     for (let x = -offset - period + dx; x < view.width; x += period) {
       ctx.fillRect(x, GROUND_Y + 5, 8, 1.5);
       ctx.fillRect(x + 23, GROUND_Y + 11, 4, 1.5);
@@ -328,9 +331,10 @@ function drawObstacles(
   ctx: CanvasRenderingContext2D,
   state: GameState,
   assets: Assets,
-  view: View
+  view: View,
+  isTouch: boolean
 ): void {
-  const blur = blurLength(state, view);
+  const blur = blurLength(state, view, isTouch);
   for (const obstacle of state.obstacles) {
     const sprite = assets[obstacle.kind];
     const frame = Math.floor(state.time / 150);
@@ -358,7 +362,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, state: GameState, assets: Ass
   const { player } = state;
   const rect = playerRect(player);
   const ducking = player.ducking && !player.jumping;
-  // Animation speed follows the run speed, like the original
   const step = Math.floor(state.distance / RUN_FRAME_DISTANCE);
 
   let sprite = assets.studentRun;
@@ -391,7 +394,6 @@ function drawScore(
   const score = getScore(state);
   const pad = (n: number) => String(Math.min(n, 99999)).padStart(5, "0");
 
-  // Blink the score briefly after every milestone, like the original
   const milestoneDistance = (score - (score % MILESTONE)) / SCORE_COEFFICIENT;
   const msSinceMilestone = ((state.distance - milestoneDistance) / state.speed) * FRAME_MS;
   const flashing =
@@ -403,7 +405,7 @@ function drawScore(
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
   const right = view.width - 8;
-  // Top of the visible area (world y can be negative when there is extra sky)
+
   const top = WORLD_H - view.height + 8;
   if (!hidden) ctx.fillText(pad(score), right, top);
   if (best > 0) {
@@ -419,18 +421,19 @@ export function draw(
   assets: Assets,
   view: View,
   best: number,
-  labels: { best: string }
+  labels: { best: string },
+  isTouch: boolean,
+  renderCtx: RenderContext
 ): void {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  // World coordinates: shift down so the ground sits at the bottom when there is extra sky
   ctx.setTransform(view.scale, 0, 0, view.scale, 0, (view.height - WORLD_H) * view.scale);
   ctx.imageSmoothingEnabled = false;
 
-  drawFadedBackground(ctx, state, assets, view);
-  drawGround(ctx, state, view);
-  drawObstacles(ctx, state, assets, view);
+  drawFadedBackground(ctx, state, assets, view, isTouch, renderCtx);
+  drawGround(ctx, state, view, isTouch);
+  drawObstacles(ctx, state, assets, view, isTouch);
   drawPlayer(ctx, state, assets);
   drawScore(ctx, state, best, view, labels);
 }
