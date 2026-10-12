@@ -67,9 +67,10 @@ export function Popover({
           targetWidth = rect.width;
         }
 
-        const actualWidth =
-          containerRef.current?.offsetWidth ||
-          (typeof targetWidth === "number" ? targetWidth : rect.width);
+        const actualWidth = matchAnchorWidth
+          ? rect.width
+          : containerRef.current?.offsetWidth ||
+            (typeof targetWidth === "number" ? targetWidth : rect.width);
 
         let desiredLeft = rect.left;
 
@@ -123,9 +124,7 @@ export function Popover({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -152,17 +151,16 @@ export function Popover({
   const content = (
     <div
       ref={containerRef}
-      className={cn(styles.popover, "ui-scrollbar", className)}
+      className={cn(styles.popover, "ui-scrollbar", !position && styles.hidden, className)}
       onClick={(event) => event.stopPropagation()}
       style={
         position
           ? {
-              position: "fixed",
               top: `${position.top}px`,
               left: `${position.left}px`,
               width: position.width,
             }
-          : { position: "fixed", visibility: "hidden", top: 0, left: 0, width: width }
+          : { top: 0, left: 0, width: width }
       }>
       {children}
     </div>

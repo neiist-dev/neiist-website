@@ -10,6 +10,8 @@ import ColorSwatchDemo from "./demos/ColorSwatchDemo";
 import ColourPickerDemo from "./demos/ColourPickerDemo";
 import ContainerDemo from "./demos/ContainerDemo";
 import { DateInputDemo } from "./demos/DateInputDemo";
+import { HourInputDemo } from "./demos/HourInputDemo";
+import { TimePickerDemo } from "./demos/TimePickerDemo";
 import EmptyStateDemo from "./demos/EmptyStateDemo";
 import FieldDemo from "./demos/FieldDemo";
 import HeadingDemo from "./demos/HeadingDemo";
@@ -82,6 +84,7 @@ export const COMPONENTS: ComponentEntry[] = [
     component: <ToggleSwitchDemo />,
   },
   { id: "tooltip", label: "Tooltip", category: "Primitives", component: <TooltipDemo /> },
+  { id: "timepicker", label: "TimePicker", category: "Primitives", component: <TimePickerDemo /> },
 
   // Components
   { id: "accordion", label: "Accordion", category: "Components", component: <AccordionDemo /> },
@@ -100,6 +103,7 @@ export const COMPONENTS: ComponentEntry[] = [
     component: <ConfirmDialogDemo />,
   },
   { id: "dateinput", label: "DateInput", category: "Components", component: <DateInputDemo /> },
+  { id: "hourinput", label: "HourInput", category: "Components", component: <HourInputDemo /> },
   {
     id: "dropdownmenu",
     label: "DropdownMenu",

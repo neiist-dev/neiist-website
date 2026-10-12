@@ -1,0 +1,10 @@
+.container {
+  max-inline-size: 18.75rem;
+  margin-inline: auto;
+  padding: 2rem;
+}
+
+.resultText {
+  font-size: 0.85rem;
+  color: var(--ui-fg-light);
+}

@@ -2,7 +2,7 @@
   inline-size: max-content;
   min-inline-size: 17.5rem;
   background: var(--ui-bg);
-  border-radius: inherit;
+  border-radius: var(--ui-radius-lg);
   overflow: hidden;
 }
 

@@ -1,0 +1,13 @@
+.demoContent {
+  padding: 1.5rem;
+}
+
+.selectedText {
+  font-size: 0.875rem;
+  color: var(--ui-fg-light);
+  text-align: center;
+}
+
+.selectedHighlight {
+  color: var(--ui-fg);
+}

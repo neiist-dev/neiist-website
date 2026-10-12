@@ -1,0 +1,63 @@
+.container {
+  box-sizing: border-box;
+  position: relative;
+  inline-size: 100%;
+}
+
+.wrapper {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background-color: var(--ui-surface);
+  cursor: text;
+  transition:
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
+}
+
+.wrapper:focus-within {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 1px var(--ui-primary);
+}
+
+.input {
+  flex: 1;
+  min-inline-size: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  color: var(--ui-fg);
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  font-feature-settings: "tnum";
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.icon {
+  color: var(--ui-fg-light);
+  flex-shrink: 0;
+}
+
+.popoverPickerWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 0.25rem;
+}
+
+.inlinePicker {
+  margin-block-start: 0.75rem;
+  inline-size: 100%;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background-color: var(--ui-bg);
+}

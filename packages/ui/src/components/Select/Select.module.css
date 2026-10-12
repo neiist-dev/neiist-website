@@ -60,6 +60,8 @@
 }
 
 .popoverMenu {
+  box-sizing: border-box;
+  inline-size: 100%;
   padding: 4px;
 }
 

@@ -1,0 +1,177 @@
+.container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  user-select: none;
+  background-color: transparent;
+  inline-size: 100%;
+  max-inline-size: 200px;
+}
+
+.rangeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-block-end: 0.5rem;
+  margin-block-end: 0.25rem;
+  inline-size: 100%;
+  border-block-end: 1px solid color-mix(in srgb, var(--ui-border) 60%, transparent);
+}
+
+.rangeButton {
+  background: transparent;
+  border: none;
+  padding: 0.2rem 0.4rem;
+  font-family: inherit;
+  font-feature-settings: "tnum";
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--ui-radius-sm);
+  color: var(--ui-fg-light);
+  opacity: 0.45;
+  transition:
+    opacity var(--ui-transition),
+    color var(--ui-transition);
+}
+
+.rangeButtonActive {
+  color: var(--ui-primary);
+  opacity: 1;
+}
+
+.rangeButton:hover:not(.rangeButtonActive) {
+  opacity: 0.8;
+  color: var(--ui-fg);
+}
+
+.rangeArrow {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ui-fg-light);
+  opacity: 0.4;
+  user-select: none;
+}
+
+.wheelBelt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 180px;
+  inline-size: 100%;
+  overflow: hidden;
+  touch-action: none;
+  background-color: transparent;
+}
+
+.selectionHighlight {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  block-size: 38px;
+  transform: translateY(-50%);
+  background-color: color-mix(in srgb, var(--ui-primary) 6%, transparent);
+  border-block: 1px solid color-mix(in srgb, var(--ui-border) 65%, transparent);
+  border-radius: var(--ui-radius-sm);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.vignetteTop,
+.vignetteBottom {
+  position: absolute;
+  inset-inline: 0;
+  block-size: 52px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.vignetteTop {
+  top: 0;
+  background: linear-gradient(to bottom, var(--ui-bg) 20%, transparent 100%);
+}
+
+.vignetteBottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--ui-bg) 20%, transparent 100%);
+}
+
+.wheelColumn {
+  position: relative;
+  flex: 1;
+  min-inline-size: 52px;
+  block-size: 180px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  perspective: 1000px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.wheelColumn:active {
+  cursor: grabbing;
+}
+
+.wheelColumn:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: -2px;
+  border-radius: var(--ui-radius-sm);
+}
+
+.drumStage {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  block-size: 38px;
+  transform: translateY(-50%);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.drumItem {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  block-size: 38px;
+  line-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-feature-settings: "tnum";
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ui-fg-light);
+  backface-visibility: hidden;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.drumItemActive {
+  color: var(--ui-primary);
+  font-weight: 700;
+  font-size: 1.25rem;
+  z-index: 10;
+}
+
+.colonSeparator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 38px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ui-fg-light);
+  opacity: 0.6;
+  padding-inline: 0.25rem;
+  user-select: none;
+  pointer-events: none;
+  z-index: 2;
+}

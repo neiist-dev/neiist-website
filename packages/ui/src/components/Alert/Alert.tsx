@@ -70,6 +70,7 @@ function createToast(variant: AlertVariant) {
       ),
       {
         duration: variant === "loading" && !options?.duration ? Infinity : options?.duration,
+        style: { background: "transparent" },
       }
     );
 }

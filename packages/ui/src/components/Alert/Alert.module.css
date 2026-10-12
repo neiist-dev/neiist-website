@@ -11,6 +11,7 @@
   font-family: var(--ui-font);
   min-inline-size: 20rem;
   max-inline-size: 24rem;
+  overflow: hidden;
 }
 
 .iconWrapper {
