@@ -11,9 +11,8 @@
   font-size: clamp(0.68rem, 0.8vw, 0.82rem);
   line-height: 1.45;
   white-space: pre-wrap;
-  color-scheme: dark;
-  min-width: 0;
   overflow-wrap: anywhere;
+  color-scheme: dark;
 }
 
 .terminalWrapper [style*="break-all"] {
@@ -25,35 +24,13 @@
   scrollbar-color: oklch(45% 0.02 260 / 0.5) transparent;
 }
 
-.terminalWrapper *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.terminalWrapper *::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.terminalWrapper *::-webkit-scrollbar-thumb {
-  background-color: oklch(45% 0.02 260 / 0.5);
-  border-radius: 9999px;
-}
-
-.terminalWrapper *::-webkit-scrollbar-thumb:hover {
-  background-color: oklch(60% 0.04 260 / 0.8);
-}
-
-.terminalWrapper a,
-.terminalWrapper a:visited {
+.terminalWrapper a {
   color: #8be9fd;
   text-decoration: underline;
   text-underline-offset: 3px;
-  cursor: pointer;
-  transition: color 0.15s ease;
 }
 
 .terminalWrapper a:hover,
 .terminalWrapper a:focus-visible {
   color: #50fa7b;
-  text-decoration: underline;
 }

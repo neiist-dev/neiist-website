@@ -7,12 +7,15 @@ export interface RateLimitRule {
 const MIN = 60_000;
 
 export function getRateLimitRule(pathname: string): RateLimitRule | null {
-  if (pathname === "/api/auth/login" || pathname === "/api/auth/callback")
-    return { limit: 5, windowMs: 15 * MIN };
+  if (process.env.NODE_ENV === "development") return null;
 
-  if (pathname === "/api/auth/refresh") return { limit: 10, windowMs: MIN };
+  if (pathname === "/api/auth/login") return { limit: 60, windowMs: MIN };
 
-  if (pathname.startsWith("/api/user/verify-email/")) return { limit: 3, windowMs: 15 * MIN };
+  if (pathname === "/api/auth/callback") return { limit: 20, windowMs: MIN };
+
+  if (pathname === "/api/auth/refresh") return { limit: 30, windowMs: MIN };
+
+  if (pathname.startsWith("/api/user/verify-email/")) return { limit: 5, windowMs: 15 * MIN };
 
   if (pathname.startsWith("/api/admin/")) return { limit: 30, windowMs: MIN, useUser: true };
 

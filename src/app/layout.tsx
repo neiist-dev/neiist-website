@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Metadata } from "next";
 import { Secular_One } from "next/font/google";
-import { Toaster } from "sonner";
+import { Toaster } from "@neiist/ui";
 import "@/styles/globals.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
 
@@ -21,17 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt" suppressHydrationWarning>
       <body className={secularOne.className}>
-        <Toaster
-          position="top-right"
-          offset={{ top: "96px", right: "16px", left: "16px" }}
-          mobileOffset={{ top: "80px", right: "16px", left: "16px" }}
-          toastOptions={{
-            style: {
-              background: "white",
-              color: "var(--foreground-colour)",
-            },
-          }}
-        />
+        <Toaster position="top-right" offset={{ top: "96px", right: "16px", left: "16px" }} />
         {children}
       </body>
     </html>

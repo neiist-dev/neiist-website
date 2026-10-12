@@ -388,6 +388,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- GAME SCORE
+CREATE TABLE neiist.game_score (
+  user_istid VARCHAR(10) PRIMARY KEY REFERENCES neiist.users(istid),
+  best_score INT NOT NULL CHECK (best_score >= 0),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_game_score_leaderboard ON neiist.game_score(best_score DESC);
+
 -- ORDERS
 CREATE TABLE neiist.orders (
   id SERIAL PRIMARY KEY,
@@ -3948,6 +3957,7 @@ BEGIN
   DELETE FROM neiist.user_courses WHERE user_istid = p_istid;
   DELETE FROM neiist.email_token WHERE istid = p_istid;
   DELETE FROM neiist.activities_sign_up WHERE user_istid = p_istid;
+  DELETE FROM neiist.game_score WHERE user_istid = p_istid;
 
   UPDATE neiist.orders o
   SET user_istid = NULL,
@@ -4017,6 +4027,31 @@ BEGIN
   RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION neiist.get_game_best_score(
+  p_user_istid VARCHAR(10)
+) RETURNS INT LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT COALESCE(
+    (SELECT best_score FROM neiist.game_score WHERE user_istid = p_user_istid),
+    0
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION neiist.submit_game_score(
+  p_user_istid VARCHAR(10),
+  p_score INT
+) RETURNS INT LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  INSERT INTO neiist.game_score (user_istid, best_score)
+  VALUES (p_user_istid, p_score)
+  ON CONFLICT (user_istid) DO UPDATE
+    SET best_score = EXCLUDED.best_score,
+        updated_at = NOW()
+    WHERE EXCLUDED.best_score > neiist.game_score.best_score;
+
+  RETURN neiist.get_game_best_score(p_user_istid);
+END;
+$$;
 
 -- Only necessary permissions to specific read only user
 GRANT EXECUTE ON FUNCTION neiist.get_all_products() TO neiist_readonly;

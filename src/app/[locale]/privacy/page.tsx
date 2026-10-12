@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Heading, Text, Table } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
 import { PrivacySection } from "@/types/privacy";
@@ -136,7 +136,7 @@ function renderSectionContent(section: PrivacySection) {
   }
 }
 
-export default async function PrivacyPolicyPage({ params }: PageProps) {
+async function PrivacyPolicyContent({ params }: PageProps) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const content = getDictionary(locale).privacy_policy_page;
@@ -160,5 +160,13 @@ export default async function PrivacyPolicyPage({ params }: PageProps) {
         </section>
       ))}
     </div>
+  );
+}
+
+export default function PrivacyPolicyPage(props: PageProps) {
+  return (
+    <Suspense fallback={null}>
+      <PrivacyPolicyContent {...props} />
+    </Suspense>
   );
 }

@@ -66,10 +66,18 @@ export async function proxy(req: NextRequest) {
   const { locale, routePath, redirectResponse } = resolveLocaleRoute(req);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.url;
 
-  const accessToken = req.cookies.get("access_token")?.value;
-  const isAuthenticated = !!accessToken;
+  const sessionToken = req.cookies.get("session")?.value;
+  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
+  const isAuthenticated = !!jwtUser;
+
+  const isPrefetch =
+    req.headers.get("purpose") === "prefetch" ||
+    req.headers.get("x-purpose") === "prefetch" ||
+    req.headers.has("next-router-prefetch");
 
   if (!isAuthenticated && protectedRoutes.some((r) => routePath.startsWith(r))) {
+    if (isPrefetch) return new NextResponse(null, { status: 204 });
+
     if (routePath !== "/api/auth/login") {
       const returnUrl = `/${locale}${routePath}${req.nextUrl.search}`;
       const loginUrl = new URL("/api/auth/login", baseUrl);
@@ -83,12 +91,13 @@ export async function proxy(req: NextRequest) {
     return response;
   }
 
-  if (isAuthenticated) {
-    const sessionToken = req.cookies.get("session")?.value;
-    const jwtUser = await verifyJWTWebCrypto(sessionToken);
-    const roles = jwtUser?.roles || [UserRole._GUEST];
+  if (isAuthenticated && jwtUser) {
+    const roles = jwtUser.roles || [UserRole._GUEST];
 
     if (!canAccess(routePath, roles)) {
+      if (isPrefetch) {
+        return new NextResponse(null, { status: 204 });
+      }
       if (routePath !== "/unauthorized") {
         const response = NextResponse.redirect(new URL(`/${locale}/unauthorized`, baseUrl));
         addSecurityHeaders(response);

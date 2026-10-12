@@ -38,9 +38,11 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
       <header className={styles.header}>
         {dict.welcome_prefix && <p className={styles.welcome}>{dict.welcome_prefix}</p>}
         <h1 className={styles.title}>
-          {dict.title_prefix}
-          <ColorfulText as="span" text={dict.title_highlight} />
-          {dict.title_suffix}
+          <span className={styles.titleLine}>
+            {dict.title_prefix}
+            <ColorfulText as="span" text={dict.title_highlight} />
+          </span>
+          <span className={styles.titleLine}>{dict.title_suffix.trim()}</span>
         </h1>
       </header>
 

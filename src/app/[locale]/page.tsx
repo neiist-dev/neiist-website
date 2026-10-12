@@ -5,6 +5,8 @@ import SweatsContest from "@/components/homepage/SweatsContest";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, locales, LocaleParams } from "@/i18n/i18n-config";
 
+export const instant = false;
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }

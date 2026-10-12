@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import styles from "@/styles/pages/EmailConfirmation.module.css";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -7,7 +8,7 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default async function EmailConfirmationSuccess({ params }: { params: LocaleParams }) {
+async function EmailConfirmationContent({ params }: { params: LocaleParams }) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).email_confirmation;
@@ -28,5 +29,13 @@ export default async function EmailConfirmationSuccess({ params }: { params: Loc
         </p>
       </div>
     </div>
+  );
+}
+
+export default function EmailConfirmationSuccess(props: { params: LocaleParams }) {
+  return (
+    <Suspense fallback={null}>
+      <EmailConfirmationContent {...props} />
+    </Suspense>
   );
 }

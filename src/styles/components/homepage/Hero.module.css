@@ -1,40 +1,36 @@
 .hero {
+  --gutter: clamp(1.5rem, 4vw, 4vw);
+  --hero-height: calc(100dvh - 4rem);
+  box-sizing: border-box;
   background-color: var(--background-colour);
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 100%;
   padding-block-start: clamp(1.5rem, 3.5vh, 3rem);
   gap: 1.5rem;
-  box-sizing: border-box;
 }
 
 .header {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  width: 100%;
-  max-width: 100%;
-  padding-inline: clamp(1.5rem, 4vw, 4vw);
-  box-sizing: border-box;
-  overflow-wrap: break-word;
+  padding-inline: var(--gutter);
 }
 
 .welcome {
   font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 700;
-  color: var(--foreground-colour);
   margin: 0;
   line-height: 1.2;
 }
 
 .title {
-  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-  font-weight: 700;
-  color: var(--foreground-colour);
+  font-size: clamp(1.4rem, 2.3vw, 2.35rem);
   margin: 0;
   line-height: 1.22;
-  text-wrap: balance;
+}
+
+.titleLine {
+  display: block;
 }
 
 .terminalSection {
@@ -51,33 +47,20 @@
 .campus {
   position: relative;
   display: flex;
-  width: 100%;
-  max-width: 100%;
   margin: 0;
-  padding: 0;
-  overflow: hidden;
-  box-sizing: border-box;
 }
 
 .campusImage {
   width: 100%;
   height: auto;
-  display: block;
   user-select: none;
 }
 
 .announcementSlot {
   position: absolute;
   top: clamp(1rem, 4.5vw, 5.5rem);
-  left: 0;
-  right: 0;
-  margin-inline: auto;
-  z-index: 10;
-  width: max-content;
-  max-width: calc(100% - 2rem);
+  inset-inline: var(--gutter);
   display: flex;
-  justify-content: center;
-  box-sizing: border-box;
 }
 
 .student {
@@ -89,14 +72,7 @@
   width: 16%;
   max-width: clamp(5rem, 14vw, 10rem);
   height: auto;
-  z-index: 2;
   pointer-events: none;
-}
-
-@media (min-width: 864px) and (hover: hover) and (pointer: fine) {
-  .student {
-    display: block;
-  }
 }
 
 .playSlot {
@@ -104,17 +80,10 @@
   left: 50%;
   bottom: 5vw;
   transform: translateX(-50%);
-  z-index: 3;
-}
-
-@media (min-width: 864px) {
-  .playSlot {
-    bottom: calc(1.7vw + min(16vw, clamp(5rem, 14vw, 10rem)) * 0.92);
-  }
 }
 
 .playing {
-  min-height: calc(100dvh - 4rem);
+  min-height: var(--hero-height);
   padding-block: 0;
   justify-content: center;
 }
@@ -128,51 +97,47 @@
   height: clamp(220px, 45dvh, 360px);
 }
 
-@media (min-width: 1180px) {
+/* Desktop: terminal beside the title, the campus is the backdrop filling the viewport */
+@media (min-width: 1024px) {
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     align-items: start;
-    gap: clamp(1.5rem, 2.5vw, 2.5rem);
-    min-height: calc(100dvh - 4rem);
-    position: relative;
+    min-height: var(--hero-height);
   }
 
   .header {
-    grid-column: 1;
-    grid-row: 1;
-    z-index: 2;
-    padding-inline-start: clamp(1.5rem, 4vw, 4vw);
-    padding-inline-end: 0;
-  }
-
-  .terminalSection {
-    display: flex;
-    grid-column: 2;
-    grid-row: 1;
-    z-index: 2;
-    height: clamp(340px, 45vh, 480px);
-    padding-inline-end: clamp(1.5rem, 4vw, 4vw);
-    box-sizing: border-box;
-  }
-
-  .campus {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    align-self: end;
+    grid-area: 1 / 1;
     z-index: 1;
   }
 
-  .playing .campus {
-    height: min(calc(100dvh - 4rem), 30vw);
-    align-self: center;
+  .titleLine {
+    white-space: nowrap;
   }
 
-  .announcementSlot {
-    left: clamp(1.5rem, 4vw, 4vw);
-    right: auto;
-    margin-inline: 0;
-    max-width: calc(45% - 2rem);
-    justify-content: flex-start;
+  .terminalSection {
+    display: block;
+    grid-area: 1 / 2;
+    z-index: 1;
+    height: clamp(340px, 45vh, 480px);
+    padding-inline-end: var(--gutter);
+  }
+
+  .campus {
+    grid-area: 1 / 1 / 2 / -1;
+    align-self: end;
+  }
+
+  .student {
+    display: block;
+  }
+
+  .playSlot {
+    bottom: calc(1.7vw + min(16vw, clamp(5rem, 14vw, 10rem)) * 0.92);
+  }
+
+  .playing .campus {
+    height: min(var(--hero-height), 30vw);
+    align-self: center;
   }
 }

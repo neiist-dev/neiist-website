@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@neiist/ui"],
   cacheComponents: true,
+  partialPrefetching: true,
   devIndicators: false,
   typedRoutes: true,
   experimental: {

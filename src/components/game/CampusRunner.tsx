@@ -17,10 +17,13 @@ import {
 } from "./RunnerEngine";
 import { attachInput } from "./RunnerInput";
 import { computeView, draw, type RenderContext } from "./RunnerRenderer";
+import { getBestScoreAction, submitScoreAction } from "@/actions/gameScore";
+import { useUser } from "@/context/UserContext";
 
-const BEST_SCORE_KEY = "neiist:runner:best";
 const MAX_FRAME_MS = 50;
-const FIXED_DT = 1000 / 60; // Exact physics step for deterministic simulation across refresh rates
+const FIXED_DT = 1000 / 60;
+
+let sessionBest = 0;
 
 type Phase = "running" | "paused" | "over";
 
@@ -29,23 +32,10 @@ interface CampusRunnerProps {
   onExit: () => void;
 }
 
-function readBest(): number {
-  try {
-    return Number(localStorage.getItem(BEST_SCORE_KEY)) || 0;
-  } catch {
-    return 0;
-  }
-}
-
-function writeBest(best: number): void {
-  try {
-    localStorage.setItem(BEST_SCORE_KEY, String(best));
-  } catch {
-    // Storage can be unavailable (private mode, blocked site data); the best score just won't persist
-  }
-}
-
 export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
+  const { user } = useUser();
+  const userRef = useRef(user);
+  const bestRef = useRef(sessionBest);
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const restartRef = useRef<() => void>(() => {});
@@ -58,6 +48,17 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
   useEffect(() => {
     onExitRef.current = onExit;
   }, [onExit]);
+
+  useEffect(() => {
+    userRef.current = user;
+    if (!user) return;
+
+    getBestScoreAction()
+      .then((stored) => {
+        if (stored) bestRef.current = Math.max(bestRef.current, stored);
+      })
+      .catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -76,7 +77,6 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     let assets: Assets = {};
     const renderCtx: RenderContext = {};
 
-    let best = readBest();
     let view = computeView(1, 1, 1, reducedMotion);
     const input = createInput();
     const state = createGame(view.width);
@@ -157,11 +157,14 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
         while (accumulator >= FIXED_DT) {
           if (update(state, input, FIXED_DT)) {
             const score = getScore(state);
-            if (score > best) {
-              best = score;
-              writeBest(best);
+            if (score > bestRef.current) {
+              bestRef.current = score;
+              sessionBest = score;
+              if (userRef.current) {
+                submitScoreAction(score).catch(() => {});
+              }
             }
-            setResult({ score, best });
+            setResult({ score, best: bestRef.current });
             setPhase("over");
             break;
           }
@@ -169,7 +172,7 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
         }
       }
 
-      draw(ctx, state, assets, view, best, { best: dict.best }, coarseTouch, renderCtx);
+      draw(ctx, state, assets, view, bestRef.current, { best: dict.best }, coarseTouch, renderCtx);
       frame = requestAnimationFrame(loop);
     };
 
@@ -200,18 +203,14 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     <div ref={containerRef} className={styles.runner} tabIndex={-1}>
       <canvas ref={canvasRef} className={styles.canvas} role="img" aria-label={dict.canvas_label} />
 
-      <div className={styles.exitSlot}>
-        <Button
-          variant="outline"
-          color="neutral"
-          size="icon"
-          shape="pill"
-          onClick={onExit}
-          aria-label={dict.exit}
-          title={dict.exit}>
-          <FiX aria-hidden="true" />
-        </Button>
-      </div>
+      <button
+        type="button"
+        className={styles.exitButton}
+        onClick={onExit}
+        aria-label={dict.exit}
+        title={dict.exit}>
+        <FiX aria-hidden="true" />
+      </button>
 
       {phase === "running" && (
         <p key={String(noObstacles)} className={styles.controlsHint}>
