@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FiRotateCcw, FiX } from "react-icons/fi";
-import { Button } from "@neiist/ui";
+import { FiPlay, FiRotateCcw, FiX } from "react-icons/fi";
+import { Button, Heading } from "@neiist/ui";
 import styles from "@/styles/components/game/CampusRunner.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { loadAssets, type Assets } from "@/components/game/RunnerAssets";
@@ -16,13 +16,11 @@ import {
   update,
 } from "./RunnerEngine";
 import { attachInput } from "./RunnerInput";
-import { computeView, draw, type RenderContext } from "./RunnerRenderer";
-import { getBestScoreAction, submitScoreAction } from "@/actions/gameScore";
+import { computeView, draw } from "./RunnerRenderer";
+import { getBestScoreAction, startGameAction, submitScoreAction } from "@/actions/gameScore";
 import { useUser } from "@/context/UserContext";
 
 const MAX_FRAME_MS = 50;
-const FIXED_DT = 1000 / 60;
-
 let sessionBest = 0;
 
 type Phase = "running" | "paused" | "over";
@@ -39,6 +37,7 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const restartRef = useRef<() => void>(() => {});
+  const resumeRef = useRef<() => void>(() => {});
   const onExitRef = useRef(onExit);
   const [phase, setPhase] = useState<Phase>("running");
   const [result, setResult] = useState({ score: 0, best: 0 });
@@ -58,6 +57,7 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
         if (stored) bestRef.current = Math.max(bestRef.current, stored);
       })
       .catch(() => {});
+    startGameAction().catch(() => {});
   }, [user]);
 
   useEffect(() => {
@@ -75,7 +75,6 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
 
     let cancelled = false;
     let assets: Assets = {};
-    const renderCtx: RenderContext = {};
 
     let view = computeView(1, 1, 1, reducedMotion);
     const input = createInput();
@@ -83,7 +82,6 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     let paused = false;
     let last = performance.now();
     let frame = 0;
-    let accumulator = 0;
 
     const resize = () => {
       const rect = container.getBoundingClientRect();
@@ -104,9 +102,11 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
       paused = false;
       setNoObstacles(withoutObstacles);
       setPhase("running");
+      if (userRef.current) startGameAction().catch(() => {});
       container.focus({ preventScroll: true });
     };
     restartRef.current = restart;
+    if (userRef.current) startGameAction().catch(() => {});
 
     const pause = () => {
       if (paused || state.status !== "running") return;
@@ -119,9 +119,9 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     const resume = () => {
       paused = false;
       last = performance.now();
-      accumulator = 0;
       setPhase("running");
     };
+    resumeRef.current = resume;
 
     const detachInput = attachInput(container, input, {
       onExit: () => onExitRef.current(),
@@ -152,27 +152,20 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
       const dt = Math.min(now - last, MAX_FRAME_MS);
       last = now;
 
-      if (!paused) {
-        accumulator += dt;
-        while (accumulator >= FIXED_DT) {
-          if (update(state, input, FIXED_DT)) {
-            const score = getScore(state);
-            if (score > bestRef.current) {
-              bestRef.current = score;
-              sessionBest = score;
-              if (userRef.current) {
-                submitScoreAction(score).catch(() => {});
-              }
-            }
-            setResult({ score, best: bestRef.current });
-            setPhase("over");
-            break;
+      if (!paused && dt > 0) {
+        if (update(state, input, dt)) {
+          const score = getScore(state);
+          if (score > bestRef.current) {
+            bestRef.current = score;
+            sessionBest = score;
+            if (userRef.current) submitScoreAction(score).catch(() => {});
           }
-          accumulator -= FIXED_DT;
+          setResult({ score, best: bestRef.current });
+          setPhase("over");
         }
       }
 
-      draw(ctx, state, assets, view, bestRef.current, { best: dict.best }, coarseTouch, renderCtx);
+      draw(ctx, state, assets, view, bestRef.current, { best: dict.best });
       frame = requestAnimationFrame(loop);
     };
 
@@ -180,7 +173,6 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
       if (cancelled) return;
       assets = loaded;
       last = performance.now();
-      accumulator = 0;
       frame = requestAnimationFrame(loop);
     });
 
@@ -191,11 +183,6 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
       detachInput();
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("blur", pause);
-      if (renderCtx.bgCanvas) {
-        renderCtx.bgCanvas.width = 0;
-        renderCtx.bgCanvas.height = 0;
-        renderCtx.bgCanvas = undefined;
-      }
     };
   }, [dict.best]);
 
@@ -203,31 +190,51 @@ export default function CampusRunner({ dict, onExit }: CampusRunnerProps) {
     <div ref={containerRef} className={styles.runner} tabIndex={-1}>
       <canvas ref={canvasRef} className={styles.canvas} role="img" aria-label={dict.canvas_label} />
 
-      <button
-        type="button"
-        className={styles.exitButton}
-        onClick={onExit}
-        aria-label={dict.exit}
-        title={dict.exit}>
-        <FiX aria-hidden="true" />
-      </button>
+      <div className={styles.exitSlot}>
+        <Button
+          variant="outline"
+          color="neutral"
+          size="sm"
+          shape="pill"
+          onClick={onExit}
+          aria-label={dict.exit}>
+          <FiX aria-hidden="true" /> {dict.exit}
+        </Button>
+      </div>
 
       {phase === "running" && (
-        <p key={String(noObstacles)} className={styles.controlsHint}>
-          {noObstacles ? dict.secret_mode : isTouch ? dict.controls_touch : dict.controls_desktop}
-        </p>
+        <div className={styles.hintSlot}>
+          <p key={String(noObstacles)} className={styles.controlsHint}>
+            {noObstacles ? dict.secret_mode : isTouch ? dict.controls_touch : dict.controls_desktop}
+          </p>
+        </div>
       )}
 
       {phase === "paused" && (
         <div className={styles.overlay}>
-          <p className={styles.overlayHint}>{dict.start_hint}</p>
+          <Button
+            variant="solid"
+            color="primary"
+            size="md"
+            shape="pill"
+            onClick={() => resumeRef.current()}>
+            <FiPlay aria-hidden="true" /> {dict.start_hint}
+          </Button>
         </div>
       )}
 
       {phase === "over" && (
         <div className={styles.overlay}>
-          <p className={styles.gameOver}>{dict.game_over}</p>
-          <Button variant="solid" color="primary" onClick={() => restartRef.current()}>
+          <Heading level={2} className={styles.gameOver}>
+            {dict.game_over}
+          </Heading>
+          <Button
+            variant="solid"
+            color="primary"
+            size="md"
+            shape="pill"
+            onClick={() => restartRef.current()}
+            aria-label={dict.restart}>
             <FiRotateCcw aria-hidden="true" /> {dict.restart}
           </Button>
         </div>

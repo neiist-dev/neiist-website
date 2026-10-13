@@ -18,11 +18,8 @@ import MemberAvatar from "@/components/layout/MemberAvatar";
 import { useSearch } from "@/hooks/useSearch";
 import { FaPlus } from "react-icons/fa";
 import { FiMoreVertical, FiCalendar, FiTrash2, FiFileText, FiCamera } from "react-icons/fi";
-import { ROLE_HIERARCHY, RoleItem, mapAccessLabelToUserRole } from "@/types/roles";
-import {
-  compareMembershipsByHierarchy,
-  compareMembershipsByActiveAndHierarchy,
-} from "@/utils/membershipSortUtils";
+import type { RoleItem } from "@/types/roles";
+import { compareMandatePower } from "@/utils/membershipSortUtils";
 import type { Membership } from "@/types/memberships";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
@@ -69,7 +66,7 @@ export default function MembershipsTab({
   selectedYear: propSelectedYear,
   departments,
   roles = [],
-  rolePositions: propRolePositions,
+  rolePositions = {},
   canManageMemberships,
   canManagePhotos = false,
   coordinatorDepartments,
@@ -189,54 +186,42 @@ export default function MembershipsTab({
 
   const deptOrderMap = useMemo(() => {
     const map = new Map<string, number>();
-    departments.forEach((department) => {
-      map.set(department.name, department.display_order ?? 999);
+    departments.forEach((dept) => {
+      map.set(dept.name, dept.display_order ?? 999);
     });
     return map;
   }, [departments]);
 
-  const rolePositionMap = useMemo(() => {
-    const map = new Map<string, number>();
-    if (propRolePositions) {
-      Object.entries(propRolePositions).forEach(([k, v]) => map.set(k, v));
-    }
-    roles.forEach((role) => {
-      const dept = role.department_name || role.department;
-      if (dept && !map.has(`${dept}-${role.role_name}`)) {
-        map.set(`${dept}-${role.role_name}`, 999);
-      }
-    });
-    return map;
-  }, [propRolePositions, roles]);
-
-  const roleTierMap = useMemo(() => {
-    const map = new Map<string, number>();
-    roles.forEach((role) => {
-      const dept = role.department_name || role.department;
-      if (!dept) return;
-      const key = `${dept}-${role.role_name}`;
-      const userRole = mapAccessLabelToUserRole(role.access_label, role.active);
-      const tierWeight = ROLE_HIERARCHY[userRole] ?? 0;
-      const permCount = role.permissions?.length ?? 0;
-      map.set(key, tierWeight * 1000 + permCount);
-    });
-    return map;
-  }, [roles]);
-
-  const sortedMemberships = useMemo(() => {
-    const ctx = { deptOrderMap, rolePositionMap, roleTierMap };
-    return [...memberships].sort((a, b) => {
-      if (selectedDept) {
-        return compareMembershipsByActiveAndHierarchy(a, b, ctx);
-      }
-      return compareMembershipsByHierarchy(a, b, ctx);
-    });
-  }, [memberships, selectedDept, deptOrderMap, roleTierMap, rolePositionMap]);
-
   const deptFilteredMemberships = useMemo(() => {
-    if (!selectedDept) return sortedMemberships;
-    return sortedMemberships.filter((membership) => membership.departmentName === selectedDept);
-  }, [sortedMemberships, selectedDept]);
+    const relevant = selectedDept
+      ? memberships.filter((m) => m.departmentName === selectedDept)
+      : memberships;
+
+    const userMandatesMap = new Map<string, Membership[]>();
+    for (const m of relevant) {
+      const id = m.userNumber || m.id;
+      if (!userMandatesMap.has(id)) userMandatesMap.set(id, []);
+      userMandatesMap.get(id)!.push(m);
+    }
+
+    const uniqueMembers: Membership[] = [];
+    userMandatesMap.forEach((userMandates) => {
+      userMandates.sort((a, b) => compareMandatePower(a, b, roles));
+      uniqueMembers.push(userMandates[0]);
+    });
+
+    return uniqueMembers.sort((a, b) => {
+      const deptA = deptOrderMap.get(a.departmentName) ?? 999;
+      const deptB = deptOrderMap.get(b.departmentName) ?? 999;
+      if (deptA !== deptB) return deptA - deptB;
+
+      const posA = rolePositions[`${a.departmentName}-${a.roleName}`] ?? 999;
+      const posB = rolePositions[`${b.departmentName}-${b.roleName}`] ?? 999;
+      if (posA !== posB) return posA - posB;
+
+      return a.userName.localeCompare(b.userName);
+    });
+  }, [memberships, selectedDept, roles, deptOrderMap, rolePositions]);
 
   const {
     results: filteredMemberships,
@@ -263,10 +248,10 @@ export default function MembershipsTab({
         });
         Alert.success(mDict.conclude_success);
         setMemberships((prev) =>
-          prev.map((membership) =>
-            membership.id === membership.id
-              ? { ...membership, isActive: false, endDate: new Date().toISOString().split("T")[0] }
-              : membership
+          prev.map((m) =>
+            m.id === membership.id
+              ? { ...m, isActive: false, endDate: new Date().toISOString().split("T")[0] }
+              : m
           )
         );
       } else {
@@ -278,7 +263,7 @@ export default function MembershipsTab({
           fromDate: membership.startDate,
         });
         Alert.success(mDict.delete_success);
-        setMemberships((prev) => prev.filter((membership) => membership.id !== membership.id));
+        setMemberships((prev) => prev.filter((m) => m.id !== membership.id));
       }
       setSelectedMembership(null);
       setPendingAction(null);
@@ -465,6 +450,7 @@ export default function MembershipsTab({
           selectedYear={selectedYear}
           canManage={canManageMemberships}
           canManagePhotos={canManagePhotos}
+          roles={roles}
           onPhotoUpdated={handlePhotoUpdated}
           onClose={() => setSelectedMembership(null)}
           onConclude={(membership) =>

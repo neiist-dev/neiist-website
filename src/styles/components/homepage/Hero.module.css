@@ -1,12 +1,12 @@
 .hero {
-  --gutter: clamp(1.5rem, 4vw, 4vw);
+  --gutter: max(1.5rem, 4vw);
   --hero-height: calc(100dvh - 4rem);
   box-sizing: border-box;
   background-color: var(--background-colour);
   display: flex;
   flex-direction: column;
-  padding-block-start: clamp(1.5rem, 3.5vh, 3rem);
-  gap: 1.5rem;
+  padding-block-start: clamp(1.25rem, 3vh, 2.5rem);
+  gap: 1.25rem;
 }
 
 .header {
@@ -31,26 +31,21 @@
 
 .titleLine {
   display: block;
+  white-space: nowrap;
 }
 
 .terminalSection {
   display: none;
 }
 
-.terminalPlaceholder {
-  width: 100%;
-  height: 100%;
-  border-radius: var(--ui-radius-lg, 12px);
-  background: #1e1e2e;
-}
-
 .campus {
   position: relative;
-  display: flex;
   margin: 0;
+  width: 100%;
 }
 
 .campusImage {
+  display: block;
   width: 100%;
   height: auto;
   user-select: none;
@@ -58,34 +53,39 @@
 
 .announcementSlot {
   position: absolute;
-  top: clamp(1rem, 4.5vw, 5.5rem);
+  top: clamp(0.5rem, 3.5vw, 4rem);
   inset-inline: var(--gutter);
   display: flex;
+  justify-content: center;
+  z-index: 2;
+}
+
+.studentSlot {
+  position: absolute;
+  bottom: clamp(1.25rem, 4vw, 2rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 3;
 }
 
 .student {
   display: none;
-  position: absolute;
-  bottom: 1.7vw;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16%;
-  max-width: clamp(5rem, 14vw, 10rem);
+  width: clamp(5rem, 14vw, 10rem);
   height: auto;
   pointer-events: none;
 }
 
-.playSlot {
-  position: absolute;
-  left: 50%;
-  bottom: 5vw;
-  transform: translateX(-50%);
-}
-
 .playing {
-  min-height: var(--hero-height);
-  padding-block: 0;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  padding: 0;
+  height: var(--hero-height);
 }
 
 .playing .header,
@@ -94,25 +94,21 @@
 }
 
 .playing .campus {
-  height: clamp(220px, 45dvh, 360px);
+  height: clamp(260px, 42dvh, 400px);
 }
 
-/* Desktop: terminal beside the title, the campus is the backdrop filling the viewport */
 @media (min-width: 1024px) {
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     align-items: start;
     min-height: var(--hero-height);
+    gap: 1.5rem;
   }
 
   .header {
     grid-area: 1 / 1;
     z-index: 1;
-  }
-
-  .titleLine {
-    white-space: nowrap;
   }
 
   .terminalSection {
@@ -128,16 +124,19 @@
     align-self: end;
   }
 
+  .studentSlot {
+    bottom: 1.7vw;
+  }
+
   .student {
     display: block;
   }
 
-  .playSlot {
-    bottom: calc(1.7vw + min(16vw, clamp(5rem, 14vw, 10rem)) * 0.92);
+  .announcementSlot {
+    justify-content: flex-start;
   }
 
   .playing .campus {
-    height: min(var(--hero-height), 30vw);
-    align-self: center;
+    height: 100%;
   }
 }

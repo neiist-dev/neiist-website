@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { User } from "@/types/user";
@@ -28,6 +28,7 @@ export interface VerifyPermissionOptions {
 }
 
 export const getAuthenticatedUser = cache(async (): Promise<AuthSession | null> => {
+  await connection();
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
 

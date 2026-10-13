@@ -16,16 +16,19 @@ import { FiMoreVertical, FiCalendar, FiTrash2, FiCamera } from "react-icons/fi";
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import type { User } from "@/types/user";
 import type { Membership } from "@/types/memberships";
+import type { RoleItem } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
 import detailStyles from "@/styles/components/management/MemberDetailModal.module.css";
 import { getMemberHistoryAction } from "@/actions/admin/memberships";
+import { compareMandatePower } from "@/utils/membershipSortUtils";
 
 interface MemberDetailModalProps {
   membership: Membership | null;
   selectedYear: string;
   canManage: boolean;
   canManagePhotos?: boolean;
+  roles?: RoleItem[];
   onPhotoUpdated?: (_userNumber: string, _photoUrl: string) => void;
   onClose: () => void;
   onConclude: (_membership: Membership) => void;
@@ -38,6 +41,7 @@ export default function MemberDetailModal({
   selectedYear: _selectedYear,
   canManage,
   canManagePhotos = false,
+  roles,
   onPhotoUpdated,
   onClose,
   onConclude,
@@ -81,12 +85,19 @@ export default function MemberDetailModal({
     };
   }, [membership?.userNumber]);
 
-  const activeMandates = useMemo(() => mandates.filter((member) => member.isActive), [mandates]);
+  const activeMandates = useMemo(() => {
+    const active = mandates.filter((m) => m.isActive);
+    if (!roles) return active;
+    return [...active].sort((a, b) => compareMandatePower(a, b, roles));
+  }, [mandates, roles]);
 
-  const historicalMandates = useMemo(
-    () => mandates.filter((member) => !member.isActive),
-    [mandates]
-  );
+  const historicalMandates = useMemo(() => {
+    const historical = mandates.filter((m) => !m.isActive);
+    if (!roles) return historical;
+    return [...historical].sort((a, b) => compareMandatePower(a, b, roles));
+  }, [mandates, roles]);
+
+  const primaryMandate = activeMandates[0] || historicalMandates[0] || membership;
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -162,9 +173,9 @@ export default function MemberDetailModal({
             <span>{displayIstId}</span>
             <div className={detailStyles.badges}>
               <Badge variant="outline" size="sm" className={detailStyles.roleBadge}>
-                <strong className={detailStyles.badgeDept}>{membership.departmentName}</strong>
+                <strong className={detailStyles.badgeDept}>{primaryMandate.departmentName}</strong>
                 <span>•</span>
-                <span>{membership.roleName}</span>
+                <span>{primaryMandate.roleName}</span>
               </Badge>
             </div>
           </div>

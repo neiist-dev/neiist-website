@@ -2,8 +2,6 @@ import type { InputState } from "@/components/game/RunnerEngine";
 
 const JUMP_KEYS = new Set([" ", "Spacebar", "ArrowUp", "w", "W"]);
 const DUCK_KEYS = new Set(["ArrowDown", "s", "S"]);
-const SWIPE_THRESHOLD = 30;
-const TAP_HOLD_MS = 200;
 /** ← → ← → ↑ ↓ ↑ ↓ B A Start, typed on the game-over screen. */
 const SECRET_CODE = [
   "ArrowLeft",
@@ -30,8 +28,6 @@ export function attachInput(
   input: InputState,
   handlers: InputHandlers
 ): () => void {
-  let tapHoldTimer: ReturnType<typeof setTimeout> | undefined;
-  let pointerStartY: number | null = null;
   let codeProgress = 0;
 
   const trackSecretCode = (event: KeyboardEvent): boolean => {
@@ -52,14 +48,18 @@ export function attachInput(
     return true;
   };
 
-  const queueJump = () => {
+  const triggerJump = () => {
     if (handlers.onJumpIntent?.()) return;
     input.jumpQueued = true;
+    input.jumpHeld = true;
   };
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (!surface.contains(document.activeElement)) return;
+  const endJump = () => {
+    input.jumpHeld = false;
+  };
 
+  // Keyboard handlers
+  const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       event.preventDefault();
       handlers.onExit();
@@ -75,16 +75,17 @@ export function attachInput(
     ) {
       return;
     }
+
     if (trackSecretCode(event)) {
       event.preventDefault();
       event.stopPropagation();
       return;
     }
+
     if (JUMP_KEYS.has(event.key)) {
       event.preventDefault();
       event.stopPropagation();
-      if (!event.repeat) queueJump();
-      input.jumpHeld = true;
+      if (!event.repeat) triggerJump();
     } else if (DUCK_KEYS.has(event.key)) {
       event.preventDefault();
       event.stopPropagation();
@@ -93,42 +94,48 @@ export function attachInput(
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if (!surface.contains(document.activeElement)) return;
-
-    if (JUMP_KEYS.has(event.key)) input.jumpHeld = false;
-    else if (DUCK_KEYS.has(event.key)) input.duckHeld = false;
+    if (JUMP_KEYS.has(event.key)) {
+      endJump();
+    } else if (DUCK_KEYS.has(event.key)) {
+      input.duckHeld = false;
+    }
   };
 
-  const onPointerDown = (event: PointerEvent) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    if (event.target instanceof Element && event.target.closest("button")) return;
-    pointerStartY = event.clientY;
-    surface.setPointerCapture(event.pointerId);
+  const onTouchStart = (event: TouchEvent) => {
+    if (
+      event.target instanceof Element &&
+      (event.target.closest("button") || event.target.closest("a"))
+    ) {
+      return;
+    }
+    event.preventDefault();
+    triggerJump();
   };
 
-  const onPointerMove = (event: PointerEvent) => {
-    if (pointerStartY === null) return;
-    input.duckHeld = event.clientY - pointerStartY > SWIPE_THRESHOLD;
+  const onTouchEnd = (event: TouchEvent) => {
+    if (
+      event.target instanceof Element &&
+      (event.target.closest("button") || event.target.closest("a"))
+    ) {
+      return;
+    }
+    event.preventDefault();
+    endJump();
   };
 
-  const onPointerUp = () => {
-    if (pointerStartY === null) return;
-    const wasDucking = input.duckHeld;
-    pointerStartY = null;
-    input.duckHeld = false;
-    if (wasDucking) return;
-
-    queueJump();
-    input.jumpHeld = true;
-    clearTimeout(tapHoldTimer);
-    tapHoldTimer = setTimeout(() => {
-      input.jumpHeld = false;
-    }, TAP_HOLD_MS);
+  const onMouseDown = (event: MouseEvent) => {
+    if (event.button !== 0) return;
+    if (
+      event.target instanceof Element &&
+      (event.target.closest("button") || event.target.closest("a"))
+    ) {
+      return;
+    }
+    triggerJump();
   };
 
-  const onPointerCancel = () => {
-    pointerStartY = null;
-    input.duckHeld = false;
+  const onMouseUp = () => {
+    endJump();
   };
 
   const onBlur = () => {
@@ -139,19 +146,21 @@ export function attachInput(
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("blur", onBlur);
-  surface.addEventListener("pointerdown", onPointerDown);
-  surface.addEventListener("pointermove", onPointerMove);
-  surface.addEventListener("pointerup", onPointerUp);
-  surface.addEventListener("pointercancel", onPointerCancel);
+
+  surface.addEventListener("touchstart", onTouchStart, { passive: false });
+  surface.addEventListener("touchend", onTouchEnd, { passive: false });
+  surface.addEventListener("touchcancel", onTouchEnd, { passive: false });
+  surface.addEventListener("mousedown", onMouseDown);
+  window.addEventListener("mouseup", onMouseUp);
 
   return () => {
-    clearTimeout(tapHoldTimer);
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
     window.removeEventListener("blur", onBlur);
-    surface.removeEventListener("pointerdown", onPointerDown);
-    surface.removeEventListener("pointermove", onPointerMove);
-    surface.removeEventListener("pointerup", onPointerUp);
-    surface.removeEventListener("pointercancel", onPointerCancel);
+    surface.removeEventListener("touchstart", onTouchStart);
+    surface.removeEventListener("touchend", onTouchEnd);
+    surface.removeEventListener("touchcancel", onTouchEnd);
+    surface.removeEventListener("mousedown", onMouseDown);
+    window.removeEventListener("mouseup", onMouseUp);
   };
 }

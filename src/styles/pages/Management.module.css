@@ -2,12 +2,22 @@
   display: flex;
   flex-direction: column;
   gap: clamp(1rem, 2vw, 1.5rem);
-  padding-block: clamp(1rem, 2.5vw, 2rem);
-  padding-inline: clamp(1rem, 3vw, 2.5rem);
-  inline-size: 100%;
+  margin: 2rem 4rem 4rem;
   min-block-size: calc(100vh - 120px);
   min-inline-size: 0;
   box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin: 1.5rem 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
 }
 
 .header {

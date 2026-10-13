@@ -1,32 +1,25 @@
 export const WORLD_H = 150;
 export const GROUND_Y = 130;
 export const MIN_WORLD_W = 300;
-
 export const FRAME_MS = 1000 / 60;
 
 const PLAYER_X = 24;
-
 export const PLAYER_SIZE = { w: 20, h: 35 };
 export const PLAYER_DUCK_SIZE = { w: 35, h: 20 };
 
 const GRAVITY = 0.6;
-const JUMP_VELOCITY = -8.5;
-const DROP_VELOCITY = -5;
-const MIN_JUMP_HEIGHT = 30;
-const FAST_FALL_MULTIPLIER = 3;
+const INITIAL_JUMP_VELOCITY = 8.5;
+const DROP_VELOCITY = -3.5;
+const MIN_JUMP_HEIGHT = 20;
+const SPEED_DROP_COEFFICIENT = 3.0;
 
-export const START_SPEED = 2.5;
-export const MAX_SPEED = 5.5;
-const ACCELERATION = 0.0004;
+export const START_SPEED = 6.0;
+export const MAX_SPEED = 13.0;
+const ACCELERATION = 0.001;
 
-export const SCORE_COEFFICIENT = 0.06;
-const AIR_OBSTACLE_MIN_SCORE = 200;
-const BASE_GAP = 120;
-const GAP_COEFFICIENT = 0.6;
-const MAX_GAP_FACTOR = 1.5;
-const RESTART_DELAY_MS = 500;
-
-const CLEAR_TIME_MS = 1500;
+export const SCORE_COEFFICIENT = 0.025;
+const RESTART_DELAY_MS = 300;
+const CLEAR_TIME_MS = 2500;
 
 export type ObstacleKind =
   "brokenPc" | "serverRack" | "coffee" | "rubberDuck" | "books" | "bug" | "floppy";
@@ -36,22 +29,19 @@ interface ObstacleDef {
   h: number;
   air: boolean;
   maxGroup: number;
-  minSpeed: number;
 }
 
 export const OBSTACLES: Record<ObstacleKind, ObstacleDef> = {
-  brokenPc: { w: 24, h: 24, air: false, maxGroup: 1, minSpeed: 0 },
-  serverRack: { w: 16, h: 34, air: false, maxGroup: 2, minSpeed: 0 },
-  coffee: { w: 14, h: 18, air: false, maxGroup: 3, minSpeed: 0 },
-  rubberDuck: { w: 20, h: 18, air: false, maxGroup: 2, minSpeed: 0 },
-  books: { w: 18, h: 20, air: false, maxGroup: 1, minSpeed: 0 },
-  bug: { w: 24, h: 14, air: true, maxGroup: 1, minSpeed: 0 },
-  floppy: { w: 16, h: 16, air: true, maxGroup: 1, minSpeed: 0 },
+  brokenPc: { w: 24, h: 24, air: false, maxGroup: 1 },
+  serverRack: { w: 16, h: 34, air: false, maxGroup: 2 },
+  coffee: { w: 14, h: 18, air: false, maxGroup: 3 },
+  rubberDuck: { w: 20, h: 18, air: false, maxGroup: 2 },
+  books: { w: 18, h: 20, air: false, maxGroup: 1 },
+  bug: { w: 24, h: 14, air: true, maxGroup: 1 },
+  floppy: { w: 16, h: 16, air: true, maxGroup: 1 },
 };
 
 const AIR_HEIGHTS = [6, 24, 52];
-const GROUP_MIN_SPEED = 3.5;
-const AIR_SPEED_OFFSET = 0.8;
 
 export interface Rect {
   x: number;
@@ -67,7 +57,6 @@ export interface Obstacle {
   w: number;
   h: number;
   group: number;
-  speedOffset: number;
   gap: number;
 }
 
@@ -76,8 +65,7 @@ export interface Player {
   vy: number;
   jumping: boolean;
   ducking: boolean;
-  falling: boolean;
-  jumpStartY: number;
+  reachedMinHeight: boolean;
 }
 
 export type GameStatus = "running" | "over";
@@ -118,8 +106,7 @@ export function createGame(worldW: number, random: () => number = Math.random): 
       vy: 0,
       jumping: false,
       ducking: false,
-      falling: false,
-      jumpStartY: GROUND_Y,
+      reachedMinHeight: false,
     },
     obstacles: [],
     noObstacles: false,
@@ -157,58 +144,32 @@ export function obstacleRect(obstacle: Obstacle): Rect {
   };
 }
 
-function inset(rect: Rect, fx: number, fy: number): Rect {
-  return {
-    x: rect.x + rect.w * fx,
-    y: rect.y + rect.h * fy,
-    w: rect.w * (1 - 2 * fx),
-    h: rect.h * (1 - 2 * fy),
-  };
-}
-
-export function intersects(a: Rect, b: Rect): boolean {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
 export function collides(player: Player, obstacle: Obstacle): boolean {
-  const p = inset(playerRect(player), 0.15, 0.08);
-  const o = inset(obstacleRect(obstacle), 0.12, 0.12);
-  return intersects(p, o);
-}
-
-export function gapRange(obstacle: Pick<Obstacle, "w" | "group">, speed: number): [number, number] {
-  const min = Math.round(obstacle.w * obstacle.group * speed + BASE_GAP * GAP_COEFFICIENT);
-  return [min, Math.round(min * MAX_GAP_FACTOR)];
-}
-
-function pick<T>(items: readonly T[], random: () => number): T {
-  return items[Math.floor(random() * items.length)];
+  const p = playerRect(player);
+  const o = obstacleRect(obstacle);
+  return (
+    p.x + 3 < o.x + o.w - 3 &&
+    p.x + p.w - 3 > o.x + 3 &&
+    p.y + 3 < o.y + o.h - 3 &&
+    p.y + p.h - 3 > o.y + 3
+  );
 }
 
 function spawnObstacle(state: GameState): Obstacle {
   const score = getScore(state);
-  const kinds = (Object.keys(OBSTACLES) as ObstacleKind[]).filter((kind) => {
-    const def = OBSTACLES[kind];
-    if (def.air && score < AIR_OBSTACLE_MIN_SCORE) return false;
-    return state.speed >= def.minSpeed;
-  });
+  const kinds = (Object.keys(OBSTACLES) as ObstacleKind[]).filter(
+    (kind) => !OBSTACLES[kind].air || score >= 200
+  );
 
-  // Avoid three obstacles of the same kind in a row
-  const last = state.obstacles.slice(-2);
-  const options =
-    last.length === 2 && last[0].kind === last[1].kind
-      ? kinds.filter((kind) => kind !== last[0].kind)
-      : kinds;
-  const kind = pick(options.length > 0 ? options : kinds, state.random);
+  const kind = kinds[Math.floor(state.random() * kinds.length)];
   const def = OBSTACLES[kind];
+  const group = !def.air && state.speed >= 6.5 ? 1 + Math.floor(state.random() * def.maxGroup) : 1;
+  const bottom = def.air
+    ? GROUND_Y - AIR_HEIGHTS[Math.floor(state.random() * AIR_HEIGHTS.length)]
+    : GROUND_Y;
 
-  const group =
-    !def.air && state.speed >= GROUP_MIN_SPEED ? 1 + Math.floor(state.random() * def.maxGroup) : 1;
-  const bottom = def.air ? GROUND_Y - pick(AIR_HEIGHTS, state.random) : GROUND_Y;
-  const speedOffset = def.air ? (state.random() < 0.5 ? -AIR_SPEED_OFFSET : AIR_SPEED_OFFSET) : 0;
-
-  const [minGap, maxGap] = gapRange({ w: def.w, group }, state.speed);
-  const gap = minGap + Math.round(state.random() * (maxGap - minGap));
+  const minGap = Math.round(def.w * group * state.speed + 72);
+  const gap = minGap + Math.round(state.random() * (minGap * 0.5));
 
   return {
     kind,
@@ -217,7 +178,6 @@ function spawnObstacle(state: GameState): Obstacle {
     w: def.w,
     h: def.h,
     group,
-    speedOffset,
     gap,
   };
 }
@@ -227,43 +187,37 @@ function updatePlayer(state: GameState, input: InputState, frames: number): void
 
   if (input.jumpQueued && !player.jumping && !input.duckHeld) {
     player.jumping = true;
-    player.falling = false;
-    player.vy = JUMP_VELOCITY - state.speed / 20;
-    player.jumpStartY = player.y;
+    player.vy = -(INITIAL_JUMP_VELOCITY + state.speed / 30);
+    player.reachedMinHeight = false;
   }
   input.jumpQueued = false;
-
   player.ducking = input.duckHeld;
 
   if (!player.jumping) return;
 
-  const risen = player.jumpStartY - player.y;
+  if (GROUND_Y - player.y >= MIN_JUMP_HEIGHT || player.ducking) player.reachedMinHeight = true;
 
-  if (!input.jumpHeld && !player.falling && risen >= MIN_JUMP_HEIGHT && player.vy < DROP_VELOCITY) {
+  if (!input.jumpHeld && player.reachedMinHeight && player.vy < DROP_VELOCITY)
     player.vy = DROP_VELOCITY;
-    player.falling = true;
-  }
 
-  const gravity = player.ducking ? GRAVITY * FAST_FALL_MULTIPLIER : GRAVITY;
-  player.y += player.vy * frames;
-  player.vy += gravity * frames;
+  if (player.ducking && player.vy < 1) player.vy = 1;
+
+  const dropMultiplier = player.ducking ? SPEED_DROP_COEFFICIENT : 1;
+  player.y += (player.vy + 0.5 * GRAVITY * frames) * dropMultiplier * frames;
+  player.vy += GRAVITY * frames;
 
   if (player.y >= GROUND_Y) {
     player.y = GROUND_Y;
     player.vy = 0;
     player.jumping = false;
-    player.falling = false;
+    player.reachedMinHeight = false;
   }
 }
 
 function updateObstacles(state: GameState, frames: number): void {
-  for (const obstacle of state.obstacles)
-    obstacle.x -= (state.speed + obstacle.speedOffset) * frames;
+  for (const obstacle of state.obstacles) obstacle.x -= state.speed * frames;
 
-  for (let i = state.obstacles.length - 1; i >= 0; i--) {
-    const o = state.obstacles[i];
-    if (o.x + o.w * o.group <= -10) state.obstacles.splice(i, 1);
-  }
+  state.obstacles = state.obstacles.filter((o) => o.x + o.w * o.group > -10);
 
   if (state.noObstacles || state.time < CLEAR_TIME_MS) return;
 

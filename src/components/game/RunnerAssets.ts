@@ -1,6 +1,3 @@
-// Sprites are PNG strips (frames side by side). When changing art, keep the pixel size or update
-// the matching OBSTACLES entry in RunnerEngine.ts. Missing images render as filled blocks.
-
 import books from "@/assets/game/books.png";
 import brokenPc from "@/assets/game/broken-pc.png";
 import bug from "@/assets/game/bug.png";
@@ -8,7 +5,6 @@ import campusSkyline from "@/assets/game/campus-skyline.png";
 import clouds from "@/assets/game/clouds.png";
 import coffee from "@/assets/game/coffee.png";
 import floppy from "@/assets/game/floppy.png";
-import props from "@/assets/game/props.png";
 import scenery from "@/assets/game/scenery.png";
 import rubberDuck from "@/assets/game/rubber-duck.png";
 import serverRack from "@/assets/game/server-rack.png";
@@ -27,7 +23,6 @@ export type SpriteName =
   | "skyline"
   | "clouds"
   | "scenery"
-  | "props"
   | "studentRun"
   | "studentJump"
   | "studentDuck"
@@ -47,7 +42,6 @@ const MANIFEST: Record<SpriteName, SpriteDef> = {
   skyline: { src: campusSkyline.src, frames: 1 },
   clouds: { src: clouds.src, frames: 3 },
   scenery: { src: scenery.src, frames: 4 },
-  props: { src: props.src, frames: 13 },
   studentRun: { src: studentRun.src, frames: 4 },
   studentJump: { src: studentJump.src, frames: 1 },
   studentDuck: { src: studentDuck.src, frames: 2 },

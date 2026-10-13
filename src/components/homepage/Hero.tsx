@@ -7,15 +7,11 @@ import { FiPlay } from "react-icons/fi";
 import { Button, cn } from "@neiist/ui";
 import hero from "@/assets/homepage/hero.png";
 import student from "@/assets/homepage/student.png";
-import styles from "@/styles/components/homepage/Hero.module.css";
 import ColorfulText from "@/components/ColorfulText";
+import HeroTerminal from "@/components/terminal/HeroTerminal";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/i18n-config";
-
-const HeroTerminal = dynamic(() => import("@/components/terminal/HeroTerminal"), {
-  ssr: false,
-  loading: () => <div className={styles.terminalPlaceholder} aria-hidden="true" />,
-});
+import styles from "@/styles/components/homepage/Hero.module.css";
 
 const CampusRunner = dynamic(() => import("@/components/game/CampusRunner"), { ssr: false });
 
@@ -55,25 +51,11 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
           <CampusRunner dict={gameDict} onExit={exitGame} />
         ) : (
           <>
-            <Image
-              src={hero}
-              alt={dict.campus_alt}
-              className={styles.campusImage}
-              priority
-              placeholder="blur"
-            />
+            <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} priority />
 
             {announcement && <div className={styles.announcementSlot}>{announcement}</div>}
 
-            <Image
-              src={student}
-              alt={dict.student_alt}
-              className={styles.student}
-              priority
-              placeholder="blur"
-            />
-
-            <div className={styles.playSlot}>
+            <div className={styles.studentSlot}>
               <Button
                 variant="solid"
                 color="primary"
@@ -83,6 +65,7 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
                 aria-label={gameDict.play_label}>
                 <FiPlay aria-hidden="true" /> {gameDict.play}
               </Button>
+              <Image src={student} alt={dict.student_alt} className={styles.student} priority />
             </div>
           </>
         )}

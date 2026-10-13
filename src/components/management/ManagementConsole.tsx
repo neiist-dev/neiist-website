@@ -12,6 +12,7 @@ import MembershipsTab from "@/components/management/MembershipsTab";
 import DepartmentsTab from "@/components/management/DepartmentsTab";
 import RolesTab from "@/components/management/RolesTab";
 import UsersTab from "@/components/management/UsersTab";
+import ColorfulText from "@/components/ColorfulText";
 import styles from "@/styles/pages/Management.module.css";
 
 export interface ManagementConsoleProps {
@@ -208,7 +209,7 @@ export default function ManagementConsole({
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>{dict.admin.management.title}</h1>
+        <ColorfulText as="h1" className={styles.title} text={dict.admin.management.title} />
         <p className={styles.subtitle}>
           {!isCoordOnly
             ? dict.admin.management.subtitle_admin

@@ -1,42 +1,21 @@
 import type { Membership } from "@/types/memberships";
+import { type RoleItem, ROLE_HIERARCHY, mapAccessLabelToUserRole } from "@/types/roles";
 
-export interface SortHierarchyContext {
-  deptOrderMap: Map<string, number>;
-  rolePositionMap: Map<string, number>; // key: `${deptName}-${roleName}`
-  roleTierMap?: Map<string, number>; // key: `${deptName}-${roleName}`
+export function getRolePower(deptName: string, roleName: string, roles: RoleItem[]): number {
+  const role = roles.find(
+    (r) => (r.department_name || r.department) === deptName && r.role_name === roleName
+  );
+  if (!role) return 0;
+
+  const userRole = mapAccessLabelToUserRole(role.access_label, true);
+  return ROLE_HIERARCHY[userRole] * 100 + (role.permissions?.length ?? 0);
 }
 
-export function compareMembershipsByHierarchy(
-  a: Membership,
-  b: Membership,
-  ctx: SortHierarchyContext
-): number {
-  // Department display order
-  const deptA = ctx.deptOrderMap.get(a.departmentName) ?? 999;
-  const deptB = ctx.deptOrderMap.get(b.departmentName) ?? 999;
-  if (deptA !== deptB) return deptA - deptB;
-
-  // Role hierarchy position in department
-  const posA = ctx.rolePositionMap.get(`${a.departmentName}-${a.roleName}`) ?? 999;
-  const posB = ctx.rolePositionMap.get(`${b.departmentName}-${b.roleName}`) ?? 999;
-  if (posA !== posB) return posA - posB;
-
-  // Role Tier & Permissions count
-  if (ctx.roleTierMap) {
-    const weightA = ctx.roleTierMap.get(`${a.departmentName}-${a.roleName}`) ?? 4000;
-    const weightB = ctx.roleTierMap.get(`${b.departmentName}-${b.roleName}`) ?? 4000;
-    if (weightA !== weightB) return weightB - weightA;
-  }
-
-  // Alphabetical by user name
-  return a.userName.localeCompare(b.userName);
-}
-
-export function compareMembershipsByActiveAndHierarchy(
-  a: Membership,
-  b: Membership,
-  ctx: SortHierarchyContext
-): number {
+export function compareMandatePower(a: Membership, b: Membership, roles: RoleItem[]): number {
   if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
-  return compareMembershipsByHierarchy(a, b, ctx);
+  const powerDiff =
+    getRolePower(b.departmentName, b.roleName, roles) -
+    getRolePower(a.departmentName, a.roleName, roles);
+  if (powerDiff !== 0) return powerDiff;
+  return (b.startDate || "").localeCompare(a.startDate || "");
 }
