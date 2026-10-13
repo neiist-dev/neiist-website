@@ -1,5 +1,15 @@
 # neiist
 
+## [4.3.0](https://github.com/neiist-dev/neiist-website/compare/v4.2.3...v4.3.0) (2026-10-13)
+
+
+### Features
+
+* **game:** add db table to keep best score per user istid, in future ([e1c0571](https://github.com/neiist-dev/neiist-website/commit/e1c057138d9673d6ed1a62592000f9a86207b7fe))
+* **game:** score on db, chrome dino physics ([fce9b83](https://github.com/neiist-dev/neiist-website/commit/fce9b831685d6033a385792d61b91fbca4f7f7fd))
+* **homepage:** mini-game and one-terminal ([#739](https://github.com/neiist-dev/neiist-website/issues/739)) ([fa725dc](https://github.com/neiist-dev/neiist-website/commit/fa725dcd9fe8305a122f766443d7a77f9281dcde))
+* **ui:** new timepicker drum wheel and small fixes on alert and cards ([e911f62](https://github.com/neiist-dev/neiist-website/commit/e911f627015263925a7aece8d912572cfe6c76d9))
+
 ## [4.2.3](https://github.com/neiist-dev/neiist-website/compare/v4.2.2...v4.2.3) (2026-10-10)
 
 
