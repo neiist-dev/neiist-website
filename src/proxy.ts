@@ -3,7 +3,7 @@ import { UserRole } from "@/types/roles";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { rateLimit } from "@/lib/security/rateLimitUtils";
 import { getRateLimitRule } from "@/lib/security/rateLimitRules";
-import { isBot, getClientIp } from "@/lib/security/botAgents";
+import { isBot, getClientIdentifier } from "@/lib/security/botAgents";
 import { addSecurityHeaders } from "@/lib/security/securityHeaders";
 import { canAccess, protectedRoutes } from "@/lib/security/routePermissions";
 import { resolveLocaleRoute } from "@/i18n/i18n-config";
@@ -39,7 +39,8 @@ export async function proxy(req: NextRequest) {
     if (rule) {
       const sessionToken = req.cookies.get("session")?.value;
       const jwtUser = await verifyJWTWebCrypto(sessionToken);
-      const identifier = rule.useUser ? (jwtUser?.istid ?? getClientIp(req)) : getClientIp(req);
+      const userKey = rule.useUser ? jwtUser?.istid : undefined;
+      const identifier = getClientIdentifier(req, userKey);
       const bucketKey = `${path.split("/").slice(0, 4).join("/")}:${identifier}`;
       const result = rateLimit(bucketKey, rule.limit, rule.windowMs);
 
