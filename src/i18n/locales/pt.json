@@ -344,8 +344,9 @@
     "restart": "Recomeçar",
     "exit": "Sair do jogo",
     "start_hint": "Carrega em Espaço ou toca para começar",
+    "start_hint_touch": "Toca para começar",
     "controls_desktop": "Espaço/↑ saltar · ↓ baixar · Esc sair",
-    "controls_touch": "Toca para saltar · desliza para baixo para baixar",
+    "controls_touch": "Toca no ecrã para saltar",
     "canvas_label": "Campus Runner: um jogo de corrida pelo campus do IST",
     "final_score": "Fim de jogo. Pontos: {score}. Melhor: {best}.",
     "secret_mode": "Código secreto desbloqueado: sem obstáculos"

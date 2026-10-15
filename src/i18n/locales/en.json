@@ -344,8 +344,9 @@
     "restart": "Restart",
     "exit": "Exit game",
     "start_hint": "Press Space or tap to start",
+    "start_hint_touch": "Tap to play",
     "controls_desktop": "Space/↑ jump · ↓ duck · Esc exit",
-    "controls_touch": "Tap to jump · swipe down to duck",
+    "controls_touch": "Tap screen to jump",
     "canvas_label": "Campus Runner: a running game across the IST campus",
     "final_score": "Game over. Score: {score}. Best: {best}.",
     "secret_mode": "Cheat code unlocked: no obstacles"

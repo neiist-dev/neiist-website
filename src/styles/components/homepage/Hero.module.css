@@ -79,22 +79,26 @@
   pointer-events: none;
 }
 
-.playing {
+.hero.playing {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  align-items: stretch;
   padding: 0;
+  gap: 0;
   height: var(--hero-height);
+  min-height: 0;
+  overflow: hidden;
 }
 
-.playing .header,
-.playing .terminalSection {
+.hero.playing .header,
+.hero.playing .terminalSection {
   display: none;
 }
 
-.playing .campus {
-  height: clamp(260px, 42dvh, 400px);
+.hero.playing .campus {
+  display: flex;
+  height: 100%;
+  align-self: stretch;
 }
 
 @media (min-width: 1024px) {
@@ -115,7 +119,7 @@
     display: block;
     grid-area: 1 / 2;
     z-index: 1;
-    height: clamp(340px, 45vh, 480px);
+    height: clamp(280px, 42vh, 480px);
     padding-inline-end: var(--gutter);
   }
 
@@ -135,8 +139,15 @@
   .announcementSlot {
     justify-content: flex-start;
   }
+}
 
-  .playing .campus {
-    height: 100%;
+@media (min-width: 1024px) and (max-height: 768px) {
+  .hero {
+    padding-block-start: clamp(0.75rem, 1.8vh, 1.25rem);
+    gap: 1rem;
+  }
+
+  .terminalSection {
+    height: clamp(240px, 36vh, 300px);
   }
 }

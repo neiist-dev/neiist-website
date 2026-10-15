@@ -4,6 +4,7 @@ import {
   MIN_WORLD_W,
   WORLD_H,
   getScore,
+  isDucking,
   playerRect,
   type GameState,
   type Rect,
@@ -52,10 +53,15 @@ export function computeView(cssW: number, cssH: number, dpr: number, reducedMoti
 
 function drawSprite(
   ctx: CanvasRenderingContext2D,
-  sprite: Sprite,
+  sprite: Sprite | undefined,
   frame: number,
   dest: Rect
 ): void {
+  if (!sprite) {
+    ctx.fillStyle = INK;
+    ctx.fillRect(dest.x, dest.y, dest.w, dest.h);
+    return;
+  }
   const f = frame % sprite.frames;
   ctx.drawImage(
     sprite.image,
@@ -169,18 +175,12 @@ function drawObstacles(ctx: CanvasRenderingContext2D, state: GameState, assets: 
   for (const obstacle of state.obstacles) {
     const sprite = assets[obstacle.kind];
     for (let i = 0; i < obstacle.group; i++) {
-      const dest = {
+      drawSprite(ctx, sprite, frame, {
         x: obstacle.x + i * obstacle.w,
         y: obstacle.y,
         w: obstacle.w,
         h: obstacle.h,
-      };
-      if (sprite) {
-        drawSprite(ctx, sprite, frame, dest);
-      } else {
-        ctx.fillStyle = INK;
-        ctx.fillRect(dest.x, dest.y, dest.w, dest.h);
-      }
+      });
     }
   }
 }
@@ -188,7 +188,6 @@ function drawObstacles(ctx: CanvasRenderingContext2D, state: GameState, assets: 
 function drawPlayer(ctx: CanvasRenderingContext2D, state: GameState, assets: Assets): void {
   const { player } = state;
   const rect = playerRect(player);
-  const ducking = player.ducking && !player.jumping;
   const step = Math.floor(state.distance / 20);
 
   let sprite = assets.studentRun;
@@ -200,16 +199,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, state: GameState, assets: Ass
   } else if (player.jumping) {
     sprite = assets.studentJump;
     frame = 0;
-  } else if (ducking) {
+  } else if (isDucking(player)) {
     sprite = assets.studentDuck;
   }
 
-  if (sprite) {
-    drawSprite(ctx, sprite, frame, rect);
-  } else {
-    ctx.fillStyle = INK;
-    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-  }
+  drawSprite(ctx, sprite, frame, rect);
 }
 
 function drawScore(
@@ -217,22 +211,22 @@ function drawScore(
   state: GameState,
   best: number,
   view: View,
-  labels: { best: string }
+  bestLabel: string
 ): void {
   const score = getScore(state);
   const pad = (n: number) => String(Math.min(n, 99999)).padStart(5, "0");
 
   ctx.fillStyle = INK;
-  ctx.font = 'bold 10px "Secular One", sans-serif';
+  ctx.font = 'bold 11px "Secular One", sans-serif';
   ctx.textAlign = "right";
   ctx.textBaseline = "top";
-  const right = view.width - 8;
-  const top = WORLD_H - view.height + 8;
+  const right = view.width - 12;
+  const top = WORLD_H - view.height + 14;
 
   const scoreText = pad(score);
   ctx.fillText(scoreText, right, top);
   if (best > 0) {
-    const bestText = `${labels.best} ${pad(best)}`;
+    const bestText = `${bestLabel} ${pad(best)}`;
     const scoreWidth = ctx.measureText(scoreText).width;
     ctx.globalAlpha = 0.6;
     ctx.fillText(bestText, right - scoreWidth - 10, top);
@@ -246,7 +240,7 @@ export function draw(
   assets: Assets,
   view: View,
   best: number,
-  labels: { best: string }
+  bestLabel: string
 ): void {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -254,31 +248,29 @@ export function draw(
   ctx.setTransform(view.scale, 0, 0, view.scale, 0, (view.height - WORLD_H) * view.scale);
   ctx.imageSmoothingEnabled = false;
 
-  if (typeof document !== "undefined") {
-    if (!bgCanvas) bgCanvas = document.createElement("canvas");
-    if (bgCanvas.width !== ctx.canvas.width || bgCanvas.height !== ctx.canvas.height) {
-      bgCanvas.width = ctx.canvas.width;
-      bgCanvas.height = ctx.canvas.height;
-    }
-    const bgCtx = bgCanvas.getContext("2d");
-    if (bgCtx) {
-      bgCtx.setTransform(1, 0, 0, 1, 0, 0);
-      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-      bgCtx.setTransform(ctx.getTransform());
-      bgCtx.imageSmoothingEnabled = false;
+  if (!bgCanvas) bgCanvas = document.createElement("canvas");
+  if (bgCanvas.width !== ctx.canvas.width || bgCanvas.height !== ctx.canvas.height) {
+    bgCanvas.width = ctx.canvas.width;
+    bgCanvas.height = ctx.canvas.height;
+  }
+  const bgCtx = bgCanvas.getContext("2d");
+  if (bgCtx) {
+    bgCtx.setTransform(1, 0, 0, 1, 0, 0);
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    bgCtx.setTransform(ctx.getTransform());
+    bgCtx.imageSmoothingEnabled = false;
 
-      drawBackground(bgCtx, state, assets, view);
+    drawBackground(bgCtx, state, assets, view);
 
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.globalAlpha = 0.35;
-      ctx.drawImage(bgCanvas, 0, 0);
-      ctx.restore();
-    }
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 0.35;
+    ctx.drawImage(bgCanvas, 0, 0);
+    ctx.restore();
   }
 
   drawGround(ctx, state, view);
   drawObstacles(ctx, state, assets);
   drawPlayer(ctx, state, assets);
-  drawScore(ctx, state, best, view, labels);
+  drawScore(ctx, state, best, view, bestLabel);
 }

@@ -170,9 +170,9 @@ function Activities({ dict }: { dict: Dictionary["activities"] }) {
                       <Image
                         src={event.image}
                         alt={event.title}
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 600px) 50vw, 100vw"
                         className={styles.image}
-                        width={400}
-                        height={250}
                       />
                       <div className={styles.label}>{event.title}</div>
                       <div className={styles.overlay}>

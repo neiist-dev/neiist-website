@@ -1,9 +1,9 @@
 export const WORLD_H = 150;
 export const GROUND_Y = 130;
-export const MIN_WORLD_W = 300;
+export const MIN_WORLD_W = 260;
 export const FRAME_MS = 1000 / 60;
 
-const PLAYER_X = 24;
+const PLAYER_X = 20;
 export const PLAYER_SIZE = { w: 20, h: 35 };
 export const PLAYER_DUCK_SIZE = { w: 35, h: 20 };
 
@@ -80,6 +80,7 @@ export interface GameState {
   player: Player;
   obstacles: Obstacle[];
   noObstacles: boolean;
+  noDucking: boolean;
   random: () => number;
 }
 
@@ -93,7 +94,11 @@ export function createInput(): InputState {
   return { jumpQueued: false, jumpHeld: false, duckHeld: false };
 }
 
-export function createGame(worldW: number, random: () => number = Math.random): GameState {
+export function createGame(
+  worldW: number,
+  random: () => number = Math.random,
+  noDucking = false
+): GameState {
   return {
     status: "running",
     worldW: Math.max(worldW, MIN_WORLD_W),
@@ -110,12 +115,13 @@ export function createGame(worldW: number, random: () => number = Math.random): 
     },
     obstacles: [],
     noObstacles: false,
+    noDucking,
     random,
   };
 }
 
 export function resetGame(state: GameState, noObstacles = false): void {
-  Object.assign(state, createGame(state.worldW, state.random), { noObstacles });
+  Object.assign(state, createGame(state.worldW, state.random, state.noDucking), { noObstacles });
 }
 
 export function setWorldWidth(state: GameState, worldW: number): void {
@@ -130,8 +136,12 @@ export function canRestart(state: GameState): boolean {
   return state.status === "over" && state.overTime >= RESTART_DELAY_MS;
 }
 
+export function isDucking(player: Player): boolean {
+  return player.ducking && !player.jumping;
+}
+
 export function playerRect(player: Player): Rect {
-  const size = player.ducking && !player.jumping ? PLAYER_DUCK_SIZE : PLAYER_SIZE;
+  const size = isDucking(player) ? PLAYER_DUCK_SIZE : PLAYER_SIZE;
   return { x: PLAYER_X, y: player.y - size.h, w: size.w, h: size.h };
 }
 
@@ -144,21 +154,23 @@ export function obstacleRect(obstacle: Obstacle): Rect {
   };
 }
 
+const HITBOX_INSET = 3;
+
 export function collides(player: Player, obstacle: Obstacle): boolean {
   const p = playerRect(player);
   const o = obstacleRect(obstacle);
   return (
-    p.x + 3 < o.x + o.w - 3 &&
-    p.x + p.w - 3 > o.x + 3 &&
-    p.y + 3 < o.y + o.h - 3 &&
-    p.y + p.h - 3 > o.y + 3
+    p.x + HITBOX_INSET < o.x + o.w - HITBOX_INSET &&
+    p.x + p.w - HITBOX_INSET > o.x + HITBOX_INSET &&
+    p.y + HITBOX_INSET < o.y + o.h - HITBOX_INSET &&
+    p.y + p.h - HITBOX_INSET > o.y + HITBOX_INSET
   );
 }
 
 function spawnObstacle(state: GameState): Obstacle {
   const score = getScore(state);
   const kinds = (Object.keys(OBSTACLES) as ObstacleKind[]).filter(
-    (kind) => !OBSTACLES[kind].air || score >= 200
+    (kind) => (!state.noDucking || !OBSTACLES[kind].air) && (!OBSTACLES[kind].air || score >= 200)
   );
 
   const kind = kinds[Math.floor(state.random() * kinds.length)];
@@ -184,14 +196,15 @@ function spawnObstacle(state: GameState): Obstacle {
 
 function updatePlayer(state: GameState, input: InputState, frames: number): void {
   const player = state.player;
+  const duck = !state.noDucking && input.duckHeld;
 
-  if (input.jumpQueued && !player.jumping && !input.duckHeld) {
+  if (input.jumpQueued && !player.jumping && !duck) {
     player.jumping = true;
     player.vy = -(INITIAL_JUMP_VELOCITY + state.speed / 30);
     player.reachedMinHeight = false;
   }
   input.jumpQueued = false;
-  player.ducking = input.duckHeld;
+  player.ducking = duck;
 
   if (!player.jumping) return;
 
