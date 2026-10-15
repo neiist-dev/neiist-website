@@ -12,6 +12,8 @@ export interface CloudAnnouncementProps {
   pulse?: boolean;
   className?: string;
   children?: React.ReactNode;
+  target?: string;
+  rel?: string;
 }
 
 export default function CloudAnnouncement({
@@ -22,6 +24,8 @@ export default function CloudAnnouncement({
   pulse = true,
   className,
   children,
+  target,
+  rel,
 }: CloudAnnouncementProps) {
   const content = children || (
     <>
@@ -42,7 +46,7 @@ export default function CloudAnnouncement({
 
   if (href) {
     return (
-      <Link href={href} className={cn(styles.cloud, className)}>
+      <Link href={href} className={cn(styles.cloud, className)} target={target} rel={rel}>
         {content}
       </Link>
     );

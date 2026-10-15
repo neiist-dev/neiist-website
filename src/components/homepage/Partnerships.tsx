@@ -2,7 +2,7 @@ import React from "react";
 import Image, { StaticImageData } from "next/image";
 import styles from "@/styles/components/homepage/Partnerships.module.css";
 import { Dictionary } from "@/i18n/dictionaries";
-
+/*
 import auren from "@/assets/partnerships/monetary/auren.png";
 import deloitte from "@/assets/partnerships/monetary/deloitte.png";
 import basedInLisbon from "@/assets/partnerships/monetary/based_in_lisbon.png";
@@ -11,8 +11,11 @@ import basedInLisbon from "@/assets/partnerships/monetary/based_in_lisbon.png";
 import lage2 from "@/assets/partnerships/non-monetary/lage2.png";
 import aiesec from "@/assets/partnerships/non-monetary/aiesec.png";
 import magma from "@/assets/partnerships/non-monetary/magma.png";
+*/
+import nightLifeLisbon from "@/assets/partnerships/lisbon_night_life.png";
 
 function Partnerships({ dict }: { dict: Dictionary["partnerships"] }) {
+  /*
   const monetaryPartners = [
     { href: "https://auren.com/pt/", src: auren, alt: "Auren", scale: "1.0" },
     {
@@ -44,6 +47,15 @@ function Partnerships({ dict }: { dict: Dictionary["partnerships"] }) {
       scale: "1.0",
     },
   ];
+*/
+  const partnerships = [
+    {
+      href: "https://3cket.com/event/falloween/NEIIST",
+      src: nightLifeLisbon,
+      alt: "Night Life Lisbon",
+      scale: "1.2",
+    },
+  ];
 
   const renderPartners = (
     partners: {
@@ -67,10 +79,13 @@ function Partnerships({ dict }: { dict: Dictionary["partnerships"] }) {
   return (
     <div className={styles.partnerships}>
       <h1 className={styles.title}>{dict.title}</h1>
+      {/*
       <h2>Parcerias Monetárias</h2>
       <div className={styles.row}>{renderPartners(monetaryPartners)}</div>
       <h2>Parcerias Não Monetárias</h2>
       <div className={styles.row}>{renderPartners(nonMonetaryPartners)}</div>
+      */}
+      <div className={styles.row}>{renderPartners(partnerships)}</div>
     </div>
   );
 }
