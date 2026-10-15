@@ -50,7 +50,7 @@ export function DateInput({
     const val = event.target.value;
     setInputValue(val);
 
-    if (val.length === 10) {
+    if (val.length === dateFormat.length) {
       const parsedDate = parse(val, dateFormat, new Date());
       if (isValid(parsedDate)) {
         if (onChange) onChange(parsedDate);
@@ -61,15 +61,13 @@ export function DateInput({
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setInputValue(format(date, dateFormat));
-      if (onChange) onChange(date);
-      if (!inline) setIsOpen(false);
-    } else {
-      setInputValue("");
-      if (onChange) onChange(undefined);
-    }
+    if (onChange) onChange(date);
+    if (date && !inline) setIsOpen(false);
   };
+
+  const calendarElement = (
+    <Calendar mode="single" selected={value} onSelect={handleDateSelect} locale={locale} />
+  );
 
   return (
     <div ref={containerRef} className={cn(styles.container, className)}>
@@ -81,9 +79,6 @@ export function DateInput({
         <input
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={() => {
-            if (!disabled) setIsOpen(true);
-          }}
           placeholder={placeholder}
           disabled={disabled}
           className={styles.input}
@@ -92,20 +87,15 @@ export function DateInput({
       </div>
 
       {inline ? (
-        <div className={styles.inlineCalendar}>
-          <Calendar mode="single" selected={value} onSelect={handleDateSelect} locale={locale} />
-        </div>
+        <div className={styles.inlineCalendar}>{calendarElement}</div>
       ) : (
         <Popover
           isOpen={isOpen}
           onClose={() => setIsOpen(false)}
           anchorRef={containerRef}
           width="max-content"
-          mobileDrawerPosition="bottom"
           mobileDrawerTitle={mobileDrawerTitle}>
-          <div className={styles.popoverCalendarWrapper}>
-            <Calendar mode="single" selected={value} onSelect={handleDateSelect} locale={locale} />
-          </div>
+          <div className={styles.popoverCalendarWrapper}>{calendarElement}</div>
         </Popover>
       )}
     </div>

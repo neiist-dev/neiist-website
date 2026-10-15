@@ -5,7 +5,7 @@
   overflow: visible;
   max-inline-size: 100vw;
   inline-size: 100%;
-  margin: auto;
+  transition: opacity 0.2s ease;
 }
 
 .dialog[open] {
@@ -20,6 +20,21 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+.dialogClosing::backdrop {
+  animation: fadeOut 0.2s ease-in forwards !important;
+}
+
+.dialog:not(.dialogClosing):has(~ .dialog[open]:not(.dialogClosing)) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dialog[open] ~ .dialog::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+  animation: none;
+}
+
 .content {
   background: var(--ui-bg);
   border-radius: var(--ui-radius-lg);
@@ -31,7 +46,42 @@
   position: relative;
   box-shadow: var(--ui-shadow-lg);
   border: none;
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.content.closing {
+  animation: modalExitDesktop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+.dragHandleBar {
+  display: none;
+  width: 100%;
+  padding-top: 0.75rem;
+  padding-bottom: 0.25rem;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.dragHandleBar:active {
+  cursor: grabbing;
+}
+
+.dragHandlePill {
+  width: 36px;
+  height: 4.5px;
+  border-radius: var(--ui-radius-full);
+  background-color: var(--ui-border);
+  transition: background-color 0.15s ease;
+}
+
+.dragHandleBar:hover .dragHandlePill {
+  background-color: var(--ui-fg-light);
 }
 
 .size-sm {
@@ -146,31 +196,26 @@
     inset-block-start: auto;
     inset-block-end: 0;
     align-items: flex-end;
-    inline-size: 100%;
-    max-inline-size: 100vw;
   }
 
   .content {
     border-radius: var(--ui-radius-lg) var(--ui-radius-lg) 0 0;
-    max-block-size: 85vh;
-    inline-size: 100%;
     max-inline-size: 100vw;
     border-inline: none;
     border-block-end: none;
     animation: slideInBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .size-sm,
-  .size-md,
-  .size-lg,
-  .size-xl,
-  .size-full,
-  .size-auto {
-    max-inline-size: 100vw;
+  .content.closing {
+    animation: slideOutBottom 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .dragHandleBar {
+    display: flex;
   }
 
   .header {
-    padding: 1.25rem 1.25rem 0;
+    padding: 0.5rem 1.25rem 0;
   }
 
   .body {
@@ -191,6 +236,15 @@
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -202,11 +256,31 @@
   }
 }
 
+@keyframes modalExitDesktop {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
 @keyframes slideInBottom {
   from {
     transform: translateY(100%);
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes slideOutBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
   }
 }

@@ -6,7 +6,8 @@
   box-shadow: var(--ui-shadow-popover);
   position: fixed;
   z-index: 9999;
-  overflow: hidden;
+  max-block-size: calc(100vh - 32px);
+  overflow: auto;
 }
 
 .hidden {

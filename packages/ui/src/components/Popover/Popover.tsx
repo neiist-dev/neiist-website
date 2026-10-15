@@ -24,6 +24,7 @@ export interface PopoverPosition {
   top: number;
   left: number;
   width?: string | number;
+  maxHeight?: number;
 }
 
 export function Popover({
@@ -35,7 +36,6 @@ export function Popover({
   width = 280,
   offset = 8,
   matchAnchorWidth = false,
-  mobileDrawerPosition: _mobileDrawerPosition = "bottom",
   mobileDrawerTitle = "",
   align = "start",
 }: PopoverProps) {
@@ -44,12 +44,13 @@ export function Popover({
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const mql = window.matchMedia("(max-width: 48rem)");
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(mql.matches);
     };
     checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    mql.addEventListener("change", checkMobile);
+    return () => mql.removeEventListener("change", checkMobile);
   }, []);
 
   useEffect(() => {
@@ -59,42 +60,39 @@ export function Popover({
     }
 
     const updatePosition = () => {
-      if (anchorRef.current) {
-        const rect = anchorRef.current.getBoundingClientRect();
+      if (!anchorRef.current) return;
+      const rect = anchorRef.current.getBoundingClientRect();
 
-        let targetWidth = width;
-        if (matchAnchorWidth) {
-          targetWidth = rect.width;
-        }
+      const targetWidth = matchAnchorWidth ? rect.width : width;
+      const actualWidth = matchAnchorWidth
+        ? rect.width
+        : containerRef.current?.offsetWidth ||
+          (typeof targetWidth === "number" ? targetWidth : rect.width);
 
-        const actualWidth = matchAnchorWidth
-          ? rect.width
-          : containerRef.current?.offsetWidth ||
-            (typeof targetWidth === "number" ? targetWidth : rect.width);
+      const desiredLeft =
+        align === "end"
+          ? rect.right - actualWidth
+          : align === "center"
+            ? rect.left + (rect.width - actualWidth) / 2
+            : rect.left;
 
-        let desiredLeft = rect.left;
+      const clampedLeft = Math.max(16, Math.min(desiredLeft, window.innerWidth - actualWidth - 16));
 
-        if (matchAnchorWidth) {
-          desiredLeft = rect.left;
-        } else if (align === "start") {
-          desiredLeft = rect.left;
-        } else if (align === "end") {
-          desiredLeft = rect.right - actualWidth;
-        } else if (align === "center") {
-          desiredLeft = rect.left + rect.width / 2 - actualWidth / 2;
-        }
+      const height = containerRef.current?.offsetHeight || 0;
+      const spaceBelow = window.innerHeight - rect.bottom - offset - 16;
+      const spaceAbove = rect.top - offset - 16;
+      const shouldFlip = spaceBelow < height && spaceAbove > spaceBelow;
 
-        const clampedLeft = Math.max(
-          16,
-          Math.min(desiredLeft, window.innerWidth - actualWidth - 16)
-        );
+      const top = shouldFlip
+        ? Math.max(16, rect.top - height - offset)
+        : Math.min(rect.bottom + offset, window.innerHeight - height - 16);
 
-        setPosition({
-          top: rect.bottom + offset,
-          left: clampedLeft,
-          width: targetWidth,
-        });
-      }
+      setPosition({
+        top,
+        left: clampedLeft,
+        width: targetWidth,
+        maxHeight: Math.max(80, shouldFlip ? spaceAbove : spaceBelow),
+      });
     };
 
     updatePosition();
@@ -124,7 +122,10 @@ export function Popover({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -138,8 +139,6 @@ export function Popover({
 
   if (typeof document === "undefined") return null;
 
-  if (!isOpen) return null;
-
   if (isMobile) {
     return (
       <Modal open={isOpen} onClose={onClose} title={mobileDrawerTitle} size="auto">
@@ -147,6 +146,8 @@ export function Popover({
       </Modal>
     );
   }
+
+  if (!isOpen) return null;
 
   const content = (
     <div
@@ -159,6 +160,7 @@ export function Popover({
               top: `${position.top}px`,
               left: `${position.left}px`,
               width: position.width,
+              maxHeight: position.maxHeight ? `${position.maxHeight}px` : undefined,
             }
           : { top: 0, left: 0, width: width }
       }>
@@ -166,9 +168,6 @@ export function Popover({
     </div>
   );
 
-  const target =
-    typeof document !== "undefined" ? anchorRef.current?.closest("dialog") || document.body : null;
-  if (!target) return null;
-
+  const target = anchorRef.current?.closest("dialog") || document.body;
   return createPortal(content, target);
 }

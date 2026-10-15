@@ -101,7 +101,6 @@ export function MultiSelect<T = MultiSelectItem>({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [createdItems, setCreatedItems] = useState<T[]>([]);
   const [asyncResults, setAsyncResults] = useState<T[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -131,7 +130,7 @@ export function MultiSelect<T = MultiSelectItem>({
     [getItemLabel]
   );
 
-  const allItems = useMemo(() => [...initialItems, ...createdItems], [initialItems, createdItems]);
+  const allItems = initialItems;
 
   const triggerRef = useRef<HTMLInputElement>(null);
   const triggerWrapRef = useRef<HTMLDivElement>(null);
@@ -199,6 +198,7 @@ export function MultiSelect<T = MultiSelectItem>({
     setOpen(false);
     setQuery("");
     setActiveIndex(0);
+    triggerRef.current?.blur();
   }, []);
 
   const openDropdown = () => {
@@ -233,8 +233,12 @@ export function MultiSelect<T = MultiSelectItem>({
     const trimmed = name.trim();
     if (!trimmed) return;
 
-    onItemCreate?.(trimmed);
-    setCreatedItems((prev) => (prev.includes(trimmed as T) ? prev : [...prev, trimmed as T]));
+    if (onItemCreate) {
+      onItemCreate(trimmed);
+      close();
+      return;
+    }
+
     if (multiSelect) {
       if (!selectedKeys.includes(trimmed)) {
         onChange?.([...selectedKeys, trimmed]);
@@ -242,6 +246,8 @@ export function MultiSelect<T = MultiSelectItem>({
       setQuery("");
       setActiveIndex(0);
     } else {
+      onSelect?.(trimmed as T);
+      onChange?.([trimmed]);
       close();
     }
   };
@@ -275,6 +281,7 @@ export function MultiSelect<T = MultiSelectItem>({
     }
 
     if (event.key === "Escape") {
+      event.preventDefault();
       close();
       triggerRef.current?.focus();
       return;
@@ -294,7 +301,13 @@ export function MultiSelect<T = MultiSelectItem>({
 
   const singleSelectedLabel = useMemo(() => {
     if (multiSelect) return "";
-    if (selectedItem) return getLabel(selectedItem as T);
+    if (selectedItem !== undefined && selectedItem !== null) {
+      if (typeof selectedItem === "string") {
+        const found = allItems.find((it) => getKey(it) === selectedItem);
+        return found ? getLabel(found) : selectedItem;
+      }
+      return getLabel(selectedItem as T);
+    }
     if (selectedItems.length > 0) {
       const first = selectedItems[0];
       if (typeof first === "string") {
@@ -325,7 +338,6 @@ export function MultiSelect<T = MultiSelectItem>({
           className={`${styles.trigger} ${open ? styles.triggerOpen : ""}`}
           value={inputValue}
           placeholder={open ? (searchPlaceholder ?? "Type to search...") : placeholder}
-          onFocus={openDropdown}
           onClick={openDropdown}
           onChange={(event) => {
             if (!open) setOpen(true);

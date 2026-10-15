@@ -1,10 +1,19 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 import styles from "./Alert.module.css";
 import { cn } from "../../utils/cn";
 
-import { FiCheckCircle, FiAlertCircle, FiAlertTriangle, FiInfo, FiLoader } from "react-icons/fi";
+import {
+  FiCheckCircle,
+  FiAlertCircle,
+  FiAlertTriangle,
+  FiInfo,
+  FiLoader,
+  FiX,
+} from "react-icons/fi";
 
 export type AlertVariant = "success" | "error" | "warning" | "info" | "loading";
 
@@ -50,7 +59,7 @@ function Toast({ id, title, description, variant, closeLabel = "Close" }: ToastP
         onClick={() => sonnerToast.dismiss(id)}
         aria-label={closeLabel}
         type="button">
-        ✕
+        <FiX size={14} />
       </button>
     </div>
   );
@@ -91,5 +100,31 @@ export interface ToasterProps {
 }
 
 export function Toaster({ position = "top-right", offset }: ToasterProps) {
-  return <SonnerToaster position={position} offset={offset} />;
+  const [target, setTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const updateTarget = () => {
+      const openDialogs = Array.from(
+        document.querySelectorAll<HTMLElement>("dialog[open]:not([data-closing])")
+      );
+
+      const activeDialog = openDialogs[openDialogs.length - 1] ?? document.body;
+      setTarget((prev) => (prev === activeDialog ? prev : activeDialog));
+    };
+
+    updateTarget();
+
+    const observer = new MutationObserver(updateTarget);
+    observer.observe(document.body, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["open", "data-closing"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (!target) return null;
+
+  return createPortal(<SonnerToaster position={position} offset={offset} />, target);
 }

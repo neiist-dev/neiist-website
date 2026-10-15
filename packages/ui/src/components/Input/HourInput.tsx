@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Popover } from "../Popover/Popover";
 import {
   TimePicker,
@@ -58,15 +58,11 @@ export function HourInput(props: HourInputProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const displayInputValue = range
-    ? typeof value === "object" && value !== null && "start" in value
-      ? `${value.start} – ${value.end}`
-      : typeof value === "string"
-        ? value
-        : ""
-    : typeof value === "string"
-      ? value
-      : "";
+  const emit = onChange as ((_val: string | TimeRangeValue) => void) | undefined;
+  const emptyValue = range ? { start: "", end: "" } : "";
+
+  const displayInputValue =
+    typeof value === "string" ? value : value?.start ? `${value.start} – ${value.end}` : "";
 
   const [inputRawValue, setInputRawValue] = useState(displayInputValue);
 
@@ -74,34 +70,11 @@ export function HourInput(props: HourInputProps) {
     setInputRawValue(displayInputValue);
   }, [displayInputValue]);
 
-  const handleSingleTimeChange = useCallback(
-    (newTime: string) => {
-      setInputRawValue(newTime);
-      (onChange as ((_time: string) => void) | undefined)?.(newTime);
-    },
-    [onChange]
-  );
-
-  const handleRangeTimeChange = useCallback(
-    (newRange: TimeRangeValue) => {
-      setInputRawValue(`${newRange.start} – ${newRange.end}`);
-      (onChange as ((_timeRange: TimeRangeValue) => void) | undefined)?.(newRange);
-    },
-    [onChange]
-  );
-
-  const commitInputRawValue = useCallback(() => {
+  const commitInputRawValue = () => {
     const trimmed = inputRawValue.trim();
     if (!trimmed) {
       setInputRawValue("");
-      if (range) {
-        (onChange as ((_timeRange: TimeRangeValue) => void) | undefined)?.({
-          start: "",
-          end: "",
-        });
-      } else {
-        (onChange as ((_time: string) => void) | undefined)?.("");
-      }
+      emit?.(emptyValue);
       return;
     }
 
@@ -113,14 +86,14 @@ export function HourInput(props: HourInputProps) {
         end: formatTime(endMin, formatType),
       };
       setInputRawValue(`${formattedRange.start} – ${formattedRange.end}`);
-      (onChange as ((_timeRange: TimeRangeValue) => void) | undefined)?.(formattedRange);
+      emit?.(formattedRange);
     } else {
       const m = parseTime(trimmed, nowMinutes());
       const formatted = formatTime(m, formatType);
       setInputRawValue(formatted);
-      (onChange as ((_time: string) => void) | undefined)?.(formatted);
+      emit?.(formatted);
     }
-  }, [range, inputRawValue, formatType, onChange]);
+  };
 
   const defaultPlaceholder = range ? "HH:MM – HH:MM" : formatType === "12h" ? "hh:mm AM" : "HH:mm";
 
@@ -130,14 +103,14 @@ export function HourInput(props: HourInputProps) {
       <TimePicker
         range
         value={value as TimeRangeValue}
-        onChange={handleRangeTimeChange}
+        onChange={emit}
         format={formatType}
         minuteStep={minuteStep}
       />
     ) : (
       <TimePicker
         value={value as string}
-        onChange={handleSingleTimeChange}
+        onChange={emit}
         format={formatType}
         minuteStep={minuteStep}
       />
@@ -157,14 +130,7 @@ export function HourInput(props: HourInputProps) {
             const nextVal = event.target.value;
             setInputRawValue(nextVal);
             if (!nextVal.trim()) {
-              if (range) {
-                (onChange as ((_timeRange: TimeRangeValue) => void) | undefined)?.({
-                  start: "",
-                  end: "",
-                });
-              } else {
-                (onChange as ((_time: string) => void) | undefined)?.("");
-              }
+              emit?.(emptyValue);
             }
           }}
           onBlur={commitInputRawValue}
@@ -172,9 +138,6 @@ export function HourInput(props: HourInputProps) {
             if (event.key === "Enter") {
               commitInputRawValue();
             }
-          }}
-          onFocus={() => {
-            if (!disabled) setIsOpen(true);
           }}
           placeholder={placeholder || defaultPlaceholder}
           disabled={disabled}
@@ -191,7 +154,6 @@ export function HourInput(props: HourInputProps) {
           onClose={() => setIsOpen(false)}
           anchorRef={containerRef}
           width="max-content"
-          mobileDrawerPosition="bottom"
           mobileDrawerTitle={mobileDrawerTitle}>
           <div className={styles.popoverPickerWrapper}>{pickerElement}</div>
         </Popover>

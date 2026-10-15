@@ -7,7 +7,6 @@
   border-radius: var(--ui-radius-md);
   background: var(--ui-bg);
   box-shadow: var(--ui-shadow-lg);
-  border: 1px solid var(--ui-border);
   font-family: var(--ui-font);
   min-inline-size: 20rem;
   max-inline-size: 24rem;
