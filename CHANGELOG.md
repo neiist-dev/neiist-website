@@ -1,5 +1,19 @@
 # neiist
 
+## [4.4.0](https://github.com/neiist-dev/neiist-website/compare/v4.3.0...v4.4.0) (2026-10-15)
+
+
+### Features
+
+* **partnerships:** add new partnerships and remove old ones ([a174928](https://github.com/neiist-dev/neiist-website/commit/a174928cfa338d5a2efa0e36e93a02ff140ba9f9))
+* **security:** proxy now identifies correctly multiple user behind ([d90746f](https://github.com/neiist-dev/neiist-website/commit/d90746fb9536b2b1b732e0a9077cd48076f36d16))
+
+
+### Bug Fixes
+
+* **game:** scalling on  mobile, performance and auto scale of textures ([c833129](https://github.com/neiist-dev/neiist-website/commit/c83312903b278185e88f68c2ee14adff34998981))
+* **ui:** closing and opening animation, alert style, and multple modals ([be7fb3e](https://github.com/neiist-dev/neiist-website/commit/be7fb3e389203a2473e8ddaacda3d280735ace13))
+
 ## [4.3.0](https://github.com/neiist-dev/neiist-website/compare/v4.2.3...v4.3.0) (2026-10-13)
 
 
