@@ -66,7 +66,13 @@ function parseNomineeIds(raw: string | undefined): string[] {
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const UPLOAD_DIR = path.join(process.cwd(), "data", "voting");
 
-type RawOption = { id?: string; name: string; description?: string; photoPath?: string };
+type RawOption = {
+  id?: string;
+  name: string;
+  description?: string;
+  photoPath?: string;
+  descriptionPhotoPath?: string;
+};
 type Extractor = (_fd: FormData) => Partial<VotingSession> | Promise<Partial<VotingSession>>;
 
 async function savePhoto(file: File): Promise<string> {
@@ -101,11 +107,24 @@ async function extractCustomOptions(fd: FormData): Promise<CustomOptionInput[]> 
     valid.map(async ({ opt, i, name }) => {
       const id = opt.id || `opt_${i + 1}_${crypto.randomUUID().slice(0, 8)}`;
       const file = fd.get(`customImage_${id}`) ?? fd.get(`customImage_${i}`);
+      const descFile = fd.get(`customDescImage_${id}`) ?? fd.get(`customDescImage_${i}`);
       const photoPath =
         file instanceof File && file.size > 0
           ? await savePhoto(file)
           : opt.photoPath?.trim() || undefined;
-      return { id, name, description: opt.description?.trim() || undefined, photoPath };
+
+      const descriptionPhotoPath =
+        descFile instanceof File && descFile.size > 0
+          ? await savePhoto(descFile)
+          : opt.descriptionPhotoPath?.trim() || photoPath;
+
+      return {
+        id,
+        name,
+        description: opt.description?.trim() || undefined,
+        photoPath,
+        descriptionPhotoPath: descriptionPhotoPath || photoPath,
+      };
     })
   );
 }

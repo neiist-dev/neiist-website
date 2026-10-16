@@ -254,6 +254,7 @@ CREATE TABLE neiist.voting_custom_options (
   id TEXT NOT NULL,
   name TEXT NOT NULL,
   photo_path TEXT,
+  description_photo_path TEXT,
   description TEXT,
   PRIMARY KEY (session_id, id)
 );
@@ -3463,8 +3464,15 @@ BEGIN
     FOR elem IN SELECT * FROM jsonb_array_elements(p_nominees)
     LOOP
       IF jsonb_typeof(elem) = 'object' THEN
-        INSERT INTO neiist.voting_custom_options (session_id, id, name, photo_path, description)
-        VALUES (v_session_id, elem->>'id', elem->>'name', elem->>'photo_path', elem->>'description');
+        INSERT INTO neiist.voting_custom_options (session_id, id, name, photo_path, description_photo_path, description)
+        VALUES (
+          v_session_id,
+          elem->>'id',
+          elem->>'name',
+          elem->>'photo_path',
+          COALESCE(elem->>'description_photo_path', elem->>'photo_path'),
+          elem->>'description'
+        );
 
         INSERT INTO neiist.voting_nominees (session_id, nominee_id)
         VALUES (v_session_id, elem->>'id');
@@ -3502,6 +3510,7 @@ RETURNS TABLE (
   id TEXT,
   name TEXT,
   photo_path TEXT,
+  description_photo_path TEXT,
   description TEXT
 ) AS $$
 BEGIN
@@ -3510,6 +3519,7 @@ BEGIN
     vn.nominee_id as id,
     COALESCE(co.name, u.name, vn.nominee_id) as name,
     COALESCE(co.photo_path, u.photo_path) as photo_path,
+    COALESCE(co.description_photo_path, co.photo_path, u.photo_path) as description_photo_path,
     co.description
   FROM neiist.voting_nominees vn
   LEFT JOIN neiist.users u ON u.istid = vn.nominee_id

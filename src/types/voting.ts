@@ -37,6 +37,7 @@ export interface DbVotingNominee {
   id: string;
   name: string;
   photo_path: string | null;
+  description_photo_path?: string | null;
   description: string | null;
 }
 
@@ -53,20 +54,24 @@ export interface CustomOptionInput {
   name: string;
   description?: string;
   photoPath?: string;
+  descriptionPhotoPath?: string;
 }
 
 export interface DbCustomOption {
   id: string;
   name: string;
   photo_path: string | null;
+  description_photo_path: string | null;
   description: string | null;
 }
 
 export function mapCustomOptionToDb(input: CustomOptionInput): DbCustomOption {
+  const mainPhoto = input.photoPath ?? null;
   return {
     id: input.id ?? "",
     name: input.name,
-    photo_path: input.photoPath ?? null,
+    photo_path: mainPhoto,
+    description_photo_path: input.descriptionPhotoPath ?? mainPhoto,
     description: input.description ?? null,
   };
 }
@@ -92,6 +97,7 @@ export interface VotingNominee {
   id: string;
   name: string;
   photoPath: string | null;
+  descriptionPhotoPath?: string | null;
   description?: string | null;
 }
 
@@ -108,6 +114,7 @@ export function mapDbVotingNominee(row: DbVotingNominee): VotingNominee {
     id: row.id,
     name: row.name,
     photoPath: row.photo_path,
+    descriptionPhotoPath: row.description_photo_path ?? row.photo_path ?? null,
     description: row.description,
   };
 }

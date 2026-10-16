@@ -33,6 +33,7 @@ interface VotingSessionFormProps {
   typesDict: Dictionary["voting_management"]["types"];
   locale?: string;
   basePath?: string;
+  backHref?: string;
 }
 
 interface CustomOptionState {
@@ -41,7 +42,14 @@ interface CustomOptionState {
   description: string;
   file?: File;
   previewUrl?: string;
+  descFile?: File;
+  descPreviewUrl?: string;
 }
+
+const initialOptions = (): CustomOptionState[] => [
+  { id: "opt_1", name: "", description: "" },
+  { id: "opt_2", name: "", description: "" },
+];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -94,35 +102,54 @@ export default function VotingSessionForm({
   typesDict,
   locale = "pt",
   basePath,
+  backHref = `${basePath || ""}/voting/manage`,
 }: VotingSessionFormProps) {
   const router = useRouter();
   const dateLocale = locale === "en" ? enGB : pt;
 
-  const [type, setType] = useState<VotingType>(VOTING_TYPES.ACTIVITY);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [startTime, setStartTime] = useState<string>("");
-  const [endDate, setEndDate] = useState<Date | undefined>();
-  const [endTime, setEndTime] = useState<string>("");
-  const [selectedNominees, setSelectedNominees] = useState<string[]>([]);
-  const [selectedActivityId, setSelectedActivityId] = useState<string>("");
+  const [form, setForm] = useState(() => ({
+    type: VOTING_TYPES.ACTIVITY as VotingType,
+    name: "",
+    description: "",
+    startDate: undefined as Date | undefined,
+    startTime: "",
+    endDate: undefined as Date | undefined,
+    endTime: "",
+    selectedNominees: [] as string[],
+    selectedActivityId: "",
+  }));
+
+  const set = useCallback(<K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const {
+    type,
+    name,
+    description,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    selectedNominees,
+    selectedActivityId,
+  } = form;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
-  const [customOptions, setCustomOptions] = useState<CustomOptionState[]>([
-    { id: "opt_1", name: "", description: "" },
-    { id: "opt_2", name: "", description: "" },
-  ]);
+  const [customOptions, setCustomOptions] = useState<CustomOptionState[]>(initialOptions);
 
   const customOptionsRef = useRef(customOptions);
   customOptionsRef.current = customOptions;
-  useEffect(() => {
-    return () => {
+
+  useEffect(
+    () => () => {
       customOptionsRef.current.forEach((opt) => {
         if (opt.previewUrl) URL.revokeObjectURL(opt.previewUrl);
+        if (opt.descPreviewUrl) URL.revokeObjectURL(opt.descPreviewUrl);
       });
-    };
-  }, []);
+    },
+    []
+  );
 
   const activityOptions = useMemo(
     () =>
@@ -142,47 +169,65 @@ export default function VotingSessionForm({
       const ids = labels
         .map((label) => userOptions.find((option) => option.label === label)?.value)
         .filter(Boolean) as string[];
-      setSelectedNominees(ids);
+      set("selectedNominees", ids);
     },
-    [userOptions]
+    [userOptions, set]
   );
 
   const handleActivityChange = useCallback(
     (labels: string[]) => {
       const id = activityOptions.find((option) => option.label === labels[0])?.value ?? "";
-      setSelectedActivityId(id);
-      const activity = activities.find((activity) => activity.id === id);
-      if (activity) {
-        const start = activity.start.dateTime ?? activity.start.date;
-        const end = activity.end.dateTime ?? activity.end.date;
-        if (start) {
-          const s = new Date(start);
-          if (!isNaN(s.getTime())) {
-            setStartDate(s);
-            setStartTime(`${pad(s.getHours())}:${pad(s.getMinutes())}`);
-          }
-        }
-        if (end) {
-          const e = new Date(end);
-          if (!isNaN(e.getTime())) {
-            setEndDate(e);
-            setEndTime(`${pad(e.getHours())}:${pad(e.getMinutes())}`);
-          }
-        }
-        setSelectedNominees(activity.subscribers ?? []);
+      const activity = activities.find((a) => a.id === id);
+      if (!activity) {
+        set("selectedActivityId", id);
+        return;
       }
+      let startDate: Date | undefined;
+      let startTime = "";
+      let endDate: Date | undefined;
+      let endTime = "";
+
+      const start = activity.start.dateTime ?? activity.start.date;
+      const end = activity.end.dateTime ?? activity.end.date;
+      if (start) {
+        const s = new Date(start);
+        if (!isNaN(s.getTime())) {
+          startDate = s;
+          startTime = `${pad(s.getHours())}:${pad(s.getMinutes())}`;
+        }
+      }
+      if (end) {
+        const e = new Date(end);
+        if (!isNaN(e.getTime())) {
+          endDate = e;
+          endTime = `${pad(e.getHours())}:${pad(e.getMinutes())}`;
+        }
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        selectedActivityId: id,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        selectedNominees: activity.subscribers ?? [],
+      }));
     },
-    [activities, activityOptions]
+    [activities, activityOptions, set]
   );
 
   const handleTypeChange = (newType: VotingType) => {
-    setType(newType);
-    setSelectedNominees([]);
-    setSelectedActivityId("");
-    setStartDate(undefined);
-    setStartTime("");
-    setEndDate(undefined);
-    setEndTime("");
+    setForm((prev) => ({
+      ...prev,
+      type: newType,
+      selectedNominees: [],
+      selectedActivityId: "",
+      startDate: undefined,
+      startTime: "",
+      endDate: undefined,
+      endTime: "",
+    }));
   };
 
   const addCustomOption = useCallback(() => {
@@ -195,9 +240,8 @@ export default function VotingSessionForm({
   const removeCustomOption = useCallback((index: number) => {
     setCustomOptions((prev) => {
       const target = prev[index];
-      if (target?.previewUrl) {
-        URL.revokeObjectURL(target.previewUrl);
-      }
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      if (target?.descPreviewUrl) URL.revokeObjectURL(target.descPreviewUrl);
       return prev.filter((_, idx) => idx !== index);
     });
   }, []);
@@ -208,18 +252,16 @@ export default function VotingSessionForm({
     );
   }, []);
 
-  const handleImageFileChange = useCallback(
-    (index: number, e: ChangeEvent<HTMLInputElement>) => {
+  const handleOptionImage = useCallback(
+    (index: number, isDesc: boolean, e: ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-      if (file.size > MAX_IMAGE_SIZE) {
+      if (file.size > 5 * 1024 * 1024) {
         Alert.error(dict.error_image_size);
         e.target.value = "";
         return;
       }
-
       const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
       if (file.type && !allowedTypes.includes(file.type)) {
         Alert.error(dict.error_image_type);
@@ -230,12 +272,12 @@ export default function VotingSessionForm({
       setCustomOptions((prev) =>
         prev.map((item, idx) => {
           if (idx !== index) return item;
-          if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
-          return {
-            ...item,
-            file,
-            previewUrl: URL.createObjectURL(file),
-          };
+          const oldUrl = isDesc ? item.descPreviewUrl : item.previewUrl;
+          if (oldUrl) URL.revokeObjectURL(oldUrl);
+          const newUrl = URL.createObjectURL(file);
+          return isDesc
+            ? { ...item, descFile: file, descPreviewUrl: newUrl }
+            : { ...item, file, previewUrl: newUrl };
         })
       );
       e.target.value = "";
@@ -243,24 +285,19 @@ export default function VotingSessionForm({
     [dict.error_image_size, dict.error_image_type]
   );
 
-  const removeCustomOptionImage = useCallback((index: number) => {
+  const removeOptionImage = useCallback((index: number, isDesc: boolean) => {
     setCustomOptions((prev) => {
       const target = prev[index];
-      if (target) {
-        if (target.previewUrl) {
-          URL.revokeObjectURL(target.previewUrl);
-        }
-        if (fileInputsRef.current[target.id]) {
-          fileInputsRef.current[target.id]!.value = "";
-        }
-      }
+      const key = `${target?.id}_${isDesc}`;
+      if (fileInputsRef.current[key]) fileInputsRef.current[key]!.value = "";
+
       return prev.map((item, idx) => {
         if (idx !== index) return item;
-        return {
-          ...item,
-          file: undefined,
-          previewUrl: undefined,
-        };
+        const oldUrl = isDesc ? item.descPreviewUrl : item.previewUrl;
+        if (oldUrl) URL.revokeObjectURL(oldUrl);
+        return isDesc
+          ? { ...item, descFile: undefined, descPreviewUrl: undefined }
+          : { ...item, file: undefined, previewUrl: undefined };
       });
     });
   }, []);
@@ -278,10 +315,10 @@ export default function VotingSessionForm({
     [selectedNominees, userOptions]
   );
 
-  const validCustomOptionsCount = customOptions.filter(
-    (option) => option.name.trim().length > 0
-  ).length;
-  const isCustomValid = type !== VOTING_TYPES.CUSTOM || validCustomOptionsCount >= 2;
+  const isCustomValid =
+    type !== VOTING_TYPES.CUSTOM ||
+    (customOptions.length >= 2 &&
+      customOptions.every((o) => o.name.trim().length > 0 && Boolean(o.file || o.previewUrl)));
   const isActivityValid = type !== VOTING_TYPES.ACTIVITY || Boolean(selectedActivityId);
   const isUsersValid = type !== VOTING_TYPES.USERS || selectedNominees.length > 0;
   const isFormValid = name.trim().length > 0 && isActivityValid && isUsersValid && isCustomValid;
@@ -373,44 +410,60 @@ export default function VotingSessionForm({
                     />
                   </Field>
 
-                  <div className={styles.imageSection}>
-                    {opt.previewUrl && (
-                      <Image
-                        src={opt.previewUrl}
-                        alt={opt.name || dict.option_title}
-                        width={48}
-                        height={48}
-                        className={styles.imagePreview}
-                      />
-                    )}
-                    <input
-                      ref={(el) => {
-                        fileInputsRef.current[opt.id] = el;
-                      }}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      className={styles.hiddenFileInput}
-                      onChange={(e) => handleImageFileChange(index, e)}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      color="neutral"
-                      size="sm"
-                      onClick={() => fileInputsRef.current[opt.id]?.click()}>
-                      <FiImage size={16} />
-                      <span>{opt.previewUrl ? dict.change_image : dict.upload_image}</span>
-                    </Button>
-                    {opt.previewUrl && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        color="danger"
-                        size="sm"
-                        onClick={() => removeCustomOptionImage(index)}>
-                        {dict.remove_image}
-                      </Button>
-                    )}
+                  <div className={styles.imageControlsRow}>
+                    {([false, true] as const).map((isDesc) => {
+                      const preview = isDesc ? opt.descPreviewUrl : opt.previewUrl;
+                      const key = `${opt.id}_${isDesc}`;
+                      const label = isDesc
+                        ? preview
+                          ? dict.change_desc_image
+                          : `${dict.desc_image} ${dict.desc_image_optional}`
+                        : preview
+                          ? dict.change_main_image
+                          : `${dict.main_image} *`;
+
+                      return (
+                        <div key={key} className={styles.imageSection}>
+                          {preview && (
+                            <Image
+                              src={preview}
+                              alt={opt.name || dict.option_title}
+                              width={48}
+                              height={48}
+                              className={styles.imagePreview}
+                            />
+                          )}
+                          <input
+                            ref={(el) => {
+                              fileInputsRef.current[key] = el;
+                            }}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            className={styles.hiddenFileInput}
+                            onChange={(e) => handleOptionImage(index, isDesc, e)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            color="neutral"
+                            size="sm"
+                            onClick={() => fileInputsRef.current[key]?.click()}>
+                            <FiImage size={16} />
+                            <span>{label}</span>
+                          </Button>
+                          {preview && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              color="danger"
+                              size="sm"
+                              onClick={() => removeOptionImage(index, isDesc)}>
+                              {dict.remove_image}
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -443,8 +496,8 @@ export default function VotingSessionForm({
       customOptions,
       removeCustomOption,
       updateCustomOption,
-      handleImageFileChange,
-      removeCustomOptionImage,
+      handleOptionImage,
+      removeOptionImage,
       addCustomOption,
     ]
   );
@@ -472,25 +525,25 @@ export default function VotingSessionForm({
         formData.set("customUsers", selectedNominees.join(","));
       } else if (type === VOTING_TYPES.CUSTOM) {
         const validOptions = customOptions.filter((option) => option.name.trim().length > 0);
-        const optionsWithFiles = validOptions.filter((option) => option.file);
+        const filesToUpload: File[] = [];
+        validOptions.forEach((o) => {
+          if (o.file) filesToUpload.push(o.file);
+          if (o.descFile) filesToUpload.push(o.descFile);
+        });
 
-        let paths: string[] = [];
-        if (optionsWithFiles.length > 0)
-          paths = await uploadVotingFiles(
-            optionsWithFiles.map((o) => o.file!),
-            dict.error_upload
-          );
+        const paths = await uploadVotingFiles(filesToUpload, dict.error_upload);
 
-        let fileIdx = 0;
-        const optionsMeta = validOptions.map((option) => {
-          let photoPath: string | undefined;
-          if (option.file) photoPath = paths[fileIdx++];
+        let pathIdx = 0;
+        const optionsMeta = validOptions.map((o) => {
+          const mainPath = o.file ? paths[pathIdx++] : undefined;
+          const descPath = o.descFile ? paths[pathIdx++] : mainPath;
 
           return {
-            id: option.id,
-            name: option.name.trim(),
-            description: option.description.trim() || undefined,
-            photoPath,
+            id: o.id,
+            name: o.name.trim(),
+            description: o.description.trim() || undefined,
+            photoPath: mainPath,
+            descriptionPhotoPath: descPath,
           };
         });
         formData.set("customOptions", JSON.stringify(optionsMeta));
@@ -499,8 +552,7 @@ export default function VotingSessionForm({
       const result = await createVotingSessionAction(formData);
       if (result.ok) {
         Alert.success(dict.create_success);
-        router.replace(`${basePath || ""}/voting/manage`);
-        router.refresh();
+        router.replace(backHref);
       } else {
         Alert.error(result.error);
       }
@@ -520,7 +572,7 @@ export default function VotingSessionForm({
           variant="ghost"
           color="neutral"
           className={styles.btnSecondary}
-          onClick={() => router.push(`${basePath || ""}/voting/manage`)}>
+          onClick={() => router.push(backHref)}>
           <FaArrowLeft /> {dict.back}
         </Button>
         <ColorfulText as="h2" className={styles.title} text={dict.title} chunk={true} />
@@ -546,7 +598,7 @@ export default function VotingSessionForm({
               id="name"
               name="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => set("name", e.target.value)}
               required
               placeholder={dict.title_placeholder}
             />
@@ -557,7 +609,7 @@ export default function VotingSessionForm({
               id="description"
               name="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => set("description", e.target.value)}
               placeholder={dict.desc_placeholder}
               rows={3}
             />
@@ -573,14 +625,14 @@ export default function VotingSessionForm({
               <div className={styles.dateTimeRow}>
                 <DateInput
                   value={startDate}
-                  onChange={setStartDate}
+                  onChange={(d) => set("startDate", d)}
                   placeholder="dd/mm/aaaa"
                   mobileDrawerTitle={dict.start_label}
                   locale={dateLocale}
                 />
                 <HourInput
                   value={startTime}
-                  onChange={setStartTime}
+                  onChange={(t) => set("startTime", t)}
                   format="24h"
                   placeholder="HH:mm"
                   mobileDrawerTitle={dict.start_label}
@@ -592,14 +644,14 @@ export default function VotingSessionForm({
               <div className={styles.dateTimeRow}>
                 <DateInput
                   value={endDate}
-                  onChange={setEndDate}
+                  onChange={(d) => set("endDate", d)}
                   placeholder="dd/mm/aaaa"
                   mobileDrawerTitle={dict.end_label}
                   locale={dateLocale}
                 />
                 <HourInput
                   value={endTime}
-                  onChange={setEndTime}
+                  onChange={(t) => set("endTime", t)}
                   format="24h"
                   placeholder="HH:mm"
                   mobileDrawerTitle={dict.end_label}

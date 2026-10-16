@@ -109,12 +109,19 @@
   margin-left: auto;
 }
 
+.imageControlsRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
 .imageSection {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding-top: 0.25rem;
 }
 
 .imagePreview {

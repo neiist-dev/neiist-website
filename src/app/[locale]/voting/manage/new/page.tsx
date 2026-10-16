@@ -23,6 +23,7 @@ async function NewVotingSessionContent({ params }: { params: LocaleParams }) {
       typesDict={dict.types}
       locale={locale}
       basePath={`/${locale}`}
+      backHref={`/${locale}/voting/manage`}
     />
   );
 }

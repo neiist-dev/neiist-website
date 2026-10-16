@@ -17,6 +17,7 @@ import ColorfulText from "@/components/ColorfulText";
 import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
 import { Button, Alert } from "@neiist/ui";
 import styles from "@/styles/pages/VotingPage.module.css";
+import ReactMarkdown from "react-markdown";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingClientProps {
@@ -110,7 +111,14 @@ const LastResultsView = ({
         <div className={styles.sessionInfo}>
           <h2 className={styles.sessionTitle}>{currentSession.name}</h2>
           {currentSession.description && (
-            <p className={styles.sessionDescription}>{currentSession.description}</p>
+            <div className={styles.sessionDescription}>
+              <ReactMarkdown
+                components={{
+                  a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+                }}>
+                {currentSession.description}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
         <WinnerCard

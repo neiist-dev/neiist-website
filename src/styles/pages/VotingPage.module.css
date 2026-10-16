@@ -202,6 +202,17 @@
   color: var(--light-foreground-colour);
 }
 
+.sessionDescription a {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  word-break: break-word;
+  transition: opacity 0.2s ease;
+}
+
+.sessionDescription a:hover {
+  opacity: 0.8;
+}
+
 .backButton {
   position: absolute;
   left: 0;

@@ -33,6 +33,19 @@
   line-height: 1.5;
 }
 
+.description a,
+.modalDescription a {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  word-break: break-word;
+  transition: opacity 0.2s ease;
+}
+
+.description a:hover,
+.modalDescription a:hover {
+  opacity: 0.8;
+}
+
 .toolbar {
   display: flex;
   flex-direction: column;

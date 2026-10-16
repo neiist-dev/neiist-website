@@ -11,6 +11,7 @@ import Search from "@/components/search/Search";
 import CommandPalette from "@/components/search/CommandPalette";
 import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/voting/VotingGrid.module.css";
+import ReactMarkdown from "react-markdown";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingGridProps {
@@ -95,7 +96,16 @@ export default function VotingGrid({
       <header className={styles.header}>
         <p className={styles.kicker}>{dict.voting_in_progress}</p>
         <h1 className={styles.title}>{sessionName ?? dict.select_your_vote}</h1>
-        {sessionDescription && <p className={styles.description}>{sessionDescription}</p>}
+        {sessionDescription && (
+          <div className={styles.description}>
+            <ReactMarkdown
+              components={{
+                a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+              }}>
+              {sessionDescription}
+            </ReactMarkdown>
+          </div>
+        )}
       </header>
 
       <div className={styles.toolbar}>
@@ -124,7 +134,8 @@ export default function VotingGrid({
           const isSelected = selectedNomineeId === nominee.id;
           const displayName = isUserType ? getFirstAndLastName(nominee.name) : nominee.name;
           const hasPhoto = Boolean(nominee.photoPath);
-          const hasDetails = !isUserType && Boolean(nominee.description);
+          const hasDetails =
+            !isUserType && (Boolean(nominee.description) || Boolean(nominee.descriptionPhotoPath));
           const ctaLabel = isSelected
             ? dict.current_vote
             : selectedNomineeId
@@ -196,10 +207,10 @@ export default function VotingGrid({
           onClose={() => setModalNominee(null)}
           title={modalNominee.name}
           size="md">
-          {modalNominee.photoPath && (
+          {Boolean(modalNominee.descriptionPhotoPath || modalNominee.photoPath) && (
             <div className={styles.modalImageWrapper}>
               <Image
-                src={modalNominee.photoPath}
+                src={(modalNominee.descriptionPhotoPath || modalNominee.photoPath)!}
                 alt={modalNominee.name}
                 fill
                 className={styles.modalImage}
@@ -209,7 +220,12 @@ export default function VotingGrid({
 
           {modalNominee.description && (
             <div className={styles.modalDescription}>
-              <p>{modalNominee.description}</p>
+              <ReactMarkdown
+                components={{
+                  a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+                }}>
+                {modalNominee.description}
+              </ReactMarkdown>
             </div>
           )}
 
