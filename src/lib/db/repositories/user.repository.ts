@@ -1,6 +1,7 @@
 import { User, dbUser, mapdbUserToUser } from "@/types/user";
 
 import { db_query } from "@/lib/db/connection";
+import { PoolClient } from "pg";
 import { cacheTag, revalidateTag } from "next/cache";
 import { getUserMemberships, getAllDepartmentRoles } from "./team.repository";
 import { compareMandatePower } from "@/utils/membershipSortUtils";
@@ -125,14 +126,15 @@ export const getEmailVerificationByUser = async (
 };
 
 export const deleteUser = async (
-  istid: string
+  istid: string,
+  client?: PoolClient
 ): Promise<{ success: boolean; was_member: boolean }> => {
+  const query = `SELECT * FROM neiist.delete_user($1::VARCHAR(10))`;
   const {
     rows: [row],
-  } = await db_query<{ success: boolean; was_member: boolean }>(
-    `SELECT * FROM neiist.delete_user($1::VARCHAR(10))`,
-    [istid]
-  );
+  } = client
+    ? await client.query<{ success: boolean; was_member: boolean }>(query, [istid])
+    : await db_query<{ success: boolean; was_member: boolean }>(query, [istid]);
   const success = row?.success ?? false;
   if (success) {
     revalidateTag("users", "max");

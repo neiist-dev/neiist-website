@@ -2,9 +2,11 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
+import pool from "@/lib/db/connection";
 import { deleteUser, getUser } from "@/lib/db/repositories/user.repository";
 import { fenixPhotos, userPhotos } from "@/lib/imageStorage";
 import { hasPermission } from "@/lib/security/permissions";
+import { appendGdprTombstone } from "@/lib/security/gdpr";
 import { sendEmail } from "@/lib/email";
 import { getAccountDeletionTemplate } from "@/lib/email/templates/auth";
 
@@ -23,8 +25,26 @@ export async function deleteUserAction(
   const existingUser = isSelf ? currentUser : await getUser(istid);
   if (!existingUser) throw new Error("Target user not found");
 
-  const { success, was_member: isMember } = await deleteUser(istid);
-  if (!success) throw new Error("Failed to delete user in database");
+  const client = await pool.connect();
+  let isMember: boolean;
+  try {
+    await client.query("BEGIN");
+    const { success, was_member } = await deleteUser(istid, client);
+    if (!success) throw new Error("Failed to delete user in database");
+
+    await appendGdprTombstone({
+      istid,
+      initiated_by: isSelf ? "user_request" : `admin:${currentUser.istid}`,
+    });
+
+    await client.query("COMMIT");
+    isMember = was_member;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 
   await fenixPhotos.remove(istid);
   if (!isMember) await userPhotos.remove(istid);
