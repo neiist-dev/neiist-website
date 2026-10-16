@@ -1,5 +1,18 @@
 # neiist
 
+## [4.5.0](https://github.com/neiist-dev/neiist-website/compare/v4.4.0...v4.5.0) (2026-10-16)
+
+
+### Features
+
+* **voting:** add images to other options SSE refactor ([41341a1](https://github.com/neiist-dev/neiist-website/commit/41341a1885f12f82eabef48053ea9f2c44a212e5))
+
+
+### Bug Fixes
+
+* **voting:** enfoce start and end date at db business logic ([6368c87](https://github.com/neiist-dev/neiist-website/commit/6368c87ef787fbee6c5cc7cc53128a083f03cd7c))
+* **voting:** form not reseting and multiple images and markdown support ([feedaad](https://github.com/neiist-dev/neiist-website/commit/feedaad9f1aaedf806db90b44636be014e91460b))
+
 ## [4.4.0](https://github.com/neiist-dev/neiist-website/compare/v4.3.0...v4.4.0) (2026-10-15)
 
 
