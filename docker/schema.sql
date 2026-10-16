@@ -3545,10 +3545,21 @@ CREATE OR REPLACE FUNCTION neiist.submit_vote(
   p_voter_istid VARCHAR(10),
   p_nominee_id TEXT
 ) RETURNS VOID AS $$
+DECLARE
+  v_session neiist.voting_sessions%ROWTYPE;
 BEGIN
-  -- Check session status
-  IF NOT EXISTS (SELECT 1 FROM neiist.voting_sessions WHERE id = p_session_id AND status = 'voting') THEN
+  SELECT * INTO v_session FROM neiist.voting_sessions WHERE id = p_session_id;
+
+  IF NOT FOUND OR v_session.status <> 'voting' THEN
     RAISE EXCEPTION 'Voting is not active for this session';
+  END IF;
+
+  IF v_session.start_at IS NOT NULL AND NOW() < v_session.start_at THEN
+    RAISE EXCEPTION 'A votação ainda não começou';
+  END IF;
+
+  IF v_session.end_at IS NOT NULL AND NOW() > v_session.end_at THEN
+    RAISE EXCEPTION 'A votação já terminou';
   END IF;
 
   -- Check if nominee is valid for this session

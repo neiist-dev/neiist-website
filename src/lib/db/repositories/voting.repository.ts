@@ -119,6 +119,7 @@ export const getGlobalVotingState = async (): Promise<GlobalVotingState> => {
 
   const activeVotingSessions = sessions.filter((session) => {
     if (session.status !== VOTING_STATUS.VOTING) return false;
+    if (session.startAt && new Date(session.startAt) > now) return false;
     return !(session.endAt && new Date(session.endAt) <= now);
   });
 
