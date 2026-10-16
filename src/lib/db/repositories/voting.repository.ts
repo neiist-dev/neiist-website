@@ -2,12 +2,15 @@ import {
   DbSessionResult,
   DbVotingNominee,
   DbVotingSession,
-  SessionResult,
-  VotingNominee,
-  VotingSession,
+  GlobalVotingState,
+  mapCustomOptionToDb,
   mapDbSessionResult,
   mapDbVotingNominee,
   mapDbVotingSession,
+  SessionResult,
+  VotingNominee,
+  VotingSession,
+  VOTING_STATUS,
 } from "@/types/voting";
 
 import { db_query } from "@/lib/db/connection";
@@ -15,37 +18,21 @@ import { db_query } from "@/lib/db/connection";
 export const addVotingSession = async (
   input: Partial<VotingSession>
 ): Promise<VotingSession | null> => {
-  const {
-    rows: [row],
-  } = await db_query<DbVotingSession>(
-    `SELECT * FROM neiist.create_voting_session($1, $2, $3, $4, $5, $6, $7)`,
-    [
-      input.name,
-      input.description ?? null,
-      input.type,
-      input.nomineeIds,
-      input.activityId ?? null,
-      input.startAt ?? null,
-      input.endAt ?? null,
-    ]
-  );
-  return row ? mapDbVotingSession(row) : null;
-};
+  const customOpts = input.customOptions;
+  const nominees =
+    customOpts && customOpts.length > 0
+      ? customOpts.map(mapCustomOptionToDb)
+      : (input.nomineeIds ?? []);
 
-export const updateVotingSession = async (
-  sessionId: number,
-  input: Partial<VotingSession>
-): Promise<VotingSession | null> => {
   const {
     rows: [row],
   } = await db_query<DbVotingSession>(
-    `SELECT * FROM neiist.update_voting_session($1, $2, $3, $4, $5, $6, $7, $8)`,
+    `SELECT * FROM neiist.create_voting_session($1, $2, $3, $4::JSONB, $5, $6, $7)`,
     [
-      sessionId,
       input.name,
       input.description ?? null,
       input.type,
-      input.nomineeIds,
+      JSON.stringify(nominees),
       input.activityId ?? null,
       input.startAt ?? null,
       input.endAt ?? null,
@@ -117,4 +104,63 @@ export const getUserVote = async (
     voterIstid,
   ]);
   return row?.nominee_id ?? null;
+};
+
+export const setSessionShowResults = async (
+  sessionId: number,
+  showResults: boolean
+): Promise<void> => {
+  await db_query(`SELECT neiist.set_session_show_results($1, $2)`, [sessionId, showResults]);
+};
+
+export const getGlobalVotingState = async (): Promise<GlobalVotingState> => {
+  const sessions = await getVotingSessions(20);
+  const now = new Date();
+
+  const activeVotingSessions = sessions.filter((session) => {
+    if (session.status !== VOTING_STATUS.VOTING) return false;
+    return !(session.endAt && new Date(session.endAt) <= now);
+  });
+
+  if (activeVotingSessions.length > 0) {
+    const activeSessions = await Promise.all(
+      activeVotingSessions.map(async (session) => {
+        const nominees = await getSessionNominees(session.id);
+        return {
+          sessionId: session.id,
+          sessionName: session.name,
+          sessionDescription: session.description ?? undefined,
+          sessionType: session.type,
+          nominees,
+        };
+      })
+    );
+    return { activeSessions };
+  }
+
+  const finishedSessionsList = sessions
+    .filter((s) => s.status === VOTING_STATUS.FINISHED && Boolean(s.showResults))
+    .slice(0, 5);
+
+  if (finishedSessionsList.length > 0) {
+    const finishedSessions = await Promise.all(
+      finishedSessionsList.map(async (s) => {
+        const results = await getSessionResults(s.id);
+        return {
+          id: s.id,
+          name: s.name,
+          description: s.description ?? undefined,
+          type: s.type,
+          results: results.slice(0, 3),
+        };
+      })
+    );
+
+    return {
+      activeSessions: [],
+      finishedSessions,
+    };
+  }
+
+  return { activeSessions: [] };
 };

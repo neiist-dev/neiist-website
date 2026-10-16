@@ -1128,8 +1128,8 @@
         "orders:write": "Gerir estado e pagamentos de encomendas",
         "orders:delete": "Cancelar e eliminar encomendas",
         "orders:override": "Substituir limites de stock e restrições de encomenda",
-        "voting:read": "Ver assembleias gerais e cadernos eleitorais",
-        "voting:write": "Gerir cadernos eleitorais e votações"
+        "voting:read": "Ver o estado e resultados de todas as votações",
+        "voting:write": "Gerir todas as sessões de votação"
       }
     },
 
@@ -1472,16 +1472,30 @@
     "voting_in_progress": "Votação em curso",
     "select_your_vote": "Seleciona o teu voto",
     "search_nominee_placeholder": "Procurar por nome ou istID...",
+    "search_options_placeholder": "Procurar opções...",
     "showing_nominees_count": "A mostrar {visible} de {total} candidatos",
+    "showing_options_count": "A mostrar {visible} de {total} opções",
     "current_vote": "Voto atual",
     "change_vote": "Mudar voto",
     "vote": "Votar",
     "show_more_nominees": "Mostrar mais candidatos",
+    "show_more_options": "Mostrar mais opções",
     "no_votes_cast": "Não houve votos em nenhum dos candidatos.",
     "vote_singular": "voto",
     "vote_plural": "votos",
     "submitting_vote": "A submeter o teu voto...",
-    "vote_success": "Voto registado com sucesso!"
+    "vote_success": "Voto registado com sucesso!",
+    "vote_error": "Erro ao submeter voto.",
+    "candidates": "Candidatos",
+    "options": "Opções",
+    "previous_sessions_aria": "Sessões anteriores",
+    "previous_session_aria": "Sessão anterior",
+    "next_session_aria": "Próxima sessão",
+    "voting_sessions_aria": "Sessões de votação",
+    "session_default_name": "Sessão {number}",
+    "view_details": "Ver detalhes",
+    "close": "Fechar",
+    "rank_format": "{rank}º"
   },
 
   "voting_management": {
@@ -1491,6 +1505,15 @@
     "filters_button": "Filtros",
     "filter_type": "Tipo",
     "filter_status": "Estado",
+    "filter_labels": {
+      "filters": "Filtros:",
+      "clear_all": "Limpar Tudo",
+      "until": "Até",
+      "range": "Intervalo",
+      "clear": "Limpar",
+      "apply": "Aplicar",
+      "close": "Fechar"
+    },
     "table": {
       "title": "Título",
       "type": "Tipo",
@@ -1529,7 +1552,20 @@
       "confirm_finish": "Tem a certeza que quer fechar esta votação?",
       "confirm_delete": "Tem a certeza que deseja eliminar esta sessão? Esta ação é irreversível.",
       "confirm_yes": "Sim",
-      "confirm_cancel": "Cancelar"
+      "confirm_cancel": "Cancelar",
+      "publish_results": "Publicar Resultados",
+      "hide_results": "Ocultar Resultados",
+      "results_public": "Resultados Públicos",
+      "results_hidden": "Resultados Ocultos",
+      "delete_success": "Sessão eliminada com sucesso.",
+      "delete_error": "Erro ao eliminar sessão de votação.",
+      "start_success": "Votação iniciada com sucesso.",
+      "start_error": "Erro ao iniciar votação.",
+      "finish_success": "Votação fechada com sucesso.",
+      "finish_error": "Erro ao fechar votação.",
+      "publish_success": "Resultados publicados com sucesso.",
+      "hide_success": "Resultados ocultados com sucesso.",
+      "toggle_publish_error": "Erro ao alterar visibilidade dos resultados."
     },
     "form": {
       "back": "Voltar",
@@ -1542,13 +1578,27 @@
       "desc_placeholder": "Descrição opcional...",
       "voting_type": "Tipo de Votação",
       "select_activity": "Selecionar Atividade",
-      "candidates_options": "Candidatos / Opções",
+      "candidates": "Candidatos",
+      "options": "Opções",
       "search_activity": "Procurar atividade...",
       "search_users": "Procurar utilizadores...",
-      "add_option_placeholder": "Adicionar opção (Enter)",
+      "add_option": "Adicionar Opção",
+      "option_title": "Título da Opção",
+      "option_title_placeholder": "Ex: Proposta A, Mascote, ou Tema",
+      "option_desc": "Descrição da Opção (suporta links)",
+      "option_desc_placeholder": "Ex: Mais informações em https://...",
+      "upload_image": "Carregar Imagem",
+      "change_image": "Mudar Imagem",
+      "remove_image": "Remover Imagem",
+      "remove_option": "Remover Opção",
       "period_title": "Período da Votação",
       "start_label": "Início",
-      "end_label": "Fim"
+      "end_label": "Fim",
+      "create_success": "Sessão criada com sucesso.",
+      "error_image_size": "A imagem não pode ter mais de 5MB.",
+      "error_image_type": "Apenas formatos JPEG, PNG e WebP são permitidos.",
+      "error_create": "Erro ao criar sessão de votação.",
+      "error_upload": "Erro ao carregar imagens."
     }
   },
 

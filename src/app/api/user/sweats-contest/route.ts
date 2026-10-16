@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { uploadSweatsSubmission } from "@/lib/google/driveService";
 
-const CONTEST_ACTIVE = true;
+const CONTEST_ACTIVE = false;
 
 async function getUsernameFromCookies(): Promise<string | null> {
   const reqCookies = await cookies();

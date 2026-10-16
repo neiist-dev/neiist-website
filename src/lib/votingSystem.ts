@@ -1,17 +1,37 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   addVotingSession,
   deleteVotingSession,
   finishVoting,
   startVoting,
   submitVote,
-  updateVotingSession,
+  setSessionShowResults,
 } from "@/lib/db/repositories/voting.repository";
-import type { VotingSession, VotingType } from "@/types/voting";
+import path from "path";
+import fs from "fs/promises";
+import crypto from "crypto";
+import {
+  type CustomOptionInput,
+  type VotingSession,
+  type VotingType,
+  VOTING_TYPES,
+} from "@/types/voting";
 import { requirePermission, requireUser } from "@/lib/auth";
+
+function getImageExtension(buffer: Buffer): ".jpg" | ".png" | ".webp" | null {
+  if (buffer.length < 4) return null;
+  const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  if (isJpeg) return ".jpg";
+  const pngSig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  if (buffer.length >= 8 && buffer.subarray(0, 8).equals(pngSig)) return ".png";
+  const isWebp =
+    buffer.length >= 12 &&
+    buffer.subarray(0, 4).toString("utf8") === "RIFF" &&
+    buffer.subarray(8, 12).toString("utf8") === "WEBP";
+  if (isWebp) return ".webp";
+  return null;
+}
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
@@ -43,70 +63,95 @@ function parseNomineeIds(raw: string | undefined): string[] {
     .filter(Boolean);
 }
 
-/**
- * Extracts and validates VotingSession data from FormData.
- */
-function extractVotingSessionData(formData: FormData): Partial<VotingSession> {
-  const type = requireString(formData.get("type"), "type") as VotingType;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const UPLOAD_DIR = path.join(process.cwd(), "data", "voting");
 
-  const baseData: Partial<VotingSession> = {
-    name: requireString(formData.get("name"), "name"),
-    description: optionalString(formData.get("description")),
-    type,
-    startAt: optionalString(formData.get("startAt")),
-    endAt: optionalString(formData.get("endAt")),
-  };
+type RawOption = { id?: string; name: string; description?: string; photoPath?: string };
+type Extractor = (_fd: FormData) => Partial<VotingSession> | Promise<Partial<VotingSession>>;
 
-  switch (type) {
-    case "activity":
-      return {
-        ...baseData,
-        activityId: requireString(formData.get("activityId"), "activityId"),
-        nomineeIds: parseNomineeIds(optionalString(formData.get("activityNominees"))),
-      };
-    case "users":
-      return {
-        ...baseData,
-        nomineeIds: parseNomineeIds(requireString(formData.get("customUsers"), "customUsers")),
-      };
-    case "custom":
-      return {
-        ...baseData,
-        nomineeIds: parseNomineeIds(
-          requireString(formData.get("customNominees"), "customNominees")
-        ),
-      };
-    default:
-      throw new Error(`Unsupported voting type: ${type}`);
+async function savePhoto(file: File): Promise<string> {
+  if (file.size > MAX_IMAGE_SIZE) throw new Error("A imagem não pode ter mais de 5MB");
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const ext = getImageExtension(buffer);
+  if (!ext) throw new Error("Apenas formatos JPEG, PNG e WebP são permitidos");
+
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  const safeName = `${crypto.randomUUID()}${ext}`;
+  await fs.writeFile(path.join(UPLOAD_DIR, safeName), buffer);
+  return `/api/voting/photo/${safeName}`;
+}
+
+function parseOptions(raw: string): RawOption[] {
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    throw new Error("Erro ao processar as opções customizadas.", { cause: err });
   }
 }
 
-function revalidateVotes() {
-  revalidateTag("votes", "max");
-  revalidatePath("/voting");
-  revalidatePath("/voting/manage");
+async function extractCustomOptions(fd: FormData): Promise<CustomOptionInput[]> {
+  const valid = parseOptions(requireString(fd.get("customOptions"), "customOptions"))
+    .map((opt, i) => ({ opt, i, name: (opt.name || "").trim() }))
+    .filter(({ name }) => name);
+
+  if (valid.length < 2) throw new Error("Pelo menos duas opções devem ser configuradas.");
+
+  return Promise.all(
+    valid.map(async ({ opt, i, name }) => {
+      const id = opt.id || `opt_${i + 1}_${crypto.randomUUID().slice(0, 8)}`;
+      const file = fd.get(`customImage_${id}`) ?? fd.get(`customImage_${i}`);
+      const photoPath =
+        file instanceof File && file.size > 0
+          ? await savePhoto(file)
+          : opt.photoPath?.trim() || undefined;
+      return { id, name, description: opt.description?.trim() || undefined, photoPath };
+    })
+  );
 }
 
-export async function createVotingSessionAction(formData: FormData): Promise<void> {
-  await requirePermission("voting:write");
+const extractors: Record<VotingType, Extractor> = {
+  [VOTING_TYPES.ACTIVITY]: (fd) => ({
+    activityId: requireString(fd.get("activityId"), "activityId"),
+    nomineeIds: parseNomineeIds(optionalString(fd.get("activityNominees"))),
+  }),
+  [VOTING_TYPES.USERS]: (fd) => ({
+    nomineeIds: parseNomineeIds(requireString(fd.get("customUsers"), "customUsers")),
+  }),
+  [VOTING_TYPES.CUSTOM]: async (fd) => ({ customOptions: await extractCustomOptions(fd) }),
+};
 
-  const sessionData = extractVotingSessionData(formData);
-  await addVotingSession(sessionData);
+async function extractVotingSessionData(fd: FormData): Promise<Partial<VotingSession>> {
+  const type = requireString(fd.get("type"), "type");
+  if (!Object.hasOwn(extractors, type)) throw new Error(`Unsupported voting type: ${type}`);
 
-  revalidateVotes();
-  redirect("/voting/manage");
+  return {
+    name: requireString(fd.get("name"), "name"),
+    description: optionalString(fd.get("description")),
+    type: type as VotingType,
+    startAt: optionalString(fd.get("startAt")),
+    endAt: optionalString(fd.get("endAt")),
+    ...(await extractors[type as VotingType](fd)),
+  };
 }
 
-export async function updateVotingSessionAction(formData: FormData): Promise<void> {
+export async function createVotingSessionAction(
+  formData: FormData
+): Promise<{ ok: true } | { ok: false; error: string }> {
   await requirePermission("voting:write");
 
-  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-  const sessionData = extractVotingSessionData(formData);
+  try {
+    const sessionData = await extractVotingSessionData(formData);
+    await addVotingSession(sessionData);
 
-  await updateVotingSession(sessionId, sessionData);
-
-  revalidateVotes();
-  redirect("/voting/manage");
+    return { ok: true };
+  } catch (err) {
+    console.error("Failed to create voting session:", err);
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Erro ao criar sessão de votação",
+    };
+  }
 }
 
 export async function deleteVotingSessionAction(formData: FormData): Promise<void> {
@@ -114,7 +159,6 @@ export async function deleteVotingSessionAction(formData: FormData): Promise<voi
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
   await deleteVotingSession(sessionId);
-  revalidateVotes();
 }
 
 export async function startVotingAction(formData: FormData): Promise<void> {
@@ -123,7 +167,6 @@ export async function startVotingAction(formData: FormData): Promise<void> {
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
 
   await startVoting(sessionId);
-  revalidateVotes();
 }
 
 export async function finishVotingAction(formData: FormData): Promise<void> {
@@ -132,7 +175,6 @@ export async function finishVotingAction(formData: FormData): Promise<void> {
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
 
   await finishVoting(sessionId);
-  revalidateVotes();
 }
 
 export async function submitVoteAction(formData: FormData): Promise<void> {
@@ -142,5 +184,13 @@ export async function submitVoteAction(formData: FormData): Promise<void> {
   const nomineeId = requireString(formData.get("nomineeId"), "nomineeId");
 
   await submitVote(sessionId, user.istid, nomineeId);
-  revalidateVotes();
+}
+
+export async function togglePublishResultsAction(formData: FormData): Promise<void> {
+  await requirePermission("voting:write");
+
+  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
+  const showResults = formData.get("showResults") === "true";
+
+  await setSessionShowResults(sessionId, showResults);
 }

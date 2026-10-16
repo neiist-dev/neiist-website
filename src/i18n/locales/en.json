@@ -1128,8 +1128,8 @@
         "orders:write": "Manage order statuses and payments",
         "orders:delete": "Cancel and delete orders",
         "orders:override": "Override stock limits and order validation constraints",
-        "voting:read": "View general assemblies and electoral rolls",
-        "voting:write": "Manage electoral rolls and voting"
+        "voting:read": "View general all voting sessions results and status",
+        "voting:write": "Manage all voting sessions"
       }
     },
 
@@ -1472,16 +1472,30 @@
     "voting_in_progress": "Voting in progress",
     "select_your_vote": "Select your vote",
     "search_nominee_placeholder": "Search by name or IST ID...",
+    "search_options_placeholder": "Search options...",
     "showing_nominees_count": "Showing {visible} of {total} nominees",
+    "showing_options_count": "Showing {visible} of {total} options",
     "current_vote": "Current vote",
     "change_vote": "Change vote",
     "vote": "Vote",
     "show_more_nominees": "Show more nominees",
+    "show_more_options": "Show more options",
     "no_votes_cast": "No votes were cast for any nominee.",
     "vote_singular": "vote",
     "vote_plural": "votes",
     "submitting_vote": "Submitting your vote...",
-    "vote_success": "Vote recorded successfully!"
+    "vote_success": "Vote recorded successfully!",
+    "vote_error": "Failed to submit vote.",
+    "candidates": "Candidates",
+    "options": "Options",
+    "previous_sessions_aria": "Previous sessions",
+    "previous_session_aria": "Previous session",
+    "next_session_aria": "Next session",
+    "voting_sessions_aria": "Voting sessions",
+    "session_default_name": "Session {number}",
+    "view_details": "View details",
+    "close": "Close",
+    "rank_format": "#{rank}"
   },
 
   "voting_management": {
@@ -1491,6 +1505,15 @@
     "filters_button": "Filters",
     "filter_type": "Type",
     "filter_status": "Status",
+    "filter_labels": {
+      "filters": "Filters:",
+      "clear_all": "Clear All",
+      "until": "Until",
+      "range": "Range",
+      "clear": "Clear",
+      "apply": "Apply",
+      "close": "Close"
+    },
     "table": {
       "title": "Title",
       "type": "Type",
@@ -1529,7 +1552,20 @@
       "confirm_finish": "Are you sure you want to close this voting session?",
       "confirm_delete": "Are you sure you want to delete this session? This action is irreversible.",
       "confirm_yes": "Yes",
-      "confirm_cancel": "Cancel"
+      "confirm_cancel": "Cancel",
+      "publish_results": "Publish Results",
+      "hide_results": "Hide Results",
+      "results_public": "Public Results",
+      "results_hidden": "Hidden Results",
+      "delete_success": "Session successfully deleted.",
+      "delete_error": "Failed to delete voting session.",
+      "start_success": "Voting session opened successfully.",
+      "start_error": "Failed to open voting session.",
+      "finish_success": "Voting session closed successfully.",
+      "finish_error": "Failed to close voting session.",
+      "publish_success": "Results published successfully.",
+      "hide_success": "Results hidden successfully.",
+      "toggle_publish_error": "Failed to toggle results visibility."
     },
     "form": {
       "back": "Back",
@@ -1542,13 +1578,27 @@
       "desc_placeholder": "Optional description...",
       "voting_type": "Voting Type",
       "select_activity": "Select Activity",
-      "candidates_options": "Nominees / Options",
+      "candidates": "Candidates",
+      "options": "Options",
       "search_activity": "Search activity...",
       "search_users": "Search users...",
-      "add_option_placeholder": "Add option (Enter)",
+      "add_option": "Add Option",
+      "option_title": "Option Title",
+      "option_title_placeholder": "e.g. Proposal A, Mascot, or Theme",
+      "option_desc": "Option Description (supports links)",
+      "option_desc_placeholder": "e.g. More information at https://...",
+      "upload_image": "Upload Image",
+      "change_image": "Change Image",
+      "remove_image": "Remove Image",
+      "remove_option": "Remove Option",
       "period_title": "Voting Period",
       "start_label": "Start",
-      "end_label": "End"
+      "end_label": "End",
+      "create_success": "Session created successfully.",
+      "error_image_size": "Image cannot exceed 5MB.",
+      "error_image_type": "Only JPEG, PNG and WebP formats are allowed.",
+      "error_create": "Failed to create voting session.",
+      "error_upload": "Failed to upload images."
     }
   },
 

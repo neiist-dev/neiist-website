@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { VotingNominee } from "@/types/voting";
+import { Modal, Button, Alert } from "@neiist/ui";
+import { FaCheck } from "react-icons/fa";
+import { VotingNominee, VotingType, isUserVotingType } from "@/types/voting";
 import { submitVoteAction } from "@/lib/votingSystem";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import Search from "@/components/search/Search";
@@ -15,6 +17,7 @@ interface VotingGridProps {
   sessionId: number;
   sessionName: string | null;
   sessionDescription?: string | null;
+  sessionType?: VotingType;
   nominees: VotingNominee[];
   selectedNomineeId?: string | null;
   onVote?: (_nomineeId: string) => Promise<void> | void;
@@ -27,6 +30,7 @@ export default function VotingGrid({
   sessionId,
   sessionName,
   sessionDescription,
+  sessionType,
   nominees,
   selectedNomineeId,
   onVote,
@@ -34,6 +38,9 @@ export default function VotingGrid({
 }: VotingGridProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [modalNominee, setModalNominee] = useState<VotingNominee | null>(null);
+
+  const isUserType = isUserVotingType(sessionType);
 
   const {
     results: filteredNominees,
@@ -44,6 +51,7 @@ export default function VotingGrid({
     fields: [
       { field: "name", boost: 3 },
       { field: "id", boost: 4 },
+      { field: "description", boost: 2 },
     ],
     returnAllWhenEmpty: true,
   });
@@ -52,13 +60,18 @@ export default function VotingGrid({
   const hasMore = filteredNominees.length > visibleCount;
 
   const handleCastVote = async (nomineeId: string) => {
-    if (onVote) {
-      await onVote(nomineeId);
-    } else {
-      const formData = new FormData();
-      formData.set("sessionId", String(sessionId));
-      formData.set("nomineeId", nomineeId);
-      await submitVoteAction(formData);
+    try {
+      if (onVote) {
+        await onVote(nomineeId);
+      } else {
+        const formData = new FormData();
+        formData.set("sessionId", String(sessionId));
+        formData.set("nomineeId", nomineeId);
+        await submitVoteAction(formData);
+      }
+    } catch (err) {
+      console.error("Failed to cast vote:", err);
+      Alert.error(err instanceof Error ? err.message : dict.vote_error);
     }
   };
 
@@ -67,15 +80,15 @@ export default function VotingGrid({
       <CommandPalette<VotingNominee>
         open={paletteOpen}
         onOpenChange={setPaletteOpen}
-        placeholder={dict.search_nominee_placeholder}
+        placeholder={isUserType ? dict.search_nominee_placeholder : dict.search_options_placeholder}
         groups={[
           {
-            heading: sessionName ?? "Candidatos",
+            heading: sessionName ?? (isUserType ? dict.candidates : dict.options),
             items: nominees,
           },
         ]}
         getItemKey={(n) => n.id}
-        getItemLabel={(n) => `${getFirstAndLastName(n.name)} (${n.id})`}
+        getItemLabel={(n) => (isUserType ? `${getFirstAndLastName(n.name)} (${n.id})` : n.name)}
         onSelect={(n) => handleCastVote(n.id)}
       />
 
@@ -89,7 +102,9 @@ export default function VotingGrid({
         <div className={styles.searchContainer}>
           <Search
             className={styles.searchInput}
-            placeholder={dict.search_nominee_placeholder}
+            placeholder={
+              isUserType ? dict.search_nominee_placeholder : dict.search_options_placeholder
+            }
             value={searchQuery}
             onChange={(val) => {
               setSearchQuery(val);
@@ -98,7 +113,7 @@ export default function VotingGrid({
           />
         </div>
         <p className={styles.count}>
-          {dict.showing_nominees_count
+          {(isUserType ? dict.showing_nominees_count : dict.showing_options_count)
             .replace("{visible}", String(visibleNominees.length))
             .replace("{total}", String(filteredNominees.length))}
         </p>
@@ -107,49 +122,121 @@ export default function VotingGrid({
       <div className={styles.grid}>
         {visibleNominees.map((nominee) => {
           const isSelected = selectedNomineeId === nominee.id;
-          const displayName = getFirstAndLastName(nominee.name);
+          const displayName = isUserType ? getFirstAndLastName(nominee.name) : nominee.name;
+          const hasPhoto = Boolean(nominee.photoPath);
+          const hasDetails = !isUserType && Boolean(nominee.description);
+          const ctaLabel = isSelected
+            ? dict.current_vote
+            : selectedNomineeId
+              ? dict.change_vote
+              : dict.vote;
 
           return (
-            <form
-              key={nominee.id}
-              action={async (formData) => {
-                if (onVote) {
-                  await onVote(nominee.id);
-                } else {
-                  await submitVoteAction(formData);
-                }
-              }}
-              className={styles.gridItem}>
-              <input type="hidden" name="sessionId" value={sessionId} />
-              <input type="hidden" name="nomineeId" value={nominee.id} />
+            <div key={nominee.id} className={styles.gridItem}>
               <button
-                type="submit"
+                type="button"
+                onClick={
+                  hasDetails ? () => setModalNominee(nominee) : () => handleCastVote(nominee.id)
+                }
+                aria-label={displayName}
                 className={`${styles.card} ${isSelected ? styles.selectedCard : ""}`}>
-                <div className={styles.photoWrapper}>
-                  <Image
-                    src={nominee.photoPath ?? "/default_user.png"}
-                    alt={nominee.name}
-                    fill
-                    className={styles.photo}
-                  />
+                <div className={styles.imageCard}>
+                  {hasPhoto ? (
+                    <Image
+                      src={nominee.photoPath!}
+                      alt={nominee.name}
+                      fill
+                      className={styles.photo}
+                    />
+                  ) : isUserType ? (
+                    <Image
+                      src="/default_user.png"
+                      alt={nominee.name}
+                      fill
+                      className={styles.photo}
+                    />
+                  ) : (
+                    <div className={styles.textFront}>
+                      {nominee.description ? (
+                        <p className={styles.textFrontDescription}>{nominee.description}</p>
+                      ) : (
+                        <span className={styles.textFrontTitle}>{displayName}</span>
+                      )}
+                    </div>
+                  )}
+
                   <div className={styles.overlay}>
                     <span className={styles.cta}>
-                      {isSelected
-                        ? dict.current_vote
-                        : selectedNomineeId
-                          ? dict.change_vote
-                          : dict.vote}
+                      {isSelected ? (
+                        <>
+                          <FaCheck className={styles.ctaIcon} />
+                          <span>{dict.current_vote}</span>
+                        </>
+                      ) : hasDetails ? (
+                        dict.view_details
+                      ) : (
+                        ctaLabel
+                      )}
                     </span>
                   </div>
                 </div>
-                <div className={styles.nameWrapper}>
-                  <span className={styles.name}>{displayName}</span>
-                </div>
+
+                {(hasPhoto || isUserType || Boolean(nominee.description)) && (
+                  <h4 className={styles.name}>{displayName}</h4>
+                )}
               </button>
-            </form>
+            </div>
           );
         })}
       </div>
+
+      {modalNominee && (
+        <Modal
+          open={Boolean(modalNominee)}
+          onClose={() => setModalNominee(null)}
+          title={modalNominee.name}
+          size="md">
+          {modalNominee.photoPath && (
+            <div className={styles.modalImageWrapper}>
+              <Image
+                src={modalNominee.photoPath}
+                alt={modalNominee.name}
+                fill
+                className={styles.modalImage}
+              />
+            </div>
+          )}
+
+          {modalNominee.description && (
+            <div className={styles.modalDescription}>
+              <p>{modalNominee.description}</p>
+            </div>
+          )}
+
+          <Modal.Footer>
+            <Button variant="outline" type="button" onClick={() => setModalNominee(null)}>
+              {dict.close}
+            </Button>
+            <Button
+              variant="primary"
+              type="button"
+              onClick={async () => {
+                const id = modalNominee.id;
+                setModalNominee(null);
+                await handleCastVote(id);
+              }}>
+              {selectedNomineeId === modalNominee.id ? (
+                <>
+                  <FaCheck className={styles.checkIcon} />
+                  {dict.current_vote}
+                </>
+              ) : (
+                dict.vote
+              )}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
 
       {hasMore && (
         <div className={styles.actions}>
@@ -157,7 +244,7 @@ export default function VotingGrid({
             type="button"
             className={styles.loadMoreButton}
             onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}>
-            {dict.show_more_nominees}
+            {isUserType ? dict.show_more_nominees : dict.show_more_options}
           </button>
         </div>
       )}

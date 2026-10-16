@@ -237,7 +237,8 @@ CREATE TABLE neiist.voting_sessions (
   start_at TIMESTAMPTZ,
   end_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  show_results BOOLEAN NOT NULL DEFAULT false
 );
 
 -- VOTING NOMINEES
@@ -245,6 +246,16 @@ CREATE TABLE neiist.voting_nominees (
   session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id) ON DELETE CASCADE,
   nominee_id TEXT NOT NULL,
   PRIMARY KEY (session_id, nominee_id)
+);
+
+-- VOTING CUSTOM OPTIONS
+CREATE TABLE neiist.voting_custom_options (
+  session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  photo_path TEXT,
+  description TEXT,
+  PRIMARY KEY (session_id, id)
 );
 
 -- CAST VOTES
@@ -256,7 +267,7 @@ CREATE TABLE neiist.votes (
   PRIMARY KEY (session_id, voter_istid)
 );
 
--- VOTE RESULTS (Frozen tally)
+-- VOTE RESULTS
 CREATE TABLE neiist.voting_results (
   session_id INTEGER NOT NULL REFERENCES neiist.voting_sessions(id) ON DELETE CASCADE,
   nominee_id TEXT NOT NULL,
@@ -264,48 +275,6 @@ CREATE TABLE neiist.voting_results (
   PRIMARY KEY (session_id, nominee_id),
   FOREIGN KEY (session_id, nominee_id) REFERENCES neiist.voting_nominees(session_id, nominee_id) ON DELETE CASCADE
 );
-
--- Trigger to touch updated_at on session when a vote is cast and notify listeners
-CREATE OR REPLACE FUNCTION neiist.touch_voting_session_updated_at()
-RETURNS TRIGGER AS $$
-DECLARE
-  v_now TIMESTAMPTZ := NOW();
-BEGIN
-  UPDATE neiist.voting_sessions
-  SET updated_at = v_now
-  WHERE id = NEW.session_id;
-
-  -- Broadcast to the 'voting_update' channel
-  PERFORM pg_notify('voting_update', json_build_object(
-    'type', 'VOTE',
-    'updated_at', v_now
-  )::text);
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER trg_touch_voting_session
-AFTER INSERT OR UPDATE ON neiist.votes
-FOR EACH ROW
-EXECUTE FUNCTION neiist.touch_voting_session_updated_at();
-
--- Trigger to notify on voting session changes
-CREATE OR REPLACE FUNCTION neiist.notify_voting_session_change()
-RETURNS TRIGGER AS $$
-BEGIN
-  PERFORM pg_notify('voting_update', json_build_object(
-    'type', 'STATE_CHANGE',
-    'updated_at', NOW()
-  )::text);
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER trg_notify_voting_session_change
-AFTER INSERT OR UPDATE OF status, start_at, end_at, name, description, updated_at ON neiist.voting_sessions
-FOR EACH ROW
-EXECUTE FUNCTION neiist.notify_voting_session_change();
 
 -- SHOP CATEGORIES
 CREATE TABLE neiist.categories (
@@ -450,64 +419,77 @@ CREATE INDEX IF NOT EXISTS idx_orders_user_istid ON neiist.orders(user_istid);
 
 --Triggers
 
---Restock Limited stock items on order cancellation
-CREATE OR REPLACE FUNCTION neiist.restock_limited_items_on_order_cancel()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
+-- Trigger to touch updated_at on session when a vote is cast and notify listeners
+CREATE OR REPLACE FUNCTION neiist.touch_voting_session_updated_at()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_now TIMESTAMPTZ := NOW();
 BEGIN
-  -- Defensive guard (trigger WHEN already enforces this transition)
-  IF OLD.status = NEW.status OR NEW.status <> 'cancelled' THEN
-    RETURN NEW;
+  UPDATE neiist.voting_sessions
+  SET updated_at = v_now
+  WHERE id = NEW.session_id;
+
+  -- Broadcast to the 'voting_update' channel
+  PERFORM pg_notify('voting_update', json_build_object(
+    'type', 'VOTE',
+    'updated_at', v_now
+  )::text);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_touch_voting_session
+AFTER INSERT OR UPDATE ON neiist.votes
+FOR EACH ROW
+EXECUTE FUNCTION neiist.touch_voting_session_updated_at();
+
+-- Trigger to notify on voting session changes
+CREATE OR REPLACE FUNCTION neiist.notify_voting_session_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify('voting_update', json_build_object(
+    'type', 'STATE_CHANGE',
+    'updated_at', NOW()
+  )::text);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_notify_voting_session_change
+AFTER INSERT OR UPDATE OF status, start_at, end_at, name, description, show_results ON neiist.voting_sessions
+FOR EACH ROW
+EXECUTE FUNCTION neiist.notify_voting_session_change();
+
+-- Restock on item cancellation trigger
+CREATE OR REPLACE FUNCTION neiist.restock_on_order_item_cancel()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  IF OLD.status <> 'cancelled' AND NEW.status = 'cancelled' THEN
+    IF NEW.variant_id IS NOT NULL THEN
+      UPDATE neiist.product_variants
+      SET stock_quantity = COALESCE(stock_quantity, 0) + NEW.quantity,
+          updated_at = NOW()
+      WHERE id = NEW.variant_id;
+    ELSE
+      UPDATE neiist.products
+      SET stock_quantity = COALESCE(stock_quantity, 0) + NEW.quantity
+      WHERE id = NEW.product_id AND stock_type = 'limited';
+    END IF;
+
+    DELETE FROM neiist.activities_sign_up
+    WHERE order_number = NEW.order_number;
   END IF;
-
-  -- Restock product variants (limited stock only, items with variant_id)
-  UPDATE neiist.product_variants AS product_variant
-  SET stock_quantity = COALESCE(product_variant.stock_quantity, 0) + variant_restock.quantity_to_restock,
-      updated_at = NOW()
-  FROM (
-    SELECT
-      order_item.product_id AS product_id,
-      order_item.variant_id AS variant_id,
-      SUM(order_item.quantity)::INTEGER AS quantity_to_restock
-    FROM neiist.order_items AS order_item
-    JOIN neiist.products AS product
-      ON product.id = order_item.product_id
-    WHERE order_item.order_id = NEW.id
-      AND order_item.variant_id IS NOT NULL
-      AND product.stock_type = 'limited'
-    GROUP BY order_item.product_id, order_item.variant_id
-  ) AS variant_restock
-  WHERE product_variant.id = variant_restock.variant_id
-    AND product_variant.product_id = variant_restock.product_id;
-
-  -- Restock base products (limited stock only, items without variant_id)
-  UPDATE neiist.products AS product
-  SET stock_quantity = COALESCE(product.stock_quantity, 0) + product_restock.quantity_to_restock
-  FROM (
-    SELECT
-      order_item.product_id AS product_id,
-      SUM(order_item.quantity)::INTEGER AS quantity_to_restock
-    FROM neiist.order_items AS order_item
-    JOIN neiist.products AS product_for_filter
-      ON product_for_filter.id = order_item.product_id
-    WHERE order_item.order_id = NEW.id
-      AND order_item.variant_id IS NULL
-      AND product_for_filter.stock_type = 'limited'
-    GROUP BY order_item.product_id
-  ) AS product_restock
-  WHERE product.id = product_restock.product_id;
 
   RETURN NEW;
 END;
 $$;
 
-CREATE TRIGGER trg_restock_limited_on_cancel
-AFTER UPDATE OF status ON neiist.orders
+DROP TRIGGER IF EXISTS trg_order_item_cancel ON neiist.order_items;
+CREATE TRIGGER trg_order_item_cancel
+AFTER UPDATE OF status ON neiist.order_items
 FOR EACH ROW
-WHEN (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'cancelled')
-EXECUTE FUNCTION neiist.restock_limited_items_on_order_cancel();
+EXECUTE FUNCTION neiist.restock_on_order_item_cancel();
 
 -- Update the name of products on orders
 CREATE OR REPLACE FUNCTION neiist.update_order_item_product_name_on_product_rename()
@@ -3408,7 +3390,8 @@ RETURNS TABLE (
   end_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
-  total_votes BIGINT
+  total_votes BIGINT,
+  show_results BOOLEAN
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -3433,7 +3416,8 @@ RETURNS TABLE (
   end_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
-  total_votes BIGINT
+  total_votes BIGINT,
+  show_results BOOLEAN
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -3449,7 +3433,7 @@ CREATE OR REPLACE FUNCTION neiist.create_voting_session(
   p_name TEXT,
   p_description TEXT,
   p_type VARCHAR(20),
-  p_nominee_ids TEXT[],
+  p_nominees JSONB,
   p_activity_id TEXT DEFAULT NULL,
   p_start_at TIMESTAMPTZ DEFAULT NULL,
   p_end_at TIMESTAMPTZ DEFAULT NULL
@@ -3464,66 +3448,51 @@ CREATE OR REPLACE FUNCTION neiist.create_voting_session(
   end_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
-  total_votes BIGINT
+  total_votes BIGINT,
+  show_results BOOLEAN
 ) AS $$
 DECLARE
   v_session_id INTEGER;
+  elem JSONB;
 BEGIN
   INSERT INTO neiist.voting_sessions (name, description, type, activity_id, start_at, end_at)
   VALUES (p_name, p_description, p_type, p_activity_id, p_start_at, p_end_at)
   RETURNING neiist.voting_sessions.id INTO v_session_id;
 
-  IF p_nominee_ids IS NOT NULL AND array_length(p_nominee_ids, 1) > 0 THEN
-    INSERT INTO neiist.voting_nominees (session_id, nominee_id)
-    SELECT v_session_id, unnest(p_nominee_ids);
+  IF p_nominees IS NOT NULL AND jsonb_typeof(p_nominees) = 'array' THEN
+    FOR elem IN SELECT * FROM jsonb_array_elements(p_nominees)
+    LOOP
+      IF jsonb_typeof(elem) = 'object' THEN
+        INSERT INTO neiist.voting_custom_options (session_id, id, name, photo_path, description)
+        VALUES (v_session_id, elem->>'id', elem->>'name', elem->>'photo_path', elem->>'description');
+
+        INSERT INTO neiist.voting_nominees (session_id, nominee_id)
+        VALUES (v_session_id, elem->>'id');
+      ELSE
+        INSERT INTO neiist.voting_nominees (session_id, nominee_id)
+        VALUES (v_session_id, elem #>> '{}');
+      END IF;
+    END LOOP;
   END IF;
 
   RETURN QUERY SELECT * FROM neiist.get_voting_session_by_id(v_session_id);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- UPDATE VOTING SESSION
-CREATE OR REPLACE FUNCTION neiist.update_voting_session(
+-- SET SESSION SHOW RESULTS
+CREATE OR REPLACE FUNCTION neiist.set_session_show_results(
   p_session_id INTEGER,
-  p_name TEXT,
-  p_description TEXT,
-  p_type VARCHAR(20),
-  p_nominee_ids TEXT[],
-  p_activity_id TEXT DEFAULT NULL,
-  p_start_at TIMESTAMPTZ DEFAULT NULL,
-  p_end_at TIMESTAMPTZ DEFAULT NULL
-) RETURNS TABLE (
-  id INTEGER,
-  name TEXT,
-  description TEXT,
-  type VARCHAR(20),
-  activity_id TEXT,
-  status TEXT,
-  start_at TIMESTAMPTZ,
-  end_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ,
-  total_votes BIGINT
-) AS $$
+  p_show_results BOOLEAN
+) RETURNS VOID AS $$
 BEGIN
   UPDATE neiist.voting_sessions
-  SET name = p_name,
-      description = p_description,
-      type = p_type,
-      activity_id = p_activity_id,
-      start_at = p_start_at,
-      end_at = p_end_at,
+  SET show_results = p_show_results,
       updated_at = NOW()
-  WHERE neiist.voting_sessions.id = p_session_id;
+  WHERE id = p_session_id;
 
-  -- Replace nominees
-  DELETE FROM neiist.voting_nominees WHERE session_id = p_session_id;
-  IF p_nominee_ids IS NOT NULL AND array_length(p_nominee_ids, 1) > 0 THEN
-    INSERT INTO neiist.voting_nominees (session_id, nominee_id)
-    SELECT p_session_id, unnest(p_nominee_ids);
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Voting session % not found', p_session_id;
   END IF;
-
-  RETURN QUERY SELECT * FROM neiist.get_voting_session_by_id(p_session_id);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -3532,16 +3501,19 @@ CREATE OR REPLACE FUNCTION neiist.get_session_nominees(p_session_id INTEGER)
 RETURNS TABLE (
   id TEXT,
   name TEXT,
-  photo_path TEXT
+  photo_path TEXT,
+  description TEXT
 ) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
     vn.nominee_id as id,
-    COALESCE(u.name, vn.nominee_id) as name,
-    u.photo_path
+    COALESCE(co.name, u.name, vn.nominee_id) as name,
+    COALESCE(co.photo_path, u.photo_path) as photo_path,
+    co.description
   FROM neiist.voting_nominees vn
   LEFT JOIN neiist.users u ON u.istid = vn.nominee_id
+  LEFT JOIN neiist.voting_custom_options co ON co.session_id = vn.session_id AND co.id = vn.nominee_id
   WHERE vn.session_id = p_session_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -3614,18 +3586,21 @@ RETURNS TABLE (
   nominee_id TEXT,
   nominee_name TEXT,
   nominee_photo_path TEXT,
-  vote_count BIGINT
+  vote_count BIGINT,
+  description TEXT
 ) AS $$
 BEGIN
   -- If session is finished, return frozen tally
-  IF EXISTS (SELECT 1 FROM neiist.voting_sessions WHERE id = p_session_id AND status = 'finished') THEN
+  IF EXISTS (SELECT 1 FROM neiist.voting_sessions WHERE neiist.voting_sessions.id = p_session_id AND status = 'finished') THEN
     RETURN QUERY
     SELECT 
       vr.nominee_id,
-      COALESCE(u.name, vr.nominee_id) as nominee_name,
-      u.photo_path as nominee_photo_path,
-      vr.vote_count
+      COALESCE(co.name, u.name, vr.nominee_id) as nominee_name,
+      COALESCE(co.photo_path, u.photo_path) as nominee_photo_path,
+      vr.vote_count,
+      co.description
     FROM neiist.voting_results vr
+    LEFT JOIN neiist.voting_custom_options co ON co.session_id = vr.session_id AND co.id = vr.nominee_id
     LEFT JOIN neiist.users u ON u.istid = vr.nominee_id
     WHERE vr.session_id = p_session_id
     ORDER BY vr.vote_count DESC;
@@ -3634,15 +3609,17 @@ BEGIN
     RETURN QUERY
     SELECT 
       vn.nominee_id,
-      COALESCE(u.name, vn.nominee_id) as nominee_name,
-      u.photo_path as nominee_photo_path,
-      COUNT(v.voter_istid)::BIGINT as vote_count
+      COALESCE(co.name, u.name, vn.nominee_id) as nominee_name,
+      COALESCE(co.photo_path, u.photo_path) as nominee_photo_path,
+      COUNT(v.voter_istid)::BIGINT as vote_count,
+      co.description
     FROM neiist.voting_nominees vn
+    LEFT JOIN neiist.voting_custom_options co ON co.session_id = vn.session_id AND co.id = vn.nominee_id
     LEFT JOIN neiist.users u ON u.istid = vn.nominee_id
     LEFT JOIN neiist.votes v ON v.session_id = vn.session_id AND v.nominee_id = vn.nominee_id
     WHERE vn.session_id = p_session_id
-    GROUP BY vn.nominee_id, u.name, u.photo_path
-    ORDER BY vote_count DESC;
+    GROUP BY vn.nominee_id, co.name, co.photo_path, co.description, u.name, u.photo_path
+    ORDER BY COUNT(v.voter_istid) DESC;
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

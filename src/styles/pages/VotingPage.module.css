@@ -57,7 +57,6 @@
   background: transparent;
   color: var(--foreground-colour);
   font-size: 0.95rem;
-  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
@@ -254,6 +253,10 @@
   justify-content: center;
   padding: 1rem;
   animation: fadeIn 0.15s ease;
+}
+
+.reviewActionWrapper {
+  margin-top: 1.5rem;
 }
 
 @keyframes fadeIn {

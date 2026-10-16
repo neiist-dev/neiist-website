@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { VotingSyncPayload, VOTING_SYNC_EVENT_TYPES } from "@/types/voting";
 
 export default function AdminVotingSync() {
   const router = useRouter();
@@ -14,7 +15,8 @@ export default function AdminVotingSync() {
       let updatedAt: string | null;
 
       try {
-        const parsed = JSON.parse(event.data) as { updatedAt?: string };
+        const parsed = JSON.parse(event.data) as VotingSyncPayload;
+        if (parsed.type === VOTING_SYNC_EVENT_TYPES.VOTE_PING) return;
         updatedAt = parsed.updatedAt ?? null;
       } catch {
         return;

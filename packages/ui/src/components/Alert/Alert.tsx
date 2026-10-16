@@ -100,16 +100,17 @@ export interface ToasterProps {
 }
 
 export function Toaster({ position = "top-right", offset }: ToasterProps) {
-  const [target, setTarget] = useState<HTMLElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [dialogTarget, setDialogTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     const updateTarget = () => {
       const openDialogs = Array.from(
         document.querySelectorAll<HTMLElement>("dialog[open]:not([data-closing])")
       );
-
-      const activeDialog = openDialogs[openDialogs.length - 1] ?? document.body;
-      setTarget((prev) => (prev === activeDialog ? prev : activeDialog));
+      const activeDialog = openDialogs[openDialogs.length - 1] ?? null;
+      setDialogTarget((prev) => (prev === activeDialog ? prev : activeDialog));
     };
 
     updateTarget();
@@ -124,7 +125,13 @@ export function Toaster({ position = "top-right", offset }: ToasterProps) {
     return () => observer.disconnect();
   }, []);
 
-  if (!target) return null;
+  if (!mounted) return null;
 
-  return createPortal(<SonnerToaster position={position} offset={offset} />, target);
+  return (
+    <>
+      <SonnerToaster position={position} offset={offset} />
+      {dialogTarget &&
+        createPortal(<SonnerToaster position={position} offset={offset} />, dialogTarget)}
+    </>
+  );
 }

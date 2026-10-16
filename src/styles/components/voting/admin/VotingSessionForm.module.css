@@ -10,6 +10,17 @@
   justify-content: space-between;
 }
 
+.btnSecondary {
+  background: var(--background-colour);
+  color: #555d6d;
+  border: none;
+}
+
+.btnSecondary:hover {
+  background: #d3d7df;
+  color: #333333;
+}
+
 .title {
   font-size: 1.8rem;
 }
@@ -46,139 +57,82 @@
   font-size: 1.25rem;
 }
 
-.fieldWrap {
+.dateGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.label {
-  color: #555d6d;
-  font-size: 0.95rem;
-}
-
-.input,
-.textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.75rem 1rem;
-  border-radius: 0.6rem;
-  border: 2px solid #d3d7df;
-  background: white;
-  font-size: 0.95rem;
-  color: #3f3f3f;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-
-.textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.input:focus,
-.textarea:focus {
-  border-color: var(--primary-colour);
-  box-shadow: 0 0 0 1px var(--primary-colour);
-}
-
-.input:disabled,
-.textarea:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: #ececf0;
-}
-
-.dateGroup {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.typeButtonsGroup {
+.dateTimeRow {
   display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.dateTimeRow > div:first-child {
+  flex: 1;
+}
+
+.dateTimeRow > div:last-child {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.customOptionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.customOptionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.customOptionRow:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.optionTopRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.removeOptionBtn {
+  margin-left: auto;
+}
+
+.imageSection {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  padding-top: 0.25rem;
 }
 
-.typeButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.2rem;
-  font-family: inherit;
-  transition:
-    background 0.18s,
-    opacity 0.18s;
+.imagePreview {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+  background: white;
 }
 
-.typeButtonActive {
-  background: var(--primary-colour);
-  color: white;
+.addOptionBtn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
 }
 
-.typeButtonActive:hover {
-  opacity: 0.9;
-}
-
-.typeButton:not(.typeButtonActive) {
-  background: var(--background-colour);
-  color: #555d6d;
-}
-
-.typeButton:not(.typeButtonActive):hover {
-  background: #d3d7df;
-}
-
-.btnSecondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.2rem;
-  font-family: inherit;
-  background: var(--background-colour);
-  color: #555d6d;
-  transition: background 0.18s;
-}
-
-.btnSecondary:hover {
-  background: #d3d7df;
-}
-
-.btnPrimary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 0.6rem 1.2rem;
-  font-family: inherit;
-  background: var(--primary-colour);
-  color: white;
-  transition:
-    background 0.18s,
-    opacity 0.18s;
-}
-
-.btnPrimary:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.btnPrimary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.hiddenFileInput {
+  display: none;
 }
 
 @media (max-width: 1100px) {
@@ -186,21 +140,11 @@
     grid-template-columns: 1fr;
     gap: 2rem;
   }
-
-  .dateGroup {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 @media (max-width: 768px) {
   .header {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .typeButtonsGroup,
-  .dateGroup {
-    flex-direction: column;
-    grid-template-columns: 1fr;
   }
 }

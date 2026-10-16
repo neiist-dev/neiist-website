@@ -1,86 +1,132 @@
 .resultsGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 2rem;
   justify-content: center;
   align-items: flex-end;
   width: 100%;
   max-width: 1200px;
+  margin: 0 auto;
 }
 
 .card {
   position: relative;
-  background: #ffffff;
-  border: none;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
-  border-radius: 1.5rem;
-  padding: 0;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
   text-align: center;
+  transition: transform 0.2s ease;
 }
 
 .card:hover {
-  transform: scale(1.01);
+  transform: translateY(-2px);
 }
 
 .rankBadge {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: 0.85rem;
+  left: 0.85rem;
   z-index: 10;
   color: white;
-  padding: 0.4rem 0.8rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 2rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.15);
 }
 
 .rank1 {
-  width: clamp(15rem, 24vw, 24rem);
+  width: clamp(14rem, 24vw, 18rem);
   order: 2;
+  z-index: 2;
 }
+
 .rank1 .rankBadge {
   background: var(--primary-colour);
 }
 
+.rank1 .imageCard {
+  box-shadow: 0 0.5rem 1.75rem rgba(40, 99, 253, 0.16);
+}
+
 .rank2 {
-  width: clamp(13rem, 20vw, 20rem);
+  width: clamp(12rem, 20vw, 15rem);
   order: 1;
 }
+
 .rank2 .rankBadge {
   background: var(--secondary-colour);
 }
 
 .rank3 {
-  width: clamp(13rem, 20vw, 20rem);
+  width: clamp(12rem, 20vw, 15rem);
   order: 3;
 }
+
 .rank3 .rankBadge {
   background: var(--quaternary-colour);
 }
 
-.imageWrap {
+.imageCard {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 180 / 200;
+  border-radius: 1.875rem;
   overflow: hidden;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  background: #eef0f4;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card:hover .imageCard {
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
 }
 
 .image {
   object-fit: cover;
 }
 
+.textFront {
+  width: 100%;
+  height: 100%;
+  padding: 1.25rem 1rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #eef0f4;
+  overflow: hidden;
+}
+
+.textFrontTitle {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  color: var(--foreground-colour);
+  opacity: 0.85;
+  word-break: break-word;
+  line-height: 1.15;
+  padding: 0.5rem;
+}
+
 .infoWrap {
-  padding: 1.5rem 1rem;
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
 }
 
 .name {
-  margin: 0 0 0.25rem;
+  margin: 0;
   color: var(--foreground-colour);
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.25;
+  word-break: break-word;
 }
 
 .votes {
@@ -91,15 +137,16 @@
 
 .emptyState {
   text-align: center;
-  padding: 2rem;
+  padding: 2.5rem 1rem;
   color: var(--light-foreground-colour);
+  font-size: 1.05rem;
 }
 
 @media (max-width: 768px) {
   .resultsGrid {
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
 
   .rank1,
@@ -107,6 +154,10 @@
   .rank3 {
     order: unset;
     width: 100%;
-    max-width: 20rem;
+    max-width: 15rem;
+  }
+
+  .imageCard {
+    border-radius: 1.5rem;
   }
 }
