@@ -11,6 +11,7 @@ import {
 } from "@/lib/votingSystem";
 import { Modal, Badge, Button, ConfirmDialog, Text, Alert } from "@neiist/ui";
 import { FiTrash2, FiEye, FiEyeOff } from "react-icons/fi";
+import ReactMarkdown from "react-markdown";
 import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -120,9 +121,14 @@ export default function VotingSessionDetailOverlay({
           <Badge variant={STATUS_BADGE[session.status]}>{dict.statuses[session.status]}</Badge>
         }>
         {session.description && (
-          <Text variant="muted" className={styles.description}>
-            {session.description}
-          </Text>
+          <div className={styles.description}>
+            <ReactMarkdown
+              components={{
+                a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+              }}>
+              {session.description}
+            </ReactMarkdown>
+          </div>
         )}
 
         <div className={styles.infoGrid}>

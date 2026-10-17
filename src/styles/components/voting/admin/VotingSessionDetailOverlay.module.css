@@ -1,9 +1,10 @@
 .description {
   color: var(--light-foreground-colour);
   margin: 0 0 1.5rem;
-  white-space: pre-wrap;
   font-size: 0.95rem;
   line-height: 1.5;
+  max-height: 180px;
+  overflow-y: auto;
 }
 
 .section {

@@ -2,10 +2,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  max-width: 24rem;
+  min-width: 0;
 }
 
 .name {
   color: var(--foreground-colour);
+  font-weight: 500;
+  word-break: break-word;
 }
 
 .description {
@@ -13,6 +17,11 @@
   color: var(--light-foreground-colour);
   word-break: break-word;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .period {
