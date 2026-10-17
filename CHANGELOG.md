@@ -1,5 +1,14 @@
 # neiist
 
+## [4.5.2](https://github.com/neiist-dev/neiist-website/compare/v4.5.1...v4.5.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* **cloud:** add sweat contest votes link on the annoucements cloud ([ad92c0f](https://github.com/neiist-dev/neiist-website/commit/ad92c0f4d99b2e5f30c4db8d4a1914b9c4b2ebc9))
+* **user:** role ranking and order on label, activity cascade delete ([3d589d4](https://github.com/neiist-dev/neiist-website/commit/3d589d4a9fd42e54a7ffd61f031456893eaaf27d))
+* **voting:** permissions all user can vote ([6a5e3bb](https://github.com/neiist-dev/neiist-website/commit/6a5e3bbfd3939e6a7c734ba81619faa490d3ce2f))
+
 ## [4.5.1](https://github.com/neiist-dev/neiist-website/compare/v4.5.0...v4.5.1) (2026-10-17)
 
 
