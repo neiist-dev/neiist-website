@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { FaArrowLeft } from "react-icons/fa";
 import Link from "next/link";
@@ -198,23 +198,36 @@ export default function VotingClient({
     nomineeName?: string;
   } | null>(null);
 
+  const voteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     const source = new EventSource("/api/voting/sync");
+
     source.onopen = () => setConnectionStatus("connected");
+
     source.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data) as VotingSyncPayload;
-        if (payload.type === VOTING_SYNC_EVENT_TYPES.STATE_UPDATE) setGlobalState(payload.state);
+        if (payload.type === VOTING_SYNC_EVENT_TYPES.STATE_UPDATE) {
+          setGlobalState(payload.state);
+        }
         setConnectionStatus("connected");
       } catch (err) {
         console.error("Failed to parse SSE payload", err);
       }
     };
+
     source.onerror = (err) => {
       console.error("VotingSync SSE Error:", err);
-      setConnectionStatus("error");
+      if (source.readyState === EventSource.CLOSED) {
+        setConnectionStatus("error");
+      }
     };
-    return () => source.close();
+
+    return () => {
+      if (voteTimeoutRef.current) clearTimeout(voteTimeoutRef.current);
+      source.close();
+    };
   }, []);
 
   const activeVotingSessions = globalState.activeSessions || [];
@@ -238,7 +251,9 @@ export default function VotingClient({
 
       setVoteFlowState({ status: "success", nomineeName: nominee?.name });
 
-      setTimeout(() => {
+      if (voteTimeoutRef.current) clearTimeout(voteTimeoutRef.current);
+      voteTimeoutRef.current = setTimeout(() => {
+        voteTimeoutRef.current = null;
         setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
         setVoteFlowState(null);
         setReviewMode(false);

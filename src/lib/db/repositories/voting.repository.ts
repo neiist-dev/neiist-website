@@ -113,7 +113,9 @@ export const setSessionShowResults = async (
   await db_query(`SELECT neiist.set_session_show_results($1, $2)`, [sessionId, showResults]);
 };
 
-export const getGlobalVotingState = async (): Promise<GlobalVotingState> => {
+let statePromise: Promise<GlobalVotingState> | null = null;
+
+const fetchGlobalVotingState = async (): Promise<GlobalVotingState> => {
   const sessions = await getVotingSessions(20);
   const now = new Date();
 
@@ -164,4 +166,14 @@ export const getGlobalVotingState = async (): Promise<GlobalVotingState> => {
   }
 
   return { activeSessions: [] };
+};
+
+export const getGlobalVotingState = (): Promise<GlobalVotingState> => {
+  if (statePromise) return statePromise;
+
+  statePromise = fetchGlobalVotingState().finally(() => {
+    statePromise = null;
+  });
+
+  return statePromise;
 };
