@@ -220,7 +220,7 @@ CREATE TABLE neiist.activities (
 
 -- EVENT SUBSCRIPTIONS
 CREATE TABLE neiist.activities_sign_up (
-  event_id TEXT NOT NULL REFERENCES neiist.activities(id),
+  event_id TEXT NOT NULL REFERENCES neiist.activities(id) ON DELETE CASCADE,
   user_istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid),
   signed_up_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (event_id, user_istid)
@@ -1625,6 +1625,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION neiist.delete_activities(p_id TEXT)
 RETURNS VOID AS $$
 BEGIN
+  DELETE FROM neiist.activities_sign_up WHERE event_id = p_id;
   DELETE FROM neiist.activities WHERE id = p_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

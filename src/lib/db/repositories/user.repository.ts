@@ -2,7 +2,8 @@ import { User, dbUser, mapdbUserToUser } from "@/types/user";
 
 import { db_query } from "@/lib/db/connection";
 import { cacheTag, revalidateTag } from "next/cache";
-import { getUserMemberships, getDepartmentRoleOrders } from "./team.repository";
+import { getUserMemberships, getAllDepartmentRoles } from "./team.repository";
+import { compareMandatePower } from "@/utils/membershipSortUtils";
 
 export const createUser = async (user: Partial<User>): Promise<User | null> => {
   if (!user.istid || !user.name || !user.email) return null;
@@ -39,7 +40,7 @@ export const updateUserPhoto = async (istid: string, photoData: string): Promise
 
 export const getUser = async (istid: string): Promise<User | null> => {
   "use cache";
-  cacheTag("users");
+  cacheTag("users", "memberships", "department_roles");
   const {
     rows: [user],
   } = await db_query<dbUser>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
@@ -47,32 +48,11 @@ export const getUser = async (istid: string): Promise<User | null> => {
 
   const memberships = await getUserMemberships(istid, true);
 
-  let positionName: string | null = memberships[0]?.roleName ?? null;
-  const deptNames = Array.from(new Set(memberships.map((m) => m.departmentName).filter(Boolean)));
-  if (deptNames.length > 0) {
-    const roleOrders = await getDepartmentRoleOrders(deptNames);
-
-    const normalize = (s: string) =>
-      s
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim();
-
-    let highest: { roleName: string; position: number } | null = null;
-    for (const membership of memberships) {
-      const matchingOrders = roleOrders.filter(
-        (role) => role.department_name === membership.departmentName
-      );
-      const found = matchingOrders.find(
-        (role) => normalize(role.role_name) === normalize(membership.roleName)
-      );
-      if (found) {
-        if (!highest || found.position < highest.position)
-          highest = { roleName: membership.roleName, position: found.position };
-      }
-    }
-    if (highest) positionName = highest.roleName;
+  let positionName: string | null = null;
+  if (memberships.length > 0) {
+    const allRoles = await getAllDepartmentRoles();
+    const sortedMemberships = [...memberships].sort((a, b) => compareMandatePower(a, b, allRoles));
+    positionName = sortedMemberships[0]?.roleName ?? null;
   }
 
   return {
