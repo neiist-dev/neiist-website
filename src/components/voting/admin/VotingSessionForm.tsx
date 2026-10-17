@@ -46,10 +46,13 @@ interface CustomOptionState {
   descPreviewUrl?: string;
 }
 
-const initialOptions = (): CustomOptionState[] => [
-  { id: "opt_1", name: "", description: "" },
-  { id: "opt_2", name: "", description: "" },
-];
+const initialOptions = (): CustomOptionState[] => {
+  const now = Date.now();
+  return [
+    { id: `opt_${now}_1`, name: "", description: "" },
+    { id: `opt_${now + 1}_2`, name: "", description: "" },
+  ];
+};
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -82,17 +85,24 @@ async function uploadVotingFiles(
   fallbackError = "Erro ao carregar imagens"
 ): Promise<string[]> {
   if (!files || files.length === 0) return [];
-  const fd = new FormData();
-  files.forEach((f) => fd.append("files", f));
-  const res = await fetch("/api/voting/uploads", { method: "POST", body: fd });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.error || fallbackError);
-  }
-  const data = await res.json();
-  const paths = data.paths ?? [];
-  if (paths.length !== files.length) throw new Error(fallbackError);
-  return paths;
+
+  return Promise.all(
+    files.map(async (file) => {
+      const fd = new FormData();
+      fd.append("files", file);
+      const res = await fetch("/api/voting/uploads", { method: "POST", body: fd });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ? `${errorData.error} (${file.name})` : `${fallbackError}: ${file.name}`
+        );
+      }
+      const data = await res.json();
+      const path = data.paths?.[0];
+      if (!path) throw new Error(`${fallbackError}: ${file.name}`);
+      return path as string;
+    })
+  );
 }
 
 export default function VotingSessionForm({

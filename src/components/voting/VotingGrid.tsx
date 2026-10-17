@@ -25,7 +25,7 @@ interface VotingGridProps {
   dict: Dictionary["voting"];
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 36;
 
 export default function VotingGrid({
   sessionId,
