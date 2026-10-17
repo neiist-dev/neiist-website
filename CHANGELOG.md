@@ -1,5 +1,13 @@
 # neiist
 
+## [4.5.1](https://github.com/neiist-dev/neiist-website/compare/v4.5.0...v4.5.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* **voting:** reactmarkdown descprition styles ([5ed599c](https://github.com/neiist-dev/neiist-website/commit/5ed599c516c7f60fb31141e4165131875752fcc5))
+* **voting:** voting grid number of itens and order item creation ([13dcd97](https://github.com/neiist-dev/neiist-website/commit/13dcd971f7fc1834bca76b5dcc82b88ce59cc47e))
+
 ## [4.5.0](https://github.com/neiist-dev/neiist-website/compare/v4.4.0...v4.5.0) (2026-10-16)
 
 
