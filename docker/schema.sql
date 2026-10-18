@@ -462,35 +462,65 @@ AFTER INSERT OR UPDATE OF status, start_at, end_at, name, description, show_resu
 FOR EACH ROW
 EXECUTE FUNCTION neiist.notify_voting_session_change();
 
--- Restock on item cancellation trigger
-CREATE OR REPLACE FUNCTION neiist.restock_on_order_item_cancel()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+-- Restock Limited stock items on order cancellation
+CREATE OR REPLACE FUNCTION neiist.restock_limited_items_on_order_cancel()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
 BEGIN
-  IF OLD.status <> 'cancelled' AND NEW.status = 'cancelled' THEN
-    IF NEW.variant_id IS NOT NULL THEN
-      UPDATE neiist.product_variants
-      SET stock_quantity = COALESCE(stock_quantity, 0) + NEW.quantity,
-          updated_at = NOW()
-      WHERE id = NEW.variant_id;
-    ELSE
-      UPDATE neiist.products
-      SET stock_quantity = COALESCE(stock_quantity, 0) + NEW.quantity
-      WHERE id = NEW.product_id AND stock_type = 'limited';
-    END IF;
-
-    DELETE FROM neiist.activities_sign_up
-    WHERE order_number = NEW.order_number;
+  -- Defensive guard (trigger WHEN already enforces this transition)
+  IF OLD.status = NEW.status OR NEW.status <> 'cancelled' THEN
+    RETURN NEW;
   END IF;
+
+  -- Restock product variants (limited stock only, items with variant_id)
+  UPDATE neiist.product_variants AS product_variant
+  SET stock_quantity = COALESCE(product_variant.stock_quantity, 0) + variant_restock.quantity_to_restock,
+      updated_at = NOW()
+  FROM (
+    SELECT
+      order_item.product_id AS product_id,
+      order_item.variant_id AS variant_id,
+      SUM(order_item.quantity)::INTEGER AS quantity_to_restock
+    FROM neiist.order_items AS order_item
+    JOIN neiist.products AS product
+      ON product.id = order_item.product_id
+    WHERE order_item.order_id = NEW.id
+      AND order_item.variant_id IS NOT NULL
+      AND product.stock_type = 'limited'
+    GROUP BY order_item.product_id, order_item.variant_id
+  ) AS variant_restock
+  WHERE product_variant.id = variant_restock.variant_id
+    AND product_variant.product_id = variant_restock.product_id;
+
+  -- Restock base products (limited stock only, items without variant_id)
+  UPDATE neiist.products AS product
+  SET stock_quantity = COALESCE(product.stock_quantity, 0) + product_restock.quantity_to_restock
+  FROM (
+    SELECT
+      order_item.product_id AS product_id,
+      SUM(order_item.quantity)::INTEGER AS quantity_to_restock
+    FROM neiist.order_items AS order_item
+    JOIN neiist.products AS product_for_filter
+      ON product_for_filter.id = order_item.product_id
+    WHERE order_item.order_id = NEW.id
+      AND order_item.variant_id IS NULL
+      AND product_for_filter.stock_type = 'limited'
+    GROUP BY order_item.product_id
+  ) AS product_restock
+  WHERE product.id = product_restock.product_id;
 
   RETURN NEW;
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_order_item_cancel ON neiist.order_items;
-CREATE TRIGGER trg_order_item_cancel
-AFTER UPDATE OF status ON neiist.order_items
+DROP TRIGGER IF EXISTS trg_restock_limited_on_cancel ON neiist.orders;
+CREATE TRIGGER trg_restock_limited_on_cancel
+AFTER UPDATE OF status ON neiist.orders
 FOR EACH ROW
-EXECUTE FUNCTION neiist.restock_on_order_item_cancel();
+WHEN (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'cancelled')
+EXECUTE FUNCTION neiist.restock_limited_items_on_order_cancel();
 
 -- Update the name of products on orders
 CREATE OR REPLACE FUNCTION neiist.update_order_item_product_name_on_product_rename()
@@ -3375,8 +3405,18 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Helper view for session data with total votes
 CREATE OR REPLACE VIEW neiist.voting_sessions_with_total_votes AS
 SELECT 
-    s.*,
-    (SELECT COUNT(*) FROM neiist.votes WHERE session_id = s.id) as total_votes
+    s.id,
+    s.name,
+    s.description,
+    s.type,
+    s.activity_id,
+    s.status,
+    s.start_at,
+    s.end_at,
+    s.created_at,
+    s.updated_at,
+    (SELECT COUNT(DISTINCT voter_istid) FROM neiist.votes WHERE session_id = s.id)::BIGINT AS total_votes,
+    s.show_results
 FROM neiist.voting_sessions s;
 
 -- GET VOTING SESSIONS
@@ -3398,7 +3438,18 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT 
-    v.*
+    v.id,
+    v.name,
+    v.description,
+    v.type,
+    v.activity_id,
+    v.status,
+    v.start_at,
+    v.end_at,
+    v.created_at,
+    v.updated_at,
+    v.total_votes,
+    v.show_results
   FROM neiist.voting_sessions_with_total_votes v
   ORDER BY v.created_at DESC
   LIMIT p_limit;
@@ -3424,7 +3475,18 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT 
-    v.*
+    v.id,
+    v.name,
+    v.description,
+    v.type,
+    v.activity_id,
+    v.status,
+    v.start_at,
+    v.end_at,
+    v.created_at,
+    v.updated_at,
+    v.total_votes,
+    v.show_results
   FROM neiist.voting_sessions_with_total_votes v
   WHERE v.id = p_session_id;
 END;
