@@ -47,6 +47,7 @@ export default function YearSelector({
     <nav className={styles.container} aria-label={dict.nav_label}>
       <Link
         href={prevYear ? hrefFor(prevYear) : "#"}
+        scroll={false}
         aria-label={dict.prev_label}
         aria-disabled={!canPrev}
         tabIndex={canPrev ? 0 : -1}
@@ -62,6 +63,7 @@ export default function YearSelector({
             <Link
               key={year}
               href={hrefFor(year)}
+              scroll={false}
               aria-current={isSelected ? "page" : undefined}
               className={`${styles.yearButton} ${isSelected ? styles.selected : ""}`}>
               <span className={styles.yearText}>
@@ -75,6 +77,7 @@ export default function YearSelector({
 
       <Link
         href={nextYear ? hrefFor(nextYear) : "#"}
+        scroll={false}
         aria-label={dict.next_label}
         aria-disabled={!canNext}
         tabIndex={canNext ? 0 : -1}
