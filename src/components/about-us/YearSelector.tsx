@@ -36,10 +36,10 @@ export default function YearSelector({
   const end = Math.min(start + v, total);
   const windowYears = years.slice(start, end);
 
-  const canPrev = idx < total - 1;
-  const canNext = idx > 0;
-  const prevYear = canPrev ? years[idx + 1] : undefined;
-  const nextYear = canNext ? years[idx - 1] : undefined;
+  const canPrev = idx > 0;
+  const canNext = idx < total - 1;
+  const prevYear = canPrev ? years[idx - 1] : undefined;
+  const nextYear = canNext ? years[idx + 1] : undefined;
 
   const hrefFor = (year: string) => ({ query: { year } });
 
