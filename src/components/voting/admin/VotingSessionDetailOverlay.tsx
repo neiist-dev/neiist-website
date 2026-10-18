@@ -107,7 +107,7 @@ export default function VotingSessionDetailOverlay({
     }
   };
 
-  const totalVotes = results.reduce((acc, result) => acc + result.voteCount, 0);
+  const totalVoters = session.totalVotes;
   const topResults = results.slice(0, 3);
 
   return (
@@ -162,7 +162,7 @@ export default function VotingSessionDetailOverlay({
           ) : (
             <div className={styles.candidateList}>
               {topResults.map((result) => {
-                const percentage = totalVotes > 0 ? (result.voteCount / totalVotes) * 100 : 0;
+                const percentage = totalVoters > 0 ? (result.voteCount / totalVoters) * 100 : 0;
                 return (
                   <div key={result.nomineeId} className={styles.candidate}>
                     <div className={styles.candidateInfo}>

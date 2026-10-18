@@ -1518,7 +1518,7 @@
       "title": "Title",
       "type": "Type",
       "period": "Period",
-      "voters": "Votes",
+      "voters": "Voters",
       "status": "Status",
       "empty": "No voting sessions found."
     },
