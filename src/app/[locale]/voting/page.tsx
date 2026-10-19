@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import VotingClient from "@/components/voting/VotingClient";
-import { getGlobalVotingState, getUserVote } from "@/lib/db/repositories/voting.repository";
+import { getGlobalVotingState, getUserVotes } from "@/lib/db/repositories/voting.repository";
 import { requireUser } from "@/lib/auth";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
@@ -23,13 +23,15 @@ async function VotingContent({ params, searchParams }: PageProps) {
   const dict = getDictionary(locale).voting;
   const showLastResult = searchParamsObj.view === "lastresult";
 
-  const initialUserVotes: Record<number, string | null> = {};
+  const initialUserVotes: Record<number, string[]> = {};
   if (initialGlobalState.activeSessions.length > 0) {
     const votes = await Promise.all(
-      initialGlobalState.activeSessions.map((session) => getUserVote(session.sessionId, user.istid))
+      initialGlobalState.activeSessions.map((session) =>
+        getUserVotes(session.sessionId, user.istid)
+      )
     );
     initialGlobalState.activeSessions.forEach((session, idx) => {
-      initialUserVotes[session.sessionId] = votes[idx];
+      initialUserVotes[session.sessionId] = votes[idx] ?? [];
     });
   }
 

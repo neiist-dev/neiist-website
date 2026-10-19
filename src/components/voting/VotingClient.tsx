@@ -10,7 +10,7 @@ import {
   VotingSyncPayload,
   VOTING_SYNC_EVENT_TYPES,
 } from "@/types/voting";
-import { submitVoteAction } from "@/lib/votingSystem";
+import { submitVotesAction } from "@/lib/votingSystem";
 import VotingGrid from "@/components/voting/VotingGrid";
 import WinnerCard from "@/components/voting/WinnerCard";
 import ColorfulText from "@/components/ColorfulText";
@@ -22,10 +22,12 @@ import type { Dictionary } from "@/i18n/dictionaries";
 
 interface VotingClientProps {
   initialGlobalState: GlobalVotingState;
-  initialUserVotes: Record<number, string | null>;
+  initialUserVotes: Record<number, string[]>;
   showLastResult: boolean;
   dict: Dictionary["voting"];
 }
+
+const EMPTY_VOTES: string[] = [];
 
 const ConnectingView = ({
   status,
@@ -187,7 +189,7 @@ export default function VotingClient({
   dict,
 }: VotingClientProps) {
   const [globalState, setGlobalState] = useState<GlobalVotingState>(initialGlobalState);
-  const [userVotes, setUserVotes] = useState<Record<number, string | null>>(initialUserVotes);
+  const [userVotes, setUserVotes] = useState<Record<number, string[]>>(initialUserVotes);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
   const [reviewMode, setReviewMode] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">(
@@ -195,7 +197,6 @@ export default function VotingClient({
   );
   const [voteFlowState, setVoteFlowState] = useState<{
     status: "processing" | "success";
-    nomineeName?: string;
   } | null>(null);
 
   const voteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -231,30 +232,29 @@ export default function VotingClient({
   }, []);
 
   const activeVotingSessions = globalState.activeSessions || [];
-  const unvotedSessions = activeVotingSessions.filter((s) => !userVotes[s.sessionId]);
+  const unvotedSessions = activeVotingSessions.filter(
+    (session) => !userVotes[session.sessionId] || userVotes[session.sessionId].length === 0
+  );
   const finishedSessions = globalState.finishedSessions || [];
 
   const displaySessions = reviewMode ? activeVotingSessions : unvotedSessions;
   const safeSessionIndex = Math.min(selectedSessionIndex, Math.max(0, displaySessions.length - 1));
 
-  const handleVote = async (sessionId: number, nomineeId: string) => {
-    const session = activeVotingSessions.find((s) => s.sessionId === sessionId);
-    const nominee = session?.nominees.find((n) => n.id === nomineeId);
-
-    setVoteFlowState({ status: "processing", nomineeName: nominee?.name });
+  const handleVote = async (sessionId: number, nomineeIds: string[]) => {
+    setVoteFlowState({ status: "processing" });
 
     try {
       const formData = new FormData();
       formData.append("sessionId", sessionId.toString());
-      formData.append("nomineeId", nomineeId);
-      await submitVoteAction(formData);
+      nomineeIds.forEach((id) => formData.append("nomineeIds", id));
+      await submitVotesAction(formData);
 
-      setVoteFlowState({ status: "success", nomineeName: nominee?.name });
+      setVoteFlowState({ status: "success" });
 
       if (voteTimeoutRef.current) clearTimeout(voteTimeoutRef.current);
       voteTimeoutRef.current = setTimeout(() => {
         voteTimeoutRef.current = null;
-        setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
+        setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeIds }));
         setVoteFlowState(null);
         setReviewMode(false);
       }, 800);
@@ -285,7 +285,6 @@ export default function VotingClient({
           <PaymentProcessingSpinner
             flowState={voteFlowState.status}
             title={voteFlowState.status === "success" ? dict.vote_success : dict.submitting_vote}
-            subtitle={voteFlowState.nomineeName}
             size={voteFlowState.status === "success" ? 56 : 48}
           />
         </div>
@@ -335,9 +334,10 @@ export default function VotingClient({
           sessionName={currentSession.sessionName}
           sessionDescription={currentSession.sessionDescription}
           sessionType={currentSession.sessionType}
+          maxChoices={currentSession.maxChoices ?? 1}
           nominees={currentSession.nominees}
-          selectedNomineeId={userVotes[currentSession.sessionId]}
-          onVote={(nomineeId) => handleVote(currentSession.sessionId, nomineeId)}
+          selectedNomineeIds={userVotes[currentSession.sessionId] ?? EMPTY_VOTES}
+          onVote={(nomineeIds) => handleVote(currentSession.sessionId, nomineeIds)}
           dict={dict}
         />
       )}

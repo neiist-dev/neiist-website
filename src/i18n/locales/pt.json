@@ -1495,7 +1495,16 @@
     "session_default_name": "Sessão {number}",
     "view_details": "Ver detalhes",
     "close": "Fechar",
-    "rank_format": "{rank}º"
+    "rank_format": "{rank}º",
+    "choices_selected": "{selected} de {max} escolhas selecionadas",
+    "choices_selected_short": "{selected} / {max} selecionadas",
+    "choices_count": "{selected} de {max} escolhas",
+    "submit": "Submeter",
+    "submit_vote": "Submeter Voto",
+    "select_choice": "Selecionar",
+    "remove_choice": "Remover seleção",
+    "max_choices_reached": "Limite de {max} escolhas atingido",
+    "ballot_progress": "Boletim de Voto"
   },
 
   "voting_management": {
@@ -1518,9 +1527,14 @@
       "title": "Título",
       "type": "Tipo",
       "period": "Período",
-      "voters": "Votantes",
+      "voters": "Votos",
       "status": "Estado",
-      "empty": "Nenhuma sessão encontrada."
+      "empty": "Nenhuma sessão encontrada.",
+      "actions": "Ações",
+      "view_full_details": "Ver detalhes completos",
+      "view_summary": "Ver resumo rápido",
+      "export_excel": "Exportar para Excel",
+      "max_choices": "Escolhas"
     },
     "types": {
       "activity": "Atividade",
@@ -1565,7 +1579,20 @@
       "finish_error": "Erro ao fechar votação.",
       "publish_success": "Resultados publicados com sucesso.",
       "hide_success": "Resultados ocultados com sucesso.",
-      "toggle_publish_error": "Erro ao alterar visibilidade dos resultados."
+      "toggle_publish_error": "Erro ao alterar visibilidade dos resultados.",
+      "max_choices": "Escolhas por votante",
+      "distinct_voters": "Votantes distintos",
+      "total_choices_cast": "Total de escolhas registadas",
+      "total_options": "Total de opções",
+      "view_full_details": "Ver mais detalhes",
+      "export_excel": "Exportar para Excel",
+      "rank": "Posição",
+      "option_name": "Opção / Candidato",
+      "percentage": "Percentagem",
+      "average_choices": "Média de escolhas por votante",
+      "summary_metrics": "Métricas Gerais",
+      "results_table": "Resultados Detalhados",
+      "back_to_manage": "Voltar à gestão"
     },
     "form": {
       "back": "Voltar",
@@ -1576,6 +1603,10 @@
       "title_placeholder": "Ex: Eleições NEIIST",
       "desc_label": "Descrição",
       "desc_placeholder": "Descrição opcional...",
+      "max_choices_label": "Escolhas por votante",
+      "max_choices_placeholder": "1",
+      "max_choices_hint": "Número máximo de opções que cada votante pode escolher (entre 1 e 5).",
+      "max_choices_error": "O número de escolhas deve ser entre 1 e 5.",
       "voting_type": "Tipo de Votação",
       "select_activity": "Selecionar Atividade",
       "candidates": "Candidatos",

@@ -1,15 +1,26 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   VotingSession,
   VotingType,
   VotingStatus,
   VOTING_TYPES,
   VOTING_STATUS,
+  formatVotingDateRange,
 } from "@/types/voting";
-import { DataTable, ColumnDef, Badge } from "@neiist/ui";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { DataTable, ColumnDef, Badge, Button, DropdownMenu } from "@neiist/ui";
+import {
+  FiEye,
+  FiEyeOff,
+  FiMoreVertical,
+  FiExternalLink,
+  FiDownload,
+  FiPlay,
+  FiTrash2,
+} from "react-icons/fi";
+import { useVotingActions } from "@/hooks/useVotingActions";
 import styles from "@/styles/components/voting/admin/VotingSessionsTable.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -37,20 +48,6 @@ const TYPE_BADGE: Record<VotingType, "secondary" | "outline" | "tertiary"> = {
   [VOTING_TYPES.CUSTOM]: "tertiary",
 };
 
-const STATUS_BADGE: Record<VotingStatus, "primary" | "outline" | "danger"> = {
-  [VOTING_STATUS.VOTING]: "primary",
-  [VOTING_STATUS.IDLE]: "outline",
-  [VOTING_STATUS.FINISHED]: "danger",
-};
-
-function formatDateRange(start?: string | Date, end?: string | Date, locale = "pt") {
-  if (!start && !end) return "—";
-  const dateLocale = locale === "en" ? "en-GB" : "pt-PT";
-  const startDate = start ? new Date(start).toLocaleDateString(dateLocale) : "...";
-  const endDate = end ? new Date(end).toLocaleDateString(dateLocale) : "...";
-  return `${startDate} → ${endDate}`;
-}
-
 export default function VotingSessionsTable({
   sessions,
   onRowClick,
@@ -64,6 +61,9 @@ export default function VotingSessionsTable({
   dict,
   locale = "pt",
 }: VotingSessionsTableProps) {
+  const router = useRouter();
+  const { confirm, togglePublish, exportExcel, dialog } = useVotingActions(dict);
+
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
       const matchesType = filters.type.length === 0 || filters.type.includes(session.type);
@@ -120,7 +120,7 @@ export default function VotingSessionsTable({
         },
         cell: (session) => (
           <span className={styles.period}>
-            {formatDateRange(session.startAt, session.endAt, locale)}
+            {formatVotingDateRange(session.startAt, session.endAt, locale)}
           </span>
         ),
       },
@@ -141,7 +141,16 @@ export default function VotingSessionsTable({
         },
         cell: (session) => (
           <div className={styles.statusCell}>
-            <Badge variant={STATUS_BADGE[session.status]}>{dict.statuses[session.status]}</Badge>
+            <Badge
+              variant={
+                session.status === VOTING_STATUS.VOTING
+                  ? "primary"
+                  : session.status === VOTING_STATUS.FINISHED
+                    ? "danger"
+                    : "outline"
+              }>
+              {dict.statuses[session.status]}
+            </Badge>
             {session.status === VOTING_STATUS.FINISHED && (
               <span
                 title={
@@ -156,6 +165,74 @@ export default function VotingSessionsTable({
           </div>
         ),
       },
+      {
+        id: "actions",
+        header: "",
+        width: 48,
+        cell: (session) => (
+          <DropdownMenu align="end">
+            <DropdownMenu.Trigger>
+              <Button
+                type="button"
+                variant="ghost"
+                color="neutral"
+                size="icon"
+                aria-label={dict.table.actions}
+                onClick={(e) => e.stopPropagation()}>
+                <FiMoreVertical size={16} />
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end" mobileTitle={dict.table.actions}>
+              <DropdownMenu.Item
+                icon={<FiExternalLink size={15} />}
+                onClick={() => {
+                  window.location.href = `/${locale}/voting/manage/${session.id}`;
+                }}>
+                {dict.table.view_full_details}
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                icon={<FiDownload size={15} />}
+                onClick={() => exportExcel(session.id)}>
+                {dict.table.export_excel}
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Divider />
+
+              {session.status === VOTING_STATUS.IDLE && (
+                <DropdownMenu.Item
+                  icon={<FiPlay size={15} />}
+                  onClick={() => confirm("start", session)}>
+                  {dict.details.start_action}
+                </DropdownMenu.Item>
+              )}
+
+              {session.status === VOTING_STATUS.VOTING && (
+                <DropdownMenu.Item onClick={() => confirm("finish", session)}>
+                  {dict.details.finish_action}
+                </DropdownMenu.Item>
+              )}
+
+              {session.status === VOTING_STATUS.FINISHED && (
+                <DropdownMenu.Item
+                  icon={session.showResults ? <FiEyeOff size={15} /> : <FiEye size={15} />}
+                  onClick={() => togglePublish(session)}>
+                  {session.showResults ? dict.details.hide_results : dict.details.publish_results}
+                </DropdownMenu.Item>
+              )}
+
+              <DropdownMenu.Divider />
+
+              <DropdownMenu.Item
+                icon={<FiTrash2 size={15} />}
+                destructive
+                onClick={() => confirm("delete", session)}>
+                {dict.details.delete_action}
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu>
+        ),
+      },
     ],
     [
       dict,
@@ -166,17 +243,24 @@ export default function VotingSessionsTable({
       typeFilterRef,
       dateFilterRef,
       statusFilterRef,
+      confirm,
+      exportExcel,
+      router,
+      togglePublish,
     ]
   );
 
   return (
-    <DataTable
-      data={filteredSessions}
-      columns={columns}
-      getRowId={(session) => String(session.id)}
-      onRowClick={onRowClick}
-      emptyMessage={dict.table.empty}
-      responsive="cards"
-    />
+    <>
+      <DataTable
+        data={filteredSessions}
+        columns={columns}
+        getRowId={(session) => String(session.id)}
+        onRowClick={onRowClick}
+        emptyMessage={dict.table.empty}
+        responsive="cards"
+      />
+      {dialog}
+    </>
   );
 }

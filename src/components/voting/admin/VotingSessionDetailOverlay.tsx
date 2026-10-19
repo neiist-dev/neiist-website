@@ -1,17 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { VotingSession, SessionResult, VOTING_STATUS, VotingStatus } from "@/types/voting";
-import {
-  startVotingAction,
-  finishVotingAction,
-  deleteVotingSessionAction,
-  togglePublishResultsAction,
-} from "@/lib/votingSystem";
-import { Modal, Badge, Button, ConfirmDialog, Text, Alert } from "@neiist/ui";
-import { FiTrash2, FiEye, FiEyeOff } from "react-icons/fi";
+import { VotingSession, SessionResult, VOTING_STATUS } from "@/types/voting";
+import { Modal, Badge, Button, Text } from "@neiist/ui";
+import { FiExternalLink, FiPlay, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import ReactMarkdown from "react-markdown";
+import { useVotingActions } from "@/hooks/useVotingActions";
 import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -21,12 +16,6 @@ interface VotingSessionDetailOverlayProps {
   dict: Dictionary["voting_management"];
   locale?: string;
 }
-
-const STATUS_BADGE: Record<VotingStatus, "primary" | "outline" | "danger"> = {
-  [VOTING_STATUS.VOTING]: "primary",
-  [VOTING_STATUS.IDLE]: "outline",
-  [VOTING_STATUS.FINISHED]: "danger",
-};
 
 function formatDate(date?: Date | string, locale = "pt") {
   return date ? new Date(date).toLocaleString(locale === "en" ? "en-GB" : "pt-PT") : "—";
@@ -40,9 +29,6 @@ export default function VotingSessionDetailOverlay({
 }: VotingSessionDetailOverlayProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [pendingAction, setPendingAction] = useState<"start" | "finish" | "delete" | null>(null);
-  const [isResultsPublic, setIsResultsPublic] = useState(Boolean(session.showResults));
-  const [isTogglingPublish, setIsTogglingPublish] = useState(false);
 
   const handleClose = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -50,62 +36,11 @@ export default function VotingSessionDetailOverlay({
     router.push(`?${params.toString()}`);
   }, [router, searchParams]);
 
-  const handleDelete = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("sessionId", String(session.id));
-      await deleteVotingSessionAction(formData);
-      Alert.success(dict.details.delete_success);
-      handleClose();
-    } catch (err) {
-      console.error("Failed to delete voting session:", err);
-      Alert.error(err instanceof Error ? err.message : dict.details.delete_error);
-    }
+  const handleNavigateToDetails = () => {
+    window.location.href = `/${locale}/voting/manage/${session.id}`;
   };
 
-  const handleStartVoting = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("sessionId", String(session.id));
-      await startVotingAction(formData);
-      Alert.success(dict.details.start_success);
-      handleClose();
-    } catch (err) {
-      console.error("Failed to start voting session:", err);
-      Alert.error(err instanceof Error ? err.message : dict.details.start_error);
-    }
-  };
-
-  const handleFinishVoting = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("sessionId", String(session.id));
-      await finishVotingAction(formData);
-      Alert.success(dict.details.finish_success);
-      handleClose();
-    } catch (err) {
-      console.error("Failed to finish voting session:", err);
-      Alert.error(err instanceof Error ? err.message : dict.details.finish_error);
-    }
-  };
-
-  const handleTogglePublish = async () => {
-    setIsTogglingPublish(true);
-    try {
-      const nextState = !isResultsPublic;
-      const formData = new FormData();
-      formData.append("sessionId", String(session.id));
-      formData.append("showResults", String(nextState));
-      await togglePublishResultsAction(formData);
-      setIsResultsPublic(nextState);
-      Alert.success(nextState ? dict.details.publish_success : dict.details.hide_success);
-    } catch (err) {
-      console.error("Failed to toggle publish status:", err);
-      Alert.error(err instanceof Error ? err.message : dict.details.toggle_publish_error);
-    } finally {
-      setIsTogglingPublish(false);
-    }
-  };
+  const { confirm, togglePublish, dialog } = useVotingActions(dict, { onDeleted: handleClose });
 
   const totalVoters = session.totalVotes;
   const topResults = results.slice(0, 3);
@@ -118,7 +53,16 @@ export default function VotingSessionDetailOverlay({
         size="md"
         title={session.name}
         badge={
-          <Badge variant={STATUS_BADGE[session.status]}>{dict.statuses[session.status]}</Badge>
+          <Badge
+            variant={
+              session.status === VOTING_STATUS.VOTING
+                ? "primary"
+                : session.status === VOTING_STATUS.FINISHED
+                  ? "danger"
+                  : "outline"
+            }>
+            {dict.statuses[session.status]}
+          </Badge>
         }>
         {session.description && (
           <div className={styles.description}>
@@ -131,20 +75,18 @@ export default function VotingSessionDetailOverlay({
           </div>
         )}
 
-        <div className={styles.infoGrid}>
-          <div className={styles.infoItem}>
-            <Text size="sm" variant="muted">
-              {dict.details.start}
-            </Text>
-            <Text size="md">{formatDate(session.startAt, locale)}</Text>
+        {(session.startAt || session.endAt) && (
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>{dict.details.start}</span>
+              <span className={styles.infoValue}>{formatDate(session.startAt, locale)}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>{dict.details.end}</span>
+              <span className={styles.infoValue}>{formatDate(session.endAt, locale)}</span>
+            </div>
           </div>
-          <div className={styles.infoItem}>
-            <Text size="sm" variant="muted">
-              {dict.details.end}
-            </Text>
-            <Text size="md">{formatDate(session.endAt, locale)}</Text>
-          </div>
-        </div>
+        )}
 
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
@@ -153,6 +95,15 @@ export default function VotingSessionDetailOverlay({
               {session.status === VOTING_STATUS.VOTING ? ` — ${dict.details.live}` : ""}{" "}
               {results.length > 3 && dict.details.top_3}
             </Text>
+            <Button
+              type="button"
+              variant="ghost"
+              color="primary"
+              size="sm"
+              onClick={handleNavigateToDetails}>
+              <FiExternalLink size={14} />
+              {dict.details.view_full_details}
+            </Button>
           </div>
 
           {results.length === 0 ? (
@@ -188,74 +139,32 @@ export default function VotingSessionDetailOverlay({
 
         <div className={styles.actionButtons}>
           {session.status === VOTING_STATUS.IDLE && (
-            <Button type="button" variant="primary" onClick={() => setPendingAction("start")}>
+            <Button type="button" variant="primary" onClick={() => confirm("start", session)}>
+              <FiPlay size={16} />
               {dict.details.start_action}
             </Button>
           )}
 
           {session.status === VOTING_STATUS.VOTING && (
-            <Button type="button" variant="outline" onClick={() => setPendingAction("finish")}>
+            <Button type="button" variant="outline" onClick={() => confirm("finish", session)}>
               {dict.details.finish_action}
             </Button>
           )}
 
           {session.status === VOTING_STATUS.FINISHED && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleTogglePublish}
-              loading={isTogglingPublish}>
-              {isResultsPublic ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-              {isResultsPublic ? dict.details.hide_results : dict.details.publish_results}
+            <Button type="button" variant="outline" onClick={() => togglePublish(session)}>
+              {session.showResults ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              {session.showResults ? dict.details.hide_results : dict.details.publish_results}
             </Button>
           )}
 
-          <Button type="button" variant="danger" onClick={() => setPendingAction("delete")}>
+          <Button type="button" variant="danger" onClick={() => confirm("delete", session)}>
             <FiTrash2 size={16} />
             {dict.details.delete_action}
           </Button>
         </div>
       </Modal>
-
-      <ConfirmDialog
-        open={pendingAction === "start"}
-        title={dict.details.start_action}
-        message={dict.details.confirm_start}
-        confirmLabel={dict.details.confirm_yes}
-        cancelLabel={dict.details.confirm_cancel}
-        onConfirm={async () => {
-          setPendingAction(null);
-          await handleStartVoting();
-        }}
-        onCancel={() => setPendingAction(null)}
-      />
-
-      <ConfirmDialog
-        open={pendingAction === "finish"}
-        title={dict.details.finish_action}
-        message={dict.details.confirm_finish}
-        confirmLabel={dict.details.confirm_yes}
-        cancelLabel={dict.details.confirm_cancel}
-        onConfirm={async () => {
-          setPendingAction(null);
-          await handleFinishVoting();
-        }}
-        onCancel={() => setPendingAction(null)}
-      />
-
-      <ConfirmDialog
-        open={pendingAction === "delete"}
-        title={dict.details.delete_action}
-        message={dict.details.confirm_delete}
-        confirmLabel={dict.details.confirm_yes}
-        cancelLabel={dict.details.confirm_cancel}
-        isDestructive={true}
-        onConfirm={async () => {
-          setPendingAction(null);
-          await handleDelete();
-        }}
-        onCancel={() => setPendingAction(null)}
-      />
+      {dialog}
     </>
   );
 }

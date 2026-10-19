@@ -1,9 +1,9 @@
 .activeSessions {
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2rem 1.5rem 5rem;
   box-sizing: border-box;
-  min-height: 85vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -223,15 +223,15 @@
   border-radius: 0.6rem;
   font-size: 0.95rem;
   padding: 0.6rem 1.2rem;
-  background: #f3f4f6;
-  color: #555d6d;
+  background: var(--background-colour-hover);
+  color: var(--foreground-colour);
   transition:
     background 0.2s ease,
     transform 0.2s ease;
 }
 
 .backButton:hover {
-  background: #e5e7eb;
+  background: color-mix(in srgb, var(--foreground-colour) 8%, var(--background-colour-hover));
 }
 
 @media (max-width: 768px) {

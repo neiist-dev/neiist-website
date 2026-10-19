@@ -24,10 +24,12 @@ export const addVotingSession = async (
       ? customOpts.map(mapCustomOptionToDb)
       : (input.nomineeIds ?? []);
 
+  const maxChoices = input.maxChoices ?? 1;
+
   const {
     rows: [row],
   } = await db_query<DbVotingSession>(
-    `SELECT * FROM neiist.create_voting_session($1, $2, $3, $4::JSONB, $5, $6, $7)`,
+    `SELECT * FROM neiist.create_voting_session($1, $2, $3, $4::JSONB, $5, $6, $7, $8)`,
     [
       input.name,
       input.description ?? null,
@@ -36,6 +38,7 @@ export const addVotingSession = async (
       input.activityId ?? null,
       input.startAt ?? null,
       input.endAt ?? null,
+      maxChoices,
     ]
   );
   return row ? mapDbVotingSession(row) : null;
@@ -70,12 +73,16 @@ export const startVoting = async (sessionId: number): Promise<void> => {
   await db_query(`SELECT neiist.start_voting($1)`, [sessionId]);
 };
 
-export const submitVote = async (
+export const submitVotes = async (
   sessionId: number,
   voterIstid: string,
-  nomineeId: string
+  nomineeIds: string[]
 ): Promise<void> => {
-  await db_query(`SELECT neiist.submit_vote($1, $2, $3)`, [sessionId, voterIstid, nomineeId]);
+  await db_query(`SELECT neiist.submit_votes($1, $2, $3::TEXT[])`, [
+    sessionId,
+    voterIstid,
+    nomineeIds,
+  ]);
 };
 
 export const finishVoting = async (sessionId: number): Promise<void> => {
@@ -93,17 +100,31 @@ export const getSessionResults = async (sessionId: number): Promise<SessionResul
   return rows.map(mapDbSessionResult);
 };
 
-export const getUserVote = async (
-  sessionId: number,
-  voterIstid: string
-): Promise<string | null> => {
-  const {
-    rows: [row],
-  } = await db_query<{ nominee_id: string }>(`SELECT * FROM neiist.get_user_vote($1, $2)`, [
-    sessionId,
-    voterIstid,
-  ]);
-  return row?.nominee_id ?? null;
+export const getUserVotes = async (sessionId: number, voterIstid: string): Promise<string[]> => {
+  const { rows } = await db_query<{ nominee_id: string }>(
+    `SELECT * FROM neiist.get_user_votes($1, $2)`,
+    [sessionId, voterIstid]
+  );
+  return rows.map((r) => r.nominee_id);
+};
+
+export interface SessionVoteLog {
+  votedAt: Date;
+  nomineeId: string;
+  nomineeName: string;
+}
+
+export const getSessionVotesLog = async (sessionId: number): Promise<SessionVoteLog[]> => {
+  const { rows } = await db_query<{
+    voted_at: string;
+    nominee_id: string;
+    nominee_name: string;
+  }>(`SELECT * FROM neiist.get_session_votes_log($1)`, [sessionId]);
+  return rows.map((r) => ({
+    votedAt: new Date(r.voted_at),
+    nomineeId: r.nominee_id,
+    nomineeName: r.nominee_name,
+  }));
 };
 
 export const setSessionShowResults = async (
@@ -134,6 +155,7 @@ const fetchGlobalVotingState = async (): Promise<GlobalVotingState> => {
           sessionName: session.name,
           sessionDescription: session.description ?? undefined,
           sessionType: session.type,
+          maxChoices: session.maxChoices ?? 1,
           nominees,
         };
       })
@@ -154,6 +176,7 @@ const fetchGlobalVotingState = async (): Promise<GlobalVotingState> => {
           name: s.name,
           description: s.description ?? undefined,
           type: s.type,
+          maxChoices: s.maxChoices ?? 1,
           results: results.slice(0, 3),
         };
       })

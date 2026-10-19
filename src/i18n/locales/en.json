@@ -1495,7 +1495,16 @@
     "session_default_name": "Session {number}",
     "view_details": "View details",
     "close": "Close",
-    "rank_format": "#{rank}"
+    "rank_format": "#{rank}",
+    "choices_selected": "{selected} of {max} choices selected",
+    "choices_selected_short": "{selected} / {max} selected",
+    "choices_count": "{selected} of {max} choices",
+    "submit": "Submit",
+    "submit_vote": "Submit Vote",
+    "select_choice": "Select",
+    "remove_choice": "Remove selection",
+    "max_choices_reached": "Maximum of {max} choices reached",
+    "ballot_progress": "Ballot"
   },
 
   "voting_management": {
@@ -1518,9 +1527,14 @@
       "title": "Title",
       "type": "Type",
       "period": "Period",
-      "voters": "Voters",
+      "voters": "Votes",
       "status": "Status",
-      "empty": "No voting sessions found."
+      "empty": "No voting sessions found.",
+      "actions": "Actions",
+      "view_full_details": "View full details",
+      "view_summary": "View quick summary",
+      "export_excel": "Export to Excel",
+      "max_choices": "Choices"
     },
     "types": {
       "activity": "Activity",
@@ -1565,7 +1579,20 @@
       "finish_error": "Failed to close voting session.",
       "publish_success": "Results published successfully.",
       "hide_success": "Results hidden successfully.",
-      "toggle_publish_error": "Failed to toggle results visibility."
+      "toggle_publish_error": "Failed to toggle results visibility.",
+      "max_choices": "Choices per voter",
+      "distinct_voters": "Distinct voters",
+      "total_choices_cast": "Total choices cast",
+      "total_options": "Total options",
+      "view_full_details": "View more details",
+      "export_excel": "Export to Excel",
+      "rank": "Rank",
+      "option_name": "Option / Nominee",
+      "percentage": "Percentage",
+      "average_choices": "Average choices per voter",
+      "summary_metrics": "Summary Metrics",
+      "results_table": "Detailed Results",
+      "back_to_manage": "Back to management"
     },
     "form": {
       "back": "Back",
@@ -1576,6 +1603,10 @@
       "title_placeholder": "E.g.: NEIIST Elections",
       "desc_label": "Description",
       "desc_placeholder": "Optional description...",
+      "max_choices_label": "Choices per voter",
+      "max_choices_placeholder": "1",
+      "max_choices_hint": "Maximum number of choices each voter can select (1 to 5).",
+      "max_choices_error": "The number of choices must be between 1 and 5.",
       "voting_type": "Voting Type",
       "select_activity": "Select Activity",
       "candidates": "Candidates",

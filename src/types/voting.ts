@@ -18,6 +18,18 @@ export function isUserVotingType(type?: VotingType | string | null): boolean {
   return type === VOTING_TYPES.USERS || type === VOTING_TYPES.ACTIVITY;
 }
 
+export function formatVotingDateRange(
+  start?: string | Date | null,
+  end?: string | Date | null,
+  locale = "pt"
+) {
+  if (!start && !end) return "—";
+  const dateLocale = locale === "en" ? "en-GB" : "pt-PT";
+  const startDate = start ? new Date(start).toLocaleDateString(dateLocale) : "...";
+  const endDate = end ? new Date(end).toLocaleDateString(dateLocale) : "...";
+  return `${startDate} → ${endDate}`;
+}
+
 export interface DbVotingSession {
   id: number;
   name: string;
@@ -31,6 +43,7 @@ export interface DbVotingSession {
   created_at: string;
   updated_at: string;
   show_results?: boolean;
+  max_choices?: number;
 }
 
 export interface DbVotingNominee {
@@ -89,6 +102,7 @@ export interface VotingSession {
   createdAt: Date | string;
   updatedAt: Date | string;
   showResults?: boolean;
+  maxChoices: number;
   nomineeIds?: string[];
   customOptions?: CustomOptionInput[];
 }
@@ -143,6 +157,7 @@ export function mapDbVotingSession(row: DbVotingSession): VotingSession {
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
     showResults: row.show_results ?? false,
+    maxChoices: row.max_choices ? Number(row.max_choices) : 1,
   };
 }
 
@@ -151,6 +166,7 @@ export interface ActiveVotingSession {
   sessionName: string;
   sessionDescription?: string;
   sessionType?: VotingType;
+  maxChoices?: number;
   nominees: VotingNominee[];
 }
 
@@ -159,6 +175,7 @@ export interface FinishedVotingSession {
   name: string;
   description?: string;
   type?: VotingType;
+  maxChoices?: number;
   results: SessionResult[];
 }
 

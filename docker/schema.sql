@@ -238,7 +238,8 @@ CREATE TABLE neiist.voting_sessions (
   end_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  show_results BOOLEAN NOT NULL DEFAULT false
+  show_results BOOLEAN NOT NULL DEFAULT false,
+  max_choices INTEGER NOT NULL DEFAULT 1 CHECK (max_choices BETWEEN 1 AND 5)
 );
 
 -- VOTING NOMINEES
@@ -265,7 +266,7 @@ CREATE TABLE neiist.votes (
   voter_istid VARCHAR(10) NOT NULL REFERENCES neiist.users(istid) ON DELETE CASCADE,
   nominee_id TEXT NOT NULL,
   voted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (session_id, voter_istid)
+  PRIMARY KEY (session_id, voter_istid, nominee_id)
 );
 
 -- VOTE RESULTS
@@ -3416,7 +3417,8 @@ SELECT
     s.created_at,
     s.updated_at,
     (SELECT COUNT(DISTINCT voter_istid) FROM neiist.votes WHERE session_id = s.id)::BIGINT AS total_votes,
-    s.show_results
+    s.show_results,
+    s.max_choices
 FROM neiist.voting_sessions s;
 
 -- GET VOTING SESSIONS
@@ -3433,7 +3435,8 @@ RETURNS TABLE (
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
   total_votes BIGINT,
-  show_results BOOLEAN
+  show_results BOOLEAN,
+  max_choices INTEGER
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -3449,7 +3452,8 @@ BEGIN
     v.created_at,
     v.updated_at,
     v.total_votes,
-    v.show_results
+    v.show_results,
+    v.max_choices
   FROM neiist.voting_sessions_with_total_votes v
   ORDER BY v.created_at DESC
   LIMIT p_limit;
@@ -3470,7 +3474,8 @@ RETURNS TABLE (
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
   total_votes BIGINT,
-  show_results BOOLEAN
+  show_results BOOLEAN,
+  max_choices INTEGER
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -3486,7 +3491,8 @@ BEGIN
     v.created_at,
     v.updated_at,
     v.total_votes,
-    v.show_results
+    v.show_results,
+    v.max_choices
   FROM neiist.voting_sessions_with_total_votes v
   WHERE v.id = p_session_id;
 END;
@@ -3500,7 +3506,8 @@ CREATE OR REPLACE FUNCTION neiist.create_voting_session(
   p_nominees JSONB,
   p_activity_id TEXT DEFAULT NULL,
   p_start_at TIMESTAMPTZ DEFAULT NULL,
-  p_end_at TIMESTAMPTZ DEFAULT NULL
+  p_end_at TIMESTAMPTZ DEFAULT NULL,
+  p_max_choices INTEGER DEFAULT 1
 ) RETURNS TABLE (
   id INTEGER,
   name TEXT,
@@ -3513,14 +3520,19 @@ CREATE OR REPLACE FUNCTION neiist.create_voting_session(
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
   total_votes BIGINT,
-  show_results BOOLEAN
+  show_results BOOLEAN,
+  max_choices INTEGER
 ) AS $$
 DECLARE
   v_session_id INTEGER;
   elem JSONB;
 BEGIN
-  INSERT INTO neiist.voting_sessions (name, description, type, activity_id, start_at, end_at)
-  VALUES (p_name, p_description, p_type, p_activity_id, p_start_at, p_end_at)
+  IF p_max_choices < 1 OR p_max_choices > 5 THEN
+    RAISE EXCEPTION 'max_choices must be between 1 and 5';
+  END IF;
+
+  INSERT INTO neiist.voting_sessions (name, description, type, activity_id, start_at, end_at, max_choices)
+  VALUES (p_name, p_description, p_type, p_activity_id, p_start_at, p_end_at, COALESCE(p_max_choices, 1))
   RETURNING neiist.voting_sessions.id INTO v_session_id;
 
   IF p_nominees IS NOT NULL AND jsonb_typeof(p_nominees) = 'array' THEN
@@ -3602,14 +3614,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- SUBMIT VOTE
-CREATE OR REPLACE FUNCTION neiist.submit_vote(
+-- SUBMIT VOTES
+CREATE OR REPLACE FUNCTION neiist.submit_votes(
   p_session_id INTEGER,
   p_voter_istid VARCHAR(10),
-  p_nominee_id TEXT
+  p_nominee_ids TEXT[]
 ) RETURNS VOID AS $$
 DECLARE
   v_session neiist.voting_sessions%ROWTYPE;
+  v_unique_nominees TEXT[];
+  v_nominee_count INTEGER;
+  v_valid_count INTEGER;
+  v_id TEXT;
 BEGIN
   SELECT * INTO v_session FROM neiist.voting_sessions WHERE id = p_session_id;
 
@@ -3625,17 +3641,37 @@ BEGIN
     RAISE EXCEPTION 'A votação já terminou';
   END IF;
 
-  -- Check if nominee is valid for this session
-  IF NOT EXISTS (SELECT 1 FROM neiist.voting_nominees WHERE session_id = p_session_id AND nominee_id = p_nominee_id) THEN
-    RAISE EXCEPTION 'Invalid nominee for this session';
+  IF p_nominee_ids IS NULL OR array_length(p_nominee_ids, 1) IS NULL OR array_length(p_nominee_ids, 1) = 0 THEN
+    RAISE EXCEPTION 'No nominees selected';
   END IF;
 
-  -- Insert or update vote
-  INSERT INTO neiist.votes (session_id, voter_istid, nominee_id)
-  VALUES (p_session_id, p_voter_istid, p_nominee_id)
-  ON CONFLICT (session_id, voter_istid) DO UPDATE
-  SET nominee_id = EXCLUDED.nominee_id,
-      voted_at = NOW();
+  -- Deduplicate nominee IDs
+  SELECT ARRAY(SELECT DISTINCT unnest(p_nominee_ids)) INTO v_unique_nominees;
+  v_nominee_count := array_length(v_unique_nominees, 1);
+
+  IF v_nominee_count > v_session.max_choices THEN
+    RAISE EXCEPTION 'Cannot select more than % options (selected %)', v_session.max_choices, v_nominee_count;
+  END IF;
+
+  -- Validate each nominee exists for this session
+  SELECT COUNT(*) INTO v_valid_count
+  FROM neiist.voting_nominees
+  WHERE session_id = p_session_id AND nominee_id = ANY(v_unique_nominees);
+
+  IF v_valid_count <> v_nominee_count THEN
+    RAISE EXCEPTION 'One or more selected nominees are invalid for this session';
+  END IF;
+
+  -- Atomically replace prior votes for this voter in this session
+  DELETE FROM neiist.votes
+  WHERE session_id = p_session_id AND voter_istid = p_voter_istid;
+
+  -- Insert new votes
+  FOREACH v_id IN ARRAY v_unique_nominees
+  LOOP
+    INSERT INTO neiist.votes (session_id, voter_istid, nominee_id, voted_at)
+    VALUES (p_session_id, p_voter_istid, v_id, NOW());
+  END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -3708,14 +3744,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- GET USER VOTE
-CREATE OR REPLACE FUNCTION neiist.get_user_vote(p_session_id INTEGER, p_voter_istid VARCHAR(10))
+-- GET USER VOTES
+CREATE OR REPLACE FUNCTION neiist.get_user_votes(p_session_id INTEGER, p_voter_istid VARCHAR(10))
 RETURNS TABLE (nominee_id TEXT) AS $$
 BEGIN
   RETURN QUERY
   SELECT v.nominee_id
   FROM neiist.votes v
   WHERE v.session_id = p_session_id AND v.voter_istid = p_voter_istid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- GET SESSION VOTES LOG
+CREATE OR REPLACE FUNCTION neiist.get_session_votes_log(p_session_id INTEGER)
+RETURNS TABLE (
+  voted_at TIMESTAMPTZ,
+  nominee_id TEXT,
+  nominee_name TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.voted_at,
+    v.nominee_id,
+    COALESCE(co.name, u.name, v.nominee_id) AS nominee_name
+  FROM neiist.votes v
+  LEFT JOIN neiist.voting_custom_options co ON co.session_id = v.session_id AND co.id = v.nominee_id
+  LEFT JOIN neiist.users u ON u.istid = v.nominee_id
+  WHERE v.session_id = p_session_id
+  ORDER BY v.voted_at;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { createVotingSessionAction } from "@/lib/votingSystem";
 import {
   MultiSelect,
+  Select,
+  type SelectOption,
   Field,
   Input,
   Textarea,
@@ -53,6 +55,14 @@ const initialOptions = (): CustomOptionState[] => {
     { id: `opt_${now + 1}_2`, name: "", description: "" },
   ];
 };
+
+const MAX_CHOICES_OPTIONS: SelectOption[] = [
+  { label: "1", value: "1" },
+  { label: "2", value: "2" },
+  { label: "3", value: "3" },
+  { label: "4", value: "4" },
+  { label: "5", value: "5" },
+];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -121,6 +131,7 @@ export default function VotingSessionForm({
     type: VOTING_TYPES.ACTIVITY as VotingType,
     name: "",
     description: "",
+    maxChoices: 1,
     startDate: undefined as Date | undefined,
     startTime: "",
     endDate: undefined as Date | undefined,
@@ -137,6 +148,7 @@ export default function VotingSessionForm({
     type,
     name,
     description,
+    maxChoices,
     startDate,
     startTime,
     endDate,
@@ -331,7 +343,9 @@ export default function VotingSessionForm({
       customOptions.every((o) => o.name.trim().length > 0 && Boolean(o.file || o.previewUrl)));
   const isActivityValid = type !== VOTING_TYPES.ACTIVITY || Boolean(selectedActivityId);
   const isUsersValid = type !== VOTING_TYPES.USERS || selectedNominees.length > 0;
-  const isFormValid = name.trim().length > 0 && isActivityValid && isUsersValid && isCustomValid;
+  const isMaxChoicesValid = Number.isInteger(maxChoices) && maxChoices >= 1 && maxChoices <= 5;
+  const isFormValid =
+    name.trim().length > 0 && isMaxChoicesValid && isActivityValid && isUsersValid && isCustomValid;
 
   const typeTabs: TabItem[] = useMemo(
     () => [
@@ -521,6 +535,7 @@ export default function VotingSessionForm({
       const formData = new FormData();
       formData.set("type", type);
       formData.set("name", name.trim());
+      formData.set("maxChoices", String(maxChoices || 1));
       if (description.trim()) formData.set("description", description.trim());
 
       if (startDate) formData.set("startAt", formatIsoDateTime(startDate, startTime));
@@ -622,6 +637,15 @@ export default function VotingSessionForm({
               onChange={(e) => set("description", e.target.value)}
               placeholder={dict.desc_placeholder}
               rows={3}
+            />
+          </Field>
+
+          <Field label={dict.max_choices_label} description={dict.max_choices_hint}>
+            <Select
+              options={MAX_CHOICES_OPTIONS}
+              value={String(maxChoices || 1)}
+              onChange={(val) => set("maxChoices", parseInt(val, 10) || 1)}
+              selectLabel={dict.max_choices_label}
             />
           </Field>
 

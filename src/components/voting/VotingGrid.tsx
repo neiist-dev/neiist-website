@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Modal, Button, Alert } from "@neiist/ui";
+import { Modal, Button, Alert, SearchInput } from "@neiist/ui";
 import { FaCheck } from "react-icons/fa";
 import { VotingNominee, VotingType, isUserVotingType } from "@/types/voting";
-import { submitVoteAction } from "@/lib/votingSystem";
+import { submitVotesAction } from "@/lib/votingSystem";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import Search from "@/components/search/Search";
 import CommandPalette from "@/components/search/CommandPalette";
 import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/voting/VotingGrid.module.css";
@@ -19,9 +18,11 @@ interface VotingGridProps {
   sessionName: string | null;
   sessionDescription?: string | null;
   sessionType?: VotingType;
+  maxChoices?: number;
   nominees: VotingNominee[];
   selectedNomineeId?: string | null;
-  onVote?: (_nomineeId: string) => Promise<void> | void;
+  selectedNomineeIds?: string[];
+  onVote?: (_nomineeIds: string[]) => Promise<void> | void;
   dict: Dictionary["voting"];
 }
 
@@ -32,14 +33,35 @@ export default function VotingGrid({
   sessionName,
   sessionDescription,
   sessionType,
+  maxChoices = 1,
   nominees,
   selectedNomineeId,
+  selectedNomineeIds,
   onVote,
   dict,
 }: VotingGridProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [modalNominee, setModalNominee] = useState<VotingNominee | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const max = Math.max(1, Math.min(5, maxChoices));
+
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    selectedNomineeIds && selectedNomineeIds.length > 0
+      ? selectedNomineeIds
+      : selectedNomineeId
+        ? [selectedNomineeId]
+        : []
+  );
+
+  useEffect(() => {
+    if (selectedNomineeIds) {
+      setSelectedIds(selectedNomineeIds);
+    } else if (selectedNomineeId) {
+      setSelectedIds([selectedNomineeId]);
+    }
+  }, [selectedNomineeIds, selectedNomineeId]);
 
   const isUserType = isUserVotingType(sessionType);
 
@@ -60,20 +82,52 @@ export default function VotingGrid({
   const visibleNominees = filteredNominees.slice(0, visibleCount);
   const hasMore = filteredNominees.length > visibleCount;
 
-  const handleCastVote = async (nomineeId: string) => {
+  const handleCastVote = async (nomineeIds: string[]) => {
+    if (isSubmitting || nomineeIds.length === 0) return;
+    setIsSubmitting(true);
     try {
       if (onVote) {
-        await onVote(nomineeId);
+        await onVote(nomineeIds);
       } else {
         const formData = new FormData();
         formData.set("sessionId", String(sessionId));
-        formData.set("nomineeId", nomineeId);
-        await submitVoteAction(formData);
+        nomineeIds.forEach((id) => formData.append("nomineeIds", id));
+        await submitVotesAction(formData);
       }
     } catch (err) {
       console.error("Failed to cast vote:", err);
       Alert.error(err instanceof Error ? err.message : dict.vote_error);
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleToggleNominee = async (nomineeId: string) => {
+    if (isSubmitting) return;
+
+    if (max === 1) {
+      await handleCastVote([nomineeId]);
+      return;
+    }
+
+    if (selectedIds.includes(nomineeId)) {
+      setSelectedIds((prev) => prev.filter((id) => id !== nomineeId));
+      return;
+    }
+
+    if (selectedIds.length >= max) {
+      Alert.info(dict.max_choices_reached.replace("{max}", String(max)));
+      return;
+    }
+
+    if (selectedIds.length + 1 === max) {
+      const next = [...selectedIds, nomineeId];
+      setSelectedIds(next);
+      await handleCastVote(next);
+      return;
+    }
+
+    setSelectedIds((prev) => [...prev, nomineeId]);
   };
 
   return (
@@ -90,7 +144,7 @@ export default function VotingGrid({
         ]}
         getItemKey={(n) => n.id}
         getItemLabel={(n) => (isUserType ? `${getFirstAndLastName(n.name)} (${n.id})` : n.name)}
-        onSelect={(n) => handleCastVote(n.id)}
+        onSelect={(n) => handleToggleNominee(n.id)}
       />
 
       <header className={styles.header}>
@@ -110,8 +164,7 @@ export default function VotingGrid({
 
       <div className={styles.toolbar}>
         <div className={styles.searchContainer}>
-          <Search
-            className={styles.searchInput}
+          <SearchInput
             placeholder={
               isUserType ? dict.search_nominee_placeholder : dict.search_options_placeholder
             }
@@ -120,8 +173,13 @@ export default function VotingGrid({
               setSearchQuery(val);
               setVisibleCount(PAGE_SIZE);
             }}
+            onClear={() => {
+              setSearchQuery("");
+              setVisibleCount(PAGE_SIZE);
+            }}
           />
         </div>
+
         <p className={styles.count}>
           {(isUserType ? dict.showing_nominees_count : dict.showing_options_count)
             .replace("{visible}", String(visibleNominees.length))
@@ -131,27 +189,39 @@ export default function VotingGrid({
 
       <div className={styles.grid}>
         {visibleNominees.map((nominee) => {
-          const isSelected = selectedNomineeId === nominee.id;
+          const isSelected = selectedIds.includes(nominee.id);
           const displayName = isUserType ? getFirstAndLastName(nominee.name) : nominee.name;
           const hasPhoto = Boolean(nominee.photoPath);
           const hasDetails =
             !isUserType && (Boolean(nominee.description) || Boolean(nominee.descriptionPhotoPath));
-          const ctaLabel = isSelected
+
+          const singleChoiceCta = isSelected
             ? dict.current_vote
-            : selectedNomineeId
+            : selectedIds.length > 0
               ? dict.change_vote
               : dict.vote;
+
+          const multiChoiceCta = isSelected ? dict.remove_choice : dict.select_choice;
+          const ctaLabel = max === 1 ? singleChoiceCta : multiChoiceCta;
 
           return (
             <div key={nominee.id} className={styles.gridItem}>
               <button
                 type="button"
                 onClick={
-                  hasDetails ? () => setModalNominee(nominee) : () => handleCastVote(nominee.id)
+                  hasDetails
+                    ? () => setModalNominee(nominee)
+                    : () => handleToggleNominee(nominee.id)
                 }
                 aria-label={displayName}
-                className={`${styles.card} ${isSelected ? styles.selectedCard : ""}`}>
+                className={`${styles.card} ${max > 1 ? styles.multiSelectCard : ""} ${isSelected ? styles.selectedCard : ""}`}>
                 <div className={styles.imageCard}>
+                  {max > 1 && isSelected && (
+                    <div className={styles.selectionBadge}>
+                      <FaCheck size={12} />
+                    </div>
+                  )}
+
                   {hasPhoto ? (
                     <Image
                       src={nominee.photoPath!}
@@ -178,7 +248,7 @@ export default function VotingGrid({
 
                   <div className={styles.overlay}>
                     <span className={styles.cta}>
-                      {isSelected ? (
+                      {max === 1 && isSelected ? (
                         <>
                           <FaCheck className={styles.ctaIcon} />
                           <span>{dict.current_vote}</span>
@@ -239,19 +309,48 @@ export default function VotingGrid({
               onClick={async () => {
                 const id = modalNominee.id;
                 setModalNominee(null);
-                await handleCastVote(id);
+                await handleToggleNominee(id);
               }}>
-              {selectedNomineeId === modalNominee.id ? (
-                <>
-                  <FaCheck className={styles.checkIcon} />
-                  {dict.current_vote}
-                </>
+              {max === 1 ? (
+                selectedIds.includes(modalNominee.id) ? (
+                  <>
+                    <FaCheck className={styles.checkIcon} />
+                    {dict.current_vote}
+                  </>
+                ) : (
+                  dict.vote
+                )
+              ) : selectedIds.includes(modalNominee.id) ? (
+                dict.remove_choice
               ) : (
-                dict.vote
+                dict.select_choice
               )}
             </Button>
           </Modal.Footer>
         </Modal>
+      )}
+
+      {max > 1 && selectedIds.length > 0 && selectedIds.length < max && (
+        <div className={styles.floatingPill}>
+          <span className={styles.pillCount}>
+            {dict.choices_count
+              ? dict.choices_count
+                  .replace("{selected}", String(selectedIds.length))
+                  .replace("{max}", String(max))
+              : `${selectedIds.length} de ${max} escolhas`}
+          </span>
+          <Button
+            type="button"
+            variant="solid"
+            color="primary"
+            shape="pill"
+            className={styles.submitBtn}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            onClick={() => handleCastVote(selectedIds)}>
+            {dict.submit ?? "Submeter"}
+          </Button>
+        </div>
       )}
 
       {hasMore && (

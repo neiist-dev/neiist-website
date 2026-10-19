@@ -29,15 +29,25 @@
 
 .infoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: 1.5rem;
-  margin: 1.25rem 0 1.5rem;
+  margin: 1rem 0 1.5rem;
 }
 
 .infoItem {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.infoLabel {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+}
+
+.infoValue {
+  font-size: 1rem;
+  color: var(--foreground-colour);
 }
 
 .candidateList {
@@ -80,7 +90,7 @@
 
 .progressBar {
   height: 0.6rem;
-  background: #e5e7eb;
+  background: var(--background-colour-hover);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -102,11 +112,12 @@
 
 @media (max-width: 768px) {
   .infoGrid {
-    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .candidateInfo {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
   }
 }

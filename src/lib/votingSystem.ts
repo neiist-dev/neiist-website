@@ -5,7 +5,7 @@ import {
   deleteVotingSession,
   finishVoting,
   startVoting,
-  submitVote,
+  submitVotes,
   setSessionShowResults,
 } from "@/lib/db/repositories/voting.repository";
 import path from "path";
@@ -144,10 +144,16 @@ async function extractVotingSessionData(fd: FormData): Promise<Partial<VotingSes
   const type = requireString(fd.get("type"), "type");
   if (!Object.hasOwn(extractors, type)) throw new Error(`Unsupported voting type: ${type}`);
 
+  const maxChoicesRaw = fd.get("maxChoices");
+  const maxChoices = maxChoicesRaw ? requireInt(maxChoicesRaw, "maxChoices") : 1;
+  if (maxChoices < 1 || maxChoices > 5)
+    throw new Error("O número de escolhas por votante deve ser entre 1 e 5.");
+
   return {
     name: requireString(fd.get("name"), "name"),
     description: optionalString(fd.get("description")),
     type: type as VotingType,
+    maxChoices,
     startAt: optionalString(fd.get("startAt")),
     endAt: optionalString(fd.get("endAt")),
     ...(await extractors[type as VotingType](fd)),
@@ -196,13 +202,15 @@ export async function finishVotingAction(formData: FormData): Promise<void> {
   await finishVoting(sessionId);
 }
 
-export async function submitVoteAction(formData: FormData): Promise<void> {
+export async function submitVotesAction(formData: FormData): Promise<void> {
   const { user } = await requireUser();
 
   const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-  const nomineeId = requireString(formData.get("nomineeId"), "nomineeId");
+  const nomineeIds = formData.getAll("nomineeIds").map(String).filter(Boolean);
 
-  await submitVote(sessionId, user.istid, nomineeId);
+  if (nomineeIds.length === 0) throw new Error("Pelo menos uma opção deve ser selecionada.");
+
+  await submitVotes(sessionId, user.istid, nomineeIds);
 }
 
 export async function togglePublishResultsAction(formData: FormData): Promise<void> {

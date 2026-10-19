@@ -90,32 +90,6 @@
   max-width: 32rem;
 }
 
-.searchInput {
-  width: 100%;
-  padding: 0.9rem 1.2rem;
-  border: 2px solid transparent;
-  background: #ffffff;
-  border-radius: 1rem;
-  font-family: inherit;
-  font-size: 1rem;
-  color: var(--foreground-colour);
-  outline: none;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-  box-sizing: border-box;
-}
-
-.searchInput:focus {
-  border-color: var(--primary-colour);
-  box-shadow: 0 0.25rem 1rem rgba(40, 99, 253, 0.15);
-}
-
-.searchInput::placeholder {
-  color: var(--light-foreground-colour);
-}
-
 .count {
   margin: 0;
   color: var(--light-foreground-colour);
@@ -166,7 +140,7 @@
   border-radius: 1.875rem;
   overflow: hidden;
   box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
-  background: #eef0f4;
+  background: var(--background-colour-hover);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -179,8 +153,8 @@
 
 .selectedCard .imageCard {
   box-shadow:
-    0 0 0 3px var(--primary-colour),
-    0 0.5rem 1.5rem rgba(40, 99, 253, 0.25);
+    0 0 0 2.5px var(--primary-colour),
+    0 0.25rem 1rem rgba(0, 0, 0, 0.08);
 }
 
 .photo {
@@ -203,7 +177,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: #eef0f4;
+  background: var(--background-colour-hover);
   overflow: hidden;
 }
 
@@ -253,7 +227,7 @@
   border-radius: 1rem;
   overflow: hidden;
   margin-bottom: 1.25rem;
-  background: #eef0f4;
+  background: var(--background-colour-hover);
 }
 
 .modalImage {
@@ -362,4 +336,56 @@
   .name {
     font-size: 0.825rem;
   }
+}
+
+.selectionBadge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--primary-colour);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.multiSelectCard.selectedCard:not(:hover) .overlay {
+  opacity: 0;
+}
+
+.floatingPill {
+  position: fixed;
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.25vw, 1.25rem);
+  padding: clamp(0.3rem, 0.5vw, 0.45rem) clamp(0.35rem, 0.5vw, 0.5rem) clamp(0.3rem, 0.5vw, 0.45rem)
+    clamp(0.85rem, 1.25vw, 1.25rem);
+  background: var(--background-colour);
+  border: 1px solid var(--background-colour-hover);
+  border-radius: 9999px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  max-width: calc(100vw - 2rem);
+}
+
+.pillCount {
+  font-size: clamp(0.8125rem, 0.9vw, 0.9375rem);
+  font-weight: 600;
+  color: var(--foreground-colour);
+  white-space: nowrap;
+}
+
+.submitBtn {
+  font-size: clamp(0.8125rem, 0.9vw, 0.9375rem) !important;
+  padding-block: clamp(0.35rem, 0.55vw, 0.475rem) !important;
+  padding-inline: clamp(0.875rem, 1.25vw, 1.25rem) !important;
+  white-space: nowrap;
 }
