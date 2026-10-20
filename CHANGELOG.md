@@ -1,5 +1,25 @@
 # neiist
 
+## [4.6.0](https://github.com/neiist-dev/neiist-website/compare/v4.5.1...v4.6.0) (2026-10-20)
+
+
+### Features
+
+* **ui:** progress bar, floating action bar and selectedble card and ([58da377](https://github.com/neiist-dev/neiist-website/commit/58da3775fab9b971dd47388b2a5506f007f563dd))
+* **voting:** multipe options per user UI from neiist/ui ([096f8d9](https://github.com/neiist-dev/neiist-website/commit/096f8d9273915da4524d09bf54ce60dc4e18e663))
+* **voting:** support multiple options voting ([7f1568f](https://github.com/neiist-dev/neiist-website/commit/7f1568fe5f727464f91dfc67922f69e7cca67a4a))
+
+
+### Bug Fixes
+
+* **cloud:** add sweat contest votes link on the annoucements cloud ([ad92c0f](https://github.com/neiist-dev/neiist-website/commit/ad92c0f4d99b2e5f30c4db8d4a1914b9c4b2ebc9))
+* **components:** fix year selector navigation logic ([97f9285](https://github.com/neiist-dev/neiist-website/commit/97f9285678b3b43498ba1a9fb4f44de2e324fbf1))
+* **shop:** restore order cancellation restock trigger in schema.sql ([c3af0f4](https://github.com/neiist-dev/neiist-website/commit/c3af0f4ce6b05d3feefb66e8c311eaa1d40312aa))
+* **user:** role ranking and order on label, activity cascade delete ([3d589d4](https://github.com/neiist-dev/neiist-website/commit/3d589d4a9fd42e54a7ffd61f031456893eaaf27d))
+* **voting:** permissions all user can vote ([6a5e3bb](https://github.com/neiist-dev/neiist-website/commit/6a5e3bbfd3939e6a7c734ba81619faa490d3ce2f))
+* **voting:** query columns, count distinct voters and update result percentages ([8ef3035](https://github.com/neiist-dev/neiist-website/commit/8ef3035cb417af2df5728257814690cffacad503))
+* **year-selector:** add scroll behavior to year navigation links ([1db3a57](https://github.com/neiist-dev/neiist-website/commit/1db3a57c0eb13b1999748c1f2519dd15dbca2a14))
+
 ## [4.5.1](https://github.com/neiist-dev/neiist-website/compare/v4.5.0...v4.5.1) (2026-10-17)
 
 
