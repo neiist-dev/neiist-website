@@ -1,0 +1,43 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  inline-size: 100%;
+}
+
+.progress {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  border-radius: var(--ui-radius-full);
+  overflow: hidden;
+  inline-size: 100%;
+  block-size: 0.5rem;
+  background-color: var(--ui-bg-hover);
+  color: var(--ui-primary);
+}
+
+.progress::-webkit-progress-bar {
+  background-color: var(--ui-bg-hover);
+  border-radius: var(--ui-radius-full);
+}
+
+.progress::-webkit-progress-value {
+  background-color: var(--ui-primary);
+  border-radius: var(--ui-radius-full);
+  transition: inline-size var(--ui-transition);
+}
+
+.progress::-moz-progress-bar {
+  background-color: var(--ui-primary);
+  border-radius: var(--ui-radius-full);
+  transition: inline-size var(--ui-transition);
+}
+
+.value {
+  font-size: var(--ui-font-sm);
+  font-weight: var(--ui-font-weight-medium);
+  color: var(--ui-fg);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

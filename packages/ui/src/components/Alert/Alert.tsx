@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 import styles from "./Alert.module.css";
@@ -101,37 +101,48 @@ export interface ToasterProps {
 
 export function Toaster({ position = "top-right", offset }: ToasterProps) {
   const [mounted, setMounted] = useState(false);
-  const [dialogTarget, setDialogTarget] = useState<HTMLElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
-    const updateTarget = () => {
-      const openDialogs = Array.from(
-        document.querySelectorAll<HTMLElement>("dialog[open]:not([data-closing])")
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateParent = () => {
+      const openDialogs = document.querySelectorAll<HTMLElement>(
+        "dialog[open]:not([data-closing])"
       );
-      const activeDialog = openDialogs[openDialogs.length - 1] ?? null;
-      setDialogTarget((prev) => (prev === activeDialog ? prev : activeDialog));
+      const targetParent = openDialogs[openDialogs.length - 1] ?? document.body;
+
+      if (container.parentElement !== targetParent) targetParent.appendChild(container);
     };
 
-    updateTarget();
+    updateParent();
 
-    const observer = new MutationObserver(updateTarget);
+    const observer = new MutationObserver(updateParent);
     observer.observe(document.body, {
       attributes: true,
       subtree: true,
       attributeFilter: ["open", "data-closing"],
     });
 
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      observer.disconnect();
+      if (container.parentElement && container.parentElement !== document.body)
+        document.body.appendChild(container);
+    };
+  }, [mounted]);
 
   if (!mounted) return null;
 
-  return (
-    <>
+  return createPortal(
+    <div ref={containerRef} style={{ display: "contents" }}>
       <SonnerToaster position={position} offset={offset} />
-      {dialogTarget &&
-        createPortal(<SonnerToaster position={position} offset={offset} />, dialogTarget)}
-    </>
+    </div>,
+    document.body
   );
 }

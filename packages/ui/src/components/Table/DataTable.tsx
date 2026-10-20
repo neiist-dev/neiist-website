@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
-import styles from "./DataTable.module.css";
-import { cn } from "../../utils/cn";
-import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
-import { Checkbox } from "../Checkbox/Checkbox";
+import React, { useMemo, useRef, useState } from "react";
 import { FiFilter } from "react-icons/fi";
+import { Checkbox } from "../Checkbox/Checkbox";
+import { Popover } from "../Popover/Popover";
+import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
+import { cn } from "../../utils/cn";
+import dropdownStyles from "../DropdownMenu/DropdownMenu.module.css";
+import styles from "./DataTable.module.css";
 
 export interface ColumnDef<T> {
   id: string;
@@ -35,6 +37,7 @@ export interface DataTableProps<T> {
   columnOrder?: string[];
   responsive?: "cards" | "scroll";
   onRowClick?: (_row: T) => void;
+  renderRowContextMenu?: (_row: T) => React.ReactNode;
   emptyMessage?: React.ReactNode;
   className?: string;
   wrapperClassName?: string;
@@ -77,10 +80,16 @@ export function DataTable<T>({
   columnOrder,
   responsive = "cards",
   onRowClick,
+  renderRowContextMenu,
   emptyMessage = "No data available",
   className,
   wrapperClassName,
 }: DataTableProps<T>) {
+  const [contextMenuState, setContextMenuState] = useState<{
+    row: T;
+    point: { x: number; y: number };
+  } | null>(null);
+
   const visibleColumns = useMemo(() => {
     if (!columnOrder) return columns;
     const colMap = new Map(columns.map((col) => [col.id, col]));
@@ -118,7 +127,7 @@ export function DataTable<T>({
     onSelectionChange(next);
   };
 
-  return (
+  const table = (
     <Table className={className} wrapperClassName={wrapperClassName} responsive={responsive}>
       <TableHead>
         <TableRow>
@@ -184,6 +193,17 @@ export function DataTable<T>({
                 key={rowId}
                 selected={isSelected}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onContextMenu={
+                  renderRowContextMenu
+                    ? (event) => {
+                        event.preventDefault();
+                        setContextMenuState({
+                          row,
+                          point: { x: event.clientX, y: event.clientY },
+                        });
+                      }
+                    : undefined
+                }
                 className={cn(
                   onRowClick && styles.rowClickable,
                   enableRowSelection && styles.rowSelectable
@@ -224,5 +244,27 @@ export function DataTable<T>({
         )}
       </TableBody>
     </Table>
+  );
+
+  if (!renderRowContextMenu) return table;
+
+  return (
+    <>
+      {table}
+      {contextMenuState && (
+        <Popover
+          isOpen={true}
+          onClose={() => setContextMenuState(null)}
+          anchorPoint={contextMenuState.point}
+          width="auto">
+          <div
+            role="menu"
+            className={dropdownStyles.menuList}
+            onClick={() => setContextMenuState(null)}>
+            {renderRowContextMenu(contextMenuState.row)}
+          </div>
+        </Popover>
+      )}
+    </>
   );
 }
