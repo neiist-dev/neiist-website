@@ -1616,7 +1616,7 @@
       "add_option": "Add Option",
       "option_title": "Option Title",
       "option_title_placeholder": "e.g. Proposal A, Mascot, or Theme",
-      "option_desc": "Option Description (supports links)",
+      "option_desc": "Option Description",
       "option_desc_placeholder": "e.g. More information at https://...",
       "upload_image": "Upload Image",
       "change_image": "Change Image",

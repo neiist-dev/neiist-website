@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useCallback } from "react";
 import {
   VotingSession,
   VotingType,
@@ -10,7 +9,7 @@ import {
   VOTING_STATUS,
   formatVotingDateRange,
 } from "@/types/voting";
-import { DataTable, ColumnDef, Badge, Button, DropdownMenu } from "@neiist/ui";
+import { DataTable, ColumnDef, Badge, Button, DropdownMenu, ContextMenu } from "@neiist/ui";
 import {
   FiEye,
   FiEyeOff,
@@ -61,8 +60,57 @@ export default function VotingSessionsTable({
   dict,
   locale = "pt",
 }: VotingSessionsTableProps) {
-  const router = useRouter();
   const { confirm, togglePublish, exportExcel, dialog } = useVotingActions(dict);
+
+  const renderSessionMenuItems = useCallback(
+    (session: VotingSession) => (
+      <>
+        <ContextMenu.Item
+          icon={<FiExternalLink size={15} />}
+          onClick={() => {
+            window.location.href = `/${locale}/voting/manage/${session.id}`;
+          }}>
+          {dict.table.view_full_details}
+        </ContextMenu.Item>
+
+        <ContextMenu.Item icon={<FiDownload size={15} />} onClick={() => exportExcel(session.id)}>
+          {dict.table.export_excel}
+        </ContextMenu.Item>
+
+        <ContextMenu.Divider />
+
+        {session.status === VOTING_STATUS.IDLE && (
+          <ContextMenu.Item icon={<FiPlay size={15} />} onClick={() => confirm("start", session)}>
+            {dict.details.start_action}
+          </ContextMenu.Item>
+        )}
+
+        {session.status === VOTING_STATUS.VOTING && (
+          <ContextMenu.Item onClick={() => confirm("finish", session)}>
+            {dict.details.finish_action}
+          </ContextMenu.Item>
+        )}
+
+        {session.status === VOTING_STATUS.FINISHED && (
+          <ContextMenu.Item
+            icon={session.showResults ? <FiEyeOff size={15} /> : <FiEye size={15} />}
+            onClick={() => togglePublish(session)}>
+            {session.showResults ? dict.details.hide_results : dict.details.publish_results}
+          </ContextMenu.Item>
+        )}
+
+        <ContextMenu.Divider />
+
+        <ContextMenu.Item
+          icon={<FiTrash2 size={15} />}
+          destructive
+          onClick={() => confirm("delete", session)}>
+          {dict.details.delete_action}
+        </ContextMenu.Item>
+      </>
+    ),
+    [confirm, dict, exportExcel, locale, togglePublish]
+  );
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
@@ -183,52 +231,7 @@ export default function VotingSessionsTable({
               </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end" mobileTitle={dict.table.actions}>
-              <DropdownMenu.Item
-                icon={<FiExternalLink size={15} />}
-                onClick={() => {
-                  window.location.href = `/${locale}/voting/manage/${session.id}`;
-                }}>
-                {dict.table.view_full_details}
-              </DropdownMenu.Item>
-
-              <DropdownMenu.Item
-                icon={<FiDownload size={15} />}
-                onClick={() => exportExcel(session.id)}>
-                {dict.table.export_excel}
-              </DropdownMenu.Item>
-
-              <DropdownMenu.Divider />
-
-              {session.status === VOTING_STATUS.IDLE && (
-                <DropdownMenu.Item
-                  icon={<FiPlay size={15} />}
-                  onClick={() => confirm("start", session)}>
-                  {dict.details.start_action}
-                </DropdownMenu.Item>
-              )}
-
-              {session.status === VOTING_STATUS.VOTING && (
-                <DropdownMenu.Item onClick={() => confirm("finish", session)}>
-                  {dict.details.finish_action}
-                </DropdownMenu.Item>
-              )}
-
-              {session.status === VOTING_STATUS.FINISHED && (
-                <DropdownMenu.Item
-                  icon={session.showResults ? <FiEyeOff size={15} /> : <FiEye size={15} />}
-                  onClick={() => togglePublish(session)}>
-                  {session.showResults ? dict.details.hide_results : dict.details.publish_results}
-                </DropdownMenu.Item>
-              )}
-
-              <DropdownMenu.Divider />
-
-              <DropdownMenu.Item
-                icon={<FiTrash2 size={15} />}
-                destructive
-                onClick={() => confirm("delete", session)}>
-                {dict.details.delete_action}
-              </DropdownMenu.Item>
+              {renderSessionMenuItems(session)}
             </DropdownMenu.Content>
           </DropdownMenu>
         ),
@@ -243,10 +246,7 @@ export default function VotingSessionsTable({
       typeFilterRef,
       dateFilterRef,
       statusFilterRef,
-      confirm,
-      exportExcel,
-      router,
-      togglePublish,
+      renderSessionMenuItems,
     ]
   );
 
@@ -257,6 +257,7 @@ export default function VotingSessionsTable({
         columns={columns}
         getRowId={(session) => String(session.id)}
         onRowClick={onRowClick}
+        renderRowContextMenu={renderSessionMenuItems}
         emptyMessage={dict.table.empty}
         responsive="cards"
       />

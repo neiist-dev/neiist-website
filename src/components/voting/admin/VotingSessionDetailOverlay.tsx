@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VotingSession, SessionResult, VOTING_STATUS } from "@/types/voting";
-import { Modal, Badge, Button, Text } from "@neiist/ui";
+import { Modal, Badge, Button, Text, Progress } from "@neiist/ui";
 import { FiExternalLink, FiPlay, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import ReactMarkdown from "react-markdown";
 import { useVotingActions } from "@/hooks/useVotingActions";
@@ -122,9 +122,7 @@ export default function VotingSessionDetailOverlay({
                         {result.voteCount} {dict.details.votes}
                       </span>
                     </div>
-                    <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${percentage}%` }} />
-                    </div>
+                    <Progress value={percentage} max={100} />
                   </div>
                 );
               })}

@@ -1616,7 +1616,7 @@
       "add_option": "Adicionar Opção",
       "option_title": "Título da Opção",
       "option_title_placeholder": "Ex: Proposta A, Mascote, ou Tema",
-      "option_desc": "Descrição da Opção (suporta links)",
+      "option_desc": "Descrição da Opção",
       "option_desc_placeholder": "Ex: Mais informações em https://...",
       "upload_image": "Carregar Imagem",
       "change_image": "Mudar Imagem",

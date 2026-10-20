@@ -186,21 +186,6 @@
   min-width: 9rem;
 }
 
-.progressTrack {
-  flex: 1;
-  height: 0.5rem;
-  background: var(--background-colour-hover);
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: var(--primary-colour);
-  border-radius: 9999px;
-  transition: width 0.3s ease;
-}
-
 .percentageText {
   font-size: 0.85rem;
   font-weight: 600;

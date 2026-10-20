@@ -11,7 +11,7 @@ import {
   formatVotingDateRange,
   isUserVotingType,
 } from "@/types/voting";
-import { DataTable, ColumnDef, Badge, Button, Modal } from "@neiist/ui";
+import { DataTable, ColumnDef, Badge, Button, Modal, Progress } from "@neiist/ui";
 import ColorfulText from "@/components/ColorfulText";
 import { FaArrowLeft } from "react-icons/fa";
 import { FiDownload, FiPlay, FiEye, FiEyeOff } from "react-icons/fi";
@@ -131,9 +131,7 @@ export default function VotingSessionDetailsView({
           const pct = totalVoters > 0 ? (row.voteCount / totalVoters) * 100 : 0;
           return (
             <div className={styles.percentageCell}>
-              <div className={styles.progressTrack}>
-                <div className={styles.progressFill} style={{ width: `${Math.min(100, pct)}%` }} />
-              </div>
+              <Progress value={pct} max={100} />
               <span className={styles.percentageText}>{pct.toFixed(1)}%</span>
             </div>
           );

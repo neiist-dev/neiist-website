@@ -76,7 +76,7 @@
   border-radius: 1.875rem;
   overflow: hidden;
   box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
-  background: #eef0f4;
+  background: var(--background-colour-hover);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -99,7 +99,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: #eef0f4;
+  background: var(--background-colour-hover);
   overflow: hidden;
 }
 

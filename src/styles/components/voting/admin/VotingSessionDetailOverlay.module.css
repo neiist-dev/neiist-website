@@ -88,20 +88,6 @@
   font-size: 0.9rem;
 }
 
-.progressBar {
-  height: 0.6rem;
-  background: var(--background-colour-hover);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: var(--primary-colour);
-  border-radius: 999px;
-  transition: width 0.5s ease;
-}
-
 .actionButtons {
   display: flex;
   gap: 0.75rem;

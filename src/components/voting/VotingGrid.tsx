@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Modal, Button, Alert, SearchInput } from "@neiist/ui";
+import { Modal, Button, Alert, SearchInput, SelectableCard, FloatingActionBar } from "@neiist/ui";
 import { FaCheck } from "react-icons/fa";
 import { VotingNominee, VotingType, isUserVotingType } from "@/types/voting";
 import { submitVotesAction } from "@/lib/votingSystem";
@@ -205,68 +205,47 @@ export default function VotingGrid({
           const ctaLabel = max === 1 ? singleChoiceCta : multiChoiceCta;
 
           return (
-            <div key={nominee.id} className={styles.gridItem}>
-              <button
-                type="button"
-                onClick={
-                  hasDetails
-                    ? () => setModalNominee(nominee)
-                    : () => handleToggleNominee(nominee.id)
-                }
-                aria-label={displayName}
-                className={`${styles.card} ${max > 1 ? styles.multiSelectCard : ""} ${isSelected ? styles.selectedCard : ""}`}>
-                <div className={styles.imageCard}>
-                  {max > 1 && isSelected && (
-                    <div className={styles.selectionBadge}>
-                      <FaCheck size={12} />
-                    </div>
-                  )}
-
-                  {hasPhoto ? (
-                    <Image
-                      src={nominee.photoPath!}
-                      alt={nominee.name}
-                      fill
-                      className={styles.photo}
-                    />
-                  ) : isUserType ? (
-                    <Image
-                      src="/default_user.png"
-                      alt={nominee.name}
-                      fill
-                      className={styles.photo}
-                    />
-                  ) : (
-                    <div className={styles.textFront}>
-                      {nominee.description ? (
-                        <p className={styles.textFrontDescription}>{nominee.description}</p>
-                      ) : (
-                        <span className={styles.textFrontTitle}>{displayName}</span>
-                      )}
-                    </div>
-                  )}
-
-                  <div className={styles.overlay}>
-                    <span className={styles.cta}>
-                      {max === 1 && isSelected ? (
-                        <>
-                          <FaCheck className={styles.ctaIcon} />
-                          <span>{dict.current_vote}</span>
-                        </>
-                      ) : hasDetails ? (
-                        dict.view_details
-                      ) : (
-                        ctaLabel
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                {(hasPhoto || isUserType || Boolean(nominee.description)) && (
-                  <h4 className={styles.name}>{displayName}</h4>
-                )}
-              </button>
-            </div>
+            <SelectableCard
+              key={nominee.id}
+              mode={max > 1 ? "multiple" : "single"}
+              selected={isSelected}
+              title={
+                hasPhoto || isUserType || Boolean(nominee.description) ? displayName : undefined
+              }
+              overlayText={
+                max === 1 && isSelected ? (
+                  <>
+                    <FaCheck />
+                    <span>{dict.current_vote}</span>
+                  </>
+                ) : hasDetails ? (
+                  dict.view_details
+                ) : (
+                  ctaLabel
+                )
+              }
+              media={
+                hasPhoto ? (
+                  <Image
+                    src={nominee.photoPath!}
+                    alt={nominee.name}
+                    fill
+                    className={styles.photo}
+                  />
+                ) : isUserType ? (
+                  <Image src="/default_user.png" alt={nominee.name} fill className={styles.photo} />
+                ) : (
+                  <SelectableCard.TextFront
+                    title={!nominee.description ? displayName : undefined}
+                    description={nominee.description}
+                  />
+                )
+              }
+              onClick={
+                hasDetails ? () => setModalNominee(nominee) : () => handleToggleNominee(nominee.id)
+              }
+              aria-label={displayName}
+            />
           );
         })}
       </div>
@@ -300,9 +279,6 @@ export default function VotingGrid({
           )}
 
           <Modal.Footer>
-            <Button variant="outline" type="button" onClick={() => setModalNominee(null)}>
-              {dict.close}
-            </Button>
             <Button
               variant="primary"
               type="button"
@@ -314,7 +290,7 @@ export default function VotingGrid({
               {max === 1 ? (
                 selectedIds.includes(modalNominee.id) ? (
                   <>
-                    <FaCheck className={styles.checkIcon} />
+                    <FaCheck />
                     {dict.current_vote}
                   </>
                 ) : (
@@ -331,26 +307,27 @@ export default function VotingGrid({
       )}
 
       {max > 1 && selectedIds.length > 0 && selectedIds.length < max && (
-        <div className={styles.floatingPill}>
-          <span className={styles.pillCount}>
-            {dict.choices_count
+        <FloatingActionBar
+          countText={
+            dict.choices_count
               ? dict.choices_count
                   .replace("{selected}", String(selectedIds.length))
                   .replace("{max}", String(max))
-              : `${selectedIds.length} de ${max} escolhas`}
-          </span>
-          <Button
-            type="button"
-            variant="solid"
-            color="primary"
-            shape="pill"
-            className={styles.submitBtn}
-            disabled={isSubmitting}
-            loading={isSubmitting}
-            onClick={() => handleCastVote(selectedIds)}>
-            {dict.submit ?? "Submeter"}
-          </Button>
-        </div>
+              : `${selectedIds.length} de ${max} escolhas`
+          }
+          action={
+            <Button
+              type="button"
+              variant="solid"
+              color="primary"
+              shape="pill"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              onClick={() => handleCastVote(selectedIds)}>
+              {dict.submit ?? "Submeter"}
+            </Button>
+          }
+        />
       )}
 
       {hasMore && (
