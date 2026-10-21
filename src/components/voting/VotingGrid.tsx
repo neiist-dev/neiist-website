@@ -320,6 +320,7 @@ export default function VotingGrid({
               type="button"
               variant="solid"
               color="primary"
+              size="sm"
               shape="pill"
               disabled={isSubmitting}
               loading={isSubmitting}
