@@ -1,5 +1,14 @@
 # neiist
 
+## [4.6.1](https://github.com/neiist-dev/neiist-website/compare/v4.6.0...v4.6.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **cve:** update nextjs with patch for RCE cve and deploy worflows ([43a6ee7](https://github.com/neiist-dev/neiist-website/commit/43a6ee721a102f9a06f88aa9e8b58472a9f838b6))
+* **deploy:** use nvm correctly and safe parse of github env on action ([f550a8f](https://github.com/neiist-dev/neiist-website/commit/f550a8ffff028c8bdfdb3b25e64fad4ae25ffaf2))
+* **ui:** button on action bar floating ([5bd6a34](https://github.com/neiist-dev/neiist-website/commit/5bd6a346679d94e3b5f9edca404e646e3d43f067))
+
 ## [4.6.0](https://github.com/neiist-dev/neiist-website/compare/v4.5.1...v4.6.0) (2026-10-20)
 
 
