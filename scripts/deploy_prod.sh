@@ -1,6 +1,8 @@
 #!/bin/bash
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+set +e
+. "$NVM_DIR/nvm.sh"
 set -e
-export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"
 
 DEPLOY_REF=${1:-main}
 TARBALL_PATH=${2:-/home/neiist/release.tar.gz}
