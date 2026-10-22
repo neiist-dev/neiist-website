@@ -33,9 +33,9 @@
     "format:check": "prettier --config ../../config/prettier/.prettierrc.json --ignore-path ../../config/prettier/.prettierignore --check ."
   },
   "devDependencies": {
-    "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.4",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
     "vite": "^8.2.4"
   }
 }
