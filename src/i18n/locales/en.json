@@ -1476,6 +1476,7 @@
     "showing_nominees_count": "Showing {visible} of {total} nominees",
     "showing_options_count": "Showing {visible} of {total} options",
     "current_vote": "Current vote",
+    "keep_vote": "Keep vote",
     "change_vote": "Change vote",
     "vote": "Vote",
     "show_more_nominees": "Show more nominees",

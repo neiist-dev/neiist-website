@@ -194,35 +194,35 @@ export default function VotingGrid({
           const hasPhoto = Boolean(nominee.photoPath);
           const hasDetails =
             !isUserType && (Boolean(nominee.description) || Boolean(nominee.descriptionPhotoPath));
-
-          const singleChoiceCta = isSelected
-            ? dict.current_vote
-            : selectedIds.length > 0
-              ? dict.change_vote
-              : dict.vote;
-
-          const multiChoiceCta = isSelected ? dict.remove_choice : dict.select_choice;
-          const ctaLabel = max === 1 ? singleChoiceCta : multiChoiceCta;
+          const isMultiple = max > 1;
+          const hasExistingSelection = selectedIds.length > 0;
 
           return (
             <SelectableCard
               key={nominee.id}
-              mode={max > 1 ? "multiple" : "single"}
+              multiple={isMultiple}
               selected={isSelected}
-              title={
-                hasPhoto || isUserType || Boolean(nominee.description) ? displayName : undefined
-              }
-              overlayText={
-                max === 1 && isSelected ? (
+              hasDetails={hasDetails}
+              detailsLabel={dict.view_details}
+              selectedLabel={
+                isMultiple ? (
+                  dict.remove_choice
+                ) : (
                   <>
                     <FaCheck />
                     <span>{dict.current_vote}</span>
                   </>
-                ) : hasDetails ? (
-                  dict.view_details
-                ) : (
-                  ctaLabel
                 )
+              }
+              unselectedLabel={
+                isMultiple
+                  ? dict.select_choice
+                  : hasExistingSelection
+                    ? dict.change_vote
+                    : dict.vote
+              }
+              title={
+                hasPhoto || isUserType || Boolean(nominee.description) ? displayName : undefined
               }
               media={
                 hasPhoto ? (
@@ -279,34 +279,22 @@ export default function VotingGrid({
           )}
 
           <Modal.Footer>
-            <Button
+            <SelectableCard.Action
               variant="primary"
-              type="button"
+              selected={selectedIds.includes(modalNominee.id)}
+              selectedLabel={max > 1 ? dict.remove_choice : dict.keep_vote}
+              unselectedLabel={max > 1 ? dict.select_choice : dict.vote}
               onClick={async () => {
                 const id = modalNominee.id;
                 setModalNominee(null);
                 await handleToggleNominee(id);
-              }}>
-              {max === 1 ? (
-                selectedIds.includes(modalNominee.id) ? (
-                  <>
-                    <FaCheck />
-                    {dict.current_vote}
-                  </>
-                ) : (
-                  dict.vote
-                )
-              ) : selectedIds.includes(modalNominee.id) ? (
-                dict.remove_choice
-              ) : (
-                dict.select_choice
-              )}
-            </Button>
+              }}
+            />
           </Modal.Footer>
         </Modal>
       )}
 
-      {max > 1 && selectedIds.length > 0 && selectedIds.length < max && (
+      {max > 1 && selectedIds.length > 0 && (
         <FloatingActionBar
           countText={
             dict.choices_count

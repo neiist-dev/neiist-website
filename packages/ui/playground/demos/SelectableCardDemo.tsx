@@ -104,18 +104,15 @@ export const SelectableCardDemo = () => {
           }}>
           {SINGLE_OPTIONS.map((option) => {
             const isSelected = singleSelected === option.id;
-            const overlayText = option.hasDetails
-              ? "Ver detalhes"
-              : isSelected
-                ? "Voto atual"
-                : "Votar";
 
             return (
               <SelectableCard
                 key={option.id}
-                mode="single"
                 selected={isSelected}
-                overlayText={overlayText}
+                hasDetails={option.hasDetails}
+                detailsLabel="Ver detalhes"
+                selectedLabel="Voto atual"
+                unselectedLabel="Votar"
                 onClick={() => handleSingleClick(option)}
                 title={option.title}
                 media={
@@ -151,18 +148,16 @@ export const SelectableCardDemo = () => {
             }}>
             {MULTI_OPTIONS.map((option) => {
               const isSelected = multiSelected.includes(option.id);
-              const overlayText = option.hasDetails
-                ? "Ver detalhes"
-                : isSelected
-                  ? "Remover"
-                  : "Selecionar";
 
               return (
                 <SelectableCard
                   key={option.id}
-                  mode="multiple"
+                  multiple
                   selected={isSelected}
-                  overlayText={overlayText}
+                  hasDetails={option.hasDetails}
+                  detailsLabel="Ver detalhes"
+                  selectedLabel="Remover"
+                  unselectedLabel="Selecionar"
                   onClick={() => handleMultiClick(option)}
                   title={option.title}
                   media={
@@ -189,27 +184,25 @@ export const SelectableCardDemo = () => {
           </Modal.Body>
           <Modal.Footer>
             {modalOption.mode === "single" ? (
-              <Button
-                variant="solid"
-                color="primary"
-                type="button"
+              <SelectableCard.Action
+                selected={singleSelected === modalOption.item.id}
+                selectedLabel="Manter Voto"
+                unselectedLabel="Votar"
                 onClick={() => {
                   setSingleSelected(modalOption.item.id);
                   setModalOption(null);
-                }}>
-                {singleSelected === modalOption.item.id ? "Manter Voto" : "Votar"}
-              </Button>
+                }}
+              />
             ) : (
-              <Button
-                variant="solid"
-                color="primary"
-                type="button"
+              <SelectableCard.Action
+                selected={multiSelected.includes(modalOption.item.id)}
+                selectedLabel="Remover"
+                unselectedLabel="Selecionar"
                 onClick={() => {
                   toggleMulti(modalOption.item.id);
                   setModalOption(null);
-                }}>
-                {multiSelected.includes(modalOption.item.id) ? "Remover" : "Selecionar"}
-              </Button>
+                }}
+              />
             )}
           </Modal.Footer>
         </Modal>

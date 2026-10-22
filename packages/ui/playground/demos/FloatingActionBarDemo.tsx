@@ -82,7 +82,7 @@ export const FloatingActionBarDemo = () => {
               return (
                 <SelectableCard
                   key={candidate.id}
-                  mode="multiple"
+                  multiple
                   selected={isSelected}
                   overlayText={isSelected ? "Remover" : "Selecionar"}
                   onClick={() => toggleSelect(candidate.id)}

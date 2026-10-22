@@ -1476,6 +1476,7 @@
     "showing_nominees_count": "A mostrar {visible} de {total} candidatos",
     "showing_options_count": "A mostrar {visible} de {total} opções",
     "current_vote": "Voto atual",
+    "keep_vote": "Manter voto",
     "change_vote": "Mudar voto",
     "vote": "Votar",
     "show_more_nominees": "Mostrar mais candidatos",
