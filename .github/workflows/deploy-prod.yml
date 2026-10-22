@@ -30,6 +30,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
+      - name: Configure Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Determine Deploy Ref
         id: deploy_ref
         env:
@@ -66,8 +73,8 @@ jobs:
 
       - name: Open SSH Tunnel to Production Database
         run: |
-          ssh -f -N -L 5432:127.0.0.1:5432 \
-              -o StrictHostKeyChecking=no \
+          ssh -M -S /tmp/ssh_prod_tunnel.sock -f -N \
+              -L 5432:127.0.0.1:5432 \
               -o ExitOnForwardFailure=yes \
               -o ServerAliveInterval=15 \
               -o ServerAliveCountMax=3 \
@@ -82,7 +89,7 @@ jobs:
       - name: Close SSH Tunnel
         if: always()
         run: |
-          pkill -f "ssh -f -N -L 5432:127.0.0.1" || true
+          ssh -S /tmp/ssh_prod_tunnel.sock -O exit dummy 2>/dev/null || true
 
       - name: Package Standalone Artifact
         run: |
@@ -92,17 +99,18 @@ jobs:
 
       - name: Upload Artifacts to VPS
         run: |
-          scp -o StrictHostKeyChecking=no release.tar.gz scripts/deploy_prod.sh \
+          rsync -avz --progress \
+              release.tar.gz scripts/deploy_prod.sh \
               ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
               "chmod +x /home/neiist/deploy_prod.sh"
 
       - name: Deploy to Production
         run: |
           ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-           "su - neiist -c 'bash ~/deploy_prod.sh $REF /home/neiist/release.tar.gz'"
+              "su - neiist -c 'bash ~/deploy_prod.sh $REF /home/neiist/release.tar.gz'"
 
       - name: Confirm Production Deployment
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c 'bash -lc \"pm2 jlist\"'" | jq -r '.[] | select(.name=="blue" or .name=="green") | "🌿 " + .name + " → " + .pm2_env.status'
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+              "su - neiist -c 'export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; pm2 jlist'" | jq -r '.[] | select(.name=="blue" or .name=="green") | "🌿 " + .name + " → " + .pm2_env.status'
