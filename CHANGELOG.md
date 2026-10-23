@@ -1,5 +1,12 @@
 # neiist
 
+## [4.6.2](https://github.com/neiist-dev/neiist-website/compare/v4.6.1...v4.6.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **voting:** submit floating action bar wont show up when changing vote ([8e574f6](https://github.com/neiist-dev/neiist-website/commit/8e574f619ba922897b679dc8dd74e9d1b0717688))
+
 ## [4.6.1](https://github.com/neiist-dev/neiist-website/compare/v4.6.0...v4.6.1) (2026-10-22)
 
 
