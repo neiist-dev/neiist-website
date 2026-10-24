@@ -7,6 +7,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { deleteUser, getUser } from "@/lib/db/repositories/user.repository";
 import { hasPermission } from "@/lib/security/permissions";
 import { getAccountDeletionTemplate, sendEmail } from "@/lib/email";
+import { appendErasureTombstone, getErasureInitiator } from "@/lib/gdprTombstones";
 
 export async function deleteUserAction(
   istid: string
@@ -35,6 +36,8 @@ export async function deleteUserAction(
 
   const { success, was_member: isMember } = await deleteUser(istid);
   if (!success) throw new Error("Failed to delete user in database");
+
+  await appendErasureTombstone(istid, getErasureInitiator(currentUser.istid, istid));
 
   if (!isMember) {
     try {
