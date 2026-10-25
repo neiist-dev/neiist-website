@@ -5,12 +5,11 @@ import { syncFenixUserAndCreateSession, setSessionCookie } from "@/lib/security/
 
 export async function GET() {
   const accessToken = (await cookies()).get("access_token")?.value;
-  if (!accessToken) return NextResponse.json({ error: "Not Authenticated." }, { status: 401 });
+  if (!accessToken) return NextResponse.json(null);
 
   try {
     const result = await syncFenixUserAndCreateSession(accessToken);
-    if (!result)
-      return NextResponse.json({ error: "Invalid/Expired Token or sync failed" }, { status: 401 });
+    if (!result) return NextResponse.json(null);
 
     const response = NextResponse.json(result.user);
     setSessionCookie(response, result.sessionToken);

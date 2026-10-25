@@ -51,7 +51,14 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
           <CampusRunner dict={gameDict} onExit={exitGame} />
         ) : (
           <>
-            <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} priority />
+            <Image
+              src={hero}
+              alt={dict.campus_alt}
+              className={styles.campusImage}
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 55vw"
+            />
 
             {announcement && <div className={styles.announcementSlot}>{announcement}</div>}
 
@@ -65,7 +72,12 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
                 aria-label={gameDict.play_label}>
                 <FiPlay aria-hidden="true" /> {gameDict.play}
               </Button>
-              <Image src={student} alt={dict.student_alt} className={styles.student} priority />
+              <Image
+                src={student}
+                alt={dict.student_alt}
+                className={styles.student}
+                loading="lazy"
+              />
             </div>
           </>
         )}

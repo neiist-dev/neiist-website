@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Hero from "@/components/homepage/Hero";
 import Activities from "@/components/homepage/Activities";
 import Partnerships from "@/components/homepage/Partnerships";
@@ -10,6 +11,26 @@ export const instant = false;
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({ params }: { params: LocaleParams }): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale);
+
+  const mainDesc =
+    `${dict.hero.title_prefix} ${dict.hero.title_highlight} ${dict.hero.title_suffix}`.trim();
+  const description = dict.hero.teaser_title ? `${mainDesc}. ${dict.hero.teaser_title}.` : mainDesc;
+
+  return {
+    description,
+    openGraph: {
+      description,
+    },
+    twitter: {
+      description,
+    },
+  };
 }
 
 async function HomePage({ params }: { params: LocaleParams }) {

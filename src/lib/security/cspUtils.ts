@@ -2,11 +2,25 @@ const isDev = process.env.NODE_ENV === "development";
 
 const directives: Record<string, string[]> = {
   "default-src": ["'self'"],
-  "script-src": ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])],
+  "script-src": [
+    "'self'",
+    "'unsafe-inline'",
+    "https://gateway.sumup.com",
+    "https://*.sumup.com",
+    "https://applepay.cdn-apple.com",
+    ...(isDev ? ["'unsafe-eval'"] : []),
+  ],
   "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
   "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
   // TODO: add Cloudflare R2/CDN domain to img-src and connect-src when implemented
-  "img-src": ["'self'", "data:", "blob:", "https://neiist.tecnico.ulisboa.pt"],
+  "img-src": [
+    "'self'",
+    "data:",
+    "blob:",
+    "https://neiist.tecnico.ulisboa.pt",
+    "https://static.sumup.com",
+    "https://api.sumup.com",
+  ],
   "connect-src": ["'self'", "https://api.sumup.com", "https://gateway.sumup.com"],
   "frame-src": ["https://gateway.sumup.com"],
   "object-src": ["'none'"],

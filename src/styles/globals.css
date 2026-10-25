@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Secular+One&display=swap");
-
 :root {
   --background-colour: #f2f2f7;
   --background-colour-hover: #e7e7ee;
@@ -10,7 +8,7 @@
   --quaternary-colour: #5ee8fa;
   --foreground-colour-rgb: rgb(51, 51, 51);
   --hover: rgba(0, 0, 0, 0.05);
-  --font-family: "Secular One";
+  --font-family: var(--font-secular-one);
   --light-foreground-colour: #7b7b8b;
   --light-secondary-colour: #d4e6f6;
 }

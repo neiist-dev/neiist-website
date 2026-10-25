@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import { login, logout } from "@/utils/userUtils";
+import { logout } from "@/utils/userUtils";
 import { Squash } from "hamburger-react";
 import { NavItem } from "@/components/layout/navbar/NavItem";
 import NeiistLogo from "@/components/layout/navbar/NeiistLogo";
@@ -51,7 +51,7 @@ export function AuthWidget({
     );
   }
 
-  return <LoginButton onClick={login} />;
+  return <LoginButton />;
 }
 
 export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavBarProps) {
@@ -123,7 +123,7 @@ export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavB
   return (
     <header className={`${styles.header} ${isSticky ? styles.sticky : ""}`}>
       <nav className={styles.navigation}>
-        <Link href={basePath} className={styles.logo}>
+        <Link href={basePath} className={styles.logo} aria-label="NEIIST">
           <NeiistLogo />
         </Link>
         <div className={styles.navItems}>{renderNavItems()}</div>
@@ -141,6 +141,7 @@ export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavB
             size={24}
             color="var(--foreground-colour)"
             rounded
+            label="Menu"
           />
         </div>
       </div>
@@ -151,6 +152,7 @@ export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavB
           <Link
             href={basePath}
             className={styles.logo}
+            aria-label="NEIIST"
             onClick={() => handleMobileNavClick(basePath)}>
             <NeiistLogo />
           </Link>

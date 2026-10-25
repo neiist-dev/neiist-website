@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { Terminal, type ExtraCommands } from "one-terminal";
 import { getTerminalVfs } from "./TerminalVfs";
 import styles from "@/styles/components/terminal/HeroTerminal.module.css";
@@ -14,7 +14,15 @@ interface HeroTerminalProps {
 }
 
 export default function HeroTerminal({ locale, dict, onStartGame }: HeroTerminalProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const vfs = useMemo(() => getTerminalVfs(locale, dict), [locale, dict]);
+
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const input = wrapperRef.current.querySelector("input");
+    if (input && !input.getAttribute("aria-label"))
+      input.setAttribute("aria-label", "Terminal input");
+  }, []);
 
   const extraCommands = useMemo<ExtraCommands>(
     () => ({
@@ -29,7 +37,7 @@ export default function HeroTerminal({ locale, dict, onStartGame }: HeroTerminal
   );
 
   return (
-    <div className={styles.terminalWrapper}>
+    <div ref={wrapperRef} className={styles.terminalWrapper}>
       <Terminal
         fileStructure={vfs}
         startPath="/home/neiist"

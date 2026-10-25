@@ -5,6 +5,7 @@ import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay, isBefore, startOfDay } from "date-fns";
 import { pt, enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import "@/styles/components/activities/ReactBigCalendar.css";
 import EventDetails from "@/components/activities/EventDetails";
 import { normalizeCalendarEvent } from "@/utils/calendarUtils";
 import type { NormalizedCalendarEvent, CalendarEvent } from "@/types/events";

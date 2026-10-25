@@ -64,7 +64,8 @@ export default defineConfig([
             {
               case: "kebab",
               target: "**/app/**",
-              patterns: "^(page|layout|loading|error|not-found|route|template|sitemap)\\.(tsx|ts)$",
+              patterns:
+                "^(page|layout|loading|error|not-found|route|template|sitemap|opengraph-image|twitter-image|icon|apple-icon|default|manifest|robots)\\.(tsx|ts)$",
             },
             { case: "camel", target: "**/hooks/**", patterns: "^use" },
           ],
