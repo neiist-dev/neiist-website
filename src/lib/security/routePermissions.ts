@@ -8,6 +8,7 @@ export const publicRoutes = [
   "/activities",
   "/unauthorized",
   "/privacy",
+  "/terms",
 ];
 
 export const ROUTE_TIERS: Record<string, UserRole> = {

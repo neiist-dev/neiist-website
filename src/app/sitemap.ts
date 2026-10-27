@@ -17,6 +17,7 @@ const routes: RouteConfig[] = [
   { path: "/voting", changeFrequency: "weekly", priority: 0.7 },
   { path: "/dinner", changeFrequency: "monthly", priority: 0.5 },
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

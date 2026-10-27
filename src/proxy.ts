@@ -20,6 +20,7 @@ Associação de estudantes de Informática do Instituto Superior Técnico, Lisbo
 - [Loja](https://neiist.tecnico.ulisboa.pt/shop)
 - [Jantar](https://neiist.tecnico.ulisboa.pt/dinner)
 - [Política de Privacidade](https://neiist.tecnico.ulisboa.pt/privacy)
+- [Termos e Condições](https://neiist.tecnico.ulisboa.pt/terms)
 `;
 
 export async function proxy(req: NextRequest) {
