@@ -719,6 +719,7 @@
     "team_link": "Equipa",
     "estatutos_link": "Estatutos",
     "privacy_policy_link": "Política de Privacidade",
+    "terms_link": "Termos e Condições",
     "address": "Av. Rovisco Pais 1, 1049-001 Lisboa",
     "courses_title": "Cursos de EIC",
     "contacts_title": "Contactos",
@@ -1667,7 +1668,7 @@
   "privacy_policy_page": {
     "title": "Política de Privacidade",
     "last_updated_label": "Última atualização",
-    "last_updated_date": "28 de setembro de 2026",
+    "last_updated_date": "27 de outubro de 2026",
     "intro": "A presente Política de Privacidade explica como o NEIIST (Núcleo Estudantil de Informática do IST) trata os dados pessoais recolhidos através deste site e serviços associados, em conformidade com o Regulamento Geral sobre a Proteção de Dados (RGPD).",
     "sections": [
       {
@@ -1769,6 +1770,10 @@
             "text": "utilizado para envio de emails transacionais e armazenamento de CVs, ao abrigo do Acordo de Tratamento de Dados (DPA) da Google."
           },
           {
+            "label": "Google Drive (cópias de segurança)",
+            "text": "utilizado para armazenar cópias de segurança da base de dados, ao abrigo do DPA da Google. Todas as cópias são cifradas localmente com GPG (AES-256) antes do envio, pelo que a Google não tem acesso ao seu conteúdo."
+          },
+          {
             "label": "SumUp",
             "text": "processamento de pagamentos online, ao abrigo do DPA da SumUp. O NEIIST não recolhe, não processa e não armazena quaisquer dados de cartões de crédito, débito ou outros dados bancários sensíveis. Os dados de pagamento são inseridos direta e exclusivamente no sistema seguro da SumUp, recebendo o NEIIST apenas a confirmação, comprovativo e código de referência de que a transação foi concluída com sucesso."
           },
@@ -1844,6 +1849,9 @@
             "text": "Os servidores e bases de dados estão alojados na UE, pelo IST."
           },
           {
+            "text": "As cópias de segurança da base de dados são cifradas com GPG (AES-256) antes de saírem dos servidores do IST, sendo armazenadas fora do local apenas em formato cifrado."
+          },
+          {
             "text": "O acesso a funções administrativas requer autenticação do IST e atribuição explícita de funções por um administrador."
           },
           {
@@ -1883,6 +1891,271 @@
         "title": "10. Contacto",
         "paragraphs": [
           "Para questões relativas a esta política ou aos seus dados pessoais, contacte-nos através de neiist@tecnico.ulisboa.pt, ou apresente reclamação junto da CNPD (https://www.cnpd.pt)."
+        ]
+      }
+    ]
+  },
+  "terms_page": {
+    "title": "Termos e Condições",
+    "last_updated_label": "Última atualização",
+    "last_updated_date": "27 de outubro de 2026",
+    "intro": "Os presentes Termos e Condições regulam a utilização deste site e as compras efetuadas na loja do NEIIST (Núcleo Estudantil de Informática do IST), incluindo encomendas, pagamentos, entregas, trocas e devoluções, em conformidade com a legislação portuguesa e europeia de defesa do consumidor.",
+    "sections": [
+      {
+        "type": "list",
+        "id": "identification",
+        "title": "1. Identificação da Entidade",
+        "intro": "Este site e a respetiva loja são geridos por:",
+        "items": [
+          { "label": "Denominação", "text": "NEIIST (Núcleo Estudantil de Informática do IST)" },
+          { "label": "Natureza", "text": "Associação Juvenil sem fins lucrativos" },
+          {
+            "label": "Morada",
+            "text": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa"
+          },
+          { "label": "Identificação Fiscal", "text": "507 162 331" },
+          { "label": "Email", "text": "neiist@tecnico.ulisboa.pt" },
+          {
+            "label": "Salas de atendimento",
+            "text": "Alameda: Pavilhão de Informática I, Sala 3-03 (3.º piso). Taguspark: Edifício Central, Sala 1 - 4.14 (entrada do Aquário)"
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "acceptance",
+        "title": "2. Objeto e Aceitação",
+        "paragraphs": [
+          "Ao aceder e utilizar este site, o utilizador declara ter lido, compreendido e aceite os presentes Termos e Condições. Caso não concorde com algum dos termos, deverá abster-se de utilizar o site e os serviços associados.",
+          "A realização de uma encomenda implica a aceitação expressa destes Termos e Condições na versão em vigor à data da encomenda."
+        ]
+      },
+      {
+        "type": "list",
+        "id": "use",
+        "title": "3. Utilização do Site e Conta",
+        "items": [
+          {
+            "text": "A autenticação é feita exclusivamente através do Fénix do IST. O utilizador é responsável por manter a confidencialidade das suas credenciais e por toda a atividade realizada na sua conta."
+          },
+          {
+            "text": "O utilizador compromete-se a fornecer informações verdadeiras, atuais e completas, nomeadamente nos dados de contacto e faturação."
+          },
+          {
+            "text": "É proibida a utilização do site para fins ilícitos, a tentativa de acesso não autorizado a sistemas ou dados, bem como qualquer ação que comprometa o seu funcionamento ou segurança."
+          },
+          {
+            "text": "O NEIIST reserva-se o direito de suspender ou encerrar contas que violem estes Termos e Condições."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "intellectual-property",
+        "title": "4. Propriedade Intelectual",
+        "paragraphs": [
+          "Os conteúdos deste site, incluindo logótipos, imagens, designs de produtos e textos, são propriedade do NEIIST ou dos respetivos titulares e encontram-se protegidos pela legislação aplicável. Não é permitida a sua reprodução, distribuição ou utilização comercial sem autorização prévia por escrito.",
+          "O código-fonte do site encontra-se disponível publicamente nos termos da licença indicada no respetivo repositório (https://github.com/neiist-dev/neiist-website)"
+        ]
+      },
+      {
+        "type": "list",
+        "id": "orders",
+        "title": "5. Encomendas e Preços",
+        "items": [
+          {
+            "label": "Quem pode comprar",
+            "text": "as compras online requerem uma conta autenticada através do Fénix do IST."
+          },
+          {
+            "label": "Preços",
+            "text": "todos os preços são apresentados em euros (€) e incluem os impostos aplicáveis à taxa legal em vigor. O valor total a pagar é sempre indicado antes da confirmação da encomenda. Não existem custos de envio, uma vez que as encomendas são levantadas presencialmente."
+          },
+          {
+            "label": "Celebração do contrato",
+            "text": "o contrato considera-se celebrado quando o NEIIST envia o email de confirmação da encomenda. Nesse email constam o resumo dos artigos, o valor total, o método de pagamento e o local de levantamento."
+          },
+          {
+            "label": "Stock e produção por encomenda",
+            "text": "alguns artigos têm stock limitado, enquanto outros são produzidos por encomenda dentro de um período de encomendas definido. A disponibilidade, o período de encomendas e o prazo estimado de entrega são indicados na página de cada produto."
+          },
+          {
+            "label": "Códigos de desconto",
+            "text": "os códigos de desconto são pessoais ou promocionais, não são cumuláveis salvo indicação em contrário e não podem ser convertidos em dinheiro."
+          },
+          {
+            "label": "Cancelamento pelo NEIIST",
+            "text": "o NEIIST pode cancelar encomendas que não sejam pagas dentro do prazo indicado, em caso de erro manifesto de preço ou de impossibilidade de fornecimento. Nesses casos, o cliente é informado por email e qualquer montante já pago é integralmente reembolsado."
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "payment",
+        "title": "6. Pagamento",
+        "intro": "São aceites os seguintes métodos de pagamento, consoante a disponibilidade indicada no checkout:",
+        "items": [
+          {
+            "label": "Cartão online / Apple Pay",
+            "text": "processado de forma segura pela SumUp. O NEIIST não tem acesso aos dados do seu cartão."
+          },
+          {
+            "label": "MB Way",
+            "text": "por transferência para o número indicado após a encomenda, incluindo o número da encomenda na descrição. A encomenda fica pendente até à verificação do pagamento."
+          },
+          {
+            "label": "Presencialmente",
+            "text": "em numerário, MB Way ou terminal de pagamento (TPA) nas salas do NEIIST, durante o horário de atendimento."
+          }
+        ],
+        "outro": "Caso pretenda fatura com NIF, deverá indicá-lo no momento da encomenda."
+      },
+      {
+        "type": "list",
+        "id": "delivery",
+        "title": "7. Entregas e Levantamento",
+        "items": [
+          {
+            "label": "Modalidade",
+            "text": "o NEIIST não efetua envios por correio. Todas as encomendas são levantadas presencialmente na sala do campus escolhido no checkout (Alameda ou Taguspark)."
+          },
+          {
+            "label": "Prazos",
+            "text": "o prazo estimado de entrega é indicado na página de cada produto e no checkout e tem caráter indicativo. Para artigos produzidos por encomenda, o prazo conta a partir do fecho do período de encomendas. Enquanto associação de estudantes sem fins lucrativos, o NEIIST depende de fornecedores externos e do trabalho voluntário dos seus membros, pelo que podem ocorrer atrasos; faremos sempre o possível para cumprir os prazos indicados. Salvo prazo diferente indicado e aceite pelo cliente no momento da encomenda, a entrega será disponibilizada no prazo máximo de 30 dias (Decreto-Lei n.º 24/2014)."
+          },
+          {
+            "label": "Aviso de disponibilidade",
+            "text": "o cliente é notificado por email quando a encomenda estiver pronta para levantamento, com indicação do prazo para o efeito."
+          },
+          {
+            "label": "Horários",
+            "text": "o horário de atendimento de cada sala pode ser consultado na loja, através da opção de ver o horário da sala. Por depender da disponibilidade dos membros voluntários, o horário pode sofrer alterações pontuais."
+          },
+          {
+            "label": "Levantamento",
+            "text": "no levantamento poderá ser solicitado o número da encomenda ou identificação. A encomenda pode ser levantada por terceiro mediante indicação prévia por email."
+          },
+          {
+            "label": "Atrasos",
+            "text": "em caso de atraso, o cliente será informado por email com a nova data prevista. Cada situação é analisada caso a caso e acordada entre a Direção do NEIIST em funções e o cliente, procurando-se a melhor solução para ambas as partes. Se o novo prazo não for conveniente, o cliente pode sempre resolver o contrato, com reembolso integral, nos termos da lei."
+          }
+        ],
+        "outro": "Após a disponibilização das encomendas, o NEIIST define uma data-limite para o seu levantamento, comunicada individualmente a cada cliente por email e, por vezes, também divulgada através das redes sociais do NEIIST. Encomendas não levantadas até essa data são tratadas caso a caso: contacte a Direção do NEIIST através de neiist@tecnico.ulisboa.pt."
+      },
+      {
+        "type": "list",
+        "id": "withdrawal",
+        "title": "8. Direito de Livre Resolução (Devoluções)",
+        "intro": "Nos termos do Decreto-Lei n.º 24/2014, o consumidor dispõe de um prazo de 14 dias a contar da data de levantamento dos artigos para resolver o contrato, sem necessidade de indicar qualquer motivo e sem quaisquer custos.",
+        "items": [
+          {
+            "label": "Como exercer",
+            "text": "envie um email para neiist@tecnico.ulisboa.pt com o número da encomenda e a indicação de que pretende resolver o contrato, ou utilize o modelo de formulário de livre resolução constante do Anexo do Decreto-Lei n.º 24/2014."
+          },
+          {
+            "label": "Devolução dos artigos",
+            "text": "os artigos devem ser entregues numa das salas do NEIIST no prazo de 14 dias após a comunicação, sem uso, em bom estado e, sempre que possível, na embalagem original e com etiquetas."
+          },
+          {
+            "label": "Reembolso",
+            "text": "o reembolso de todos os montantes pagos é efetuado no prazo máximo de 14 dias a contar da comunicação da resolução, através do mesmo meio de pagamento utilizado, salvo acordo expresso em contrário. O NEIIST pode reter o reembolso até à receção dos artigos."
+          },
+          {
+            "label": "Exceções",
+            "text": "o direito de livre resolução não se aplica a artigos personalizados ou produzidos segundo especificações do consumidor (por exemplo, com nome ou design escolhido pelo cliente), nos termos do artigo 17.º, n.º 1, alínea c), do Decreto-Lei n.º 24/2014."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "exchanges",
+        "title": "9. Trocas",
+        "paragraphs": [
+          "Enquanto associação de estudantes sem fins lucrativos, o NEIIST não garante a possibilidade de troca de artigos. Os pedidos de troca (por exemplo, de tamanho ou modelo) são analisados caso a caso e acordados entre a Direção do NEIIST em funções e o cliente.",
+          "O pedido deve ser feito por email para neiist@tecnico.ulisboa.pt no prazo máximo de 14 dias após a entrega, indicando o número da encomenda e o motivo. As condições da troca, nomeadamente a disponibilidade de artigos, o estado do artigo a devolver e a forma e local de entrega, são definidas por acordo entre as partes. O NEIIST fará o possível para encontrar uma solução, mas nem sempre será possível efetuar a troca.",
+          "Esta política de trocas não prejudica o direito de livre resolução (secção 8) nem a garantia legal de conformidade (secção 10)."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "warranty",
+        "title": "10. Garantia e Conformidade",
+        "paragraphs": [
+          "Todos os artigos beneficiam da garantia legal de conformidade de 3 anos a contar da entrega, nos termos do Decreto-Lei n.º 84/2021.",
+          "Em caso de defeito ou falta de conformidade, o consumidor tem direito à reparação ou substituição do artigo, à redução proporcional do preço ou à resolução do contrato, nos termos da lei. Para o efeito, contacte neiist@tecnico.ulisboa.pt com o número da encomenda e, se possível, fotografias do defeito."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "events",
+        "title": "11. Bilhetes e Inscrições em Eventos",
+        "paragraphs": [
+          "Os bilhetes para eventos com data específica (como jantares ou atividades) não estão abrangidos pelo direito de livre resolução, nos termos do artigo 17.º, n.º 1, alínea l), do Decreto-Lei n.º 24/2014. Pedidos de cancelamento ou alteração podem ser enviados para neiist@tecnico.ulisboa.pt e são analisados caso a caso pela Direção do NEIIST em funções, que fará o possível por encontrar uma solução, embora nem sempre seja possível.",
+          "Se um evento for cancelado pelo NEIIST, os participantes serão informados e o valor pago será integralmente reembolsado."
+        ]
+      },
+      {
+        "type": "list",
+        "id": "disputes",
+        "title": "12. Reclamações e Resolução Alternativa de Litígios",
+        "intro": "Em caso de litígio, o consumidor pode contactar previamente o NEIIST através de neiist@tecnico.ulisboa.pt, procurando-se uma resolução amigável. Pode ainda recorrer a:",
+        "items": [
+          {
+            "label": "Livro de Reclamações Eletrónico",
+            "text": "disponível em https://www.livroreclamacoes.pt"
+          },
+          {
+            "label": "Centro de Arbitragem de Conflitos de Consumo de Lisboa (CACCL)",
+            "text": "entidade de Resolução Alternativa de Litígios de consumo competente (https://www.centroarbitragemlisboa.pt)"
+          },
+          {
+            "label": "Outras entidades RAL",
+            "text": "a lista completa de entidades de Resolução Alternativa de Litígios de consumo está disponível no Portal do Consumidor (https://www.consumidor.gov.pt)"
+          }
+        ],
+        "outro": "Esta informação é prestada nos termos da Lei n.º 144/2015, de 8 de setembro."
+      },
+      {
+        "type": "paragraphs",
+        "id": "data-protection",
+        "title": "13. Proteção de Dados",
+        "paragraphs": [
+          "O tratamento dos dados pessoais recolhidos através deste site, incluindo os dados das encomendas, é regulado pela nossa Política de Privacidade (https://neiist.tecnico.ulisboa.pt/privacy)"
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "liability",
+        "title": "14. Limitação de Responsabilidade",
+        "paragraphs": [
+          "O NEIIST é uma associação de estudantes sem fins lucrativos, gerida por estudantes em regime de voluntariado. Esforçamo-nos por manter a informação do site correta e atualizada e por prestar o melhor serviço possível, mas não podemos garantir a ausência total de erros, falhas ou interrupções.",
+          "As imagens e descrições dos produtos são ilustrativas e podem apresentar ligeiras diferenças de cor ou detalhe face ao artigo real. O site pode estar temporariamente indisponível por motivos de manutenção ou falhas técnicas, e o NEIIST não se responsabiliza por conteúdos de sites de terceiros para os quais existam ligações.",
+          "Qualquer situação imprevista ou não prevista nestes Termos é analisada caso a caso pela Direção do NEIIST em funções, que fará o possível por encontrar uma solução justa em diálogo com o utilizador, embora nem sempre seja possível satisfazer todos os pedidos.",
+          "Nada nestes Termos e Condições limita os direitos que a lei confere ao consumidor."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "changes",
+        "title": "15. Alterações aos Termos",
+        "paragraphs": [
+          "O NEIIST pode atualizar estes Termos e Condições periodicamente. A versão em vigor é sempre a publicada nesta página, aplicando-se a cada encomenda a versão vigente à data da sua realização."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "law",
+        "title": "16. Lei Aplicável e Foro",
+        "paragraphs": [
+          "Estes Termos e Condições regem-se pela lei portuguesa. Para a resolução de qualquer litígio é competente o foro da comarca de Lisboa, sem prejuízo das normas imperativas aplicáveis aos consumidores e do recurso às entidades de resolução alternativa de litígios indicadas na secção 12."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "contact",
+        "title": "17. Contacto",
+        "paragraphs": [
+          "Para qualquer questão relativa a estes Termos e Condições, encomendas, trocas ou devoluções, contacte-nos através de neiist@tecnico.ulisboa.pt ou dirija-se a uma das nossas salas."
         ]
       }
     ]

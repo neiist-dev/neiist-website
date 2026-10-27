@@ -719,6 +719,7 @@
     "team_link": "Team",
     "estatutos_link": "Bylaws",
     "privacy_policy_link": "Privacy Policy",
+    "terms_link": "Terms and Conditions",
     "address": "Av. Rovisco Pais 1, 1049-001 Lisbon",
     "courses_title": "CS & Eng. Degrees",
     "contacts_title": "Contacts",
@@ -1667,7 +1668,7 @@
   "privacy_policy_page": {
     "title": "Privacy Policy",
     "last_updated_label": "Last updated",
-    "last_updated_date": "September 28, 2026",
+    "last_updated_date": "October 27, 2026",
     "intro": "This Privacy Policy explains how NEIIST (Núcleo Estudantil de Informática do IST) processes personal data collected through this website and related services, in accordance with the General Data Protection Regulation (GDPR).",
     "sections": [
       {
@@ -1769,6 +1770,10 @@
             "text": "used for transactional emails and CV storage, under Google's Data Processing Agreement (DPA)."
           },
           {
+            "label": "Google Drive (backups)",
+            "text": "used to store database backups, under Google's DPA. All backups are encrypted locally with GPG (AES-256) before upload, so Google has no access to their contents."
+          },
+          {
             "label": "SumUp",
             "text": "online payment processing, under SumUp's DPA. NEIIST does not collect, process, or store credit card numbers, debit card details, or any sensitive banking information. Payment data is entered directly and securely into SumUp's platform, and NEIIST receives only a transaction receipt, confirmation, and reference code that the payment was successful."
           },
@@ -1844,6 +1849,9 @@
             "text": "Servers and databases are hosted within the EU by IST."
           },
           {
+            "text": "Database backups are encrypted with GPG (AES-256) before leaving IST's servers and are only stored off-site in encrypted form."
+          },
+          {
             "text": "Access to administrative functions requires IST authentication and explicit role assignment by an administrator."
           },
           {
@@ -1883,6 +1891,271 @@
         "title": "10. Contact",
         "paragraphs": [
           "For any questions about this policy or your personal data, contact us at neiist@tecnico.ulisboa.pt, or lodge a complaint with the CNPD (https://www.cnpd.pt)."
+        ]
+      }
+    ]
+  },
+  "terms_page": {
+    "title": "Terms and Conditions",
+    "last_updated_label": "Last updated",
+    "last_updated_date": "October 27, 2026",
+    "intro": "These Terms and Conditions govern the use of this website and purchases made in the NEIIST (Núcleo Estudantil de Informática do IST) shop, including orders, payments, delivery, exchanges and returns, in accordance with Portuguese and European consumer protection law. In case of discrepancy, the Portuguese version prevails.",
+    "sections": [
+      {
+        "type": "list",
+        "id": "identification",
+        "title": "1. Company Information",
+        "intro": "This website and its shop are operated by:",
+        "items": [
+          { "label": "Name", "text": "NEIIST (Núcleo Estudantil de Informática do IST)" },
+          { "label": "Legal nature", "text": "Non-profit Youth Association" },
+          {
+            "label": "Address",
+            "text": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa"
+          },
+          { "label": "Tax ID", "text": "507 162 331" },
+          { "label": "Email", "text": "neiist@tecnico.ulisboa.pt" },
+          {
+            "label": "Service rooms",
+            "text": "Alameda: Computer Science Pavilion I, Room 3-03 (3rd floor). Taguspark: Central Building, Room 1 - 4.14 (Aquarium entrance)"
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "acceptance",
+        "title": "2. Scope and Acceptance",
+        "paragraphs": [
+          "By accessing and using this website, you confirm that you have read, understood and accepted these Terms and Conditions. If you do not agree with any of them, please refrain from using the website and related services.",
+          "Placing an order implies express acceptance of the version of these Terms and Conditions in force at the time of the order."
+        ]
+      },
+      {
+        "type": "list",
+        "id": "use",
+        "title": "3. Website Use and Account",
+        "items": [
+          {
+            "text": "Authentication is performed exclusively through IST's Fénix. You are responsible for keeping your credentials confidential and for all activity carried out on your account."
+          },
+          {
+            "text": "You agree to provide true, current and complete information, namely contact and billing details."
+          },
+          {
+            "text": "Using the website for unlawful purposes, attempting unauthorised access to systems or data, or any action that compromises its operation or security is prohibited."
+          },
+          {
+            "text": "NEIIST reserves the right to suspend or close accounts that breach these Terms and Conditions."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "intellectual-property",
+        "title": "4. Intellectual Property",
+        "paragraphs": [
+          "The content of this website, including logos, images, product designs and texts, is owned by NEIIST or its respective owners and is protected by applicable law. Reproduction, distribution or commercial use without prior written permission is not allowed.",
+          "The website's source code is publicly available under the licence stated in its repository (https://github.com/neiist-dev/neiist-website)"
+        ]
+      },
+      {
+        "type": "list",
+        "id": "orders",
+        "title": "5. Orders and Prices",
+        "items": [
+          {
+            "label": "Who can buy",
+            "text": "online purchases require an account authenticated through IST's Fénix."
+          },
+          {
+            "label": "Prices",
+            "text": "all prices are shown in euros (€) and include applicable taxes at the legal rate in force. The total amount payable is always shown before the order is confirmed. There are no shipping costs, as orders are collected in person."
+          },
+          {
+            "label": "Contract formation",
+            "text": "the contract is concluded when NEIIST sends the order confirmation email, which includes a summary of the items, the total amount, the payment method and the pickup location."
+          },
+          {
+            "label": "Stock and made-to-order items",
+            "text": "some items have limited stock, while others are produced to order within a defined ordering period. Availability, the ordering period and the estimated delivery time are shown on each product page."
+          },
+          {
+            "label": "Discount codes",
+            "text": "discount codes are personal or promotional, cannot be combined unless stated otherwise and cannot be exchanged for cash."
+          },
+          {
+            "label": "Cancellation by NEIIST",
+            "text": "NEIIST may cancel orders that are not paid within the stated deadline, in case of an obvious pricing error, or if supply becomes impossible. In such cases, the customer is notified by email and any amount already paid is refunded in full."
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "id": "payment",
+        "title": "6. Payment",
+        "intro": "The following payment methods are accepted, subject to availability shown at checkout:",
+        "items": [
+          {
+            "label": "Online card / Apple Pay",
+            "text": "securely processed by SumUp. NEIIST has no access to your card details."
+          },
+          {
+            "label": "MB Way",
+            "text": "by transfer to the number shown after the order, including the order number in the description. The order remains pending until the payment is verified."
+          },
+          {
+            "label": "In person",
+            "text": "in cash, MB Way or card terminal (POS) at the NEIIST rooms during opening hours."
+          }
+        ],
+        "outro": "If you need an invoice with your tax number (NIF), please provide it when placing the order."
+      },
+      {
+        "type": "list",
+        "id": "delivery",
+        "title": "7. Delivery and Pickup",
+        "items": [
+          {
+            "label": "Method",
+            "text": "NEIIST does not ship orders by post. All orders are collected in person at the room of the campus selected at checkout (Alameda or Taguspark)."
+          },
+          {
+            "label": "Delivery times",
+            "text": "the estimated delivery time is shown on each product page and at checkout and is indicative only. For made-to-order items, it counts from the end of the ordering period. As a non-profit student association, NEIIST relies on external suppliers and on the volunteer work of its members, so delays may occur; we will always do our best to meet the stated dates. Unless a different period was stated and accepted by the customer when ordering, the order will be made available within a maximum of 30 days (Decree-Law no. 24/2014)."
+          },
+          {
+            "label": "Ready notice",
+            "text": "the customer is notified by email when the order is ready for pickup, including the pickup deadline."
+          },
+          {
+            "label": "Opening hours",
+            "text": "each room's opening hours can be checked in the shop using the view room schedule option. As they depend on the availability of volunteer members, opening hours may occasionally change."
+          },
+          {
+            "label": "Pickup",
+            "text": "the order number or identification may be requested at pickup. A third party may collect the order if notified in advance by email."
+          },
+          {
+            "label": "Delays",
+            "text": "if there is a delay, the customer will be informed by email of the new expected date. Each situation is assessed case by case and agreed between the current NEIIST Board and the customer, seeking the best solution for both parties. If the new date is not convenient, the customer may always cancel the contract with a full refund, as provided by law."
+          }
+        ],
+        "outro": "Once orders are ready, NEIIST sets a pickup deadline, which is communicated individually to each customer by email and sometimes also announced on NEIIST's social media. Orders not collected by that date are handled case by case: contact the NEIIST Board at neiist@tecnico.ulisboa.pt."
+      },
+      {
+        "type": "list",
+        "id": "withdrawal",
+        "title": "8. Right of Withdrawal (Returns)",
+        "intro": "Under Decree-Law no. 24/2014, consumers have 14 days from the date the items are collected to withdraw from the contract, without giving any reason and at no cost.",
+        "items": [
+          {
+            "label": "How to withdraw",
+            "text": "send an email to neiist@tecnico.ulisboa.pt with your order number stating that you wish to withdraw, or use the model withdrawal form in the Annex to Decree-Law no. 24/2014."
+          },
+          {
+            "label": "Returning items",
+            "text": "items must be returned to one of the NEIIST rooms within 14 days of your notice, unused, in good condition and, where possible, in their original packaging with tags."
+          },
+          {
+            "label": "Refund",
+            "text": "all amounts paid are refunded within 14 days of the withdrawal notice, using the same payment method, unless expressly agreed otherwise. NEIIST may withhold the refund until the items are received."
+          },
+          {
+            "label": "Exceptions",
+            "text": "the right of withdrawal does not apply to personalised items or items made to the consumer's specifications (for example, with a name or design chosen by the customer), under Article 17(1)(c) of Decree-Law no. 24/2014."
+          }
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "exchanges",
+        "title": "9. Exchanges",
+        "paragraphs": [
+          "As a non-profit student association, NEIIST does not guarantee that items can be exchanged. Exchange requests (for example, for a different size or model) are assessed case by case and agreed between the current NEIIST Board and the customer.",
+          "Requests must be sent by email to neiist@tecnico.ulisboa.pt within 14 days of delivery at the latest, stating the order number and the reason. The terms of the exchange, including item availability, the condition of the returned item, and how and where it is handed over, are agreed between both parties. NEIIST will do its best to find a solution, but an exchange may not always be possible.",
+          "This exchange policy does not affect the right of withdrawal (section 8) or the legal guarantee of conformity (section 10)."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "warranty",
+        "title": "10. Warranty and Conformity",
+        "paragraphs": [
+          "All items benefit from the 3-year legal guarantee of conformity from delivery, under Decree-Law no. 84/2021.",
+          "In case of a defect or lack of conformity, the consumer is entitled to repair or replacement, a proportional price reduction, or termination of the contract, as provided by law. To do so, contact neiist@tecnico.ulisboa.pt with your order number and, if possible, photos of the defect."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "events",
+        "title": "11. Event Tickets and Registrations",
+        "paragraphs": [
+          "Tickets for events on a specific date (such as dinners or activities) are not covered by the right of withdrawal, under Article 17(1)(l) of Decree-Law no. 24/2014. Cancellation or change requests may be sent to neiist@tecnico.ulisboa.pt and are assessed case by case by the current NEIIST Board, which will do its best to find a solution, although this may not always be possible.",
+          "If an event is cancelled by NEIIST, participants will be informed and the amount paid will be refunded in full."
+        ]
+      },
+      {
+        "type": "list",
+        "id": "disputes",
+        "title": "12. Complaints and Alternative Dispute Resolution",
+        "intro": "In case of a dispute, consumers may first contact NEIIST at neiist@tecnico.ulisboa.pt to seek an amicable solution. They may also use:",
+        "items": [
+          {
+            "label": "Electronic Complaints Book (Livro de Reclamações)",
+            "text": "available at https://www.livroreclamacoes.pt"
+          },
+          {
+            "label": "Lisbon Consumer Arbitration Centre (CACCL)",
+            "text": "the competent consumer Alternative Dispute Resolution entity (https://www.centroarbitragemlisboa.pt)"
+          },
+          {
+            "label": "Other ADR entities",
+            "text": "the full list of consumer Alternative Dispute Resolution entities is available on the Consumer Portal (https://www.consumidor.gov.pt)"
+          }
+        ],
+        "outro": "This information is provided under Law no. 144/2015 of 8 September."
+      },
+      {
+        "type": "paragraphs",
+        "id": "data-protection",
+        "title": "13. Data Protection",
+        "paragraphs": [
+          "The processing of personal data collected through this website, including order data, is governed by our Privacy Policy (https://neiist.tecnico.ulisboa.pt/privacy)"
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "liability",
+        "title": "14. Limitation of Liability",
+        "paragraphs": [
+          "NEIIST is a non-profit student association run by volunteer students. We strive to keep the information on this website accurate and up to date and to provide the best possible service, but we cannot guarantee that it will be entirely free of errors, faults or interruptions.",
+          "Product images and descriptions are illustrative and may show slight differences in colour or detail from the actual item. The website may be temporarily unavailable due to maintenance or technical issues, and NEIIST is not liable for the content of third-party websites linked from this site.",
+          "Any unforeseen situation, or one not covered by these Terms, is assessed case by case by the current NEIIST Board, which will do its best to find a fair solution in dialogue with the user, although it may not always be possible to meet every request.",
+          "Nothing in these Terms and Conditions limits the rights granted to consumers by law."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "changes",
+        "title": "15. Changes to these Terms",
+        "paragraphs": [
+          "NEIIST may update these Terms and Conditions from time to time. The version in force is always the one published on this page, and each order is governed by the version in force on the date it was placed."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "law",
+        "title": "16. Governing Law and Jurisdiction",
+        "paragraphs": [
+          "These Terms and Conditions are governed by Portuguese law. The courts of Lisbon have jurisdiction over any dispute, without prejudice to mandatory consumer protection rules and to the alternative dispute resolution entities listed in section 12."
+        ]
+      },
+      {
+        "type": "paragraphs",
+        "id": "contact",
+        "title": "17. Contact",
+        "paragraphs": [
+          "For any question about these Terms and Conditions, orders, exchanges or returns, contact us at neiist@tecnico.ulisboa.pt or visit one of our rooms."
         ]
       }
     ]
