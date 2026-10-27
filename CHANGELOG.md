@@ -1,5 +1,18 @@
 # neiist
 
+## [4.7.0](https://github.com/neiist-dev/neiist-website/compare/v4.6.2...v4.7.0) (2026-10-27)
+
+
+### Features
+
+* add terms of usage and a new legal component ([06cab95](https://github.com/neiist-dev/neiist-website/commit/06cab956914e74c8acb37c17f2099da76731e5a0))
+
+
+### Bug Fixes
+
+* add seo tags and also small lighthouse complience fixes a11y ([42e6d5e](https://github.com/neiist-dev/neiist-website/commit/42e6d5e577cd538199a7b8cc95fffd591af9deba))
+* correct json en pt format for privacy policy and terms of usage ([281efca](https://github.com/neiist-dev/neiist-website/commit/281efca4f5dd383c9d2364bd0584ef39de55c4e5))
+
 ## [4.6.2](https://github.com/neiist-dev/neiist-website/compare/v4.6.1...v4.6.2) (2026-10-22)
 
 
