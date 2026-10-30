@@ -7,10 +7,10 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   devIndicators: false,
   typedRoutes: true,
+  serverExternalPackages: ["@opentelemetry/sdk-node", "pg", "pino"],
   experimental: {
     typedEnv: true,
     optimizePackageImports: [
-      "@neiist/ui",
       "react-icons",
       "date-fns",
       "@dnd-kit/core",
