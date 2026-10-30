@@ -4,13 +4,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@neiist/ui"],
   cacheComponents: true,
-  partialPrefetching: true,
   devIndicators: false,
   typedRoutes: true,
+  serverExternalPackages: ["@opentelemetry/sdk-node", "pg", "pino"],
   experimental: {
     typedEnv: true,
     optimizePackageImports: [
-      "@neiist/ui",
       "react-icons",
       "date-fns",
       "@dnd-kit/core",
