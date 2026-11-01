@@ -32,12 +32,6 @@ export const updateUser = async (istid: string, updates: Partial<User>): Promise
   return result;
 };
 
-export const updateUserPhoto = async (istid: string, photoData: string): Promise<boolean> => {
-  await db_query("SELECT neiist.update_user_photo($1::VARCHAR(10), $2::TEXT)", [istid, photoData]);
-  revalidateTag("users", "max");
-  return true;
-};
-
 export const getUser = async (istid: string): Promise<User | null> => {
   "use cache";
   cacheTag("users", "memberships", "department_roles");
@@ -61,11 +55,15 @@ export const getUser = async (istid: string): Promise<User | null> => {
   };
 };
 
+export const getAllUsersNoCache = async (): Promise<User[]> => {
+  const { rows } = await db_query<dbUser>("SELECT * FROM neiist.get_all_users()");
+  return rows.map(mapdbUserToUser);
+};
+
 export const getAllUsers = async (): Promise<User[]> => {
   "use cache";
   cacheTag("users");
-  const { rows } = await db_query<dbUser>("SELECT * FROM neiist.get_all_users()");
-  return rows.map(mapdbUserToUser);
+  return getAllUsersNoCache();
 };
 
 export const addEmailVerification = async (

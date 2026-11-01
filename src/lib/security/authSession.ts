@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { signJWTWebCrypto } from "@/lib/security/jwt";
 import { User } from "@/types/user";
+import { fenixPhotos } from "@/lib/imageStorage";
 import {
   getUser,
   createUser,
@@ -65,13 +64,11 @@ async function syncOrCreateUser(params: {
   return user;
 }
 
-async function cacheFenixPhoto(istid: string, photoData?: string, isCustom = false) {
-  if (isCustom || !photoData) return;
+async function cacheFenixPhoto(istid: string, photoData?: string) {
+  if (!photoData) return;
   try {
     const photoBuffer = Buffer.from(photoData, "base64");
-    const fenixDir = path.join(process.cwd(), "data", "fenix_cache");
-    await fs.mkdir(fenixDir, { recursive: true });
-    await fs.writeFile(path.join(fenixDir, `${istid}.png`), photoBuffer);
+    await fenixPhotos.save(photoBuffer, istid);
   } catch (error) {
     console.warn(`[Auth] Failed to cache Fenix photo for ${istid}:`, error);
   }
@@ -108,7 +105,7 @@ export async function syncFenixUserAndCreateSession(
     const user = await syncOrCreateUser({ istid, name, email, phone, courses });
     if (!user) return null;
 
-    await cacheFenixPhoto(user.istid, info.photo?.data, user.photo?.includes("?custom"));
+    await cacheFenixPhoto(user.istid, info.photo?.data);
     await attachEmailVerification(user);
 
     const jwtPayload = {

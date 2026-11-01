@@ -8,8 +8,6 @@ import {
   submitVotes,
   setSessionShowResults,
 } from "@/lib/db/repositories/voting.repository";
-import path from "path";
-import fs from "fs/promises";
 import crypto from "crypto";
 import {
   type CustomOptionInput,
@@ -18,20 +16,7 @@ import {
   VOTING_TYPES,
 } from "@/types/voting";
 import { requirePermission, requireUser } from "@/lib/auth";
-
-function getImageExtension(buffer: Buffer): ".jpg" | ".png" | ".webp" | null {
-  if (buffer.length < 4) return null;
-  const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
-  if (isJpeg) return ".jpg";
-  const pngSig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  if (buffer.length >= 8 && buffer.subarray(0, 8).equals(pngSig)) return ".png";
-  const isWebp =
-    buffer.length >= 12 &&
-    buffer.subarray(0, 4).toString("utf8") === "RIFF" &&
-    buffer.subarray(8, 12).toString("utf8") === "WEBP";
-  if (isWebp) return ".webp";
-  return null;
-}
+import { votingImages } from "@/lib/imageStorage";
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
@@ -63,9 +48,6 @@ function parseNomineeIds(raw: string | undefined): string[] {
     .filter(Boolean);
 }
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-const UPLOAD_DIR = path.join(process.cwd(), "data", "voting");
-
 type RawOption = {
   id?: string;
   name: string;
@@ -76,16 +58,8 @@ type RawOption = {
 type Extractor = (_fd: FormData) => Partial<VotingSession> | Promise<Partial<VotingSession>>;
 
 async function savePhoto(file: File): Promise<string> {
-  if (file.size > MAX_IMAGE_SIZE) throw new Error("A imagem não pode ter mais de 5MB");
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = getImageExtension(buffer);
-  if (!ext) throw new Error("Apenas formatos JPEG, PNG e WebP são permitidos");
-
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  const safeName = `${crypto.randomUUID()}${ext}`;
-  await fs.writeFile(path.join(UPLOAD_DIR, safeName), buffer);
-  return `/api/voting/photo/${safeName}`;
+  const saved = await votingImages.save(file);
+  return saved.id;
 }
 
 function parseOptions(raw: string): RawOption[] {

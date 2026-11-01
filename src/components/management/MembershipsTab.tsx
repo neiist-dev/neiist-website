@@ -115,35 +115,28 @@ export default function MembershipsTab({
     if (!file || !editingPhotoIstid) return;
 
     setIsUploadingPhoto(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const base64 = (reader.result as string).split(",")[1];
-        const res = await fetch(`/api/user/update/${editingPhotoIstid}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photo: base64 }),
-        });
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch(`/api/user/photo/${editingPhotoIstid}`, { method: "POST", body });
 
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || mDict.photo_error || "Failed to update photo");
-        }
-
-        const newPhotoUrl = `/api/user/photo/${editingPhotoIstid}?custom&t=${Date.now()}`;
-        handlePhotoUpdated(editingPhotoIstid, newPhotoUrl);
-        Alert.success(mDict.photo_updated || "Photo updated successfully");
-      } catch (err: unknown) {
-        Alert.error(
-          err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
-        );
-      } finally {
-        setIsUploadingPhoto(false);
-        setEditingPhotoIstid(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || mDict.photo_error || "Failed to update photo");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const newPhotoUrl = `/api/user/photo/${editingPhotoIstid}?t=${Date.now()}`;
+      handlePhotoUpdated(editingPhotoIstid, newPhotoUrl);
+      Alert.success(mDict.photo_updated || "Photo updated successfully");
+    } catch (err: unknown) {
+      Alert.error(
+        err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+      setEditingPhotoIstid(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   useEffect(() => {

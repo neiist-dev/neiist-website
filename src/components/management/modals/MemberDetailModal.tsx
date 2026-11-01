@@ -104,37 +104,29 @@ export default function MemberDetailModal({
     if (!file || !membership?.userNumber) return;
 
     setIsUploadingPhoto(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const base64 = (reader.result as string).split(",")[1];
-        const res = await fetch(`/api/user/update/${membership.userNumber}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photo: base64 }),
-        });
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch(`/api/user/photo/${membership.userNumber}`, { method: "POST", body });
 
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || mDict.photo_error || "Failed to update photo");
-        }
-
-        const newPhotoUrl = `/api/user/photo/${membership.userNumber}?custom&t=${Date.now()}`;
-        if (user) {
-          setUser({ ...user, photo: newPhotoUrl });
-        }
-        onPhotoUpdated?.(membership.userNumber, newPhotoUrl);
-        Alert.success(mDict.photo_updated || "Photo updated successfully");
-      } catch (err: unknown) {
-        Alert.error(
-          err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
-        );
-      } finally {
-        setIsUploadingPhoto(false);
-        if (photoInputRef.current) photoInputRef.current.value = "";
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || mDict.photo_error || "Failed to update photo");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const newPhotoUrl = `/api/user/photo/${membership.userNumber}?t=${Date.now()}`;
+      if (user) setUser({ ...user, photo: newPhotoUrl });
+
+      onPhotoUpdated?.(membership.userNumber, newPhotoUrl);
+      Alert.success(mDict.photo_updated || "Photo updated successfully");
+    } catch (err: unknown) {
+      Alert.error(
+        err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
   };
 
   if (!membership) return null;

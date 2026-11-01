@@ -32,6 +32,18 @@ interface PageProps {
   searchParams: Promise<{ year?: string }>;
 }
 
+function renderMemberPhoto(photo?: string, name?: string) {
+  return (
+    <Image
+      src={photo || "/default_user.png"}
+      alt={`${name} photo`}
+      fill
+      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 250px"
+      style={{ objectFit: "cover" }}
+    />
+  );
+}
+
 async function AboutUsContent({ params, searchParams }: PageProps) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
@@ -129,17 +141,7 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
                   key={member.id}
                   name={getFirstAndLastName(member.userName)}
                   role={roleName}
-                  image={
-                    member.userPhoto ? (
-                      <Image
-                        src={member.userPhoto}
-                        alt={`${member.userName} photo`}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 250px"
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : undefined
-                  }
+                  image={renderMemberPhoto(member.userPhoto, member.userName)}
                   githubUrl={member.github}
                   linkedinUrl={member.linkedin}
                   username={member.linkedin}

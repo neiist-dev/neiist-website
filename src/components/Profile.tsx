@@ -294,7 +294,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         <div className={styles.left}>
           <div className={styles.details}>
             <Image
-              src={user?.photo || "/default-profile.png"}
+              src={user.photo}
               alt={dict.photo_alt}
               width={180}
               height={180}

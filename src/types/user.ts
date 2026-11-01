@@ -81,7 +81,7 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     alternativeEmailVerified: true,
     phone: dbUser.phone ?? undefined,
     preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
-    photo: dbUser.photo_path ?? `/api/user/photo/${dbUser.istid}`,
+    photo: `/api/user/photo/${dbUser.istid}`,
     courses: dbUser.courses ?? [],
     roles,
     permissions,

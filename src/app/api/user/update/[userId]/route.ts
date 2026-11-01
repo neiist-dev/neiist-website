@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
 import type { User } from "@/types/user";
-import fs from "fs/promises";
-import path from "path";
 import { handleApiError } from "@/utils/apiErrorUtils";
+import { userPhotos } from "@/lib/imageStorage";
 import { validateIstId, isValidEmail, isValidPhone } from "@/utils/apiValidationUtils";
-import {
-  getUser,
-  updateUser,
-  updateUserPhoto,
-  deleteUser,
-} from "@/lib/db/repositories/user.repository";
+import { getUser, updateUser, deleteUser } from "@/lib/db/repositories/user.repository";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
@@ -113,24 +107,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
         updates.courses = updateData.courses;
     }
 
-    if (updateData.photo !== undefined && canWritePhoto) {
-      if (updateData.photo && updateData.photo !== existingUser.photo) {
-        try {
-          const buffer = Buffer.from(updateData.photo, "base64");
-          const photoDir = path.join(process.cwd(), "data", "user_photos");
-          await fs.mkdir(photoDir, { recursive: true });
-          const filePath = path.join(photoDir, `${targetUserId}.png`);
-          await fs.writeFile(filePath, buffer);
-          await updateUserPhoto(
-            targetUserId,
-            `/api/user/photo/${targetUserId}?custom&v=${Date.now()}`
-          );
-        } catch (photoError) {
-          return handleApiError(photoError);
-        }
-      }
-    }
-
     if (Object.keys(updates).length > 0) {
       const updatedUser = await updateUser(targetUserId, updates);
       if (!updatedUser)
@@ -188,13 +164,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Falha ao eliminar utilizador" }, { status: 500 });
 
     if (!isMember) {
-      try {
-        const filePath = path.join(process.cwd(), "data", "user_photos", `${targetUserId}.png`);
-        await fs.unlink(filePath);
-      } catch (unlinkError: unknown) {
-        if ((unlinkError as NodeJS.ErrnoException)?.code !== "ENOENT")
-          console.warn("Failed to delete user photo file:", unlinkError);
-      }
+      await userPhotos.remove(targetUserId);
     }
 
     console.warn(
