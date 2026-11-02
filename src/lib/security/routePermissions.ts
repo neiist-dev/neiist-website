@@ -16,19 +16,23 @@ export const ROUTE_TIERS: Record<string, UserRole> = {
   "/my-orders": UserRole._GUEST,
   "/shop/cart": UserRole._GUEST,
   "/shop/checkout": UserRole._GUEST,
+  "/voting/manage": UserRole._ADMIN,
   "/voting": UserRole._GUEST,
   "/orders": UserRole._MEMBER,
   "/management": UserRole._COORDINATOR,
   "/shop/manage": UserRole._ADMIN,
   "/shop/pos": UserRole._ADMIN,
-  "/voting/manage": UserRole._ADMIN,
   "/dinner": UserRole._ADMIN,
 };
 
 export const protectedRoutes = Object.keys(ROUTE_TIERS);
 
 export function canAccess(path: string, roles: UserRole[]): boolean {
-  const tier = Object.entries(ROUTE_TIERS).find(([route]) => path.startsWith(route))?.[1];
+  const tier = Object.entries(ROUTE_TIERS)
+    .sort(([a], [b]) => b.length - a.length)
+    .find(
+      ([route]) => path === route || path.startsWith(route + "/") || path.startsWith(route + "?")
+    )?.[1];
 
   if (!tier) {
     // Public route
