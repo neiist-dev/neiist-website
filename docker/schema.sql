@@ -85,8 +85,7 @@ CREATE TABLE neiist.users (
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   github TEXT,
-  linkedin TEXT,
-  photo_path TEXT
+  linkedin TEXT
 );
 
 -- COURSES TABLE
@@ -559,7 +558,6 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
   alt_email TEXT,
   phone TEXT,
   preferred_contact_method TEXT,
-  photo_path TEXT,
   courses TEXT[],
   permissions TEXT[],
   access_label TEXT,
@@ -577,7 +575,6 @@ BEGIN
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'alt_email' LIMIT 1) AS alt_email,
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
     (SELECT contact_type::TEXT FROM neiist.user_contacts WHERE user_istid = u.istid AND is_preferred = TRUE LIMIT 1) AS preferred_contact_method,
-    u.photo_path,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     COALESCE(derived_permissions.permissions_array, ARRAY[]::TEXT[]) AS permissions,
     derived_label.top_label::TEXT AS access_label,
@@ -652,7 +649,6 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   p_email TEXT,
   p_alt_email TEXT,
   p_phone TEXT,
-  p_photo_path TEXT,
   p_courses TEXT[],
   p_github TEXT DEFAULT NULL,
   p_linkedin TEXT DEFAULT NULL
@@ -663,7 +659,6 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   alt_email TEXT,
   phone TEXT,
   preferred_contact_method TEXT,
-  photo_path TEXT,
   courses TEXT[],
   permissions TEXT[],
   access_label TEXT,
@@ -673,8 +668,8 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   department_permissions JSONB
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO neiist.users (istid, name, email, photo_path, github, linkedin)
-  VALUES (p_istid, p_name, p_email, p_photo_path, p_github, p_linkedin);
+  INSERT INTO neiist.users (istid, name, email, github, linkedin)
+  VALUES (p_istid, p_name, p_email, p_github, p_linkedin);
 
   -- Insert alternative email if provided
   IF p_alt_email IS NOT NULL THEN
@@ -970,7 +965,6 @@ RETURNS TABLE (
   email TEXT,
   phone TEXT,
   courses TEXT[],
-  photo_path TEXT,
   permissions TEXT[],
   access_label TEXT,
   teams TEXT[],
@@ -986,7 +980,6 @@ BEGIN
     u.email,
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
-    u.photo_path,
     COALESCE(derived_permissions.permissions_array, ARRAY[]::TEXT[]) AS permissions,
     derived_label.top_label::TEXT AS access_label,
     COALESCE(user_teams.teams_array, ARRAY[]::TEXT[]) as teams,
@@ -1066,7 +1059,6 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
   alt_email TEXT,
   phone TEXT,
   preferred_contact_method TEXT,
-  photo_path TEXT,
   courses TEXT[],
   permissions TEXT[],
   access_label TEXT,
@@ -1082,9 +1074,6 @@ BEGIN
   END IF;
   IF p_updates ? 'email' THEN
     UPDATE neiist.users SET email = p_updates->>'email' WHERE neiist.users.istid = p_istid;
-  END IF;
-  IF p_updates ? 'photo' THEN
-    UPDATE neiist.users SET photo_path = p_updates->>'photo' WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'github' THEN
     UPDATE neiist.users SET github = p_updates->>'github' WHERE neiist.users.istid = p_istid;
@@ -1135,22 +1124,6 @@ BEGIN
   END IF;
 
   RETURN QUERY SELECT * FROM neiist.get_user(p_istid);
-END;
-$$;
-
--- Update user photo path
-CREATE OR REPLACE FUNCTION neiist.update_user_photo(
-  p_istid VARCHAR(10),
-  p_photo_data TEXT
-) RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  UPDATE neiist.users
-  SET photo_path = p_photo_data
-  WHERE istid = p_istid;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'User with istid % not found', p_istid;
-  END IF;
 END;
 $$;
 
@@ -1392,7 +1365,6 @@ RETURNS TABLE (
   user_istid VARCHAR(10),
   user_name TEXT,
   user_email TEXT,
-  user_photo TEXT,
   user_github TEXT,
   user_linkedin TEXT,
   department_name TEXT,
@@ -1422,7 +1394,6 @@ BEGIN
     m.user_istid,
     u.name AS user_name,
     u.email::TEXT AS user_email,
-    u.photo_path::TEXT AS user_photo,
     u.github::TEXT AS user_github,
     u.linkedin::TEXT AS user_linkedin,
     m.department_name::TEXT,
@@ -3593,8 +3564,8 @@ BEGIN
   SELECT 
     vn.nominee_id as id,
     COALESCE(co.name, u.name, vn.nominee_id) as name,
-    COALESCE(co.photo_path, u.photo_path) as photo_path,
-    COALESCE(co.description_photo_path, co.photo_path, u.photo_path) as description_photo_path,
+    co.photo_path,
+    COALESCE(co.description_photo_path, co.photo_path) as description_photo_path,
     co.description
   FROM neiist.voting_nominees vn
   LEFT JOIN neiist.users u ON u.istid = vn.nominee_id
@@ -3716,7 +3687,7 @@ BEGIN
     SELECT 
       vr.nominee_id,
       COALESCE(co.name, u.name, vr.nominee_id) as nominee_name,
-      COALESCE(co.photo_path, u.photo_path) as nominee_photo_path,
+      co.photo_path as nominee_photo_path,
       vr.vote_count,
       co.description
     FROM neiist.voting_results vr
@@ -3730,7 +3701,7 @@ BEGIN
     SELECT 
       vn.nominee_id,
       COALESCE(co.name, u.name, vn.nominee_id) as nominee_name,
-      COALESCE(co.photo_path, u.photo_path) as nominee_photo_path,
+      co.photo_path as nominee_photo_path,
       COUNT(v.voter_istid)::BIGINT as vote_count,
       co.description
     FROM neiist.voting_nominees vn
@@ -3738,7 +3709,7 @@ BEGIN
     LEFT JOIN neiist.users u ON u.istid = vn.nominee_id
     LEFT JOIN neiist.votes v ON v.session_id = vn.session_id AND v.nominee_id = vn.nominee_id
     WHERE vn.session_id = p_session_id
-    GROUP BY vn.nominee_id, co.name, co.photo_path, co.description, u.name, u.photo_path
+    GROUP BY vn.nominee_id, co.name, co.photo_path, co.description, u.name
     ORDER BY COUNT(v.voter_istid) DESC;
   END IF;
 END;

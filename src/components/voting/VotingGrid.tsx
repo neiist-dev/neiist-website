@@ -225,15 +225,15 @@ export default function VotingGrid({
                 hasPhoto || isUserType || Boolean(nominee.description) ? displayName : undefined
               }
               media={
-                hasPhoto ? (
+                isUserType ? (
                   <Image
-                    src={nominee.photoPath!}
+                    src={`/api/user/photo/${nominee.id}`}
                     alt={nominee.name}
                     fill
                     className={styles.photo}
                   />
-                ) : isUserType ? (
-                  <Image src="/default_user.png" alt={nominee.name} fill className={styles.photo} />
+                ) : nominee.photoPath ? (
+                  <Image src={nominee.photoPath} alt={nominee.name} fill className={styles.photo} />
                 ) : (
                   <SelectableCard.TextFront
                     title={!nominee.description ? displayName : undefined}

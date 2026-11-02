@@ -9,9 +9,9 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
   if (!user.istid || !user.name || !user.email) return null;
   const {
     rows: [newUser],
-  } = await db_query<User>(
-    `SELECT * FROM neiist.add_user($1::VARCHAR(10), $2::TEXT, $3::TEXT, $4::TEXT, $5::TEXT, $6::TEXT, $7::TEXT[])`,
-    [user.istid, user.name, user.email, user.alternativeEmail, user.phone, user.photo, user.courses]
+  } = await db_query<dbUser>(
+    `SELECT * FROM neiist.add_user($1::VARCHAR(10), $2::TEXT, $3::TEXT, $4::TEXT, $5::TEXT, $6::TEXT[])`,
+    [user.istid, user.name, user.email, user.alternativeEmail, user.phone, user.courses]
   );
   if (!newUser) return null;
   const result = newUser ? mapdbUserToUser(newUser) : null;

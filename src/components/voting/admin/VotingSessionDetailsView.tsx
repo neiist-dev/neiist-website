@@ -78,33 +78,27 @@ export default function VotingSessionDetailsView({
         header: dict.details.option_name,
         dataLabel: dict.details.option_name,
         isCardHeader: true,
-        cell: (row) => (
-          <div className={styles.nomineeCell}>
-            {row.nomineePhotoPath ? (
+        cell: (row) => {
+          const isUserType = isUserVotingType(session.type);
+          const photoUrl = isUserType
+            ? `/api/user/photo/${row.nomineeId}`
+            : row.nomineePhotoPath || "/default_user.png";
+          return (
+            <div className={styles.nomineeCell}>
               <Image
-                src={row.nomineePhotoPath}
+                src={photoUrl}
                 alt={row.nomineeName}
                 width={44}
                 height={44}
                 className={styles.nomineePhoto}
               />
-            ) : (
-              <Image
-                src="/default_user.png"
-                alt={row.nomineeName}
-                width={44}
-                height={44}
-                className={styles.nomineePhoto}
-              />
-            )}
-            <div className={styles.nomineeInfo}>
-              <span className={styles.nomineeName}>{row.nomineeName}</span>
-              {isUserVotingType(session.type) && (
-                <span className={styles.nomineeId}>{row.nomineeId}</span>
-              )}
+              <div className={styles.nomineeInfo}>
+                <span className={styles.nomineeName}>{row.nomineeName}</span>
+                {isUserType && <span className={styles.nomineeId}>{row.nomineeId}</span>}
+              </div>
             </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         id: "description",

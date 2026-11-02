@@ -32,7 +32,6 @@ export interface dbMembership {
   user_istid: string;
   user_name: string;
   user_email?: string;
-  user_photo?: string;
   user_github?: string;
   user_linkedin?: string;
   department_name: string;
@@ -54,7 +53,7 @@ export function mapdbMembershipToMembership(raw: dbMembership): Membership {
   const endDate = raw.to_date ? toDate(raw.to_date) : undefined;
 
   const email = raw.user_email || "";
-  const photo = raw.user_photo || (raw.user_istid ? `/api/user/photo/${raw.user_istid}` : "");
+  const photo = `/api/user/photo/${raw.user_istid}`;
 
   return {
     id: `${raw.user_istid}-${raw.department_name}-${raw.role_name}-${startDate}`,

@@ -29,7 +29,6 @@ export interface dbUser {
   alt_email?: string;
   phone?: string | null;
   preferred_contact_method?: "email" | "alternativeEmail" | "phone";
-  photo_path?: string;
   courses?: string[];
   permissions?: Permission[];
   access_label?: "admin" | "coordinator" | null;
