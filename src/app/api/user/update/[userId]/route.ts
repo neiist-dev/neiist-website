@@ -8,6 +8,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
 import { sendEmail, getAccountDeletionTemplate } from "@/lib/email";
+import { appendErasureTombstone, getErasureInitiator } from "@/lib/gdprTombstones";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const session = await getAuthenticatedUser();
@@ -162,6 +163,11 @@ export async function DELETE(
     const { success, was_member: isMember } = await deleteUser(targetUserId);
     if (!success)
       return NextResponse.json({ error: "Falha ao eliminar utilizador" }, { status: 500 });
+
+    await appendErasureTombstone(
+      targetUserId,
+      getErasureInitiator(currentUser.istid, targetUserId)
+    );
 
     if (!isMember) {
       await userPhotos.remove(targetUserId);
