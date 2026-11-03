@@ -17,7 +17,6 @@ import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 import ColorfulText from "../ColorfulText";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { getProductTimingBadge } from "@/utils/shop/shopUtils";
 
 interface ShopManagementProps {
   products: Product[];
@@ -200,18 +199,19 @@ export default function ShopManagement({
         minWidth: 140,
         cell: (product) => {
           if (product.stock_type === "on_demand") {
-            return <Badge variant="primary">{dict.on_demand}</Badge>;
+            return <Badge variant="tertiary">{dict.on_demand}</Badge>;
           }
 
           const stock =
             product.variants?.length > 0
               ? product.variants.reduce((sum, variant) => sum + (variant.stock_quantity || 0), 0)
               : product.stock_quantity || 0;
-          return (
-            <Badge variant={stock === 0 ? "secondary" : "primary"}>
-              {stock === 0 ? dict.out_of_stock : dict.in_stock.replace("{count}", String(stock))}
-            </Badge>
-          );
+
+          if (stock === 0) {
+            return <Badge variant="danger">{dict.out_of_stock}</Badge>;
+          }
+
+          return <Badge variant="primary">{dict.in_stock.replace("{count}", String(stock))}</Badge>;
         },
       },
       {
@@ -219,14 +219,27 @@ export default function ShopManagement({
         header: dict.col_status,
         minWidth: 130,
         cell: (product) => {
-          const timingBadge = getProductTimingBadge(product, dict.timing_badge);
-          return (
-            <div className={styles.statusCell}>
-              {!product.active && <Badge variant="secondary">{dict.archived_badge}</Badge>}
-              {timingBadge && <span>{timingBadge}</span>}
-              {product.active && !timingBadge && <span>—</span>}
-            </div>
-          );
+          const hasDateExpired = product.order_deadline
+            ? new Date(product.order_deadline) < new Date()
+            : false;
+
+          if (product.active === false || hasDateExpired) {
+            return <Badge variant="secondary">{dict.status_inactive}</Badge>;
+          }
+
+          // Calcular o stock total
+          const stock =
+            product.variants?.length > 0
+              ? product.variants.reduce((sum, variant) => sum + (variant.stock_quantity || 0), 0)
+              : product.stock_quantity || 0;
+
+          // Se for do tipo normal e o stock for 0
+          if (product.stock_type !== "on_demand" && stock === 0) {
+            return <Badge variant="danger">{dict.status_sold_out}</Badge>;
+          }
+
+          // Caso contrário, está ativo e à venda
+          return <Badge variant="primary">{dict.status_for_sale}</Badge>;
         },
       },
       {
