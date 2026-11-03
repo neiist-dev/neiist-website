@@ -1,5 +1,22 @@
 # neiist
 
+## [4.7.0](https://github.com/neiist-dev/neiist-website/compare/v4.6.2...v4.7.0) (2026-11-03)
+
+
+### Features
+
+* add terms of usage and a new legal component ([06cab95](https://github.com/neiist-dev/neiist-website/commit/06cab956914e74c8acb37c17f2099da76731e5a0))
+* **db:** update tables and functions for new image architeture ([53e5c2b](https://github.com/neiist-dev/neiist-website/commit/53e5c2b37f8c8a29419c34f500e307f694ef1a39))
+* **images:** unified image upload, and serving architecture ([2f32b56](https://github.com/neiist-dev/neiist-website/commit/2f32b56230d3e3f553ec65903aa6f5b901177d7b))
+
+
+### Bug Fixes
+
+* add seo tags and also small lighthouse complience fixes a11y ([42e6d5e](https://github.com/neiist-dev/neiist-website/commit/42e6d5e577cd538199a7b8cc95fffd591af9deba))
+* correct json en pt format for privacy policy and terms of usage ([281efca](https://github.com/neiist-dev/neiist-website/commit/281efca4f5dd383c9d2364bd0584ef39de55c4e5))
+* **permissions:** dev override and priority of parent urls (/voting vs ([8a62dae](https://github.com/neiist-dev/neiist-website/commit/8a62daefc0848bf91810aa76ad462d7854b6f95c))
+* **user:** rebuild search index only when users cache changes ([#746](https://github.com/neiist-dev/neiist-website/issues/746)) ([4347fe5](https://github.com/neiist-dev/neiist-website/commit/4347fe5b776b849fa03d7405914a66d3228acaa2))
+
 ## [4.6.2](https://github.com/neiist-dev/neiist-website/compare/v4.6.1...v4.6.2) (2026-10-22)
 
 
