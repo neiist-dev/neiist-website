@@ -5,8 +5,7 @@ import Image from "next/image";
 import { Alert, Badge, ColumnDef, DataTable } from "@neiist/ui";
 import { useRouter } from "next/navigation";
 import { FaEdit, FaPlus } from "react-icons/fa";
-import { FiArchive, FiImage, FiPackage, FiTrash2 } from "react-icons/fi";
-import { MdOutlineUnarchive } from "react-icons/md";
+import { FiImage, FiPackage, FiTrash2 } from "react-icons/fi";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
@@ -25,10 +24,7 @@ interface ShopManagementProps {
   basePath?: string;
 }
 
-type ConfirmAction =
-  | { type: "archive"; productId: number }
-  | { type: "restore"; productId: number }
-  | { type: "permanent"; productId: number };
+type ConfirmAction = { type: "delete"; productId: number };
 
 export default function ShopManagement({
   products,
@@ -38,47 +34,26 @@ export default function ShopManagement({
 }: ShopManagementProps) {
   const router = useRouter();
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [showArchived, setShowArchived] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
 
   const [optimisticProducts, setOptimisticProducts] = useOptimistic(
     products,
     (state, action: ConfirmAction) => {
-      if (action.type === "archive") {
-        return state.map((product) =>
-          product.id === action.productId ? { ...product, active: false } : product
-        );
-      }
-      if (action.type === "restore") {
-        return state.map((product) =>
-          product.id === action.productId ? { ...product, active: true } : product
-        );
-      }
-      if (action.type === "permanent") {
+      if (action.type === "delete") {
         return state.filter((product) => product.id !== action.productId);
       }
       return state;
     }
   );
 
-  const activeProducts = useMemo(
-    () => optimisticProducts.filter((product) => product.active !== false),
-    [optimisticProducts]
-  );
-  const archivedProducts = useMemo(
-    () => optimisticProducts.filter((product) => product.active === false),
-    [optimisticProducts]
-  );
-  const visibleProducts = showArchived ? archivedProducts : activeProducts;
-
   const baseProducts = useMemo(() => {
-    let list = visibleProducts;
+    let list = optimisticProducts;
     if (categoryFilter !== "all") {
       list = list.filter((p) => p.category === categoryFilter);
     }
     return list;
-  }, [visibleProducts, categoryFilter]);
+  }, [optimisticProducts, categoryFilter]);
 
   const {
     results: filteredProducts,
@@ -97,25 +72,13 @@ export default function ShopManagement({
     [basePath, router]
   );
 
-  const handleArchive = useCallback((productId: number) => {
-    setPendingAction({ type: "archive", productId });
-    setShowConfirm(true);
-  }, []);
-
-  const handleRestore = useCallback((productId: number) => {
-    setPendingAction({ type: "restore", productId });
-    setShowConfirm(true);
-  }, []);
-
-  const handlePermanentDelete = useCallback((productId: number) => {
-    setPendingAction({ type: "permanent", productId });
+  const handleDelete = useCallback((productId: number) => {
+    setPendingAction({ type: "delete", productId });
     setShowConfirm(true);
   }, []);
 
   const confirmMessages: Record<ConfirmAction["type"], string> = {
-    archive: dict.confirm_archive,
-    restore: dict.confirm_restore,
-    permanent: dict.confirm_permanent,
+    delete: dict.confirm_permanent,
   };
 
   const confirmAction = async () => {
@@ -127,21 +90,9 @@ export default function ShopManagement({
     setPendingAction(null);
 
     try {
-      let response: Response;
-
-      if (type === "archive") {
-        response = await fetch(`/api/shop/products/${productId}`, { method: "DELETE" });
-      } else if (type === "restore") {
-        response = await fetch(`/api/shop/products/${productId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ active: true }),
-        });
-      } else {
-        response = await fetch(`/api/shop/products/${productId}?permanent=true`, {
-          method: "DELETE",
-        });
-      }
+      const response = await fetch(`/api/shop/products/${productId}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const data = await response.json();
@@ -153,6 +104,7 @@ export default function ShopManagement({
   };
 
   const isFiltering = search.trim() !== "" || categoryFilter !== "all";
+
   const columns: ColumnDef<Product>[] = useMemo(
     () => [
       {
@@ -199,7 +151,7 @@ export default function ShopManagement({
         minWidth: 140,
         cell: (product) => {
           if (product.stock_type === "on_demand") {
-            return <Badge variant="tertiary">{dict.on_demand}</Badge>;
+            return <Badge variant="secondary">{dict.on_demand}</Badge>;
           }
 
           const stock =
@@ -223,67 +175,45 @@ export default function ShopManagement({
             ? new Date(product.order_deadline) < new Date()
             : false;
 
-          if (product.active === false || hasDateExpired) {
-            return <Badge variant="secondary">{dict.status_inactive}</Badge>;
+          if (hasDateExpired) {
+            return <Badge variant="tertiary">{dict.status_inactive || "Inativo"}</Badge>;
           }
 
-          // Calcular o stock total
           const stock =
             product.variants?.length > 0
               ? product.variants.reduce((sum, variant) => sum + (variant.stock_quantity || 0), 0)
               : product.stock_quantity || 0;
 
-          // Se for do tipo normal e o stock for 0
           if (product.stock_type !== "on_demand" && stock === 0) {
-            return <Badge variant="danger">{dict.status_sold_out}</Badge>;
+            return <Badge variant="secondary">{dict.status_sold_out || "Esgotado"}</Badge>;
           }
 
-          // Caso contrário, está ativo e à venda
-          return <Badge variant="primary">{dict.status_for_sale}</Badge>;
+          return <Badge variant="primary">{dict.status_for_sale || "À venda"}</Badge>;
         },
       },
       {
         id: "actions",
         header: dict.col_actions,
-        minWidth: 190,
+        minWidth: 140,
         cell: (product) => (
           <div className={styles.tableActions}>
-            {product.active !== false ? (
-              <>
-                <button
-                  type="button"
-                  className={styles.tableEditButton}
-                  onClick={() => handleEdit(product.id)}>
-                  <FaEdit />
-                </button>
-                <button
-                  type="button"
-                  className={styles.tableArchiveButton}
-                  onClick={() => handleArchive(product.id)}>
-                  <FiArchive />
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className={styles.tableRestoreButton}
-                  onClick={() => handleRestore(product.id)}>
-                  <MdOutlineUnarchive /> {dict.restore}
-                </button>
-                <button
-                  type="button"
-                  className={styles.tableDeleteButton}
-                  onClick={() => handlePermanentDelete(product.id)}>
-                  <FiTrash2 /> {dict.delete}
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              className={styles.tableEditButton}
+              onClick={() => handleEdit(product.id)}>
+              <FaEdit />
+            </button>
+            <button
+              type="button"
+              className={styles.tableDeleteButton}
+              onClick={() => handleDelete(product.id)}>
+              <FiTrash2 />
+            </button>
           </div>
         ),
       },
     ],
-    [dict, handleArchive, handleEdit, handlePermanentDelete, handleRestore]
+    [dict, handleDelete, handleEdit]
   );
 
   return (
@@ -322,19 +252,6 @@ export default function ShopManagement({
             ))}
           </select>
           <button
-            type="button"
-            className={`${styles.archiveToggle} ${showArchived ? styles.archiveToggleActive : ""}`}
-            onClick={() => {
-              setShowArchived((v) => !v);
-              setCategoryFilter("all");
-              setSearch("");
-            }}>
-            <FiArchive />
-            {showArchived
-              ? dict.view_active
-              : `${dict.archived}${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
-          </button>
-          <button
             className={styles.addBtn}
             onClick={() => router.push(`${basePath || ""}/shop/pos`)}>
             <PiContactlessPayment /> {dict.pos_link}
@@ -353,11 +270,6 @@ export default function ShopManagement({
               <>
                 <p>{dict.no_products_found}</p>
                 <span>{dict.adjust_filters}</span>
-              </>
-            ) : showArchived ? (
-              <>
-                <p>{dict.no_archived_products}</p>
-                <span>{dict.no_archived_products_hint}</span>
               </>
             ) : (
               <>
