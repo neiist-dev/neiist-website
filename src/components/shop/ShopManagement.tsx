@@ -1,21 +1,23 @@
 "use client";
 
-import { useState, useMemo, useOptimistic } from "react";
-import { Alert } from "@neiist/ui";
+import { useState, useMemo, useOptimistic, useCallback } from "react";
+import Image from "next/image";
+import { Alert, Badge, ColumnDef, DataTable } from "@neiist/ui";
 import { useRouter } from "next/navigation";
-import { FaPlus } from "react-icons/fa";
-import { FiPackage, FiArchive } from "react-icons/fi";
+import { FaEdit, FaPlus } from "react-icons/fa";
+import { FiArchive, FiImage, FiPackage, FiTrash2 } from "react-icons/fi";
+import { MdOutlineUnarchive } from "react-icons/md";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { PiContactlessPayment } from "react-icons/pi";
 import { MdOutlineDiscount } from "react-icons/md";
-import ProductManagementCard from "./ProductManagementCard";
 import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 import ColorfulText from "../ColorfulText";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { getProductTimingBadge } from "@/utils/shop/shopUtils";
 
 interface ShopManagementProps {
   products: Product[];
@@ -89,24 +91,27 @@ export default function ShopManagement({
     returnAllWhenEmpty: true,
   });
 
-  const handleEdit = (productId: number) => {
-    router.push(`${basePath || ""}/shop/manage/${productId}/edit`);
-  };
+  const handleEdit = useCallback(
+    (productId: number) => {
+      router.push(`${basePath || ""}/shop/manage/${productId}/edit`);
+    },
+    [basePath, router]
+  );
 
-  const handleArchive = (productId: number) => {
+  const handleArchive = useCallback((productId: number) => {
     setPendingAction({ type: "archive", productId });
     setShowConfirm(true);
-  };
+  }, []);
 
-  const handleRestore = (productId: number) => {
+  const handleRestore = useCallback((productId: number) => {
     setPendingAction({ type: "restore", productId });
     setShowConfirm(true);
-  };
+  }, []);
 
-  const handlePermanentDelete = (productId: number) => {
+  const handlePermanentDelete = useCallback((productId: number) => {
     setPendingAction({ type: "permanent", productId });
     setShowConfirm(true);
-  };
+  }, []);
 
   const confirmMessages: Record<ConfirmAction["type"], string> = {
     archive: dict.confirm_archive,
@@ -149,6 +154,124 @@ export default function ShopManagement({
   };
 
   const isFiltering = search.trim() !== "" || categoryFilter !== "all";
+  const columns: ColumnDef<Product>[] = useMemo(
+    () => [
+      {
+        id: "product",
+        header: dict.col_product,
+        isCardHeader: true,
+        minWidth: 240,
+        cell: (product) => {
+          const image = product.images?.[0];
+          return (
+            <div className={styles.productCell}>
+              {image ? (
+                <Image src={image} alt="" width={56} height={56} className={styles.productImage} />
+              ) : (
+                <div className={styles.productImagePlaceholder} aria-label={dict.no_image}>
+                  <FiImage />
+                </div>
+              )}
+              <div>
+                <strong>{product.name}</strong>
+                {product.description && (
+                  <span className={styles.descriptionCell}>{product.description}</span>
+                )}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        id: "category",
+        header: dict.col_category,
+        minWidth: 130,
+        cell: (product) => product.category || "—",
+      },
+      {
+        id: "price",
+        header: dict.col_price,
+        minWidth: 100,
+        cell: (product) => <strong>{product.price.toFixed(2)} €</strong>,
+      },
+      {
+        id: "stock",
+        header: dict.col_stock,
+        minWidth: 140,
+        cell: (product) => {
+          if (product.stock_type === "on_demand") {
+            return <Badge variant="primary">{dict.on_demand}</Badge>;
+          }
+
+          const stock =
+            product.variants?.length > 0
+              ? product.variants.reduce((sum, variant) => sum + (variant.stock_quantity || 0), 0)
+              : product.stock_quantity || 0;
+          return (
+            <Badge variant={stock === 0 ? "secondary" : "primary"}>
+              {stock === 0 ? dict.out_of_stock : dict.in_stock.replace("{count}", String(stock))}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: "status",
+        header: dict.col_status,
+        minWidth: 130,
+        cell: (product) => {
+          const timingBadge = getProductTimingBadge(product, dict.timing_badge);
+          return (
+            <div className={styles.statusCell}>
+              {!product.active && <Badge variant="secondary">{dict.archived_badge}</Badge>}
+              {timingBadge && <span>{timingBadge}</span>}
+              {product.active && !timingBadge && <span>—</span>}
+            </div>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: dict.col_actions,
+        minWidth: 190,
+        cell: (product) => (
+          <div className={styles.tableActions}>
+            {product.active !== false ? (
+              <>
+                <button
+                  type="button"
+                  className={styles.tableEditButton}
+                  onClick={() => handleEdit(product.id)}>
+                  <FaEdit />
+                </button>
+                <button
+                  type="button"
+                  className={styles.tableArchiveButton}
+                  onClick={() => handleArchive(product.id)}>
+                  <FiArchive />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={styles.tableRestoreButton}
+                  onClick={() => handleRestore(product.id)}>
+                  <MdOutlineUnarchive /> {dict.restore}
+                </button>
+                <button
+                  type="button"
+                  className={styles.tableDeleteButton}
+                  onClick={() => handlePermanentDelete(product.id)}>
+                  <FiTrash2 /> {dict.delete}
+                </button>
+              </>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [dict, handleArchive, handleEdit, handlePermanentDelete, handleRestore]
+  );
 
   return (
     <>
@@ -231,19 +354,13 @@ export default function ShopManagement({
             )}
           </div>
         ) : (
-          <div className={styles.grid}>
-            {filteredProducts.map((product) => (
-              <ProductManagementCard
-                key={product.id}
-                product={product}
-                onEdit={handleEdit}
-                onArchive={handleArchive}
-                onRestore={handleRestore}
-                onPermanentDelete={handlePermanentDelete}
-                dict={dict}
-              />
-            ))}
-          </div>
+          <DataTable
+            data={filteredProducts}
+            columns={columns}
+            getRowId={(product) => String(product.id)}
+            responsive="scroll"
+            wrapperClassName={styles.tableWrapper}
+          />
         )}
       </div>
     </>

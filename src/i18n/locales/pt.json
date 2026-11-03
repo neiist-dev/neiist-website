@@ -1237,7 +1237,17 @@
     },
     "categories": {
       "Vestuário": "Vestuário"
-    }
+    },
+    "col_product": "Produto",
+    "col_category": "Categoria",
+    "col_price": "Preço",
+    "col_stock": "Stock",
+    "col_status": "Estado",
+    "col_actions": "Ações",
+    "pos_link": "Gestão POS",
+    "discounts_link": "Códigos de Desconto",
+    "add_product": "Adicionar Produto",
+    "search_placeholder": "Pesquisar produto..."
   },
 
   "discount_codes": {

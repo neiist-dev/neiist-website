@@ -6,10 +6,91 @@
   flex-direction: column;
 }
 
-.grid {
+.tableWrapper {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 220px;
+}
+
+.productCell > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.productImage,
+.productImagePlaceholder {
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.productImagePlaceholder {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  place-items: center;
+  background: var(--background-colour);
+  color: var(--light-foreground-colour);
+}
+
+.descriptionCell {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--light-foreground-colour);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusCell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tableActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tableActions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.6rem;
+  border: 0;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+
+.tableEditButton {
+  background: var(--primary-colour);
+  color: white;
+}
+
+.tableArchiveButton {
+  background: var(--background-colour-hover);
+  color: var(--light-foreground-colour);
+}
+Edit .tableRestoreButton {
+  background: var(--light-secondary-colour);
+  color: var(--secondary-colour);
+}
+
+.tableDeleteButton {
+  background: #fee2e2;
+  color: #ef4444;
 }
 
 .emptyState {

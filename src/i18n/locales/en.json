@@ -1237,7 +1237,17 @@
     },
     "categories": {
       "Vestuário": "Apparel"
-    }
+    },
+    "col_product": "Product",
+    "col_category": "Category",
+    "col_price": "Price",
+    "col_stock": "Stock",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "pos_link": "POS Management",
+    "discounts_link": "Discount Codes",
+    "add_product": "Add Product",
+    "search_placeholder": "Search product..."
   },
 
   "discount_codes": {
