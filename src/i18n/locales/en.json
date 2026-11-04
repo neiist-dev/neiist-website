@@ -1238,6 +1238,7 @@
     "col_stock": "Stock",
     "col_status": "Status",
     "col_actions": "Actions",
+    "actions_menu": "Product actions",
     "status_for_sale": "For sale",
     "status_sold_out": "Sold out",
     "status_inactive": "Inactive",

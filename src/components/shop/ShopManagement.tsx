@@ -2,10 +2,27 @@
 
 import { useState, useMemo, useOptimistic } from "react";
 import Image from "next/image";
-import { Alert, Badge, Button, ColumnDef, DataTable, Input, Select, Stack } from "@neiist/ui";
+import {
+  Alert,
+  Badge,
+  Button,
+  ColumnDef,
+  DataTable,
+  DropdownMenu,
+  Input,
+  Select,
+  Stack,
+} from "@neiist/ui";
 import { useRouter } from "next/navigation";
 import { FaEdit, FaPlus } from "react-icons/fa";
-import { FiArchive, FiImage, FiPackage, FiRotateCcw, FiTrash2 } from "react-icons/fi";
+import {
+  FiArchive,
+  FiImage,
+  FiMoreVertical,
+  FiPackage,
+  FiRotateCcw,
+  FiTrash2,
+} from "react-icons/fi";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
@@ -232,49 +249,47 @@ export default function ShopManagement({
         header: dict.col_actions,
         minWidth: 140,
         cell: (product) => (
-          <Stack direction="row" gap="sm" align="center">
-            <Button
-              variant="solid"
-              color="primary"
-              size="icon"
-              onClick={() => handleEdit(product.id)}
-              title={dict.edit}
-              aria-label={dict.edit}>
-              <FaEdit />
-            </Button>
-            {product.active === false ? (
-              <>
-                <Button
-                  variant="outline"
-                  color="success"
-                  size="sm"
-                  onClick={() => handleRestore(product.id)}
-                  title={dict.restore}>
-                  <FiRotateCcw />
-                  {dict.restore}
-                </Button>
-                <Button
-                  variant="ghost"
-                  color="danger"
-                  size="icon"
-                  onClick={() => handlePermanentDelete(product.id)}
-                  title={dict.delete}
-                  aria-label={dict.delete}>
-                  <FiTrash2 />
-                </Button>
-              </>
-            ) : (
+          <DropdownMenu>
+            <DropdownMenu.Trigger>
               <Button
-                variant="outline"
-                color="neutral"
-                size="sm"
-                onClick={() => handleArchive(product.id)}
-                title={dict.archive}>
-                <FiArchive />
-                {dict.archive}
+                variant="ghost"
+                size="icon"
+                aria-label={dict.actions_menu}
+                title={dict.actions_menu}>
+                <FiMoreVertical />
               </Button>
-            )}
-          </Stack>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end" mobileTitle={dict.actions_menu}>
+              <DropdownMenu.Item icon={<FaEdit />} onClick={() => handleEdit(product.id)}>
+                {dict.edit}
+              </DropdownMenu.Item>
+              {product.active === false ? (
+                <>
+                  <DropdownMenu.Item
+                    icon={<FiRotateCcw />}
+                    onClick={() => handleRestore(product.id)}>
+                    {dict.restore}
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    icon={<FiTrash2 />}
+                    destructive
+                    onClick={() => handlePermanentDelete(product.id)}>
+                    {dict.delete}
+                  </DropdownMenu.Item>
+                </>
+              ) : (
+                <>
+                  <DropdownMenu.Divider />
+                  <DropdownMenu.Item
+                    icon={<FiArchive />}
+                    destructive // Opcional, caso queiras dar destaque visual de ação sensível
+                    onClick={() => handleArchive(product.id)}>
+                    {dict.archive}
+                  </DropdownMenu.Item>
+                </>
+              )}
+            </DropdownMenu.Content>
+          </DropdownMenu>
         ),
       },
     ],
