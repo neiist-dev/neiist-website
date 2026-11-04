@@ -6,10 +6,33 @@
   flex-direction: column;
 }
 
-.grid {
+.tableWrapper {
+  width: 100%;
+}
+
+.productImage,
+.productImagePlaceholder {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.productImagePlaceholder {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  place-items: center;
+  background: var(--background-colour);
+  color: var(--light-foreground-colour);
+}
+
+.descriptionCell {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--light-foreground-colour);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .emptyState {
@@ -50,19 +73,6 @@
   margin: 0;
 }
 
-.addBtn {
-  background: var(--primary-colour);
-  color: white;
-  font-family: inherit;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-}
-
 .headerActions {
   display: flex;
   align-items: center;
@@ -72,52 +82,8 @@
 .filters {
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.filters input,
-.filters select {
-  font-family: inherit;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  background: white;
-}
-
-.archiveToggle {
-  font-family: inherit;
-  display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.75rem 1.25rem;
-  border: 1.5px solid #ddd;
-  border-radius: 0.5rem;
-  background: white;
-  color: var(--light-foreground-colour);
-  cursor: pointer;
-  white-space: nowrap;
-  font-size: 0.9rem;
-  transition:
-    border-color 0.15s,
-    background 0.15s,
-    color 0.15s;
-}
-
-.archiveToggle:hover {
-  border-color: var(--primary-colour);
-  color: var(--primary-colour);
-}
-
-.archiveToggleActive {
-  border-color: var(--primary-colour);
-  background: var(--primary-colour);
-  color: white;
-}
-
-.archiveToggleActive:hover {
-  background: var(--primary-colour);
-  color: white;
-  opacity: 0.9;
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {
@@ -133,13 +99,9 @@
     align-items: stretch;
   }
 
-  .posBtn,
-  .addBtn {
-    width: 100%;
-    justify-content: center;
-  }
-
   .filters {
+    width: 100%;
     flex-direction: column;
+    align-items: stretch;
   }
 }

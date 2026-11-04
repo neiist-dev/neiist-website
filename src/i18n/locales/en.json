@@ -1232,6 +1232,16 @@
     "confirm_restore": "Are you sure you want to restore this product?",
     "confirm_permanent": "Are you sure you want to permanently delete this product? This action cannot be undone.",
     "error_generic": "An error occurred. Please try again.",
+    "col_product": "Product",
+    "col_category": "Category",
+    "col_price": "Price",
+    "col_stock": "Stock",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "status_for_sale": "For sale",
+    "status_sold_out": "Sold out",
+    "status_inactive": "Inactive",
+    "status_archived": "Archived",
     "confirm_dialog": {
       "confirm": "Confirm",
       "cancel": "Cancel"
@@ -1907,7 +1917,10 @@
         "title": "1. Company Information",
         "intro": "This website and its shop are operated by:",
         "items": [
-          { "label": "Name", "text": "NEIIST (Núcleo Estudantil de Informática do IST)" },
+          {
+            "label": "Name",
+            "text": "NEIIST (Núcleo Estudantil de Informática do IST)"
+          },
           { "label": "Legal nature", "text": "Non-profit Youth Association" },
           {
             "label": "Address",

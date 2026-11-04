@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useMemo, useOptimistic } from "react";
-import { Alert } from "@neiist/ui";
+import Image from "next/image";
+import { Alert, Badge, Button, ColumnDef, DataTable, Input, Select, Stack } from "@neiist/ui";
 import { useRouter } from "next/navigation";
-import { FaPlus } from "react-icons/fa";
-import { FiPackage, FiArchive } from "react-icons/fi";
+import { FaEdit, FaPlus } from "react-icons/fa";
+import { FiArchive, FiImage, FiPackage, FiRotateCcw, FiTrash2 } from "react-icons/fi";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import ConfirmDialog from "@/components/layout/ConfirmDialog";
 import { PiContactlessPayment } from "react-icons/pi";
 import { MdOutlineDiscount } from "react-icons/md";
-import ProductManagementCard from "./ProductManagementCard";
-import Search from "@/components/search/Search";
 import { useSearch } from "@/hooks/useSearch";
 import styles from "@/styles/components/shop/ShopManagement.module.css";
 import ColorfulText from "../ColorfulText";
@@ -37,7 +36,6 @@ export default function ShopManagement({
 }: ShopManagementProps) {
   const router = useRouter();
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [showArchived, setShowArchived] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingAction, setPendingAction] = useState<ConfirmAction | null>(null);
 
@@ -61,23 +59,13 @@ export default function ShopManagement({
     }
   );
 
-  const activeProducts = useMemo(
-    () => optimisticProducts.filter((product) => product.active !== false),
-    [optimisticProducts]
-  );
-  const archivedProducts = useMemo(
-    () => optimisticProducts.filter((product) => product.active === false),
-    [optimisticProducts]
-  );
-  const visibleProducts = showArchived ? archivedProducts : activeProducts;
-
   const baseProducts = useMemo(() => {
-    let list = visibleProducts;
+    let list = optimisticProducts;
     if (categoryFilter !== "all") {
       list = list.filter((p) => p.category === categoryFilter);
     }
     return list;
-  }, [visibleProducts, categoryFilter]);
+  }, [optimisticProducts, categoryFilter]);
 
   const {
     results: filteredProducts,
@@ -126,7 +114,9 @@ export default function ShopManagement({
       let response: Response;
 
       if (type === "archive") {
-        response = await fetch(`/api/shop/products/${productId}`, { method: "DELETE" });
+        response = await fetch(`/api/shop/products/${productId}`, {
+          method: "DELETE",
+        });
       } else if (type === "restore") {
         response = await fetch(`/api/shop/products/${productId}`, {
           method: "PATCH",
@@ -150,6 +140,147 @@ export default function ShopManagement({
 
   const isFiltering = search.trim() !== "" || categoryFilter !== "all";
 
+  const columns: ColumnDef<Product>[] = useMemo(
+    () => [
+      {
+        id: "product",
+        header: dict.col_product,
+        isCardHeader: true,
+        minWidth: 250,
+        cell: (product) => {
+          const image = product.images?.[0];
+          return (
+            <Stack direction="row" gap="md" align="center">
+              {image ? (
+                <Image src={image} alt="" width={64} height={64} className={styles.productImage} />
+              ) : (
+                <div className={styles.productImagePlaceholder} aria-label={dict.no_image}>
+                  <FiImage />
+                </div>
+              )}
+              <Stack gap="none">
+                <strong>{product.name}</strong>
+                {product.description && (
+                  <span className={styles.descriptionCell}>{product.description}</span>
+                )}
+              </Stack>
+            </Stack>
+          );
+        },
+      },
+      {
+        id: "category",
+        header: dict.col_category,
+        minWidth: 150,
+        cell: (product) => product.category || "—",
+      },
+      {
+        id: "price",
+        header: dict.col_price,
+        minWidth: 110,
+        cell: (product) => <strong>{product.price.toFixed(2)} €</strong>,
+      },
+      {
+        id: "stock",
+        header: dict.col_stock,
+        minWidth: 150,
+        cell: (product) => {
+          if (product.stock_type === "on_demand") {
+            return <Badge variant="primary">{dict.on_demand}</Badge>;
+          }
+
+          const stock =
+            product.variants?.length > 0
+              ? product.variants.reduce((sum, variant) => sum + (variant.stock_quantity || 0), 0)
+              : product.stock_quantity || 0;
+
+          return stock === 0 ? (
+            <Badge variant="danger">{dict.out_of_stock}</Badge>
+          ) : (
+            <Badge variant="primary">{dict.in_stock.replace("{count}", String(stock))}</Badge>
+          );
+        },
+      },
+      {
+        id: "status",
+        header: dict.col_status,
+        minWidth: 140,
+        cell: (product) => {
+          if (product.active === false) {
+            return <Badge variant="tertiary">{dict.status_archived}</Badge>;
+          }
+
+          const hasDateExpired = product.order_deadline
+            ? new Date(product.order_deadline) < new Date()
+            : false;
+          if (hasDateExpired) return <Badge variant="tertiary">{dict.status_inactive}</Badge>;
+
+          const stock =
+            product.variants?.length > 0
+              ? product.variants.reduce((sum, variant) => sum + (variant.stock_quantity || 0), 0)
+              : product.stock_quantity || 0;
+
+          return product.stock_type !== "on_demand" && stock === 0 ? (
+            <Badge variant="primary">{dict.status_sold_out}</Badge>
+          ) : (
+            <Badge variant="primary">{dict.status_for_sale}</Badge>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: dict.col_actions,
+        minWidth: 140,
+        cell: (product) => (
+          <Stack direction="row" gap="sm" align="center">
+            <Button
+              variant="solid"
+              color="primary"
+              size="icon"
+              onClick={() => handleEdit(product.id)}
+              title={dict.edit}
+              aria-label={dict.edit}>
+              <FaEdit />
+            </Button>
+            {product.active === false ? (
+              <>
+                <Button
+                  variant="outline"
+                  color="success"
+                  size="sm"
+                  onClick={() => handleRestore(product.id)}
+                  title={dict.restore}>
+                  <FiRotateCcw />
+                  {dict.restore}
+                </Button>
+                <Button
+                  variant="ghost"
+                  color="danger"
+                  size="icon"
+                  onClick={() => handlePermanentDelete(product.id)}
+                  title={dict.delete}
+                  aria-label={dict.delete}>
+                  <FiTrash2 />
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                color="neutral"
+                size="sm"
+                onClick={() => handleArchive(product.id)}
+                title={dict.archive}>
+                <FiArchive />
+                {dict.archive}
+              </Button>
+            )}
+          </Stack>
+        ),
+      },
+    ],
+    [dict, handleArchive, handleEdit, handlePermanentDelete, handleRestore]
+  );
+
   return (
     <>
       {showConfirm && pendingAction && (
@@ -167,47 +298,37 @@ export default function ShopManagement({
         <div className={styles.header}>
           <ColorfulText className={styles.title} text={dict.title} />
           <div className={styles.headerActions}>
-            <button
-              className={styles.addBtn}
-              onClick={() => router.push(`${basePath || ""}/shop/manage/new`)}>
+            <Button onClick={() => router.push(`${basePath || ""}/shop/manage/new`)}>
               <FaPlus /> {dict.add_product}
-            </button>
+            </Button>
           </div>
         </div>
 
         <div className={styles.filters}>
-          <Search placeholder={dict.search_placeholder} value={search} onChange={setSearch} />
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="all">{dict.all_categories}</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.name}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            className={`${styles.archiveToggle} ${showArchived ? styles.archiveToggleActive : ""}`}
-            onClick={() => {
-              setShowArchived((v) => !v);
-              setCategoryFilter("all");
-              setSearch("");
-            }}>
-            <FiArchive />
-            {showArchived
-              ? dict.view_active
-              : `${dict.archived}${archivedProducts.length > 0 ? ` (${archivedProducts.length})` : ""}`}
-          </button>
-          <button
-            className={styles.addBtn}
-            onClick={() => router.push(`${basePath || ""}/shop/pos`)}>
+          <Input
+            aria-label={dict.search_placeholder}
+            placeholder={dict.search_placeholder}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <Select
+            aria-label={dict.all_categories}
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={[
+              { value: "all", label: dict.all_categories },
+              ...categories.map((category) => ({
+                value: category.name,
+                label: category.name,
+              })),
+            ]}
+          />
+          <Button onClick={() => router.push(`${basePath || ""}/shop/pos`)}>
             <PiContactlessPayment /> {dict.pos_link}
-          </button>
-          <button
-            className={styles.addBtn}
-            onClick={() => router.push(`${basePath || ""}/shop/manage/discounts`)}>
+          </Button>
+          <Button onClick={() => router.push(`${basePath || ""}/shop/manage/discounts`)}>
             <MdOutlineDiscount /> {dict.discounts_link}
-          </button>
+          </Button>
         </div>
 
         {filteredProducts.length === 0 ? (
@@ -218,11 +339,6 @@ export default function ShopManagement({
                 <p>{dict.no_products_found}</p>
                 <span>{dict.adjust_filters}</span>
               </>
-            ) : showArchived ? (
-              <>
-                <p>{dict.no_archived_products}</p>
-                <span>{dict.no_archived_products_hint}</span>
-              </>
             ) : (
               <>
                 <p>{dict.no_products}</p>
@@ -231,19 +347,13 @@ export default function ShopManagement({
             )}
           </div>
         ) : (
-          <div className={styles.grid}>
-            {filteredProducts.map((product) => (
-              <ProductManagementCard
-                key={product.id}
-                product={product}
-                onEdit={handleEdit}
-                onArchive={handleArchive}
-                onRestore={handleRestore}
-                onPermanentDelete={handlePermanentDelete}
-                dict={dict}
-              />
-            ))}
-          </div>
+          <DataTable
+            data={filteredProducts}
+            columns={columns}
+            getRowId={(product) => String(product.id)}
+            responsive="scroll"
+            wrapperClassName={styles.tableWrapper}
+          />
         )}
       </div>
     </>

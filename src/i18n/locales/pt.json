@@ -1232,6 +1232,16 @@
     "confirm_restore": "Tem a certeza que deseja restaurar este produto?",
     "confirm_permanent": "Tem a certeza que deseja eliminar definitivamente este produto? Esta ação não pode ser desfeita.",
     "error_generic": "Ocorreu um erro. Tenta novamente.",
+    "col_product": "Produto",
+    "col_category": "Categoria",
+    "col_price": "Preço",
+    "col_stock": "Stock",
+    "col_status": "Estado",
+    "col_actions": "Ações",
+    "status_for_sale": "À venda",
+    "status_sold_out": "Esgotado",
+    "status_inactive": "Inativo",
+    "status_archived": "Arquivado",
     "confirm_dialog": {
       "confirm": "Confirmar",
       "cancel": "Cancelar"
@@ -1907,8 +1917,14 @@
         "title": "1. Identificação da Entidade",
         "intro": "Este site e a respetiva loja são geridos por:",
         "items": [
-          { "label": "Denominação", "text": "NEIIST (Núcleo Estudantil de Informática do IST)" },
-          { "label": "Natureza", "text": "Associação Juvenil sem fins lucrativos" },
+          {
+            "label": "Denominação",
+            "text": "NEIIST (Núcleo Estudantil de Informática do IST)"
+          },
+          {
+            "label": "Natureza",
+            "text": "Associação Juvenil sem fins lucrativos"
+          },
           {
             "label": "Morada",
             "text": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa"
