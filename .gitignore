@@ -22,10 +22,13 @@ yarn-error.log*
 
 # Data
 data/
+pg_data/
+redis_data/
 
 # Environment Variables
 .env
 .venv
+*-service-account.json
 
 # TypeScript
 *.tsbuildinfo

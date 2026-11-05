@@ -9,8 +9,26 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db:/var/lib/postgresql/data
+      - ./pg_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
 
-volumes:
-  db:
+  redis:
+    container_name: neiist_redis
+    image: redis:alpine
+    restart: always
+    env_file:
+      - .env
+    entrypoint:
+      - sh
+      - -c
+      - |
+        cat <<EOF > /tmp/users.acl
+        user default on >$REDIS_ADMIN_PASSWORD ~* &* +@all
+        user neiist_app on >$REDIS_APP_PASSWORD ~* &* +@all
+        user neiist_readonly on >$REDIS_READONLY_PASSWORD ~* &* +@read +ping +select -@write -@admin
+        EOF
+        exec redis-server --appendonly yes --aclfile /tmp/users.acl
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis_data:/data
