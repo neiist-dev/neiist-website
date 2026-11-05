@@ -29,6 +29,16 @@
   color: var(--ui-fg);
   font-size: 0.95rem;
   font-family: inherit;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.input::placeholder {
+  color: var(--ui-fg-light);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .clearButton {
@@ -42,4 +52,11 @@
 
 .clearButton:hover {
   color: var(--ui-fg);
+}
+
+.actionSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }

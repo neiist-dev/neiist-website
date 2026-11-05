@@ -19,7 +19,6 @@
   padding-inline: 1rem;
   font-size: var(--ui-font-sm);
   color: var(--ui-fg);
-  white-space: nowrap;
   vertical-align: middle;
 }
 
@@ -28,6 +27,12 @@
   border-block-end: 1px solid var(--ui-border);
   background: var(--ui-bg);
   text-align: start;
+  white-space: nowrap;
+}
+
+.td {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .th[data-align="center"],
@@ -148,6 +153,7 @@
     font-weight: var(--ui-font-weight-bold);
     color: var(--ui-fg);
     padding: 0.75rem;
+    padding-inline-end: 3rem;
     border-block-end: 1px solid var(--ui-border);
     background: var(--ui-bg);
   }

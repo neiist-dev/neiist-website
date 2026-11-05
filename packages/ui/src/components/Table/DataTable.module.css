@@ -61,9 +61,44 @@
   outline-offset: 2px;
 }
 
+.headerSortBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  text-align: inherit;
+  transition: color var(--ui-transition);
+}
+
+.headerSortBtn:hover {
+  color: var(--ui-primary);
+}
+
+.sortIconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sortIconActive {
+  color: var(--ui-primary);
+}
+
+.sortIconInactive {
+  color: var(--ui-fg-light);
+  opacity: 0.5;
+}
+
 @container table-wrapper (max-width: 48rem) {
-  .checkboxCol,
-  .actionsCol {
+  .checkboxCol {
     position: absolute;
     inset-block-start: 0;
     inset-inline-end: 0;
@@ -80,8 +115,18 @@
     z-index: 2;
   }
 
+  .actionsCol {
+    display: none;
+  }
+
   .emptyStateCell {
     display: block;
     padding-block: 2.5rem;
+  }
+}
+
+@media (max-width: 48rem) {
+  .actionsCol {
+    display: none;
   }
 }

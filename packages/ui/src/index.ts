@@ -35,6 +35,7 @@ export * from "./components/Table/TableFilterMultiSelect";
 export * from "./components/Table/TableFilterCascade";
 export * from "./components/Table/TableFiltersDrawer";
 export * from "./components/Table/TableActiveFilters";
+export * from "./components/Table/TableSelectionBar";
 export * from "./components/Divider/Divider";
 export * from "./components/Tabs/Tabs";
 export * from "./components/Accordion/Accordion";

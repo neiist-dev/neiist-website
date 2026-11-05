@@ -2,6 +2,7 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import { FiFilter } from "react-icons/fi";
+import { LuArrowUp, LuArrowDown, LuArrowUpDown } from "react-icons/lu";
 import { Checkbox } from "../Checkbox/Checkbox";
 import { Popover } from "../Popover/Popover";
 import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
@@ -16,6 +17,7 @@ export interface ColumnDef<T> {
   dataLabel?: string;
   isCardHeader?: boolean;
   hasFilter?: boolean;
+  sortable?: boolean;
   filterButtonAriaLabel?: string;
   onFilterClick?: (
     _event: React.MouseEvent<HTMLButtonElement>,
@@ -38,6 +40,9 @@ export interface DataTableProps<T> {
   responsive?: "cards" | "scroll";
   onRowClick?: (_row: T) => void;
   renderRowContextMenu?: (_row: T) => React.ReactNode;
+  sortField?: string;
+  sortDirection?: "asc" | "desc";
+  onSortChange?: (_field: string, _direction: "asc" | "desc") => void;
   emptyMessage?: React.ReactNode;
   className?: string;
   wrapperClassName?: string;
@@ -81,6 +86,9 @@ export function DataTable<T>({
   responsive = "cards",
   onRowClick,
   renderRowContextMenu,
+  sortField,
+  sortDirection,
+  onSortChange,
   emptyMessage = "No data available",
   className,
   wrapperClassName,
@@ -146,6 +154,38 @@ export function DataTable<T>({
 
           {visibleColumns.map((column) => {
             const colWidth = column.width ?? column.minWidth;
+            const rawHeader =
+              typeof column.header === "function" ? column.header({ column }) : column.header;
+
+            const isSorted = Boolean(column.sortable && sortField === column.id);
+            const nextDirection: "asc" | "desc" =
+              isSorted && sortDirection === "asc" ? "desc" : "asc";
+
+            const renderedHeader = column.sortable ? (
+              <button
+                type="button"
+                className={styles.headerSortBtn}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSortChange?.(column.id, nextDirection);
+                }}>
+                <span>{rawHeader}</span>
+                <span className={styles.sortIconWrapper}>
+                  {isSorted ? (
+                    sortDirection === "asc" ? (
+                      <LuArrowUp size={14} className={styles.sortIconActive} />
+                    ) : (
+                      <LuArrowDown size={14} className={styles.sortIconActive} />
+                    )
+                  ) : (
+                    <LuArrowUpDown size={14} className={styles.sortIconInactive} />
+                  )}
+                </span>
+              </button>
+            ) : (
+              rawHeader
+            );
+
             return (
               <TableHeaderCell
                 key={column.id}
@@ -154,9 +194,7 @@ export function DataTable<T>({
                 style={colWidth ? { width: colWidth } : undefined}>
                 {column.hasFilter ? (
                   <div className={styles.headerWithFilter} data-align={column.align}>
-                    {typeof column.header === "function"
-                      ? column.header({ column })
-                      : column.header}
+                    {renderedHeader}
                     {column.onFilterClick && (
                       <FilterButton
                         onClick={column.onFilterClick}
@@ -164,10 +202,8 @@ export function DataTable<T>({
                       />
                     )}
                   </div>
-                ) : typeof column.header === "function" ? (
-                  column.header({ column })
                 ) : (
-                  column.header
+                  renderedHeader
                 )}
               </TableHeaderCell>
             );

@@ -146,6 +146,10 @@ export function ModalRoot({
       }, 200);
       return () => clearTimeout(timer);
     }
+
+    return () => {
+      if (dialog && dialog.open) dialog.close();
+    };
   }, [open, isClosing, mounted]);
 
   useEffect(() => {

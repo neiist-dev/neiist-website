@@ -14,6 +14,7 @@ export interface SearchInputProps extends Omit<
   onClear?: () => void;
   className?: string;
   clearLabel?: string;
+  action?: React.ReactNode;
 }
 
 export function SearchInput({
@@ -22,6 +23,7 @@ export function SearchInput({
   onClear,
   className,
   clearLabel,
+  action,
   ref,
   ...props
 }: SearchInputProps) {
@@ -50,6 +52,7 @@ export function SearchInput({
           <FiX size={14} />
         </button>
       )}
+      {action && <div className={styles.actionSlot}>{action}</div>}
     </div>
   );
 }
