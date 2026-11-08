@@ -26,6 +26,8 @@ Associação de estudantes de Informática do Instituto Superior Técnico, Lisbo
 export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
+  if (path.startsWith("/api/health/")) return NextResponse.next();
+
   if (isBot(req)) return new NextResponse("Forbidden", { status: 403 });
 
   if (!path.startsWith("/api/") && (req.headers.get("accept") ?? "").includes("text/markdown")) {
