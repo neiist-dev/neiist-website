@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import NavBar, { AuthWidget } from "@/components/layout/navbar/NavBar";
 import LoginButton from "@/components/layout/navbar/LoginButton";
 import Footer from "@/components/layout/Footer";
-import Cart from "@/components/shop/Cart";
+import Cart from "@/components/shop/checkout/Cart";
 import { UserProvider } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { getAuthenticatedUser } from "@/lib/auth";

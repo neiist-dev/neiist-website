@@ -5,7 +5,7 @@ import { verifyPermission } from "@/lib/auth";
 import { searchUsers } from "@/lib/search/userSearch";
 
 export async function GET(request: NextRequest) {
-  const auth = await verifyPermission("users:read");
+  const auth = await verifyPermission(["users:read", "pos:access"], { match: "any" });
   if (auth.error) return auth.error;
 
   try {

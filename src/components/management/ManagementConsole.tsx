@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Tabs, TabItem } from "@neiist/ui";
+import { Tabs, TabItem, ColorfulText } from "@neiist/ui";
 import { hasPermission } from "@/lib/security/permissions";
 import type { User } from "@/types/user";
 import type { Membership, Description } from "@/types/memberships";
@@ -12,7 +12,6 @@ import MembershipsTab from "@/components/management/MembershipsTab";
 import DepartmentsTab from "@/components/management/DepartmentsTab";
 import RolesTab from "@/components/management/RolesTab";
 import UsersTab from "@/components/management/UsersTab";
-import ColorfulText from "@/components/ColorfulText";
 import styles from "@/styles/pages/Management.module.css";
 
 export interface ManagementConsoleProps {

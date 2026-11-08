@@ -2,7 +2,15 @@ import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
 import { IconType } from "react-icons";
 import { GoSignOut, GoPerson, GoOrganization } from "react-icons/go";
-import { LuFileText, LuShoppingBag, LuPackage, LuVote } from "react-icons/lu";
+import {
+  LuFileText,
+  LuShoppingBag,
+  LuPackage,
+  LuVote,
+  LuMonitor,
+  LuTicket,
+  LuCalendar,
+} from "react-icons/lu";
 import { UserMenuItem } from "@/components/layout/navbar/NavItem";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
 import { User } from "@/types/user";
@@ -73,10 +81,30 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict, basePath })
       icon: LuPackage,
     },
     {
+      href: `${basePath}/my-tickets`,
+      label: dict.my_tickets,
+      icon: LuTicket,
+    },
+    {
       href: `${basePath}/orders`,
       label: dict.manage_orders,
       icon: LuFileText,
       permission: "orders:read",
+    },
+    {
+      href: `${basePath}/activities/manage`,
+      label: dict.manage_activities,
+      icon: LuCalendar,
+      check: (user) =>
+        hasPermission(user, "events:read") ||
+        hasPermission(user, "events:write") ||
+        hasPermission(user, "events:checkin"),
+    },
+    {
+      href: `${basePath}/shop/pos`,
+      label: dict.pos,
+      icon: LuMonitor,
+      permission: "pos:access",
     },
     {
       href: `${basePath}/management`,

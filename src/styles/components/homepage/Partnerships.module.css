@@ -24,9 +24,9 @@
   margin-bottom: 2rem;
 }
 
-@media (max-width: 786px) {
+@media (max-width: 768px) {
   .row {
-    gap: 0em;
+    gap: 0;
   }
 }
 

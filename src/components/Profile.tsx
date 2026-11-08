@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import styles from "@/styles/components/Profile.module.css";
 import { User } from "@/types/user";
 import { UserRole, checkRoles } from "@/types/roles";
 import {
@@ -21,9 +19,9 @@ import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { Alert } from "@neiist/ui";
+import { Alert, ConfirmDialog, ColorfulText } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
-import ColorfulText from "@/components/ColorfulText";
+import styles from "@/styles/components/Profile.module.css";
 
 type FieldName = "alternativeEmail" | "phone" | "preferredContactMethod" | "github" | "linkedin";
 
@@ -516,6 +514,8 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
                   .replace("{value}", getValueDisplayName(pendingChange.field, pendingChange.value))
             : ""
         }
+        confirmLabel={dict.confirm_dialog.confirm}
+        cancelLabel={dict.confirm_dialog.cancel}
         onConfirm={handleConfirmChange}
         onCancel={() => {
           setShowConfirmDialog(false);
@@ -524,7 +524,11 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       />
       <ConfirmDialog
         open={showDeleteConfirm}
+        title={dict.delete_account.title}
         message={isMember ? dict.delete_account.confirm_member : dict.delete_account.confirm_user}
+        confirmLabel={dict.delete_account.button}
+        cancelLabel={dict.confirm_dialog.cancel}
+        isDestructive
         onConfirm={handleDeleteAccount}
         onCancel={() => {
           if (!deleteLoading) setShowDeleteConfirm(false);

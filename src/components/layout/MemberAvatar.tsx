@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Avatar } from "@neiist/ui";
-import styles from "./MemberAvatar.module.css";
+import styles from "@/styles/components/layout/MemberAvatar.module.css";
 
 interface MemberAvatarProps {
   name: string;

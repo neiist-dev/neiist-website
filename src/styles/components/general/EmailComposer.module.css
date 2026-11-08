@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  color: var(--foreground-colour);
+  margin-top: 0.25rem;
+}
+
+.sectionIcon {
+  color: var(--primary-colour);
+  font-size: 1.1rem;
+}
+
+.variablesHint {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  line-height: 1.4;
+  margin-top: -0.5rem;
+}
+
+.variableTag {
+  font-family: monospace;
+  background: #f1f5f9;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--primary-colour);
+}
+
+.previewContainer {
+  margin-top: 0.5rem;
+}
+
+.previewEmail {
+  background: #f2f2f7;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  max-width: 600px;
+  box-sizing: border-box;
+}

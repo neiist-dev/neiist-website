@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import styles from "@/styles/components/general/FullScreenWrapper.module.css";
 
 export default function FullScreenWrapper({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,13 +15,7 @@ export default function FullScreenWrapper({ children }: { children: React.ReactN
   };
 
   return (
-    <div
-      ref={containerRef}
-      onClick={handleEnterFullScreen}
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-      }}>
+    <div ref={containerRef} onClick={handleEnterFullScreen} className={styles.wrapper}>
       {children}
     </div>
   );

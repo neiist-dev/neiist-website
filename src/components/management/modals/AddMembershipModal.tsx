@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Alert, Modal, Button, DateInput, Field, MultiSelect } from "@neiist/ui";
-import CreateNewUserModal from "@/components/shop/CreateNewUserModal";
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import { format, parse, isValid } from "date-fns";
 import { pt } from "date-fns/locale";
 import type { User } from "@/types/user";
 import type { RoleItem } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
-import styles from "@/styles/components/management/ManagementTabs.module.css";
+import { searchUsersClient, formatSearchedUserLabel } from "@/utils/userUtils";
 import { addMembershipAction } from "@/actions/admin/memberships";
+import styles from "@/styles/components/management/ManagementTabs.module.css";
 
 interface Department {
   name: string;
@@ -44,10 +44,7 @@ export default function AddMembershipModal({
   const [fromDate, setFromDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [toDate, setToDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // For creating new user on the fly
-  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
-  const [newUserIstId, setNewUserIstId] = useState("");
+  const memberSearchQueryRef = useRef("");
 
   const mDict = dict.admin.memberships_management;
 
@@ -96,22 +93,12 @@ export default function AddMembershipModal({
             multiSelect={false}
             selectedItem={selectedUser}
             onSelect={(user) => setSelectedUser(user)}
-            onSearch={async (query, signal) => {
-              const res = await fetch(
-                `/api/admin/users?search=${encodeURIComponent(query)}&limit=20`,
-                { signal }
-              );
-              if (!res.ok) return [];
-              const data = await res.json();
-              return data.users || (Array.isArray(data) ? data : []);
-            }}
-            createLabel={mDict.create_user}
-            onItemCreate={(query) => {
-              setNewUserIstId(query);
-              setShowCreateUserModal(true);
+            onSearch={(query, signal) => {
+              memberSearchQueryRef.current = query.trim();
+              return searchUsersClient(query, signal);
             }}
             getItemKey={(user) => user.istid}
-            getItemLabel={(user) => `${user.name} (${user.istid})`}
+            getItemLabel={(user) => formatSearchedUserLabel(user, memberSearchQueryRef.current)}
             placeholder={mDict.member_placeholder}
             emptyMessage={mDict.empty}
             renderItem={(user, isSelected) => (
@@ -209,17 +196,6 @@ export default function AddMembershipModal({
           </div>
         </form>
       </Modal>
-
-      {showCreateUserModal && (
-        <CreateNewUserModal
-          onClose={() => setShowCreateUserModal(false)}
-          onSubmit={(user: User) => {
-            setSelectedUser(user);
-            setShowCreateUserModal(false);
-          }}
-          initialIstId={newUserIstId}
-        />
-      )}
     </>
   );
 }

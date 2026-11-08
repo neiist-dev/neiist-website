@@ -11,7 +11,7 @@ import {
 } from "@/lib/db/repositories/team.repository";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import type { Membership } from "@/types/memberships";
-import type { User } from "@/types/user";
+import type { UserProfile } from "@/types/user";
 
 export async function getYearMembershipsAction(year: string) {
   const auth = await verifyPermission("memberships:read");
@@ -132,13 +132,28 @@ export async function deleteMembershipAction(params: {
 }
 
 export async function getMemberHistoryAction(istid: string): Promise<{
-  user: User | null;
+  user: UserProfile | null;
   memberships: Membership[];
 }> {
   const auth = await verifyPermission("memberships:read");
   if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
-  const [user, memberships] = await Promise.all([getUser(istid), getUserMemberships(istid, false)]);
+  const [fullUser, memberships] = await Promise.all([
+    getUser(istid),
+    getUserMemberships(istid, false),
+  ]);
+
+  const user: UserProfile | null = fullUser
+    ? {
+        istid: fullUser.istid,
+        name: fullUser.name,
+        email: fullUser.email,
+        alternativeEmail: fullUser.alternativeEmail,
+        phone: fullUser.phone,
+        courses: fullUser.courses,
+        photo: fullUser.photo,
+      }
+    : null;
 
   return { user, memberships };
 }

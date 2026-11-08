@@ -26,6 +26,11 @@ interface PageProps {
 }
 
 async function ManagementContent({ params, searchParams }: PageProps) {
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale);
+  const { tab, year } = await searchParams;
+
   const { user } = await requireUser();
   const canAccessManagement =
     hasPermission(user, "departments:read") ||
@@ -38,12 +43,7 @@ async function ManagementContent({ params, searchParams }: PageProps) {
     hasPermission(user, "photos:write_global") ||
     hasPermission(user, "users:read");
 
-  if (!canAccessManagement) redirect("/unauthorized");
-
-  const { locale: rawLocale } = await params;
-  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
-  const dict = getDictionary(locale);
-  const { tab, year } = await searchParams;
+  if (!canAccessManagement) redirect(`/${locale}/unauthorized`);
 
   const currentAcademicYear = getCurrentAcademicYear();
   const dbYears = await getAcademicYears();

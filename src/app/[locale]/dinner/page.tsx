@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import localFont from "next/font/local";
@@ -13,7 +14,6 @@ import {
 import Countdown from "@/components/dinner/Countdown";
 import InfoListItem from "@/components/dinner/InfoListItem";
 import UnlockedDinnerPage from "@/components/dinner/UnlockedDinnerPage";
-import { isJantarDeCursoCategory } from "@/utils/shop/orderKindUtils";
 import penguinImg from "@/assets/events/DinnerPenguin.png";
 import styles from "@/styles/pages/DinnerPage.module.css";
 import {
@@ -23,6 +23,7 @@ import {
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDictionary, Dictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
+import GlobalLoading from "@/app/loading";
 
 const handelsonTwo = localFont({
   src: "../../../assets/fonts/handelson-two.otf",
@@ -87,7 +88,7 @@ function DinnerInfoList({ dict }: { dict: Dictionary["dinner"] }) {
   );
 }
 
-export default async function DinnerPage({ params }: { params: LocaleParams }) {
+async function DinnerContent({ params }: { params: LocaleParams }) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).dinner;
@@ -98,8 +99,9 @@ export default async function DinnerPage({ params }: { params: LocaleParams }) {
   const now = new Date();
   const isUnlocked = now >= unlockDate;
 
-  const dinnerProduct = Array.from(products.values()).find((product) =>
-    isJantarDeCursoCategory(product.category)
+  const dinnerProduct = Array.from(products.values()).find(
+    (product) =>
+      product.product_type === "event_ticket" || product.name.toLowerCase().includes("jantar")
   );
 
   if (!dinnerProduct)
@@ -175,5 +177,13 @@ export default async function DinnerPage({ params }: { params: LocaleParams }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DinnerPage(props: { params: LocaleParams }) {
+  return (
+    <Suspense fallback={<GlobalLoading />}>
+      <DinnerContent {...props} />
+    </Suspense>
   );
 }

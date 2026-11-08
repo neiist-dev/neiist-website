@@ -14,7 +14,7 @@ import {
 } from "@neiist/ui";
 import { FiMoreVertical, FiCalendar, FiTrash2, FiCamera } from "react-icons/fi";
 import MemberAvatar from "@/components/layout/MemberAvatar";
-import type { User } from "@/types/user";
+import type { UserProfile } from "@/types/user";
 import type { Membership } from "@/types/memberships";
 import type { RoleItem } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -48,7 +48,7 @@ export default function MemberDetailModal({
   onDelete,
   dict,
 }: MemberDetailModalProps) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [mandates, setMandates] = useState<Membership[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);

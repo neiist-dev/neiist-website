@@ -1,6 +1,5 @@
 import React from "react";
-import { Heading, Text, Table } from "@neiist/ui";
-import ColorfulText from "@/components/ColorfulText";
+import { Heading, Text, Table, ColorfulText } from "@neiist/ui";
 import { LegalSection } from "@/types/privacy";
 import styles from "@/styles/pages/PrivacyPolicy.module.css";
 
