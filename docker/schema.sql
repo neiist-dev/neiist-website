@@ -120,8 +120,7 @@ CREATE TYPE neiist.payment_method_enum AS ENUM (
   'tpa',
   'card-online',
   'instant-transfer',
-  'other',
-  'in-person'
+  'other'
 );
 
 CREATE TYPE neiist.discount_type_enum AS ENUM (
@@ -1965,7 +1964,10 @@ BEGIN
     END IF;
   END IF;
 
-  v_ticket_code := UPPER(SUBSTRING(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT) FROM 1 FOR 9));
+  LOOP
+    v_ticket_code := UPPER(SUBSTRING(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT) FROM 1 FOR 6));
+    EXIT WHEN NOT EXISTS (SELECT 1 FROM neiist.activities_sign_up WHERE ticket_code = v_ticket_code);
+  END LOOP;
   v_qr_signature := COALESCE(p_qr_signature, MD5(p_event_id || ':' || p_user_istid || ':' || v_ticket_code || ':' || CLOCK_TIMESTAMP()::TEXT));
 
   INSERT INTO neiist.activities_sign_up (
@@ -2910,7 +2912,7 @@ BEGIN
   v_stock_override := COALESCE((p_order->>'stock_override')::BOOLEAN, FALSE);
 
   v_pay := p_order->'payment';
-  IF v_pay IS NOT NULL AND (v_pay->>'method' = 'in-person' OR v_pay->>'method' IS NULL) THEN
+  IF v_pay IS NOT NULL AND v_pay->>'method' IS NULL THEN
     v_pay := NULL;
   END IF;
 
@@ -2927,7 +2929,7 @@ BEGIN
 
     IF v_pay_method IN ('cash'::neiist.payment_method_enum, 'tpa'::neiist.payment_method_enum) AND v_pay_status = 'successful' THEN
       IF v_pay_shift_id IS NULL THEN
-        RAISE EXCEPTION 'shift_id is required for in-person payment method %', v_pay_method;
+        RAISE EXCEPTION 'shift_id is required for POS payment method %', v_pay_method;
       END IF;
       PERFORM 1 FROM neiist.pos_shifts WHERE id = v_pay_shift_id AND status = 'open' FOR SHARE;
       IF NOT FOUND THEN
@@ -4112,6 +4114,7 @@ BEGIN
       ELSE nif END,
     campus = CASE WHEN p_updates ? 'campus' THEN NULLIF(BTRIM(p_updates->>'campus'), '') ELSE campus END,
     notes = CASE WHEN p_updates ? 'notes' THEN NULLIF(BTRIM(p_updates->>'notes'), '') ELSE notes END,
+    pickup_deadline = CASE WHEN p_updates ? 'pickup_deadline' THEN NULLIF(BTRIM(p_updates->>'pickup_deadline'), '')::TIMESTAMPTZ ELSE pickup_deadline END,
     updated_at = NOW(),
     updated_by = p_user_istid
   WHERE order_number = p_order_number;
