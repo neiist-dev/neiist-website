@@ -1,87 +1,66 @@
 import nodemailer from "nodemailer";
-import { OrderKind } from "@/types/shop/orderKind";
-import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
-import {
-  formatCampus,
-  getCampusLocation,
-  getColorFromOptions,
-  formatVariantSimple,
-  isColorKey,
-} from "@/utils/shop/shopUtils";
-import { getMbWayNumberForOrder } from "@/lib/mbwayNumbers";
-import {
-  renderDiscountCampaignEmailHtml,
-  type DiscountEmailTemplateData,
-} from "@/utils/shop/discountEmail";
+import ical from "ical-generator";
+import { getEventTicketEmailTemplate } from "@/lib/email/templates/events";
+import { generateTicketPNG } from "@/lib/ticketCode";
 
-interface EmailOptions {
+export interface EmailAttachment {
+  filename: string;
+  content?: Buffer | string;
+  path?: string;
+  contentType?: string;
+  cid?: string;
+}
+
+export interface EmailOptions {
   to: string;
   subject: string;
   html: string;
+  attachments?: EmailAttachment[];
 }
 
 function isSMTPConfigured(): boolean {
   return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-export function formatVariantLabel(
-  variantLabel?: string,
-  variantOptions?: Record<string, string>
-): string {
-  const { text, colorInfo } = formatVariantSimple(
-    variantOptions ?? undefined,
-    variantLabel ?? undefined
-  );
-  if (!text) return "";
+type MailTransporter = ReturnType<typeof nodemailer.createTransport>;
 
-  if (colorInfo.hex) {
-    return `<span style="display:inline-block;width:12px;height:12px;border-radius:12px;background:${colorInfo.hex};margin-right:8px;vertical-align:middle;"></span>${text}`;
-  }
+const globalForEmail = globalThis as unknown as {
+  emailTransporter: MailTransporter | undefined;
+};
 
-  return text;
-}
-
-export function formatVariantForEmail(variantOptions?: Record<string, string>): string {
-  if (!variantOptions || Object.keys(variantOptions).length === 0) return "";
-
-  const colorInfo = getColorFromOptions(variantOptions);
-  const parts: string[] = [];
-  if (colorInfo.hex)
-    parts.push(
-      `<span style="display:inline-block;width:12px;height:12px;border-radius:12px;background:${colorInfo.hex};margin-right:6px;vertical-align:middle;"></span>`
-    );
-
-  const optionParts: string[] = [];
-  for (const [key, value] of Object.entries(variantOptions)) {
-    if (!isColorKey(key)) {
-      optionParts.push(`${key}: ${value}`);
-    }
-  }
-  if (optionParts.length > 0) parts.push(optionParts.join(" "));
-
-  return parts.join("");
-}
-
-export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
-  if (!isSMTPConfigured()) {
-    console.warn("SMTP not configured. Email not sent:", { to, subject });
-    return false;
-  }
-
-  try {
-    const transporter = nodemailer.createTransport({
+function getTransporter(): MailTransporter {
+  if (!globalForEmail.emailTransporter) {
+    globalForEmail.emailTransporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
+  }
+  return globalForEmail.emailTransporter;
+}
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  attachments,
+}: EmailOptions): Promise<boolean> {
+  if (!isSMTPConfigured()) {
+    console.warn("SMTP not configured. Email not sent:", { to, subject });
+    return false;
+  }
+
+  try {
+    const transporter = getTransporter();
 
     await transporter.sendMail({
       from: `"NEIIST" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
+      attachments,
     });
     return true;
   } catch (error) {
@@ -90,444 +69,104 @@ export async function sendEmail({ to, subject, html }: EmailOptions): Promise<bo
   }
 }
 
-export function getDiscountCampaignEmailTemplate(
-  introLine: string,
-  templateData: DiscountEmailTemplateData
-): string {
-  return renderDiscountCampaignEmailHtml(introLine, templateData);
-}
+export function generateEventIcs(event: {
+  title: string;
+  description?: string;
+  location?: string | string[];
+  start: Date | string;
+  end?: Date | string | null;
+  url?: string;
+}): string {
+  const calendar = ical({ name: "NEIIST Eventos" });
+  const startDate = new Date(event.start);
+  const endDate = event.end
+    ? new Date(event.end)
+    : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  const loc = Array.isArray(event.location) ? event.location.join(", ") : event.location;
 
-type OrderEmailItem = {
-  product_name: string;
-  variant_label?: string;
-  variant_options?: Record<string, string>;
-  quantity: number;
-  unit_price: number;
-};
-
-function formatDeadline(pickupDeadline?: string | null): string {
-  if (!pickupDeadline) return "72 horas após a criação da encomenda";
-
-  const dt = new Date(pickupDeadline);
-  if (Number.isNaN(dt.getTime())) return "72 horas após a criação da encomenda";
-
-  return dt.toLocaleString("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  calendar.createEvent({
+    start: startDate,
+    end: endDate,
+    summary: event.title,
+    description: event.description || "",
+    location: loc || undefined,
+    url: event.url || process.env.NEXT_PUBLIC_BASE_URL,
   });
+
+  return calendar.toString();
 }
 
-function renderItemsTable(items: OrderEmailItem[], total: number): string {
-  const itemsHtml = items
-    .map((item) => {
-      const variant = formatVariantForEmail(item.variant_options);
-      const variantText = variant ? ` - ${variant}` : "";
-      return `
-        <tr>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef;">
-            ${item.product_name}${variantText}
-          </td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: center;">${item.quantity}</td>
-          <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: right;">€${item.unit_price.toFixed(2)}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  return `
-    <h3 style="color: #2863FD; margin-top: 2rem;">Resumo da Encomenda</h3>
-    <table style="width: 100%; margin: 1rem 0; border-collapse: collapse;">
-      <thead>
-        <tr style="background: #f8f9fa;">
-          <th style="padding: 0.5rem; text-align: left; border-bottom: 2px solid #dee2e6;">Produto</th>
-          <th style="padding: 0.5rem; text-align: center; border-bottom: 2px solid #dee2e6;">Qtd</th>
-          <th style="padding: 0.5rem; text-align: right; border-bottom: 2px solid #dee2e6;">Preço</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemsHtml}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="2" style="padding: 1rem 0.5rem; text-align: right; font-weight: bold;">Total:</td>
-          <td style="padding: 1rem 0.5rem; text-align: right; font-weight: bold; color: #2863FD;">€${total.toFixed(2)}</td>
-        </tr>
-      </tfoot>
-    </table>
-  `;
-}
-
-export function getEmailVerificationTemplate(verifyUrl: string): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Confirmação de Email Alternativo</h2>
-      <p style="font-size: 1.1rem;">Olá!</p>
-      <p>Recebemos um pedido para adicionar este email como contacto alternativo na tua conta NEIIST.</p>
-      <div style="margin: 2rem 0;">
-        <a href="${verifyUrl}" style="background: linear-gradient(90deg,#2863FD 0%,#34D1F9 100%); color: #fff; padding: 0.9em 2em; border-radius: 0.5em; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(40,99,253,0.08);">
-          Confirmar Email
-        </a>
-      </div>
-      <p style="color: #555;">Se não fizeste este pedido, ignora este email.</p>
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getOrderPendingTemplate(
-  orderNumber: string,
-  customerName: string,
-  items: OrderEmailItem[],
-  total: number,
-  campus?: string,
-  paymentMethod?: string,
-  pickupDeadline?: string | null,
-  orderId?: number
-): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-  const scheduleLink = orderId
-    ? ` Consulta o horário aqui: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/my-orders?orderId=${orderId}" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
-    : "";
-
-  const paymentText: Record<string, string> = {
-    "in-person": `Presencial numa banca NEIIST (${getCampusLocation(campus)}).${scheduleLink}`,
-    cash: `Numerário numa banca NEIIST (${getCampusLocation(campus)}).${scheduleLink}`,
-    mbway: "MB Way (aguarda validação manual da transferência pelo NEIIST).",
-    other: "Transferência/Outro (aguarda validação manual pelo NEIIST).",
-    "sumup-tpa": "Cartão no terminal SumUp POS (confirmação no dispositivo).",
-    sumup: "Cartão online via SumUp",
-    "apple-pay": "Apple Pay via SumUp",
-  };
-  const deadlineText = formatDeadline(pickupDeadline);
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Encomenda Pendente</h2>
-      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>A tua encomenda <strong>#${orderNumber}</strong> foi registada e encontra-se <strong>pendente</strong>.</p>
-      <p><strong>Atenção:</strong> a encomenda só fica confirmada depois do pagamento.</p>
-      <p><strong>Onde pagar:</strong> ${paymentText[paymentMethod || ""] || `Banca NEIIST (${getCampusLocation(campus)})`}</p>
-      <p><strong>Prazo limite de pagamento:</strong> ${deadlineText}. Se não for paga até esta data, a encomenda é automaticamente cancelada.</p>
-
-      ${renderItemsTable(items, total)}
-
-      ${campus ? `<p><strong>Campus de levantamento:</strong> ${formatCampus(campus)}</p>` : ""}
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getOrderPaidTemplate(
-  orderNumber: string,
-  customerName: string,
-  items: OrderEmailItem[],
-  total: number,
-  campus?: string,
-  paymentMethod?: string,
-  paymentReference?: string
-): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-
-  const presencialText = `Presencial numa banca do NEIIST ou na ${getCampusLocation(campus)}.`;
-  const paymentMethodLabels: Record<string, string> = {
-    "in-person": presencialText,
-    cash: presencialText,
-    mbway: "MB Way",
-    other: presencialText,
-    "sumup-tpa": "Cartão via TPA SumUp",
-    sumup: "Cartão online via SumUp",
-    "apple-pay": "Apple Pay via SumUp",
-  };
-  const paymentMethodText = paymentMethod
-    ? paymentMethodLabels[paymentMethod] || paymentMethod
-    : undefined;
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Pagamento Confirmado</h2>
-      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>O pagamento da tua encomenda <strong>#${orderNumber}</strong> foi confirmado com sucesso.</p>
-
-      ${renderItemsTable(items, total)}
-
-      ${campus ? `<p><strong>Campus de levantamento:</strong> ${formatCampus(campus)}</p>` : ""}
-      ${paymentMethodText ? `<p><strong>Método de pagamento:</strong> ${paymentMethodText}</p>` : ""}
-      ${paymentReference ? `<p><strong>Referência de pagamento:</strong> ${paymentReference}</p>` : ""}
-
-      <p style="margin-top: 1.25rem;">Receberás novo email quando a encomenda estiver pronta para levantamento.</p>
-
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getJantarDeCursoPendingTemplate(
-  orderNumber: string,
-  customerName: string,
-  items: OrderEmailItem[],
-  total: number,
-  campus?: string,
-  pickupDeadline?: string | null,
-  paymentMethod?: string,
-  orderId?: number
-): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-  const deadlineText = formatDeadline(pickupDeadline);
-  const mbwayNumber = getMbWayNumberForOrder(orderNumber);
-  const isMbWay = paymentMethod === "mbway";
-  const scheduleLink = orderId
-    ? `Consulta o horário aqui: <a href="${process.env.NEXT_PUBLIC_BASE_URL}/my-orders?orderId=${orderId}" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">Horários do NEIIST</a>`
-    : "";
-
-  const paymentInfo = isMbWay
-    ? mbwayNumber
-      ? `
-      <p><strong>Pagamento MB Way:</strong> envia <strong>€${total.toFixed(2)}</strong> para o número <strong>${mbwayNumber}</strong>.</p>
-      <p><strong>Instruções:</strong> na descrição da transferência indica <strong>#${orderNumber}</strong> para conseguirmos associar o pagamento à tua reserva.</p>
-      <p>Após o envio, a confirmação é feita por um membro da equipa e receberás um novo email.</p>
-    `
-      : `
-      <p><strong>Pagamento MB Way:</strong> pedido selecionado, mas não foi possível atribuir número automático.</p>
-      <p>Por favor responde a este email ou contacta a equipa NEIIST para receber o número MB Way de pagamento.</p>
-    `
-    : `
-      <p>
-        <strong>Pagamento:</strong> presencialmente na (${getCampusLocation(campus)}).
-        ${scheduleLink}
-      </p>
-      <p>O pagamento deve ser efetuado no prazo de 72 horas após a criação da encomenda.</p>
-    `;
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Jantar de Curso - Encomenda Pendente</h2>
-      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>A tua reserva para o <strong>Jantar de Curso</strong> (#${orderNumber}) foi registada com sucesso.</p>
-      ${paymentInfo}
-      <p><strong>Prazo limite:</strong> ${deadlineText}. Após esse prazo a reserva pode ser cancelada automaticamente.</p>
-
-      ${renderItemsTable(items, total)}
-
-      ${campus ? `<p><strong>Campus selecionado:</strong> ${formatCampus(campus)}</p>` : ""}
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getJantarDeCursoPaidTemplate(
-  orderNumber: string,
-  customerName: string,
-  items: OrderEmailItem[],
-  total: number,
-  campus?: string,
-  paymentReference?: string
-): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Jantar de Curso - Pagamento Confirmado</h2>
-      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>Recebemos o teu pagamento para a reserva <strong>#${orderNumber}</strong> do Jantar de Curso.</p>
-
-      ${renderItemsTable(items, total)}
-
-      ${campus ? `<p><strong>Campus selecionado:</strong> ${formatCampus(campus)}</p>` : ""}
-      ${paymentReference ? `<p><strong>Referência de pagamento:</strong> ${paymentReference}</p>` : ""}
-      <p style="margin-top: 1.25rem;">A tua inscrição será validada automaticamente após confirmação final do pagamento.</p>
-
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getOrderStatusUpdateTemplate(
-  orderNumber: string,
-  customerName: string,
-  status: string,
-  statusLabel: string,
-  campus?: string
-): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-
-  const statusMessages: Record<string, string> = {
-    paid: "O estado da tua encomenda foi atualizado para pago.",
-    ready: "A tua encomenda está pronta para levantamento!",
-    delivered: "A tua encomenda foi entregue com sucesso!",
-    cancelled: "A tua encomenda foi cancelada pela equipa da loja.",
-  };
-
-  const message =
-    statusMessages[status] || `O estado da tua encomenda foi atualizado para: ${statusLabel}`;
-
-  const campusLocation = getCampusLocation(campus);
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Atualização do Estado da Encomenda</h2>
-      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>${message}</p>
-      <p><strong>Número da encomenda:</strong> #${orderNumber}</p>
-      <p><strong>Estado atual:</strong> ${statusLabel}</p>
-
-      ${
-        status === "ready" && campusLocation
-          ? `<p>A tua encomenda está pronta para ser levantada no <strong>${campusLocation}</strong>. Consulta as nossas redes sociais para saber os horários de funcionamento!</p>`
-          : status === "ready"
-            ? `<p>A tua encomenda está pronta para ser levantada no campus selecionado. Consulta as nossas redes sociais para saber os horários de funcionamento!</p>`
-            : ""
-      }
-
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getOrderAutoCancelledTemplate(
-  orderNumber: string,
-  customerName: string,
-  campus?: string
-): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Encomenda Cancelada Automaticamente</h2>
-      <p style="font-size: 1.1rem;">Olá ${customerName}!</p>
-      <p>A tua encomenda <strong>#${orderNumber}</strong> foi cancelada automaticamente por falta de pagamento dentro do prazo.</p>
-      <p>Se ainda quiseres os produtos, podes fazer uma nova encomenda no site.</p>
-      ${campus ? `<p><strong>Campus selecionado:</strong> ${formatCampus(campus)}</p>` : ""}
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
-}
-
-export function getPendingOrderEmailTemplate(
-  orderKind: OrderKind,
-  orderNumber: string,
-  customerName: string,
-  items: OrderEmailItem[],
-  total: number,
-  campus?: string,
-  paymentMethod?: string,
-  pickupDeadline?: string | null,
-  orderId?: number
-): string {
-  const templateKey = getOrderKindRules(orderKind).emailTemplates.pending;
-
-  if (templateKey === "jantar_pending") {
-    return getJantarDeCursoPendingTemplate(
-      orderNumber,
-      customerName,
-      items,
-      total,
-      campus,
-      pickupDeadline,
-      paymentMethod,
-      orderId
-    );
-  }
-
-  return getOrderPendingTemplate(
+/**
+ * Sends the confirmed event ticket email (QR PNG + .ics attachments).
+ * Shared by the event sign-up route and the paid-order ticket hooks.
+ */
+export async function sendEventTicketEmail(params: {
+  eventId: string;
+  eventTitle: string;
+  eventDescription?: string | null;
+  eventLocation?: string | string[] | null;
+  eventStart: string | Date;
+  eventEnd?: string | Date | null;
+  attendeeName: string;
+  recipientEmail: string;
+  ticketCode: string;
+  formResponses?: Record<string, unknown> | null;
+  orderNumber?: string | null;
+}): Promise<boolean> {
+  const {
+    eventId,
+    eventTitle,
+    eventDescription,
+    eventLocation,
+    eventStart,
+    eventEnd,
+    attendeeName,
+    recipientEmail,
+    ticketCode,
+    formResponses,
     orderNumber,
-    customerName,
-    items,
-    total,
-    campus,
-    paymentMethod,
-    pickupDeadline,
-    orderId
-  );
-}
+  } = params;
 
-export function getPaidOrderEmailTemplate(
-  orderKind: OrderKind,
-  orderNumber: string,
-  customerName: string,
-  items: OrderEmailItem[],
-  total: number,
-  campus?: string,
-  paymentMethod?: string,
-  paymentReference?: string
-): string {
-  const templateKey = getOrderKindRules(orderKind).emailTemplates.paid;
+  const ticketUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/activities/${eventId}/ticket`;
+  const qrPng = await generateTicketPNG(ticketCode);
+  const icsContent = generateEventIcs({
+    title: eventTitle,
+    description: eventDescription ?? undefined,
+    location: eventLocation ?? undefined,
+    start: eventStart,
+    end: eventEnd,
+    url: ticketUrl,
+  });
 
-  if (templateKey === "jantar_paid") {
-    return getJantarDeCursoPaidTemplate(
-      orderNumber,
-      customerName,
-      items,
-      total,
-      campus,
-      paymentReference
-    );
-  }
-
-  return getOrderPaidTemplate(
+  const html = getEventTicketEmailTemplate({
+    eventTitle,
+    eventStart,
+    eventEnd,
+    location: eventLocation ?? undefined,
+    ticketCode,
+    attendeeName,
     orderNumber,
-    customerName,
-    items,
-    total,
-    campus,
-    paymentMethod,
-    paymentReference
-  );
-}
+    formResponses,
+    ticketUrl,
+    hasCidQr: true,
+  });
 
-export function getAutoCancelledOrderEmailTemplate(
-  _orderKind: OrderKind,
-  orderNumber: string,
-  customerName: string,
-  campus?: string
-): string {
-  return getOrderAutoCancelledTemplate(orderNumber, customerName, campus);
-}
-
-export function getStatusUpdateOrderEmailTemplate(
-  _orderKind: OrderKind,
-  orderNumber: string,
-  customerName: string,
-  status: string,
-  statusLabel: string,
-  campus?: string
-): string {
-  return getOrderStatusUpdateTemplate(orderNumber, customerName, status, statusLabel, campus);
-}
-
-export function getAccountDeletionTemplate(name: string): string {
-  const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/neiist_logo.svg`;
-
-  return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1rem;" />
-      <h2 style="color: #2863FD; margin-bottom: 1rem;">Conta Eliminada</h2>
-      <p style="font-size: 1.1rem;">Olá ${name}!</p>
-      <p>Confirmamos que a tua conta no NEIIST e os teus dados pessoais foram eliminados com sucesso, conforme o RGPD (Direito ao Apagamento).</p>
-      <p style="color: #555; font-size: 0.95rem; margin-top: 1rem;">
-        <strong>Nota informativa:</strong> Caso tenhas realizado encomendas na nossa loja, os registos fiscais correspondentes são mantidos durante o período legal obrigatório de 10 anos (art.º 52.º da Lei Geral Tributária), findo o qual serão totalmente removidos.
-      </p>
-      <p style="margin-top: 1rem;">Se não solicitaste esta eliminação ou tens alguma dúvida, por favor contacta a nossa equipa.</p>
-      <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e9ecef;" />
-      <p style="font-size: 0.9rem; color: #6c757d;">NEIIST &mdash; Núcleo Estudantil de Informática do IST</p>
-    </div>
-  `;
+  return sendEmail({
+    to: recipientEmail,
+    subject: `[NEIIST] Bilhete Confirmado: ${eventTitle}`,
+    html,
+    attachments: [
+      {
+        filename: "ticket-qr.png",
+        content: qrPng,
+        cid: "ticket-qr-code",
+        contentType: "image/png",
+      },
+      {
+        filename: `${eventTitle.replace(/[^a-zA-Z0-9]/g, "_")}.ics`,
+        content: icsContent,
+        contentType: "text/calendar; charset=utf-8",
+      },
+    ],
+  });
 }
