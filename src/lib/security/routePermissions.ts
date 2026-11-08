@@ -14,6 +14,7 @@ export const publicRoutes = [
 export const ROUTE_TIERS: Record<string, UserRole> = {
   "/profile": UserRole._GUEST,
   "/my-orders": UserRole._GUEST,
+  "/my-tickets": UserRole._GUEST,
   "/shop/cart": UserRole._GUEST,
   "/shop/checkout": UserRole._GUEST,
   "/voting/manage": UserRole._ADMIN,

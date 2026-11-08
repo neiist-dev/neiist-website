@@ -16,11 +16,29 @@ export const ROLE_PRESETS: Record<UserRole, Permission[]> = {
     "memberships:write_dept",
     "photos:read",
     "photos:write_dept",
+    "shop:read",
+    "shop:write",
+    "pos:access",
+    "pos:manage",
     "orders:read",
     "orders:read_customer",
+    "orders:create",
+    "orders:write",
+    "orders:deliver",
+    "orders:override",
     "voting:read",
+    "events:read",
+    "events:write",
+    "events:checkin",
   ],
-  [UserRole._MEMBER]: ["orders:read_customer", "orders:create", "photos:read", "voting:read"],
+  [UserRole._MEMBER]: [
+    "orders:read_customer",
+    "orders:deliver",
+    "orders:create",
+    "photos:read",
+    "voting:read",
+    "pos:access",
+  ],
   [UserRole._GUEST]: [],
 };
 
@@ -32,9 +50,15 @@ const ADMIN_LEVEL_PERMISSIONS: Permission[] = [
   "roles:delete",
   "memberships:write_global",
   "memberships:delete",
+  "events:delete",
 ];
 
-const COORDINATOR_LEVEL_PERMISSIONS: Permission[] = ["memberships:write_dept", "photos:write_dept"];
+const COORDINATOR_LEVEL_PERMISSIONS: Permission[] = [
+  "memberships:write_dept",
+  "photos:write_dept",
+  "events:write",
+  "events:checkin",
+];
 
 export function deriveAccessLabel(permissions: Permission[]): "admin" | "coordinator" | null {
   const set = new Set(permissions);

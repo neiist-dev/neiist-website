@@ -8,7 +8,8 @@ import {
   updateUser,
   getEmailVerificationByUser,
 } from "@/lib/db/repositories/user.repository";
-import { FenixPersonResponse, extractCourses } from "@/types/fenix";
+import { FenixPersonResponse } from "@/types/fenix";
+import { extractCourses } from "@/utils/userUtils";
 
 export const SESSION_COOKIE_NAME = "session";
 

@@ -17,14 +17,21 @@ export const PERMISSIONS = {
   "photos:write_dept": { category: "photos" },
   "shop:read": { category: "shop" },
   "shop:write": { category: "shop" },
+  "pos:access": { category: "shop" },
+  "pos:manage": { category: "shop" },
   "orders:read": { category: "orders" },
   "orders:read_customer": { category: "orders" },
   "orders:create": { category: "orders" },
   "orders:write": { category: "orders" },
+  "orders:deliver": { category: "orders" },
   "orders:delete": { category: "orders" },
   "orders:override": { category: "orders" },
   "voting:read": { category: "voting" },
   "voting:write": { category: "voting" },
+  "events:read": { category: "events" },
+  "events:write": { category: "events" },
+  "events:delete": { category: "events" },
+  "events:checkin": { category: "events" },
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;

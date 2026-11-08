@@ -48,6 +48,51 @@ export function parseDatabaseError(error: unknown): DatabaseError {
   if (message.includes("Invalid quantity for product_id"))
     return new DatabaseError("Quantidade inválida", 400);
 
+  if (message.includes("Only untracked products can be sold on fast-pos"))
+    return new DatabaseError(
+      "Apenas artigos sem controlo de stock podem ser vendidos no POS rápido",
+      400
+    );
+
+  if (message.includes("is not available on channel"))
+    return new DatabaseError("Produto não disponível para venda neste canal", 400);
+
+  // POS & Shift errors
+  if (
+    message.includes("shift_id is required") ||
+    message.includes("payment requires an active POS shift") ||
+    message.includes("chk_pos_payment_shift")
+  ) {
+    return new DatabaseError(
+      "Pagamentos no balcão (numerário ou TPA) requerem um turno de caixa ativo",
+      400
+    );
+  }
+
+  if (
+    message.includes("Active shift") &&
+    (message.includes("not found or closed") || message.includes("not found"))
+  ) {
+    return new DatabaseError(
+      "O turno de caixa selecionado não foi encontrado ou já foi encerrado",
+      400
+    );
+  }
+
+  // Order transition & settlement errors
+  if (
+    message.includes("Cannot transition cancelled item") ||
+    message.includes("Cannot transition delivered item") ||
+    message.includes("Cannot transition paid item back to pending") ||
+    message.includes("Invalid transition from") ||
+    message.includes("Invalid item status transition")
+  ) {
+    return new DatabaseError("Transição de estado do artigo inválida", 400);
+  }
+
+  if (message.includes("and cannot be settled"))
+    return new DatabaseError("A encomenda não pode ser liquidada no estado atual", 400);
+
   // Discount errors
   if (message.includes("Discount code is required"))
     return new DatabaseError("Código de desconto obrigatório", 400);

@@ -4,6 +4,7 @@ import type {
   OrderSource,
   CreateOrderInput,
 } from "@/types/shop/order";
+import type { PaymentMethod } from "@/types/shop/payment";
 
 export interface StockHoldItem {
   productId: number;
@@ -61,7 +62,7 @@ export interface CheckoutSessionData extends Omit<
   order_number: string;
   order_source: OrderSource;
   total_amount: number;
-  payment_method: string;
+  payment_method: PaymentMethod;
   items: Array<CreateOrderItemInput | OrderItem>;
   reference?: string;
   shift_id?: string | null;

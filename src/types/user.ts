@@ -22,6 +22,12 @@ export interface User {
   linkedin?: string;
   isAnonymized?: boolean;
 }
+
+export type UserProfile = Pick<
+  User,
+  "istid" | "name" | "email" | "alternativeEmail" | "phone" | "courses" | "photo"
+>;
+
 export interface dbUser {
   istid: string;
   name: string;
