@@ -38,7 +38,7 @@ export function Popover({
   width = 280,
   offset = 8,
   matchAnchorWidth = false,
-  mobileDrawerTitle = "",
+  mobileDrawerTitle,
   align = "start",
 }: PopoverProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,14 +46,15 @@ export function Popover({
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
     const mql = window.matchMedia("(max-width: 48rem)");
     const checkMobile = () => {
-      setIsMobile(mql.matches);
+      setIsMobile((prev) => (prev !== mql.matches ? mql.matches : prev));
     };
     checkMobile();
     mql.addEventListener("change", checkMobile);
     return () => mql.removeEventListener("change", checkMobile);
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || isMobile) {
@@ -157,7 +158,7 @@ export function Popover({
     };
   }, [isOpen, isMobile, anchorRef, onClose]);
 
-  if (typeof document === "undefined") return null;
+  if (typeof document === "undefined" || !isOpen) return null;
 
   if (isMobile) {
     return (
@@ -166,8 +167,6 @@ export function Popover({
       </Modal>
     );
   }
-
-  if (!isOpen) return null;
 
   const content = (
     <div

@@ -98,7 +98,8 @@
 }
 
 @container table-wrapper (max-width: 48rem) {
-  .checkboxCol {
+  .checkboxCol,
+  .actionsCol {
     position: absolute;
     inset-block-start: 0;
     inset-inline-end: 0;
@@ -115,18 +116,8 @@
     z-index: 2;
   }
 
-  .actionsCol {
-    display: none;
-  }
-
   .emptyStateCell {
     display: block;
     padding-block: 2.5rem;
-  }
-}
-
-@media (max-width: 48rem) {
-  .actionsCol {
-    display: none;
   }
 }

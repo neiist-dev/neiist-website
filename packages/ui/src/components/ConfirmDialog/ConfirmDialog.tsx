@@ -8,7 +8,7 @@ import { cn } from "../../utils/cn";
 
 export interface ConfirmDialogProps {
   open: boolean;
-  title?: string;
+  title?: React.ReactNode;
   message: React.ReactNode;
   confirmLabel: string;
   cancelLabel: string;

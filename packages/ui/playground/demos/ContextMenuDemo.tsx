@@ -164,11 +164,11 @@ export const ContextMenuDemo = () => {
 
       <DemoCard
         title="Native DataTable Integration"
-        description="Rows capture onContextMenu automatically via renderRowContextMenu without any manual portal or coordinate calculations.">
+        description="Rows capture onContextMenu automatically via rowActions, and display the 3-dots actions menu without any manual portal or coordinate calculations.">
         <DataTable
           data={SAMPLE_ROWS}
           columns={columns}
-          renderRowContextMenu={(row) => (
+          rowActions={(row) => (
             <>
               <ContextMenu.Item
                 icon={<FiCheckCircle />}
@@ -194,6 +194,7 @@ export const ContextMenuDemo = () => {
               </ContextMenu.Item>
             </>
           )}
+          actionsTitle="Ações"
         />
       </DemoCard>
     </Stack>
