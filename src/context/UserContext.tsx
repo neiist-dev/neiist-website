@@ -42,9 +42,6 @@ export function UserProvider({
         setUser(null);
       }
     };
-    if (!initialUser) {
-      revalidate(true);
-    }
 
     const onVisibility = () => {
       if (document.visibilityState === "visible") revalidate();
@@ -76,4 +73,16 @@ export function useUser() {
   const context = use(UserContext);
   if (!context) throw new Error("useUser must be used within a UserProvider");
   return context;
+}
+
+export function UserSessionSync({ serverUser }: { serverUser: User | null }) {
+  const { user, setUser } = useUser();
+
+  useEffect(() => {
+    if (serverUser?.istid !== user?.istid) {
+      setUser(serverUser);
+    }
+  }, [serverUser, user, setUser]);
+
+  return null;
 }
