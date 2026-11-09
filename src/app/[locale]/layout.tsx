@@ -4,7 +4,7 @@ import NavBar, { AuthWidget } from "@/components/layout/navbar/NavBar";
 import LoginButton from "@/components/layout/navbar/LoginButton";
 import Footer from "@/components/layout/Footer";
 import Cart from "@/components/shop/Cart";
-import { UserProvider } from "@/context/UserContext";
+import { UserProvider, UserSessionSync } from "@/context/UserContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
@@ -76,8 +76,14 @@ async function ServerAuthWidget({
   dict: Dictionary["navbar"]["menu"];
 }) {
   const session = await getAuthenticatedUser();
+  const user = session?.user ?? null;
 
-  return <AuthWidget initialUser={session?.user ?? null} dict={dict} basePath={basePath} />;
+  return (
+    <>
+      <UserSessionSync serverUser={user} />
+      <AuthWidget initialUser={user} dict={dict} basePath={basePath} />;
+    </>
+  );
 }
 
 export default async function LocaleLayout({
