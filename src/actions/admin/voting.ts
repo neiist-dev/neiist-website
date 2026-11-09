@@ -1,41 +1,36 @@
 "use server";
 
+import crypto from "crypto";
 import {
   addVotingSession,
   deleteVotingSession,
   finishVoting,
   startVoting,
-  submitVotes,
   setSessionShowResults,
 } from "@/lib/db/repositories/voting.repository";
-import crypto from "crypto";
 import {
   type CustomOptionInput,
   type VotingSession,
   type VotingType,
   VOTING_TYPES,
 } from "@/types/voting";
-import { requirePermission, requireUser } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import { votingImages } from "@/lib/imageStorage";
 
 function requireString(value: FormDataEntryValue | null, field: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
-
   return value.trim();
 }
 
 function requireInt(value: FormDataEntryValue | null, field: string): number {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
-
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) throw new Error(`${field} must be a valid integer`);
-
   return parsed;
 }
 
 function optionalString(value: FormDataEntryValue | null): string | undefined {
   if (typeof value !== "string") return undefined;
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
 }
@@ -55,6 +50,7 @@ type RawOption = {
   photoPath?: string;
   descriptionPhotoPath?: string;
 };
+
 type Extractor = (_fd: FormData) => Partial<VotingSession> | Promise<Partial<VotingSession>>;
 
 async function savePhoto(file: File): Promise<string> {
@@ -153,45 +149,30 @@ export async function createVotingSessionAction(
   }
 }
 
-export async function deleteVotingSessionAction(formData: FormData): Promise<void> {
-  await requirePermission("voting:write");
-
-  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-  await deleteVotingSession(sessionId);
+function requireSessionId(id: number): number {
+  if (!id || typeof id !== "number") throw new Error("ID de sessão inválido");
+  return id;
 }
 
-export async function startVotingAction(formData: FormData): Promise<void> {
+export async function deleteVotingSessionAction(sessionId: number): Promise<void> {
   await requirePermission("voting:write");
-
-  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-
-  await startVoting(sessionId);
+  await deleteVotingSession(requireSessionId(sessionId));
 }
 
-export async function finishVotingAction(formData: FormData): Promise<void> {
+export async function startVotingAction(sessionId: number): Promise<void> {
   await requirePermission("voting:write");
-
-  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-
-  await finishVoting(sessionId);
+  await startVoting(requireSessionId(sessionId));
 }
 
-export async function submitVotesAction(formData: FormData): Promise<void> {
-  const { user } = await requireUser();
-
-  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-  const nomineeIds = formData.getAll("nomineeIds").map(String).filter(Boolean);
-
-  if (nomineeIds.length === 0) throw new Error("Pelo menos uma opção deve ser selecionada.");
-
-  await submitVotes(sessionId, user.istid, nomineeIds);
+export async function finishVotingAction(sessionId: number): Promise<void> {
+  await requirePermission("voting:write");
+  await finishVoting(requireSessionId(sessionId));
 }
 
-export async function togglePublishResultsAction(formData: FormData): Promise<void> {
+export async function togglePublishResultsAction(
+  sessionId: number,
+  showResults: boolean
+): Promise<void> {
   await requirePermission("voting:write");
-
-  const sessionId = requireInt(formData.get("sessionId"), "sessionId");
-  const showResults = formData.get("showResults") === "true";
-
-  await setSessionShowResults(sessionId, showResults);
+  await setSessionShowResults(requireSessionId(sessionId), showResults);
 }

@@ -10,15 +10,13 @@ import {
   VotingSyncPayload,
   VOTING_SYNC_EVENT_TYPES,
 } from "@/types/voting";
-import { submitVotesAction } from "@/lib/votingSystem";
+import { submitVotesAction } from "@/actions/voting";
+import { Button, Alert, ColorfulText, Spinner } from "@neiist/ui";
 import VotingGrid from "@/components/voting/VotingGrid";
 import WinnerCard from "@/components/voting/WinnerCard";
-import ColorfulText from "@/components/ColorfulText";
-import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
-import { Button, Alert } from "@neiist/ui";
-import styles from "@/styles/pages/VotingPage.module.css";
 import ReactMarkdown from "react-markdown";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/pages/VotingPage.module.css";
 
 interface VotingClientProps {
   initialGlobalState: GlobalVotingState;
@@ -244,10 +242,7 @@ export default function VotingClient({
     setVoteFlowState({ status: "processing" });
 
     try {
-      const formData = new FormData();
-      formData.append("sessionId", sessionId.toString());
-      nomineeIds.forEach((id) => formData.append("nomineeIds", id));
-      await submitVotesAction(formData);
+      await submitVotesAction(sessionId, nomineeIds);
 
       setVoteFlowState({ status: "success" });
 
@@ -282,8 +277,8 @@ export default function VotingClient({
     <div className={styles.activeSessions}>
       {voteFlowState && (
         <div className={styles.voteOverlayBackdrop}>
-          <PaymentProcessingSpinner
-            flowState={voteFlowState.status}
+          <Spinner
+            state={voteFlowState.status === "success" ? "success" : "loading"}
             title={voteFlowState.status === "success" ? dict.vote_success : dict.submitting_vote}
             size={voteFlowState.status === "success" ? 56 : 48}
           />

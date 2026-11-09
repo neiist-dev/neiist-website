@@ -6,7 +6,7 @@ import { VotingType, VOTING_TYPES } from "@/types/voting";
 import { CalendarEvent } from "@/types/events";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
-import { createVotingSessionAction } from "@/lib/votingSystem";
+import { createVotingSessionAction } from "@/actions/admin/voting";
 import {
   MultiSelect,
   Select,
@@ -20,13 +20,13 @@ import {
   Tabs,
   Alert,
   type TabItem,
+  ColorfulText,
 } from "@neiist/ui";
-import ColorfulText from "@/components/ColorfulText";
 import { FiEdit3, FiClock, FiUsers, FiImage, FiTrash2, FiList } from "react-icons/fi";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import { pt, enGB } from "date-fns/locale";
-import styles from "@/styles/components/voting/admin/VotingSessionForm.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/voting/admin/VotingSessionForm.module.css";
 
 interface VotingSessionFormProps {
   activities: CalendarEvent[];

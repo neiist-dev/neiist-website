@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import {
   VotingSession,
   VotingType,
@@ -9,19 +9,24 @@ import {
   VOTING_STATUS,
   formatVotingDateRange,
 } from "@/types/voting";
-import { DataTable, ColumnDef, Badge, Button, DropdownMenu, ContextMenu } from "@neiist/ui";
+import { DataTable, ColumnDef, Badge, ContextMenu, ConfirmDialog, Alert } from "@neiist/ui";
+import { FiEye, FiEyeOff, FiExternalLink, FiDownload, FiPlay, FiTrash2 } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 import {
-  FiEye,
-  FiEyeOff,
-  FiMoreVertical,
-  FiExternalLink,
-  FiDownload,
-  FiPlay,
-  FiTrash2,
-} from "react-icons/fi";
-import { useVotingActions } from "@/hooks/useVotingActions";
-import styles from "@/styles/components/voting/admin/VotingSessionsTable.module.css";
+  startVotingAction,
+  finishVotingAction,
+  deleteVotingSessionAction,
+  togglePublishResultsAction,
+} from "@/actions/admin/voting";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/voting/admin/VotingSessionsTable.module.css";
+
+type ActionType = "start" | "finish" | "delete";
+
+interface PendingAction {
+  type: ActionType;
+  session: VotingSession;
+}
 
 interface VotingSessionsTableProps {
   sessions: VotingSession[];
@@ -60,7 +65,39 @@ export default function VotingSessionsTable({
   dict,
   locale = "pt",
 }: VotingSessionsTableProps) {
-  const { confirm, togglePublish, exportExcel, dialog } = useVotingActions(dict);
+  const router = useRouter();
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return;
+    const { type, session } = pendingAction;
+    setPendingAction(null);
+
+    try {
+      if (type === "start") await startVotingAction(session.id);
+      else if (type === "finish") await finishVotingAction(session.id);
+      else await deleteVotingSessionAction(session.id);
+
+      Alert.success(dict.details[`${type}_success`]);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details[`${type}_error`] || "Erro");
+    }
+  };
+
+  const handleTogglePublish = useCallback(
+    async (session: VotingSession) => {
+      const nextState = !session.showResults;
+      try {
+        await togglePublishResultsAction(session.id, nextState);
+        Alert.success(nextState ? dict.details.publish_success : dict.details.hide_success);
+        router.refresh();
+      } catch (err) {
+        Alert.error(err instanceof Error ? err.message : dict.details.toggle_publish_error);
+      }
+    },
+    [dict, router]
+  );
 
   const renderSessionMenuItems = useCallback(
     (session: VotingSession) => (
@@ -73,20 +110,26 @@ export default function VotingSessionsTable({
           {dict.table.view_full_details}
         </ContextMenu.Item>
 
-        <ContextMenu.Item icon={<FiDownload size={15} />} onClick={() => exportExcel(session.id)}>
+        <ContextMenu.Item
+          icon={<FiDownload size={15} />}
+          onClick={() => {
+            window.location.href = `/api/voting/${session.id}/export`;
+          }}>
           {dict.table.export_excel}
         </ContextMenu.Item>
 
         <ContextMenu.Divider />
 
         {session.status === VOTING_STATUS.IDLE && (
-          <ContextMenu.Item icon={<FiPlay size={15} />} onClick={() => confirm("start", session)}>
+          <ContextMenu.Item
+            icon={<FiPlay size={15} />}
+            onClick={() => setPendingAction({ type: "start", session })}>
             {dict.details.start_action}
           </ContextMenu.Item>
         )}
 
         {session.status === VOTING_STATUS.VOTING && (
-          <ContextMenu.Item onClick={() => confirm("finish", session)}>
+          <ContextMenu.Item onClick={() => setPendingAction({ type: "finish", session })}>
             {dict.details.finish_action}
           </ContextMenu.Item>
         )}
@@ -94,7 +137,7 @@ export default function VotingSessionsTable({
         {session.status === VOTING_STATUS.FINISHED && (
           <ContextMenu.Item
             icon={session.showResults ? <FiEyeOff size={15} /> : <FiEye size={15} />}
-            onClick={() => togglePublish(session)}>
+            onClick={() => handleTogglePublish(session)}>
             {session.showResults ? dict.details.hide_results : dict.details.publish_results}
           </ContextMenu.Item>
         )}
@@ -104,12 +147,12 @@ export default function VotingSessionsTable({
         <ContextMenu.Item
           icon={<FiTrash2 size={15} />}
           destructive
-          onClick={() => confirm("delete", session)}>
+          onClick={() => setPendingAction({ type: "delete", session })}>
           {dict.details.delete_action}
         </ContextMenu.Item>
       </>
     ),
-    [confirm, dict, exportExcel, locale, togglePublish]
+    [dict, handleTogglePublish, locale]
   );
 
   const filteredSessions = useMemo(() => {
@@ -213,29 +256,6 @@ export default function VotingSessionsTable({
           </div>
         ),
       },
-      {
-        id: "actions",
-        header: "",
-        width: 48,
-        cell: (session) => (
-          <DropdownMenu align="end">
-            <DropdownMenu.Trigger>
-              <Button
-                type="button"
-                variant="ghost"
-                color="neutral"
-                size="icon"
-                aria-label={dict.table.actions}
-                onClick={(e) => e.stopPropagation()}>
-                <FiMoreVertical size={16} />
-              </Button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" mobileTitle={dict.table.actions}>
-              {renderSessionMenuItems(session)}
-            </DropdownMenu.Content>
-          </DropdownMenu>
-        ),
-      },
     ],
     [
       dict,
@@ -246,7 +266,6 @@ export default function VotingSessionsTable({
       typeFilterRef,
       dateFilterRef,
       statusFilterRef,
-      renderSessionMenuItems,
     ]
   );
 
@@ -257,11 +276,23 @@ export default function VotingSessionsTable({
         columns={columns}
         getRowId={(session) => String(session.id)}
         onRowClick={onRowClick}
-        renderRowContextMenu={renderSessionMenuItems}
+        rowActions={renderSessionMenuItems}
+        actionsTitle={dict.table.actions}
         emptyMessage={dict.table.empty}
         responsive="cards"
       />
-      {dialog}
+      {pendingAction && (
+        <ConfirmDialog
+          open
+          title={dict.details[`${pendingAction.type}_action`]}
+          message={dict.details[`confirm_${pendingAction.type}`]}
+          confirmLabel={dict.details.confirm_yes}
+          cancelLabel={dict.details.confirm_cancel}
+          isDestructive={pendingAction.type === "delete"}
+          onConfirm={handleConfirmAction}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
     </>
   );
 }

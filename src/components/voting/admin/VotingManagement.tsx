@@ -12,13 +12,13 @@ import {
   TableFilterMultiSelect,
   TableFilterDate,
   TableFiltersDrawer,
+  ColorfulText,
 } from "@neiist/ui";
 import { pt, enGB } from "date-fns/locale";
 import VotingSessionsTable from "@/components/voting/admin/VotingSessionsTable";
-import ColorfulText from "@/components/ColorfulText";
 import { useSearch } from "@/hooks/useSearch";
-import styles from "@/styles/components/voting/admin/VotingManagement.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/voting/admin/VotingManagement.module.css";
 
 interface VotingManagementProps {
   initialSessions: VotingSession[];

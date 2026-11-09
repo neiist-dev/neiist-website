@@ -49,7 +49,8 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
     const order = await getOrderByNumber(job.order_number);
     if (!order?.customer_email) return;
 
-    const { sendEmail, getAutoCancelledOrderEmailTemplate } = await import("@/lib/email");
+    const { sendEmail } = await import("@/lib/email");
+    const { getAutoCancelledOrderEmailTemplate } = await import("@/lib/email/templates/shop");
     try {
       await sendEmail({
         to: order.customer_email,
@@ -73,7 +74,8 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
   async event_reminder(job: EventReminderJob) {
     const { getActivityByIdFromDb, getEventAttendanceRoster } =
       await import("@/lib/db/repositories/event.repository");
-    const { sendEmail, getEventReminderEmailTemplate } = await import("@/lib/email");
+    const { sendEmail } = await import("@/lib/email");
+    const { getEventReminderEmailTemplate } = await import("@/lib/email/templates/events");
 
     const event = await getActivityByIdFromDb(job.event_id);
     if (!event) return;
@@ -159,21 +161,9 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
           (user) => user.email && user.istid && calendarByIstid.has(user.istid)
         );
 
+        const { mapCalendarEventToNotionEvent } = await import("@/types/events");
         const allDbEvents = await getActivitiesEventsFromDbRaw(false);
-        const notionFormatEvents = allDbEvents.map((event) => ({
-          id: event.id,
-          title: event.summary,
-          date: event.start.date || event.start.dateTime || null,
-          end: event.end.date || event.end.dateTime || null,
-          url: event.source?.url || "",
-          location: event.location ? [event.location] : [],
-          type: event.extendedProperties?.private?.type || null,
-          teams: event.extendedProperties?.private?.teams?.split(",").filter(Boolean) || [],
-          attendees: event.extendedProperties?.private?.attendees?.split(",").filter(Boolean) || [],
-          lastEditedTime:
-            event.extendedProperties?.private?.lastEditedTime || new Date().toISOString(),
-          public: event.extendedProperties?.private?.public !== false,
-        }));
+        const notionFormatEvents = allDbEvents.map(mapCalendarEventToNotionEvent);
 
         const limit = pLimit(2);
         await Promise.all(

@@ -11,14 +11,27 @@ import {
   formatVotingDateRange,
   isUserVotingType,
 } from "@/types/voting";
-import { DataTable, ColumnDef, Badge, Button, Modal, Progress } from "@neiist/ui";
-import ColorfulText from "@/components/ColorfulText";
+import {
+  DataTable,
+  ColumnDef,
+  Badge,
+  Button,
+  Modal,
+  Progress,
+  ColorfulText,
+  ConfirmDialog,
+  Alert,
+} from "@neiist/ui";
 import { FaArrowLeft } from "react-icons/fa";
 import { FiDownload, FiPlay, FiEye, FiEyeOff } from "react-icons/fi";
 import ReactMarkdown from "react-markdown";
-import { useVotingActions } from "@/hooks/useVotingActions";
-import styles from "@/styles/components/voting/admin/VotingSessionDetailsView.module.css";
+import {
+  startVotingAction,
+  finishVotingAction,
+  togglePublishResultsAction,
+} from "@/actions/admin/voting";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/voting/admin/VotingSessionDetailsView.module.css";
 
 interface VotingSessionDetailsViewProps {
   session: VotingSession;
@@ -36,8 +49,35 @@ export default function VotingSessionDetailsView({
   locale = "pt",
 }: VotingSessionDetailsViewProps) {
   const router = useRouter();
-  const { confirm, togglePublish, exportExcel, dialog } = useVotingActions(dict);
+  const [pendingAction, setPendingAction] = useState<"start" | "finish" | null>(null);
   const [selectedNominee, setSelectedNominee] = useState<VotingNominee | null>(null);
+
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return;
+    const type = pendingAction;
+    setPendingAction(null);
+
+    try {
+      if (type === "start") await startVotingAction(session.id);
+      else await finishVotingAction(session.id);
+
+      Alert.success(dict.details[`${type}_success`]);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details[`${type}_error`] || "Erro");
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    const nextState = !session.showResults;
+    try {
+      await togglePublishResultsAction(session.id, nextState);
+      Alert.success(nextState ? dict.details.publish_success : dict.details.hide_success);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details.toggle_publish_error);
+    }
+  };
 
   const totalVoters = session.totalVotes;
 
@@ -192,17 +232,17 @@ export default function VotingSessionDetailsView({
         </div>
 
         <div className={styles.actionsToolbar}>
-          <Button type="button" variant="outline" size="sm" onClick={() => exportExcel(session.id)}>
+          <a href={`/api/voting/${session.id}/export`} download className={styles.exportBtn}>
             <FiDownload size={14} />
             {dict.details.export_excel}
-          </Button>
+          </a>
 
           {session.status === VOTING_STATUS.IDLE && (
             <Button
               type="button"
               variant="primary"
               size="sm"
-              onClick={() => confirm("start", session)}>
+              onClick={() => setPendingAction("start")}>
               <FiPlay size={14} />
               {dict.details.start_action}
             </Button>
@@ -213,17 +253,13 @@ export default function VotingSessionDetailsView({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => confirm("finish", session)}>
+              onClick={() => setPendingAction("finish")}>
               {dict.details.finish_action}
             </Button>
           )}
 
           {session.status === VOTING_STATUS.FINISHED && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => togglePublish(session)}>
+            <Button type="button" variant="outline" size="sm" onClick={handleTogglePublish}>
               {session.showResults ? <FiEyeOff size={14} /> : <FiEye size={14} />}
               {session.showResults ? dict.details.hide_results : dict.details.publish_results}
             </Button>
@@ -315,7 +351,17 @@ export default function VotingSessionDetailsView({
         </Modal>
       )}
 
-      {dialog}
+      {pendingAction && (
+        <ConfirmDialog
+          open
+          title={dict.details[`${pendingAction}_action`]}
+          message={dict.details[`confirm_${pendingAction}`]}
+          confirmLabel={dict.details.confirm_yes}
+          cancelLabel={dict.details.confirm_cancel}
+          onConfirm={handleConfirmAction}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
     </div>
   );
 }

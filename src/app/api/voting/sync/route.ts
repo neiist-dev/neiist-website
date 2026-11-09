@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { dbBroadcaster } from "@/lib/dbBroadcaster";
+import { votingDbListener } from "@/lib/votingDbListener";
 import { VotingSyncPayload, VOTING_SYNC_EVENT_TYPES, DB_VOTING_UPDATE_TYPES } from "@/types/voting";
 import { getGlobalVotingState } from "@/lib/db/repositories/voting.repository";
 import { getAuthenticatedUser } from "@/lib/auth";
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const session = await getAuthenticatedUser();
   if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  void dbBroadcaster.connect();
+  void votingDbListener.connect();
 
   const encoder = new TextEncoder();
   let cleanupRef: (() => void) | null = null;
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
           heartbeatId = null;
         }
 
-        dbBroadcaster.off("voting_update", onUpdate);
+        votingDbListener.off("voting_update", onUpdate);
         request.signal.removeEventListener("abort", cleanup);
 
         try {
@@ -101,8 +101,8 @@ export async function GET(request: NextRequest) {
         }
       };
 
-      // Subscribe to DB broadcaster
-      dbBroadcaster.on("voting_update", onUpdate);
+      // Subscribe to DB listener
+      votingDbListener.on("voting_update", onUpdate);
 
       // Heartbeat keep alive through proxies
       heartbeatId = setInterval(() => {

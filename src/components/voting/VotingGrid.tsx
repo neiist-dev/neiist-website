@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Modal, Button, Alert, SearchInput, SelectableCard, FloatingActionBar } from "@neiist/ui";
 import { FaCheck } from "react-icons/fa";
 import { VotingNominee, VotingType, isUserVotingType } from "@/types/voting";
-import { submitVotesAction } from "@/lib/votingSystem";
+import { submitVotesAction } from "@/actions/voting";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import CommandPalette from "@/components/search/CommandPalette";
 import { useSearch } from "@/hooks/useSearch";
@@ -89,10 +89,7 @@ export default function VotingGrid({
       if (onVote) {
         await onVote(nomineeIds);
       } else {
-        const formData = new FormData();
-        formData.set("sessionId", String(sessionId));
-        nomineeIds.forEach((id) => formData.append("nomineeIds", id));
-        await submitVotesAction(formData);
+        await submitVotesAction(sessionId, nomineeIds);
       }
     } catch (err) {
       console.error("Failed to cast vote:", err);

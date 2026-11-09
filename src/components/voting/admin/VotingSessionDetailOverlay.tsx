@@ -1,14 +1,19 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VotingSession, SessionResult, VOTING_STATUS } from "@/types/voting";
-import { Modal, Badge, Button, Text, Progress } from "@neiist/ui";
+import { Modal, Badge, Button, Text, Progress, ConfirmDialog, Alert } from "@neiist/ui";
 import { FiExternalLink, FiPlay, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import ReactMarkdown from "react-markdown";
-import { useVotingActions } from "@/hooks/useVotingActions";
-import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
+import {
+  startVotingAction,
+  finishVotingAction,
+  deleteVotingSessionAction,
+  togglePublishResultsAction,
+} from "@/actions/admin/voting";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
 
 interface VotingSessionDetailOverlayProps {
   session: VotingSession;
@@ -40,7 +45,38 @@ export default function VotingSessionDetailOverlay({
     window.location.href = `/${locale}/voting/manage/${session.id}`;
   };
 
-  const { confirm, togglePublish, dialog } = useVotingActions(dict, { onDeleted: handleClose });
+  const [pendingAction, setPendingAction] = useState<"start" | "finish" | "delete" | null>(null);
+
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return;
+    const type = pendingAction;
+    setPendingAction(null);
+
+    try {
+      if (type === "start") await startVotingAction(session.id);
+      else if (type === "finish") await finishVotingAction(session.id);
+      else {
+        await deleteVotingSessionAction(session.id);
+        handleClose();
+      }
+
+      Alert.success(dict.details[`${type}_success`]);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details[`${type}_error`] || "Erro");
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    const nextState = !session.showResults;
+    try {
+      await togglePublishResultsAction(session.id, nextState);
+      Alert.success(nextState ? dict.details.publish_success : dict.details.hide_success);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details.toggle_publish_error);
+    }
+  };
 
   const totalVoters = session.totalVotes;
   const topResults = results.slice(0, 3);
@@ -137,32 +173,43 @@ export default function VotingSessionDetailOverlay({
 
         <div className={styles.actionButtons}>
           {session.status === VOTING_STATUS.IDLE && (
-            <Button type="button" variant="primary" onClick={() => confirm("start", session)}>
+            <Button type="button" variant="primary" onClick={() => setPendingAction("start")}>
               <FiPlay size={16} />
               {dict.details.start_action}
             </Button>
           )}
 
           {session.status === VOTING_STATUS.VOTING && (
-            <Button type="button" variant="outline" onClick={() => confirm("finish", session)}>
+            <Button type="button" variant="outline" onClick={() => setPendingAction("finish")}>
               {dict.details.finish_action}
             </Button>
           )}
 
           {session.status === VOTING_STATUS.FINISHED && (
-            <Button type="button" variant="outline" onClick={() => togglePublish(session)}>
+            <Button type="button" variant="outline" onClick={handleTogglePublish}>
               {session.showResults ? <FiEyeOff size={16} /> : <FiEye size={16} />}
               {session.showResults ? dict.details.hide_results : dict.details.publish_results}
             </Button>
           )}
 
-          <Button type="button" variant="danger" onClick={() => confirm("delete", session)}>
+          <Button type="button" variant="danger" onClick={() => setPendingAction("delete")}>
             <FiTrash2 size={16} />
             {dict.details.delete_action}
           </Button>
         </div>
       </Modal>
-      {dialog}
+      {pendingAction && (
+        <ConfirmDialog
+          open
+          title={dict.details[`${pendingAction}_action`]}
+          message={dict.details[`confirm_${pendingAction}`]}
+          confirmLabel={dict.details.confirm_yes}
+          cancelLabel={dict.details.confirm_cancel}
+          isDestructive={pendingAction === "delete"}
+          onConfirm={handleConfirmAction}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
     </>
   );
 }
