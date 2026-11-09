@@ -36,10 +36,10 @@ export type OrderEmailItem = {
   event_id?: string;
 };
 
-export function formatDeadline(pickupDeadline?: string | null): string {
-  if (!pickupDeadline) return "72 horas após a criação da encomenda";
+export function formatPaymentDeadline(paymentDeadline?: string | null): string {
+  if (!paymentDeadline) return "72 horas após a criação da encomenda";
 
-  const dt = new Date(pickupDeadline);
+  const dt = new Date(paymentDeadline);
   if (Number.isNaN(dt.getTime())) return "72 horas após a criação da encomenda";
 
   return dt.toLocaleString("pt-PT", {
@@ -50,6 +50,20 @@ export function formatDeadline(pickupDeadline?: string | null): string {
     minute: "2-digit",
   });
 }
+
+export function formatPickupDeadline(pickupDeadline?: string | Date | null): string | null {
+  if (!pickupDeadline) return null;
+  const dt = typeof pickupDeadline === "string" ? new Date(pickupDeadline) : pickupDeadline;
+  if (Number.isNaN(dt.getTime())) return null;
+
+  return dt.toLocaleDateString("pt-PT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export const formatDeadline = formatPaymentDeadline;
 
 export function renderItemsTable(items: OrderEmailItem[], total: number): string {
   const itemsHtml = items
@@ -98,7 +112,7 @@ export function getOrderPendingTemplate(
   total: number,
   campus?: string,
   paymentMethod?: PaymentMethod,
-  pickupDeadline?: string | null,
+  paymentDeadline?: string | null,
   orderId?: number
 ): string {
   const scheduleLink = orderId
@@ -113,7 +127,7 @@ export function getOrderPendingTemplate(
     sumup: "Cartão online via SumUp.",
     "apple-pay": "Apple Pay via SumUp.",
   };
-  const deadlineText = formatDeadline(pickupDeadline);
+  const deadlineText = formatPaymentDeadline(paymentDeadline);
   const isReservation = !paymentMethod;
 
   const content = `
@@ -155,7 +169,8 @@ export function getOrderPaidTemplate(
   total: number,
   campus?: string,
   paymentMethod?: PaymentMethod,
-  paymentReference?: string
+  paymentReference?: string,
+  pickupDeadline?: string | null
 ): string {
   const counterText = `Banca (POS) do NEIIST ou ${getCampusLocation(campus)}.`;
   const paymentMethodLabels: Record<PaymentMethod, string> = {
@@ -167,6 +182,7 @@ export function getOrderPaidTemplate(
     "apple-pay": "Apple Pay via SumUp",
   };
   const paymentMethodText = paymentMethod ? paymentMethodLabels[paymentMethod] : undefined;
+  const formattedPickup = formatPickupDeadline(pickupDeadline);
 
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">Pagamento Confirmado</h2>
@@ -178,6 +194,7 @@ export function getOrderPaidTemplate(
     ${campus ? `<p><strong>Campus de levantamento:</strong> ${formatCampus(campus)}</p>` : ""}
     ${paymentMethodText ? `<p><strong>Método de pagamento:</strong> ${paymentMethodText}</p>` : ""}
     ${paymentReference ? `<p><strong>Referência de pagamento:</strong> ${paymentReference}</p>` : ""}
+    ${formattedPickup ? `<p><strong>Prazo limite para levantamento:</strong> ${formattedPickup}</p>` : ""}
 
     <p style="margin-top: 1.25rem;">Receberás novo email quando a encomenda estiver pronta para levantamento.</p>
   `;
@@ -232,11 +249,11 @@ export function getEventTicketPendingTemplate(
   items: OrderEmailItem[],
   total: number,
   campus?: string,
-  pickupDeadline?: string | null,
+  paymentDeadline?: string | null,
   _paymentMethod?: PaymentMethod,
   _orderId?: number
 ): string {
-  const deadlineText = formatDeadline(pickupDeadline);
+  const deadlineText = formatPaymentDeadline(paymentDeadline);
 
   const paymentInfo = `
     <p>
@@ -264,7 +281,8 @@ export function getStatusUpdateOrderEmailTemplate(
   customerName: string,
   status: string,
   statusLabel: string,
-  campus?: string
+  campus?: string,
+  pickupDeadline?: string | null
 ): string {
   const statusMessages: Record<string, string> = {
     paid: "O estado da tua encomenda foi atualizado para pago.",
@@ -277,6 +295,21 @@ export function getStatusUpdateOrderEmailTemplate(
     statusMessages[status] || `O estado da tua encomenda foi atualizado para: ${statusLabel}`;
 
   const campusLocation = getCampusLocation(campus);
+  const formattedPickup =
+    status !== "delivered" && status !== "cancelled" ? formatPickupDeadline(pickupDeadline) : null;
+
+  const pickupNotice = formattedPickup
+    ? `
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin: 1.25rem 0;">
+      <p style="margin: 0; color: #92400e; font-weight: bold;">
+        Prazo limite para levantamento: ${formattedPickup}
+      </p>
+      <p style="margin: 0.25rem 0 0 0; color: #b45309; font-size: 0.9rem;">
+        Por favor levanta a tua encomenda na Banca (POS) do NEIIST até esta data.
+      </p>
+    </div>
+    `
+    : "";
 
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">Atualização do Estado da Encomenda</h2>
@@ -284,6 +317,8 @@ export function getStatusUpdateOrderEmailTemplate(
     <p>${message}</p>
     <p><strong>Número da encomenda:</strong> ${orderNumber}</p>
     <p><strong>Estado atual:</strong> ${statusLabel}</p>
+
+    ${pickupNotice}
 
     ${
       status === "ready" && campusLocation
@@ -320,7 +355,7 @@ export function getPendingOrderEmailTemplate(
   total: number,
   campus?: string,
   paymentMethod?: PaymentMethod,
-  pickupDeadline?: string | null,
+  paymentDeadline?: string | null,
   orderId?: number,
   isTicket?: boolean
 ): string {
@@ -337,7 +372,7 @@ export function getPendingOrderEmailTemplate(
       items,
       total,
       campus,
-      pickupDeadline,
+      paymentDeadline,
       paymentMethod,
       orderId
     );
@@ -350,7 +385,7 @@ export function getPendingOrderEmailTemplate(
     total,
     campus,
     paymentMethod,
-    pickupDeadline,
+    paymentDeadline,
     orderId
   );
 }
@@ -363,7 +398,8 @@ export function getPaidOrderEmailTemplate(
   campus?: string,
   paymentMethod?: PaymentMethod,
   paymentReference?: string,
-  isTicket?: boolean
+  isTicket?: boolean,
+  pickupDeadline?: string | null
 ): string {
   const isTicketOrder =
     isTicket ??
@@ -389,6 +425,7 @@ export function getPaidOrderEmailTemplate(
     total,
     campus,
     paymentMethod,
-    paymentReference
+    paymentReference,
+    pickupDeadline
   );
 }

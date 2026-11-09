@@ -8,7 +8,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import {
   getUserEventTicket,
   getEventTicketByCode,
-  getActivityByIdFromDb,
+  getActivityById,
 } from "@/lib/db/repositories/event.repository";
 import TicketPass from "@/components/activities/TicketPass";
 import TicketDownloadIcsButton from "@/components/activities/TicketDownloadIcsButton";
@@ -43,7 +43,7 @@ async function TicketContent({ params, searchParams }: TicketPageProps) {
       : code
         ? getEventTicketByCode(code)
         : Promise.resolve(null),
-    getActivityByIdFromDb(id),
+    getActivityById(id),
   ]);
 
   if (!ticketPass || !activity) {

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import ShopManagement from "@/components/shop/ShopManagement";
+import ShopManagement from "@/components/shop/manage/ShopManagement";
 import { getAllProductsAdmin, getAllCategories } from "@/lib/db/repositories/shop.repository";
 import { requirePermission } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
@@ -13,7 +13,7 @@ async function ShopManageContent({ params }: { params: LocaleParams }) {
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
 
-  const [products, categories] = await Promise.all([getAllProductsAdmin(), getAllCategories(true)]);
+  const [products, categories] = await Promise.all([getAllProductsAdmin(), getAllCategories()]);
 
   return (
     <ShopManagement

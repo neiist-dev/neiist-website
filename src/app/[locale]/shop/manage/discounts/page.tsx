@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import DiscountCodeManagement from "@/components/shop/DiscountCodeManagement";
+import DiscountCodeManagement from "@/components/shop/manage/DiscountCodeManagement";
 import { getAllDiscountCodes, getAllProductsAdmin } from "@/lib/db/repositories/shop.repository";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import { requirePermission } from "@/lib/auth";

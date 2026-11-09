@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import ProductForm from "@/components/shop/ProductForm";
+import ProductForm from "@/components/shop/manage/ProductForm";
 import { getAllCategories } from "@/lib/db/repositories/shop.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { requirePermission } from "@/lib/auth";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -13,13 +14,17 @@ async function NewProductContent({ params }: { params: LocaleParams }) {
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).shop.product_form;
 
-  const categories = await getAllCategories(true);
+  const [categories, events] = await Promise.all([
+    getAllCategories(),
+    getActivitiesEvents().catch(() => []),
+  ]);
 
   return (
     <ProductForm
       isEdit={false}
       backHref={`/${locale}/shop/manage`}
       categories={categories}
+      events={events}
       dict={dict}
     />
   );

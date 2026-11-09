@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ActivitiesManagement from "@/components/activities/admin/ActivitiesManagement";
-import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { requirePermission } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -12,7 +12,7 @@ async function ActivitiesManageContent({ params }: { params: LocaleParams }) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
-  const events = await getActivitiesEventsFromDb(false);
+  const events = await getActivitiesEvents(false);
 
   return (
     <ActivitiesManagement

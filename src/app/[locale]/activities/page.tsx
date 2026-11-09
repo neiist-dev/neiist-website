@@ -3,7 +3,7 @@ import Calendar from "@/components/activities/Calendar";
 import { syncNotionEventsToDb } from "@/utils/eventsUtils";
 import { ColorfulText } from "@neiist/ui";
 import styles from "@/styles/pages/Activities.module.css";
-import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
@@ -18,12 +18,12 @@ async function getEventsAndSubscriptions() {
   const session = await getAuthenticatedUser();
   const istid = session?.user.istid ?? null;
 
-  let events = await getActivitiesEventsFromDb(true);
+  let events = await getActivitiesEvents(true);
 
   // If no events in DB, sync from Notion
   if (events.length === 0) {
     await syncNotionEventsToDb();
-    events = await getActivitiesEventsFromDb(true);
+    events = await getActivitiesEvents(true);
   }
 
   const signedUpEventIds = istid

@@ -1,6 +1,77 @@
 import { Product, ProductVariant } from "@/types/shop/product";
 import { Order, OrderItem } from "@/types/shop/order";
-import { CampusScheduleInfo, DEFAULT_CAMPUS_SCHEDULES } from "@/types/shop/schedule";
+import { PaymentMethod } from "@/types/shop/payment";
+
+/**
+ * Converts stored image id or full URL to canonical /api/shop/photo/[id] URL.
+ * TODO: on the db only stores an ID/UUID -> always goes thrue a mapper or directly to an api
+ */
+export function buildProductImageUrl(img: string): string {
+  if (!img) return "";
+  if (/^https?:\/\//i.test(img)) return img;
+  const id = img.replace(/^\/?(api\/shop\/photo\/)?/, "");
+  return `/api/shop/photo/${id}`;
+}
+
+/**
+ * Product image list format (product images first, then variant images)
+ */
+export function getProductImages(product: Product): string[] {
+  return [
+    ...new Set(
+      [
+        ...(product.images || []),
+        ...(product.variants || []).flatMap((v) => v.images || []),
+      ].filter(Boolean)
+    ),
+  ];
+}
+
+/**
+ * Item variant image[0] if not available uses main product image[0]
+ */
+export function getItemImage(product: Product, variant?: ProductVariant | null): string | null {
+  return variant?.images?.[0] ?? product.images?.[0] ?? null;
+}
+
+const normalizeOptionValue = (value?: string) => value?.replace(/["'\\]/g, "").trim() ?? "";
+
+/**
+ * True when every selected key/value matches the variant's options.
+ */
+export const matchesSelections = (
+  variantOptions: Record<string, string> = {},
+  selections: Record<string, string>
+): boolean =>
+  Object.entries(selections).every(
+    ([key, value]) => normalizeOptionValue(variantOptions[key]) === normalizeOptionValue(value)
+  );
+
+/**
+ * Find variant by id or matching options
+ */
+export function findItemVariant(
+  product: Product,
+  selection: {
+    variant_id?: number | null;
+    variant_options?: Record<string, string> | null;
+  }
+): ProductVariant | undefined {
+  const variants = product.variants || [];
+  if (!variants.length) return undefined;
+
+  if (selection.variant_id != null) {
+    const byId = variants.find(
+      (v) => v.id === selection.variant_id || String(v.id) === String(selection.variant_id)
+    );
+    if (byId) return byId;
+  }
+
+  if (selection.variant_options)
+    return variants.find((v) => matchesSelections(v.options, selection.variant_options!));
+
+  return undefined;
+}
 
 const COLOR_KEYS = new Set(["cor", "color", "colour"]);
 const SIZE_KEYS = new Set(["tamanho", "size"]);
@@ -8,34 +79,8 @@ const SIZE_KEYS = new Set(["tamanho", "size"]);
 const REGEX = {
   HEX: /#([0-9a-fA-F]{3,8})\b/,
   NAME_WITH_HEX: /^(.*?)\s*[-–—]?\s*#([0-9a-fA-F]{3,8})\b/,
-  LABEL_DELIMITER: /\||,/,
+  LABEL_DELIMITER: /[|,]/,
 };
-
-const CAMPUS_LOCATIONS: Record<string, string> = {
-  alameda: "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)",
-  taguspark: "Sala do NEIIST Taguspark (1 - 4.14)",
-};
-
-export function getFeaturedAndTopProducts(
-  products: Product[],
-  orders: Order[]
-): { featured?: Product; top: Product[] } {
-  const salesCount = orders.reduce<Record<number, number>>((acc, order) => {
-    order.items.forEach((item) => {
-      acc[item.product_id] = (acc[item.product_id] || 0) + item.quantity;
-    });
-    return acc;
-  }, {});
-
-  const topProducts = [...products]
-    .sort((a, b) => (salesCount[b.id] || 0) - (salesCount[a.id] || 0))
-    .slice(0, 5);
-
-  const featured =
-    products.length > 0 ? products[Math.floor(Math.random() * products.length)] : undefined;
-
-  return { featured, top: topProducts };
-}
 
 export function splitNameHex(val?: string): { name: string; hex: string } {
   if (!val) return { name: "", hex: "" };
@@ -57,11 +102,6 @@ export function joinNameHex(name?: string, hex?: string): string {
   if (!cleanName) return cleanHex;
 
   return `${cleanName} - ${cleanHex}`;
-}
-
-export function extractHex(val?: string): string | undefined {
-  const match = val?.match(REGEX.HEX);
-  return match ? `#${match[1]}` : undefined;
 }
 
 export function isColorKey(key?: string): boolean {
@@ -93,37 +133,6 @@ export function getColorFromOptions(
   return {};
 }
 
-export function getCompactProductsSummary(items: OrderItem[]): string[] {
-  return items.map((it) => {
-    const { text: variantText } = formatVariantSimple(it.variant_options, it.variant_label);
-
-    return variantText ? `${it.product_name} ${variantText}`.trim() : it.product_name;
-  });
-}
-
-export function formatCampus(campus?: string): string {
-  if (!campus) return "";
-
-  return campus
-    .trim()
-    .split(/\s+/)
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : ""))
-    .join(" ");
-}
-
-export function getCampusLocation(campus?: string): string {
-  if (!campus) return "uma banca NEIIST";
-
-  const normalizedCampus = campus.trim().toLowerCase();
-  return CAMPUS_LOCATIONS[normalizedCampus] || `banca NEIIST em ${formatCampus(campus)}`;
-}
-
-export function getCampusSchedule(campus?: string): CampusScheduleInfo | null {
-  if (!campus) return null;
-  const normalizedCampus = campus.trim().toLowerCase();
-  return DEFAULT_CAMPUS_SCHEDULES[normalizedCampus] ?? null;
-}
-
 export function formatVariantSimple(
   options?: Record<string, string> | null,
   label?: string | null
@@ -150,27 +159,82 @@ export function formatVariantSimple(
   };
 }
 
-export function sanitizeOrder(order: Order): Order {
-  return {
-    ...order,
-    customer_email: order.customer_email ? maskEmail(order.customer_email) : undefined,
-    customer_phone: order.customer_phone ? maskPhone(order.customer_phone) : undefined,
-    customer_nif: undefined,
-    mbway_number: undefined,
-    notes: undefined,
-  };
+export const OPTION_ORDER_PREFIX = "__ord";
+export const OPTION_ORDER_SEPARATOR = "__::";
+
+type ParsedOptionEntry = {
+  index: number;
+  key: string;
+  value: string;
+  originalPosition: number;
+};
+
+function makeOrderedStorageKey(index: number, key: string): string {
+  const safeIndex = Number.isFinite(index) ? Math.max(0, Math.floor(index)) : 0;
+  const paddedIndex = String(safeIndex).padStart(4, "0");
+  return `${OPTION_ORDER_PREFIX}${paddedIndex}${OPTION_ORDER_SEPARATOR}${key}`;
 }
 
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  const maskedLocal = local.length <= 2 ? "***" : `${local.slice(0, 2)}***`;
-  return `${maskedLocal}@${domain}`;
+function parseOrderedStorageKey(rawKey: string): { index: number; key: string } {
+  if (!rawKey.startsWith(OPTION_ORDER_PREFIX))
+    return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
+
+  const separatorIndex = rawKey.indexOf(OPTION_ORDER_SEPARATOR);
+  if (separatorIndex === -1) return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
+
+  const indexPart = rawKey.slice(OPTION_ORDER_PREFIX.length, separatorIndex);
+  const parsedIndex = Number.parseInt(indexPart, 10);
+  const key = rawKey.slice(separatorIndex + OPTION_ORDER_SEPARATOR.length);
+
+  if (!Number.isFinite(parsedIndex) || !key) return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
+
+  return { index: parsedIndex, key };
 }
 
-function maskPhone(phone: string): string {
-  if (phone.length <= 4) return "***";
-  return `${phone.slice(0, 4)}***${phone.slice(-2)}`;
+export function encodeVariantOptionsForStorage(
+  options: Record<string, string>
+): Record<string, string> {
+  const entries = Object.entries(options ?? {});
+  const encoded: Record<string, string> = {};
+
+  entries.forEach(([key, value], index) => {
+    encoded[makeOrderedStorageKey(index, key)] = value;
+  });
+
+  return encoded;
+}
+
+export function decodeVariantOptionsFromStorage(
+  options: Record<string, string> | null | undefined
+): Record<string, string> {
+  const rawEntries = Object.entries(options ?? {});
+  if (!rawEntries.some(([key]) => key.startsWith(OPTION_ORDER_PREFIX)))
+    return Object.fromEntries(rawEntries);
+
+  const entries: ParsedOptionEntry[] = rawEntries.map(([rawKey, value], originalPosition) => ({
+    ...parseOrderedStorageKey(rawKey),
+    value,
+    originalPosition,
+  }));
+
+  entries.sort((a, b) => {
+    if (a.index !== b.index) return a.index - b.index;
+    return a.originalPosition - b.originalPosition;
+  });
+
+  const decoded: Record<string, string> = {};
+  for (const entry of entries) decoded[entry.key] = entry.value;
+
+  return decoded;
+}
+
+export function restoreVariantOptionOrder(
+  variants: ProductVariant[] | undefined
+): ProductVariant[] {
+  return (variants ?? []).map((variant) => ({
+    ...variant,
+    options: decodeVariantOptionsFromStorage(variant.options),
+  }));
 }
 
 export function isProductUpcoming(product?: { order_start?: string | null } | null): boolean {
@@ -212,10 +276,7 @@ export interface ProductUnavailableDict {
   error_unavailable: string;
 }
 
-export function isProductAvailable(
-  product: Product,
-  selectedVariant?: ProductVariant | null
-): boolean {
+function isProductAvailable(product: Product, selectedVariant?: ProductVariant | null): boolean {
   if (isProductUpcoming(product) || isProductDeadlinePassed(product)) {
     return false;
   }
@@ -235,9 +296,73 @@ export function getProductUnavailableReason(
     const date = new Date(product.order_start!).toLocaleDateString();
     return dict.error_upcoming.replace("{date}", date);
   }
-  if (isProductDeadlinePassed(product)) {
-    return dict.error_deadline;
-  }
+  if (isProductDeadlinePassed(product)) return dict.error_deadline;
 
   return isProductAvailable(product, selectedVariant) ? null : dict.error_unavailable;
+}
+
+export function getCompactProductsSummary(items: OrderItem[]): string[] {
+  return items.map((it) => {
+    const { text: variantText } = formatVariantSimple(it.variant_options, it.variant_label);
+    return variantText ? `${it.product_name} ${variantText}`.trim() : it.product_name;
+  });
+}
+
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const maskedLocal = local.length <= 2 ? "***" : `${local.slice(0, 2)}***`;
+  return `${maskedLocal}@${domain}`;
+}
+
+function maskPhone(phone: string): string {
+  if (phone.length <= 4) return "***";
+  return `${phone.slice(0, 4)}***${phone.slice(-2)}`;
+}
+
+export function sanitizeOrder(order: Order): Order {
+  return {
+    ...order,
+    customer_email: order.customer_email ? maskEmail(order.customer_email) : undefined,
+    customer_phone: order.customer_phone ? maskPhone(order.customer_phone) : undefined,
+    customer_nif: undefined,
+    notes: undefined,
+  };
+}
+
+const CAMPUS_LOCATIONS: Record<string, string> = {
+  alameda: "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)",
+  taguspark: "Sala do NEIIST Taguspark (1 - 4.14)",
+};
+
+export function formatCampus(campus?: string): string {
+  if (!campus) return "";
+  return campus
+    .trim()
+    .split(/\s+/)
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : ""))
+    .join(" ");
+}
+
+export function getCampusLocation(campus?: string): string {
+  if (!campus) return "uma banca NEIIST";
+  const normalizedCampus = campus.trim().toLowerCase();
+  return CAMPUS_LOCATIONS[normalizedCampus] || `banca NEIIST em ${formatCampus(campus)}`;
+}
+
+export function getPaymentLabel(
+  method: PaymentMethod,
+  dict: Record<PaymentMethod, string>
+): string {
+  return dict[method];
+}
+
+export function getLocalizedPaymentMethods(
+  methods: ReadonlyArray<PaymentMethod>,
+  dict: Record<PaymentMethod, string>
+): Array<{ id: PaymentMethod; label: string }> {
+  return methods.map((method) => ({
+    id: method,
+    label: getPaymentLabel(method, dict),
+  }));
 }

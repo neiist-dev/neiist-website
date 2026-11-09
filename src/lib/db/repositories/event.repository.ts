@@ -186,7 +186,7 @@ export const getEventSubscribers = async (
   }));
 };
 
-export const getActivitiesEventsFromDbRaw = async (
+export const getActivitiesEventsNoCache = async (
   publicOnly: boolean = false
 ): Promise<Activity[]> => {
   const { rows } = await db_query<DbActivity>(
@@ -196,23 +196,25 @@ export const getActivitiesEventsFromDbRaw = async (
   return rows.map(mapDbRowToActivity);
 };
 
-export const getActivitiesEventsFromDb = async (
-  publicOnly: boolean = false
-): Promise<Activity[]> => {
+export const getActivitiesEvents = async (publicOnly: boolean = false): Promise<Activity[]> => {
   "use cache";
   cacheTag("activities");
-  return getActivitiesEventsFromDbRaw(publicOnly);
+  return getActivitiesEventsNoCache(publicOnly);
 };
 
-export const getActivityByIdFromDb = async (eventId: string): Promise<Activity | null> => {
-  "use cache";
-  cacheTag("activities", `activity-${eventId}`);
+export const getActivityByIdNoCache = async (eventId: string): Promise<Activity | null> => {
   const { rows } = await db_query<DbActivity>(
     `SELECT * FROM neiist.get_activities($1::TEXT, FALSE::BOOLEAN)`,
     [eventId]
   );
   if (!rows[0]) return null;
   return mapDbRowToActivity(rows[0]);
+};
+
+export const getActivityById = async (eventId: string): Promise<Activity | null> => {
+  "use cache";
+  cacheTag("activities", `activity-${eventId}`);
+  return getActivityByIdNoCache(eventId);
 };
 
 export const deleteActivitiesEvent = async (id: string): Promise<void> => {

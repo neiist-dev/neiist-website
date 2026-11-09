@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import EventForm from "@/components/activities/admin/EventForm";
-import { getActivityByIdFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivityById } from "@/lib/db/repositories/event.repository";
 import { requirePermission } from "@/lib/auth";
 import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -18,7 +18,7 @@ async function EditEventContent({ params }: PageProps) {
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
 
-  const event = await getActivityByIdFromDb(id);
+  const event = await getActivityById(id);
   if (!event) redirect(`/${locale}/activities/manage`);
 
   return (

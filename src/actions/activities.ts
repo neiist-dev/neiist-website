@@ -5,7 +5,7 @@ import { requirePermission, requireUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import {
   getEventAttendanceRoster,
-  getActivityByIdFromDb,
+  getActivityById,
   upsertWebsiteActivity,
   updateActivityProperties,
   deleteActivitiesEvent,
@@ -28,7 +28,7 @@ export async function sendEventParticipantsEmailAction(payload: {
   await requirePermission("events:write");
 
   const [event, roster] = await Promise.all([
-    getActivityByIdFromDb(payload.eventId),
+    getActivityById(payload.eventId),
     getEventAttendanceRoster(payload.eventId),
   ]);
 

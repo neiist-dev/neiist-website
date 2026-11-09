@@ -1,89 +1,597 @@
-import { getPaidOrderEmailTemplate, sendEmail } from "@/lib/email";
-import { Order } from "@/types/shop/order";
-import { getOrderKindRules } from "@/utils/shop/orderKindUtils";
-import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
-import { getOrderKindFromItems } from "@/utils/shop/orderKindUtils";
-import { getOrderById, setOrderState } from "@/lib/db/repositories/shop.repository";
-import { signUpToEvent } from "@/lib/db/repositories/event.repository";
+import { sendEmail } from "@/lib/email";
+import {
+  getPaidOrderEmailTemplate,
+  getPendingOrderEmailTemplate,
+} from "@/lib/email/templates/shop";
+import {
+  getOrderByNumber,
+  settleOrdersBatch,
+  getProduct,
+  getProductNoCache,
+  validateDiscountCode,
+} from "@/lib/db/repositories/shop.repository";
+import { EventHookJob, CheckoutSessionData } from "@/types/redis";
+import { enqueueStreamJob, scheduleDelayedJob } from "@/lib/redis/queue";
+import {
+  getStatusLabel,
+  isCashPayment,
+  isSettledOrderStatus,
+  isTicketOrder,
+} from "@/utils/shop/orderStatusUtils";
+import { getDictionary } from "@/i18n/dictionaries";
+import { getActivityByIdNoCache, signUpToEvent } from "@/lib/db/repositories/event.repository";
+import { PaymentMethod } from "@/types/shop/payment";
+import type { Order, CreateOrderPaymentInput } from "@/types/shop/order";
+import type { Product, ProductChannel } from "@/types/shop/product";
+import { lineTotalMoney, addMoney, unitPriceMoney, subtractMoney } from "@/utils/shop/moneyUtils";
 
-const AFTER_PURCHASE_ACTIONS = {
-  register_jantar_de_curso: async (order: Order) => {
-    const activityId = process.env.NEXT_PUBLIC_JANTAR_DE_CURSO_ACTIVITY_ID;
-    if (!activityId || !order.user_istid) return;
+export interface BuildOrderPaymentParams {
+  method?: PaymentMethod | null;
+  status: "pending" | "successful";
+  shiftId?: string | null;
+  receivedBy?: string | null;
+  reference?: string | null;
+}
 
-    await signUpToEvent(activityId, order.user_istid);
-  },
-} as const;
+export function buildOrderPaymentInput(
+  params: BuildOrderPaymentParams
+): CreateOrderPaymentInput | undefined {
+  if (!params.method) return undefined;
+
+  return {
+    method: params.method,
+    status: params.status,
+    shift_id: params.shiftId ?? null,
+    received_by: params.status === "successful" ? (params.receivedBy ?? null) : null,
+    reference: isCashPayment(params.method) ? null : (params.reference ?? null),
+  };
+}
+
+async function createOrderFromCheckoutSession(
+  session: CheckoutSessionData,
+  payment?: CreateOrderPaymentInput
+): Promise<Order | null> {
+  const { createOrder } = await import("@/lib/db/repositories/shop.repository");
+
+  return createOrder({
+    order_number: session.order_number,
+    order_source: session.order_source || "web",
+    user_istid: session.user_istid,
+    customer_name: session.customer_name || "Cliente",
+    customer_email: session.customer_email || null,
+    customer_phone: session.customer_phone || null,
+    customer_nif: session.customer_nif || null,
+    campus: session.campus || null,
+    notes: session.notes || null,
+    discount_code: session.discount_code || undefined,
+    items: session.items,
+    payment,
+  });
+}
+
+export async function promoteRedisCheckoutSession(
+  session: CheckoutSessionData,
+  reference: string,
+  paymentMethodOverride?: PaymentMethod
+): Promise<Order | null> {
+  const { discardCheckoutSession } = await import("@/lib/redis/sessions");
+  const { revalidatePath } = await import("next/cache");
+
+  const effectiveMethod = paymentMethodOverride ?? session.payment_method;
+
+  const createdOrder = await createOrderFromCheckoutSession(session, {
+    method: effectiveMethod,
+    status: "successful",
+    reference,
+    amount: session.total_amount,
+    shift_id: session.shift_id ?? undefined,
+  });
+
+  if (!createdOrder) return null;
+
+  // The PostgreSQL order now owns the stock, release the Redis hold
+  await discardCheckoutSession(session.order_number);
+
+  await enqueueEventTicketHooks(createdOrder);
+  sendOrderPaidEmails(createdOrder, reference);
+
+  revalidatePath("/orders");
+  revalidatePath("/my-orders");
+
+  return createdOrder;
+}
+
+/**
+ * Converts an in-flight Redis checkout session into a pending reservation
+ * without releasing its stock hold until PostgreSQL has the order
+ */
+export async function promoteRedisCheckoutSessionToReservation(
+  session: CheckoutSessionData
+): Promise<Order | null> {
+  const { discardCheckoutSession } = await import("@/lib/redis/sessions");
+  const { revalidatePath } = await import("next/cache");
+
+  const createdOrder = await createOrderFromCheckoutSession(session);
+
+  if (!createdOrder) return null;
+
+  // The PostgreSQL order now owns the stock; release the Redis hold.
+  await discardCheckoutSession(session.order_number);
+
+  await schedulePendingOrderExpiry(createdOrder);
+  await sendPendingOrderEmail(createdOrder);
+
+  revalidatePath("/orders");
+  revalidatePath("/my-orders");
+
+  return createdOrder;
+}
+
+export async function executeEventTicketHook(job: EventHookJob): Promise<void> {
+  // Registration failure propagates (job retries), only the email is best-effort.
+  const ticket = await signUpToEvent(job.event_id, job.user_istid, job.order_number);
+  try {
+    const { getUserNoCache } = await import("@/lib/db/repositories/user.repository");
+
+    const [activity, user] = await Promise.all([
+      getActivityByIdNoCache(job.event_id),
+      getUserNoCache(job.user_istid),
+    ]);
+
+    if (!activity || !user) return;
+    const recipientEmail = (user.alternativeEmailVerified && user.alternativeEmail) || user.email;
+    if (!recipientEmail) return;
+
+    const ticketCode = ticket?.ticket_code || "CONFIRMED";
+    const start = activity.start || new Date();
+    const end = activity.end || null;
+
+    const { sendEventTicketEmail } = await import("@/lib/email");
+    await sendEventTicketEmail({
+      eventId: activity.id,
+      eventTitle: activity.title,
+      eventDescription: activity.description,
+      eventLocation: activity.location,
+      eventStart: start,
+      eventEnd: end,
+      attendeeName: user.name,
+      recipientEmail,
+      ticketCode,
+      orderNumber: job.order_number,
+    });
+  } catch (emailErr) {
+    console.error("[executeEventTicketHook] Failed to dispatch ticket email:", emailErr);
+  }
+}
+
+export async function enqueueEventTicketHooks(order: Order): Promise<void> {
+  if (!order.user_istid) return;
+  for (const item of order.items) {
+    if (!item.event_id) continue;
+    try {
+      await enqueueStreamJob({
+        type: "event_hook",
+        order_number: order.order_number,
+        event_id: item.event_id,
+        user_istid: order.user_istid,
+      });
+    } catch (error) {
+      console.error("Failed to enqueue event hook job:", {
+        orderNumber: order.order_number,
+        error,
+      });
+    }
+  }
+}
+
+export async function computeReservationExpiryMs(
+  order: Order
+): Promise<{ deadlineMs: number; customDeadlineIso: string | null }> {
+  const createdMs = order.created_at ? new Date(order.created_at).getTime() : Date.now();
+  const baseCreatedMs = Number.isFinite(createdMs) ? createdMs : Date.now();
+  const default72hMs = baseCreatedMs + 72 * 60 * 60 * 1000;
+  let deadlineMs = default72hMs;
+  const nowMs = Date.now();
+
+  for (const item of order.items || []) {
+    const product = item.product_id ? await getProductNoCache(item.product_id) : null;
+    if (product?.order_deadline) {
+      const orderDeadlineMs = new Date(product.order_deadline).getTime();
+      if (Number.isFinite(orderDeadlineMs) && orderDeadlineMs > nowMs)
+        deadlineMs = Math.min(deadlineMs, orderDeadlineMs);
+    }
+
+    const eventId = item.event_id || product?.event_id;
+    if (eventId) {
+      const activity = await getActivityByIdNoCache(eventId);
+      if (activity?.signupDeadline) {
+        const signupDeadlineMs = new Date(activity.signupDeadline).getTime();
+        if (Number.isFinite(signupDeadlineMs) && signupDeadlineMs > nowMs)
+          deadlineMs = Math.min(deadlineMs, signupDeadlineMs);
+      }
+
+      if (activity?.start) {
+        const startMs = new Date(activity.start).getTime();
+        if (Number.isFinite(startMs) && startMs > nowMs) deadlineMs = Math.min(deadlineMs, startMs);
+      }
+    }
+  }
+
+  return {
+    deadlineMs,
+    customDeadlineIso: deadlineMs < default72hMs ? new Date(deadlineMs).toISOString() : null,
+  };
+}
+
+export async function schedulePendingOrderExpiry(order: Order): Promise<void> {
+  try {
+    const { deadlineMs } = await computeReservationExpiryMs(order);
+    await scheduleDelayedJob({ type: "expire", order_number: order.order_number }, deadlineMs);
+  } catch (jobErr) {
+    console.error(
+      `FAILED to schedule auto-cancel for order ${order.order_number} — it will never expire automatically and needs a manual cancel.`,
+      jobErr
+    );
+  }
+}
+
+export async function sendPendingOrderEmail(
+  order: Order,
+  paymentMethod?: PaymentMethod
+): Promise<void> {
+  if (!order.customer_email) return;
+
+  try {
+    const { customDeadlineIso } = await computeReservationExpiryMs(order);
+    await sendEmail({
+      to: order.customer_email,
+      subject: `Encomenda ${order.order_number} - Pendente`,
+      html: getPendingOrderEmailTemplate(
+        order.order_number,
+        order.customer_name || "Cliente",
+        order.items,
+        Number(order.total_amount),
+        order.campus ?? undefined,
+        paymentMethod,
+        customDeadlineIso,
+        undefined,
+        isTicketOrder(order)
+      ),
+    });
+  } catch (emailErr) {
+    console.warn("Pending order email couldn't be sent:", emailErr);
+  }
+}
+
+export function sendOrderPaidEmails(order: Order, paymentReference?: string): void {
+  if (!order.customer_email || order.order_source === "fast-pos") return;
+  sendEmail({
+    to: order.customer_email,
+    subject: `Encomenda ${order.order_number} - ${getStatusLabel(
+      "paid",
+      getDictionary("pt").orders_table.status
+    )}`,
+    html: getPaidOrderEmailTemplate(
+      order.order_number,
+      order.customer_name ?? "Cliente",
+      order.items,
+      Number(order.total_amount),
+      order.campus ?? undefined,
+      order.payment_method ?? undefined,
+      isCashPayment(order.payment_method) ? undefined : paymentReference,
+      undefined,
+      order.pickup_deadline ?? undefined
+    ),
+  }).catch((err) => console.warn("Confirmation email couldn't be sent:", err));
+}
+
+export interface FinalizePaidOrdersOptions {
+  orderNumbers: string[];
+  paymentReference?: string | null;
+  paymentCheckedBy: string;
+  paymentMethod: PaymentMethod;
+  shiftId?: string | null;
+}
+
+export type FinalizePaidOrdersResult =
+  | { success: true; orders: Order[]; alreadyProcessed?: boolean }
+  | { success: false; error: string; statusCode: number };
 
 export type FinalizePaidOrderResult =
   | { success: true; alreadyProcessed?: boolean }
   | { success: false; error: string; statusCode: number };
 
-const inFlightOrders = new Map<number, Promise<FinalizePaidOrderResult>>();
+export async function finalizePaidOrders({
+  orderNumbers,
+  paymentReference,
+  paymentCheckedBy,
+  paymentMethod,
+  shiftId,
+}: FinalizePaidOrdersOptions): Promise<FinalizePaidOrdersResult> {
+  if (!orderNumbers || orderNumbers.length === 0) {
+    return { success: false, error: "No orders to settle", statusCode: 400 };
+  }
+
+  if (!paymentMethod) {
+    return {
+      success: false,
+      error: "Missing payment method",
+      statusCode: 400,
+    };
+  }
+
+  const effectiveMethod = paymentMethod;
+  const resolvedShiftId = shiftId ?? null;
+  const reference = String(paymentReference ?? "").trim() || null;
+
+  if (!reference && !isCashPayment(effectiveMethod)) {
+    return {
+      success: false,
+      error: "Missing payment reference",
+      statusCode: 400,
+    };
+  }
+
+  // Inspect existing orders to detect already-settled items
+  const existingOrders: Order[] = [];
+  for (const num of orderNumbers) {
+    const ord = await getOrderByNumber(num);
+    if (!ord) {
+      return { success: false, error: `Order ${num} not found`, statusCode: 404 };
+    }
+    existingOrders.push(ord);
+  }
+
+  const alreadySettled = existingOrders.filter((o) => isSettledOrderStatus(o.status));
+  const unsettled = existingOrders.filter((o) => !isSettledOrderStatus(o.status));
+
+  if (unsettled.length === 0) {
+    return {
+      success: true,
+      orders: alreadySettled,
+      alreadyProcessed: true,
+    };
+  }
+
+  const unsettledNumbers = unsettled.map((o) => o.order_number);
+  const updatedOrders = await settleOrdersBatch(unsettledNumbers, effectiveMethod, {
+    shift_id: resolvedShiftId,
+    reference: isCashPayment(effectiveMethod) ? null : reference,
+    by: paymentCheckedBy,
+  });
+
+  if (!updatedOrders || updatedOrders.length === 0) {
+    return {
+      success: false,
+      error: "Failed to settle orders",
+      statusCode: 500,
+    };
+  }
+
+  // Trigger post-settlement side effects for each settled order
+  for (const ord of updatedOrders) {
+    await enqueueEventTicketHooks(ord);
+    sendOrderPaidEmails(ord, reference ?? undefined);
+  }
+
+  return {
+    success: true,
+    orders: [...alreadySettled, ...updatedOrders],
+    alreadyProcessed: alreadySettled.length > 0 && unsettled.length === 0,
+  };
+}
 
 export async function finalizePaidOrder({
+  orderNumber,
   orderId,
   paymentReference,
   paymentCheckedBy,
+  paymentMethod,
+  shiftId,
 }: {
-  orderId: number;
-  paymentReference: string;
+  orderNumber?: string;
+  orderId?: string | number;
+  paymentReference?: string | null;
   paymentCheckedBy: string;
+  paymentMethod: PaymentMethod;
+  shiftId?: string | null;
 }): Promise<FinalizePaidOrderResult> {
-  const existing = inFlightOrders.get(orderId);
-  if (existing) return existing;
+  const resolvedNumber = String(orderNumber ?? orderId ?? "").trim();
+  const res = await finalizePaidOrders({
+    orderNumbers: [resolvedNumber],
+    paymentReference,
+    paymentCheckedBy,
+    paymentMethod,
+    shiftId,
+  });
 
-  const promise: Promise<FinalizePaidOrderResult> = (async (): Promise<FinalizePaidOrderResult> => {
-    const order = await getOrderById(orderId);
-    if (!order) return { success: false, error: "Order not found", statusCode: 404 };
+  if (!res.success) return { success: false, error: res.error, statusCode: res.statusCode };
 
-    if (["paid", "ready", "delivered"].includes(order.status))
-      return { success: true, alreadyProcessed: true };
+  return { success: true, alreadyProcessed: res.alreadyProcessed };
+}
 
-    const reference = String(paymentReference ?? "").trim();
-    if (!reference) return { success: false, error: "Missing payment reference", statusCode: 400 };
+export interface CartItemInput {
+  product_id: number;
+  variant_id?: number | null;
+  quantity?: number;
+  deliver_now?: boolean;
+}
 
-    const paymentRef = order.payment_method === "cash" ? undefined : reference;
-    const statusUpdate = await setOrderState(orderId, "paid", paymentCheckedBy, paymentRef);
-    if (!statusUpdate)
-      return { success: false, error: "Failed to update order status", statusCode: 500 };
+export interface ValidateAndPriceCartItemsOptions {
+  channel?: ProductChannel;
+  userIstid?: string | null;
+  discountCode?: string | null;
+  enforceChannel?: boolean;
+  enforceTicketRules?: boolean;
+}
 
-    const { orderKind } = getOrderKindFromItems(statusUpdate.items);
-    const orderRules = getOrderKindRules(orderKind, "other");
-    const afterPurchaseActionKey = orderRules.afterPurchaseActionKey;
+export interface ValidateAndPriceCartItemsResult {
+  isValid: boolean;
+  error?: string;
+  totalAmount: number;
+  discountAmount: number;
+  finalAmount: number;
+  productsMap: Map<number, Product>;
+  items: Array<{
+    product_id: number;
+    variant_id: number | null;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+    product_name: string;
+    variant_label?: string | null;
+    deliver_now: boolean;
+  }>;
+}
 
-    if (afterPurchaseActionKey) {
-      try {
-        await AFTER_PURCHASE_ACTIONS[afterPurchaseActionKey](statusUpdate);
-      } catch (error) {
-        console.warn("Failed to perform after purchase action", { orderId, error });
+export async function validateAndPriceCartItems(
+  itemsInput: CartItemInput[],
+  options: ValidateAndPriceCartItemsOptions = {}
+): Promise<ValidateAndPriceCartItemsResult> {
+  const {
+    channel = "web",
+    userIstid = null,
+    discountCode = null,
+    enforceChannel = true,
+    enforceTicketRules = true,
+  } = options;
+
+  if (!itemsInput || itemsInput.length === 0) {
+    return {
+      isValid: false,
+      error: "O carrinho está vazio.",
+      totalAmount: 0,
+      discountAmount: 0,
+      finalAmount: 0,
+      productsMap: new Map(),
+      items: [],
+    };
+  }
+
+  const productIds = new Set<number>(itemsInput.map((it) => it.product_id));
+  const fetchedProducts = await Promise.all([...productIds].map((id) => getProduct(id)));
+
+  if (fetchedProducts.some((p) => p == null)) {
+    return {
+      isValid: false,
+      error: "Produto inválido no pedido.",
+      totalAmount: 0,
+      discountAmount: 0,
+      finalAmount: 0,
+      productsMap: new Map(),
+      items: [],
+    };
+  }
+
+  const productsMap = new Map<number, Product>();
+  for (const p of fetchedProducts) {
+    if (!p) continue;
+    if (enforceChannel && p.channels && !p.channels.includes(channel)) {
+      return {
+        isValid: false,
+        error: `O produto "${p.name}" não está disponível para encomenda no canal ${channel}.`,
+        totalAmount: 0,
+        discountAmount: 0,
+        finalAmount: 0,
+        productsMap: new Map(),
+        items: [],
+      };
+    }
+    productsMap.set(p.id, p);
+  }
+
+  if (enforceTicketRules) {
+    const hasTickets = fetchedProducts.some((p) => p?.product_type === "event_ticket");
+    const hasMerchandise = fetchedProducts.some((p) => p?.product_type === "merchandise");
+    if (hasTickets && hasMerchandise) {
+      return {
+        isValid: false,
+        error: "Bilhetes de eventos não podem ser encomendados juntamente com outros produtos.",
+        totalAmount: 0,
+        discountAmount: 0,
+        finalAmount: 0,
+        productsMap: new Map(),
+        items: [],
+      };
+    }
+
+    for (const it of itemsInput) {
+      const prod = productsMap.get(it.product_id);
+      if (prod?.product_type === "event_ticket" && (it.quantity ?? 1) > 1) {
+        return {
+          isValid: false,
+          error: "Apenas é permitido 1 bilhete por utilizador.",
+          totalAmount: 0,
+          discountAmount: 0,
+          finalAmount: 0,
+          productsMap: new Map(),
+          items: [],
+        };
       }
     }
-
-    if (statusUpdate.customer_email && orderRules.customerEmailsEnabled) {
-      sendEmail({
-        to: statusUpdate.customer_email,
-        subject: `Encomenda ${statusUpdate.order_number} - ${getStatusLabel("paid")}`,
-        html: getPaidOrderEmailTemplate(
-          orderKind,
-          statusUpdate.order_number,
-          statusUpdate.customer_name,
-          statusUpdate.items,
-          Number(statusUpdate.total_amount),
-          statusUpdate.campus,
-          statusUpdate.payment_method,
-          statusUpdate.payment_method === "cash" ? undefined : reference
-        ),
-      }).catch((err) => console.warn("Confirmation couldn't be sent:", err));
-    }
-
-    return { success: true };
-  })();
-
-  inFlightOrders.set(orderId, promise);
-  try {
-    return await promise;
-  } finally {
-    inFlightOrders.delete(orderId);
   }
+
+  let calculatedTotal = 0;
+  const processedItems = [];
+
+  for (const it of itemsInput) {
+    const prod = productsMap.get(it.product_id)!;
+    const qty = it.quantity ?? 1;
+    const variant = it.variant_id
+      ? (prod.variants?.find((v) => v.id === it.variant_id) ?? null)
+      : null;
+
+    const unitPrice = unitPriceMoney(prod.price, variant?.price_modifier ?? 0);
+    const lineTotal = lineTotalMoney(prod.price, variant?.price_modifier ?? 0, qty);
+    calculatedTotal = addMoney(calculatedTotal, lineTotal);
+
+    processedItems.push({
+      product_id: it.product_id,
+      variant_id: it.variant_id ?? null,
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: lineTotal,
+      product_name: prod.name,
+      variant_label: variant?.sku ?? null,
+      deliver_now: Boolean(it.deliver_now),
+    });
+  }
+
+  let discountAmount = 0;
+  const cleanCode = typeof discountCode === "string" ? discountCode.trim() : "";
+  if (cleanCode) {
+    const validation = await validateDiscountCode(
+      cleanCode,
+      userIstid,
+      itemsInput.map((it) => ({
+        product_id: it.product_id,
+        variant_id: it.variant_id ?? null,
+        quantity: it.quantity ?? 1,
+      }))
+    );
+
+    if (!validation?.is_valid) {
+      return {
+        isValid: false,
+        error: validation?.error || "Invalid discount code.",
+        totalAmount: calculatedTotal,
+        discountAmount: 0,
+        finalAmount: calculatedTotal,
+        productsMap,
+        items: processedItems,
+      };
+    }
+    discountAmount = Math.min(calculatedTotal, Number(validation.discount_amount) || 0);
+  }
+
+  const finalAmount = Math.max(0, subtractMoney(calculatedTotal, discountAmount));
+
+  return {
+    isValid: true,
+    totalAmount: calculatedTotal,
+    discountAmount,
+    finalAmount,
+    productsMap,
+    items: processedItems,
+  };
 }

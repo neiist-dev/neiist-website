@@ -1,0 +1,251 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-in-out;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.widgetOnly {
+  background-color: white;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  min-height: 500px;
+  position: relative;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.widgetContainer {
+  width: 100%;
+  min-height: 500px;
+  padding: 0;
+}
+
+.cardElement {
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.applePaySection {
+  padding: 16px 20px 20px;
+}
+
+.applePayDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: #6b7280;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.applePayDivider::before,
+.applePayDivider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: #e5e7eb;
+}
+
+.applePayButton {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  -webkit-appearance: -apple-pay-button;
+  appearance: -apple-pay-button;
+  -apple-pay-button-type: buy;
+  -apple-pay-button-style: black;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.applePayButton:hover {
+  opacity: 0.92;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.errorPanel {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  animation: scaleIn 0.4s ease-out;
+  max-width: 520px;
+  width: 100%;
+}
+
+.errorTitle {
+  font-size: 24px;
+  color: #991b1b;
+  margin: 0 0 16px 0;
+}
+
+.errorMessage {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.btnPrimary,
+.btnSecondary {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 140px;
+}
+
+.btnPrimary {
+  background: var(--primary-colour);
+  color: #fff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  filter: opacity(0.8);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btnSecondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+  .widgetOnly {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .applePaySection {
+    padding: 14px 14px 16px;
+  }
+
+  .errorPanel {
+    padding: 32px 24px;
+    max-width: 100%;
+  }
+
+  .errorTitle {
+    font-size: 22px;
+  }
+
+  .errorActions {
+    flex-direction: column;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+  }
+}
+
+.mbwayWaitingCard {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.mbwayIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-colour);
+}
+
+.mbwayTitle {
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground-colour);
+}
+
+.mbwayDescription {
+  color: var(--light-foreground-colour);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.mbwayCountdownBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--background-colour);
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--primary-colour);
+  margin-bottom: 1.5rem;
+}
+
+.mbwayFallbackButton {
+  font-size: 0.875rem;
+}

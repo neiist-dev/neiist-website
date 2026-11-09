@@ -6,7 +6,7 @@ import {
   createActivitiesEvent,
   updateActivitiesEvent,
   deleteActivitiesEvent,
-  getActivitiesEventsFromDbRaw,
+  getActivitiesEventsNoCache,
 } from "@/lib/db/repositories/event.repository";
 import { scheduleEventReminder, cancelEventReminder } from "@/lib/redis/queue";
 
@@ -86,7 +86,7 @@ export async function syncNotionEventsToDb(prefetchedEvents?: NotionEvent[]): Pr
   unchanged: number;
 }> {
   const notionEvents = prefetchedEvents ?? (await fetchAllNotionEvents());
-  const dbEvents = await getActivitiesEventsFromDbRaw(false);
+  const dbEvents = await getActivitiesEventsNoCache(false);
 
   const dbEventMap = new Map<string, Date | null>();
   for (const dbEvent of dbEvents) {

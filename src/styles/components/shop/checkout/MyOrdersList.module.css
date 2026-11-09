@@ -1,0 +1,176 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin: 2rem 4rem 4rem;
+  min-block-size: calc(100vh - 120px);
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin: 0;
+}
+
+.deadlineBanner {
+  background: var(--secondary-colour);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.searchRow {
+  margin-block-end: 1rem;
+}
+
+.searchContainer {
+  position: relative;
+  max-width: 28rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.searchInput {
+  width: 100%;
+  height: 44px;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: var(--background-colour);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: var(--primary-colour);
+}
+
+.searchInput::placeholder {
+  color: var(--light-foreground-colour);
+}
+
+.ordersGrid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  width: 100%;
+}
+
+.orderCard {
+  width: 100%;
+  max-width: 320px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: transform 0.15s ease;
+}
+
+.orderCard:hover {
+  transform: translateY(-2px);
+}
+
+.orderCardLink {
+  width: 100%;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: inherit;
+  cursor: pointer;
+}
+
+.orderImageWrapper {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--background-colour);
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.orderImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.orderInfo {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.orderProduct {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--foreground-colour);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+}
+
+.orderStatus {
+  font-size: 0.875rem;
+  color: var(--light-foreground-colour);
+}
+
+.deadlineTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--secondary-colour);
+  margin-top: 0.35rem;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: var(--light-foreground-colour);
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin: 1.5rem 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .ordersGrid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .orderCard {
+    margin-inline: auto;
+  }
+}

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/lib/auth";
-import { getActivityByIdFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivityById } from "@/lib/db/repositories/event.repository";
 import CheckinScanner from "@/components/activities/admin/CheckinScanner";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
@@ -18,7 +18,7 @@ async function CheckinPageContent({ params }: CheckinPageProps) {
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
 
-  const activity = await getActivityByIdFromDb(id);
+  const activity = await getActivityById(id);
   if (!activity) notFound();
 
   return <CheckinScanner event={activity} dict={dict.checkin_scanner} basePath={`/${locale}`} />;

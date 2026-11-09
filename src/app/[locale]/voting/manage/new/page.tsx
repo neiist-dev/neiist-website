@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import VotingSessionForm from "@/components/voting/admin/VotingSessionForm";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
-import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { requirePermission } from "@/lib/auth";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
@@ -13,7 +13,7 @@ async function NewVotingSessionContent({ params }: { params: LocaleParams }) {
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).voting_management;
 
-  const [activities, users] = await Promise.all([getActivitiesEventsFromDb(), getAllUsers()]);
+  const [activities, users] = await Promise.all([getActivitiesEvents(), getAllUsers()]);
 
   return (
     <VotingSessionForm

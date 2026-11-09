@@ -17,12 +17,12 @@ export const ROUTE_TIERS: Record<string, UserRole> = {
   "/my-tickets": UserRole._GUEST,
   "/shop/cart": UserRole._GUEST,
   "/shop/checkout": UserRole._GUEST,
+  "/shop/pos": UserRole._MEMBER,
   "/voting/manage": UserRole._ADMIN,
   "/voting": UserRole._GUEST,
   "/orders": UserRole._MEMBER,
   "/management": UserRole._COORDINATOR,
   "/shop/manage": UserRole._ADMIN,
-  "/shop/pos": UserRole._ADMIN,
   "/dinner": UserRole._ADMIN,
 };
 

@@ -41,12 +41,12 @@ type JobHandler<J extends JobPayload = JobPayload> = (_job: J) => Promise<void>;
 
 const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>> } = {
   async expire(job: ExpireJob) {
-    const { cancelExpiredReservation, getOrderByNumber } =
+    const { cancelExpiredReservation, getOrderByNumberNoCache } =
       await import("@/lib/db/repositories/shop.repository");
     const cancelled = await cancelExpiredReservation(job.order_number);
     if (!cancelled) return;
 
-    const order = await getOrderByNumber(job.order_number);
+    const order = await getOrderByNumberNoCache(job.order_number);
     if (!order?.customer_email) return;
 
     const { sendEmail } = await import("@/lib/email");
@@ -72,30 +72,29 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
   },
 
   async event_reminder(job: EventReminderJob) {
-    const { getActivityByIdFromDb, getEventAttendanceRoster } =
+    const { getActivityByIdNoCache, getEventAttendanceRoster } =
       await import("@/lib/db/repositories/event.repository");
     const { sendEmail } = await import("@/lib/email");
     const { getEventReminderEmailTemplate } = await import("@/lib/email/templates/events");
 
-    const event = await getActivityByIdFromDb(job.event_id);
-    if (!event) return;
-
-    const startStr = event.start.dateTime || event.start.date;
-    if (!startStr) return;
+    const event = await getActivityByIdNoCache(job.event_id);
+    if (!event || !event.start) return;
 
     const roster = await getEventAttendanceRoster(job.event_id);
     if (!roster || roster.length === 0) return;
+
+    const title = event.title || "Evento";
 
     for (const attendee of roster) {
       if (!attendee.email) continue;
       try {
         await sendEmail({
           to: attendee.email,
-          subject: `Lembrete: ${event.summary} é amanhã!`,
+          subject: `Lembrete: ${title} é amanhã!`,
           html: getEventReminderEmailTemplate({
-            eventTitle: event.summary,
-            eventStart: startStr,
-            eventEnd: event.end.dateTime || event.end.date || null,
+            eventTitle: title,
+            eventStart: event.start,
+            eventEnd: event.end || null,
             location: event.location,
             attendeeName: attendee.name,
             ticketCode: attendee.ticket_code || "CONFIRMED",
@@ -130,8 +129,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
       const { fetchAllNotionEvents, syncNotionEventsToDb } = await import("@/utils/eventsUtils");
       const { getCalendarClient, syncAllEventsToCalendar } = await import("@/lib/google/calendar");
       const { getAllUsersNoCache } = await import("@/lib/db/repositories/user.repository");
-      const { getActivitiesEventsFromDbRaw } =
-        await import("@/lib/db/repositories/event.repository");
+      const { getActivitiesEventsNoCache } = await import("@/lib/db/repositories/event.repository");
       const pLimit = (await import("p-limit")).default;
 
       if (process.env.NOTION_API_KEY && process.env.DATABASE_ID) {
@@ -161,9 +159,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
           (user) => user.email && user.istid && calendarByIstid.has(user.istid)
         );
 
-        const { mapCalendarEventToNotionEvent } = await import("@/types/events");
-        const allDbEvents = await getActivitiesEventsFromDbRaw(false);
-        const notionFormatEvents = allDbEvents.map(mapCalendarEventToNotionEvent);
+        const allDbEvents = await getActivitiesEventsNoCache(false);
 
         const limit = pLimit(2);
         await Promise.all(
@@ -175,7 +171,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
                   ? (user.alternativeEmail ?? undefined)
                   : undefined;
                 const calId = calendarByIstid.get(user.istid)!.id;
-                await syncAllEventsToCalendar(calId, notionFormatEvents, user.email!, altEmail);
+                await syncAllEventsToCalendar(calId, allDbEvents, user.email!, altEmail);
               } catch (calErr) {
                 console.error(`[redis-worker] Error syncing calendar for ${user.istid}:`, calErr);
               }

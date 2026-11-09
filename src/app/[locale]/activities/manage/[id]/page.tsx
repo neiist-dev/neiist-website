@@ -1,10 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/lib/auth";
-import {
-  getActivityByIdFromDb,
-  getEventAttendanceRoster,
-} from "@/lib/db/repositories/event.repository";
+import { getActivityById, getEventAttendanceRoster } from "@/lib/db/repositories/event.repository";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 import GlobalLoading from "@/app/loading";
@@ -23,7 +20,7 @@ async function ActivityManageDetailsContent({ params }: PageProps) {
   const locale = isValidLocale(resolved.locale) ? resolved.locale : defaultLocale;
   const dict = getDictionary(locale);
   const [event, roster] = await Promise.all([
-    getActivityByIdFromDb(resolved.id),
+    getActivityById(resolved.id),
     getEventAttendanceRoster(resolved.id),
   ]);
 

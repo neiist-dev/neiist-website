@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { verifyPermission } from "@/lib/auth";
-import {
-  getActivityByIdFromDb,
-  getEventAttendanceRoster,
-} from "@/lib/db/repositories/event.repository";
+import { getActivityById, getEventAttendanceRoster } from "@/lib/db/repositories/event.repository";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 import { handleApiError } from "@/utils/apiErrorUtils";
@@ -22,10 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const d = dict.activities_management.details;
 
   try {
-    const [event, roster] = await Promise.all([
-      getActivityByIdFromDb(id),
-      getEventAttendanceRoster(id),
-    ]);
+    const [event, roster] = await Promise.all([getActivityById(id), getEventAttendanceRoster(id)]);
 
     if (!event) return NextResponse.json({ error: "Atividade não encontrada" }, { status: 404 });
 
