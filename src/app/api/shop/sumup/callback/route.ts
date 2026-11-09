@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpCheckout } from "@/types/sumup";
-import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
-import { getOrderById } from "@/lib/db/repositories/shop.repository";
+import {
+  validateSumUpCredentials,
+  sumupErrorResponse,
+  verifyAndSettleSumUpCheckout,
+} from "@/lib/payments/sumup";
 
 type CheckoutStatusChangedPayload = {
   event_type?: string;
@@ -13,46 +14,19 @@ export async function GET(req: NextRequest) {
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
 
-  const orderId = Number(req.nextUrl.searchParams.get("orderId"));
+  const orderIdentifier = String(
+    req.nextUrl.searchParams.get("orderNumber") || req.nextUrl.searchParams.get("orderId") || ""
+  ).trim();
   const checkoutId = String(req.nextUrl.searchParams.get("checkout_id") ?? "").trim();
 
-  if (!Number.isInteger(orderId) || orderId <= 0) return sumupErrorResponse("Invalid orderId", 400);
+  if (!orderIdentifier) return sumupErrorResponse("Missing orderNumber or orderId", 400);
   if (!checkoutId) return sumupErrorResponse("Missing checkout_id", 400);
 
-  let checkout: SumUpCheckout;
-  try {
-    checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
-  } catch (err) {
-    return sumupErrorResponse(err);
-  }
-
-  const order = await getOrderById(orderId);
-  if (!order) return sumupErrorResponse("Order not found", 404);
-
-  if (order.payment_reference && order.payment_reference !== checkoutId)
-    return sumupErrorResponse("Checkout id does not match order", 400);
-
-  const status = String(checkout.status ?? "")
-    .trim()
-    .toUpperCase();
-
-  const expectedAmountCents = Math.round(Number(order.total_amount) * 100);
-  const actualAmountCents = Math.round(Number(checkout.amount) * 100);
-
-  if (
-    status === "PAID" &&
-    actualAmountCents === expectedAmountCents &&
-    (!checkout.currency || checkout.currency.toUpperCase() === "EUR")
-  ) {
-    const transactionCode = String(checkout.transaction_code ?? checkoutId).trim();
-    if (transactionCode) {
-      await finalizePaidOrder({
-        orderId,
-        paymentReference: transactionCode,
-        paymentCheckedBy: "sumup-return",
-      });
-    }
-  }
+  await verifyAndSettleSumUpCheckout({
+    orderNumber: orderIdentifier,
+    checkoutId,
+    checkedBy: "sumup-return",
+  });
 
   const html = `<!doctype html>
 <html lang="pt">
@@ -80,8 +54,10 @@ export async function POST(req: NextRequest) {
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
 
-  const orderId = Number(req.nextUrl.searchParams.get("orderId"));
-  if (!Number.isInteger(orderId) || orderId <= 0) return sumupErrorResponse("Invalid orderId", 400);
+  const orderIdentifier = String(
+    req.nextUrl.searchParams.get("orderNumber") || req.nextUrl.searchParams.get("orderId") || ""
+  ).trim();
+  if (!orderIdentifier) return sumupErrorResponse("Missing orderNumber or orderId", 400);
 
   let body: CheckoutStatusChangedPayload;
   try {
@@ -93,48 +69,29 @@ export async function POST(req: NextRequest) {
   const checkoutId = String(body?.id ?? "").trim();
   if (!checkoutId) return sumupErrorResponse("Missing checkout id", 400);
 
-  let checkout: SumUpCheckout;
-  try {
-    checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
-  } catch (err) {
-    return sumupErrorResponse(err);
-  }
-
-  const order = await getOrderById(orderId);
-  if (!order) return sumupErrorResponse("Order not found", 404);
-
-  if (["paid", "ready", "delivered"].includes(order.status))
-    return NextResponse.json({ success: true, alreadyProcessed: true });
-
-  if (order.payment_reference && order.payment_reference !== checkoutId)
-    return sumupErrorResponse("Checkout id does not match order", 400);
-
-  if (checkout.currency && checkout.currency.toUpperCase() !== "EUR")
-    return sumupErrorResponse("Payment currency mismatch", 400);
-
-  const expectedAmountCents = Math.round(Number(order.total_amount) * 100);
-  const actualAmountCents = Math.round(Number(checkout.amount) * 100);
-  if (actualAmountCents !== expectedAmountCents)
-    return sumupErrorResponse("Payment amount mismatch", 400);
-
-  const status = String(checkout.status ?? "")
-    .trim()
-    .toUpperCase();
-
-  if (status !== "PAID") return NextResponse.json({ success: true, status });
-
-  const result = await finalizePaidOrder({
-    orderId,
-    paymentReference: checkout.transaction_code || checkoutId,
-    paymentCheckedBy: "sumup-webhook",
+  const result = await verifyAndSettleSumUpCheckout({
+    orderNumber: orderIdentifier,
+    checkoutId,
+    checkedBy: "sumup-webhook",
   });
 
-  if (!result.success) return sumupErrorResponse(result.error, result.statusCode);
+  if (!result.success) {
+    if ("statusCode" in result) return sumupErrorResponse(result.error, result.statusCode);
+
+    return NextResponse.json({
+      failed: true,
+      status: result.status,
+      transactionCode: result.transactionCode,
+    });
+  }
+
+  if ("pending" in result) return NextResponse.json({ success: true, status: result.status });
 
   return NextResponse.json({
     success: true,
-    status,
-    transactionCode: checkout.transaction_code || undefined,
+    status: result.status,
+    transactionCode: result.reference,
+    orderNumber: result.orderNumber,
     alreadyProcessed: result.alreadyProcessed,
   });
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpReaderCallbackPayload } from "@/types/sumup";
-import { getOrderById } from "@/lib/db/repositories/shop.repository";
+import { withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
+import { paymentBroadcaster } from "@/lib/payments/broadcaster";
+import type { SumUpReaderCallbackPayload } from "@/types/shop/sumup";
+import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
 import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -14,22 +15,34 @@ export async function POST(req: NextRequest) {
     return sumupErrorResponse("Invalid payload", 400);
   }
 
-  const orderId = Number(body?.payload?.order_id);
+  const orderIdentifier = body?.payload?.order_id ? String(body.payload.order_id).trim() : null;
   const status = body?.event_type;
 
-  if (!Number.isInteger(orderId) || orderId <= 0)
-    return sumupErrorResponse("Invalid order_id", 400);
+  if (!orderIdentifier) return sumupErrorResponse("Invalid order identifier", 400);
 
   const clientTransactionId = body?.payload?.client_transaction_id;
   const checkoutId = body?.payload?.checkout_id;
 
   try {
-    const order = await getOrderById(orderId);
+    const order = await getOrderByNumber(String(orderIdentifier));
 
     if (!order) return sumupErrorResponse("Order not found", 404);
 
-    if (["paid", "ready", "delivered"].includes(order.status))
+    if (["paid", "ready", "delivered"].includes(order.status)) {
+      if (clientTransactionId) {
+        paymentBroadcaster.emitPaymentUpdate(clientTransactionId, {
+          status: "PAID",
+          orderNumber: order.order_number,
+          clientTransactionId,
+        });
+      }
+      paymentBroadcaster.emitPaymentUpdate(order.order_number, {
+        status: "PAID",
+        orderNumber: order.order_number,
+        clientTransactionId,
+      });
       return NextResponse.json({ success: true, alreadyProcessed: true });
+    }
 
     if (!clientTransactionId || order.payment_reference !== clientTransactionId)
       return sumupErrorResponse("Transaction id does not match order", 400);
@@ -56,14 +69,39 @@ export async function POST(req: NextRequest) {
       }
 
       const result = await finalizePaidOrder({
-        orderId,
+        orderId: order.order_number,
         paymentReference: String(paymentReference ?? ""),
         paymentCheckedBy: "sumup-tpa",
+        paymentMethod: "sumup-tpa",
       });
 
-      if (!result.success) {
-        return sumupErrorResponse(result.error, result.statusCode);
+      if (!result.success) return sumupErrorResponse(result.error, result.statusCode);
+
+      if (clientTransactionId) {
+        paymentBroadcaster.emitPaymentUpdate(clientTransactionId, {
+          status: "PAID",
+          orderNumber: order.order_number,
+          clientTransactionId,
+        });
       }
+      paymentBroadcaster.emitPaymentUpdate(order.order_number, {
+        status: "PAID",
+        orderNumber: order.order_number,
+        clientTransactionId,
+      });
+    } else if (status === "failed" || status === "cancelled") {
+      if (clientTransactionId) {
+        paymentBroadcaster.emitPaymentUpdate(clientTransactionId, {
+          status: "FAILED",
+          orderNumber: order.order_number,
+          clientTransactionId,
+        });
+      }
+      paymentBroadcaster.emitPaymentUpdate(order.order_number, {
+        status: "FAILED",
+        orderNumber: order.order_number,
+        clientTransactionId,
+      });
     }
 
     return NextResponse.json({ success: true });

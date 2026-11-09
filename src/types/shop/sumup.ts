@@ -23,7 +23,7 @@ export interface SumUpCheckoutPayload {
   redirect_url?: string;
 }
 
-export interface SumUpReaderStatus {
+export interface SumUpReader {
   id: string;
   name: string;
   status: string;
@@ -54,7 +54,7 @@ export interface SumUpReaderCheckoutPayload {
 }
 
 export interface SumUpReadersListResponse {
-  items?: SumUpReaderStatus[];
+  items?: SumUpReader[];
   [key: string]: unknown;
 }
 
@@ -69,17 +69,18 @@ export interface SumUpReaderCallbackPayload {
 }
 
 export interface CreateCheckoutRequestBody {
-  orderId?: number | string;
+  orderNumber: string;
 }
 
 export interface CreateCheckoutResponse {
   checkoutId?: string;
+  amount?: number;
   error?: string;
 }
 
 export interface VerifyCheckoutRequestBody {
   checkoutId?: string;
-  orderId?: number | string;
+  orderNumber: string;
   applePayToken?: ApplePayPaymentToken;
 }
 
@@ -90,6 +91,7 @@ export interface VerifyCheckoutResponse {
   alreadyProcessed?: boolean;
   status?: string;
   transactionCode?: string;
+  orderNumber?: string;
   error?: string;
 }
 
@@ -187,15 +189,6 @@ export interface ApplePaySessionConstructor {
 export interface ApiErrorResponse {
   error?: string;
 }
-
-export type SumUpReader = {
-  id: string;
-  name: string;
-  status: string;
-  device: { model: string; identifier: string };
-  created_at?: string;
-  updated_at?: string;
-};
 
 declare global {
   interface Window {

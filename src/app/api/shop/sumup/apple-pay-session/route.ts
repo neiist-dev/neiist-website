@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, sumupErrorResponse } from "@/lib/sumup";
+import { validateSumUpCredentials, sumupErrorResponse } from "@/lib/payments/sumup";
 import { verifyPermission } from "@/lib/auth";
 
 type ApplePaySessionRequestBody = {

@@ -6,8 +6,8 @@ import {
   getErrorStatus,
   formatSumUpError,
   SumUpAuthError,
-} from "@/lib/sumup";
-import type { SumUpReadersListResponse } from "@/types/sumup";
+} from "@/lib/payments/sumup";
+import type { SumUpReadersListResponse } from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -28,7 +28,7 @@ function parseSumUpProblem(error: unknown): SumUpProblem | null {
 }
 
 export async function GET() {
-  const auth = await verifyPermission("shop:write");
+  const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
   if (auth.error) return auth.error;
 
   const credentialError = validateSumUpCredentials();

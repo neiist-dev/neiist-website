@@ -6,7 +6,7 @@ import {
   sumupErrorResponse,
   formatSumUpError,
   SumUpAuthError,
-} from "@/lib/sumup";
+} from "@/lib/payments/sumup";
 import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;

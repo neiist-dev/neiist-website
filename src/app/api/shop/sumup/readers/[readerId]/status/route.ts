@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpReaderStatus } from "@/types/sumup";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
+import type { SumUpReader } from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -21,7 +21,7 @@ export async function GET(
   try {
     const status = (await withSumUp((client) =>
       client.readers.get(SUMUP_MERCHANT_CODE!, readerId)
-    )) as SumUpReaderStatus;
+    )) as SumUpReader;
     return NextResponse.json({ success: true, status });
   } catch (error) {
     return sumupErrorResponse(error, undefined, { readerId });

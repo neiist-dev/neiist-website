@@ -1,47 +1,95 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/sumup";
-import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
+import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/shop/sumup";
+import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
 import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 
-function toMinorUnits(amountMajor: number, minorUnit = 2): number {
-  return Math.round(amountMajor * 10 ** minorUnit);
+export async function GET(
+  req: NextRequest,
+  { params: _params }: { params: Promise<{ readerId: string }> }
+) {
+  const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
+  if (auth.error) return auth.error;
+
+  const credentialError = validateSumUpCredentials();
+  if (credentialError) return credentialError;
+
+  const clientTransactionId = req.nextUrl.searchParams.get("client_transaction_id");
+  if (!clientTransactionId) return sumupErrorResponse("client_transaction_id is required", 400);
+
+  try {
+    const tx = await withSumUp((client) =>
+      client.transactions.get(SUMUP_MERCHANT_CODE!, {
+        client_transaction_id: clientTransactionId,
+      })
+    );
+
+    const status = String(
+      (tx as { status?: string; simple_status?: string }).status ||
+        (tx as { simple_status?: string }).simple_status ||
+        "PENDING"
+    ).toUpperCase();
+    const id = tx.transaction_code || tx.id || clientTransactionId;
+
+    return NextResponse.json({
+      status,
+      id,
+    });
+  } catch {
+    // If transaction is not found yet in SumUp, it is still pending on the terminal
+    return NextResponse.json({
+      status: "PENDING",
+      id: clientTransactionId,
+    });
+  }
 }
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ readerId: string }> }
 ) {
-  const auth = await verifyPermission("shop:write");
+  const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
   if (auth.error) return auth.error;
-  const { user } = auth;
 
   const credentialError = validateSumUpCredentials();
   if (credentialError) return credentialError;
 
   const { readerId } = await params;
-  const body = (await req.json()) as { orderId?: number | string };
+  const body = (await req.json()) as {
+    orderId?: number | string;
+    amount?: number;
+    currency?: string;
+    description?: string;
+  };
 
-  if (!readerId || !body?.orderId)
-    return sumupErrorResponse("readerId and orderId are required", 400);
+  if (!readerId) return sumupErrorResponse("readerId is required", 400);
 
-  const orderId = Number(body.orderId);
-  if (!Number.isInteger(orderId) || orderId <= 0) return sumupErrorResponse("Invalid orderId", 400);
+  let amount = 0;
+  let description = "Venda POS";
 
-  const order = await getOrderById(orderId);
-  if (!order) return sumupErrorResponse("Order not found", 404);
+  if (body.orderId) {
+    const orderIdentifier = String(body.orderId).trim();
+    const order = await getOrderByNumber(orderIdentifier);
+    if (!order) return sumupErrorResponse("Order not found", 404);
+    amount = Number(order.total_amount ?? 0);
+    description = `Encomenda ${order.order_number}`;
+  } else if (body.amount != null) {
+    amount = Number(body.amount);
+    if (typeof body.description === "string" && body.description.trim()) {
+      description = body.description.trim();
+    }
+  }
 
-  const amount = Number(order.total_amount ?? 0);
   if (!(amount > 0)) return sumupErrorResponse("Invalid order amount", 400);
 
   const payload: SumUpReaderCheckoutPayload = {
-    description: order.order_number,
+    description,
     total_amount: {
       currency: "EUR",
       minor_unit: 2,
-      value: toMinorUnits(amount, 2),
+      value: Math.round(amount * 100),
     },
   };
 
@@ -51,26 +99,15 @@ export async function POST(
       client.readers.createCheckout(SUMUP_MERCHANT_CODE!, readerId, payload)
     );
   } catch (error) {
-    return sumupErrorResponse(error, undefined, { readerId, orderId });
+    return sumupErrorResponse(error, undefined, { readerId });
   }
 
   const clientTransactionId = data.data?.client_transaction_id ?? null;
 
-  if (clientTransactionId) {
-    await updateOrder(
-      orderId,
-      {
-        payment_reference: clientTransactionId,
-        updated_at: new Date().toISOString(),
-      },
-      false,
-      user.istid ?? "system"
-    );
-  }
-
   return NextResponse.json({
     success: true,
-    clientTransactionId: clientTransactionId ?? null,
-    orderId,
+    clientTransactionId,
+    client_transaction_id: clientTransactionId,
+    order_number: description,
   });
 }

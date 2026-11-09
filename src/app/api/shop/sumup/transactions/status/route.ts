@@ -4,8 +4,8 @@ import {
   withSumUp,
   sumupErrorResponse,
   getErrorStatus,
-} from "@/lib/sumup";
-import type { SumUpCheckout } from "@/types/sumup";
+} from "@/lib/payments/sumup";
+import type { SumUpCheckout } from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -28,14 +28,13 @@ export async function GET(req: NextRequest) {
       })
     )) as SumUpCheckout;
   } catch (error) {
-    if (getErrorStatus(error) === 404) {
+    if (getErrorStatus(error) === 404)
       return NextResponse.json({
         success: true,
         status: "pending",
         paid: false,
         transactionCode: null,
       });
-    }
 
     return sumupErrorResponse(error, undefined, {
       transactionId: clientTransactionId,
@@ -46,12 +45,11 @@ export async function GET(req: NextRequest) {
   const transactionCode = checkoutData?.transaction_code;
   const paid = status === "PAID" || status === "SUCCESSFUL";
 
-  if (paid && !transactionCode) {
+  if (paid && !transactionCode)
     return sumupErrorResponse("Missing transaction code in provider response", 502, {
       transactionId: clientTransactionId,
       status,
     });
-  }
 
   return NextResponse.json({
     success: true,
