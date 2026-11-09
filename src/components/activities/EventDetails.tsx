@@ -1,42 +1,31 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import * as FA from "react-icons/fa";
-import * as MD from "react-icons/md";
-import * as IO from "react-icons/io5";
-import * as TB from "react-icons/tb";
-import * as GI from "react-icons/gi";
-import * as HI from "react-icons/hi2";
-import * as BS from "react-icons/bs";
-import { IoClose, IoLocationOutline, IoShareOutline } from "react-icons/io5";
+import { IoLocationOutline, IoShareOutline } from "react-icons/io5";
 import { MdAccessTime } from "react-icons/md";
-import IconPicker from "./IconPicker";
 import { formatEventDateTime } from "@/utils/calendarUtils";
-import { getEventSettings } from "@/types/events";
+import { getEventIcon } from "@/components/activities/EventIcons";
 import Linkify from "linkify-react";
-import { Alert } from "@neiist/ui";
+import { Alert, Modal, Button, Badge, Input, Select, Checkbox } from "@neiist/ui";
 import { useUser } from "@/context/UserContext";
-import { hasPermission } from "@/lib/security/permissions";
-import type {
-  EventSettings,
-  NormalizedCalendarEvent,
-  EventSubscriber,
-  CalendarEvent,
-} from "@/types/events";
-import type { IconType } from "react-icons";
+import type { Activity } from "@/types/events";
 import styles from "@/styles/components/activities/EventDetails.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
-type CalendarEventWithOptionalCustom = CalendarEvent & { customIcon?: string };
+function renderEventIcon(iconName?: string, size = 28) {
+  const IconComponent = getEventIcon(iconName);
+  return <IconComponent size={size} />;
+}
 
 interface EventDetailsProps {
-  event: NormalizedCalendarEvent;
+  event: Activity;
   onClose: () => void;
   isSignedUp: boolean;
   onSignUpChange: (_eventId: string, _signedUp: boolean) => void;
-  onUpdate: (_updatedEvent?: CalendarEvent) => void;
+  onUpdate?: (_updatedEvent?: Activity) => void;
   dict: Dictionary["activities"]["details"];
+  locale?: string;
 }
 
 export default function EventDetails({
@@ -44,65 +33,106 @@ export default function EventDetails({
   onClose,
   isSignedUp,
   onSignUpChange,
-  onUpdate,
   dict,
+  locale = "pt",
 }: EventDetailsProps) {
   const router = useRouter();
   const { user } = useUser();
   const currentIstid = user?.istid ?? undefined;
-  const canManageActivities = hasPermission(user, "departments:write");
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [signedUp, setSignedUp] = useState(isSignedUp);
-  const [showIconPicker, setShowIconPicker] = useState(false);
-  const [settings, setSettings] = useState<EventSettings>(() => getEventSettings(event.raw));
-  const hasChangesRef = useRef(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formResponses, setFormResponses] = useState<Record<string, unknown>>({});
+  const [currentTimestamp] = useState(() => Date.now());
 
-  const ICON_REGISTRY: Record<string, IconType> = {
-    ...FA,
-    ...MD,
-    ...IO,
-    ...TB,
-    ...GI,
-    ...HI,
-    ...BS,
-  };
-  const resolvedIconName =
-    settings.customIcon ||
-    event.raw.extendedProperties?.private?.customIcon ||
-    (event.raw as CalendarEventWithOptionalCustom).customIcon ||
-    "FaCalendar";
-  const EventIcon: IconType = ICON_REGISTRY[resolvedIconName] || FA.FaCalendar;
+  const act = event;
+  const resolvedIconName = act.customIcon || "FaCalendar";
 
-  const { startDate, endDate, startTime, endTime, isAllDay } = formatEventDateTime(event.raw);
-  const subscriberCount = event.raw.subscriberCount ?? 0;
-  const maxAttendeesNum = parseInt(settings.maxAttendees) || Infinity;
-  const canSignUp = settings.signupEnabled && subscriberCount < maxAttendeesNum;
+  const { startDate, endDate, startTime, endTime, isAllDay } = formatEventDateTime(act);
 
-  useEffect(() => {
-    setSettings(getEventSettings(event.raw));
-    hasChangesRef.current = false;
-  }, [event]);
+  const subscriberCount = act.subscriberCount ?? 0;
+  const signupEnabled = act.signupEnabled;
+  const signupDeadline = act.signupDeadline;
+  const maxAttendees = act.maxAttendees;
+  const ticketProductId = act.ticketProductId;
+  const ticketPrice = act.ticketPrice;
+  const isPaidTicket = Boolean(ticketProductId);
+  const parsedSignupFields = act.signupFields ?? [];
+
+  const maxAttendeesNum = maxAttendees ? Number(maxAttendees) : Infinity;
+  const isDeadlinePassed = Boolean(
+    signupDeadline && currentTimestamp > new Date(signupDeadline).getTime()
+  );
+  const isEventEnded = Boolean(event.end && currentTimestamp > new Date(event.end).getTime());
+  const isFull = maxAttendeesNum < Infinity && subscriberCount >= maxAttendeesNum;
+  const canSignUp = signupEnabled && !isDeadlinePassed && !isEventEnded && !isFull;
 
   useEffect(() => setSignedUp(isSignedUp), [isSignedUp]);
 
-  const saveSettings = useCallback(async () => {
-    if (!canManageActivities || !hasChangesRef.current) return;
-    Alert.info(dict.saving_settings);
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const handleClose = useCallback(() => {
+    document.body.style.overflow = "";
+    onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => e.key === "Escape" && handleClose();
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [handleClose]);
+
+  const handleShare = () => {
+    const url = `${window.location.origin}/${locale}/activities?eventId=${event.id}`;
+    navigator.clipboard.writeText(url);
+    Alert.success(dict.link_copied);
+  };
+
+  const handleFieldChange = (fieldId: string, value: unknown) => {
+    setFormResponses((prev) => ({ ...prev, [fieldId]: value }));
+  };
+
+  const submitSignUp = async (responses?: Record<string, unknown>) => {
+    if (!currentIstid) {
+      Alert.warning(dict.please_login);
+      return;
+    }
+
+    if (parsedSignupFields.length > 0) {
+      for (const field of parsedSignupFields) {
+        if (field.required) {
+          const val = responses ? responses[field.id] : formResponses[field.id];
+          if (
+            val === undefined ||
+            val === null ||
+            val === "" ||
+            (field.type === "checkbox" && !val)
+          ) {
+            Alert.error(`Por favor preenche o campo obrigatório: ${field.label}`);
+            return;
+          }
+        }
+      }
+    }
+
+    setIsProcessing(true);
+    const alertId = Alert.loading(dict.signing_up);
     try {
-      const res = await fetch("/api/calendar/activities", {
+      const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           eventId: event.id,
-          signupEnabled: settings.signupEnabled,
-          signupDeadline: settings.signupDeadline
-            ? new Date(settings.signupDeadline).toISOString()
-            : null,
-          maxAttendees: settings.maxAttendees ? parseInt(settings.maxAttendees) : null,
-          customIcon: settings.customIcon || null,
-          description: settings.description || null,
+          signUp: true,
+          formResponses: responses ?? formResponses,
         }),
       });
 
@@ -111,66 +141,53 @@ export default function EventDetails({
         return;
       }
 
-      if (res.ok) {
-        const patchedRaw: CalendarEvent = {
-          ...(event.raw as CalendarEvent),
-          extendedProperties: {
-            ...(event.raw.extendedProperties || {}),
-            private: {
-              ...(event.raw.extendedProperties?.private || {}),
-              customIcon: settings.customIcon || undefined,
-            },
-          },
-          description: settings.description || undefined,
-        };
-        onUpdate(patchedRaw);
-        router.refresh();
-        Alert.success(dict.settings_saved);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || dict.errors.sign_up);
       }
+
+      const data = await res.json();
+      setSignedUp(data.signedUp);
+      setIsFormOpen(false);
+      onSignUpChange(event.id, data.signedUp);
+      router.refresh();
+      Alert.success(dict.signed_up);
     } catch (error) {
-      Alert.error(error instanceof Error ? error.message : dict.errors.save_settings);
+      Alert.error(error instanceof Error ? error.message : dict.errors.update_signup);
+    } finally {
+      Alert.dismiss(alertId);
+      setIsProcessing(false);
     }
-  }, [canManageActivities, settings, event.id, event.raw, onUpdate, router, dict]);
-
-  const handleClose = useCallback(async () => {
-    await saveSettings();
-    onClose();
-  }, [saveSettings, onClose]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => e.key === "Escape" && handleClose();
-    document.addEventListener("keydown", handleEscape);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
-    };
-  }, [handleClose]);
-
-  const updateSetting = <K extends keyof EventSettings>(key: K, value: EventSettings[K]) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-    hasChangesRef.current = true;
   };
 
-  const handleSignUp = async () => {
+  const handleSignUpClick = () => {
     if (!currentIstid) {
       Alert.warning(dict.please_login);
       return;
     }
 
-    if (!canSignUp && subscriberCount >= maxAttendeesNum) {
-      Alert.error(dict.errors.sign_up);
+    if (parsedSignupFields.length > 0) {
+      setIsFormOpen(true);
+      return;
+    }
+
+    submitSignUp();
+  };
+
+  const handleCancelSignUp = async () => {
+    if (isPaidTicket) {
+      Alert.warning(dict.labels.contact_coordinators_for_refund);
       return;
     }
 
     setIsProcessing(true);
-    const SignUpAlertId = Alert.loading(signedUp ? dict.cancelling_signup : dict.signing_up);
+    const alertId = Alert.loading(dict.cancelling_signup);
     try {
       const res = await fetch("/api/calendar/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ eventId: event.id, signUp: !signedUp }),
+        body: JSON.stringify({ eventId: event.id, signUp: false }),
       });
 
       if (res.status === 401) {
@@ -178,77 +195,52 @@ export default function EventDetails({
         return;
       }
 
-      if (!res.ok) throw new Error(dict.errors.sign_up);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || dict.errors.update_signup);
+      }
+
       const data = await res.json();
       setSignedUp(data.signedUp);
       onSignUpChange(event.id, data.signedUp);
       router.refresh();
-      Alert.success(data.signedUp ? dict.signed_up : dict.signup_cancelled);
+      Alert.success(dict.signup_cancelled);
     } catch (error) {
       Alert.error(error instanceof Error ? error.message : dict.errors.update_signup);
     } finally {
-      Alert.dismiss(SignUpAlertId);
+      Alert.dismiss(alertId);
       setIsProcessing(false);
     }
   };
 
-  const handleEmailAttendees = async () => {
-    Alert.info(dict.preparing_email);
-    try {
-      const res = await fetch(`/api/calendar/activities?eventId=${event.id}`, {
-        credentials: "include",
-      });
-      if (res.status === 401) {
-        window.location.reload();
-        return;
-      }
-      if (!res.ok) throw new Error(dict.errors.fetch_attendees);
-      const data = await res.json();
-      const emails = (data.subscribers as EventSubscriber[]).map((s) => s.email).join(",");
-      window.open(
-        `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}`,
-        "_blank"
-      );
-      Alert.success(dict.email_opened);
-    } catch (error) {
-      Alert.error(error instanceof Error ? error.message : dict.errors.fetch_emails);
-    }
-  };
-
-  const handleShare = () => {
-    const url = `${window.location.origin}/activities?eventId=${event.id}`;
-    navigator.clipboard.writeText(url);
-    Alert.success(dict.link_copied);
-  };
+  const remainingSpots =
+    maxAttendeesNum < Infinity ? Math.max(0, maxAttendeesNum - subscriberCount) : null;
 
   return (
-    <div
-      className={styles.modalOverlay}
-      onClick={(e) => e.target === e.currentTarget && handleClose()}>
-      <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={handleClose} aria-label={dict.close}>
-          <IoClose size={32} />
-        </button>
-
-        <div className={styles.eventHeader}>
-          <div
-            className={styles.eventIcon}
-            onClick={canManageActivities ? () => setShowIconPicker(true) : undefined}
-            style={{ cursor: canManageActivities ? "pointer" : "default" }}>
-            <EventIcon size={48} />
-          </div>
-          <h2 className={styles.eventTitle}>{event.summary || dict.untitled_event}</h2>
-          <button className={styles.shareButton} onClick={handleShare} title={dict.share_title}>
-            <IoShareOutline size={22} />
-          </button>
+    <Modal open={true} onClose={handleClose} size="md" closeLabel={dict.close}>
+      <Modal.Header onClose={handleClose} closeLabel={dict.close}>
+        <div className={styles.modalHeaderTitle}>
+          <div className={styles.eventIcon}>{renderEventIcon(resolvedIconName, 28)}</div>
+          <h2 className={styles.eventTitle}>{event.title || dict.untitled_event}</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            shape="pill"
+            onClick={handleShare}
+            title={dict.share_title}
+            aria-label={dict.share_title}>
+            <IoShareOutline size={18} />
+          </Button>
         </div>
+      </Modal.Header>
 
+      <Modal.Body className={styles.modalBody}>
         <div className={styles.detailsSection}>
           <div className={styles.detailRow}>
-            <MdAccessTime size={24} />
+            <MdAccessTime size={20} className={styles.detailIcon} />
             {isAllDay ? (
-              <span>{startDate == endDate ? `${startDate}` : `${startDate} → ${endDate}`}</span>
-            ) : startDate == endDate ? (
+              <span>{startDate === endDate ? `${startDate}` : `${startDate} → ${endDate}`}</span>
+            ) : startDate === endDate ? (
               <span>
                 {startDate} | {startTime} - {endTime}
               </span>
@@ -260,13 +252,33 @@ export default function EventDetails({
           </div>
           {event.location && (
             <div className={styles.detailRow}>
-              <IoLocationOutline size={24} />
-              <span>{event.location}</span>
+              <IoLocationOutline size={20} className={styles.detailIcon} />
+              <span>
+                {Array.isArray(event.location) ? event.location.join(", ") : event.location}
+              </span>
+            </div>
+          )}
+
+          {remainingSpots !== null && (
+            <div className={styles.badgeRow}>
+              {remainingSpots === 0 ? (
+                <Badge variant="danger" size="md">
+                  {dict.labels.capacity_reached}
+                </Badge>
+              ) : remainingSpots < Math.max(3, maxAttendeesNum * 0.1) ? (
+                <Badge variant="tertiary" size="md">
+                  {remainingSpots} {dict.labels.spots_remaining}
+                </Badge>
+              ) : (
+                <Badge variant="secondary" size="md">
+                  {remainingSpots} {dict.labels.available_spots}
+                </Badge>
+              )}
             </div>
           )}
         </div>
 
-        {settings.description && !canManageActivities && (
+        {event.description && (
           <div className={styles.descriptionSection}>
             <Linkify
               options={{
@@ -274,97 +286,126 @@ export default function EventDetails({
                 rel: "noopener noreferrer",
                 attributes: { className: styles.descriptionLink },
               }}>
-              {settings.description}
+              {event.description}
             </Linkify>
           </div>
         )}
 
-        {canManageActivities && (
-          <div className={styles.adminSection}>
-            <label>
-              {dict.labels.description}
-              <textarea
-                value={settings.description}
-                onChange={(e) => updateSetting("description", e.target.value)}
-                rows={4}
-                placeholder={dict.placeholders.description}
-                disabled={isProcessing}
-              />
-            </label>
-
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={settings.signupEnabled}
-                onChange={(e) => updateSetting("signupEnabled", e.target.checked)}
-                disabled={isProcessing}
-              />
-              <span>{dict.labels.allow_signups}</span>
-            </label>
-
-            {settings.signupEnabled && (
-              <>
-                <label>
-                  {dict.labels.signup_deadline}
-                  <input
-                    type="datetime-local"
-                    value={settings.signupDeadline}
-                    onChange={(e) => updateSetting("signupDeadline", e.target.value)}
+        {isFormOpen && (
+          <div className={styles.dynamicFormContainer}>
+            <h4 className={styles.dynamicFormTitle}>{dict.labels.fill_signup_form}</h4>
+            {parsedSignupFields.map((field) => (
+              <div key={field.id} className={styles.dynamicFormField}>
+                {field.type === "text" && (
+                  <Input
+                    label={`${field.label}${field.required ? " *" : ""}`}
+                    placeholder={field.placeholder || ""}
+                    value={String(formResponses[field.id] ?? "")}
+                    onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     disabled={isProcessing}
                   />
-                </label>
-
-                <label>
-                  {dict.labels.max_attendees}
-                  <input
-                    type="number"
-                    min="1"
-                    value={settings.maxAttendees}
-                    onChange={(e) => updateSetting("maxAttendees", e.target.value)}
-                    placeholder={dict.placeholders.no_limit}
+                )}
+                {field.type === "select" && (
+                  <Select
+                    label={`${field.label}${field.required ? " *" : ""}`}
+                    options={(field.options || []).map((opt: string) => ({
+                      label: opt,
+                      value: opt,
+                    }))}
+                    value={String(formResponses[field.id] ?? "")}
+                    onChange={(val) => handleFieldChange(field.id, val)}
                     disabled={isProcessing}
                   />
-                </label>
-              </>
-            )}
+                )}
+                {field.type === "checkbox" && (
+                  <Checkbox
+                    label={`${field.label}${field.required ? " *" : ""}`}
+                    checked={Boolean(formResponses[field.id])}
+                    onChange={(e) => handleFieldChange(field.id, e.target.checked)}
+                    disabled={isProcessing}
+                  />
+                )}
+              </div>
+            ))}
+
+            <div className={styles.dynamicFormActions}>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                disabled={isProcessing}>
+                Voltar
+              </Button>
+              <Button
+                variant="solid"
+                color="primary"
+                onClick={() => submitSignUp()}
+                loading={isProcessing}
+                disabled={isProcessing}>
+                {isProcessing ? dict.processing : dict.labels.submit_form}
+              </Button>
+            </div>
           </div>
         )}
+      </Modal.Body>
 
-        <div className={styles.actionSection}>
-          {canManageActivities && subscriberCount > 0 && (
-            <div className={styles.subscriberCount}>
-              {String(subscriberCount).padStart(2, "0")} {dict.labels.subscribers}
+      {!isFormOpen && (signedUp || ticketProductId || canSignUp) && (
+        <Modal.Footer className={styles.modalFooter}>
+          {signedUp ? (
+            <div className={styles.signedUpActions}>
+              <Button
+                variant="solid"
+                color="primary"
+                fullWidth
+                size="lg"
+                onClick={() => {
+                  handleClose();
+                  router.push(`/${locale}/activities/${event.id}/ticket`);
+                }}>
+                {dict.buttons.view_ticket}
+              </Button>
+              {!isPaidTicket && !isEventEnded && (
+                <Button
+                  variant="outline"
+                  color="danger"
+                  fullWidth
+                  onClick={handleCancelSignUp}
+                  loading={isProcessing}
+                  disabled={isProcessing}>
+                  {isProcessing ? dict.processing : dict.buttons.cancel_signup}
+                </Button>
+              )}
             </div>
-          )}
-
-          <button
-            className={styles.signUpButton}
-            onClick={handleSignUp}
-            disabled={isProcessing || !currentIstid}>
-            {isProcessing
-              ? dict.processing
-              : !currentIstid
-                ? dict.please_login
-                : signedUp
-                  ? dict.buttons.cancel_signup
+          ) : ticketProductId ? (
+            <Button
+              variant="solid"
+              color="primary"
+              fullWidth
+              size="lg"
+              onClick={() => {
+                handleClose();
+                router.push(`/${locale}/shop/${ticketProductId}`);
+              }}>
+              {dict.buttons.buy_ticket} {ticketPrice ? `(${ticketPrice}€)` : ""}
+            </Button>
+          ) : canSignUp ? (
+            <Button
+              variant="solid"
+              color="primary"
+              fullWidth
+              size="lg"
+              onClick={handleSignUpClick}
+              loading={isProcessing}
+              disabled={isProcessing || !currentIstid}>
+              {isProcessing
+                ? dict.processing
+                : !currentIstid
+                  ? dict.please_login
                   : dict.buttons.sign_up}
-          </button>
-          {canManageActivities && subscriberCount > 0 && (
-            <button onClick={handleEmailAttendees} className={styles.emailLink}>
-              {dict.buttons.email_attendees}
-            </button>
-          )}
-        </div>
-      </div>
-
-      {showIconPicker && (
-        <IconPicker
-          value={settings.customIcon}
-          onChange={(icon) => updateSetting("customIcon", icon)}
-          onClose={() => setShowIconPicker(false)}
-          dict={dict.icon_picker}
-        />
+            </Button>
+          ) : null}
+        </Modal.Footer>
       )}
-    </div>
+    </Modal>
   );
 }

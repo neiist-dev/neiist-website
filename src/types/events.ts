@@ -1,5 +1,7 @@
 import type { StaticImageData } from "next/image";
 
+export const EVENT_TYPES = ["Meeting", "Event"] as const;
+
 export interface Event {
   id: string;
   title: string;
@@ -7,94 +9,16 @@ export interface Event {
   image: string | StaticImageData;
 }
 
-export interface NotionEvent {
+export interface SignupField {
   id: string;
-  title: string;
-  date: string | null;
-  end: string | null;
-  url: string;
-  location: string[];
-  type: string | null;
-  teams: string[];
-  attendees: string[];
-  lastEditedTime: string;
-  public: boolean;
+  label: string;
+  type: "text" | "select" | "checkbox";
+  required?: boolean;
+  options?: string[];
+  placeholder?: string;
 }
 
-export interface CalendarEvent {
-  id: string;
-  summary: string;
-  description?: string;
-  location?: string;
-  start: {
-    date?: string;
-    dateTime?: string;
-    timeZone?: string;
-  };
-  end: {
-    date?: string;
-    dateTime?: string;
-    timeZone?: string;
-  };
-  extendedProperties?: {
-    private?: EventExtendedProperties;
-  };
-  source?: {
-    title: string;
-    url: string;
-  };
-  subscribers?: string[];
-  subscriberCount?: number;
-}
-
-export interface EventExtendedProperties {
-  type?: string;
-  teams?: string;
-  attendees?: string;
-  lastEditedTime?: string;
-  signupEnabled?: boolean;
-  signupDeadline?: string;
-  maxAttendees?: number;
-  customIcon?: string;
-  customDescription?: string;
-}
-
-export interface EventSettings {
-  signupEnabled: boolean;
-  signupDeadline: string;
-  maxAttendees: string;
-  customIcon: string;
-  description: string;
-}
-
-export interface NormalizedCalendarEvent {
-  id: string;
-  summary: string;
-  location?: string;
-  isAllDay: boolean;
-  start: Date;
-  end: Date;
-  raw: CalendarEvent;
-}
-
-export interface CalendarDay {
-  date: Date;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  events: NormalizedCalendarEvent[];
-}
-
-export interface PositionedEvent {
-  event: NormalizedCalendarEvent;
-  startCol: number;
-  span: number;
-  row: number;
-  weekIndex: number;
-}
-
-export type CalendarMode = "month" | "week" | "3days";
-
-export interface DbActivityRow {
+export interface DbActivity {
   id: string;
   title: string;
   description: string;
@@ -111,120 +35,116 @@ export interface DbActivityRow {
   signup_deadline: Date | null;
   max_attendees: number | null;
   custom_icon: string | null;
+  public: boolean;
+  source_type: string;
+  signup_fields?: SignupField[] | string | null;
+  event_ticket_product_id?: number | null;
+  event_ticket_price?: string | number | null;
   subscribers: string[];
-  subscriber_count: string;
+  subscriber_count: string | number;
 }
 
-export interface ActivityEvent {
+export interface Activity {
   id: string;
   title: string;
   description: string;
-  url: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
   location: string[];
   type: string;
   teams: string[];
   attendees: string[];
-  start: Date;
-  end: Date;
-  allDay: boolean;
-  lastEditedTime: Date;
-}
+  public: boolean;
 
-export interface ActivityProperties {
-  eventId: string;
   signupEnabled: boolean;
   signupDeadline: Date | null;
   maxAttendees: number | null;
   customIcon: string | null;
-  description?: string | null;
+  ticketProductId?: number | null;
+  ticketPrice?: number | null;
+  signupFields?: SignupField[] | null;
+
+  subscribers: string[];
+  subscriberCount: number;
+  url?: string;
+  lastEditedTime?: Date;
+  sourceType?: string;
 }
 
-export interface ActivitySignUp {
-  event_id: string;
-  user_istid: string;
+export interface Ticket {
+  ticket_code: string;
+  qr_signature: string;
+  order_number: string | null;
+  is_paid: boolean;
+  form_responses: Record<string, unknown> | null;
+  checked_in_at: Date | null;
+  checked_in_by: string | null;
+  checked_in_by_name: string | null;
   signed_up_at: Date;
-}
 
-export interface EventSubscriber {
   istid: string;
   name: string;
-  email: string;
-  signed_up_at: Date;
+  email?: string;
+  attendee_istid?: string;
+  attendee_name?: string;
+
+  event_id?: string;
+  event_title?: string;
+  event_description?: string;
+  event_location?: string[];
+  event_start?: Date;
+  event_end?: Date;
+  event_all_day?: boolean;
+  event_custom_icon?: string | null;
 }
 
-export function getEventSettings(event: CalendarEvent): EventSettings {
-  const props = event.extendedProperties?.private || {};
-  return {
-    signupEnabled: props.signupEnabled ?? false,
-    signupDeadline: props.signupDeadline
-      ? new Date(props.signupDeadline).toISOString().slice(0, 16)
-      : "",
-    maxAttendees: props.maxAttendees?.toString() ?? "",
-    customIcon: props.customIcon ?? "FaCalendar",
-    description: event.description || props.customDescription || "",
-  };
+export interface CheckinResult {
+  success: boolean;
+  already_checked_in: boolean;
+  attendee_name: string;
+  attendee_istid: string;
+  ticket_code: string;
+  order_number: string | null;
+  form_responses: Record<string, unknown> | null;
+  checked_in_at: Date;
+  checked_in_by: string;
+  checked_in_by_name: string;
+  activity_id?: string;
+  user_ist_id?: string;
+  attended?: boolean;
 }
 
-export function mapDbRowToCalendarEvent(row: DbActivityRow): CalendarEvent {
+export function mapDbRowToActivity(row: DbActivity): Activity {
+  const parsedFields = Array.isArray(row.signup_fields)
+    ? row.signup_fields
+    : typeof row.signup_fields === "string"
+      ? (JSON.parse(row.signup_fields) as SignupField[])
+      : null;
+
   return {
     id: row.id,
-    summary: row.title,
-    description: row.description,
-    location: row.location?.join(", "),
-    start: row.all_day
-      ? { date: row.start.toISOString().split("T")[0] }
-      : { dateTime: row.start.toISOString(), timeZone: "UTC" },
-    end: row.all_day
-      ? { date: row.end.toISOString().split("T")[0] }
-      : { dateTime: row.end.toISOString(), timeZone: "UTC" },
-    extendedProperties: {
-      private: {
-        type: row.type,
-        teams: row.teams?.join(","),
-        attendees: row.attendees?.join(","),
-        lastEditedTime: row.last_edited_time?.toISOString(),
-        signupEnabled: row.signup_enabled,
-        signupDeadline: row.signup_deadline?.toISOString(),
-        maxAttendees: row.max_attendees ?? undefined,
-        customIcon: row.custom_icon ?? undefined,
-      },
-    },
+    title: row.title,
+    description: row.description || "",
+    url: row.url || "",
+    location: row.location || [],
+    type: row.type || "",
+    teams: row.teams || [],
+    attendees: row.attendees || [],
+    start: new Date(row.start),
+    end: new Date(row.end),
+    allDay: Boolean(row.all_day),
+    public: row.public,
+    signupEnabled: Boolean(row.signup_enabled),
+    signupDeadline: row.signup_deadline ? new Date(row.signup_deadline) : null,
+    maxAttendees: row.max_attendees ?? null,
+    customIcon: row.custom_icon ?? null,
+    ticketProductId: row.event_ticket_product_id ?? null,
+    ticketPrice: row.event_ticket_price != null ? Number(row.event_ticket_price) : null,
+    signupFields: parsedFields,
     subscribers: row.subscribers || [],
-    subscriberCount: parseInt(row.subscriber_count) || 0,
-  };
-}
-
-export function mapNotionEventToCalendarEvent(notionEvent: NotionEvent): CalendarEvent {
-  const isDateOnly = (s?: string | null) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-
-  const startIsDateOnly = isDateOnly(notionEvent.date);
-
-  return {
-    id: notionEvent.id,
-    summary: notionEvent.title,
-    description: notionEvent.url,
-    location: notionEvent.location.join(", "),
-    start: startIsDateOnly
-      ? { date: notionEvent.date! }
-      : { dateTime: notionEvent.date!, timeZone: "UTC" },
-    end: notionEvent.end
-      ? startIsDateOnly
-        ? { date: notionEvent.end }
-        : { dateTime: notionEvent.end, timeZone: "UTC" }
-      : startIsDateOnly
-        ? { date: notionEvent.date! }
-        : { dateTime: notionEvent.date!, timeZone: "UTC" },
-    source: {
-      title: "Notion",
-      url: notionEvent.url,
-    },
-    extendedProperties: {
-      private: {
-        type: notionEvent.type ?? undefined,
-        teams: notionEvent.teams.join(","),
-        attendees: notionEvent.attendees.join(","),
-        lastEditedTime: notionEvent.lastEditedTime,
-      },
-    },
+    subscriberCount: parseInt(String(row.subscriber_count), 10) || 0,
+    lastEditedTime: row.last_edited_time ? new Date(row.last_edited_time) : undefined,
+    sourceType: row.source_type,
   };
 }

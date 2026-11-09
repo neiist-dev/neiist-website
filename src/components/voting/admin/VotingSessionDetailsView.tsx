@@ -232,10 +232,14 @@ export default function VotingSessionDetailsView({
         </div>
 
         <div className={styles.actionsToolbar}>
-          <a href={`/api/voting/${session.id}/export`} download className={styles.exportBtn}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`/api/voting/${session.id}/export`, "_blank")}>
             <FiDownload size={14} />
             {dict.details.export_excel}
-          </a>
+          </Button>
 
           {session.status === VOTING_STATUS.IDLE && (
             <Button

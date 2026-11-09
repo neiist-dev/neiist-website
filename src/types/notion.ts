@@ -58,3 +58,17 @@ export function mapNotionResultToPage(result: NotionPageResult): NotionPage {
     last_edited_time: result.last_edited_time,
   };
 }
+
+export interface NotionEvent {
+  id: string;
+  title: string;
+  date: string | null;
+  end: string | null;
+  url: string;
+  location: string[];
+  type: string | null;
+  teams: string[];
+  attendees: string[];
+  lastEditedTime: string;
+  public: boolean;
+}

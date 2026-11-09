@@ -1,66 +1,51 @@
 import { Client } from "@notionhq/client";
-import type { NotionPage, NotionApiResponse, NotionPerson } from "@/types/notion";
+import type { NotionPage, NotionApiResponse, NotionPerson, NotionEvent } from "@/types/notion";
 import { mapNotionResultToPage } from "@/types/notion";
-import type { NotionEvent } from "@/types/events";
+import type { Activity } from "@/types/events";
 import {
+  createActivitiesEvent,
   updateActivitiesEvent,
   deleteActivitiesEvent,
-  getActivitiesEventsFromDb,
+  getActivitiesEventsFromDbRaw,
 } from "@/lib/db/repositories/event.repository";
+import { scheduleEventReminder, cancelEventReminder } from "@/lib/redis/queue";
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY!;
 const DATABASE_ID = process.env.DATABASE_ID!;
 const notion = new Client({ auth: NOTION_API_KEY });
 
-function isDateOnly(s?: string | null) {
-  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
+export function parseNotionDates(
+  dateStr?: string | null,
+  endStr?: string | null
+): { start: Date; end: Date; allDay: boolean } | null {
+  if (!dateStr) return null;
 
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setUTCDate(d.getUTCDate() + days);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
+  const isAllDay = /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
 
-function addHours(date: Date, hours: number) {
-  const d = new Date(date);
-  d.setTime(d.getTime() + hours * 60 * 60 * 1000);
-  return d;
-}
-
-function buildICalDatesFromNotion(event: NotionEvent) {
-  if (!event.date) return null;
-  const startIsDateOnly = isDateOnly(event.date);
-  const endExists = !!event.end;
-  const endIsDateOnly = endExists && isDateOnly(event.end!);
-
-  if (startIsDateOnly && !endExists) {
-    const start = new Date(event.date + "T00:00:00Z");
-    const end = addDays(start, 1);
+  if (isAllDay) {
+    const start = new Date(`${dateStr}T00:00:00Z`);
+    const endBase = new Date(`${endStr ?? dateStr}T00:00:00Z`);
+    const end = new Date(endBase.getTime() + 86_400_000);
     return { start, end, allDay: true };
   }
-  if (startIsDateOnly && endIsDateOnly) {
-    const start = new Date(event.date + "T00:00:00Z");
-    const endDate = new Date(event.end! + "T00:00:00Z");
-    const end = addDays(endDate, 1);
-    return { start, end, allDay: true };
-  }
-  if (!startIsDateOnly && !endExists) {
-    const start = new Date(event.date);
-    const end = addHours(start, 1);
-    return { start, end, allDay: false };
-  }
-  if (!startIsDateOnly && endExists && !endIsDateOnly) {
-    const start = new Date(event.date);
-    const end = new Date(event.end!);
-    return { start, end, allDay: false };
-  }
-  return null;
+
+  const start = new Date(dateStr);
+  const end = endStr ? new Date(endStr) : new Date(start.getTime() + 3_600_000);
+  return { start, end, allDay: false };
 }
+
+export const buildICalDatesFromNotion = (event: NotionEvent) =>
+  parseNotionDates(event.date, event.end);
 
 export function parseNotionPageToEvent(page: NotionPage): NotionEvent {
   const props = page.properties;
+  const publicProp =
+    props.Public?.checkbox ??
+    (props as Record<string, { checkbox?: boolean }>)["Público"]?.checkbox ??
+    (props as Record<string, { checkbox?: boolean }>)["Publico"]?.checkbox ??
+    (props as Record<string, { checkbox?: boolean }>)["public"]?.checkbox ??
+    true;
+
   return {
     id: page.id,
     title: props.Name?.title?.[0]?.plain_text || "Untitled Event",
@@ -74,7 +59,7 @@ export function parseNotionPageToEvent(page: NotionPage): NotionEvent {
       props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "").filter(Boolean) ??
       [],
     lastEditedTime: page.last_edited_time,
-    public: props.Public?.checkbox ?? true,
+    public: publicProp,
   };
 }
 
@@ -95,46 +80,59 @@ export async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
 }
 
 export async function syncNotionEventsToDb(prefetchedEvents?: NotionEvent[]): Promise<{
+  created: number;
   updated: number;
   deleted: number;
   unchanged: number;
 }> {
   const notionEvents = prefetchedEvents ?? (await fetchAllNotionEvents());
-  const dbEvents = await getActivitiesEventsFromDb();
-  const filteredNotionEvents = notionEvents.filter((e) => e.public);
+  const dbEvents = await getActivitiesEventsFromDbRaw(false);
 
-  const dbEventMap = new Map<string, Date>();
+  const dbEventMap = new Map<string, Date | null>();
   for (const dbEvent of dbEvents) {
-    const lastEdited = dbEvent.extendedProperties?.private?.lastEditedTime;
-    if (lastEdited) {
-      dbEventMap.set(dbEvent.id, new Date(lastEdited));
-    }
+    if (dbEvent.sourceType === "website") continue;
+    dbEventMap.set(dbEvent.id, dbEvent.lastEditedTime ?? null);
   }
 
+  let created = 0;
   let updated = 0;
   let unchanged = 0;
 
-  for (const event of filteredNotionEvents) {
+  for (const event of notionEvents) {
     const dates = buildICalDatesFromNotion(event);
     if (!dates) continue;
 
+    const existsInDb = dbEventMap.has(event.id);
     const dbLastEdited = dbEventMap.get(event.id);
     const notionLastEdited = new Date(event.lastEditedTime);
+    const activityData: Partial<Activity> & { id: string } = {
+      id: event.id,
+      title: event.title,
+      description: "",
+      url: event.url,
+      location: event.location,
+      type: event.type || "",
+      teams: event.teams,
+      attendees: event.attendees,
+      start: dates.start,
+      end: dates.end,
+      allDay: dates.allDay,
+      lastEditedTime: new Date(event.lastEditedTime),
+      public: event.public,
+    };
 
-    if (!dbLastEdited || notionLastEdited > dbLastEdited) {
-      await updateActivitiesEvent({
+    if (!existsInDb) {
+      await createActivitiesEvent(activityData);
+      await scheduleEventReminder({
         id: event.id,
-        title: event.title,
-        description: "",
-        url: event.url,
-        location: event.location,
-        type: event.type || "",
-        teams: event.teams,
-        attendees: event.attendees,
-        start: dates.start,
-        end: dates.end,
-        allDay: dates.allDay,
-        lastEditedTime: notionLastEdited,
+        start: { dateTime: dates.start.toISOString() },
+      });
+      created++;
+    } else if (!dbLastEdited || notionLastEdited > dbLastEdited) {
+      await updateActivitiesEvent(activityData);
+      await scheduleEventReminder({
+        id: event.id,
+        start: { dateTime: dates.start.toISOString() },
       });
       updated++;
     } else {
@@ -146,12 +144,9 @@ export async function syncNotionEventsToDb(prefetchedEvents?: NotionEvent[]): Pr
   let deleted = 0;
   for (const deletedId of dbEventMap.keys()) {
     await deleteActivitiesEvent(deletedId);
-    deleted++;
-  }
-  for (const event of notionEvents.filter((e) => !e.public)) {
-    await deleteActivitiesEvent(event.id);
+    await cancelEventReminder(deletedId);
     deleted++;
   }
 
-  return { updated, deleted, unchanged };
+  return { created, updated, deleted, unchanged };
 }

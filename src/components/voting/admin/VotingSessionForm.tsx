@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect, ChangeEvent } from "react";
 import Image from "next/image";
 import { VotingType, VOTING_TYPES } from "@/types/voting";
-import { CalendarEvent } from "@/types/events";
+import { Activity } from "@/types/events";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { createVotingSessionAction } from "@/actions/admin/voting";
@@ -29,7 +29,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/voting/admin/VotingSessionForm.module.css";
 
 interface VotingSessionFormProps {
-  activities: CalendarEvent[];
+  activities: Activity[];
   users: User[];
   dict: Dictionary["voting_management"]["form"];
   typesDict: Dictionary["voting_management"]["types"];
@@ -176,7 +176,7 @@ export default function VotingSessionForm({
   const activityOptions = useMemo(
     () =>
       activities.map((activity) => ({
-        label: `${activity.summary} (${activity.id.slice(0, 8)})`,
+        label: `${activity.title || "Sem título"} (${activity.id.slice(0, 8)})`,
         value: activity.id,
       })),
     [activities]
@@ -209,17 +209,15 @@ export default function VotingSessionForm({
       let endDate: Date | undefined;
       let endTime = "";
 
-      const start = activity.start.dateTime ?? activity.start.date;
-      const end = activity.end.dateTime ?? activity.end.date;
-      if (start) {
-        const s = new Date(start);
+      if (activity.start) {
+        const s = new Date(activity.start);
         if (!isNaN(s.getTime())) {
           startDate = s;
           startTime = `${pad(s.getHours())}:${pad(s.getMinutes())}`;
         }
       }
-      if (end) {
-        const e = new Date(end);
+      if (activity.end) {
+        const e = new Date(activity.end);
         if (!isNaN(e.getTime())) {
           endDate = e;
           endTime = `${pad(e.getHours())}:${pad(e.getMinutes())}`;

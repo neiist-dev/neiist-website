@@ -1,37 +1,102 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay, isBefore, startOfDay } from "date-fns";
+import { useMemo, useState, useEffect, useCallback, createContext, use } from "react";
+import { Calendar as BigCalendar, dateFnsLocalizer, Views, View } from "react-big-calendar";
+import { format, parse, startOfWeek, getDay, isBefore, startOfDay, addDays } from "date-fns";
 import { pt, enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "@/styles/components/activities/ReactBigCalendar.css";
 import EventDetails from "@/components/activities/EventDetails";
-import { normalizeCalendarEvent } from "@/utils/calendarUtils";
-import type { NormalizedCalendarEvent, CalendarEvent } from "@/types/events";
+import type { Activity } from "@/types/events";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import * as FA from "react-icons/fa";
-import * as MD from "react-icons/md";
-import * as IO from "react-icons/io5";
-import * as TB from "react-icons/tb";
-import * as GI from "react-icons/gi";
-import * as HI from "react-icons/hi2";
-import * as BS from "react-icons/bs";
+import { getEventIcon as getEventIconType } from "@/components/activities/EventIcons";
 import styles from "@/styles/components/activities/Calendar.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/i18n-config";
+import { useSearchParams } from "next/navigation";
+
+import { Button, Tabs, TabItem } from "@neiist/ui";
 
 const dateLocales = { pt, en: enUS };
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // Monday start per standard
   getDay,
   locales: dateLocales,
 });
 
+interface CalendarToolbarContextType {
+  dict: Dictionary["activities"];
+  currentView: View;
+  onViewChange: (_view: View) => void;
+}
+
+const CalendarToolbarContext = createContext<CalendarToolbarContextType | null>(null);
+
+function CalendarToolbar(toolbarProps: {
+  label: string;
+  onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
+}) {
+  const ctx = use(CalendarToolbarContext);
+  if (!ctx) return null;
+  const { dict, currentView, onViewChange } = ctx;
+
+  const viewTabs: TabItem[] = [
+    { id: Views.MONTH, name: dict.views?.month || "Mês", content: null },
+    { id: Views.WEEK, name: dict.views?.week || "Semana", content: null },
+  ];
+
+  return (
+    <div className={styles.header}>
+      <div className={styles.leftControls}>
+        <Button
+          variant="outline"
+          size="sm"
+          shape="pill"
+          onClick={() => toolbarProps.onNavigate("TODAY")}>
+          {dict.toolbar.today}
+        </Button>
+        <div className={styles.navigationButtons}>
+          <Button
+            variant="ghost"
+            size="icon"
+            shape="pill"
+            onClick={() => toolbarProps.onNavigate("PREV")}
+            aria-label={dict.toolbar.prev_month}>
+            <FiChevronLeft size={18} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            shape="pill"
+            onClick={() => toolbarProps.onNavigate("NEXT")}
+            aria-label={dict.toolbar.next_month}>
+            <FiChevronRight size={18} />
+          </Button>
+        </div>
+        <span className={styles.monthLabel}>{toolbarProps.label}</span>
+      </div>
+
+      <div className={styles.rightControls}>
+        <Tabs
+          tabs={viewTabs}
+          value={currentView}
+          onChange={(v) => onViewChange(v as View)}
+          size="sm"
+          classNames={{
+            root: styles.tabsRoot,
+            tabBar: styles.tabsBar,
+            tabContent: styles.hiddenTabContent,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 interface CalendarProps {
-  events: CalendarEvent[];
+  events: Activity[];
   signedUpEventIds: string[];
   initialSelectedEventId?: string;
   dict: Dictionary["activities"];
@@ -40,81 +105,30 @@ interface CalendarProps {
 
 interface ReactBigCalendarEvent {
   id: string;
-  title: React.ReactNode;
+  title: string;
   start: Date;
   end: Date;
   allDay?: boolean;
-  resource?: CalendarEvent;
+  resource?: Activity;
 }
 
-const ALL_ICONS = {
-  ...FA,
-  ...MD,
-  ...IO,
-  ...TB,
-  ...GI,
-  ...HI,
-  ...BS,
-};
-
-function getEventIcon(event: CalendarEvent) {
-  const iconName =
-    event?.extendedProperties?.private?.customIcon ||
-    (event as CalendarEvent & { customIcon?: string })?.customIcon ||
-    "FaCalendar";
-  const Icon = ALL_ICONS[iconName as keyof typeof ALL_ICONS] || FA.FaCalendar;
-  return <Icon size={18} style={{ marginRight: 6, verticalAlign: "middle" }} />;
+function getEventIcon(event: Activity) {
+  const iconName = event?.customIcon || "FaCalendar";
+  const Icon = getEventIconType(iconName);
+  return <Icon size={16} className={styles.eventIcon} />;
 }
 
-function IconEventsCard({ event }: { event: ReactBigCalendarEvent }) {
-  return (
-    <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-      {event.resource && getEventIcon(event.resource)}
-      <span>{event.title}</span>
-    </span>
-  );
-}
-
-function mapToBigCalendarEvent(event: NormalizedCalendarEvent) {
+function mapToBigCalendarEvent(activity: Activity): ReactBigCalendarEvent {
+  const start = new Date(activity.start);
+  const end = new Date(activity.end);
   return {
-    id: event.id,
-    title: event.summary,
-    start: event.start,
-    end: event.end,
-    allDay: event.isAllDay,
-    resource: event.raw,
+    id: activity.id,
+    title: activity.title,
+    start,
+    end: activity.allDay ? addDays(end, 1) : end,
+    allDay: activity.allDay,
+    resource: activity,
   };
-}
-
-function CustomToolbar({
-  label,
-  onNavigate,
-  dict,
-}: {
-  label: string;
-  onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
-  dict: Dictionary["activities"]["toolbar"];
-}) {
-  const [month, year] = label.split(" ");
-
-  return (
-    <div className={styles.header}>
-      <button className={styles.todayButton} onClick={() => onNavigate("TODAY")}>
-        {dict.today}
-      </button>
-      <div className={styles.navigationButtons}>
-        <button onClick={() => onNavigate("PREV")} aria-label={dict.prev_month}>
-          <FiChevronLeft />
-        </button>
-        <button onClick={() => onNavigate("NEXT")} aria-label={dict.next_month}>
-          <FiChevronRight />
-        </button>
-      </div>
-      <span className={styles.monthLabel}>
-        {month} {year}
-      </span>
-    </div>
-  );
 }
 
 export default function Calendar({
@@ -124,73 +138,115 @@ export default function Calendar({
   dict,
   currentLocale,
 }: CalendarProps) {
-  const [selectedEvent, setSelectedEvent] = useState<NormalizedCalendarEvent | null>(null);
+  const searchParams = useSearchParams();
+
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
+  const [selectedEvent, setSelectedEvent] = useState<Activity | null>(null);
   const [signUps, setSignUps] = useState<Set<string>>(() => new Set(signedUpEventIds));
-  const [eventList, setEventList] = useState<CalendarEvent[]>(events);
+  const [eventList, setEventList] = useState<Activity[]>(events);
+  const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
+  const paramView = searchParams.get("view");
+
+  const [currentView, setCurrentView] = useState<View>(() => {
+    if (paramView === "week") return Views.WEEK;
+    return Views.MONTH;
+  });
 
   useEffect(() => {
     setEventList(events);
   }, [events]);
+
   useEffect(() => {
     setSignUps(new Set(signedUpEventIds));
   }, [signedUpEventIds]);
 
-  const normalizedEvents = useMemo<NormalizedCalendarEvent[]>(
-    () =>
-      eventList.map(normalizeCalendarEvent).filter((e): e is NormalizedCalendarEvent => e !== null),
+  // Sync state to URL search params
+  const updateUrlParams = useCallback(
+    (newView: View) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (newView === Views.MONTH) params.delete("view");
+      else params.set("view", newView);
+
+      const qs = params.toString();
+      const newPath = `${window.location.pathname}${qs ? `?${qs}` : ""}`;
+      window.history.replaceState(null, "", newPath);
+    },
+    [searchParams]
+  );
+
+  const handleViewChange = useCallback(
+    (view: View) => {
+      setCurrentView(view);
+      updateUrlParams(view);
+    },
+    [updateUrlParams]
+  );
+
+  const calendarEvents = useMemo<ReactBigCalendarEvent[]>(
+    () => eventList.map(mapToBigCalendarEvent),
     [eventList]
   );
-  const calendarEvents = useMemo<ReactBigCalendarEvent[]>(
-    () => normalizedEvents.map(mapToBigCalendarEvent),
-    [normalizedEvents]
-  );
+
   useEffect(() => {
     if (initialSelectedEventId) {
-      const normalized = normalizedEvents.find((e) => e.id === initialSelectedEventId);
-      if (normalized) setSelectedEvent(normalized);
+      const found = eventList.find((e) => e.id === initialSelectedEventId);
+      if (found) setSelectedEvent(found);
     }
-  }, [initialSelectedEventId, normalizedEvents]);
+  }, [initialSelectedEventId, eventList]);
 
-  const handleEventUpdate = (updatedEvent: CalendarEvent) => {
+  const handleEventUpdate = (updatedEvent: Activity) => {
     setEventList((prev) => prev.map((evt) => (evt.id === updatedEvent.id ? updatedEvent : evt)));
     setSelectedEvent((current) =>
-      current && current.id === updatedEvent.id ? normalizeCalendarEvent(updatedEvent) : current
+      current && current.id === updatedEvent.id ? updatedEvent : current
     );
   };
-
-  const components = useMemo(
-    () => ({
-      toolbar: (props: {
-        label: string;
-        onNavigate: (_action: "PREV" | "NEXT" | "TODAY") => void;
-      }) => <CustomToolbar label={props.label} onNavigate={props.onNavigate} dict={dict.toolbar} />,
-      event: IconEventsCard,
-    }),
-    [dict.toolbar]
-  );
 
   const dayPropGetter = (date: Date) => {
     const now = startOfDay(new Date());
     if (isBefore(date, now)) {
-      return {
-        className: "rbc-past-day",
-      };
+      return { className: "rbc-past-day" };
     }
     return {};
   };
 
   const eventPropGetter = (event: ReactBigCalendarEvent) => {
-    const now = new Date();
-    if (isBefore(event.end, now)) {
-      return {
-        className: "rbc-past-event",
-      };
-    }
-    return {};
+    const isPast = isBefore(event.end, new Date());
+    const isHovered = hoveredEventId === event.id;
+    const classes = [isPast ? "rbc-past-event" : "", isHovered ? "rbc-event-hovered" : ""]
+      .filter(Boolean)
+      .join(" ");
+    return { className: classes };
   };
 
+  const calendarComponents = useMemo(
+    () => ({
+      toolbar: CalendarToolbar,
+      event: ({ event, title }: { event: ReactBigCalendarEvent; title: string }) => (
+        <div
+          className={styles.eventCard}
+          onMouseEnter={() => setHoveredEventId(event.id)}
+          onMouseLeave={() => setHoveredEventId(null)}>
+          <div className={styles.eventCardLeft}>
+            {event.resource && getEventIcon(event.resource)}
+            <span className={styles.eventTitle}>{title}</span>
+          </div>
+        </div>
+      ),
+    }),
+    []
+  );
+
+  const toolbarContextValue = useMemo(
+    () => ({
+      dict,
+      currentView,
+      onViewChange: handleViewChange,
+    }),
+    [dict, currentView, handleViewChange]
+  );
+
   return (
-    <>
+    <CalendarToolbarContext value={toolbarContextValue}>
       <div className={styles.calendarWrapper}>
         <BigCalendar
           localizer={localizer}
@@ -199,13 +255,18 @@ export default function Calendar({
           endAccessor="end"
           titleAccessor="title"
           popup
-          views={["month"]}
+          view={currentView}
+          onView={(view: View) => handleViewChange(view)}
+          date={currentDate}
+          onNavigate={(date: Date) => setCurrentDate(date)}
+          views={[Views.MONTH, Views.WEEK]}
+          min={new Date(0, 0, 0, 8, 0)} // Timetable window 08:00
+          max={new Date(0, 0, 0, 23, 0)} // to 23:00
           showAllEvents={true}
           onSelectEvent={(event: ReactBigCalendarEvent) => {
-            const normalized = normalizedEvents.find((e) => e.id === event.id);
-            setSelectedEvent(normalized ?? null);
+            setSelectedEvent(event.resource ?? null);
           }}
-          components={components}
+          components={calendarComponents}
           dayPropGetter={dayPropGetter}
           eventPropGetter={eventPropGetter}
           culture={currentLocale}
@@ -220,20 +281,16 @@ export default function Calendar({
           onSignUpChange={(eventId: string, signedUp: boolean) => {
             setSignUps((prev) => {
               const newSet = new Set(prev);
-              if (signedUp) {
-                newSet.add(eventId);
-              } else {
-                newSet.delete(eventId);
-              }
+              if (signedUp) newSet.add(eventId);
+              else newSet.delete(eventId);
               return newSet;
             });
           }}
-          onUpdate={(updatedEvent?: CalendarEvent) =>
-            handleEventUpdate(updatedEvent ?? selectedEvent!.raw)
-          }
+          onUpdate={(updatedEvent?: Activity) => handleEventUpdate(updatedEvent ?? selectedEvent)}
           dict={dict.details}
+          locale={currentLocale}
         />
       )}
-    </>
+    </CalendarToolbarContext>
   );
 }

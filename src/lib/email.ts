@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import ical from "ical-generator";
 import { getEventTicketEmailTemplate } from "@/lib/email/templates/events";
-import { generateTicketPNG } from "@/lib/ticketCode";
+import { generateTicketPNG } from "@/lib/ticketPng";
 
 export interface EmailAttachment {
   filename: string;

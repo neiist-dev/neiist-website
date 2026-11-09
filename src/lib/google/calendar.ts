@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import type { NotionEvent } from "@/types/events";
+import type { Activity } from "@/types/events";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getServiceAccount } from "@/lib/google/serviceAccount";
 
@@ -19,67 +19,12 @@ export function getCalendarClient(): ReturnType<typeof google.calendar> | null {
   return _calendarClient;
 }
 
-function isDateOnly(s?: string | null) {
-  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
+function buildGoogleCalendarDates(event: Activity) {
+  if (!event.start || !event.end) return null;
 
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setUTCDate(d.getUTCDate() + days);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
-
-function addHours(date: Date, hours: number) {
-  const d = new Date(date);
-  d.setTime(d.getTime() + hours * 60 * 60 * 1000);
-  return d;
-}
-
-function buildICalDatesFromNotion(
-  event: NotionEvent
-): { start: Date; end: Date; allDay: boolean } | null {
-  if (!event.date) return null;
-
-  const startIsDateOnly = isDateOnly(event.date);
-  const endExists = !!event.end;
-  const endIsDateOnly = endExists && isDateOnly(event.end!);
-
-  if (startIsDateOnly && !endExists) {
-    const start = new Date(event.date + "T00:00:00Z");
-    const end = addDays(start, 1);
-    return { start, end, allDay: true };
-  }
-
-  if (startIsDateOnly && endIsDateOnly) {
-    const start = new Date(event.date + "T00:00:00Z");
-    const endDate = new Date(event.end! + "T00:00:00Z");
-    const end = addDays(endDate, 1);
-    return { start, end, allDay: true };
-  }
-
-  if (!startIsDateOnly && !endExists) {
-    const start = new Date(event.date);
-    const end = addHours(start, 1);
-    return { start, end, allDay: false };
-  }
-
-  if (!startIsDateOnly && endExists && !endIsDateOnly) {
-    const start = new Date(event.date);
-    const end = new Date(event.end!);
-    return { start, end, allDay: false };
-  }
-
-  return null;
-}
-
-function buildGoogleCalendarDates(event: NotionEvent) {
-  const dates = buildICalDatesFromNotion(event);
-  if (!dates) return null;
-
-  if (dates.allDay) {
-    const startDate = dates.start.toISOString().split("T")[0];
-    const endDate = dates.end.toISOString().split("T")[0];
+  if (event.allDay) {
+    const startDate = event.start.toISOString().split("T")[0];
+    const endDate = event.end.toISOString().split("T")[0];
     return {
       start: { date: startDate },
       end: { date: endDate },
@@ -87,8 +32,8 @@ function buildGoogleCalendarDates(event: NotionEvent) {
   }
 
   return {
-    start: { dateTime: dates.start.toISOString(), timeZone: "UTC" },
-    end: { dateTime: dates.end.toISOString(), timeZone: "UTC" },
+    start: { dateTime: event.start.toISOString(), timeZone: "UTC" },
+    end: { dateTime: event.end.toISOString(), timeZone: "UTC" },
   };
 }
 
@@ -299,13 +244,19 @@ async function getExistingCalendarEvents(calendarId: string): Promise<Map<string
       calendarId,
       maxResults: 2500,
       singleEvents: true,
+      showDeleted: false,
     });
 
     const events = response.data.items || [];
 
     for (const event of events) {
-      if (event.id && event.extendedProperties?.private?.notionLastEdited) {
-        eventMap.set(event.id, event.extendedProperties.private.notionLastEdited);
+      if (event.id) {
+        const lastEdited =
+          event.extendedProperties?.private?.notionLastEdited ||
+          event.extendedProperties?.private?.lastEdited ||
+          event.updated ||
+          "";
+        eventMap.set(event.id, lastEdited);
       }
     }
   } catch (error) {
@@ -321,7 +272,7 @@ function delay(ms: number) {
 
 export async function syncEventToCalendar(
   calendarId: string,
-  event: NotionEvent,
+  event: Activity,
   userEmail: string,
   existingEventIds?: Set<string>,
   alternativeEmail?: string
@@ -331,7 +282,7 @@ export async function syncEventToCalendar(
 
   const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
   const shouldInclude =
-    event.date &&
+    event.start &&
     (event.type !== "Meeting" ||
       (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
 
@@ -351,24 +302,34 @@ export async function syncEventToCalendar(
   const dates = buildGoogleCalendarDates(event);
   if (!dates) return;
 
+  const validUrl = event.url && event.url.startsWith("http") ? event.url : undefined;
+  const lastEditedIso = event.lastEditedTime
+    ? event.lastEditedTime.toISOString()
+    : new Date().toISOString();
+
   const googleEvent = {
     id: googleEventId,
     summary: event.title,
     description: [
-      event.url,
+      validUrl,
       event.attendees.length ? `Attendees: ${event.attendees.join(", ")}` : "",
     ]
       .filter(Boolean)
       .join("\n"),
     location: event.location.length ? event.location.join(", ") : undefined,
     ...dates,
-    source: {
-      title: "Notion",
-      url: event.url,
-    },
+    ...(validUrl
+      ? {
+          source: {
+            title: event.sourceType === "notion" ? "Notion" : "NEIIST",
+            url: validUrl,
+          },
+        }
+      : {}),
     extendedProperties: {
       private: {
-        notionLastEdited: event.lastEditedTime || new Date().toISOString(),
+        notionLastEdited: lastEditedIso,
+        lastEdited: lastEditedIso,
       },
     },
   };
@@ -380,8 +341,20 @@ export async function syncEventToCalendar(
         eventId: googleEventId,
         requestBody: googleEvent,
       });
-    } catch (error) {
-      console.error(`Error updating event ${googleEventId}:`, error);
+    } catch (error: unknown) {
+      const err = error as { status?: number; code?: number };
+      if (err?.status === 404 || err?.code === 404) {
+        try {
+          await calendar.events.insert({
+            calendarId,
+            requestBody: googleEvent,
+          });
+        } catch (insertErr) {
+          console.error(`Error inserting event after 404 ${googleEventId}:`, insertErr);
+        }
+      } else {
+        console.error(`Error updating event ${googleEventId}:`, error);
+      }
     }
   } else {
     try {
@@ -389,15 +362,28 @@ export async function syncEventToCalendar(
         calendarId,
         requestBody: googleEvent,
       });
-    } catch (error) {
-      console.error(`Error inserting event ${googleEventId}:`, error);
+    } catch (error: unknown) {
+      const err = error as { status?: number; code?: number };
+      if (err?.status === 409 || err?.code === 409) {
+        try {
+          await calendar.events.update({
+            calendarId,
+            eventId: googleEventId,
+            requestBody: googleEvent,
+          });
+        } catch (updateErr) {
+          console.error(`Error updating event after 409 ${googleEventId}:`, updateErr);
+        }
+      } else {
+        console.error(`Error inserting event ${googleEventId}:`, error);
+      }
     }
   }
 }
 
 export async function syncEventsToCalendarBatched(
   calendarId: string,
-  events: NotionEvent[],
+  events: Activity[],
   userEmail: string,
   alternativeEmail?: string
 ) {
@@ -422,13 +408,13 @@ export async function syncEventsToCalendarBatched(
 
 export async function syncAllEventsToCalendar(
   calendarId: string,
-  events: NotionEvent[],
+  events: Activity[],
   userEmail: string,
   alternativeEmail?: string
 ) {
   const existingEvents = await getExistingCalendarEvents(calendarId);
 
-  const eventsToUpdate: NotionEvent[] = [];
+  const eventsToUpdate: Activity[] = [];
   const eventsToDelete: string[] = [];
   const existingEventIds = new Set(existingEvents.keys());
 
@@ -436,7 +422,7 @@ export async function syncAllEventsToCalendar(
 
   for (const event of events) {
     const shouldInclude =
-      event.date &&
+      event.start &&
       (event.type !== "Meeting" ||
         (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
 
@@ -451,7 +437,11 @@ export async function syncAllEventsToCalendar(
 
     const existingLastEdited = existingEvents.get(googleEventId);
 
-    if (!existingLastEdited || new Date(event.lastEditedTime) > new Date(existingLastEdited)) {
+    if (
+      !existingLastEdited ||
+      (event.lastEditedTime &&
+        new Date(event.lastEditedTime).getTime() > new Date(existingLastEdited).getTime())
+    ) {
       eventsToUpdate.push(event);
     }
 

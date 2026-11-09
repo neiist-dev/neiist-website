@@ -1,117 +1,6 @@
-import { after, NextRequest, NextResponse } from "next/server";
-import pLimit from "p-limit";
-import { Client } from "@notionhq/client";
+import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import type { NotionApiResponse, NotionPage } from "@/types/notion";
-import { mapNotionResultToPage } from "@/types/notion";
-import type { NotionEvent } from "@/types/events";
-import { getCalendarClient, syncAllEventsToCalendar } from "@/lib/google/calendar";
-import { parseNotionPageToEvent, syncNotionEventsToDb } from "@/utils/eventsUtils";
-import { getAllUsers } from "@/lib/db/repositories/user.repository";
-
-const NOTION_API_KEY = process.env.NOTION_API_KEY!;
-const DATABASE_ID = process.env.DATABASE_ID!;
-
-const notion = new Client({ auth: NOTION_API_KEY });
-
-let isSyncRunning = false;
-let hasPendingSync = false;
-
-async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
-  const pages: NotionPage[] = [];
-  let cursor: string | undefined = undefined;
-  do {
-    const response = (await notion.dataSources.query({
-      data_source_id: DATABASE_ID,
-      start_cursor: cursor,
-    })) as unknown as NotionApiResponse;
-    const mappedPages = response.results.map(mapNotionResultToPage);
-    pages.push(...mappedPages);
-    cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
-  } while (cursor);
-
-  return pages.map(parseNotionPageToEvent);
-}
-
-async function getExistingNEIISTCalendars() {
-  const calendar = getCalendarClient();
-  if (!calendar) return [];
-  const response = await calendar.calendarList.list();
-  const calendars = response.data.items || [];
-  return calendars.filter((cal) => cal.summary?.startsWith("NEIIST-"));
-}
-
-async function syncAllEventsToGoogleCalendars(events: NotionEvent[]) {
-  const allUsers = await getAllUsers();
-  const existingCalendars = await getExistingNEIISTCalendars();
-  const calendarByIstid = new Map<string, { id: string; summary: string }>();
-
-  existingCalendars.forEach((cal) => {
-    const istidMatch = cal.description?.match(/istid:([a-zA-Z0-9]+)/);
-    if (istidMatch) {
-      calendarByIstid.set(istidMatch[1], { id: cal.id!, summary: cal.summary! });
-    }
-  });
-
-  const usersWithCalendars = allUsers.filter(
-    (user) => user.email && user.istid && calendarByIstid.has(user.istid)
-  );
-
-  const limit = pLimit(2);
-
-  const results = await Promise.all(
-    usersWithCalendars.map((user) =>
-      limit(async () => {
-        try {
-          const alternativeEmailRaw = user.alternativeEmailVerified
-            ? user.alternativeEmail
-            : undefined;
-          const alternativeEmail = alternativeEmailRaw ?? undefined;
-          const calendarId = calendarByIstid.get(user.istid)!.id;
-          return await syncAllEventsToCalendar(calendarId, events, user.email!, alternativeEmail);
-        } catch (error) {
-          console.error(`Error syncing calendar for ${user.istid}:`, error);
-          return { updated: 0, deleted: 0, unchanged: 0 };
-        }
-      })
-    )
-  );
-
-  return results.reduce(
-    (acc, stat) => ({
-      updated: acc.updated + stat.updated,
-      deleted: acc.deleted + stat.deleted,
-      unchanged: acc.unchanged + stat.unchanged,
-    }),
-    { updated: 0, deleted: 0, unchanged: 0 }
-  );
-}
-
-async function runCoalescedNotionSync() {
-  if (isSyncRunning) {
-    hasPendingSync = true;
-    console.warn("[Notion Webhook] Sync already in progress. Queued pending run.");
-    return;
-  }
-
-  isSyncRunning = true;
-
-  try {
-    do {
-      hasPendingSync = false;
-      const events = await fetchAllNotionEvents();
-      const stats = await syncAllEventsToGoogleCalendars(events);
-      const dbStats = await syncNotionEventsToDb(events);
-      console.warn(
-        `[Notion Webhook] Sync complete. GCal: ${stats.updated} updated, ${stats.deleted} deleted, ${stats.unchanged} unchanged. DB: ${dbStats.updated} updated, ${dbStats.deleted} deleted, ${dbStats.unchanged} unchanged.`
-      );
-    } while (hasPendingSync);
-  } catch (error) {
-    console.error("[Notion Webhook] Background sync failed:", error);
-  } finally {
-    isSyncRunning = false;
-  }
-}
+import { triggerDebouncedCalendarSync } from "@/lib/redis/queue";
 
 export async function POST(req: NextRequest) {
   const bodyText = await req.text();
@@ -137,13 +26,12 @@ export async function POST(req: NextRequest) {
     return new NextResponse("Invalid signature", { status: 401 });
   }
 
-  after(async () => {
-    await runCoalescedNotionSync();
-  });
+  // Redis-backed debounced synchronization
+  await triggerDebouncedCalendarSync("notion_webhook", 5000);
 
   return NextResponse.json({
     ok: true,
     queued: true,
-    message: "Sync scheduled",
+    message: "Sync scheduled via Redis",
   });
 }
