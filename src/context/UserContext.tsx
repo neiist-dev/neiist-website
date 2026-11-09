@@ -27,7 +27,7 @@ export function UserProvider({
 
   useEffect(() => {
     let mounted = true;
-    let lastFetch = initialUser ? Date.now() : 0;
+    let lastFetch = Date.now();
 
     const revalidate = async (force: boolean = false) => {
       const now = Date.now();
@@ -42,9 +42,6 @@ export function UserProvider({
         setUser(null);
       }
     };
-    if (!initialUser) {
-      revalidate(true);
-    }
 
     const onVisibility = () => {
       if (document.visibilityState === "visible") revalidate();
@@ -76,4 +73,14 @@ export function useUser() {
   const context = use(UserContext);
   if (!context) throw new Error("useUser must be used within a UserProvider");
   return context;
+}
+
+export function UserSessionSync({ serverUser }: { serverUser: User | null }) {
+  const { setUser } = useUser();
+
+  useEffect(() => {
+    setUser(serverUser);
+  }, [serverUser, setUser]);
+
+  return null;
 }
