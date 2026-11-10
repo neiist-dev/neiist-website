@@ -18,7 +18,7 @@ import {
 import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { LuCalendarDays } from "react-icons/lu";
-import { getFirstAndLastName } from "@/utils/userUtils";
+import { getFirstAndLastName, logout } from "@/utils/userUtils";
 import { Alert, ConfirmDialog, ColorfulText } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/Profile.module.css";
@@ -45,9 +45,10 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const [githubDraft, setGithubDraft] = useState<string>(initialUser?.github ?? "");
   const [linkedinDraft, setLinkedinDraft] = useState<string>(initialUser?.linkedin ?? "");
 
-  const [pendingChange, setPendingChange] = useState<{ field: FieldName; value: string } | null>(
-    null
-  );
+  const [pendingChange, setPendingChange] = useState<{
+    field: FieldName;
+    value: string;
+  } | null>(null);
   const [calendarData, setCalendarData] = useState<{
     addCalendarLink: string;
     webViewLink: string;
@@ -71,8 +72,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || dict.delete_account.error_failed);
       }
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-      window.location.href = "/";
+      await logout();
     } catch (e: unknown) {
       Alert.error(e instanceof Error ? e.message : dict.delete_account.error_generic);
       setShowDeleteConfirm(false);
@@ -226,7 +226,10 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       form.append("file", file);
       form.append("istid", user.istid);
 
-      const res = await fetch("/api/user/cv-bank", { method: "POST", body: form });
+      const res = await fetch("/api/user/cv-bank", {
+        method: "POST",
+        body: form,
+      });
       if (!res.ok) throw new Error(dict.errors.cv_upload);
       setHasCV(true);
       Alert.dismiss(cvAlertId);

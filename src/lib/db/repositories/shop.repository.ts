@@ -1,11 +1,13 @@
 import { Category, dbCategory, mapdbCategoryToCategory } from "@/types/shop/category";
 import {
   dbDiscountCode,
+  dbDiscountValidationResult,
   DiscountCode,
   DiscountCodeInput,
   DiscountCodeUpdateInput,
   DiscountValidationResult,
   mapdbDiscountCodeToDiscountCode,
+  mapdbDiscountValidationResult,
 } from "@/types/shop/discountCode";
 import {
   CreateOrderInput,
@@ -539,9 +541,9 @@ export const validateDiscountCode = async (
 ): Promise<DiscountValidationResult | null> => {
   const {
     rows: [row],
-  } = await db_query<DiscountValidationResult>(
+  } = await db_query<dbDiscountValidationResult>(
     `SELECT * FROM neiist.validate_discount_code($1, $2, $3)`,
     [code, userIstid, JSON.stringify(cartItems)]
   );
-  return row ?? null;
+  return row ? mapdbDiscountValidationResult(row) : null;
 };

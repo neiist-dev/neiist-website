@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser, verifyPermission } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
-import { getCheckoutSession, saveCheckoutSession } from "@/lib/redis/sessions";
+import {
+  getCheckoutSession,
+  getRemainingSessionSeconds,
+  saveCheckoutSession,
+} from "@/lib/redis/sessions";
 import { getOrderByNumber, generateOrderNumber } from "@/lib/db/repositories/shop.repository";
 import { requestMbWayPayment, formatMbWayPhone } from "@/lib/payments/ifthenpay";
 import { getRedisClient } from "@/lib/redis/client";
@@ -130,7 +134,9 @@ async function resolvePaymentTarget(
     );
 
     if (!pricing.isValid)
-      return { error: NextResponse.json({ error: pricing.error }, { status: 400 }) };
+      return {
+        error: NextResponse.json({ error: pricing.error }, { status: 400 }),
+      };
 
     return {
       data: {
@@ -206,10 +212,7 @@ export async function POST(req: NextRequest) {
       );
 
     if (redisSession) {
-      const sessionExpiryMs = redisSession.expires_at
-        ? new Date(redisSession.expires_at).getTime()
-        : Date.now() + 1800 * 1000;
-      const remainingSeconds = Math.max(1, Math.floor((sessionExpiryMs - Date.now()) / 1000));
+      const remainingSeconds = Math.max(1, getRemainingSessionSeconds(redisSession));
       await saveCheckoutSession(
         {
           ...redisSession,

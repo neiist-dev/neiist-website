@@ -81,7 +81,11 @@ export function sumupErrorResponse(
 ): NextResponse {
   if (errOrMessage instanceof SumUpAuthError) {
     return NextResponse.json(
-      { error: errOrMessage.message, status: 502, ...(details ? { details } : {}) },
+      {
+        error: errOrMessage.message,
+        status: 502,
+        ...(details ? { details } : {}),
+      },
       { status: 502 }
     );
   }
@@ -152,116 +156,22 @@ export type VerifyAndSettleSumUpResult =
   | { success: false; status: "FAILED" | "EXPIRED"; transactionCode?: string }
   | { success: false; error: string; statusCode: number };
 
-export async function verifyAndSettleSumUpCheckout({
-  orderNumber,
-  checkoutId,
-  applePayToken,
-  checkedBy = "sumup",
-  userIstid,
-}: VerifyAndSettleSumUpOptions): Promise<VerifyAndSettleSumUpResult> {
-  const session = await getCheckoutSession(orderNumber);
+type SumUpCheckOutcome =
+  | { kind: "paid"; transactionCode?: string }
+  | { kind: "pending"; status: string }
+  | { kind: "failed"; status: "FAILED" | "EXPIRED"; transactionCode?: string }
+  | { kind: "error"; error: string; statusCode: number };
 
-  if (session) {
-    if (session.user_istid && userIstid && session.user_istid !== userIstid) {
-      return { success: false, error: "Not order owner", statusCode: 403 };
-    }
-
-    if (applePayToken) {
-      const amount = Math.round(Number(session.total_amount) * 100) / 100;
-      const result = await fetch(`https://api.sumup.com/v0.1/checkouts/${checkoutId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${process.env.SUMUP_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          payment_type: "apple_pay",
-          id: checkoutId,
-          amount,
-          currency: "EUR",
-          apple_pay: { token: applePayToken },
-        }),
-      });
-
-      if (!result.ok) {
-        return { success: false, error: "Apple Pay processing failed", statusCode: result.status };
-      }
-    }
-
-    let checkout: SumUpCheckout;
-    try {
-      checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
-    } catch (err) {
-      const status = getErrorStatus(err);
-      const msg = err instanceof Error ? err.message : "Failed to retrieve SumUp checkout";
-      return { success: false, error: msg, statusCode: status };
-    }
-
-    if (checkout.id && String(checkout.id) !== checkoutId)
-      return { success: false, error: "Checkout id mismatch", statusCode: 400 };
-
-    if (checkout.currency && checkout.currency.toUpperCase() !== "EUR")
-      return { success: false, error: "Payment currency mismatch", statusCode: 400 };
-
-    const expectedAmountCents = Math.round(Number(session.total_amount) * 100);
-    const actualAmountCents = Math.round(Number(checkout.amount) * 100);
-    if (actualAmountCents !== expectedAmountCents)
-      return { success: false, error: "Payment amount mismatch", statusCode: 400 };
-
-    if (session.reference && session.reference !== checkoutId)
-      return { success: false, error: "Payment session does not match order", statusCode: 400 };
-
-    const status = String(checkout.status ?? "")
-      .trim()
-      .toUpperCase();
-
-    if (status === "FAILED" || status === "EXPIRED") {
-      /* Keep the Redis session and stock hold so the customer can switch to a
-      reservation/pay-later order without losing the item. */
-      return { success: false, status, transactionCode: checkout.transaction_code };
-    }
-
-    if (status === "PAID") {
-      const reference = String(checkout.transaction_code || checkoutId).trim();
-      const createdOrder = await promoteRedisCheckoutSession(
-        session,
-        reference,
-        applePayToken ? "apple-pay" : undefined
-      );
-
-      if (!createdOrder)
-        return { success: false, error: "Failed to promote order to database", statusCode: 500 };
-
-      return {
-        success: true,
-        status: "PAID",
-        reference,
-        alreadyProcessed: false,
-        orderNumber: createdOrder.order_number,
-      };
-    }
-
-    return { success: true, status, pending: true };
-  }
-
-  const order = await getOrderByNumber(orderNumber);
-  if (!order) return { success: false, error: "Order not found", statusCode: 404 };
-
-  if (order.user_istid && userIstid && order.user_istid !== userIstid)
-    return { success: false, error: "Not order owner", statusCode: 403 };
-
-  if (["paid", "ready", "delivered"].includes(order.status)) {
-    return {
-      success: true,
-      status: "PAID",
-      reference: order.payment_reference ?? checkoutId,
-      alreadyProcessed: true,
-      orderNumber: order.order_number,
-    };
-  }
+async function authorizeAndCheckSumUpCheckout(params: {
+  checkoutId: string;
+  expectedAmount: number;
+  expectedReference?: string | null;
+  applePayToken?: ApplePayPaymentToken;
+}): Promise<SumUpCheckOutcome> {
+  const { checkoutId, expectedAmount, expectedReference, applePayToken } = params;
 
   if (applePayToken) {
-    const amount = Math.round(Number(order.total_amount) * 100) / 100;
+    const amount = Math.round(expectedAmount * 100) / 100;
     const result = await fetch(`https://api.sumup.com/v0.1/checkouts/${checkoutId}`, {
       method: "PUT",
       headers: {
@@ -277,61 +187,179 @@ export async function verifyAndSettleSumUpCheckout({
       }),
     });
 
-    if (!result.ok) {
-      return { success: false, error: "Apple Pay processing failed", statusCode: result.status };
-    }
+    if (!result.ok)
+      return {
+        kind: "error",
+        error: "Apple Pay processing failed",
+        statusCode: result.status,
+      };
   }
 
   let checkout: SumUpCheckout;
   try {
     checkout = await withSumUp((client) => client.checkouts.get(checkoutId));
   } catch (err) {
-    const status = getErrorStatus(err);
-    const msg = err instanceof Error ? err.message : "Failed to retrieve SumUp checkout";
-    return { success: false, error: msg, statusCode: status };
+    return {
+      kind: "error",
+      error: err instanceof Error ? err.message : "Failed to retrieve SumUp checkout",
+      statusCode: getErrorStatus(err),
+    };
   }
+
+  if (checkout.id && String(checkout.id) !== checkoutId)
+    return { kind: "error", error: "Checkout id mismatch", statusCode: 400 };
+
+  if (checkout.currency && checkout.currency.toUpperCase() !== "EUR")
+    return {
+      kind: "error",
+      error: "Payment currency mismatch",
+      statusCode: 400,
+    };
+
+  const expectedAmountCents = Math.round(expectedAmount * 100);
+  const actualAmountCents = Math.round(Number(checkout.amount) * 100);
+  if (actualAmountCents !== expectedAmountCents)
+    return { kind: "error", error: "Payment amount mismatch", statusCode: 400 };
+
+  if (expectedReference && expectedReference !== checkoutId)
+    return {
+      kind: "error",
+      error: "Payment session does not match order",
+      statusCode: 400,
+    };
 
   const status = String(checkout.status ?? "")
     .trim()
     .toUpperCase();
 
-  if (checkout.id && String(checkout.id) !== checkoutId)
-    return { success: false, error: "Checkout id mismatch", statusCode: 400 };
-
-  if (checkout.currency && checkout.currency.toUpperCase() !== "EUR")
-    return { success: false, error: "Payment currency mismatch", statusCode: 400 };
-
-  const expectedAmountCents = Math.round(Number(order.total_amount) * 100);
-  const actualAmountCents = Math.round(Number(checkout.amount) * 100);
-  if (actualAmountCents !== expectedAmountCents)
-    return { success: false, error: "Payment amount mismatch", statusCode: 400 };
-
-  if (order.payment_reference && order.payment_reference !== checkoutId)
-    return { success: false, error: "Payment session does not match order", statusCode: 400 };
-
   if (status === "FAILED" || status === "EXPIRED")
-    return { success: false, status, transactionCode: checkout.transaction_code };
+    return {
+      kind: "failed",
+      status,
+      transactionCode: checkout.transaction_code,
+    };
 
-  if (status === "PAID") {
-    const reference = String(checkout.transaction_code || checkoutId).trim();
-    const result = await finalizePaidOrder({
-      orderNumber: order.order_number,
-      paymentReference: reference,
-      paymentCheckedBy: checkedBy,
-      paymentMethod: applePayToken ? "apple-pay" : (order.payment_method ?? "sumup"),
+  if (status === "PAID") return { kind: "paid", transactionCode: checkout.transaction_code };
+
+  return { kind: "pending", status };
+}
+
+export async function verifyAndSettleSumUpCheckout({
+  orderNumber,
+  checkoutId,
+  applePayToken,
+  checkedBy = "sumup",
+  userIstid,
+}: VerifyAndSettleSumUpOptions): Promise<VerifyAndSettleSumUpResult> {
+  const session = await getCheckoutSession(orderNumber);
+
+  if (session) {
+    if (session.user_istid && userIstid && session.user_istid !== userIstid)
+      return { success: false, error: "Not order owner", statusCode: 403 };
+
+    const outcome = await authorizeAndCheckSumUpCheckout({
+      checkoutId,
+      expectedAmount: Number(session.total_amount),
+      expectedReference: session.reference,
+      applePayToken,
     });
 
-    if (!result.success)
-      return { success: false, error: result.error, statusCode: result.statusCode };
+    if (outcome.kind === "error")
+      return {
+        success: false,
+        error: outcome.error,
+        statusCode: outcome.statusCode,
+      };
+
+    if (outcome.kind === "failed")
+      return {
+        success: false,
+        status: outcome.status,
+        transactionCode: outcome.transactionCode,
+      };
+
+    if (outcome.kind === "pending") return { success: true, status: outcome.status, pending: true };
+
+    const reference = String(outcome.transactionCode || checkoutId).trim();
+    const createdOrder = await promoteRedisCheckoutSession(
+      session,
+      reference,
+      applePayToken ? "apple-pay" : undefined
+    );
+    if (!createdOrder)
+      return {
+        success: false,
+        error: "Failed to promote order to database",
+        statusCode: 500,
+      };
 
     return {
       success: true,
       status: "PAID",
       reference,
-      alreadyProcessed: result.alreadyProcessed ?? false,
-      orderNumber: order.order_number,
+      alreadyProcessed: false,
+      orderNumber: createdOrder.order_number,
     };
   }
 
-  return { success: true, status, pending: true };
+  const order = await getOrderByNumber(orderNumber);
+  if (!order) return { success: false, error: "Order not found", statusCode: 404 };
+
+  if (order.user_istid && userIstid && order.user_istid !== userIstid)
+    return { success: false, error: "Not order owner", statusCode: 403 };
+
+  if (["paid", "ready", "delivered"].includes(order.status))
+    return {
+      success: true,
+      status: "PAID",
+      reference: order.payment_reference ?? checkoutId,
+      alreadyProcessed: true,
+      orderNumber: order.order_number,
+    };
+
+  const outcome = await authorizeAndCheckSumUpCheckout({
+    checkoutId,
+    expectedAmount: Number(order.total_amount),
+    expectedReference: order.payment_reference,
+    applePayToken,
+  });
+
+  if (outcome.kind === "error")
+    return {
+      success: false,
+      error: outcome.error,
+      statusCode: outcome.statusCode,
+    };
+
+  if (outcome.kind === "failed")
+    return {
+      success: false,
+      status: outcome.status,
+      transactionCode: outcome.transactionCode,
+    };
+
+  if (outcome.kind === "pending") return { success: true, status: outcome.status, pending: true };
+
+  const reference = String(outcome.transactionCode || checkoutId).trim();
+  const result = await finalizePaidOrder({
+    orderNumber: order.order_number,
+    paymentReference: reference,
+    paymentCheckedBy: checkedBy,
+    paymentMethod: applePayToken ? "apple-pay" : (order.payment_method ?? "sumup"),
+  });
+
+  if (!result.success)
+    return {
+      success: false,
+      error: result.error,
+      statusCode: result.statusCode,
+    };
+
+  return {
+    success: true,
+    status: "PAID",
+    reference,
+    alreadyProcessed: result.alreadyProcessed ?? false,
+    orderNumber: order.order_number,
+  };
 }

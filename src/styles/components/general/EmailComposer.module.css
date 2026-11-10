@@ -5,6 +5,12 @@
   width: 100%;
 }
 
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .sectionHeader {
   display: flex;
   align-items: center;

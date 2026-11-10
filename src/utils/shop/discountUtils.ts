@@ -1,3 +1,5 @@
+import { parseDbNumeric } from "@/utils/shop/moneyUtils";
+
 export interface DiscountCartItem {
   product_id: number;
   variant_id?: number | null;
@@ -36,5 +38,17 @@ export async function validateDiscount({
   if (!response.ok)
     throw new Error(data?.error || "Não foi possível validar o código de desconto.");
 
-  return data ?? { valid: false, error: "Não foi possível validar o código de desconto." };
+  if (!data)
+    return {
+      valid: false,
+      error: "Não foi possível validar o código de desconto.",
+    };
+
+  return {
+    ...data,
+    discount_value:
+      data.discount_value !== undefined ? parseDbNumeric(data.discount_value) : undefined,
+    discount_amount:
+      data.discount_amount !== undefined ? parseDbNumeric(data.discount_amount) : undefined,
+  };
 }

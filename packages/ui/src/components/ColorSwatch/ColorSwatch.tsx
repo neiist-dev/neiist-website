@@ -15,6 +15,7 @@ export function ColorSwatch({
   size = "md",
   onClick,
   className,
+  style,
   ariaLabel,
   ref,
   ...props
@@ -24,7 +25,7 @@ export function ColorSwatch({
       ref={ref}
       type="button"
       className={cn(styles.swatch, styles[size], active && styles.active, className)}
-      style={{ backgroundColor: color }}
+      style={{ ...style, backgroundColor: color }}
       onClick={onClick}
       aria-label={ariaLabel || color}
       {...props}

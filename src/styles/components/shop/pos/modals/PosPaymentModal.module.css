@@ -1,0 +1,46 @@
+.headerTotalValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-colour, #0070f3);
+}
+
+.shortcutLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.changeAmount {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-feature-settings: "tnum";
+}
+
+.centerText {
+  text-align: center;
+}
+
+.dangerBorderCard {
+  border-color: #ef4444;
+}
+
+.dangerTextCenter {
+  color: #ef4444;
+  text-align: center;
+}
+
+.timerBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.processingStack {
+  padding: 2rem 0;
+}
+
+.successStack {
+  padding: 1.5rem 0;
+  text-align: center;
+}

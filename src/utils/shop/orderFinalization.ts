@@ -10,7 +10,7 @@ import {
   getProductNoCache,
   validateDiscountCode,
 } from "@/lib/db/repositories/shop.repository";
-import { EventHookJob, CheckoutSessionData } from "@/types/redis";
+import { EventHookJob, CheckoutSessionData, StockRequestItem } from "@/types/redis";
 import { enqueueStreamJob, scheduleDelayedJob } from "@/lib/redis/queue";
 import {
   getStatusLabel,
@@ -23,7 +23,7 @@ import { getActivityByIdNoCache, signUpToEvent } from "@/lib/db/repositories/eve
 import { PaymentMethod } from "@/types/shop/payment";
 import type { Order, CreateOrderPaymentInput } from "@/types/shop/order";
 import type { Product, ProductChannel } from "@/types/shop/product";
-import { lineTotalMoney, addMoney, unitPriceMoney, subtractMoney } from "@/utils/shop/moneyUtils";
+import { lineTotalMoney, addMoney, subtractMoney } from "@/utils/shop/moneyUtils";
 
 export interface BuildOrderPaymentParams {
   method?: PaymentMethod | null;
@@ -69,36 +69,48 @@ async function createOrderFromCheckoutSession(
   });
 }
 
+async function promoteCheckoutSession(
+  session: CheckoutSessionData,
+  payment?: CreateOrderPaymentInput,
+  onCreated?: (_order: Order) => Promise<void>
+): Promise<Order | null> {
+  const { discardCheckoutSession } = await import("@/lib/redis/sessions");
+  const { revalidatePath } = await import("next/cache");
+
+  const createdOrder = await createOrderFromCheckoutSession(session, payment);
+  if (!createdOrder) return null;
+
+  // The PostgreSQL order now owns the stock; release the Redis hold.
+  await discardCheckoutSession(session.order_number);
+  if (onCreated) await onCreated(createdOrder);
+
+  revalidatePath("/orders");
+  revalidatePath("/my-orders");
+  return createdOrder;
+}
+
 export async function promoteRedisCheckoutSession(
   session: CheckoutSessionData,
   reference: string,
   paymentMethodOverride?: PaymentMethod
 ): Promise<Order | null> {
-  const { discardCheckoutSession } = await import("@/lib/redis/sessions");
-  const { revalidatePath } = await import("next/cache");
-
   const effectiveMethod = paymentMethodOverride ?? session.payment_method;
+  if (!effectiveMethod) return null;
 
-  const createdOrder = await createOrderFromCheckoutSession(session, {
-    method: effectiveMethod,
-    status: "successful",
-    reference,
-    amount: session.total_amount,
-    shift_id: session.shift_id ?? undefined,
-  });
-
-  if (!createdOrder) return null;
-
-  // The PostgreSQL order now owns the stock, release the Redis hold
-  await discardCheckoutSession(session.order_number);
-
-  await enqueueEventTicketHooks(createdOrder);
-  sendOrderPaidEmails(createdOrder, reference);
-
-  revalidatePath("/orders");
-  revalidatePath("/my-orders");
-
-  return createdOrder;
+  return promoteCheckoutSession(
+    session,
+    {
+      method: effectiveMethod,
+      status: "successful",
+      reference,
+      amount: session.total_amount,
+      shift_id: session.shift_id ?? undefined,
+    },
+    async (createdOrder) => {
+      await enqueueEventTicketHooks(createdOrder);
+      sendOrderPaidEmails(createdOrder, reference);
+    }
+  );
 }
 
 /**
@@ -108,23 +120,10 @@ export async function promoteRedisCheckoutSession(
 export async function promoteRedisCheckoutSessionToReservation(
   session: CheckoutSessionData
 ): Promise<Order | null> {
-  const { discardCheckoutSession } = await import("@/lib/redis/sessions");
-  const { revalidatePath } = await import("next/cache");
-
-  const createdOrder = await createOrderFromCheckoutSession(session);
-
-  if (!createdOrder) return null;
-
-  // The PostgreSQL order now owns the stock; release the Redis hold.
-  await discardCheckoutSession(session.order_number);
-
-  await schedulePendingOrderExpiry(createdOrder);
-  await sendPendingOrderEmail(createdOrder);
-
-  revalidatePath("/orders");
-  revalidatePath("/my-orders");
-
-  return createdOrder;
+  return promoteCheckoutSession(session, undefined, async (createdOrder) => {
+    await schedulePendingOrderExpiry(createdOrder);
+    await sendPendingOrderEmail(createdOrder);
+  });
 }
 
 export async function executeEventTicketHook(job: EventHookJob): Promise<void> {
@@ -337,36 +336,38 @@ export async function finalizePaidOrders({
   for (const num of orderNumbers) {
     const ord = await getOrderByNumber(num);
     if (!ord) {
-      return { success: false, error: `Order ${num} not found`, statusCode: 404 };
+      return {
+        success: false,
+        error: `Order ${num} not found`,
+        statusCode: 404,
+      };
     }
     existingOrders.push(ord);
   }
 
-  const alreadySettled = existingOrders.filter((o) => isSettledOrderStatus(o.status));
-  const unsettled = existingOrders.filter((o) => !isSettledOrderStatus(o.status));
+  const alreadySettled = existingOrders.filter((order) => isSettledOrderStatus(order.status));
+  const unsettled = existingOrders.filter((order) => !isSettledOrderStatus(order.status));
 
-  if (unsettled.length === 0) {
+  if (unsettled.length === 0)
     return {
       success: true,
       orders: alreadySettled,
       alreadyProcessed: true,
     };
-  }
 
-  const unsettledNumbers = unsettled.map((o) => o.order_number);
+  const unsettledNumbers = unsettled.map((order) => order.order_number);
   const updatedOrders = await settleOrdersBatch(unsettledNumbers, effectiveMethod, {
     shift_id: resolvedShiftId,
     reference: isCashPayment(effectiveMethod) ? null : reference,
     by: paymentCheckedBy,
   });
 
-  if (!updatedOrders || updatedOrders.length === 0) {
+  if (!updatedOrders || updatedOrders.length === 0)
     return {
       success: false,
       error: "Failed to settle orders",
       statusCode: 500,
     };
-  }
 
   // Trigger post-settlement side effects for each settled order
   for (const ord of updatedOrders) {
@@ -410,44 +411,19 @@ export async function finalizePaidOrder({
   return { success: true, alreadyProcessed: res.alreadyProcessed };
 }
 
-export interface CartItemInput {
-  product_id: number;
-  variant_id?: number | null;
-  quantity?: number;
-  deliver_now?: boolean;
-}
-
-export interface ValidateAndPriceCartItemsOptions {
-  channel?: ProductChannel;
-  userIstid?: string | null;
-  discountCode?: string | null;
-  enforceChannel?: boolean;
-  enforceTicketRules?: boolean;
-}
-
-export interface ValidateAndPriceCartItemsResult {
-  isValid: boolean;
-  error?: string;
-  totalAmount: number;
-  discountAmount: number;
-  finalAmount: number;
-  productsMap: Map<number, Product>;
-  items: Array<{
-    product_id: number;
-    variant_id: number | null;
-    quantity: number;
-    unit_price: number;
-    total_price: number;
-    product_name: string;
-    variant_label?: string | null;
-    deliver_now: boolean;
-  }>;
-}
-
 export async function validateAndPriceCartItems(
-  itemsInput: CartItemInput[],
-  options: ValidateAndPriceCartItemsOptions = {}
-): Promise<ValidateAndPriceCartItemsResult> {
+  itemsInput: StockRequestItem[],
+  options: {
+    channel?: ProductChannel;
+    userIstid?: string | null;
+    discountCode?: string | null;
+    enforceChannel?: boolean;
+    enforceTicketRules?: boolean;
+  } = {}
+): Promise<
+  | { isValid: true; finalAmount: number; productsMap: Map<number, Product> }
+  | { isValid: false; error: string }
+> {
   const {
     channel = "web",
     userIstid = null,
@@ -457,30 +433,14 @@ export async function validateAndPriceCartItems(
   } = options;
 
   if (!itemsInput || itemsInput.length === 0) {
-    return {
-      isValid: false,
-      error: "O carrinho está vazio.",
-      totalAmount: 0,
-      discountAmount: 0,
-      finalAmount: 0,
-      productsMap: new Map(),
-      items: [],
-    };
+    return { isValid: false, error: "O carrinho está vazio." };
   }
 
   const productIds = new Set<number>(itemsInput.map((it) => it.product_id));
   const fetchedProducts = await Promise.all([...productIds].map((id) => getProduct(id)));
 
   if (fetchedProducts.some((p) => p == null)) {
-    return {
-      isValid: false,
-      error: "Produto inválido no pedido.",
-      totalAmount: 0,
-      discountAmount: 0,
-      finalAmount: 0,
-      productsMap: new Map(),
-      items: [],
-    };
+    return { isValid: false, error: "Produto inválido no pedido." };
   }
 
   const productsMap = new Map<number, Product>();
@@ -490,11 +450,6 @@ export async function validateAndPriceCartItems(
       return {
         isValid: false,
         error: `O produto "${p.name}" não está disponível para encomenda no canal ${channel}.`,
-        totalAmount: 0,
-        discountAmount: 0,
-        finalAmount: 0,
-        productsMap: new Map(),
-        items: [],
       };
     }
     productsMap.set(p.id, p);
@@ -507,11 +462,6 @@ export async function validateAndPriceCartItems(
       return {
         isValid: false,
         error: "Bilhetes de eventos não podem ser encomendados juntamente com outros produtos.",
-        totalAmount: 0,
-        discountAmount: 0,
-        finalAmount: 0,
-        productsMap: new Map(),
-        items: [],
       };
     }
 
@@ -521,40 +471,19 @@ export async function validateAndPriceCartItems(
         return {
           isValid: false,
           error: "Apenas é permitido 1 bilhete por utilizador.",
-          totalAmount: 0,
-          discountAmount: 0,
-          finalAmount: 0,
-          productsMap: new Map(),
-          items: [],
         };
       }
     }
   }
 
   let calculatedTotal = 0;
-  const processedItems = [];
-
   for (const it of itemsInput) {
     const prod = productsMap.get(it.product_id)!;
-    const qty = it.quantity ?? 1;
     const variant = it.variant_id
       ? (prod.variants?.find((v) => v.id === it.variant_id) ?? null)
       : null;
-
-    const unitPrice = unitPriceMoney(prod.price, variant?.price_modifier ?? 0);
-    const lineTotal = lineTotalMoney(prod.price, variant?.price_modifier ?? 0, qty);
+    const lineTotal = lineTotalMoney(prod.price, variant?.price_modifier ?? 0, it.quantity ?? 1);
     calculatedTotal = addMoney(calculatedTotal, lineTotal);
-
-    processedItems.push({
-      product_id: it.product_id,
-      variant_id: it.variant_id ?? null,
-      quantity: qty,
-      unit_price: unitPrice,
-      total_price: lineTotal,
-      product_name: prod.name,
-      variant_label: variant?.sku ?? null,
-      deliver_now: Boolean(it.deliver_now),
-    });
   }
 
   let discountAmount = 0;
@@ -574,24 +503,14 @@ export async function validateAndPriceCartItems(
       return {
         isValid: false,
         error: validation?.error || "Invalid discount code.",
-        totalAmount: calculatedTotal,
-        discountAmount: 0,
-        finalAmount: calculatedTotal,
-        productsMap,
-        items: processedItems,
       };
     }
     discountAmount = Math.min(calculatedTotal, Number(validation.discount_amount) || 0);
   }
 
-  const finalAmount = Math.max(0, subtractMoney(calculatedTotal, discountAmount));
-
   return {
     isValid: true,
-    totalAmount: calculatedTotal,
-    discountAmount,
-    finalAmount,
+    finalAmount: Math.max(0, subtractMoney(calculatedTotal, discountAmount)),
     productsMap,
-    items: processedItems,
   };
 }

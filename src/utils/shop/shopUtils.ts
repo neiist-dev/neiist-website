@@ -1,6 +1,7 @@
-import { Product, ProductVariant } from "@/types/shop/product";
+import type { CartItem, Product, ProductVariant } from "@/types/shop/product";
 import { Order, OrderItem } from "@/types/shop/order";
 import { PaymentMethod } from "@/types/shop/payment";
+import { unitPriceMoney, lineTotalMoney, addMoney } from "@/utils/shop/moneyUtils";
 
 /**
  * Converts stored image id or full URL to canonical /api/shop/photo/[id] URL.
@@ -175,7 +176,10 @@ function makeOrderedStorageKey(index: number, key: string): string {
   return `${OPTION_ORDER_PREFIX}${paddedIndex}${OPTION_ORDER_SEPARATOR}${key}`;
 }
 
-function parseOrderedStorageKey(rawKey: string): { index: number; key: string } {
+function parseOrderedStorageKey(rawKey: string): {
+  index: number;
+  key: string;
+} {
   if (!rawKey.startsWith(OPTION_ORDER_PREFIX))
     return { index: Number.MAX_SAFE_INTEGER, key: rawKey };
 
@@ -350,6 +354,12 @@ export function getCampusLocation(campus?: string): string {
   return CAMPUS_LOCATIONS[normalizedCampus] || `banca NEIIST em ${formatCampus(campus)}`;
 }
 
+export function formatTimer(secs: number): string {
+  const m = Math.floor(Math.max(0, secs) / 60);
+  const s = Math.max(0, secs) % 60;
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
 export function getPaymentLabel(
   method: PaymentMethod,
   dict: Record<PaymentMethod, string>
@@ -365,4 +375,61 @@ export function getLocalizedPaymentMethods(
     id: method,
     label: getPaymentLabel(method, dict),
   }));
+}
+
+export function getCartItemVariant(item: CartItem): ProductVariant | undefined {
+  return item.variantId != null
+    ? findItemVariant(item.product, { variant_id: item.variantId })
+    : undefined;
+}
+
+export function getCartItemUnitPrice(item: CartItem): number {
+  return unitPriceMoney(item.product.price, getCartItemVariant(item)?.price_modifier);
+}
+
+export function calculateCartSubtotal(cart: CartItem[]): number {
+  return cart.reduce(
+    (sum, item) =>
+      addMoney(
+        sum,
+        lineTotalMoney(item.product.price, getCartItemVariant(item)?.price_modifier, item.quantity)
+      ),
+    0
+  );
+}
+
+export function toCartOrderItems(cart: CartItem[]) {
+  return cart.map((item) => ({
+    product_id: item.product.id,
+    variant_id: item.variantId ?? null,
+    quantity: item.quantity,
+  }));
+}
+
+export const CHECKOUT_HOLD_STORAGE_KEY = "checkout_hold_v1";
+
+export function clearClientCart(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("cart");
+  window.dispatchEvent(new Event("cartUpdated"));
+}
+
+export async function discardCheckoutHold(orderNumber?: string | null): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    let targetOrder = orderNumber;
+    if (!targetOrder) {
+      const raw = sessionStorage.getItem(CHECKOUT_HOLD_STORAGE_KEY);
+      sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
+      targetOrder = raw ? (JSON.parse(raw) as { orderNumber?: string })?.orderNumber : null;
+    }
+    if (!targetOrder) return;
+    await fetch("/api/shop/checkout/discard", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderNumber: targetOrder }),
+    }).catch(() => {});
+  } catch {
+    // ignore storage/network errors
+  }
 }

@@ -66,44 +66,14 @@
   color: var(--foreground-colour);
 }
 
-.scheduleButton {
+.scheduleAction {
   margin-top: 14px;
-  background: transparent;
-  border: 1px solid var(--primary-colour);
-  color: var(--primary-colour);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-
-.scheduleButton:hover {
-  background: var(--primary-colour);
-  color: #fff;
+  display: flex;
+  justify-content: center;
 }
 
 .actionButtons {
   margin-top: 24px;
   display: flex;
   justify-content: center;
-}
-
-.btnPrimary {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  min-width: 180px;
-  background: var(--primary-colour);
-  color: #fff;
-}
-
-.btnPrimary:hover {
-  filter: opacity(0.8);
 }

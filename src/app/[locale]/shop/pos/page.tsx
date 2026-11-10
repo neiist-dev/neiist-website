@@ -1,33 +1,56 @@
 import { Suspense } from "react";
-import SumUpReadersManagement from "@/components/shop/SumUpReadersManagement";
-import styles from "@/styles/pages/ShopPos.module.css";
-import { requirePermission } from "@/lib/auth";
+import PosDesk from "@/components/shop/pos/PosDesk";
+import {
+  getAllProducts,
+  getAllCategories,
+  getOrderByNumber,
+} from "@/lib/db/repositories/shop.repository";
+import { getAllStations } from "@/lib/db/repositories/pos.repository";
+import { requirePermission, requireUser } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
-import ColorfulText from "@/components/ColorfulText";
+import { Order } from "@/types/shop/order";
 
-async function ShopPosContent({ params }: { params: LocaleParams }) {
-  await requirePermission("shop:write");
+interface PageProps {
+  params: LocaleParams;
+  searchParams: Promise<{ orderNumber?: string; orderId?: string }>;
+}
 
-  const { locale: rawLocale } = await params;
+async function ShopPosContent({ params, searchParams }: PageProps) {
+  const session = await requireUser();
+  await requirePermission("pos:access");
+
+  const [{ locale: rawLocale }, resolvedSearch] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
+  const targetOrderNumber = resolvedSearch.orderNumber || resolvedSearch.orderId;
+
+  const [products, stations, categories, initialPendingOrder] = await Promise.all([
+    getAllProducts("pos"),
+    getAllStations(),
+    getAllCategories(),
+    targetOrderNumber ? getOrderByNumber(String(targetOrderNumber).trim()) : Promise.resolve(null),
+  ]);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <ColorfulText as="h1" className={styles.title} text={dict.shop_pos.title} />
-      </div>
-      <SumUpReadersManagement dict={dict.sumup_readers} />
-    </div>
+    <PosDesk
+      products={products}
+      stations={stations}
+      categories={categories}
+      basePath={`/${locale}`}
+      initialPendingOrder={initialPendingOrder as Order | null}
+      currentUser={session.user}
+      dict={dict.pos}
+      paymentsDict={dict.payments}
+    />
   );
 }
 
-export default function ShopPosPage({ params }: { params: LocaleParams }) {
+export default function ShopPosPage(props: PageProps) {
   return (
     <Suspense fallback={<GlobalLoading />}>
-      <ShopPosContent params={params} />
+      <ShopPosContent {...props} />
     </Suspense>
   );
 }

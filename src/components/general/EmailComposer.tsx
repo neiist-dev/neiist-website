@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Field, Input, Textarea } from "@neiist/ui";
+import { Field, Heading, Input, Stack, Text, Textarea } from "@neiist/ui";
 import { FaEnvelope, FaEye } from "react-icons/fa";
 import { EmailVariableDefinition, renderEmailMarkdownToHtml } from "@/lib/email/baseEmail";
 import styles from "@/styles/components/general/EmailComposer.module.css";
@@ -52,12 +52,12 @@ export default function EmailComposer({
   }, [body, previewVariables]);
 
   return (
-    <div className={`${styles.container} ${className}`}>
+    <Stack direction="column" gap="md" className={className}>
       {sectionTitle && (
-        <div className={styles.sectionHeader}>
+        <Heading level={4} className={styles.sectionTitle}>
           <FaEnvelope className={styles.sectionIcon} />
           <span>{sectionTitle}</span>
-        </div>
+        </Heading>
       )}
 
       <Field label={subjectLabel}>
@@ -81,25 +81,25 @@ export default function EmailComposer({
       </Field>
 
       {variables.length > 0 && (
-        <span className={styles.variablesHint}>
+        <Text size="sm" variant="muted">
           {variablesHintLabel} {variables.map((variable) => `{{${variable.key}}}`).join(", ")}.
-        </span>
+        </Text>
       )}
 
       {previewTitle && (
-        <div className={styles.previewContainer}>
-          <div className={styles.sectionHeader}>
+        <Stack direction="column" gap="sm">
+          <Heading level={4} className={styles.sectionTitle}>
             <FaEye className={styles.sectionIcon} />
             <span>{previewTitle}</span>
-          </div>
+          </Heading>
 
           <article
             className={styles.previewEmail}
             // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- safe: generated with strict HTML escaping
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
-        </div>
+        </Stack>
       )}
-    </div>
+    </Stack>
   );
 }

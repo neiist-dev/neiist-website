@@ -54,6 +54,7 @@ export const STREAM_GROUP = "shop_workers";
 export const DEAD_LETTER_KEY = "orders:hooks:dead_letter";
 export const CALENDAR_SYNC_PENDING_KEY = "events:sync:pending";
 export const CALENDAR_SYNC_LOCK_KEY = "events:sync:lock";
+export const CHECKOUT_HOLD_TTL_SECONDS = 15 * 60;
 
 export interface CheckoutSessionData extends Omit<
   CreateOrderInput,
@@ -62,7 +63,7 @@ export interface CheckoutSessionData extends Omit<
   order_number: string;
   order_source: OrderSource;
   total_amount: number;
-  payment_method: PaymentMethod;
+  payment_method?: PaymentMethod | null;
   items: Array<CreateOrderItemInput | OrderItem>;
   reference?: string;
   shift_id?: string | null;

@@ -28,10 +28,14 @@
   gap: 3rem;
 }
 
-.stackBlock {
+.sectionTitle {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sectionIcon {
+  color: var(--primary-colour);
 }
 
 .row {
@@ -46,33 +50,11 @@
   min-width: 0;
 }
 
-.sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.3rem;
-  color: #3f3f3f;
-  margin-bottom: 0.25rem;
-}
-
-.label {
-  color: #555d6d;
-  font-size: 0.95rem;
-}
-
-.hint {
-  font-size: 0.85rem;
-  color: #555d6d;
-  margin: 0;
-}
-
-.previewCard {
-  margin-top: -0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background-color: #f8f9fa;
+.previewBox {
+  padding: 0.85rem 1rem;
+  background-color: #f8fafc;
   border-radius: 0.6rem;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e2e8f0;
 }
 
 .variantList {
@@ -81,45 +63,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-}
-
-.mbHalfRem {
-  margin-bottom: 0.5rem;
-}
-
-.datePickerWrap {
-  position: relative;
-  width: 100%;
-}
-
-.datePickerPopup {
-  position: absolute;
-  top: auto;
-  bottom: calc(100% + 0.5rem);
-  z-index: 10;
-  background: white;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-  border-radius: 0.6rem;
-  padding: 0.5rem;
-}
-
-.datePickerPopup :global(.rdp-root) {
-  --rdp-accent-color: var(--primary-colour);
-}
-
-.datePickerPanel {
-  overflow-y: auto;
-  background: white;
-  border-radius: 0.6rem;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-  padding: 0.5rem;
-}
-
-.previewEmail {
-  border: 2px solid #d3d7df;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  box-sizing: border-box;
 }
 
 @media (max-width: 1100px) {
@@ -138,18 +81,5 @@
   .row {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .datePickerPopup {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.01);
-    backdrop-filter: blur(2px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
   }
 }

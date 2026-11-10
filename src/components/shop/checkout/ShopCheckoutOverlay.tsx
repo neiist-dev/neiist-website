@@ -8,7 +8,8 @@ import styles from "@/styles/components/shop/checkout/ShopCheckoutOverlay.module
 import PendingPaymentOverlay from "@/components/shop/checkout/PendingPaymentOverlay";
 import { Order } from "@/types/shop/order";
 import { PaymentMethod, isPaymentMethodAllowedForChannel } from "@/types/shop/payment";
-import { useMbWayPayment, formatTimer } from "@/hooks/shop/useMbWayPayment";
+import { useMbWayPayment } from "@/hooks/shop/useMbWayPayment";
+import { clearClientCart, discardCheckoutHold, formatTimer } from "@/utils/shop/shopUtils";
 import { cancelOrderAction } from "@/actions/shop/orders";
 import type {
   SumUpCardInstance,
@@ -33,6 +34,7 @@ interface Props {
   pendingPaymentDict: Dictionary["pending_payment"];
   paymentsDict: Dictionary["payments"];
   onSwitchToReservation: (_orderNumber: string) => Promise<void>;
+  onHoldEnded?: () => void;
   basePath?: string;
 }
 
@@ -47,6 +49,7 @@ export default function ShopCheckoutOverlay({
   pendingPaymentDict,
   paymentsDict,
   onSwitchToReservation,
+  onHoldEnded,
   basePath,
 }: Props) {
   const router = useRouter();
@@ -74,6 +77,7 @@ export default function ShopCheckoutOverlay({
   } = useMbWayPayment({
     messages: paymentsDict.mbway,
     onPaid: () => {
+      onHoldEnded?.();
       setFlowState("success");
     },
     onDeclined: (msg) => {
@@ -137,22 +141,18 @@ export default function ShopCheckoutOverlay({
   const finalizeAndNavigate = useCallback(
     (path?: string) => {
       closeMbWaySse();
-      localStorage.setItem("cart", "[]");
-      window.dispatchEvent(new Event("cartUpdated"));
+      onHoldEnded?.();
+      clearClientCart();
       router.push(path ?? `${basePath || ""}/my-orders`);
     },
-    [router, basePath, closeMbWaySse]
+    [router, basePath, closeMbWaySse, onHoldEnded]
   );
 
   const cancelOrder = useCallback(
     async (targetOrderNumber: string) => {
       try {
         await cancelOrderAction(targetOrderNumber).catch(() => {});
-        await fetch("/api/shop/checkout/discard", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderNumber: targetOrderNumber }),
-        }).catch(() => {});
+        await discardCheckoutHold(targetOrderNumber);
       } catch (err) {
         console.error("cancelOrder error", err);
       } finally {
@@ -205,6 +205,7 @@ export default function ShopCheckoutOverlay({
         }
 
         if (result === "paid") {
+          onHoldEnded?.();
           setFlowState("success");
           return;
         }
@@ -228,7 +229,7 @@ export default function ShopCheckoutOverlay({
         verifyingRef.current = false;
       }
     },
-    [clearAbortTimer, unmountWidget, checkPaymentStatus, dict]
+    [clearAbortTimer, unmountWidget, checkPaymentStatus, dict, onHoldEnded]
   );
 
   // Apple Pay setup
@@ -471,6 +472,7 @@ export default function ShopCheckoutOverlay({
     setError(null);
     try {
       await onSwitchToReservation(target);
+      onHoldEnded?.();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : paymentsDict.reservation.switch_error);
     } finally {
@@ -481,6 +483,7 @@ export default function ShopCheckoutOverlay({
     isFallbackSubmitting,
     closeMbWaySse,
     onSwitchToReservation,
+    onHoldEnded,
     paymentsDict.reservation.switch_error,
   ]);
 
@@ -520,10 +523,7 @@ export default function ShopCheckoutOverlay({
   return (
     <div className={styles.overlay}>
       {isSumUpOrApplePay && (
-        <div
-          className={`${styles.widgetOnly}${
-            flowState === "loading" || flowState === "widget" ? "" : ` ${styles.hidden}`
-          }`}>
+        <div className={`${styles.widgetOnly}${flowState === "widget" ? "" : ` ${styles.hidden}`}`}>
           <div className={styles.widgetContainer}>
             <div id="sumup-card" className={styles.cardElement} />
           </div>
@@ -569,11 +569,23 @@ export default function ShopCheckoutOverlay({
         </div>
       )}
 
-      {(flowState === "processing" || flowState === "success") && (
+      {(flowState === "loading" || flowState === "processing" || flowState === "success") && (
         <Spinner
           state={flowState === "success" ? "success" : "loading"}
-          title={flowState === "success" ? dict.payment_confirmed : dict.verifying_payment}
-          subtitle={flowState === "success" ? dict.order_processed : dict.wait_moment}
+          title={
+            flowState === "success"
+              ? dict.payment_confirmed
+              : flowState === "loading"
+                ? dict.wait_moment
+                : dict.verifying_payment
+          }
+          subtitle={
+            flowState === "success"
+              ? dict.order_processed
+              : flowState === "loading"
+                ? undefined
+                : dict.wait_moment
+          }
           size={flowState === "success" ? 56 : 48}
           actionLabel={flowState === "success" ? dict.view_my_orders : undefined}
           onAction={flowState === "success" ? handleViewOrders : undefined}

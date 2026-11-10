@@ -1,0 +1,63 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem 4rem 4rem;
+  min-height: calc(100vh - 120px);
+  box-sizing: border-box;
+}
+
+.mainLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(380px, 26vw, 480px);
+  gap: 2rem;
+  align-items: start;
+  width: 100%;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 0;
+}
+
+.guardWrapper {
+  margin: 2rem auto;
+  max-width: 480px;
+  width: 100%;
+}
+
+.stationFormCard {
+  width: 100%;
+  min-width: 280px;
+  text-align: left;
+}
+
+@media (max-width: 1024px) {
+  .root {
+    margin: 1.5rem 2rem 3rem;
+  }
+
+  .mainLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .root {
+    margin: 1rem 1.5rem 2rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .root {
+    margin: 1rem 1.25rem 2rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .root {
+    margin: 1rem 0.9rem 2rem;
+  }
+}

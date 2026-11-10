@@ -1,0 +1,29 @@
+.ordersList {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.orderItem {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.orderItem:hover {
+  border-color: var(--primary-colour);
+}
+
+.orderItemActive {
+  border-color: var(--primary-colour);
+  background-color: var(--background-colour-hover);
+}
+
+.details {
+  flex: 1;
+}
+
+.orderTotal {
+  font-size: 1.05rem;
+  color: var(--primary-colour);
+}

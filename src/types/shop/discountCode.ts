@@ -89,6 +89,36 @@ export interface DiscountValidationResult {
   error?: string | null;
 }
 
+export interface dbDiscountValidationResult {
+  is_valid: boolean;
+  discount_code_id?: number | null;
+  discount_code?: string | null;
+  discount_type?: string | null;
+  discount_value?: string | number | null;
+  discount_amount?: string | number | null;
+  error?: string | null;
+}
+
+export function mapdbDiscountValidationResult(
+  row: dbDiscountValidationResult
+): DiscountValidationResult {
+  return {
+    is_valid: Boolean(row.is_valid),
+    discount_code_id: row.discount_code_id ?? null,
+    discount_code: row.discount_code ?? null,
+    discount_type: (row.discount_type as DiscountType | null) ?? null,
+    discount_value:
+      row.discount_value !== null && row.discount_value !== undefined
+        ? parseDbNumeric(row.discount_value)
+        : null,
+    discount_amount:
+      row.discount_amount !== null && row.discount_amount !== undefined
+        ? parseDbNumeric(row.discount_amount)
+        : null,
+    error: row.error ?? null,
+  };
+}
+
 export function mapdbDiscountCodeToDiscountCode(row: dbDiscountCode): DiscountCode {
   return {
     id: row.id,

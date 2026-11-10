@@ -1,28 +1,37 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo, ReactNode } from "react";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
-import { FaPlus, FaTicketAlt, FaArrowLeft } from "react-icons/fa";
+import { useMemo, useState } from "react";
+import { FaArrowLeft, FaPlus, FaTicketAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { pt } from "date-fns/locale";
 import {
   Alert,
-  MultiSelect,
-  Field,
-  Input,
-  Select,
-  Textarea,
   Button,
   ColorfulText,
+  DateInput,
+  Field,
+  Heading,
+  Input,
+  MultiSelect,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  type MultiSelectOption,
 } from "@neiist/ui";
 import { Product } from "@/types/shop/product";
 import { User } from "@/types/user";
 import { DiscountType } from "@/types/shop/discountCode";
 import { createDiscountBulkAction } from "@/actions/shop/discounts";
-import styles from "@/styles/components/shop/manage/modals/DiscountCodeForm.module.css";
 import EmailComposer from "@/components/general/EmailComposer";
-import { getDefaultDiscountEmailIntroLine } from "@/lib/email/templates/discounts";
+import {
+  formatDiscountExpiryLabel,
+  formatDiscountValueLabel,
+  getDefaultDiscountEmailIntroLine,
+} from "@/lib/email/templates/discounts";
+import { formatMoney } from "@/utils/shop/moneyUtils";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/shop/manage/modals/DiscountCodeForm.module.css";
 
 interface DiscountCodeEditorProps {
   users: User[];
@@ -32,11 +41,11 @@ interface DiscountCodeEditorProps {
 }
 
 type CreationDraft = {
-  selectedRecipients: string[];
+  selectedUserIstids: string[];
   externalEmails: string;
   discount_type: DiscountType;
   discount_value: string;
-  selectedProducts: string[];
+  selectedProductIds: string[];
   maxUses: string;
   expiresAt?: Date;
   emailSubject: string;
@@ -51,33 +60,16 @@ const PREVIEW_RECIPIENT = {
 
 function emptyCreationDraft(dict: Dictionary["discount_codes"]["form"]): CreationDraft {
   return {
-    selectedRecipients: [],
+    selectedUserIstids: [],
     externalEmails: "",
     discount_type: "percentage",
     discount_value: "",
-    selectedProducts: [],
+    selectedProductIds: [],
     maxUses: "1",
     expiresAt: undefined,
     emailSubject: dict.default_email_subject,
     emailIntroLine: getDefaultDiscountEmailIntroLine().trim(),
   };
-}
-
-function buildProductOption(product: Product): string {
-  return product.name;
-}
-
-function formatUserLabel(user: User): string {
-  return `${user.email} • ${user.istid}`;
-}
-
-function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
-  return (
-    <div className={styles.sectionTitle}>
-      <span className={styles.sectionIcon}>{icon}</span>
-      <span>{children}</span>
-    </div>
-  );
 }
 
 export default function DiscountCodeForm({
@@ -89,87 +81,93 @@ export default function DiscountCodeForm({
   const router = useRouter();
   const [creationDraft, setCreationDraft] = useState<CreationDraft>(() => emptyCreationDraft(dict));
   const [isCreating, setIsCreating] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const datePickerRef = useRef<HTMLDivElement>(null);
 
-  const productOptions = products.map(buildProductOption);
-  const productIdByLabel = new Map(products.map((p) => [buildProductOption(p), p.id]));
+  const userOptions = useMemo<MultiSelectOption[]>(
+    () =>
+      users.map((user) => ({
+        value: user.istid,
+        label: user.name,
+        subtitle: `${user.email} • ${user.istid}`,
+        avatar: user.photo,
+      })),
+    [users]
+  );
 
-  const userOptions = useMemo(() => users.map(formatUserLabel), [users]);
-  const userByLabel = useMemo(() => new Map(users.map((u) => [formatUserLabel(u), u])), [users]);
+  const userByIstid = useMemo(() => new Map(users.map((u) => [u.istid, u])), [users]);
+
+  const productOptions = useMemo<MultiSelectOption[]>(
+    () =>
+      products.map((product) => ({
+        value: String(product.id),
+        label: product.name,
+      })),
+    [products]
+  );
 
   const previewRecipient = useMemo(() => {
-    const firstRecipient = creationDraft.selectedRecipients[0];
-    const firstRecipientUser = firstRecipient ? userByLabel.get(firstRecipient) : null;
-    return firstRecipientUser
+    const firstIstid = creationDraft.selectedUserIstids[0];
+    const firstUser = firstIstid ? userByIstid.get(firstIstid) : null;
+    return firstUser
       ? {
-          name: firstRecipientUser.name,
-          istid: firstRecipientUser.istid,
-          email: firstRecipientUser.email,
+          name: firstUser.name,
+          istid: firstUser.istid,
+          email: firstUser.email,
         }
       : PREVIEW_RECIPIENT;
-  }, [creationDraft.selectedRecipients, userByLabel]);
+  }, [creationDraft.selectedUserIstids, userByIstid]);
 
-  const discountVariables = useMemo(
-    () => [
-      { key: "name", sampleValue: previewRecipient.name || "Nome" },
-      { key: "istid", sampleValue: previewRecipient.istid || "ist110000" },
+  const discountVariables = useMemo(() => {
+    const numVal = Number(creationDraft.discount_value) || 0;
+    const expiryIso = creationDraft.expiresAt ? creationDraft.expiresAt.toISOString() : null;
+    return [
+      {
+        key: "name",
+        sampleValue: previewRecipient.name || PREVIEW_RECIPIENT.name,
+      },
+      {
+        key: "istid",
+        sampleValue: previewRecipient.istid || PREVIEW_RECIPIENT.istid,
+      },
       { key: "code", sampleValue: "K9X2A1" },
       {
         key: "discount",
-        sampleValue:
-          creationDraft.discount_type === "percentage"
-            ? `${creationDraft.discount_value || "0"}%`
-            : `€${creationDraft.discount_value || "0.00"}`,
+        sampleValue: formatDiscountValueLabel(creationDraft.discount_type, numVal),
       },
       {
         key: "expiry",
-        sampleValue: creationDraft.expiresAt
-          ? creationDraft.expiresAt.toLocaleDateString("pt-PT")
-          : "sem limite",
+        sampleValue: formatDiscountExpiryLabel(expiryIso),
       },
-    ],
-    [
-      previewRecipient,
-      creationDraft.discount_type,
-      creationDraft.discount_value,
-      creationDraft.expiresAt,
-    ]
-  );
+    ];
+  }, [
+    previewRecipient,
+    creationDraft.discount_type,
+    creationDraft.discount_value,
+    creationDraft.expiresAt,
+  ]);
 
-  useEffect(() => {
-    const handler = (event: MouseEvent) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node))
-        setShowDatePicker(false);
-    };
-
-    if (showDatePicker) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showDatePicker]);
-
-  const renderDiscountPreview = (
-    type: DiscountType,
-    value: string,
-    selectedProductsList: string[]
-  ) => {
+  const pricePreview = useMemo(() => {
     if (products.length === 0) return null;
-    const label = selectedProductsList.length > 0 ? selectedProductsList[0] : productOptions[0];
-    const productId = label ? productIdByLabel.get(label) : null;
-    const product = products.find((p) => p.id === productId) || products[0];
+    const selectedId = creationDraft.selectedProductIds[0]
+      ? Number(creationDraft.selectedProductIds[0])
+      : null;
+    const product = products.find((p) => p.id === selectedId) || products[0];
 
-    const numVal = Number(value) || 0;
+    const numVal = Number(creationDraft.discount_value) || 0;
     const calcPrice = (orig: number) =>
-      Math.max(0, type === "percentage" ? orig * (1 - numVal / 100) : orig - numVal);
+      Math.max(
+        0,
+        creationDraft.discount_type === "percentage" ? orig * (1 - numVal / 100) : orig - numVal
+      );
 
     const baseOriginal = product.price;
     const baseNew = calcPrice(baseOriginal);
 
     const variantsByPrice = new Map<number, string[]>();
-    let hasVariantsWithDifferentPrices = false;
+    let hasVariantDifferences = false;
 
     (product.variants || []).forEach((variant) => {
       const mod = Number(variant.price_modifier) || 0;
-      if (mod !== 0) hasVariantsWithDifferentPrices = true;
+      if (mod !== 0) hasVariantDifferences = true;
       const variantName = Object.values(variant.options || {}).join(" ") || `Var ${variant.id}`;
       const existing = variantsByPrice.get(mod) || [];
       existing.push(variantName);
@@ -177,37 +175,49 @@ export default function DiscountCodeForm({
     });
 
     return (
-      <div className={styles.previewCard}>
-        <div className={hasVariantsWithDifferentPrices ? styles.mbHalfRem : undefined}>
-          <strong>{product.name}:</strong>{" "}
-          {hasVariantsWithDifferentPrices ? dict.preview_base_price : dict.preview_will_go_from}
-          {baseOriginal.toFixed(2)}€ {dict.preview_to} <strong>{baseNew.toFixed(2)}€</strong>.
-        </div>
-        {hasVariantsWithDifferentPrices && (
-          <ul className={styles.variantList}>
-            {Array.from(variantsByPrice.entries())
-              .sort(([modA], [modB]) => modA - modB)
-              .map(([mod, names]) => {
-                const variantOriginal = baseOriginal + mod;
-                const variantNew = calcPrice(variantOriginal);
-                return (
-                  <li key={mod}>
-                    {names.join(", ")}: {variantOriginal.toFixed(2)}€ {dict.preview_to}{" "}
-                    <strong>{variantNew.toFixed(2)}€</strong>
-                  </li>
-                );
-              })}
-          </ul>
-        )}
+      <div className={styles.previewBox}>
+        <Stack direction="column" gap="sm">
+          <Text size="sm">
+            <strong>{product.name}:</strong>{" "}
+            {hasVariantDifferences ? dict.preview_base_price : dict.preview_will_go_from}
+            {formatMoney(baseOriginal)} {dict.preview_to} <strong>{formatMoney(baseNew)}</strong>.
+          </Text>
+          {hasVariantDifferences && (
+            <ul className={styles.variantList}>
+              {Array.from(variantsByPrice.entries())
+                .sort(([modA], [modB]) => modA - modB)
+                .map(([mod, names]) => {
+                  const variantOriginal = baseOriginal + mod;
+                  const variantNew = calcPrice(variantOriginal);
+                  return (
+                    <li key={mod}>
+                      <Text size="sm" variant="muted">
+                        {names.join(", ")}: {formatMoney(variantOriginal)} {dict.preview_to}{" "}
+                        <strong>{formatMoney(variantNew)}</strong>
+                      </Text>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+        </Stack>
       </div>
     );
-  };
+  }, [
+    products,
+    creationDraft.selectedProductIds,
+    creationDraft.discount_value,
+    creationDraft.discount_type,
+    dict.preview_base_price,
+    dict.preview_will_go_from,
+    dict.preview_to,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const selectedUsers = creationDraft.selectedRecipients
-      .map((item) => userByLabel.get(item))
+    const selectedUsers = creationDraft.selectedUserIstids
+      .map((istid) => userByIstid.get(istid))
       .filter((user): user is User => Boolean(user))
       .map((user) => ({
         name: user.name,
@@ -230,10 +240,8 @@ export default function DiscountCodeForm({
     const maxUses = Number(creationDraft.maxUses);
     const expiresAt = creationDraft.expiresAt ? creationDraft.expiresAt.toISOString() : undefined;
 
-    const validProductIds = creationDraft.selectedProducts.length
-      ? creationDraft.selectedProducts
-          .map((item) => productIdByLabel.get(item) ?? null)
-          .filter((item): item is number => item !== null)
+    const validProductIds = creationDraft.selectedProductIds.length
+      ? creationDraft.selectedProductIds.map(Number).filter((id) => Number.isFinite(id))
       : null;
 
     if (recipients.length === 0) {
@@ -297,33 +305,37 @@ export default function DiscountCodeForm({
         <header className={styles.header}>
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
+            color="neutral"
             onClick={() => router.push(backHref || "/shop/manage/discounts")}>
             <FaArrowLeft /> {dict.back}
           </Button>
           <ColorfulText as="h1" className={styles.title} text={dict.title} />
-          <Button variant="primary" type="submit" disabled={isCreating}>
+          <Button variant="primary" type="submit" loading={isCreating} disabled={isCreating}>
             <FaPlus /> {isCreating ? dict.generating : dict.generate_btn}
           </Button>
         </header>
 
         <div className={styles.grid}>
           <div className={styles.sectionCol}>
-            <div className={styles.stackBlock}>
-              <SectionTitle icon={<FaTicketAlt />}>{dict.section_discount}</SectionTitle>
+            <Stack direction="column" gap="md">
+              <Heading level={4} className={styles.sectionTitle}>
+                <FaTicketAlt className={styles.sectionIcon} />
+                <span>{dict.section_discount}</span>
+              </Heading>
 
               <Field label={dict.users_label}>
                 <MultiSelect
-                  items={userOptions}
-                  multiSelect={true}
-                  selectedItems={creationDraft.selectedRecipients}
+                  availableItems={userOptions}
+                  selectedItems={creationDraft.selectedUserIstids}
                   onChange={(items) =>
                     setCreationDraft((prev) => ({
                       ...prev,
-                      selectedRecipients: items,
+                      selectedUserIstids: items,
                     }))
                   }
                   placeholder={dict.users_placeholder}
+                  mobileDrawerTitle={dict.users_label}
                 />
               </Field>
 
@@ -376,11 +388,7 @@ export default function DiscountCodeForm({
                 </Field>
               </div>
 
-              {renderDiscountPreview(
-                creationDraft.discount_type,
-                creationDraft.discount_value,
-                creationDraft.selectedProducts
-              )}
+              {pricePreview}
 
               <div className={styles.row}>
                 <Field label={dict.max_uses_label}>
@@ -399,78 +407,55 @@ export default function DiscountCodeForm({
                 </Field>
 
                 <Field label={dict.expiration_label}>
-                  <div className={styles.datePickerWrap} ref={datePickerRef}>
-                    <Input
-                      type="text"
-                      value={creationDraft.expiresAt?.toLocaleDateString("pt-PT") ?? ""}
-                      placeholder={dict.no_limit}
-                      readOnly
-                      onClick={() => setShowDatePicker((prev) => !prev)}
-                    />
-                    {showDatePicker && (
-                      <div
-                        className={styles.datePickerPopup}
-                        onClick={(e) => {
-                          if (e.target === e.currentTarget) setShowDatePicker(false);
-                        }}>
-                        <div className={styles.datePickerPanel}>
-                          <DayPicker
-                            mode="single"
-                            selected={creationDraft.expiresAt}
-                            onSelect={(date) => {
-                              setCreationDraft((prev) => ({
-                                ...prev,
-                                expiresAt: date,
-                              }));
-                              setShowDatePicker(false);
-                            }}
-                            weekStartsOn={1}
-                            captionLayout="dropdown"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <DateInput
+                    value={creationDraft.expiresAt}
+                    onChange={(date) =>
+                      setCreationDraft((prev) => ({
+                        ...prev,
+                        expiresAt: date,
+                      }))
+                    }
+                    placeholder={dict.no_limit}
+                    mobileDrawerTitle={dict.expiration_label}
+                    locale={pt}
+                  />
                 </Field>
               </div>
 
               <Field label={dict.valid_products_label}>
                 <MultiSelect
                   availableItems={productOptions}
-                  selectedItems={creationDraft.selectedProducts}
+                  selectedItems={creationDraft.selectedProductIds}
                   onChange={(items) =>
                     setCreationDraft((prev) => ({
                       ...prev,
-                      selectedProducts: items,
+                      selectedProductIds: items,
                     }))
                   }
                   placeholder={dict.valid_products_placeholder}
+                  mobileDrawerTitle={dict.valid_products_label}
                 />
               </Field>
-            </div>
+            </Stack>
           </div>
 
           <div className={styles.sectionCol}>
-            <div className={styles.stackBlock}>
-              <EmailComposer
-                subject={creationDraft.emailSubject}
-                onSubjectChange={(val) =>
-                  setCreationDraft((prev) => ({ ...prev, emailSubject: val }))
-                }
-                body={creationDraft.emailIntroLine}
-                onBodyChange={(val) =>
-                  setCreationDraft((prev) => ({ ...prev, emailIntroLine: val }))
-                }
-                variables={discountVariables}
-                subjectLabel={dict.email_subject_label}
-                subjectPlaceholder={dict.default_email_subject}
-                bodyLabel={dict.email_body_label}
-                bodyPlaceholder={dict.email_body_placeholder}
-                sectionTitle={dict.section_email}
-                previewTitle={dict.preview_title}
-                variablesHintLabel={dict.email_variables_hint}
-              />
-            </div>
+            <EmailComposer
+              subject={creationDraft.emailSubject}
+              onSubjectChange={(val) =>
+                setCreationDraft((prev) => ({ ...prev, emailSubject: val }))
+              }
+              body={creationDraft.emailIntroLine}
+              onBodyChange={(val) => setCreationDraft((prev) => ({ ...prev, emailIntroLine: val }))}
+              variables={discountVariables}
+              subjectLabel={dict.email_subject_label}
+              subjectPlaceholder={dict.default_email_subject}
+              bodyLabel={dict.email_body_label}
+              bodyPlaceholder={dict.email_body_placeholder}
+              sectionTitle={dict.section_email}
+              previewTitle={dict.preview_title}
+              variablesHintLabel={dict.email_variables_hint}
+            />
           </div>
         </div>
       </form>

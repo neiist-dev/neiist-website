@@ -1,4 +1,5 @@
 import type { User } from "@/types/user";
+import { clearClientCart, discardCheckoutHold } from "@/utils/shop/shopUtils";
 
 export async function searchUsersClient(query: string, signal?: AbortSignal): Promise<User[]> {
   try {
@@ -30,9 +31,9 @@ export const login = (customReturnUrl?: string | unknown) => {
 };
 
 export const logout = async () => {
+  await discardCheckoutHold();
   await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-  localStorage.removeItem("cart");
-  window.dispatchEvent(new Event("cartUpdated"));
+  clearClientCart();
   window.location.href = "/";
 };
 

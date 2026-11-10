@@ -31,6 +31,8 @@ export interface SumUpReader {
     model: string;
     identifier: string;
   };
+  service_account_id?: string;
+  metadata?: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
@@ -184,10 +186,6 @@ export interface ApplePaySessionConstructor {
   canMakePayments(): boolean;
   readonly STATUS_SUCCESS: number;
   readonly STATUS_FAILURE: number;
-}
-
-export interface ApiErrorResponse {
-  error?: string;
 }
 
 declare global {

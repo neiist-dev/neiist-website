@@ -1,0 +1,51 @@
+.metadataGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.875rem;
+  inline-size: 100%;
+}
+
+.selectRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.userSearchWrap {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.externalClientBtn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.userMeta {
+  color: var(--light-foreground-colour);
+  font-size: 0.85em;
+}
+
+@media (max-width: 1200px) {
+  .metadataGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .metadataGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 425px) {
+  .selectRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .externalClientBtn {
+    width: 100%;
+  }
+}

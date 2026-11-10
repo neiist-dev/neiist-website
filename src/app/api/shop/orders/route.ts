@@ -153,7 +153,7 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
   const isReservation = body.is_reservation === true;
-  if (orderSource === "web" && !isReservation)
+  if (!isPos)
     return NextResponse.json(
       { error: "Pagamentos online devem iniciar sessão de checkout." },
       { status: 400 }
@@ -213,17 +213,14 @@ async function resolveAndValidateProducts(
   const fetchedProducts = await Promise.all(productIds.map((id) => getProduct(id)));
 
   if (fetchedProducts.some((p) => p == null))
-    return { error: NextResponse.json({ error: "Produto inválido no pedido" }, { status: 400 }) };
+    return {
+      error: NextResponse.json({ error: "Produto inválido no pedido" }, { status: 400 }),
+    };
 
   const products = fetchedProducts as Product[];
   const orderSource = parseOrderSource(body.order_source);
-  const isPos = orderSource === "pos" || orderSource === "fast-pos";
   const guestCheckout = body.guest_checkout === true;
-  const orderUserIstid = guestCheckout
-    ? undefined
-    : isPos
-      ? body.user_istid || userIstid
-      : userIstid;
+  const orderUserIstid = guestCheckout ? undefined : body.user_istid || userIstid;
 
   const ruleError = validateProductRules(products, items, orderSource, orderUserIstid);
   if (ruleError) return { error: NextResponse.json({ error: ruleError }, { status: 400 }) };
@@ -250,7 +247,9 @@ async function resolveOrderShift(
   if (requiresCounterShift && !resolvedShiftId)
     return {
       error: NextResponse.json(
-        { error: "Turno de caixa ativo obrigatório para efetuar vendas ao balcão." },
+        {
+          error: "Turno de caixa ativo obrigatório para efetuar vendas ao balcão.",
+        },
         { status: 400 }
       ),
     };

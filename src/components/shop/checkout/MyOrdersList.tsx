@@ -9,8 +9,7 @@ import { Order } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
 import { getCompactProductsSummary, findItemVariant, getItemImage } from "@/utils/shop/shopUtils";
 import { getLocalizedOrderStatusLabel } from "@/utils/shop/orderStatusUtils";
-import { ColorfulText } from "@neiist/ui";
-import Search from "@/components/search/Search";
+import { ColorfulText, SearchInput } from "@neiist/ui";
 import { useSearch } from "@/hooks/useSearch";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -25,9 +24,10 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
   const anyDeadlineNear = useMemo(() => {
     if (!orders || orders.length === 0) return false;
     const now = new Date();
-    return orders.some((o) => {
-      if (!o.pickup_deadline || o.status === "delivered" || o.status === "cancelled") return false;
-      const deadline = new Date(o.pickup_deadline);
+    return orders.some((order) => {
+      if (!order.pickup_deadline || order.status === "delivered" || order.status === "cancelled")
+        return false;
+      const deadline = new Date(order.pickup_deadline);
       const diffDays = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
       return diffDays <= 28 && diffDays >= 0;
     });
@@ -46,9 +46,9 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
     data: sortedOrders,
     fields: [{ field: "order_number", boost: 4 }, { field: "status", boost: 3 }, "itemsText"],
     extractField: (order, field) => {
-      if (field === "itemsText") {
+      if (field === "itemsText")
         return order.items?.map((i) => `${i.product_name} ${i.variant_label || ""}`).join(" ");
-      }
+
       return undefined;
     },
     returnAllWhenEmpty: true,
@@ -57,7 +57,8 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
   const selectImage = (order: Order): string | undefined => {
     if (!order.items || order.items.length === 0) return undefined;
     const firstItem = order.items[0];
-    const product = products.find((p) => String(p.id) === String(firstItem.product_id));
+    const product = products.find((product) => String(product.id) === String(firstItem.product_id));
+
     if (!product) return undefined;
     const variantObj = findItemVariant(product, {
       variant_id: firstItem.variant_id,
@@ -75,8 +76,7 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
 
       <div className={styles.searchRow}>
         <div className={styles.searchContainer}>
-          <Search
-            className={styles.searchInput}
+          <SearchInput
             placeholder={dict.search_placeholder}
             value={query}
             onChange={setQuery}

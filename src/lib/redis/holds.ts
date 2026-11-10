@@ -1,6 +1,6 @@
 import { getRedisClient } from "@/lib/redis/client";
 import { RESERVE_STOCK_HOLD_LUA, RELEASE_STOCK_HOLD_LUA } from "@/lib/redis/scripts";
-import { StockHoldItem, StockRequestItem } from "@/types/redis";
+import { CHECKOUT_HOLD_TTL_SECONDS, StockHoldItem, StockRequestItem } from "@/types/redis";
 import { DatabaseError } from "@/types/errors";
 import type { Product } from "@/types/shop/product";
 
@@ -64,7 +64,7 @@ export async function reserveStockHolds(
   orderNumber: string,
   items: StockHoldItem[],
   pgStocks: Record<string, number>,
-  ttlSeconds = 1800
+  ttlSeconds = CHECKOUT_HOLD_TTL_SECONDS
 ): Promise<boolean> {
   if (items.length === 0) return true;
 

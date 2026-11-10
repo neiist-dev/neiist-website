@@ -40,30 +40,8 @@
 }
 
 .searchContainer {
-  position: relative;
   max-width: 28rem;
   width: 100%;
-  box-sizing: border-box;
-}
-
-.searchInput {
-  width: 100%;
-  height: 44px;
-  padding: 0 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  background: var(--background-colour);
-  font-size: 14px;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.searchInput:focus {
-  border-color: var(--primary-colour);
-}
-
-.searchInput::placeholder {
-  color: var(--light-foreground-colour);
 }
 
 .ordersGrid {

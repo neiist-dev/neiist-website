@@ -1,13 +1,24 @@
 import { getRedisClient } from "@/lib/redis/client";
 import { releaseStockHolds } from "@/lib/redis/holds";
-import { CheckoutSessionData } from "@/types/redis";
+import { CHECKOUT_HOLD_TTL_SECONDS, CheckoutSessionData } from "@/types/redis";
 
 const SESSION_PREFIX = "checkout:session:";
 const CART_PREFIX = "checkout:cart:";
 
+export function getSessionExpiryMs(session: CheckoutSessionData): number {
+  const parsed = session.expires_at ? Date.parse(session.expires_at) : NaN;
+  return Number.isFinite(parsed) ? parsed : Date.now() + CHECKOUT_HOLD_TTL_SECONDS * 1000;
+}
+
+export function getRemainingSessionSeconds(session: CheckoutSessionData): number {
+  const parsed = session.expires_at ? Date.parse(session.expires_at) : NaN;
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.floor((parsed - Date.now()) / 1000);
+}
+
 export async function saveCheckoutSession(
   session: CheckoutSessionData,
-  ttlSeconds = 1800
+  ttlSeconds = CHECKOUT_HOLD_TTL_SECONDS
 ): Promise<void> {
   const redis = getRedisClient();
   const key = `${SESSION_PREFIX}${session.order_number}`;

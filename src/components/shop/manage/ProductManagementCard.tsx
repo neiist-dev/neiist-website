@@ -34,9 +34,11 @@ export default function ProductManagementCard({
   const images = useMemo(() => getProductImages(product), [product]);
 
   const stockInfo = useMemo(() => {
-    if (product.stock_type === "on_demand") {
-      return { label: dict.on_demand, status: "on-demand" };
-    }
+    if (product.stock_type === "untracked")
+      return { label: dict.untracked_stock, status: "untracked" };
+
+    if (product.stock_type === "on_demand") return { label: dict.on_demand, status: "on-demand" };
+
     const total =
       product.variants?.length > 0
         ? product.variants.reduce((sum, v) => sum + (v.stock_quantity || 0), 0)
@@ -58,7 +60,9 @@ export default function ProductManagementCard({
         wrapperClassName={styles.imageWrapper}
         placeholderClassName={styles.placeholder}
         placeholderLabel={dict.no_image}>
-        <span className={`${styles.badge} ${styles[stockInfo.status]}`}>{stockInfo.label}</span>
+        {stockInfo && (
+          <span className={`${styles.badge} ${styles[stockInfo.status]}`}>{stockInfo.label}</span>
+        )}
         {timingBadge && <span className={styles.timingBadge}>{timingBadge}</span>}
         {!product.active && <span className={styles.archivedBadge}>{dict.archived_badge}</span>}
       </ProductImage>
