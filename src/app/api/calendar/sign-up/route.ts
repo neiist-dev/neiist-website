@@ -3,7 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import {
   signUpToEvent,
   removeSignUpFromEvent,
-  getActivityByIdFromDb,
+  getActivityById,
 } from "@/lib/db/repositories/event.repository";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { sendEmail, sendEventTicketEmail } from "@/lib/email";
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     if (!eventId) return NextResponse.json({ error: "Event ID required" }, { status: 400 });
 
-    const activity = await getActivityByIdFromDb(eventId);
+    const activity = await getActivityById(eventId);
     if (!activity) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
     if (signUp) {

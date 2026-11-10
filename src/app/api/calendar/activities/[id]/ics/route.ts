@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getActivityByIdFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivityById } from "@/lib/db/repositories/event.repository";
 import { generateEventIcs } from "@/lib/email";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const activity = await getActivityByIdFromDb(id);
+    const activity = await getActivityById(id);
     if (!activity) return NextResponse.json({ error: "Atividade não encontrada" }, { status: 404 });
 
     const start = activity.start || new Date();

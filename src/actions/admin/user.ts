@@ -6,7 +6,8 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { deleteUser, getUser } from "@/lib/db/repositories/user.repository";
 import { hasPermission } from "@/lib/security/permissions";
-import { getAccountDeletionTemplate, sendEmail } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
+import { getAccountDeletionTemplate } from "@/lib/email/templates/auth";
 
 export async function deleteUserAction(
   istid: string

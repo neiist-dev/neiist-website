@@ -1,14 +1,15 @@
 import { Suspense } from "react";
-import MyOrdersList from "@/components/shop/MyOrdersList";
-import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
+import MyOrdersList from "@/components/shop/checkout/MyOrdersList";
+import OrderDetailOverlay from "@/components/shop/manage/modals/OrderDetailsOverlay";
 import { requireUser } from "@/lib/auth";
-import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
+import { getUserOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
+import { isTicketOrder } from "@/utils/shop/orderStatusUtils";
 import GlobalLoading from "@/app/loading";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 interface PageProps {
-  params: Promise<LocaleParams>;
+  params: LocaleParams;
   searchParams: Promise<{ orderId?: string }>;
 }
 
@@ -22,11 +23,14 @@ async function MyOrdersContent({ params, searchParams }: PageProps) {
   const locale = isValidLocale(resolvedParams.locale) ? resolvedParams.locale : defaultLocale;
   const dict = getDictionary(locale);
 
-  const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
-  const myOrders = allOrders.filter((order) => order.user_istid === auth.user.istid);
-  const selectedOrderId = resolvedSearch.orderId ? Number(resolvedSearch.orderId) : null;
+  const [userOrders, products] = await Promise.all([
+    getUserOrders(auth.user.istid),
+    getAllProducts(true),
+  ]);
+  const myOrders = userOrders.filter((order) => !isTicketOrder(order));
+  const selectedOrderId = resolvedSearch.orderId ? String(resolvedSearch.orderId).trim() : null;
   const selectedOrder = selectedOrderId
-    ? (myOrders.find((order) => order.id === selectedOrderId) ?? null)
+    ? (myOrders.find((order) => order.order_number === selectedOrderId) ?? null)
     : null;
 
   return (
@@ -42,11 +46,7 @@ async function MyOrdersContent({ params, searchParams }: PageProps) {
           order={selectedOrder}
           canManage={false}
           basePath={`/${locale}/my-orders`}
-          canEditNotes={true}
           dict={dict.order_details}
-          posPaymentDict={dict.pos_payment}
-          newOrderModalDict={dict.new_order_modal}
-          createUserModalDict={dict.create_user_modal}
         />
       )}
     </>

@@ -7,7 +7,7 @@ import {
   syncEventsToCalendarBatched,
 } from "@/lib/google/calendar";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateIstId } from "@/utils/apiValidationUtils";
@@ -42,7 +42,7 @@ export async function GET(
 
     if (!calendarId) return NextResponse.json({ addCalendarLink: "", webViewLink: "" });
 
-    const events = await getActivitiesEventsFromDb(false);
+    const events = await getActivitiesEvents(false);
     const synced = await syncEventsToCalendarBatched(
       calendarId,
       events,

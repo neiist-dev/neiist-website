@@ -3898,11 +3898,11 @@ BEGIN
     s.closed_by,
     s.initial_float,
     s.final_cash_counted,
-    ROUND(s.initial_float + COALESCE(cash.total, 0.00), 2) AS expected_cash,
-    CASE
+    ROUND(s.initial_float + COALESCE(cash.total, 0.00), 2)::NUMERIC(10,2) AS expected_cash,
+    (CASE
       WHEN s.final_cash_counted IS NOT NULL
       THEN ROUND(s.final_cash_counted - (s.initial_float + COALESCE(cash.total, 0.00)), 2)
-    END AS cash_variance,
+    END)::NUMERIC(10,2) AS cash_variance,
     s.status,
     s.opened_at,
     s.closed_at,
@@ -4197,12 +4197,10 @@ CREATE OR REPLACE FUNCTION neiist.get_campus_schedule_slots(
   ORDER BY s.campus, s.day_of_week, s.start_time;
 $$;
 
--- Add Campus Schedule Slots
-CREATE OR REPLACE FUNCTION neiist.add_campus_schedule_slot(
+-- Set Campus Schedule Slots
+CREATE OR REPLACE FUNCTION neiist.set_campus_schedule_slots(
   p_campus TEXT,
-  p_day_of_week INT,
-  p_start_time TIME,
-  p_end_time TIME
+  p_slots JSONB
 ) RETURNS TABLE (
   id INT,
   campus VARCHAR(20),
@@ -4213,26 +4211,20 @@ CREATE OR REPLACE FUNCTION neiist.add_campus_schedule_slot(
   updated_at TIMESTAMPTZ
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  RETURN QUERY
-  INSERT INTO neiist.campus_schedule_slots (campus, day_of_week, start_time, end_time)
-  VALUES (p_campus, p_day_of_week, p_start_time, p_end_time)
-  RETURNING neiist.campus_schedule_slots.id,
-    neiist.campus_schedule_slots.campus,
-    neiist.campus_schedule_slots.day_of_week,
-    neiist.campus_schedule_slots.start_time,
-    neiist.campus_schedule_slots.end_time,
-    neiist.campus_schedule_slots.created_at,
-    neiist.campus_schedule_slots.updated_at;
-END;
-$$;
+  DELETE FROM neiist.campus_schedule_slots WHERE campus = p_campus;
 
--- Delete Campus Schedule Slots
-CREATE OR REPLACE FUNCTION neiist.delete_campus_schedule_slot(
-  p_id INT
-) RETURNS BOOLEAN LANGUAGE plpgsql SECURITY DEFINER AS $$
-BEGIN
-  DELETE FROM neiist.campus_schedule_slots WHERE id = p_id;
-  RETURN FOUND;
+  IF p_slots IS NOT NULL AND jsonb_array_length(p_slots) > 0 THEN
+    INSERT INTO neiist.campus_schedule_slots (campus, day_of_week, start_time, end_time)
+    SELECT
+      p_campus,
+      (elem->>'day_of_week')::INT,
+      (elem->>'start_time')::TIME,
+      (elem->>'end_time')::TIME
+    FROM jsonb_array_elements(p_slots) AS elem;
+  END IF;
+
+  RETURN QUERY
+  SELECT * FROM neiist.get_campus_schedule_slots(p_campus);
 END;
 $$;
 

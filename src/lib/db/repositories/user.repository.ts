@@ -32,12 +32,18 @@ export const updateUser = async (istid: string, updates: Partial<User>): Promise
   return result;
 };
 
-export const getUser = async (istid: string): Promise<User | null> => {
-  "use cache";
-  cacheTag("users", "memberships", "department_roles");
+export const getUserNoCache = async (istid: string): Promise<User | null> => {
   const {
     rows: [user],
   } = await db_query<dbUser>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
+  if (!user) return null;
+  return mapdbUserToUser(user);
+};
+
+export const getUser = async (istid: string): Promise<User | null> => {
+  "use cache";
+  cacheTag("users", "memberships", "department_roles");
+  const user = await getUserNoCache(istid);
   if (!user) return null;
 
   const memberships = await getUserMemberships(istid, true);
@@ -50,7 +56,7 @@ export const getUser = async (istid: string): Promise<User | null> => {
   }
 
   return {
-    ...mapdbUserToUser(user),
+    ...user,
     positionName: positionName ?? undefined,
   };
 };

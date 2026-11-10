@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import CheckoutForm from "@/components/shop/CheckoutForm";
+import CheckoutForm from "@/components/shop/checkout/CheckoutForm";
 import { requireUser } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -17,6 +17,7 @@ async function CheckoutContent({ params }: { params: LocaleParams }) {
       dict={dict.checkout_form}
       pendingPaymentDict={dict.pending_payment}
       checkoutOverlayDict={dict.checkout_overlay}
+      paymentsDict={dict.payments}
       basePath={`/${locale}`}
     />
   );

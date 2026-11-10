@@ -7,7 +7,8 @@ import { getUser, updateUser, deleteUser } from "@/lib/db/repositories/user.repo
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
-import { sendEmail, getAccountDeletionTemplate } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
+import { getAccountDeletionTemplate } from "@/lib/email/templates/auth";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const session = await getAuthenticatedUser();
