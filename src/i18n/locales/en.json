@@ -3,11 +3,13 @@
     "about_us": "About Us",
     "activities": "Activities",
     "shop": "Shop",
-    "dinner": "Course Dinner",
     "menu": {
       "profile": "Profile",
       "my_orders": "My Orders",
+      "my_tickets": "My Tickets",
       "manage_orders": "Manage Orders",
+      "manage_activities": "Manage Events",
+      "pos": "Desk POS",
       "management": "Manage Organization",
       "manage_shop": "Manage Shop",
       "manage_voting": "Manage Voting",
@@ -15,7 +17,6 @@
       "user_photo_alt": "User photo"
     }
   },
-
   "dinner": {
     "not_found": "Dinner product not found",
     "signed_up_message": "Your spot at the course dinner is guaranteed! Get ready, we have surprises waiting for you.",
@@ -42,7 +43,6 @@
       "karaoke_text": "Show off your skills on the mic! Solo or in a group, brave karaoke singers get tokens ;)"
     },
     "surprises": {
-      "title": "Course Dinner Surprises",
       "welcome_message": "Welcome to the course dinner!\nExplore all the activities we prepared for you:",
       "voting_button": "Go to Voting",
       "poster_alt": "Course Dinner Poster",
@@ -109,47 +109,69 @@
       }
     }
   },
-
   "sumup_readers": {
+    "title": "SumUp Readers",
+    "subtitle": "Physical terminals paired with NEIIST's SumUp account.",
     "pairing_code_label": "Pairing Code:",
     "pairing_code_placeholder": "E.g.: ABCD1234",
     "reader_name_label": "Reader Name",
     "reader_name_placeholder": "E.g.: Bar POS",
     "add_button": "Add Reader",
+    "pair_modal_title": "Pair SumUp Reader",
+    "refresh_button": "Refresh",
     "loading": "Loading readers...",
     "no_readers": "No readers available.",
+    "actions_title": "Reader Actions",
+    "view_details": "View Details",
+    "rename_button": "Rename",
+    "rename_title": "Rename Reader",
+    "rename_confirm": "Save",
+    "rename_success": "Reader renamed successfully.",
+    "copy_id": "Copy ID",
+    "id_copied": "Reader ID copied.",
+    "copy_error": "Failed to copy ID.",
     "remove_button": "Remove",
+    "remove_confirm_title": "Remove SumUp Reader",
+    "remove_confirm_message": "Are you sure you want to unpair and remove reader",
+    "remove_confirm_button": "Confirm Removal",
+    "removing": "Removing...",
+    "cancel": "Cancel",
+    "details_title": "Reader Details",
+    "detail_id": "Reader ID",
+    "detail_serial": "Serial Number",
+    "detail_model": "Model",
+    "detail_service_account": "Service Account",
+    "detail_created_at": "Created at",
+    "detail_updated_at": "Updated at",
+    "detail_metadata": "Metadata",
     "added_success1": "Reader ",
     "added_success2": " successfully added.",
     "removed_success": "Reader successfully removed.",
     "pairing_code_required": "Pairing code and name are required.",
-    "table_id": "ID",
     "table_name": "Name",
     "table_status": "Status",
     "table_model": "Model",
-    "table_actions": "Actions",
     "fetch_error": "Failed to fetch readers",
     "create_error": "Failed to create reader",
+    "update_error": "Failed to update reader",
     "delete_error": "Failed to remove reader"
   },
-
-  "shop_pos": {
-    "title": "SumUp POS Management"
-  },
-
   "orders_table": {
     "title": "Orders",
     "archive_title": "Orders (Archive)",
     "archive": "Archive",
+    "view_active": "Active Orders",
     "search_placeholder": "Search...",
+    "actions_title": "Order actions",
     "export_button": "Export",
-    "new_order_button": "New Order",
     "no_archived_orders": "No archived orders found.",
     "filters_title": "Filters",
     "send_email_selected": "Email selected customers",
     "send_email": "Send Email",
     "set_pickup_deadline_title": "Set pickup deadline",
     "set_pickup_deadline": "Set pickup deadline",
+    "edit_pickup_deadline": "Edit pickup deadline",
+    "clear_pickup_deadline": "Clear pickup deadline",
     "processing": "Processing...",
     "mark_paid": "Mark as Paid",
     "mark_ready": "Mark as Ready",
@@ -161,6 +183,8 @@
     "selected_plural": "selected",
     "bulk_confirm_1": "Are you sure you want to change the status of",
     "bulk_confirm_3": "to",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
     "no_orders": "No orders found.",
     "pickup_dialog_title": "Pickup deadline for orders",
     "col_number": "Number",
@@ -181,39 +205,12 @@
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },
-    "special_status": {
-      "jantar_pending_mbway": "MB Way payment pending verification",
-      "jantar_confirmed": "Confirmed"
-    }
+    "ticket_confirmed": "Confirmed",
+    "error_update_order": "Failed to update order",
+    "order_success": "Order updated successfully",
+    "status_update_bulk": "Updating status of bulk order...",
+    "status_update_success": "Status updated successfully."
   },
-
-  "confirm_dialog": {
-    "title": "Are you sure you want to remove reader ",
-    "confirm": "Confirm",
-    "cancel": "Cancel",
-    "yes": "Yes"
-  },
-
-  "input_date_dialog": {
-    "hint": "Leave empty to remove the deadline.",
-    "confirm": "Confirm",
-    "cancel": "Cancel"
-  },
-
-  "input_text_dialog": {
-    "confirm": "Confirm",
-    "cancel": "Cancel"
-  },
-
-  "active_filters": {
-    "label": "Active Filters:",
-    "clear_all": "Clear All",
-    "from": "From",
-    "until": "Until",
-    "remove_date_range": "remove date range",
-    "remove_filter": "remove"
-  },
-
   "cart": {
     "close_label": "Close Cart",
     "title": "Cart",
@@ -221,7 +218,6 @@
     "total": "Total:",
     "checkout": "Continue to Checkout"
   },
-
   "checkout_form": {
     "empty_cart": "Your cart is empty.",
     "section_personal": "1. Personal Information",
@@ -247,15 +243,6 @@
     "delivery_detail": "Delivery time may vary depending on the chosen pickup location.",
     "campus_alameda": "Alameda",
     "campus_taguspark": "Taguspark",
-    "payment_methods": {
-      "cash": "Cash",
-      "sumup-tpa": "SumUp POS",
-      "sumup": "SumUp Online Card",
-      "apple-pay": "Apple Pay",
-      "in-person": "In person",
-      "mbway": "MBWay",
-      "other": "Other"
-    },
     "discount_label": "Discount Code",
     "discount_placeholder": "Ex: DISCOUNT10",
     "discount_applied": "Discount applied",
@@ -264,7 +251,7 @@
     "error_no_campus": "Please select a campus.",
     "error_no_payment": "Please select a payment method.",
     "error_submit": "Error submitting order.",
-    "error_mixed_invalid": "This order cannot mix special categories with regular categories.",
+    "error_mixed_invalid": "This order cannot mix tickets with other products.",
     "error_apple_pay_context": "Apple Pay requires a secure context (HTTPS).",
     "error_apple_pay_unavailable": "Apple Pay is not available in this browser.",
     "error_apple_pay_device": "Apple Pay is not available on this device.",
@@ -274,27 +261,17 @@
     "error_payment_incomplete": "Incomplete payment data.",
     "error_checkout_create": "Failed to create checkout.",
     "error_checkout_unexpected": "Unexpected response from payment provider.",
-    "error_applepay_validation": "Apple Pay validation failed."
+    "error_applepay_validation": "Apple Pay validation failed.",
+    "hold_expired": "Checkout time expired."
   },
-
   "pending_payment": {
-    "title_pending": "Pending Order!",
     "title_submitted": "Order Submitted!",
-    "mbway_intro": "To confirm your order, please complete the payment.",
-    "mbway_transfer": "Transfer €{amount} via MBWay to the number:",
-    "mbway_unavailable": "Number unavailable",
-    "mbway_instructions": "Instructions: in the transfer description include {order_number} so we can identify your payment.",
-    "mbway_email_info": "For more information please check your email.",
     "loading_details": "Loading payment details...",
-    "in_person_intro": "To confirm your order, please complete the payment.",
-    "in_person_location": "In person at {location}",
     "view_schedule": "View Room Schedule",
     "thanks_order": "Thank you for your order.",
     "confirmation_email": "You will receive a confirmation email shortly.",
-    "continue": "Continue",
     "view_orders": "View Orders"
   },
-
   "checkout_overlay": {
     "or_pay_with": "or pay with",
     "pay_apple_pay": "Pay with Apple Pay",
@@ -304,27 +281,18 @@
     "wait_moment": "Please wait a moment",
     "view_my_orders": "View My Orders",
     "continue": "Continue",
-    "view_orders": "View Orders",
     "payment_error": "Payment Error",
     "default_payment_error": "An error occurred while processing the payment.",
     "retry": "Try Again",
-    "pay_in_person": "Pay In Person",
     "cancel_order": "Cancel Order",
-    "error_declined": "Payment declined by card issuer. Try again, use another card, or choose in-person payment.",
+    "error_declined": "Payment declined by card issuer. Try again, use another card, or choose to reserve and pay at the Banca (POS).",
     "error_expired": "Authorization expired. Try again to generate a new payment session.",
     "error_unconfirmed": "Could not confirm payment after bank authorization.",
-    "error_pending_too_long": "Payment has been pending for too long. If you were charged, please contact us.",
-    "error_apple_pay_validation": "Apple Pay validation failed. Please try again.",
-    "error_apple_pay_failed": "Apple Pay payment failed. Please try again.",
-    "error_apple_pay_processing": "Error processing Apple Pay. Please try again.",
     "error_invalid_card": "Check your card details and try again.",
     "error_processing": "Error processing payment.",
     "error_canceled_or_expired": "Payment canceled or expired. Please try again.",
-    "error_session_expired": "Payment session expired. Please try again.",
-    "error_switch_payment": "Failed to change payment method.",
-    "error_switch_in_person": "Error switching to in-person payment."
+    "error_session_expired": "Payment session expired. Please try again."
   },
-
   "hero": {
     "welcome_prefix": "Welcome to the",
     "title_prefix": "Computer Science ",
@@ -332,14 +300,11 @@
     "title_suffix": " at Instituto Superior Técnico",
     "campus_alt": "IST Campus",
     "student_alt": "Student",
-    "title": "Computer Science Student Branch at Instituto Superior Técnico",
     "teaser_title": "Vote here on the colours of your hoodie!"
   },
-
   "game": {
     "play": "Play",
     "play_label": "Play Campus Runner",
-    "score": "Score",
     "best": "HI",
     "game_over": "Game Over",
     "restart": "Restart",
@@ -352,7 +317,6 @@
     "final_score": "Game over. Score: {score}. Best: {best}.",
     "secret_mode": "Cheat code unlocked: no obstacles"
   },
-
   "terminal": {
     "welcome": "Welcome to the NEIIST terminal! \nSupporting Computer Science students at Instituto Superior Técnico.\n\nUseful commands:\n  ls         - list files and folders\n  cd <dir>   - enter a directory (e.g. cd about, cd campuses)\n  cat <file> - read a file (e.g. cat mission.txt)\n  clear      - clear the screen\n  help       - system help\n\nExplore directories to learn about NEIIST activities, rooms, and courses!",
     "fs": {
@@ -453,28 +417,12 @@
       "linkedin": "LinkedIn: NEIIST (https://www.linkedin.com/company/neiist/)"
     }
   },
-
-  "sinfo": {
-    "title": "Autonomous Section",
-    "button": "Visit SINFO",
-    "logo_alt": "SINFO",
-    "description": "SINFO is an annual event organized exclusively by students who strive to make the event more interesting and innovative with each edition. All participants have the opportunity to experience some of the most innovative gadgets and technologies on the market, in addition to being presented with an overview of the IT landscape by top companies. On top of all this, daily workshops cover the most in-demand and recent topics, helping all participants enhance their technical and non-technical skills.",
-    "objective": "The main goal of SINFO is to allow all students and participants in general to interact and get closer to influential and inspiring people or companies in Information Technology and Computer Science."
-  },
-
   "sweats_contest": {
-    "badge": "COMING SOON",
     "title": "Sweatshirt Design Contest",
     "participate": "Participate",
-    "description_start": "Want to create the next special edition CS sweatshirt?",
-    "description_link": "here",
-    "description_end": "the rules, submit your design, and get a chance to win a sweatshirt!",
-    "description": "Want to create the next special edition CS sweatshirt? Check the rules, submit your design, and get a chance to win a sweatshirt!",
     "rules_link_text": "rules",
     "rules_prefix": "Check the",
     "rules_suffix": "and submit your ZIP file.",
-    "rules_button": "View Contest Rules",
-    "card_title": "Submit Proposal",
     "button": "Submit a design!",
     "uploading": "Submitting...",
     "submitted": "Design submitted",
@@ -482,21 +430,18 @@
     "accept_terms": "I accept the contest rules",
     "share_name": "I authorize sharing my name",
     "file_helper": "ZIP files only (max. 15MB)",
-    "choose_file_error": "Please choose a ZIP file.",
     "errors": {
       "zip_only": "Error: ZIP files only",
       "file_too_large": "File is too large (max 15MB)",
       "upload": "Error submitting"
     }
   },
-
   "shop": {
     "title": "Shop",
     "subtitle": "The products representing your degree!",
     "empty_title": "No products available",
     "empty_subtitle": "There are currently no products for sale. Stay tuned for upcoming releases!",
     "empty_button": "Back to Home",
-    "not_found": "Product not found",
     "no_image_label": "No Image",
     "size_guide_title": "Size Guide",
     "size_guide_link": "Size Guide",
@@ -505,39 +450,17 @@
     "error_upcoming": "Orders for this product open on {date}.",
     "error_deadline": "The ordering deadline for this product has ended.",
     "error_unavailable": "This product is no longer available for purchase.",
-    "breadcrumbs": { "shop": "Shop" },
-    "labels": { "quantity": "Quantity" },
+    "breadcrumbs": {
+      "shop": "Shop"
+    },
+    "labels": {
+      "quantity": "Quantity"
+    },
     "buttons": {
       "add_to_cart": "Add to Cart",
       "buy_now": "Buy Now",
       "coming_soon": "Coming Soon",
       "unavailable": "Unavailable"
-    },
-    "products": {
-      "Sweats EIC": {
-        "title": "CS Sweatshirts",
-        "description": "The official sweatshirt of your degree."
-      }
-    },
-    "size_guide_overlay": {
-      "close_label": "Close",
-      "title": "Size Guide",
-      "unit": "Measurements in centimeters"
-    },
-    "campus_schedule_overlay": {
-      "close_label": "Close",
-      "title": "Opening Hours",
-      "col_day": "Day",
-      "col_hours": "Hours",
-      "closed": "Closed"
-    },
-    "size_guide_editor": {
-      "close_label": "Close",
-      "title": "Edit Size Guide",
-      "add_measure": "Add Measurement",
-      "remove_measure_title": "Remove measurement",
-      "measure_placeholder": "Measurement description...",
-      "unit": "Measurements in centimeters"
     },
     "product_form": {
       "back": "Back",
@@ -583,75 +506,58 @@
       "preview_button": "Preview",
       "remove_button": "Remove",
       "images_title": "Images",
-      "size_guide_title": "Size Guide {name}",
       "delete_size_guide_confirm": "Are you sure you want to remove the size guide from this product?",
-      "error_create_category": "Error creating category.",
-      "error_required_fields": "Name and Category are required.",
-      "error_save": "Error saving.",
-      "error_upload": "Failed to upload files."
-    },
-    "categories": {
-      "Vestuário": "Apparel"
+      "error_save": "Error saving."
     }
   },
-
   "activities": {
     "title": "Activities",
     "no_events": "No activities available.",
-    "previous": "Previous",
-    "next": "Next",
     "prev_label": "Previous",
     "next_label": "Next",
+    "views": {
+      "month": "Month",
+      "week": "Week"
+    },
     "toolbar": {
       "today": "Today",
       "prev_month": "Previous Month",
       "next_month": "Next Month"
     },
-
     "details": {
       "close": "Close",
       "errors": {
-        "save_settings": "Error saving event settings.",
         "sign_up": "Error signing up.",
-        "update_signup": "Error updating sign-up.",
-        "fetch_attendees": "Error fetching attendees.",
-        "fetch_emails": "Error fetching attendee emails."
+        "update_signup": "Error updating sign-up."
       },
-      "saving_settings": "Saving event settings...",
-      "settings_saved": "Event settings saved successfully.",
       "cancelling_signup": "Cancelling sign-up...",
       "signing_up": "Signing up for event...",
       "signed_up": "Sign-up successful.",
       "signup_cancelled": "Sign-up cancelled successfully.",
-      "preparing_email": "Preparing attendee emails...",
-      "email_opened": "Email draft opened successfully.",
       "link_copied": "Link copied",
       "untitled_event": "Untitled event",
       "share_title": "Copy event link",
       "labels": {
-        "description": "Event description",
-        "allow_signups": "Allow sign-ups",
-        "signup_deadline": "Sign-up deadline",
-        "max_attendees": "Maximum attendees",
-        "subscribers": "Signed up"
-      },
-      "placeholders": {
-        "description": "Add description...",
-        "no_limit": "No limit"
+        "capacity_reached": "Capacity Reached",
+        "contact_coordinators_for_refund": "For cancellations or refund inquiries, please contact NEIIST coordination.",
+        "fill_signup_form": "Please fill out the following fields to complete your registration:",
+        "submit_form": "Confirm Registration",
+        "available_spots": "spots available",
+        "spots_remaining": "spots remaining"
       },
       "processing": "Processing...",
       "please_login": "Please log in to sign up",
       "buttons": {
         "cancel_signup": "Cancel sign-up",
         "sign_up": "Sign Up",
-        "email_attendees": "Email attendees"
+        "view_ticket": "View Ticket",
+        "buy_ticket": "Buy Ticket"
       },
       "icon_picker": {
         "title": "Choose Icon",
         "search_placeholder": "Search icon..."
       }
     },
-
     "events": {
       "aoc": {
         "title": "Advent of Code",
@@ -707,11 +613,9 @@
       }
     }
   },
-
   "partnerships": {
     "title": "Partnerships"
   },
-
   "footer": {
     "title_neiist": "NEIIST",
     "mission_description": "A group of motivated students committed to helping every Computer Science and Engineering student, organizing activities and social support.",
@@ -720,13 +624,11 @@
     "estatutos_link": "Bylaws",
     "privacy_policy_link": "Privacy Policy",
     "terms_link": "Terms and Conditions",
-    "address": "Av. Rovisco Pais 1, 1049-001 Lisbon",
     "courses_title": "CS & Eng. Degrees",
     "contacts_title": "Contacts",
     "powered_by": "Powered by:",
     "copyright": "© 2026 NEIIST"
   },
-
   "about_us_page": {
     "hero": {
       "title": "Who We Are?",
@@ -736,14 +638,12 @@
       "close_label": "Close",
       "team_image_alt": "NEIIST Team"
     },
-
     "join_us": {
       "title": "Join Us!",
       "description": "NEIIST is recruiting for the 1st Phase 26/27! Come develop your soft skills and contribute to our community by joining one of our teams External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nRegister until September 30th (23:59).",
       "apply": "Apply Now",
       "apply_link": "https://docs.google.com/forms/d/e/1FAIpQLSf_XLoqJ2crdiySnrlIUzvna4V-QHBHDeSfhpCfh27DVIfdKQ/viewform"
     },
-
     "campuses": {
       "title": "Where to Find Us?",
       "description": "NEIIST has student support rooms on both campuses of Instituto Superior Técnico. Come visit us to ask questions, pick up merchandise, or hang out!",
@@ -752,20 +652,12 @@
       "taguspark_title": "Taguspark Campus",
       "taguspark_room": "Room 1 - 4.14, Central Building (Aquarium Entrance)"
     },
-
     "year_selector": {
       "nav_label": "Academic Year Selector",
       "prev_label": "Previous year",
       "next_label": "Next year"
-    },
-    "editor": {
-      "title": "About Us Page Preview",
-      "no_member": "No member",
-      "photo_alt": "photo"
-    },
-    "order_saved_success": "Order saved successfully."
+    }
   },
-
   "profile": {
     "title": "Profile",
     "confirm_dialog": {
@@ -847,97 +739,6 @@
       "error_failed": "Failed to delete account."
     }
   },
-
-  "create_user_modal": {
-    "title": "New User",
-    "ist_id_label": "IST ID",
-    "ist_id_placeholder": "ist1119999",
-    "name_label": "Name",
-    "name_placeholder": "John Doe",
-    "email_label": "Email",
-    "email_placeholder": "john.doe@tecnico.ulisboa.pt",
-    "cancel": "Cancel",
-    "submitting": "Creating...",
-    "submit": "Save",
-    "confirm_message_1": "Are you sure you want to create user",
-    "confirm_message_2": "?",
-    "error_required": "Please fill in all fields.",
-    "error_create": "Failed to create user",
-    "success_new_user": "New user created successfully.",
-    "error_new_user": "Error while creating a new user"
-  },
-
-  "new_order_modal": {
-    "title_create": "New Order",
-    "title_edit": "Edit Order",
-    "user_label": "User",
-    "user_placeholder": "Search by istid...",
-    "user_not_found": "User not found",
-    "user_create_new": "Click to create new user",
-    "products_label": "Products",
-    "products_placeholder": "Add products...",
-    "campus_label": "Campus",
-    "campus_placeholder": "Select campus",
-    "campus_alameda": "Alameda",
-    "campus_taguspark": "Taguspark",
-    "nif_label": "NIF (optional)",
-    "nif_placeholder": "123456789",
-    "phone_label": "Phone (optional)",
-    "phone_placeholder": "999333111",
-    "notes_label": "Notes",
-    "notes_placeholder": "Notes",
-    "cancel": "Cancel",
-    "submitting_create": "Creating...",
-    "submitting_edit": "Saving...",
-    "submit_create": "Create Order",
-    "submit_edit": "Save Order",
-    "confirm_create": "Are you sure you want to create this order?",
-    "confirm_edit": "Are you sure you want to save changes to the order?",
-    "confirm_stock_override": "Are you sure you want to create the order anyway?",
-    "error_no_products": "Please select at least one product.",
-    "error_no_campus": "Please select a campus.",
-    "error_no_user": "Please select a user.",
-    "error_create": "Failed to create order",
-    "error_update": "Failed to update order",
-    "guest_confirm": "Are you sure you want to sell this order as Guest?",
-    "guest_title": "Guest",
-    "guest_name_label": "Customer name",
-    "guest_name_placeholder": "Customer name",
-    "guest_email_label": "Customer email",
-    "guest_email_placeholder": "mail@example.com",
-    "guest_phone_label": "Customer phone",
-    "guest_phone_placeholder": "+351 000 000 000",
-    "errors": {
-      "no_products": "Please select at least one product.",
-      "no_campus": "Please select a campus.",
-      "mixed_invalid": "This order cannot mix special categories with regular categories.",
-      "guest_name": "Please enter customer name.",
-      "guest_email": "Please enter customer email.",
-      "guest_phone": "Please enter customer phone."
-    }
-  },
-
-  "date_filter": {
-    "title": "Date",
-    "until": "Until date",
-    "range": "Range",
-    "days": ["S", "M", "T", "W", "T", "F", "S"]
-  },
-
-  "mobile_filters_drawer": {
-    "title": "Filters",
-    "close_label": "Close Filters",
-    "date_section": "Date",
-    "until": "Until date",
-    "range": "Range",
-    "days": ["S", "M", "T", "W", "T", "F", "S"],
-    "products_section": "Products",
-    "campus_section": "Campus",
-    "status_section": "Status",
-    "clear_all": "Clear All",
-    "apply": "Apply"
-  },
-
   "admin": {
     "management": {
       "title": "Manage Organization",
@@ -950,12 +751,10 @@
       "tab_roles": "Roles & Permissions"
     },
     "users_management": {
-      "tab_users": "Users",
       "title": "Users Overview",
       "search_placeholder": "Search by name, ISTID, email, role or department...",
       "clear_search": "Clear search",
       "empty": "No users found.",
-      "photo_alt": "Photo of",
       "email_label": "Email",
       "phone_label": "Phone",
       "courses_label": "Courses",
@@ -970,15 +769,12 @@
       "pagination_info": "{start}–{end} of {total} users",
       "prev_page": "Previous",
       "next_page": "Next",
-      "confirm_yes": "Yes",
       "confirm_cancel": "Cancel"
     },
-
     "teams_management": {
       "title": "Departments Management",
       "search_placeholder": "Search department...",
       "clear_search": "Clear search",
-      "active": "Active",
       "show_inactive": "Show Inactive",
       "empty": "No departments found.",
       "inactive_badge": "Inactive",
@@ -1027,19 +823,15 @@
       "confirm_reactivate_title": "Reactivate {name}",
       "confirm_reactivate_msg": "Are you sure you want to reactivate department \"{name}\"? It will become active and visible in the organization again."
     },
-
     "roles_management": {
       "title": "Roles Management",
-      "all": "All",
       "search_placeholder": "Search role, access level or department...",
       "clear_search": "Clear search",
       "select_department": "Select Department",
-      "active": "Active",
       "show_inactive": "Show Inactive",
       "empty_all": "No roles found.",
       "empty_select": "Select a department to view roles.",
       "inactive_badge": "Inactive",
-      "active_badge": "Active",
       "order_column": "Order",
       "role_column": "Role",
       "access_level_column": "Access Level",
@@ -1075,34 +867,10 @@
       "role_name_required": "Role name is required",
       "add_role": "Add Role",
       "confirm_remove": "Are you sure you want to remove role \"{role}\" from department \"{department}\"?",
-      "access": {
-        "guest": "Standard",
-        "member": "Member",
-        "coordinator": "Coordinator",
-        "admin": "Admin"
-      },
       "errors": {
         "add_role": "Error adding role",
         "remove_role": "Error removing role",
         "save_permissions": "Failed to save permissions"
-      },
-      "successes": {
-        "add_role": "Role added successfully",
-        "remove_role": "Role removed successfully"
-      },
-      "confirm_dialog": {
-        "confirm": "Confirm",
-        "cancel": "Cancel"
-      },
-      "permission_categories": {
-        "users": "Users & GDPR",
-        "departments": "Departments & Administrative Bodies",
-        "roles": "Roles & Positions",
-        "memberships": "Memberships & Mandates",
-        "photos": "Member Photos",
-        "shop": "Shop Catalog Management",
-        "orders": "Orders & Counter Sales",
-        "voting": "General Assemblies & Voting"
       },
       "permissions": {
         "users:read": "View user list and details",
@@ -1123,6 +891,8 @@
         "photos:write_dept": "Manage photos within own departments",
         "shop:read": "View shop catalog and stock",
         "shop:write": "Manage products, categories, and stock",
+        "pos:access": "Operate point of sale terminals",
+        "pos:manage": "Manage POS stations, shifts, and cash drawers",
         "orders:read": "View orders and purchase history",
         "orders:read_customer": "View personal customer orders",
         "orders:create": "Create new orders",
@@ -1133,7 +903,6 @@
         "voting:write": "Manage all voting sessions"
       }
     },
-
     "memberships_management": {
       "title": "Memberships Management",
       "add_mandate_button": "Add Member Mandate",
@@ -1142,12 +911,8 @@
       "select_role": "Select a role",
       "select_year": "Select Year",
       "all_departments": "All Departments",
-      "add_member": "Add Member",
-      "create_user": "Create user",
       "search_placeholder": "Search member, ISTID, department...",
       "clear_search": "Clear search",
-      "active": "Active",
-      "show_inactive": "Show Inactive",
       "empty": "No members found.",
       "change_photo": "Change Photo",
       "photo_updated": "Photo updated successfully",
@@ -1181,40 +946,30 @@
       "alt_email": "Alternative Email",
       "phone": "Phone",
       "courses": "Courses",
-      "email_label": "Email:",
       "active_badge": "Active",
-      "inactive_badge": "Inactive",
       "concluded_badge": "Concluded",
-      "remove": "Remove",
-      "confirm_remove": "Are you sure you want to remove this member?",
-      "confirm_yes": "Yes",
       "confirm_cancel": "Cancel",
-      "data_deleted": "Data deleted",
       "errors": {
         "add_member": "Error adding member"
       }
     }
   },
-
   "shop_management": {
     "title": "Shop Management",
-    "pos_link": "POS Management",
     "discounts_link": "Discount Codes",
+    "schedules_link": "Campus Schedules",
     "add_product": "Add Product",
     "search_placeholder": "Search product...",
     "all_categories": "All categories",
     "no_image": "No Image",
-    "view_image": "View image {idx}",
-    "limited": "Limited",
     "on_demand": "Made to Order",
+    "untracked_stock": "Unlimited",
     "out_of_stock": "Out of stock",
     "in_stock": "{count} in stock",
     "edit": "Edit",
     "archive": "Archive",
     "restore": "Restore",
     "delete": "Delete",
-    "remove": "Remove",
-    "confirm_remove": "Are you sure you want to remove this product?",
     "view_active": "View active",
     "archived": "Archived",
     "archived_badge": "Archived",
@@ -1235,21 +990,29 @@
     "confirm_dialog": {
       "confirm": "Confirm",
       "cancel": "Cancel"
-    },
-    "categories": {
-      "Vestuário": "Apparel"
     }
   },
-
+  "campus_schedules_management": {
+    "title": "Campus Schedules",
+    "subtitle": "Availability and presence shifts of staff members in NEIIST rooms",
+    "fallback_alameda": "Alameda (Room & Stand)",
+    "fallback_taguspark": "Taguspark (Room 1-4.14)",
+    "days_short": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "toast_saved": "Schedule saved successfully!",
+    "toast_save_error": "Error saving schedule.",
+    "toast_load_error": "Error loading campus schedule."
+  },
   "discount_codes": {
     "title": "Discount Codes",
     "new_code": "New code",
+    "actions_title": "Discount code actions",
     "search_placeholder": "Search code, ISTID, email or product...",
     "selected_singular": "selected code",
     "selected_plural": "selected codes",
     "activate": "Activate",
     "deactivate": "Deactivate",
     "delete": "Delete",
+    "cancel": "Cancel",
     "delete_confirm": "Delete {count} code(s)? Are you sure?",
     "status_inactive": "Inactive",
     "status_expired": "Expired",
@@ -1296,13 +1059,12 @@
       "preview_base_price": "Base Price from ",
       "preview_will_go_from": "Will go from ",
       "preview_to": "to",
-      "preview_variants": "variants",
       "section_email": "Email to Send",
       "email_subject_label": "Email subject",
       "default_email_subject": "Your NEIIST discount code",
       "email_body_label": "Email Body",
       "email_body_placeholder": "Hello {{name}},\n\nHere is your discount code: {{code}}",
-      "email_variables_hint": "Variables: {{name}}, {{istid}}, {{code}}, {{discount}}, {{expiry}}.",
+      "email_variables_hint": "Variables:",
       "preview_title": "Preview",
       "error_no_recipients": "Please specify at least one user or external email.",
       "error_invalid_value": "Please specify a valid discount value.",
@@ -1313,18 +1075,14 @@
       "toast_generated_success": "Generated {count} codes and sent emails."
     }
   },
-
   "order_details": {
-    "close_label": "Close",
     "order_title": "Order",
-    "not_found": "Order not found.",
     "col_name": "Name",
     "col_ist_id": "IST ID",
     "col_campus": "Campus",
     "col_email": "Email",
     "col_phone": "Phone",
     "items_title": "Order Items",
-    "edit_items_label": "Edit order items",
     "col_product": "Product",
     "col_variant": "Variant",
     "col_qty": "Qty",
@@ -1333,10 +1091,25 @@
     "add_notes": "Add notes",
     "total_label": "Total: {amount}€",
     "notes_title": "Notes",
-    "status_title": "Status",
     "mark_ready": "Mark as Ready",
     "mark_delivered": "Mark as Delivered",
     "cancel_order": "Cancel Order",
+    "status_updated": "Order status updated successfully.",
+    "order_cancelled": "Order cancelled successfully.",
+    "item_updated": "Item updated successfully.",
+    "error_item_update": "Error updating item.",
+    "email_resent": "Email resent successfully!",
+    "error_resend_email": "Error resending email.",
+    "confirm": "Confirm",
+    "back": "Back",
+    "pay_in_pos": "Charge at Banca",
+    "resend_email": "Resend Confirmation Email",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "deliver": "Deliver",
+    "mark_ready_short": "Ready",
+    "saving": "Saving...",
+    "view_ticket": "View Ticket",
     "created_by": "Created by {by} on {date}",
     "payment_verified_by": "Payment verified by {by} on {date}",
     "pickup_deadline": "Pickup deadline on {date}",
@@ -1348,6 +1121,7 @@
     "confirm_cancel": "Are you sure you want to cancel this order?",
     "confirm_status": "Are you sure you want to mark as {status}?",
     "confirm_save_notes": "Notes have changed. Do you want to save the changes?",
+    "confirm_pay_in_pos": "Do you want to open order {number} at the POS Desk to register the payment and associate it with your active shift?",
     "error_update_status": "Error updating status.",
     "error_cancel": "Error cancelling order.",
     "error_save_notes": "Error saving notes.",
@@ -1364,83 +1138,23 @@
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },
-    "special_status": {
-      "jantar_pending_mbway": "MB Way payment pending verification",
-      "jantar_confirmed": "Confirmed"
-    },
+    "ticket_confirmed": "Confirmed",
     "payment_methods": {
       "cash": "Cash",
-      "sumup-tpa": "SumUp POS",
+      "sumup-tpa": "Card SumUp Reader",
       "sumup": "SumUp Online Card",
       "apple-pay": "Apple Pay",
-      "in-person": "In person",
       "mbway": "MBWay",
       "other": "Other"
     }
   },
-
-  "pos_payment": {
-    "close_label": "Close",
-    "title": "Pay Order {number}",
-    "title_register_payment": "Register Payment",
-    "title_finalize_order": "Finalize Order",
-    "method_label": "Payment method",
-    "payment_methods": {
-      "cash": "Cash",
-      "sumup-tpa": "SumUp POS",
-      "sumup": "SumUp Online",
-      "apple-pay": "Apple Pay",
-      "in-person": "In person",
-      "mbway": "MBWay",
-      "other": "Other"
-    },
-    "reference_label": "Payment reference or reason *",
-    "reference_placeholder": "E.g., Gift, Sponsor, IBAN, MB Way, TX ID...",
-    "in_person_notice": "By selecting In person, payment will be completed at a later time. The order will remain pending until payment is received.",
-    "reader_label": "SumUp Reader",
-    "loading_readers": "Loading readers…",
-    "select_reader": "Select a reader",
-    "cancel": "Cancel",
-    "confirm_btn": "Confirm {method}",
-    "success_title": "Order Registered!",
-    "processing_terminal_title": "Processing on terminal",
-    "processing_payment_title": "Processing payment",
-    "success_subtitle": "Your order has been registered. Payment confirmed successfully.",
-    "awaiting_subtitle": "Awaiting confirmation...",
-    "view_orders": "View Orders",
-    "error_load_readers": "Failed to load readers",
-    "error_update_order": "Failed to update order",
-    "error_finalize_order": "Failed to finalize order",
-    "error_invalid_server_response": "Invalid server response",
-    "order_success": "Order updated successfully",
-    "reader_status": "Reader {name}: {status}",
-    "awaiting_terminal": "Awaiting terminal confirmation...",
-    "select_reader_error": "Select a SumUp reader to continue.",
-    "starting_payment": "Starting payment on terminal...",
-    "checkout_started": "Checkout already started on terminal. Awaiting confirmation...",
-    "payment_initiated_toast": "Payment initiated on terminal. Confirmation may take a few seconds.",
-    "failed_terminal": "Failed to start on terminal.",
-    "payment_sent": "Payment sent to terminal. Awaiting confirmation...",
-    "processing_payment": "Processing payment...",
-    "error_mbway_missing": "MBWay number missing for this order",
-    "fill_reference": "Please enter the payment reference or reason.",
-    "payment_confirmed": "Payment confirmed successfully.",
-    "error_payment": "Failed to process payment.",
-    "confirm_in_person": "Do you confirm the order will remain pending for later in-person payment?",
-    "confirm_cash": "Do you confirm cash payment was received and is correct?",
-    "confirm_mbway": "Do you confirm MBWay payment was received and is correct?",
-    "confirm_reference": "Do you confirm you received payment for reference/reason \"{reference}\" and it is correct?",
-    "mbway_send_to": "Send MBWay to:",
-    "mbway_number_unavailable": "Number not available",
-    "status_update_bulk": "Updating status of bulk order...",
-    "status_update_success": "Status updated successfully."
-  },
-
   "my_orders": {
     "title": "My Orders",
+    "subtitle": "History and status of your orders and shop purchases",
     "search_placeholder": "Search number, product, status or date...",
     "search_aria_label": "Search orders",
     "deadline_banner": "Warning: you have at least one order with an upcoming pickup deadline.",
+    "pickup_deadline_tag": "Pickup by {date}",
     "delivered_on": "Delivered on {date}",
     "order_aria_label": "View order {number}",
     "empty": "No orders found.",
@@ -1451,12 +1165,8 @@
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },
-    "special_status": {
-      "jantar_pending_mbway": "MB Way payment pending verification",
-      "jantar_confirmed": "Confirmed"
-    }
+    "ticket_confirmed": "Confirmed"
   },
-
   "voting": {
     "connecting": "Connecting...",
     "reconnecting": "Reconnecting...",
@@ -1496,19 +1206,13 @@
     "voting_sessions_aria": "Voting sessions",
     "session_default_name": "Session {number}",
     "view_details": "View details",
-    "close": "Close",
     "rank_format": "#{rank}",
-    "choices_selected": "{selected} of {max} choices selected",
-    "choices_selected_short": "{selected} / {max} selected",
     "choices_count": "{selected} of {max} choices",
     "submit": "Submit",
-    "submit_vote": "Submit Vote",
     "select_choice": "Select",
     "remove_choice": "Remove selection",
-    "max_choices_reached": "Maximum of {max} choices reached",
-    "ballot_progress": "Ballot"
+    "max_choices_reached": "Maximum of {max} choices reached"
   },
-
   "voting_management": {
     "title": "Voting Management",
     "search_placeholder": "Search by title...",
@@ -1534,9 +1238,7 @@
       "empty": "No voting sessions found.",
       "actions": "Actions",
       "view_full_details": "View full details",
-      "view_summary": "View quick summary",
-      "export_excel": "Export to Excel",
-      "max_choices": "Choices"
+      "export_excel": "Export to Excel"
     },
     "types": {
       "activity": "Activity",
@@ -1606,9 +1308,7 @@
       "desc_label": "Description",
       "desc_placeholder": "Optional description...",
       "max_choices_label": "Choices per voter",
-      "max_choices_placeholder": "1",
       "max_choices_hint": "Maximum number of choices each voter can select (1 to 5).",
-      "max_choices_error": "The number of choices must be between 1 and 5.",
       "voting_type": "Voting Type",
       "select_activity": "Select Activity",
       "candidates": "Candidates",
@@ -1620,18 +1320,12 @@
       "option_title_placeholder": "e.g. Proposal A, Mascot, or Theme",
       "option_desc": "Option Description",
       "option_desc_placeholder": "e.g. More information at https://...",
-      "upload_image": "Upload Image",
-      "change_image": "Change Image",
       "remove_image": "Remove Image",
       "remove_option": "Remove Option",
       "main_image": "Main Image",
-      "main_image_required": "Main image is required.",
-      "upload_main_image": "Upload Main Image",
       "change_main_image": "Change Main Image",
       "desc_image": "Description Image",
       "desc_image_optional": "(Optional)",
-      "desc_image_hint": "If not provided, the main image will be used.",
-      "upload_desc_image": "Upload Description Image",
       "change_desc_image": "Change Description Image",
       "period_title": "Voting Period",
       "start_label": "Start",
@@ -1643,28 +1337,18 @@
       "error_upload": "Failed to upload images."
     }
   },
-
   "unauthorized": {
     "title": "Restricted Access",
     "message": "You do not have permission to access this page.",
     "home_button": "Go to home page",
     "help_text": "Need help? Contact the NEIIST team at"
   },
-
   "email_confirmation": {
     "title": "Alternative Email Verified!",
     "message_p1": "Your alternative email has been successfully verified.",
     "message_p2": "You may close this page or return to your",
     "profile_link": "profile"
   },
-
-  "error_page": {
-    "title": "Something Went Wrong",
-    "default_message": "An error occurred while loading this page.",
-    "retry_button": "Try again",
-    "help_text": "Need help? Contact the NEIIST team at"
-  },
-
   "privacy_policy_page": {
     "title": "Privacy Policy",
     "last_updated_label": "Last updated",
@@ -1907,14 +1591,26 @@
         "title": "1. Company Information",
         "intro": "This website and its shop are operated by:",
         "items": [
-          { "label": "Name", "text": "NEIIST (Núcleo Estudantil de Informática do IST)" },
-          { "label": "Legal nature", "text": "Non-profit Youth Association" },
+          {
+            "label": "Name",
+            "text": "NEIIST (Núcleo Estudantil de Informática do IST)"
+          },
+          {
+            "label": "Legal nature",
+            "text": "Non-profit Youth Association"
+          },
           {
             "label": "Address",
             "text": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa"
           },
-          { "label": "Tax ID", "text": "507 162 331" },
-          { "label": "Email", "text": "neiist@tecnico.ulisboa.pt" },
+          {
+            "label": "Tax ID",
+            "text": "507 162 331"
+          },
+          {
+            "label": "Email",
+            "text": "neiist@tecnico.ulisboa.pt"
+          },
           {
             "label": "Service rooms",
             "text": "Alameda: Computer Science Pavilion I, Room 3-03 (3rd floor). Taguspark: Central Building, Room 1 - 4.14 (Aquarium entrance)"
@@ -2159,5 +1855,521 @@
         ]
       }
     ]
+  },
+  "activities_management": {
+    "title": "Activities Management",
+    "subtitle": "Event management, Notion calendar synchronization, and entrance scanners",
+    "sync_notion": "Sync with Notion",
+    "syncing": "Syncing...",
+    "sync_success": "Notion synchronization triggered successfully",
+    "create_event": "Create New Event",
+    "edit_event": "Edit Event",
+    "search_placeholder": "Search event by title or type...",
+    "open_scanner": "Open Door Scanner",
+    "sync_error": "Failed to sync with Notion",
+    "event_details": "Event Details",
+    "delete_event": "Delete Event",
+    "delete_confirm": "Are you sure you want to delete the event \"{title}\"?",
+    "confirm_delete": "Delete",
+    "cancel": "Cancel",
+    "table": {
+      "title": "Title",
+      "type": "Type",
+      "date": "Date",
+      "location": "Location",
+      "visibility": "Visibility",
+      "status": "Sign-ups",
+      "attendees": "Attendees",
+      "actions": "Actions",
+      "filter_label": "Filters:",
+      "clear_all": "Clear all",
+      "empty_title": "No events found",
+      "empty_desc": "No events match the selected filters.",
+      "public_badge": "Public",
+      "internal_badge": "Internal",
+      "open_badge": "Open",
+      "closed_badge": "Closed"
+    },
+    "roster_modal": {
+      "title": "Attendee Roster",
+      "col_name": "Name",
+      "col_istid": "IST ID",
+      "col_email": "Email",
+      "col_ticket": "Ticket",
+      "col_signup_date": "Registration Date",
+      "col_checkin": "Admission",
+      "col_checkin_time": "Check-in Time",
+      "col_responses": "Responses",
+      "checked_in": "Validated",
+      "not_checked_in": "Not Checked In"
+    },
+    "details": {
+      "back_to_events": "Back to Events Management",
+      "open_scanner": "Open Scanner",
+      "edit": "Edit",
+      "send_email": "Send Email",
+      "export_excel": "Export Excel",
+      "export_success": "Excel file exported successfully!",
+      "export_error": "Error generating Excel file",
+      "total_attendees": "Total Attendees",
+      "checked_in_attendees": "Checked In",
+      "search_placeholder": "Search attendee...",
+      "selected_count": "attendee selected",
+      "selected_count_plural": "attendees selected",
+      "clear_selection": "Clear",
+      "send_email_selected": "Send Email to Selected",
+      "empty_title": "No attendees found",
+      "empty_desc": "There are no attendees registered yet or matching the search.",
+      "attendee_actions": "Attendee Actions",
+      "checkin": "Check In",
+      "undo_checkin": "Undo Check-in",
+      "view_responses": "View Responses",
+      "copy_ticket": "Copy Ticket",
+      "copy_email": "Copy Email",
+      "ticket_code": "Ticket code",
+      "email": "Email",
+      "copied_success": "{label} copied!",
+      "copied_error": "Error copying {label}",
+      "checkin_success": "Check-in confirmed for {name}",
+      "undo_checkin_success": "Check-in undone for {name}",
+      "checkin_error": "Error changing check-in status",
+      "signups_open": "Sign-ups Open",
+      "signups_closed": "Sign-ups Closed",
+      "public": "Public",
+      "unlisted": "Unlisted",
+      "all_day": "(All Day)",
+      "at_time": "at {time}",
+      "responses_title": "Registration Responses: {name}",
+      "yes": "Yes",
+      "no": "No",
+      "close": "Close"
+    },
+    "form": {
+      "back": "Back",
+      "section_general": "General Information",
+      "section_period": "Event Period",
+      "section_signups": "Sign-ups & Capacity",
+      "all_day_label": "All Day Event",
+      "change_icon_label": "Change icon",
+      "title_label": "Event Title *",
+      "title_placeholder": "e.g. Intro to Next.js Workshop",
+      "desc_label": "Description",
+      "desc_placeholder": "Details on speakers, prerequisites, or event schedule...",
+      "type_label": "Event Type",
+      "type_text": "Text",
+      "type_select": "Dropdown Selection",
+      "type_checkbox": "Checkbox",
+      "location_label": "Location (comma-separated)",
+      "location_placeholder": "e.g. Amphitheater FA2, Informatics Building",
+      "start_label": "Start Date *",
+      "end_label": "End Date *",
+      "public_label": "Public Event (visible to all students)",
+      "signup_enabled_label": "Enable Sign-ups",
+      "signup_deadline_label": "Sign-up Deadline",
+      "max_attendees_label": "Max Attendees (capacity)",
+      "max_attendees_placeholder": "No attendee limit",
+      "add_icon": "Add icon",
+      "remove_icon": "Remove icon",
+      "signup_fields_title": "Custom Registration Questions (Dynamic Fields)",
+      "add_field": "+ Add Question",
+      "remove_field": "Remove Question",
+      "field_label": "Question / Label",
+      "field_type": "Response Type",
+      "field_required": "Required",
+      "field_options": "Options (comma-separated)",
+      "chips_placeholder": "Type and press Enter to add option...",
+      "chips_add_more": "Add another...",
+      "chips_remove_aria": "Remove option",
+      "save": "Save Event",
+      "saving": "Saving..."
+    }
+  },
+  "tickets": {
+    "title": "My Tickets",
+    "subtitle": "Access passes to your NEIIST events and activities",
+    "no_tickets": "You don't have any event tickets or registrations yet.",
+    "empty_desc": "When you sign up for free events or purchase tickets in the shop, your passes will appear here.",
+    "explore_events": "Explore Available Activities",
+    "search_placeholder": "Search by event, code or order...",
+    "search_aria_label": "Search tickets",
+    "clear_search": "Clear search",
+    "no_search_results": "No tickets found for your search.",
+    "ticket_code": "Code",
+    "status_checked_in": "Validated",
+    "status_confirmed": "Confirmed"
+  },
+  "ticket_pass": {
+    "title": "Entry Pass",
+    "instructions": "Present this QR code at the event entrance",
+    "order_prefix": "Order:",
+    "paid_ticket": "Paid Ticket",
+    "free_signup": "Free Registration",
+    "responses_title": "Your Answers",
+    "download_calendar": "Add to Calendar (.ics)",
+    "validated_at": "Validated at {time}",
+    "validated_at_by": "Validated at {time} by {staff}",
+    "yes": "Yes",
+    "no": "No",
+    "back_to_activities": "Back"
+  },
+  "checkin_scanner": {
+    "offline_badge": "Offline Mode",
+    "online_badge": "Online",
+    "pending_sync": "pending validations",
+    "sync_now": "Sync Now",
+    "syncing": "Syncing...",
+    "sync_complete": "Sync completed successfully",
+    "camera_prompt": "Point the camera at attendee's QR code",
+    "manual_search_placeholder": "Search by Name, IST ID or Ticket Code...",
+    "validate_button": "Validate Entry",
+    "undo_checkin": "Undo Check-in",
+    "undo_checkin_success": "Check-in undone successfully!",
+    "undo_error": "Error undoing validation",
+    "success_validated": "Admission Confirmed!",
+    "already_checked_in": "Warning: Already validated!",
+    "invalid_code": "Ticket code not found for this event",
+    "offline_validated": "Validated locally (offline)",
+    "confirm_title": "Confirm Admission",
+    "already_validated_title": "Validated",
+    "recent_checkins_title": "Recent Validations",
+    "no_recent_checkins": "No attendees checked in yet.",
+    "undo": "Undo",
+    "confirm_prompt_validate": "Do you want to confirm admission for this attendee?",
+    "confirm_prompt_undo": "Do you want to undo admission validation for this attendee?",
+    "cancel": "Cancel",
+    "verify": "Verify",
+    "back_to_activities": "Back to Activities Management",
+    "checked_in_stat": "Checked In",
+    "total_registered_stat": "Total Registered",
+    "istid_label": "IST ID",
+    "ticket_label": "Ticket",
+    "offline_retry": "Try Again",
+    "offline_confirm_title": "Switch to Offline Mode?",
+    "offline_confirm_text": "Network connection lost. You can continue validating attendees offline using the cached local roster. Validations will sync automatically when back online.",
+    "confirm_offline": "Activate Offline Mode",
+    "leave_guard": "You have pending validations to sync with the server! If you leave now, these scans may be lost."
+  },
+  "payments": {
+    "methods": {
+      "cash": "Cash",
+      "sumup-tpa": "SumUp Card Reader",
+      "sumup": "Online card SumUp",
+      "apple-pay": "Apple Pay",
+      "mbway": "MB Way",
+      "other": "Other"
+    },
+    "reservation": {
+      "label": "Reservation - pay at the Banca",
+      "pending_title": "Reservation Registered!",
+      "pending_intro": "Your reservation was registered. Complete the payment at the Banca within the deadline.",
+      "pending_location": "Banca - {location}",
+      "continue": "Continue",
+      "action_label": "Reserve and pay at the Banca",
+      "switch_error": "Could not convert the payment into a reservation."
+    },
+    "mbway": {
+      "waiting": "Waiting for confirmation in the MB Way app...",
+      "success": "Payment confirmed!",
+      "declined": "Payment declined by the customer in the MB Way app.",
+      "expired": "MB Way authorization timed out (4 minutes).",
+      "failed": "MB Way transaction was declined or failed.",
+      "request_error": "Could not send the MB Way request.",
+      "service_error": "MB Way service error.",
+      "title": "Confirm in your MB Way app",
+      "instructions_with_phone": "We sent a payment request to {phone}. Open the MB Way app and authorize the payment.",
+      "instructions_without_phone": "We sent a payment request to your phone. Open the MB Way app and authorize the payment."
+    },
+    "phone_required": "Enter the phone number to receive the MB Way payment request.",
+    "module_load_error": "Error loading the payment module.",
+    "discount_enter": "Enter a discount code.",
+    "discount_invalid": "Invalid discount code.",
+    "discount_error": "Could not validate the code."
+  },
+  "pos": {
+    "desk": {
+      "identified_title": "Sales Stand",
+      "identified_subtitle": "Standard orders with receipt and tracking",
+      "fast_title": "Quick Sale",
+      "fast_subtitle": "Drinks, food, and quick items",
+      "close_shift": "Close Shift"
+    },
+    "guard": {
+      "blocked_heading": "Terminal Locked",
+      "blocked_body": "No operator access. Ask a supervisor.",
+      "checking": "Finding stands...",
+      "select_heading": "Select Stand",
+      "select_body": "Choose where you are selling:",
+      "station_label": "Stand",
+      "closed_heading": "Shift Closed",
+      "closed_body": "No active shift at {station}. Open a shift to start.",
+      "switch_station": "Switch Stand",
+      "open_shift": "Open Shift"
+    },
+    "shift": {
+      "close_title": "Close Cash Shift",
+      "opening_label": "Opened:",
+      "initial_float_label": "Opening float:",
+      "station_operator_label": "Desk / Operator:",
+      "counted_cash_label": "Cash Counted at Close (€)",
+      "counted_cash_placeholder": "E.g. 85.50",
+      "cancel": "Cancel",
+      "closing": "Closing...",
+      "confirm_close": "Confirm Shift Close",
+      "open_title": "Open Cash Shift",
+      "open_body": "Open a new shift at {station} to start registering sales.",
+      "initial_float_input_label": "Opening Cash Float (€)",
+      "initial_float_placeholder": "50.00",
+      "confirm_open": "Confirm Shift Open",
+      "opened_today": "Opened at {time}",
+      "opened_on": "Opened on {date} at {time}",
+      "session": "Desk Session",
+      "tooltip": "{opened} · Float: {float} €",
+      "error_invalid_float": "Enter a valid opening float.",
+      "error_invalid_count": "Enter a valid counted cash amount.",
+      "open_success": "Shift opened successfully.",
+      "open_error": "Error opening shift",
+      "close_success": "Shift closed successfully.",
+      "close_error": "Error closing shift"
+    },
+    "customer": {
+      "search_label": "Customer / Student",
+      "search_placeholder": "Search by IST ID (e.g. ist1102934), name or email...",
+      "external_client": "External customer",
+      "external_badge": "External Customer",
+      "student_badge": "IST Student",
+      "remove_customer": "Remove customer",
+      "email": "Email",
+      "phone": "Phone",
+      "nif_label": "NIF (optional)",
+      "nif_placeholder": "999999990",
+      "campus_label": "Pickup campus",
+      "campus_alameda": "Alameda Campus",
+      "campus_taguspark": "Taguspark Campus",
+      "phone_placeholder": "+351 912 345 678",
+      "notes_label": "Order notes",
+      "notes_placeholder": "Special instructions..."
+    },
+    "guest": {
+      "title": "Register External Customer (No IST ID)",
+      "name_label": "Full Name",
+      "name_placeholder": "E.g. John Smith",
+      "email_label": "Email",
+      "email_placeholder": "john.smith@example.com",
+      "phone_label": "Phone (optional)",
+      "phone_placeholder": "+351 912 345 678",
+      "cancel": "Cancel",
+      "confirm": "Confirm Customer",
+      "error_required": "Name and Email are required for an external customer."
+    },
+    "cart": {
+      "title": "Current Cart",
+      "clear": "Clear",
+      "reservation_label": "Reservation {number}",
+      "reservation_loading": "Loading for settlement at the desk",
+      "discard": "Discard",
+      "empty": "No items in the cart.",
+      "empty_hint": "Click a product to add it.",
+      "remove": "Remove",
+      "discount_placeholder": "Discount code",
+      "apply": "Apply",
+      "subtotal": "Subtotal",
+      "discount": "Discount ({code})",
+      "remove_discount": "Remove discount",
+      "total": "Total: ",
+      "charge": "Charge {amount}"
+    },
+    "catalog": {
+      "empty": "No products available in this category.",
+      "back_to_catalog": "Back to catalogue ({product})",
+      "back": "Back",
+      "select_option": "Select {option}",
+      "all": "All",
+      "badge_deadline": "Past Deadline",
+      "badge_sold_out": "Sold Out",
+      "badge_named": "Named Ticket",
+      "badge_on_demand": "Made to Order",
+      "badge_units": "{count} units",
+      "no_image": "No image"
+    },
+    "pending": {
+      "single_title": "Pending Order Found",
+      "single_intro": "Student {name} has 1 pending order for pickup at the desk. Load it for settlement?",
+      "multiple_title": "Pending Orders Found",
+      "multiple_intro": "This student has {count} pending orders for pickup at the desk. Select the ones you want to settle:",
+      "new_sale": "New Sale",
+      "load": "Load Order",
+      "load_selected": "Load Selected ({count})"
+    },
+    "payment": {
+      "title": "Desk Payment",
+      "method_label": "Payment Method",
+      "cash_option": "Cash",
+      "tpa_option": "SumUp Card Reader",
+      "mbway_option": "MB WAY",
+      "reservation_option": "Reservation - pay at the Banca",
+      "other_option": "Other Payment Method",
+      "cash_received_label": "Amount Received from Customer (€)",
+      "shortcuts": "Amount Shortcuts",
+      "change_title": "Change Due",
+      "reader_label": "SumUp Card Reader",
+      "reader_online": "Online",
+      "reader_paired": "Paired",
+      "reader_offline": "Offline",
+      "reader_default_name": "Reader",
+      "reader_none": "No reader",
+      "reader_searching": "Searching for readers...",
+      "reader_select_error": "Select a SumUp reader.",
+      "reader_load_error": "Error loading SumUp readers.",
+      "tpa_starting": "Initialising terminal...",
+      "tpa_present_card": "Present the card to the SumUp terminal...",
+      "tpa_paid": "Payment confirmed successfully!",
+      "tpa_paid_toast": "Payment completed on the terminal!",
+      "tpa_failed": "Transaction cancelled or declined on the reader.",
+      "tpa_failed_toast": "Payment cancelled or declined.",
+      "tpa_register_failed": "Payment was confirmed on the terminal, but registering the sale failed. Use \"Retry sale\" — do not charge the customer again.",
+      "tpa_register_failed_toast": "Registering the sale failed after the terminal payment.",
+      "tpa_retry_failed": "Registration failed again. Please try again.",
+      "tpa_retry_failed_toast": "Failed to register sale.",
+      "tpa_start_error": "Error starting payment on the SumUp reader",
+      "tpa_error": "Reader error",
+      "tpa_cancel_operation": "Cancel Operation",
+      "tpa_not_completed": "Operation Not Completed",
+      "tpa_retry": "Try Again",
+      "tpa_send": "Send to Terminal",
+      "tpa_retry_settlement": "Retry sale registration",
+      "mbway_phone_label": "Customer's MB WAY Phone Number",
+      "mbway_phone_placeholder": "912 345 678",
+      "mbway_phone_error": "Enter the customer's phone number.",
+      "mbway_hint": "The customer will receive a push notification in the MB WAY app to confirm the payment of {amount}.",
+      "mbway_sent_to": "Request sent to {phone} ({amount})",
+      "mbway_cancel": "Cancel Request",
+      "mbway_declined_badge": "Payment Declined / Expired",
+      "mbway_retry": "Try Again",
+      "mbway_switch_cash": "Switch to Cash",
+      "mbway_send": "Send MB WAY Request",
+      "mbway_paid_toast": "MB WAY payment confirmed!",
+      "mbway_finalize_error": "Error finalising the sale after MB WAY payment.",
+      "other_reference_label": "Reference / Reason (required)",
+      "other_reference_placeholder": "E.g. Bank transfer, protocol, subsidy...",
+      "back": "Back",
+      "registering": "Registering...",
+      "confirm_payment": "Confirm Payment",
+      "reservation_creating": "Creating reservation...",
+      "reservation_create": "Create Reservation (72h)",
+      "register_sale": "Register Sale",
+      "processing_sale": "Registering the sale in the system...",
+      "success_reservation": "Reservation Registered!",
+      "success_sale": "Sale Completed Successfully!",
+      "order_number": "Order {number}",
+      "view_order": "View Order",
+      "new_customer": "New Customer",
+      "confirm_exit_title": "Cancel Ongoing Operation?",
+      "confirm_exit_body": "A payment request is awaiting a response on the reader or the customer's phone. If you leave now, the operation will be cancelled.",
+      "keep_waiting": "Keep Waiting",
+      "confirm_exit": "Yes, Cancel Operation",
+      "settle_error": "Failed to register the payment.",
+      "sale_error": "Error processing the sale at the desk.",
+      "shift_required": "No cash shift is open."
+    },
+    "alerts": {
+      "processing_pending": "Processing pending reservation {number} at the desk.",
+      "reservation_discarded": "Reservation operation discarded. Desk ready for a new sale.",
+      "reservation_loaded": "Reservation {number} loaded for settlement.",
+      "reservations_loaded": "Reservations {numbers} loaded for joint settlement.",
+      "reservation_locked_cart": "The reservation is locked to the reserved items. Settle it first or discard it to start a new sale.",
+      "reservation_quantity_locked": "The quantity of items in a pending reservation cannot be changed at the desk.",
+      "discount_add_items": "Add items to the cart before applying a discount code.",
+      "discount_invalid": "Invalid discount code.",
+      "discount_applied": "Discount \"{code}\" applied!",
+      "discount_error": "Error validating discount code.",
+      "guest_selected": "External customer {name} selected.",
+      "fast_sale_success": "Sale completed! Order #{number}",
+      "deadline_expired": "Order deadline has passed for this item.",
+      "out_of_stock": "Item sold out.",
+      "ticket_single": "Only 1 ticket is allowed per sale.",
+      "ticket_mixed": "Tickets cannot be combined with clothing or other items.",
+      "ticket_locked": "You cannot add regular items to a cart containing tickets."
+    },
+    "management": {
+      "title": "POS Desks & Shifts Management",
+      "subtitle": "Desk configuration, real-time shift opening and closing, and SumUp readers.",
+      "tabs": {
+        "stations": "Desks & Active Shifts",
+        "shifts": "Shift History",
+        "readers": "SumUp Readers"
+      },
+      "stations_title": "Sales Desks",
+      "stations_subtitle": "Physical desks where cash can be opened and sales registered.",
+      "search_stations": "Search desks by name or location...",
+      "new_station": "New Desk",
+      "empty_stations": "No sales desks found.",
+      "shifts_title": "Closed Shift History",
+      "shifts_subtitle": "Cash count audit, cash sales and cash discrepancies.",
+      "search_shifts": "Search by desk or operator...",
+      "empty_shifts": "No shifts recorded in history.",
+      "filters_active": "Active filters:",
+      "clear_all": "Clear all",
+      "filter_station_title": "Filter by Desk",
+      "filter_status_title": "Filter by Status",
+      "filter_date_title": "Opening Date",
+      "filter_until": "Until",
+      "filter_range": "Range",
+      "filter_date_drawer": "Filter by Date",
+      "clear": "Clear",
+      "apply": "Apply",
+      "edit_station": "Edit Desk",
+      "new_station_title": "New Sales Desk",
+      "station_name_label": "Desk Name",
+      "station_name_placeholder": "E.g. Tagus Counter",
+      "station_location_label": "Location",
+      "station_location_placeholder": "E.g. Taguspark Central Hall",
+      "cancel": "Cancel",
+      "save": "Save",
+      "open_shift_title": "Open Shift: {station}",
+      "initial_float_label": "Opening Cash Float (€)",
+      "confirm_open": "Confirm Open",
+      "shift_details_title": "Shift Details: {station}",
+      "fields": {
+        "station": "Desk",
+        "location": "Location",
+        "shift_status": "Shift Status",
+        "shift": "Shift",
+        "no_active_shift": "No open shift",
+        "since_float": "Since {date} · Float: {float}€",
+        "status": "Status",
+        "opened_by": "Opened By",
+        "opened_at": "Opened",
+        "closed_at": "Closed",
+        "float": "Float",
+        "final_count": "Final Count",
+        "variance": "Discrepancy",
+        "variance_cash": "Cash Discrepancy",
+        "date_open": "Opening Date",
+        "date_close": "Closing Date",
+        "initial_float": "Initial Float"
+      },
+      "status_open": "Open",
+      "status_closed": "Closed",
+      "today": "Today",
+      "actions_station_title": "Desk Actions",
+      "actions_shift_title": "Shift Actions",
+      "edit_station_action": "Edit Desk",
+      "view_details": "View Details",
+      "errors": {
+        "fill_all": "Fill in all fields.",
+        "invalid_float": "Invalid cash float.",
+        "invalid_count": "Invalid count value.",
+        "save": "Error saving desk",
+        "open": "Error opening shift",
+        "close": "Error closing shift"
+      },
+      "success": {
+        "station_updated": "Desk updated",
+        "station_created": "Desk created",
+        "shift_opened": "Shift opened for {station}",
+        "shift_closed": "Shift closed successfully"
+      },
+      "close": "Close"
+    }
   }
 }

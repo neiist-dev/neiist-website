@@ -8,8 +8,10 @@ import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
 import {
   getLocalizedOrderStatusLabel,
+  getStatusLabel,
   canTransitionOrderStatus,
   isTicketOrder,
+  isTicketOrderItem,
 } from "@/utils/shop/orderStatusUtils";
 import { FaCalendarAlt, FaCheck, FaExclamationTriangle } from "react-icons/fa";
 import { FiChevronDown, FiChevronUp, FiMail, FiRefreshCw } from "react-icons/fi";
@@ -278,25 +280,11 @@ export default function OrderDetailOverlay({
   const isPaidOrBeyond = ["paid", "ready", "delivered"].includes(order.status);
   const hasEventHook = order.items.some((i) => !!i.event_hook);
 
-  const physicalItems = order.items.filter(
-    (item) =>
-      !item.event_id &&
-      item.product_type !== "event_ticket" &&
-      item.product_type !== "course_event_ticket" &&
-      item.product_type !== "standard_ticket" &&
-      !item.product_name?.toLowerCase().includes("jantar")
-  );
+  const physicalItems = order.items.filter((item) => !isTicketOrderItem(item));
 
   const undeliveredPhysicalItems = physicalItems.filter((item) => item.status !== "delivered");
 
-  const hasTicketItems = order.items.some(
-    (item) =>
-      Boolean(item.event_id) ||
-      item.product_type === "event_ticket" ||
-      item.product_type === "course_event_ticket" ||
-      item.product_type === "standard_ticket" ||
-      item.product_name?.toLowerCase().includes("jantar")
-  );
+  const hasTicketItems = isTicket;
 
   const showActionsColumn = canManage || canDeliver || hasTicketItems;
 
@@ -319,9 +307,7 @@ export default function OrderDetailOverlay({
       ];
 
   const getStepLabel = (step: { key: OrderStatus }) => {
-    if (isTicket) {
-      if (step.key === "paid") return dict.special_status.jantar_confirmed;
-    }
+    if (isTicket && step.key === "paid") return dict.ticket_confirmed;
     if (step.key === "pending") return dict.step_pending;
     if (step.key === "paid") return dict.step_paid;
     if (step.key === "ready") return dict.step_ready;
@@ -385,7 +371,7 @@ export default function OrderDetailOverlay({
           <Badge variant={getStatusBadgeVariant(order.status)}>
             {getLocalizedOrderStatusLabel(order, {
               status: dict.status,
-              special_status: dict.special_status,
+              ticket_confirmed: dict.ticket_confirmed,
             })}
           </Badge>
         }>
@@ -498,14 +484,7 @@ export default function OrderDetailOverlay({
                       item.variant_options ?? undefined,
                       item.variant_label ?? undefined
                     ).text || "-";
-                  const isItemTicket = Boolean(
-                    item.event_id ||
-                    item.product_type === "event_ticket" ||
-                    item.product_type === "course_event_ticket" ||
-                    item.product_type === "standard_ticket" ||
-                    Boolean(item.event_hook) ||
-                    item.product_name?.toLowerCase().includes("jantar")
-                  );
+                  const isItemTicket = isTicketOrderItem(item);
                   return (
                     <Table.Row
                       key={`${item.product_id}-${item.variant_id ?? item.variant_label ?? idx}`}>
@@ -531,7 +510,14 @@ export default function OrderDetailOverlay({
                         <Badge
                           size="sm"
                           variant={getStatusBadgeVariant(item.status || order.status)}>
-                          {dict.status[item.status as OrderStatus] ??
+                          {getStatusLabel(
+                            (item.status as OrderStatus) || order.status,
+                            dict.status,
+                            {
+                              isTicket: isItemTicket,
+                              ticketConfirmedLabel: dict.ticket_confirmed,
+                            }
+                          ) ??
                             item.status ??
                             dict.status[order.status]}
                         </Badge>
@@ -825,13 +811,25 @@ export default function OrderDetailOverlay({
           title={
             pendingStatus === "cancelled"
               ? dict.cancel_order
-              : dict.confirm_status.replace("{status}", dict.status[pendingStatus])
+              : dict.confirm_status.replace(
+                  "{status}",
+                  getStatusLabel(pendingStatus, dict.status, {
+                    isTicket,
+                    ticketConfirmedLabel: dict.ticket_confirmed,
+                  })
+                )
           }>
           <div className={styles.modalBody}>
             <Text size="sm" className={styles.modalText}>
               {pendingStatus === "cancelled"
                 ? dict.confirm_cancel
-                : dict.confirm_status.replace("{status}", dict.status[pendingStatus])}
+                : dict.confirm_status.replace(
+                    "{status}",
+                    getStatusLabel(pendingStatus, dict.status, {
+                      isTicket,
+                      ticketConfirmedLabel: dict.ticket_confirmed,
+                    })
+                  )}
             </Text>
             <div className={styles.modalActions}>
               <Button size="sm" variant="outline" onClick={() => setPendingStatus(null)}>

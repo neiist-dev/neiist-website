@@ -5,8 +5,23 @@ import {
 } from "@/types/shop/orderStatus";
 import type { Order } from "@/types/shop/order";
 
-export function getStatusLabel(status: OrderStatus, dict: Record<OrderStatus, string>): string {
+export function getStatusLabel(
+  status: OrderStatus,
+  dict: Record<OrderStatus, string>,
+  options?: { isTicket?: boolean; ticketConfirmedLabel?: string }
+): string {
+  if (options?.isTicket && status === "paid" && options.ticketConfirmedLabel) {
+    return options.ticketConfirmedLabel;
+  }
   return dict[status];
+}
+
+export function isTicketOrderItem(item: {
+  product_type?: string | null;
+  event_id?: string | null;
+  event_hook?: string | null;
+}): boolean {
+  return item.product_type === "event_ticket" || Boolean(item.event_id) || Boolean(item.event_hook);
 }
 
 export function isTicketOrder(order: {
@@ -16,12 +31,7 @@ export function isTicketOrder(order: {
     event_hook?: string | null;
   }>;
 }): boolean {
-  return Boolean(
-    order.items?.some(
-      (item) =>
-        item.product_type === "event_ticket" || Boolean(item.event_id) || Boolean(item.event_hook)
-    )
-  );
+  return Boolean(order.items?.some(isTicketOrderItem));
 }
 
 export function getAllowedOrderStatusTransitions(
@@ -60,8 +70,8 @@ export function getLocalizedOrderStatusLabel(order: Order, dict: OrderStatusDict
   if (order.delivered_at && dict.delivered_on)
     return dict.delivered_on.replace("{date}", new Date(order.delivered_at).toLocaleDateString());
 
-  if (isTicketOrder(order) && order.status === "paid" && dict.special_status)
-    return dict.special_status.jantar_confirmed;
+  if (isTicketOrder(order) && order.status === "paid" && dict.ticket_confirmed)
+    return dict.ticket_confirmed;
 
   return dict.status[order.status];
 }

@@ -91,7 +91,11 @@ export async function setOrderStatusAction(
   if (!updated) throw new Error("Failed to update order status");
 
   if (updated.customer_email) {
-    const statusLabel = getStatusLabel(updated.status, getDictionary("pt").orders_table.status);
+    const ordersTableDict = getDictionary("pt").orders_table;
+    const statusLabel = getStatusLabel(updated.status, ordersTableDict.status, {
+      isTicket: isTicketOrder(updated),
+      ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
+    });
     const subject = `Encomenda ${updated.order_number} - ${statusLabel}`;
     const html = getStatusUpdateOrderEmailTemplate(
       updated.order_number,
@@ -162,7 +166,11 @@ export async function updateOrderAction(
   ) {
     const formattedDeadline = new Date(updated.pickup_deadline).toLocaleDateString("pt-PT");
     const subject = `Encomenda ${updated.order_number} - Prazo Limite para Levantamento (${formattedDeadline})`;
-    const statusLabel = getStatusLabel(updated.status, getDictionary("pt").orders_table.status);
+    const ordersTableDict = getDictionary("pt").orders_table;
+    const statusLabel = getStatusLabel(updated.status, ordersTableDict.status, {
+      isTicket: isTicketOrder(updated),
+      ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
+    });
     const html = getStatusUpdateOrderEmailTemplate(
       updated.order_number,
       updated.customer_name ?? "Cliente",
@@ -286,7 +294,11 @@ export async function resendOrderEmailAction(orderNumber: string): Promise<{ suc
   if (!order) throw new Error("Order not found");
   if (!order.customer_email) throw new Error("Cliente não possui email associado");
 
-  const statusLabel = getStatusLabel(order.status, getDictionary("pt").orders_table.status);
+  const ordersTableDict = getDictionary("pt").orders_table;
+  const statusLabel = getStatusLabel(order.status, ordersTableDict.status, {
+    isTicket: isTicketOrder(order),
+    ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
+  });
   let subject = `Encomenda ${order.order_number} - ${statusLabel}`;
   let html: string;
 

@@ -3,9 +3,7 @@ export type OrderStatus = "pending" | "paid" | "ready" | "delivered" | "cancelle
 export interface OrderStatusDict {
   status: Record<OrderStatus, string>;
   delivered_on?: string;
-  special_status?: {
-    jantar_confirmed: string;
-  };
+  ticket_confirmed?: string;
 }
 
 export interface OrderStatusConfig {

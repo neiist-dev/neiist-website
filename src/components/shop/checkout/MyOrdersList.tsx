@@ -99,7 +99,7 @@ export default function MyOrdersList({ orders, products, dict, basePath }: MyOrd
             const statusLabel = getLocalizedOrderStatusLabel(order, {
               status: dict.status,
               delivered_on: dict.delivered_on,
-              special_status: dict.special_status,
+              ticket_confirmed: dict.ticket_confirmed,
             });
 
             return (

@@ -147,7 +147,6 @@ export default function CheckoutForm({
   const hasTickets = cart.some((item) => item.product.product_type === "event_ticket");
   const hasMerchandise = cart.some((item) => item.product.product_type !== "event_ticket");
   const isMixedInvalid = hasTickets && hasMerchandise;
-  const isSpecialOrderKind = hasTickets;
 
   const buildReserveFields = (paymentMethod?: PaymentMethod) => ({
     payment_method: paymentMethod,
@@ -387,7 +386,7 @@ export default function CheckoutForm({
 
   const paymentOptions: { id: CheckoutChoice; label: string }[] = [
     ...getLocalizedPaymentMethods(["mbway", "sumup"], paymentsDict.methods),
-    ...(!isSpecialOrderKind
+    ...(!hasTickets
       ? [
           {
             id: RESERVATION,
@@ -414,7 +413,7 @@ export default function CheckoutForm({
               onChange={(e) => setPhone(e.target.value)}
               placeholder={dict.phone_placeholder}
             />
-            {!isSpecialOrderKind && (
+            {!hasTickets && (
               <Input
                 type="text"
                 label={dict.nif_label}
@@ -429,9 +428,7 @@ export default function CheckoutForm({
         <Divider />
 
         <Stack direction="column" gap="md">
-          <Heading level={5}>
-            {isSpecialOrderKind ? dict.section_campus : dict.section_delivery}
-          </Heading>
+          <Heading level={5}>{hasTickets ? dict.section_campus : dict.section_delivery}</Heading>
           <RadioGroup
             name="campus"
             direction="row"
@@ -584,7 +581,7 @@ export default function CheckoutForm({
           </Stack>
 
           <Stack direction="column" gap="sm">
-            {!isSpecialOrderKind && (
+            {!hasTickets && (
               <>
                 <Stack direction="row" justify="between">
                   <Text size="sm" variant="muted">
@@ -614,14 +611,14 @@ export default function CheckoutForm({
                 </Text>
               </Stack>
             )}
-            {(!isSpecialOrderKind || (appliedDiscount && discountAmount > 0)) && <Divider />}
+            {(!hasTickets || (appliedDiscount && discountAmount > 0)) && <Divider />}
             <Stack direction="row" align="center" justify="between" className={styles.totalLine}>
               <span>{dict.total}</span>
               <strong>{formatMoney(total)}</strong>
             </Stack>
           </Stack>
 
-          {!isSpecialOrderKind && (
+          {!hasTickets && (
             <Accordion type="multiple" variant="flush">
               <Accordion.Item value="tax">
                 <Accordion.Trigger className={styles.accordionTrigger}>

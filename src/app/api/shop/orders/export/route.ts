@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyPermission } from "@/lib/auth";
 import { getAllOrdersNoCache } from "@/lib/db/repositories/shop.repository";
 import * as XLSX from "xlsx";
-import { getStatusLabel } from "@/utils/shop/orderStatusUtils";
+import { getStatusLabel, isTicketOrder } from "@/utils/shop/orderStatusUtils";
 import { getColorFromOptions, formatVariantSimple } from "@/utils/shop/shopUtils";
 import { withSumUp } from "@/lib/payments/sumup";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -53,12 +53,16 @@ async function lookupSumUpPayment(reference: string | null | undefined) {
 }
 
 async function buildOrdersWorkbook(orders: Order[]): Promise<Buffer> {
+  const ordersTableDict = getDictionary("pt").orders_table;
   const ordersSheet = orders.map((o) => {
     const primaryPayment = o.payments?.[0];
     const txId = (primaryPayment?.reference || o.payment_reference || "").split(";")[0].trim();
 
     return {
-      Estado: getStatusLabel(o.status, getDictionary("pt").orders_table.status),
+      Estado: getStatusLabel(o.status, ordersTableDict.status, {
+        isTicket: isTicketOrder(o),
+        ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
+      }),
       Número: o.order_number,
       Data: new Date(o.created_at).toLocaleString("pt-PT"),
       Nome: o.customer_name || "",

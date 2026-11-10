@@ -3,11 +3,13 @@
     "about_us": "Sobre Nós",
     "activities": "Atividades",
     "shop": "Loja",
-    "dinner": "Jantar de Curso",
     "menu": {
       "profile": "Perfil",
       "my_orders": "As Minhas Encomendas",
+      "my_tickets": "Os Meus Bilhetes",
       "manage_orders": "Gerir Encomendas",
+      "manage_activities": "Gerir Eventos",
+      "pos": "Terminal Balcão",
       "management": "Gerir Equipas e Membros",
       "manage_shop": "Gerir Loja",
       "manage_voting": "Gerir Votações",
@@ -15,7 +17,6 @@
       "user_photo_alt": "Foto do utilizador"
     }
   },
-
   "dinner": {
     "not_found": "Produto de Jantar de Curso não encontrado",
     "signed_up_message": "O teu lugar no jantar de curso está garantido! Prepara-te, temos surpresas à tua espera.",
@@ -42,7 +43,6 @@
       "karaoke_text": "Mostra os teus dotes no microfone! Sozinho ou em grupo, os corajosos do karaoke recebem senhas ;)"
     },
     "surprises": {
-      "title": "Surpresas do Jantar de Curso",
       "welcome_message": "Bem-vindo ao jantar de curso!\nExplora todas as atividades que preparámos para ti:",
       "voting_button": "Ir para as Votações",
       "poster_alt": "Poster do Jantar de Curso",
@@ -109,47 +109,69 @@
       }
     }
   },
-
   "sumup_readers": {
+    "title": "Leitores SumUp (TPA)",
+    "subtitle": "Terminais físicos associados à conta SumUp do NEIIST.",
     "pairing_code_label": "Código de Emparelhamento:",
     "pairing_code_placeholder": "Ex: ABCD1234",
     "reader_name_label": "Nome do Leitor",
     "reader_name_placeholder": "Ex: POS do Bar",
     "add_button": "Adicionar Leitor",
+    "pair_modal_title": "Emparelhar Leitor SumUp",
+    "refresh_button": "Atualizar",
     "loading": "A carregar leitores...",
     "no_readers": "Nenhum leitor disponível.",
+    "actions_title": "Ações do Leitor",
+    "view_details": "Ver Detalhes",
+    "rename_button": "Renomear",
+    "rename_title": "Renomear Leitor",
+    "rename_confirm": "Guardar",
+    "rename_success": "Leitor renomeado com sucesso.",
+    "copy_id": "Copiar ID",
+    "id_copied": "ID do leitor copiado.",
+    "copy_error": "Falha ao copiar ID.",
     "remove_button": "Remover",
+    "remove_confirm_title": "Remover Leitor SumUp",
+    "remove_confirm_message": "Tens a certeza que desejas desemparelhar e remover o leitor",
+    "remove_confirm_button": "Confirmar Remoção",
+    "removing": "A remover...",
+    "cancel": "Cancelar",
+    "details_title": "Detalhes do Leitor",
+    "detail_id": "ID do Leitor",
+    "detail_serial": "Número de Série",
+    "detail_model": "Modelo",
+    "detail_service_account": "Conta de Serviço",
+    "detail_created_at": "Criado em",
+    "detail_updated_at": "Atualizado em",
+    "detail_metadata": "Metadados",
     "added_success1": "Leitor ",
     "added_success2": "adicionado com sucesso.",
     "removed_success": "Leitor removido com sucesso.",
     "pairing_code_required": "Código de emparelhamento e nome são obrigatórios.",
-    "table_id": "ID",
     "table_name": "Nome",
     "table_status": "Estado",
     "table_model": "Modelo",
-    "table_actions": "Ações",
     "fetch_error": "Falha ao obter leitores",
     "create_error": "Falha ao criar leitor",
+    "update_error": "Falha ao atualizar leitor",
     "delete_error": "Falha ao remover leitor"
   },
-
-  "shop_pos": {
-    "title": "Gestão de TPAs SumUp"
-  },
-
   "orders_table": {
     "title": "Encomendas",
     "archive_title": "Encomendas (Arquivo)",
     "archive": "Arquivo",
+    "view_active": "Encomendas Ativas",
     "search_placeholder": "Procurar...",
+    "actions_title": "Ações da encomenda",
     "export_button": "Exportar",
-    "new_order_button": "Nova Encomenda",
     "no_archived_orders": "Nenhuma encomenda arquivada encontrada.",
     "filters_title": "Filtros",
     "send_email_selected": "Enviar email aos selecionados",
     "send_email": "Enviar Email",
     "set_pickup_deadline_title": "Definir prazo limite de levantamento",
     "set_pickup_deadline": "Definir prazo para levantamento",
+    "edit_pickup_deadline": "Alterar prazo de levantamento",
+    "clear_pickup_deadline": "Limpar prazo de levantamento",
     "processing": "A processar...",
     "mark_paid": "Marcar como Pago",
     "mark_ready": "Marcar como Pronto",
@@ -161,6 +183,8 @@
     "selected_plural": "selecionadas",
     "bulk_confirm_1": "Tem a certeza que deseja alterar o estado de",
     "bulk_confirm_3": "para",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
     "no_orders": "Nenhuma encomenda encontrada.",
     "pickup_dialog_title": "Prazo limite para levantamento das encomendas",
     "col_number": "Número",
@@ -181,39 +205,12 @@
       "delivered": "Entregue",
       "cancelled": "Cancelado"
     },
-    "special_status": {
-      "jantar_pending_mbway": "Pagamento MB Way em verificação",
-      "jantar_confirmed": "Confirmado"
-    }
+    "ticket_confirmed": "Confirmado",
+    "error_update_order": "Falha ao atualizar encomenda",
+    "order_success": "Encomenda atualizada com sucesso",
+    "status_update_bulk": "A atualizar estado de encomenda grande...",
+    "status_update_success": "Estado atualizado com sucesso."
   },
-
-  "confirm_dialog": {
-    "title": "Tem a certeza que deseja remover o leitor ",
-    "confirm": "Confirmar",
-    "cancel": "Cancelar",
-    "yes": "Sim"
-  },
-
-  "input_date_dialog": {
-    "hint": "Para remover o prazo, deixar vazio.",
-    "confirm": "Confirmar",
-    "cancel": "Cancelar"
-  },
-
-  "input_text_dialog": {
-    "confirm": "Confirmar",
-    "cancel": "Cancelar"
-  },
-
-  "active_filters": {
-    "label": "Filtros Ativos:",
-    "clear_all": "Limpar Tudo",
-    "from": "De",
-    "until": "Até",
-    "remove_date_range": "remover intervalo de datas",
-    "remove_filter": "remover"
-  },
-
   "cart": {
     "close_label": "Fechar Carrinho",
     "title": "Carrinho",
@@ -221,7 +218,6 @@
     "total": "Total:",
     "checkout": "Continuar Para Pagamento"
   },
-
   "checkout_form": {
     "empty_cart": "O teu carrinho está vazio.",
     "section_personal": "1. Informação Pessoal",
@@ -247,15 +243,6 @@
     "delivery_detail": "O tempo de entrega pode variar dependendo da localização de levantamento escolhida.",
     "campus_alameda": "Alameda",
     "campus_taguspark": "Taguspark",
-    "payment_methods": {
-      "cash": "Dinheiro",
-      "sumup-tpa": "SumUp TPA",
-      "sumup": "SumUp Cartão Online",
-      "apple-pay": "Apple Pay",
-      "in-person": "Em pessoa",
-      "mbway": "MBWay",
-      "other": "Outro"
-    },
     "discount_label": "Código de Desconto",
     "discount_placeholder": "Ex: DESCONTO10",
     "discount_applied": "Desconto aplicado",
@@ -264,7 +251,7 @@
     "error_no_campus": "Por favor, seleciona o campus.",
     "error_no_payment": "Seleciona um método de pagamento.",
     "error_submit": "Erro ao submeter encomenda.",
-    "error_mixed_invalid": "Este pedido não pode misturar categorias especiais com outras categorias.",
+    "error_mixed_invalid": "Este pedido não pode misturar bilhetes com outros produtos.",
     "error_apple_pay_context": "Apple Pay requer um contexto seguro (HTTPS).",
     "error_apple_pay_unavailable": "Apple Pay não está disponível neste browser.",
     "error_apple_pay_device": "Apple Pay não está disponível neste dispositivo.",
@@ -274,27 +261,17 @@
     "error_payment_incomplete": "Dados de pagamento incompletos.",
     "error_checkout_create": "Falha ao criar checkout.",
     "error_checkout_unexpected": "Resposta inesperada do serviço de pagamento.",
-    "error_applepay_validation": "Falha na validação Apple Pay."
+    "error_applepay_validation": "Falha na validação Apple Pay.",
+    "hold_expired": "O tempo de compra expirou."
   },
-
   "pending_payment": {
-    "title_pending": "Encomenda Pendente!",
     "title_submitted": "Encomenda Submetida!",
-    "mbway_intro": "Para a tua encomenda ser confirmada conclui o pagamento.",
-    "mbway_transfer": "Transfere €{amount} via MBWay para o número:",
-    "mbway_unavailable": "Número indisponível",
-    "mbway_instructions": "Instruções: na descrição da transferência indica {order_number} para conseguirmos identificar o teu pagamento.",
-    "mbway_email_info": "Para mais informações por favor consulta o email.",
     "loading_details": "A carregar os detalhes do pagamento...",
-    "in_person_intro": "Para a tua encomenda ser confirmada conclui o pagamento.",
-    "in_person_location": "Presencialmente na {location}",
     "view_schedule": "Ver Horário da Sala",
     "thanks_order": "Obrigado pela tua encomenda.",
     "confirmation_email": "Receberás um email de confirmação em breve.",
-    "continue": "Continuar",
     "view_orders": "Ver Encomendas"
   },
-
   "checkout_overlay": {
     "or_pay_with": "ou paga com",
     "pay_apple_pay": "Pagar com Apple Pay",
@@ -304,27 +281,18 @@
     "wait_moment": "Aguarda um momento",
     "view_my_orders": "Ver as Minhas Encomendas",
     "continue": "Continuar",
-    "view_orders": "Ver Encomendas",
     "payment_error": "Erro no Pagamento",
     "default_payment_error": "Ocorreu um erro ao processar o pagamento.",
     "retry": "Tentar Novamente",
-    "pay_in_person": "Pagar em Pessoa",
     "cancel_order": "Cancelar Encomenda",
-    "error_declined": "Pagamento recusado pelo emissor do cartão. Tenta novamente, usa outro cartão, ou escolhe pagamento presencial.",
+    "error_declined": "Pagamento recusado pelo emissor do cartão. Tenta novamente, usa outro cartão, ou escolhe reservar e pagar na Banca (POS).",
     "error_expired": "A autorização expirou. Tenta novamente para gerar uma nova sessão de pagamento.",
     "error_unconfirmed": "Não foi possível confirmar o pagamento após autorização bancária.",
-    "error_pending_too_long": "O pagamento está pendente há demasiado tempo. Se foi cobrado, contacta-nos.",
-    "error_apple_pay_validation": "Falha na validação Apple Pay. Tenta novamente.",
-    "error_apple_pay_failed": "Pagamento Apple Pay falhou. Tenta novamente.",
-    "error_apple_pay_processing": "Erro ao processar Apple Pay. Tenta novamente.",
     "error_invalid_card": "Verifica os dados do cartão e tenta novamente.",
     "error_processing": "Erro ao processar pagamento.",
     "error_canceled_or_expired": "Pagamento cancelado ou expirado. Tenta novamente.",
-    "error_session_expired": "A sessão de pagamento expirou. Tenta novamente.",
-    "error_switch_payment": "Falha ao mudar método de pagamento.",
-    "error_switch_in_person": "Erro ao mudar para pagamento presencial."
+    "error_session_expired": "A sessão de pagamento expirou. Tenta novamente."
   },
-
   "hero": {
     "welcome_prefix": "Bem-vindos ao",
     "title_prefix": "Núcleo Estudantil de ",
@@ -332,14 +300,11 @@
     "title_suffix": " do Instituto Superior Técnico",
     "campus_alt": "Campus do IST",
     "student_alt": "Estudante",
-    "title": "Núcleo Estudantil de Informática do Instituto Superior Técnico",
     "teaser_title": "Vota aqui nas cores da tua sweat!"
   },
-
   "game": {
     "play": "Jogar",
     "play_label": "Jogar Campus Runner",
-    "score": "Pontos",
     "best": "HI",
     "game_over": "Fim de Jogo",
     "restart": "Recomeçar",
@@ -352,7 +317,6 @@
     "final_score": "Fim de jogo. Pontos: {score}. Melhor: {best}.",
     "secret_mode": "Código secreto desbloqueado: sem obstáculos"
   },
-
   "terminal": {
     "welcome": "Bem-vindo ao terminal do NEIIST! \nO Núcleo Estudantil de Informática do IST apoia os estudantes de LEIC e MEIC.\n\nComandos úteis:\n  ls         - listar ficheiros e pastas\n  cd <dir>   - entrar numa pasta (ex: cd sobre, cd campi)\n  cat <file> - ler um ficheiro (ex: cat missao.txt)\n  clear      - limpar o ecrã\n  help       - ajuda do sistema\n\nExplora as pastas para conheceres as atividades, salas e cursos do NEIIST!",
     "fs": {
@@ -453,28 +417,12 @@
       "linkedin": "LinkedIn: NEIIST (https://www.linkedin.com/company/neiist/)"
     }
   },
-
-  "sinfo": {
-    "title": "Secção Autónoma",
-    "button": "Visita a SINFO",
-    "logo_alt": "SINFO",
-    "description": "A SINFO é um evento anual organizado exclusivamente por estudantes que se esforçam para tornar o evento mais interessante e inovador a cada edição. Todos os participantes têm o direito de experimentar alguns dos gadgets e tecnologias mais inovadoras do mercado para além de lhes ser apresentado uma visão geral do cenário de TI pelas melhores empresas do país. Para além disto tudo, todos os dias são realizados workshops nos temas mais requisitados e recentes, permitindo a todos os participantes que melhorem as suas skills técnicas e não-técnicas.",
-    "objective": "O principal objetivo da SINFO é permitir que todos os estudantes e os participantes em geral possam interagir e estar mais próximos de pessoas ou empresas influentes e interessantes no ramo das Tecnologias de Informação e Engenharia Informática."
-  },
-
   "sweats_contest": {
-    "badge": "EM BREVE",
     "title": "Concurso de Design de Sweats",
     "participate": "Participar",
-    "description_start": "Queres criar a próxima sweat especial de EIC?",
-    "description_link": "aqui",
-    "description_end": "o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
-    "description": "Queres criar a próxima sweat especial de EIC? Consulta o regulamento, submete o teu design e habilita-te a ganhar uma sweat!",
     "rules_link_text": "regulamento",
     "rules_prefix": "Consulta o",
     "rules_suffix": "e submete o teu ficheiro ZIP.",
-    "rules_button": "Consultar Regulamento",
-    "card_title": "Submeter Proposta",
     "button": "Submete um design!",
     "uploading": "A submeter...",
     "submitted": "Design submetido",
@@ -482,21 +430,18 @@
     "accept_terms": "Li e aceito o regulamento",
     "share_name": "Autorizo partilhar o meu nome",
     "file_helper": "Apenas ficheiros .ZIP (máx. 15MB)",
-    "choose_file_error": "Por favor escolhe um ficheiro ZIP.",
     "errors": {
       "zip_only": "Erro: Apenas ficheiros ZIP",
       "file_too_large": "O ficheiro é demasiado grande (máx. 15MB)",
       "upload": "Erro ao submeter"
     }
   },
-
   "shop": {
     "title": "Loja",
     "subtitle": "Os produtos que representam o teu curso!",
     "empty_title": "Sem produtos disponíveis",
     "empty_subtitle": "De momento não existem produtos à venda. Fica atento às próximas novidades!",
     "empty_button": "Voltar à Página Inicial",
-    "not_found": "Produto não encontrado",
     "no_image_label": "Sem Imagem",
     "size_guide_title": "Guia de Tamanhos",
     "size_guide_link": "Guia de Tamanhos",
@@ -505,39 +450,17 @@
     "error_upcoming": "As encomendas para este produto abrem a {date}.",
     "error_deadline": "O prazo de encomenda deste produto já terminou.",
     "error_unavailable": "Este produto já não está disponível para compra.",
-    "breadcrumbs": { "shop": "Loja" },
-    "labels": { "quantity": "Quantidade" },
+    "breadcrumbs": {
+      "shop": "Loja"
+    },
+    "labels": {
+      "quantity": "Quantidade"
+    },
     "buttons": {
       "add_to_cart": "Adicionar ao Carrinho",
       "buy_now": "Comprar Já",
       "coming_soon": "Brevemente",
       "unavailable": "Indisponível"
-    },
-    "products": {
-      "Sweats EIC": {
-        "title": "Sweats EIC",
-        "description": "A sweatshirt oficial do teu curso."
-      }
-    },
-    "size_guide_overlay": {
-      "close_label": "Fechar",
-      "title": "Guia de Tamanhos",
-      "unit": "Medidas em centímetros"
-    },
-    "campus_schedule_overlay": {
-      "close_label": "Fechar",
-      "title": "Horário de Funcionamento",
-      "col_day": "Dia",
-      "col_hours": "Horário",
-      "closed": "Encerrado"
-    },
-    "size_guide_editor": {
-      "close_label": "Fechar",
-      "title": "Editar Guia de Tamanhos",
-      "add_measure": "Adicionar Medida",
-      "remove_measure_title": "Remover medida",
-      "measure_placeholder": "Descrição da medida...",
-      "unit": "Medidas em centímetros"
     },
     "product_form": {
       "back": "Voltar",
@@ -583,75 +506,58 @@
       "preview_button": "Pré-visualizar",
       "remove_button": "Remover",
       "images_title": "Imagens",
-      "size_guide_title": "Guia de Tamanhos {name}",
       "delete_size_guide_confirm": "Tens a certeza que pretendes remover o guia de tamanhos deste produto?",
-      "error_create_category": "Erro ao criar categoria.",
-      "error_required_fields": "Nome e Categoria são obrigatórios.",
-      "error_save": "Erro ao guardar.",
-      "error_upload": "Falha ao carregar ficheiros."
-    },
-    "categories": {
-      "Vestuário": "Vestuário"
+      "error_save": "Erro ao guardar."
     }
   },
-
   "activities": {
     "title": "Atividades",
     "no_events": "Nenhuma atividade disponível.",
-    "previous": "Anterior",
-    "next": "Próximo",
     "prev_label": "Anterior",
     "next_label": "Próximo",
+    "views": {
+      "month": "Mês",
+      "week": "Semana"
+    },
     "toolbar": {
       "today": "Hoje",
       "prev_month": "Mês Anterior",
       "next_month": "Próximo Mês"
     },
-
     "details": {
       "close": "Fechar",
       "errors": {
-        "save_settings": "Erro ao guardar as configurações do evento.",
         "sign_up": "Erro ao inscrever.",
-        "update_signup": "Erro ao atualizar inscrição.",
-        "fetch_attendees": "Erro ao obter inscritos.",
-        "fetch_emails": "Erro ao obter emails dos inscritos."
+        "update_signup": "Erro ao atualizar inscrição."
       },
-      "saving_settings": "A gravar configurações do evento...",
-      "settings_saved": "Configurações do evento guardadas com sucesso.",
       "cancelling_signup": "A cancelar inscrição...",
       "signing_up": "A inscrever no evento...",
       "signed_up": "Inscrição efetuada com sucesso.",
       "signup_cancelled": "Inscrição cancelada com sucesso.",
-      "preparing_email": "A preparar o email dos inscritos...",
-      "email_opened": "Rascunho de email aberto com sucesso.",
       "link_copied": "Link copiado",
       "untitled_event": "Evento sem título",
       "share_title": "Copiar link do evento",
       "labels": {
-        "description": "Descrição do evento",
-        "allow_signups": "Permitir inscrições",
-        "signup_deadline": "Data limite para inscrições",
-        "max_attendees": "Número máximo de participantes",
-        "subscribers": "Inscritos"
-      },
-      "placeholders": {
-        "description": "Adicionar descrição...",
-        "no_limit": "Sem limit"
+        "capacity_reached": "Lotação Esgotada",
+        "contact_coordinators_for_refund": "Para cancelamentos ou pedidos de reembolso, por favor contacta a coordenação do NEIIST.",
+        "fill_signup_form": "Preenche os seguintes campos para completar a inscrição:",
+        "submit_form": "Confirmar Inscrição",
+        "available_spots": "vagas disponíveis",
+        "spots_remaining": "vagas restantes"
       },
       "processing": "A processar...",
       "please_login": "Por favor inicie sessão para se inscrever",
       "buttons": {
         "cancel_signup": "Cancelar inscrição",
         "sign_up": "Inscrever-se",
-        "email_attendees": "Enviar email para inscritos"
+        "view_ticket": "Ver Bilhete",
+        "buy_ticket": "Comprar Bilhete"
       },
       "icon_picker": {
         "title": "Escolher Ícone",
         "search_placeholder": "Procurar ícone..."
       }
     },
-
     "events": {
       "aoc": {
         "title": "Advent of Code",
@@ -707,11 +613,9 @@
       }
     }
   },
-
   "partnerships": {
     "title": "Parcerias"
   },
-
   "footer": {
     "title_neiist": "NEIIST",
     "mission_description": "Um grupo de estudantes motivados para ajudar todo e qualquer aluno de Engenharia Informática e Computadores, realizando atividades e apoio social.",
@@ -720,13 +624,11 @@
     "estatutos_link": "Estatutos",
     "privacy_policy_link": "Política de Privacidade",
     "terms_link": "Termos e Condições",
-    "address": "Av. Rovisco Pais 1, 1049-001 Lisboa",
     "courses_title": "Cursos de EIC",
     "contacts_title": "Contactos",
     "powered_by": "Powered by:",
     "copyright": "© 2026 NEIIST"
   },
-
   "about_us_page": {
     "hero": {
       "title": "Quem Somos?",
@@ -736,14 +638,12 @@
       "close_label": "Fechar",
       "team_image_alt": "Equipa NEIIST"
     },
-
     "join_us": {
       "title": "Junta-te a Nós!",
       "description": "O NEIIST está a recrutar para a _ª Fase 2_/2_! Vem desenvolver as tuas soft skills e contribuir para a nossa comunidade integrando uma das nossas equipas External Relations, Human Resources, Dev-Team, Logistics, Marketing & Design.\nInscreve-te até dia __ de _ (23H59).",
       "apply": "Candidata-te",
       "apply_link": ""
     },
-
     "campuses": {
       "title": "Onde Estamos?",
       "description": "O NEIIST dispõe de salas de apoio aos estudantes nos dois campi do Instituto Superior Técnico. Vem visitar-nos para esclarecer dúvidas, levantar merchandising ou conviver!",
@@ -752,20 +652,12 @@
       "taguspark_title": "Campus Taguspark",
       "taguspark_room": "Sala 1 - 4.14 Edifício Central (Entrada do Aquário)"
     },
-
     "year_selector": {
       "nav_label": "Seletor de Ano Académico",
       "prev_label": "Ano anterior",
       "next_label": "Próximo ano"
-    },
-    "editor": {
-      "title": "Pré-visualização da Página Sobre nós",
-      "no_member": "Sem membro",
-      "photo_alt": "foto"
-    },
-    "order_saved_success": "Ordem guardada com sucesso."
+    }
   },
-
   "profile": {
     "title": "Perfil",
     "confirm_dialog": {
@@ -847,97 +739,6 @@
       "error_failed": "Falha ao eliminar conta."
     }
   },
-
-  "create_user_modal": {
-    "title": "Novo Utilizador",
-    "ist_id_label": "IST ID",
-    "ist_id_placeholder": "ist1119999",
-    "name_label": "Nome",
-    "name_placeholder": "John Doe",
-    "email_label": "Email",
-    "email_placeholder": "john.doe@tecnico.ulisboa.pt",
-    "cancel": "Cancelar",
-    "submitting": "A criar...",
-    "submit": "Guardar",
-    "confirm_message_1": "Tem a certeza que deseja criar o utilizador",
-    "confirm_message_2": "?",
-    "error_required": "Por favor, preencha todos os campos.",
-    "error_create": "Falha ao criar utilizador",
-    "success_new_user": "Novo utilizador criado com sucesso.",
-    "error_new_user": "Erro ao criar um novo utilizador."
-  },
-
-  "new_order_modal": {
-    "title_create": "Nova Encomenda",
-    "title_edit": "Editar Encomenda",
-    "user_label": "User",
-    "user_placeholder": "Procurar por istid...",
-    "user_not_found": "Utilizador não encontrado",
-    "user_create_new": "Clique para criar novo utilizador",
-    "products_label": "Produtos",
-    "products_placeholder": "Adicionar produtos...",
-    "campus_label": "Campus",
-    "campus_placeholder": "Selecionar campus",
-    "campus_alameda": "Alameda",
-    "campus_taguspark": "Taguspark",
-    "nif_label": "NIF (opcional)",
-    "nif_placeholder": "123456789",
-    "phone_label": "Telemóvel (opcional)",
-    "phone_placeholder": "999333111",
-    "notes_label": "Notas",
-    "notes_placeholder": "Notas",
-    "cancel": "Cancelar",
-    "submitting_create": "A criar...",
-    "submitting_edit": "A guardar...",
-    "submit_create": "Criar Encomenda",
-    "submit_edit": "Guardar Encomenda",
-    "confirm_create": "Tem a certeza que deseja criar esta encomenda?",
-    "confirm_edit": "Tem a certeza que deseja guardar as alterações da encomenda?",
-    "confirm_stock_override": "Tem a certeza que deseja criar a encomenda à mesma?",
-    "error_no_products": "Por favor, selecione pelo menos um produto.",
-    "error_no_campus": "Por favor, selecione o campus.",
-    "error_no_user": "Por favor, selecione um utilizador.",
-    "error_create": "Falha ao criar encomenda",
-    "error_update": "Falha ao atualizar encomenda",
-    "guest_confirm": "Tem a certeza que deseja vender esta encomenda como Guest?",
-    "guest_title": "Guest",
-    "guest_name_label": "Nome do cliente",
-    "guest_name_placeholder": "Nome do cliente",
-    "guest_email_label": "Email do cliente",
-    "guest_email_placeholder": "mail@example.com",
-    "guest_phone_label": "Telemóvel do cliente",
-    "guest_phone_placeholder": "+351 000 000 000",
-    "errors": {
-      "no_products": "Por favor, selecione pelo menos um produto.",
-      "no_campus": "Por favor, selecione o campus.",
-      "mixed_invalid": "Este pedido não pode misturar categorias especiais com outras categorias.",
-      "guest_name": "Por favor, indique o nome do cliente.",
-      "guest_email": "Por favor, indique o email do cliente.",
-      "guest_phone": "Por favor, indique o telemóvel do cliente."
-    }
-  },
-
-  "date_filter": {
-    "title": "Data",
-    "until": "Até data",
-    "range": "Intervalo",
-    "days": ["D", "S", "T", "Q", "Q", "S", "S"]
-  },
-
-  "mobile_filters_drawer": {
-    "title": "Filtros",
-    "close_label": "Fechar Filtros",
-    "date_section": "Data",
-    "until": "Até data",
-    "range": "Intervalo",
-    "days": ["D", "S", "T", "Q", "Q", "S", "S"],
-    "products_section": "Produtos",
-    "campus_section": "Campus",
-    "status_section": "Estado",
-    "clear_all": "Limpar Tudo",
-    "apply": "Aplicar"
-  },
-
   "admin": {
     "management": {
       "title": "Gerir Equipas e Membros",
@@ -950,12 +751,10 @@
       "tab_roles": "Cargos e Permissões"
     },
     "users_management": {
-      "tab_users": "Utilizadores",
       "title": "Visualização de Utilizadores",
       "search_placeholder": "Pesquisar por nome, ISTID, email, cargo ou departamento...",
       "clear_search": "Limpar pesquisa",
       "empty": "Nenhum utilizador encontrado.",
-      "photo_alt": "Foto de",
       "email_label": "Email",
       "phone_label": "Telefone",
       "courses_label": "Cursos",
@@ -970,15 +769,12 @@
       "pagination_info": "{start}–{end} de {total} utilizadores",
       "prev_page": "Anterior",
       "next_page": "Seguinte",
-      "confirm_yes": "Sim",
       "confirm_cancel": "Cancelar"
     },
-
     "teams_management": {
       "title": "Gestão de Departamentos",
       "search_placeholder": "Pesquisar departamento...",
       "clear_search": "Limpar pesquisa",
-      "active": "Ativos",
       "show_inactive": "Mostrar Inativos",
       "empty": "Nenhum departamento encontrado.",
       "inactive_badge": "Inativo",
@@ -1027,19 +823,15 @@
       "confirm_reactivate_title": "Reativar {name}",
       "confirm_reactivate_msg": "Tem a certeza de que deseja reativar o departamento \"{name}\"? Ele voltará a estar ativo e visível na organização."
     },
-
     "roles_management": {
       "title": "Gestão de Cargos",
-      "all": "Todos",
       "search_placeholder": "Pesquisar cargo, nível de acesso ou departamento...",
       "clear_search": "Limpar pesquisa",
       "select_department": "Selecionar Departamento",
-      "active": "Ativos",
       "show_inactive": "Mostrar Inativos",
       "empty_all": "Nenhum cargo encontrado.",
       "empty_select": "Selecione um departamento para ver os cargos.",
       "inactive_badge": "Inativo",
-      "active_badge": "Ativo",
       "order_column": "Ordem",
       "role_column": "Cargo",
       "access_level_column": "Nível de Acesso",
@@ -1075,34 +867,10 @@
       "role_name_required": "Nome do cargo é obrigatório",
       "add_role": "Adicionar Cargo",
       "confirm_remove": "Tem a certeza que quer remover o cargo \"{role}\" do departamento \"{department}\"?",
-      "access": {
-        "guest": "Normal",
-        "member": "Membro",
-        "coordinator": "Coordenador",
-        "admin": "Administrador"
-      },
       "errors": {
         "add_role": "Erro ao adicionar cargo",
         "remove_role": "Erro remover cargo",
         "save_permissions": "Erro ao guardar permissões"
-      },
-      "successes": {
-        "add_role": "Cargo adicionado com sucesso",
-        "remove_role": "Cargo removido com sucesso"
-      },
-      "confirm_dialog": {
-        "confirm": "Confirmar",
-        "cancel": "Cancelar"
-      },
-      "permission_categories": {
-        "users": "Utilizadores e RGPD",
-        "departments": "Departamentos e Órgãos",
-        "roles": "Cargos e Posições",
-        "memberships": "Mandatos e Membros",
-        "photos": "Fotografias de Membros",
-        "shop": "Catálogo da Loja",
-        "orders": "Encomendas e Balcão",
-        "voting": "Assembleias Gerais e Cadernos"
       },
       "permissions": {
         "users:read": "Ver lista e detalhes de utilizadores",
@@ -1123,6 +891,8 @@
         "photos:write_dept": "Gerir fotos dos seus departamentos",
         "shop:read": "Ver catálogo da loja e stock",
         "shop:write": "Gerir produtos, categorias e stock",
+        "pos:access": "Operar terminais de ponto de venda (POS)",
+        "pos:manage": "Gerir postos, turnos e caixas de POS",
         "orders:read": "Ver encomendas e histórico de compras",
         "orders:read_customer": "Ver encomendas próprias de cliente",
         "orders:create": "Criar novas encomendas",
@@ -1133,7 +903,6 @@
         "voting:write": "Gerir todas as sessões de votação"
       }
     },
-
     "memberships_management": {
       "title": "Gestão de Membros",
       "add_mandate_button": "Adicionar Mandato",
@@ -1142,12 +911,8 @@
       "select_role": "Selecione um cargo",
       "select_year": "Selecionar Ano",
       "all_departments": "Todos os Departamentos",
-      "add_member": "Adicionar Membro",
-      "create_user": "Criar utilizador",
       "search_placeholder": "Pesquisar membro, ISTID, departamento...",
       "clear_search": "Limpar pesquisa",
-      "active": "Ativos",
-      "show_inactive": "Mostrar Inativos",
       "empty": "Nenhum membro encontrado.",
       "change_photo": "Alterar Foto",
       "photo_updated": "Foto atualizada com sucesso",
@@ -1181,40 +946,30 @@
       "alt_email": "Email Alternativo",
       "phone": "Telefone",
       "courses": "Cursos",
-      "email_label": "Email:",
       "active_badge": "Ativo",
-      "inactive_badge": "Inativo",
       "concluded_badge": "Concluído",
-      "remove": "Remover",
-      "confirm_remove": "Tem a certeza que quer remover este membro?",
-      "confirm_yes": "Sim",
       "confirm_cancel": "Cancelar",
-      "data_deleted": "Dados eliminados",
       "errors": {
         "add_member": "Erro ao adicionar membro"
       }
     }
   },
-
   "shop_management": {
     "title": "Gestão da Loja",
-    "pos_link": "Gestão POS",
     "discounts_link": "Códigos de Desconto",
+    "schedules_link": "Horários dos Campi",
     "add_product": "Adicionar Produto",
     "search_placeholder": "Pesquisar produto...",
     "all_categories": "Todas categorias",
     "no_image": "Sem Imagem",
-    "view_image": "Ver imagem {idx}",
-    "limited": "Limitado",
     "on_demand": "Sob Encomenda",
+    "untracked_stock": "Ilimitado",
     "out_of_stock": "Sem stock",
     "in_stock": "{count} em stock",
     "edit": "Editar",
     "archive": "Arquivar",
     "restore": "Restaurar",
     "delete": "Eliminar",
-    "remove": "Remover",
-    "confirm_remove": "Tem a certeza que deseja remover este produto?",
     "view_active": "Ver ativos",
     "archived": "Arquivados",
     "archived_badge": "Arquivado",
@@ -1235,21 +990,29 @@
     "confirm_dialog": {
       "confirm": "Confirmar",
       "cancel": "Cancelar"
-    },
-    "categories": {
-      "Vestuário": "Vestuário"
     }
   },
-
+  "campus_schedules_management": {
+    "title": "Horários dos Campi",
+    "subtitle": "Disponibilidade e turnos de presença dos colaboradores nas salas do NEIIST",
+    "fallback_alameda": "Alameda (Sala & Banca)",
+    "fallback_taguspark": "Taguspark (Sala 1-4.14)",
+    "days_short": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+    "toast_saved": "Horário guardado com sucesso!",
+    "toast_save_error": "Erro ao guardar horário.",
+    "toast_load_error": "Erro ao carregar horários do campus."
+  },
   "discount_codes": {
     "title": "Códigos de Desconto",
     "new_code": "Novo código",
+    "actions_title": "Ações do código",
     "search_placeholder": "Pesquisar código, ISTID, email ou produto...",
     "selected_singular": "código selecionado",
     "selected_plural": "códigos selecionados",
     "activate": "Ativar",
     "deactivate": "Desativar",
     "delete": "Eliminar",
+    "cancel": "Cancelar",
     "delete_confirm": "Eliminar {count} código(s)? Tem a certeza?",
     "status_inactive": "Inativo",
     "status_expired": "Expirado",
@@ -1296,13 +1059,12 @@
       "preview_base_price": "Preço Base de ",
       "preview_will_go_from": "Passará de ",
       "preview_to": "para",
-      "preview_variants": "variantes",
       "section_email": "Email a Enviar",
       "email_subject_label": "Assunto do email",
       "default_email_subject": "O teu código de desconto NEIIST",
       "email_body_label": "Corpo do Email",
       "email_body_placeholder": "Olá {{name}},\n\nAqui tens o teu código de desconto: {{code}}",
-      "email_variables_hint": "Variáveis: {{name}}, {{istid}}, {{code}}, {{discount}}, {{expiry}}.",
+      "email_variables_hint": "Variáveis:",
       "preview_title": "Pré-visualização",
       "error_no_recipients": "Indica pelo menos um utilizador ou email externo.",
       "error_invalid_value": "Indica um valor de desconto válido.",
@@ -1313,18 +1075,14 @@
       "toast_generated_success": "Gerados {count} códigos e enviados os emails."
     }
   },
-
   "order_details": {
-    "close_label": "Fechar",
     "order_title": "Encomenda",
-    "not_found": "Encomenda não encontrada.",
     "col_name": "Nome",
     "col_ist_id": "IST ID",
     "col_campus": "Campus",
     "col_email": "Email",
     "col_phone": "Telefone",
     "items_title": "Itens da Encomenda",
-    "edit_items_label": "Editar itens da encomenda",
     "col_product": "Produto",
     "col_variant": "Variante",
     "col_qty": "Qtd",
@@ -1333,10 +1091,25 @@
     "add_notes": "Adicionar notas",
     "total_label": "Total: {amount}€",
     "notes_title": "Notas",
-    "status_title": "Estado",
     "mark_ready": "Marcar como Pronto",
     "mark_delivered": "Marcar como Entregue",
     "cancel_order": "Cancelar Encomenda",
+    "status_updated": "Estado da encomenda alterado com sucesso.",
+    "order_cancelled": "Encomenda cancelada com sucesso.",
+    "item_updated": "Artigo atualizado com sucesso.",
+    "error_item_update": "Erro ao atualizar artigo.",
+    "email_resent": "Email reenviado com sucesso!",
+    "error_resend_email": "Erro ao reenviar email.",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "pay_in_pos": "Cobrar na Banca (POS)",
+    "resend_email": "Reenviar Email de Confirmação",
+    "col_status": "Estado",
+    "col_actions": "Ações",
+    "deliver": "Entregar",
+    "mark_ready_short": "Pronto",
+    "saving": "A registar...",
+    "view_ticket": "Ver Bilhete",
     "created_by": "Criada por {by} em {date}",
     "payment_verified_by": "Pagamento verificado por {by} em {date}",
     "pickup_deadline": "Prazo limite para levantamento em {date}",
@@ -1348,6 +1121,7 @@
     "confirm_cancel": "Tem a certeza que quer cancelar esta encomenda?",
     "confirm_status": "Tem a certeza que quer marcar como {status}?",
     "confirm_save_notes": "As notas foram alteradas. Deseja guardar as alterações?",
+    "confirm_pay_in_pos": "Desejas abrir a encomenda {number} no Balcão POS para registar o pagamento e associar ao teu turno ativo?",
     "error_update_status": "Erro ao atualizar estado.",
     "error_cancel": "Erro ao cancelar encomenda.",
     "error_save_notes": "Erro ao guardar notas.",
@@ -1364,83 +1138,23 @@
       "delivered": "Entregue",
       "cancelled": "Cancelado"
     },
-    "special_status": {
-      "jantar_pending_mbway": "Pagamento MB Way em verificação",
-      "jantar_confirmed": "Confirmado"
-    },
+    "ticket_confirmed": "Confirmado",
     "payment_methods": {
       "cash": "Dinheiro",
       "sumup-tpa": "SumUp TPA",
       "sumup": "SumUp Cartão Online",
       "apple-pay": "Apple Pay",
-      "in-person": "Em pessoa",
       "mbway": "MBWay",
       "other": "Outro"
     }
   },
-
-  "pos_payment": {
-    "close_label": "Fechar",
-    "title": "Pagar Encomenda {number}",
-    "title_register_payment": "Registar Pagamento",
-    "title_finalize_order": "Finalizar Encomenda",
-    "method_label": "Método de pagamento",
-    "payment_methods": {
-      "cash": "Dinheiro",
-      "sumup-tpa": "SumUp TPA",
-      "sumup": "SumUp Online",
-      "apple-pay": "Apple Pay",
-      "in-person": "Presencial",
-      "mbway": "MBWay",
-      "other": "Outro"
-    },
-    "reference_label": "Referência ou motivo do pagamento *",
-    "reference_placeholder": "Ex: Oferta, Patrocínio, IBAN, MB Way, ID de transação...",
-    "in_person_notice": "Encomenda vai ficar pendente, até o pagamento ser efetuado.",
-    "reader_label": "Leitor SumUp",
-    "loading_readers": "A carregar leitores…",
-    "select_reader": "Seleciona um leitor",
-    "cancel": "Cancelar",
-    "confirm_btn": "Confirmar {method}",
-    "success_title": "Encomenda Registada!",
-    "processing_terminal_title": "A processar no terminal",
-    "processing_payment_title": "A processar pagamento",
-    "success_subtitle": "A tua encomenda foi registada. Pagamento confirmado com sucesso.",
-    "awaiting_subtitle": "A aguardar confirmação...",
-    "view_orders": "Ver Encomendas",
-    "error_load_readers": "Falha ao carregar leitores",
-    "error_update_order": "Falha ao atualizar encomenda",
-    "error_finalize_order": "Falha ao finalizar encomenda",
-    "error_invalid_server_response": "Resposta inválida do servidor",
-    "order_success": "Encomenda atualizada com sucesso",
-    "reader_status": "Leitor {name}: {status}",
-    "awaiting_terminal": "A aguardar confirmação do terminal...",
-    "select_reader_error": "Seleciona um leitor SumUp para continuar.",
-    "starting_payment": "A iniciar pagamento no terminal...",
-    "checkout_started": "Checkout já iniciado no terminal. A aguardar confirmação...",
-    "payment_initiated_toast": "Pagamento iniciado no terminal. A confirmação pode demorar alguns segundos.",
-    "failed_terminal": "Falha ao iniciar no terminal.",
-    "payment_sent": "Pagamento enviado para o terminal. A aguardar confirmação...",
-    "processing_payment": "A processar pagamento...",
-    "error_mbway_missing": "Número MBWay não disponível para esta encomenda",
-    "fill_reference": "Por favor, indica a referência ou motivo do pagamento.",
-    "payment_confirmed": "Pagamento confirmado com sucesso.",
-    "error_payment": "Falha ao processar pagamento.",
-    "confirm_in_person": "Confirmas que a encomenda fica pendente para pagamento presencial posterior?",
-    "confirm_cash": "Confirmas que recebeste o pagamento em dinheiro e está correto?",
-    "confirm_mbway": "Confirmas que recebeste o pagamento por MBWay e está correto?",
-    "confirm_reference": "Confirmas que recebeste o pagamento com a referência/motivo \"{reference}\" e está correto?",
-    "mbway_send_to": "Enviar MBWay para:",
-    "mbway_number_unavailable": "Número não disponível",
-    "status_update_bulk": "A atualizar estado de encomenda grande...",
-    "status_update_success": "Estado atualizado com sucesso."
-  },
-
   "my_orders": {
     "title": "As Minhas Encomendas",
+    "subtitle": "Histórico e estado dos teus pedidos e compras na loja do NEIIST",
     "search_placeholder": "Procurar número, produto, estado ou data...",
     "search_aria_label": "Pesquisar encomendas",
     "deadline_banner": "Atenção: tens pelo menos uma encomenda com prazo de levantamento próximo.",
+    "pickup_deadline_tag": "Levantar até {date}",
     "delivered_on": "Entregue em {date}",
     "order_aria_label": "Ver encomenda {number}",
     "empty": "Nenhuma encomenda encontrada.",
@@ -1451,12 +1165,8 @@
       "delivered": "Entregue",
       "cancelled": "Cancelado"
     },
-    "special_status": {
-      "jantar_pending_mbway": "Pagamento MB Way em verificação",
-      "jantar_confirmed": "Confirmado"
-    }
+    "ticket_confirmed": "Confirmado"
   },
-
   "voting": {
     "connecting": "A conectar...",
     "reconnecting": "A reconectar...",
@@ -1496,19 +1206,13 @@
     "voting_sessions_aria": "Sessões de votação",
     "session_default_name": "Sessão {number}",
     "view_details": "Ver detalhes",
-    "close": "Fechar",
     "rank_format": "{rank}º",
-    "choices_selected": "{selected} de {max} escolhas selecionadas",
-    "choices_selected_short": "{selected} / {max} selecionadas",
     "choices_count": "{selected} de {max} escolhas",
     "submit": "Submeter",
-    "submit_vote": "Submeter Voto",
     "select_choice": "Selecionar",
     "remove_choice": "Remover seleção",
-    "max_choices_reached": "Limite de {max} escolhas atingido",
-    "ballot_progress": "Boletim de Voto"
+    "max_choices_reached": "Limite de {max} escolhas atingido"
   },
-
   "voting_management": {
     "title": "Gestão de Votações",
     "search_placeholder": "Procurar por título...",
@@ -1534,9 +1238,7 @@
       "empty": "Nenhuma sessão encontrada.",
       "actions": "Ações",
       "view_full_details": "Ver detalhes completos",
-      "view_summary": "Ver resumo rápido",
-      "export_excel": "Exportar para Excel",
-      "max_choices": "Escolhas"
+      "export_excel": "Exportar para Excel"
     },
     "types": {
       "activity": "Atividade",
@@ -1606,9 +1308,7 @@
       "desc_label": "Descrição",
       "desc_placeholder": "Descrição opcional...",
       "max_choices_label": "Escolhas por votante",
-      "max_choices_placeholder": "1",
       "max_choices_hint": "Número máximo de opções que cada votante pode escolher (entre 1 e 5).",
-      "max_choices_error": "O número de escolhas deve ser entre 1 e 5.",
       "voting_type": "Tipo de Votação",
       "select_activity": "Selecionar Atividade",
       "candidates": "Candidatos",
@@ -1620,18 +1320,12 @@
       "option_title_placeholder": "Ex: Proposta A, Mascote, ou Tema",
       "option_desc": "Descrição da Opção",
       "option_desc_placeholder": "Ex: Mais informações em https://...",
-      "upload_image": "Carregar Imagem",
-      "change_image": "Mudar Imagem",
       "remove_image": "Remover Imagem",
       "remove_option": "Remover Opção",
       "main_image": "Imagem Principal",
-      "main_image_required": "A imagem principal é obrigatória.",
-      "upload_main_image": "Carregar Imagem Principal",
       "change_main_image": "Mudar Imagem Principal",
       "desc_image": "Imagem da Descrição",
       "desc_image_optional": "(Opcional)",
-      "desc_image_hint": "Se não for fornecida, será usada a imagem principal.",
-      "upload_desc_image": "Carregar Imagem da Descrição",
       "change_desc_image": "Mudar Imagem da Descrição",
       "period_title": "Período da Votação",
       "start_label": "Início",
@@ -1643,28 +1337,18 @@
       "error_upload": "Erro ao carregar imagens."
     }
   },
-
   "unauthorized": {
     "title": "Acesso Restrito",
     "message": "Não tem permissão para aceder a esta página.",
     "home_button": "Ir para a página inicial",
     "help_text": "Precisa de ajuda? Contacte a equipa NEIIST em"
   },
-
   "email_confirmation": {
     "title": "Email Alternativo Verificado!",
     "message_p1": "O teu email alternativo foi verificado com sucesso.",
     "message_p2": "Podes fechar esta página ou voltar ao",
     "profile_link": "perfil"
   },
-
-  "error_page": {
-    "title": "Algo Correu Mal",
-    "default_message": "Ocorreu um erro ao carregar esta página.",
-    "retry_button": "Tentar novamente",
-    "help_text": "Precisa de ajuda? Contacte a equipa NEIIST em"
-  },
-
   "privacy_policy_page": {
     "title": "Política de Privacidade",
     "last_updated_label": "Última atualização",
@@ -1907,14 +1591,26 @@
         "title": "1. Identificação da Entidade",
         "intro": "Este site e a respetiva loja são geridos por:",
         "items": [
-          { "label": "Denominação", "text": "NEIIST (Núcleo Estudantil de Informática do IST)" },
-          { "label": "Natureza", "text": "Associação Juvenil sem fins lucrativos" },
+          {
+            "label": "Denominação",
+            "text": "NEIIST (Núcleo Estudantil de Informática do IST)"
+          },
+          {
+            "label": "Natureza",
+            "text": "Associação Juvenil sem fins lucrativos"
+          },
           {
             "label": "Morada",
             "text": "Instituto Superior Técnico, Av. Rovisco Pais 1, 1049-001 Lisboa"
           },
-          { "label": "Identificação Fiscal", "text": "507 162 331" },
-          { "label": "Email", "text": "neiist@tecnico.ulisboa.pt" },
+          {
+            "label": "Identificação Fiscal",
+            "text": "507 162 331"
+          },
+          {
+            "label": "Email",
+            "text": "neiist@tecnico.ulisboa.pt"
+          },
           {
             "label": "Salas de atendimento",
             "text": "Alameda: Pavilhão de Informática I, Sala 3-03 (3.º piso). Taguspark: Edifício Central, Sala 1 - 4.14 (entrada do Aquário)"
@@ -2159,5 +1855,521 @@
         ]
       }
     ]
+  },
+  "activities_management": {
+    "title": "Gestão de Atividades",
+    "subtitle": "Administração de eventos, sincronização com o Notion e scanners de porta",
+    "sync_notion": "Sincronizar com Notion",
+    "syncing": "A sincronizar...",
+    "sync_success": "Sincronização com o Notion iniciada com sucesso",
+    "create_event": "Criar Novo Evento",
+    "edit_event": "Editar Evento",
+    "search_placeholder": "Procurar evento por título ou tipo...",
+    "open_scanner": "Abrir Scanner de Porta",
+    "sync_error": "Falha ao sincronizar com o Notion",
+    "event_details": "Detalhes do Evento",
+    "delete_event": "Apagar Evento",
+    "delete_confirm": "Tens a certeza que desejas apagar o evento \"{title}\"?",
+    "confirm_delete": "Apagar",
+    "cancel": "Cancelar",
+    "table": {
+      "title": "Título",
+      "type": "Tipo",
+      "date": "Data",
+      "location": "Local",
+      "visibility": "Visibilidade",
+      "status": "Inscrições",
+      "attendees": "Inscritos",
+      "actions": "Ações",
+      "filter_label": "Filtros:",
+      "clear_all": "Limpar tudo",
+      "empty_title": "Nenhum evento encontrado",
+      "empty_desc": "Não existem eventos correspondentes aos filtros selecionados.",
+      "public_badge": "Público",
+      "internal_badge": "Interno",
+      "open_badge": "Abertas",
+      "closed_badge": "Fechadas"
+    },
+    "roster_modal": {
+      "title": "Lista de Inscritos",
+      "col_name": "Nome",
+      "col_istid": "IST ID",
+      "col_email": "Email",
+      "col_ticket": "Bilhete",
+      "col_signup_date": "Data de Inscrição",
+      "col_checkin": "Entrada",
+      "col_checkin_time": "Data/Hora de Entrada",
+      "col_responses": "Respostas",
+      "checked_in": "Entrada Validada",
+      "not_checked_in": "Não Validado"
+    },
+    "details": {
+      "back_to_events": "Voltar para Gestão de Eventos",
+      "open_scanner": "Abrir Scanner",
+      "edit": "Editar",
+      "send_email": "Enviar Email",
+      "export_excel": "Exportar Excel",
+      "export_success": "Ficheiro Excel exportado com sucesso!",
+      "export_error": "Erro ao gerar ficheiro Excel",
+      "total_attendees": "Total Inscritos",
+      "checked_in_attendees": "Entradas Validadas",
+      "search_placeholder": "Procurar participante...",
+      "selected_count": "participante selecionado",
+      "selected_count_plural": "participantes selecionados",
+      "clear_selection": "Limpar",
+      "send_email_selected": "Enviar Email aos Selecionados",
+      "empty_title": "Nenhum participante encontrado",
+      "empty_desc": "Ainda não existem participantes inscritos ou correspondentes à pesquisa.",
+      "attendee_actions": "Ações do Participante",
+      "checkin": "Validar Entrada",
+      "undo_checkin": "Anular Check-in",
+      "view_responses": "Ver Respostas",
+      "copy_ticket": "Copiar Bilhete",
+      "copy_email": "Copiar Email",
+      "ticket_code": "Código de bilhete",
+      "email": "Email",
+      "copied_success": "{label} copiado!",
+      "copied_error": "Erro ao copiar {label}",
+      "checkin_success": "Entrada validada para {name}",
+      "undo_checkin_success": "Check-in anulado para {name}",
+      "checkin_error": "Erro ao alterar estado de entrada",
+      "signups_open": "Inscrições Abertas",
+      "signups_closed": "Inscrições Fechadas",
+      "public": "Público",
+      "unlisted": "Não Listado",
+      "all_day": "(Dia Inteiro)",
+      "at_time": "às {time}",
+      "responses_title": "Respostas de Inscrição: {name}",
+      "yes": "Sim",
+      "no": "Não",
+      "close": "Fechar"
+    },
+    "form": {
+      "back": "Voltar",
+      "section_general": "Informações Gerais",
+      "section_period": "Período do Evento",
+      "section_signups": "Inscrições & Vagas",
+      "all_day_label": "Evento de Dia Inteiro",
+      "change_icon_label": "Alterar ícone",
+      "title_label": "Título do Evento *",
+      "title_placeholder": "ex: Workshop de Introdução a Next.js",
+      "desc_label": "Descrição",
+      "desc_placeholder": "Detalhes sobre oradores, requisitos ou programa do evento...",
+      "type_label": "Tipo de Evento",
+      "type_text": "Texto",
+      "type_select": "Seleção (Opções)",
+      "type_checkbox": "Caixa de Seleção",
+      "location_label": "Localização (separada por vírgulas)",
+      "location_placeholder": "ex: Anfiteatro FA2, Pavilhão de Informática",
+      "start_label": "Data de Início *",
+      "end_label": "Data de Fim *",
+      "public_label": "Evento Público (visível para todos os estudantes)",
+      "signup_enabled_label": "Ativar Inscrições",
+      "signup_deadline_label": "Data Limite para Inscrições",
+      "max_attendees_label": "Lotação Máxima (vagas)",
+      "max_attendees_placeholder": "Sem limite de vagas",
+      "add_icon": "Adicionar ícone",
+      "remove_icon": "Remover ícone",
+      "signup_fields_title": "Perguntas Personalizadas na Inscrição (Campos Dinâmicos)",
+      "add_field": "+ Adicionar Pergunta",
+      "remove_field": "Remover Pergunta",
+      "field_label": "Pergunta / Rótulo",
+      "field_type": "Tipo de Resposta",
+      "field_required": "Obrigatório",
+      "field_options": "Opções (separadas por vírgulas)",
+      "chips_placeholder": "Escreve e prime Enter para adicionar opção...",
+      "chips_add_more": "Adicionar outra...",
+      "chips_remove_aria": "Remover opção",
+      "save": "Guardar Evento",
+      "saving": "A gravar..."
+    }
+  },
+  "tickets": {
+    "title": "Os Meus Bilhetes",
+    "subtitle": "Passes de acesso aos teus eventos e atividades no NEIIST",
+    "no_tickets": "Ainda não tens bilhetes ou inscrições em eventos.",
+    "empty_desc": "Quando te inscreveres em eventos gratuitos ou adquirires bilhetes na loja, os teus passes aparecerão aqui.",
+    "explore_events": "Ver Atividades Disponíveis",
+    "search_placeholder": "Pesquisar por evento, código ou encomenda...",
+    "search_aria_label": "Pesquisar bilhetes",
+    "clear_search": "Limpar pesquisa",
+    "no_search_results": "Nenhum bilhete encontrado para a pesquisa.",
+    "ticket_code": "Código",
+    "status_checked_in": "Entrada Validada",
+    "status_confirmed": "Confirmado"
+  },
+  "ticket_pass": {
+    "title": "Passe de Entrada",
+    "instructions": "Apresenta este código QR à entrada do evento",
+    "order_prefix": "Encomenda:",
+    "paid_ticket": "Bilhete Pago",
+    "free_signup": "Inscrição Gratuita",
+    "responses_title": "As Tuas Respostas",
+    "download_calendar": "Adicionar ao Calendário (.ics)",
+    "validated_at": "Validado às {time}",
+    "validated_at_by": "Validado às {time} por {staff}",
+    "yes": "Sim",
+    "no": "Não",
+    "back_to_activities": "Voltar"
+  },
+  "checkin_scanner": {
+    "offline_badge": "Modo Offline",
+    "online_badge": "Online",
+    "pending_sync": "validações pendentes",
+    "sync_now": "Sincronizar Agora",
+    "syncing": "A sincronizar...",
+    "sync_complete": "Sincronização concluída com sucesso",
+    "camera_prompt": "Aponta a câmara para o código QR do participante",
+    "manual_search_placeholder": "Procurar por Nome, IST ID ou Código de Bilhete...",
+    "validate_button": "Validar Entrada",
+    "undo_checkin": "Anular Check-in",
+    "undo_checkin_success": "Check-in anulado com sucesso!",
+    "undo_error": "Erro ao anular validação",
+    "success_validated": "Entrada validada com sucesso!",
+    "already_checked_in": "Este participante já tem a entrada validada!",
+    "invalid_code": "Bilhete não encontrado para este evento",
+    "offline_validated": "Entrada validada localmente (offline)",
+    "confirm_title": "Confirmar Entrada",
+    "already_validated_title": "Validado",
+    "recent_checkins_title": "Últimas Validações",
+    "no_recent_checkins": "Nenhuma entrada validada ainda.",
+    "undo": "Anular",
+    "confirm_prompt_validate": "Pretendes validar a entrada deste participante?",
+    "confirm_prompt_undo": "Pretendes anular a validação deste participante?",
+    "cancel": "Cancelar",
+    "verify": "Verificar",
+    "back_to_activities": "Voltar à Gestão de Atividades",
+    "checked_in_stat": "Entradas Validadas",
+    "total_registered_stat": "Total Inscritos",
+    "istid_label": "IST ID",
+    "ticket_label": "Bilhete",
+    "offline_retry": "Tentar Novamente",
+    "offline_confirm_title": "Alternar para Modo Offline?",
+    "offline_confirm_text": "A ligação à rede foi perdida. Podes continuar a validar entradas offline utilizando a lista local em cache. As validações serão sincronizadas automaticamente assim que a rede regressar.",
+    "confirm_offline": "Ativar Modo Offline",
+    "leave_guard": "Tens validações pendentes por sincronizar com o servidor! Se saíres agora, estas entradas podem perder-se."
+  },
+  "payments": {
+    "methods": {
+      "cash": "Numerário",
+      "sumup-tpa": "Terminal de Pagamento",
+      "sumup": "Cartão de Crédito/Debito",
+      "apple-pay": "Apple Pay",
+      "mbway": "MB Way",
+      "other": "Outro"
+    },
+    "reservation": {
+      "label": "Reserva — pagar na Banca",
+      "pending_title": "Reserva Registada!",
+      "pending_intro": "A tua reserva foi registada. Conclui o pagamento na Banca dentro do prazo.",
+      "pending_location": "Banca — {location}",
+      "continue": "Continuar",
+      "action_label": "Reservar e pagar na Banca",
+      "switch_error": "Não foi possível converter o pagamento em reserva."
+    },
+    "mbway": {
+      "waiting": "A aguardar confirmação na app MB WAY...",
+      "success": "Pagamento confirmado!",
+      "declined": "Pagamento recusado pelo cliente na app MB WAY.",
+      "expired": "Tempo de autorização MB WAY expirado (4 minutos).",
+      "failed": "Transação MB WAY recusada ou falhou.",
+      "request_error": "Não foi possível enviar o pedido MB WAY.",
+      "service_error": "Erro no serviço MB WAY.",
+      "title": "Confirma na tua app MB Way",
+      "instructions_with_phone": "Enviámos um pedido de pagamento para {phone}. Abre a app MB Way e autoriza o pagamento.",
+      "instructions_without_phone": "Enviámos um pedido de pagamento para o teu telemóvel. Abre a app MB Way e autoriza o pagamento."
+    },
+    "phone_required": "Indica o número de telemóvel para receber o pedido de pagamento MB Way.",
+    "module_load_error": "Erro ao carregar o módulo de pagamento.",
+    "discount_enter": "Indica um código de desconto.",
+    "discount_invalid": "Código de desconto inválido.",
+    "discount_error": "Não foi possível validar o código."
+  },
+  "pos": {
+    "desk": {
+      "identified_title": "Banca de Vendas",
+      "identified_subtitle": "Vendas normais com fatura e registo",
+      "fast_title": "Venda Rápida",
+      "fast_subtitle": "Bebidas, comida e consumíveis",
+      "close_shift": "Fechar Turno"
+    },
+    "guard": {
+      "blocked_heading": "Terminal Bloqueado",
+      "blocked_body": "Sem acesso de operador. Pede ao responsável.",
+      "checking": "A procurar bancas...",
+      "select_heading": "Escolher Banca",
+      "select_body": "Escolhe onde estás a vender:",
+      "station_label": "Banca",
+      "closed_heading": "Turno Fechado",
+      "closed_body": "Sem turno ativo na {station}. Abre o turno para começar.",
+      "switch_station": "Trocar de Banca",
+      "open_shift": "Abrir Turno"
+    },
+    "shift": {
+      "close_title": "Fechar Turno de Caixa",
+      "opening_label": "Abertura:",
+      "initial_float_label": "Fundo Inicial:",
+      "station_operator_label": "Posto / Operador:",
+      "counted_cash_label": "Dinheiro Contado no Fecho (€)",
+      "counted_cash_placeholder": "Ex: 85.50",
+      "cancel": "Cancelar",
+      "closing": "A encerrar...",
+      "confirm_close": "Confirmar Fecho de Turno",
+      "open_title": "Abrir Turno de Caixa",
+      "open_body": "Abre um novo turno no posto {station} para iniciar o registo de vendas.",
+      "initial_float_input_label": "Fundo de Caixa Inicial (€)",
+      "initial_float_placeholder": "50.00",
+      "confirm_open": "Confirmar Abertura de Turno",
+      "opened_today": "Aberto às {time}",
+      "opened_on": "Aberto a {date} às {time}",
+      "session": "Sessão de Posto",
+      "tooltip": "{opened} · Fundo: {float} €",
+      "error_invalid_float": "Introduz um valor válido de fundo inicial.",
+      "error_invalid_count": "Introduz um valor válido de dinheiro contado.",
+      "open_success": "Turno aberto com sucesso.",
+      "open_error": "Erro ao abrir turno",
+      "close_success": "Turno encerrado com sucesso.",
+      "close_error": "Erro ao encerrar turno"
+    },
+    "customer": {
+      "search_label": "Cliente / Aluno",
+      "search_placeholder": "Pesquisar por IST ID (ex: ist1102934), nome ou email...",
+      "external_client": "Cliente externo",
+      "external_badge": "Cliente Externo",
+      "student_badge": "Aluno IST",
+      "remove_customer": "Remover cliente",
+      "email": "Email",
+      "phone": "Telefone",
+      "nif_label": "NIF (opcional)",
+      "nif_placeholder": "999999990",
+      "campus_label": "Campus de levantamento",
+      "campus_alameda": "Campus Alameda",
+      "campus_taguspark": "Campus Taguspark",
+      "phone_placeholder": "+351 912 345 678",
+      "notes_label": "Notas da encomenda",
+      "notes_placeholder": "Instruções especiais..."
+    },
+    "guest": {
+      "title": "Registar Cliente Externo (Sem IST ID)",
+      "name_label": "Nome Completo",
+      "name_placeholder": "Ex: João Silva",
+      "email_label": "Email",
+      "email_placeholder": "joao.silva@exemplo.pt",
+      "phone_label": "Telefone (opcional)",
+      "phone_placeholder": "+351 912 345 678",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar Cliente",
+      "error_required": "Nome e Email são obrigatórios para cliente externo."
+    },
+    "cart": {
+      "title": "Carrinho Atual",
+      "clear": "Limpar",
+      "reservation_label": "Reserva {number}",
+      "reservation_loading": "A carregar para liquidação no balcão",
+      "discard": "Descartar",
+      "empty": "Nenhum artigo adicionado ao carrinho.",
+      "empty_hint": "Clica num produto para adicionar.",
+      "remove": "Remover",
+      "discount_placeholder": "Código de desconto",
+      "apply": "Aplicar",
+      "subtotal": "Subtotal",
+      "discount": "Desconto ({code})",
+      "remove_discount": "Remover desconto",
+      "total": "Total: ",
+      "charge": "Cobrar {amount}"
+    },
+    "catalog": {
+      "empty": "Nenhum produto disponível nesta categoria.",
+      "back_to_catalog": "Voltar ao catálogo ({product})",
+      "back": "Voltar atrás",
+      "select_option": "Selecionar {option}",
+      "all": "Todos",
+      "badge_deadline": "Fora de Prazo",
+      "badge_sold_out": "Esgotado",
+      "badge_named": "Nominativo",
+      "badge_on_demand": "Sob encomenda",
+      "badge_units": "{count} un.",
+      "no_image": "Sem imagem"
+    },
+    "pending": {
+      "single_title": "Encomenda Pendente Encontrada",
+      "single_intro": "O aluno {name} possui 1 encomenda pendente para levantamento no balcão. Desejas carregar para liquidação?",
+      "multiple_title": "Encomendas Pendentes Encontradas",
+      "multiple_intro": "Este aluno possui {count} encomendas pendentes para levantamento no balcão. Seleciona as que pretendes liquidar:",
+      "new_sale": "Nova Compra",
+      "load": "Carregar Encomenda",
+      "load_selected": "Carregar Selecionadas ({count})"
+    },
+    "payment": {
+      "title": "Pagamento no Balcão",
+      "method_label": "Método de Pagamento",
+      "cash_option": "Dinheiro (Numerário)",
+      "tpa_option": "SumUp TPA (Terminal de Cartão)",
+      "mbway_option": "MB WAY",
+      "reservation_option": "Reserva — pagar na Banca (POS)",
+      "other_option": "Outro Método de Pagamento",
+      "cash_received_label": "Valor Entregue pelo Cliente (€)",
+      "shortcuts": "Atalhos de Valor",
+      "change_title": "Troco a Devolver",
+      "reader_label": "Leitor de Cartão SumUp",
+      "reader_online": "Online",
+      "reader_paired": "Emparelhado",
+      "reader_offline": "Offline",
+      "reader_default_name": "Leitor",
+      "reader_none": "Nenhum leitor",
+      "reader_searching": "A procurar leitores...",
+      "reader_select_error": "Seleciona um leitor SumUp.",
+      "reader_load_error": "Erro ao carregar leitores SumUp.",
+      "tpa_starting": "A inicializar terminal...",
+      "tpa_present_card": "Apresenta o cartão ao terminal SumUp...",
+      "tpa_paid": "Pagamento confirmado com sucesso!",
+      "tpa_paid_toast": "Pagamento efetuado no terminal!",
+      "tpa_failed": "Transação cancelada ou recusada no leitor.",
+      "tpa_failed_toast": "Pagamento cancelado ou recusado.",
+      "tpa_register_failed": "Pagamento confirmado no terminal, mas o registo da venda falhou. Usa \"Repetir registo\" — não voltes a cobrar o cliente.",
+      "tpa_register_failed_toast": "O registo da venda falhou após o pagamento no terminal.",
+      "tpa_retry_failed": "O registo voltou a falhar. Tenta novamente.",
+      "tpa_retry_failed_toast": "Falha ao registar venda.",
+      "tpa_start_error": "Erro ao iniciar pagamento no leitor SumUp",
+      "tpa_error": "Erro no leitor",
+      "tpa_cancel_operation": "Cancelar Operação",
+      "tpa_not_completed": "Operação Não Concluída",
+      "tpa_retry": "Tentar Novamente",
+      "tpa_send": "Enviar para Terminal",
+      "tpa_retry_settlement": "Repetir registo da venda",
+      "mbway_phone_label": "Número de Telemóvel MB WAY do Cliente",
+      "mbway_phone_placeholder": "912 345 678",
+      "mbway_phone_error": "Indica o número de telemóvel do cliente.",
+      "mbway_hint": "O cliente receberá uma notificação push na app MB WAY para confirmar o pagamento de {amount}.",
+      "mbway_sent_to": "Pedido enviado para {phone} ({amount})",
+      "mbway_cancel": "Cancelar Pedido",
+      "mbway_declined_badge": "Pagamento Recusado / Expirado",
+      "mbway_retry": "Tentar Novamente",
+      "mbway_switch_cash": "Mudar para Dinheiro",
+      "mbway_send": "Enviar Pedido MB WAY",
+      "mbway_paid_toast": "Pagamento MB WAY confirmado!",
+      "mbway_finalize_error": "Erro ao finalizar venda após pagamento MB WAY.",
+      "other_reference_label": "Referência / Justificação (obrigatório)",
+      "other_reference_placeholder": "Ex: Transferência bancária, protocolo, subsídio...",
+      "back": "Voltar",
+      "registering": "A registar...",
+      "confirm_payment": "Confirmar Pagamento",
+      "reservation_creating": "A gerar reserva...",
+      "reservation_create": "Criar Reserva (72h)",
+      "register_sale": "Registar Venda",
+      "processing_sale": "A registar a venda no sistema...",
+      "success_reservation": "Reserva Registada!",
+      "success_sale": "Venda Concluída com Sucesso!",
+      "order_number": "Encomenda {number}",
+      "view_order": "Ver Encomenda",
+      "new_customer": "Novo Atendimento",
+      "confirm_exit_title": "Cancelar Operação em Curso?",
+      "confirm_exit_body": "Existe um pedido de pagamento a aguardar resposta no leitor ou telemóvel do cliente. Se saíres agora, a operação será cancelada.",
+      "keep_waiting": "Continuar a Aguardar",
+      "confirm_exit": "Sim, Cancelar Operação",
+      "settle_error": "Falha ao registar o pagamento.",
+      "sale_error": "Erro ao processar venda no balcão.",
+      "shift_required": "Não existe turno de caixa aberto."
+    },
+    "alerts": {
+      "processing_pending": "A processar reserva pendente {number} no balcão.",
+      "reservation_discarded": "Operação de reserva descartada. Balcão pronto para nova venda.",
+      "reservation_loaded": "Reserva {number} carregada para liquidação.",
+      "reservations_loaded": "Reservas {numbers} carregadas para liquidação conjunta.",
+      "reservation_locked_cart": "A reserva está bloqueada aos artigos reservados. Liquida a reserva primeiro ou descarta-a para iniciar uma nova venda.",
+      "reservation_quantity_locked": "A quantidade dos artigos de uma reserva pendente não pode ser alterada no balcão.",
+      "discount_add_items": "Adiciona artigos ao carrinho antes de aplicar um código de desconto.",
+      "discount_invalid": "Código de desconto inválido.",
+      "discount_applied": "Desconto \"{code}\" aplicado!",
+      "discount_error": "Erro ao validar código de desconto.",
+      "guest_selected": "Cliente externo {name} selecionado.",
+      "fast_sale_success": "Venda concluída! Encomenda #{number}",
+      "deadline_expired": "Prazo de encomenda expirado para este artigo.",
+      "out_of_stock": "Artigo esgotado.",
+      "ticket_single": "Apenas é permitido 1 bilhete por venda.",
+      "ticket_mixed": "Bilhetes não podem ser combinados com vestuário ou outros artigos.",
+      "ticket_locked": "Não podes adicionar artigos normais a um carrinho com bilhetes."
+    },
+    "management": {
+      "title": "Gestão de Postos & Turnos (POS)",
+      "subtitle": "Configuração de postos, abertura e fecho de turnos em tempo real e leitores SumUp.",
+      "tabs": {
+        "stations": "Postos & Turnos Ativos",
+        "shifts": "Histórico de Turnos",
+        "readers": "Leitores SumUp"
+      },
+      "stations_title": "Postos de Venda",
+      "stations_subtitle": "Postos físicos onde é possível abrir caixas e efetuar vendas.",
+      "search_stations": "Pesquisar postos por nome ou localização...",
+      "new_station": "Novo Posto",
+      "empty_stations": "Nenhum posto de venda encontrado.",
+      "shifts_title": "Histórico de Turnos Fechados",
+      "shifts_subtitle": "Auditoria de contagem de dinheiro, vendas em numerário e discrepâncias de caixa.",
+      "search_shifts": "Pesquisar por posto ou operador...",
+      "empty_shifts": "Nenhum turno registado no histórico.",
+      "filters_active": "Filtros ativos:",
+      "clear_all": "Limpar todos",
+      "filter_station_title": "Filtrar por Posto",
+      "filter_status_title": "Filtrar por Estado",
+      "filter_date_title": "Data de Abertura",
+      "filter_until": "Até",
+      "filter_range": "Intervalo",
+      "filter_date_drawer": "Filtrar por Data",
+      "clear": "Limpar",
+      "apply": "Aplicar",
+      "edit_station": "Editar Posto",
+      "new_station_title": "Novo Posto de Venda",
+      "station_name_label": "Nome do Posto",
+      "station_name_placeholder": "Ex: Banca Tagus",
+      "station_location_label": "Localização",
+      "station_location_placeholder": "Ex: Átrio Central Taguspark",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "open_shift_title": "Abrir Turno: {station}",
+      "initial_float_label": "Fundo de Caixa Inicial (€)",
+      "confirm_open": "Confirmar Abertura",
+      "shift_details_title": "Detalhes do Turno: {station}",
+      "fields": {
+        "station": "Posto",
+        "location": "Localização",
+        "shift_status": "Estado do Turno",
+        "shift": "Turno",
+        "no_active_shift": "Sem turno aberto",
+        "since_float": "Desde {date} · Fundo: {float}€",
+        "status": "Estado",
+        "opened_by": "Aberto Por",
+        "opened_at": "Abertura",
+        "closed_at": "Fecho",
+        "float": "Fundo",
+        "final_count": "Contagem Final",
+        "variance": "Discrepância",
+        "variance_cash": "Discrepância de Caixa",
+        "date_open": "Data de Abertura",
+        "date_close": "Data de Fecho",
+        "initial_float": "Fundo Inicial"
+      },
+      "status_open": "Aberto",
+      "status_closed": "Fechado",
+      "today": "Hoje",
+      "actions_station_title": "Ações do Posto",
+      "actions_shift_title": "Ações do Turno",
+      "edit_station_action": "Editar Posto",
+      "view_details": "Ver Detalhes",
+      "errors": {
+        "fill_all": "Preenche todos os campos.",
+        "invalid_float": "Fundo de caixa inválido.",
+        "invalid_count": "Valor de contagem inválido.",
+        "save": "Erro ao guardar posto",
+        "open": "Erro ao abrir turno",
+        "close": "Erro ao fechar turno"
+      },
+      "success": {
+        "station_updated": "Posto atualizado",
+        "station_created": "Posto criado",
+        "shift_opened": "Turno aberto para {station}",
+        "shift_closed": "Turno fechado com sucesso"
+      },
+      "close": "Fechar"
+    }
   }
 }

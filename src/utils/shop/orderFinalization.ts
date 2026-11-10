@@ -264,12 +264,13 @@ export async function sendPendingOrderEmail(
 
 export function sendOrderPaidEmails(order: Order, paymentReference?: string): void {
   if (!order.customer_email || order.order_source === "fast-pos") return;
+  const ordersTableDict = getDictionary("pt").orders_table;
   sendEmail({
     to: order.customer_email,
-    subject: `Encomenda ${order.order_number} - ${getStatusLabel(
-      "paid",
-      getDictionary("pt").orders_table.status
-    )}`,
+    subject: `Encomenda ${order.order_number} - ${getStatusLabel("paid", ordersTableDict.status, {
+      isTicket: isTicketOrder(order),
+      ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
+    })}`,
     html: getPaidOrderEmailTemplate(
       order.order_number,
       order.customer_name ?? "Cliente",

@@ -20,7 +20,7 @@ import {
 import { TbFilter, TbTableExport } from "react-icons/tb";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { getLocalizedOrderStatusLabel } from "@/utils/shop/orderStatusUtils";
+import { getLocalizedOrderStatusLabel, isTicketOrder } from "@/utils/shop/orderStatusUtils";
 import {
   buildCascadeFilterTree,
   matchesProductFilter,
@@ -326,14 +326,14 @@ export default function OrdersTable({
             {dict.mark_paid}
           </DropdownMenu.Item>
         )}
-        {order.status === "paid" && (
+        {order.status === "paid" && !isTicketOrder(order) && (
           <DropdownMenu.Item
             icon={<FiPackage size={14} />}
             onClick={() => handleSingleStatusChange(order.order_number, "ready")}>
             {dict.mark_ready}
           </DropdownMenu.Item>
         )}
-        {order.status === "ready" && (
+        {order.status === "ready" && !isTicketOrder(order) && (
           <DropdownMenu.Item
             icon={<FiTruck size={14} />}
             onClick={() => handleSingleStatusChange(order.order_number, "delivered")}>
@@ -577,7 +577,7 @@ export default function OrdersTable({
           <Badge variant={getStatusBadgeVariant(order.status)}>
             {getLocalizedOrderStatusLabel(order, {
               status: dict.status,
-              special_status: dict.special_status,
+              ticket_confirmed: dict.ticket_confirmed,
             })}
           </Badge>
         ),
