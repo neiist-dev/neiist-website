@@ -1,3 +1,4 @@
+import path from "path";
 import { defineConfig, globalIgnores } from "eslint/config";
 import eslintJs from "@eslint/js";
 import tseslint from "typescript-eslint";
@@ -8,23 +9,22 @@ import validateFilename from "eslint-plugin-validate-filename";
 
 export default defineConfig([
   globalIgnores([
-    ".next/**",
-    "node_modules/**",
-    "dist/**",
-    "build/**",
-    "out/**",
-    "public/**",
-    "docker/**",
-    ".husky/**",
+    "**/.next/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**",
+    "**/public/**",
+    "**/docker/**",
+    "**/.husky/**",
     "next-env.d.ts",
-    "yarn.lock",
-    "pnpm-lock.lock",
-    "pnpm-workspace.lock",
+    "pnpm-lock.yaml",
+    "**/*.lock",
     "**/*.md",
     "**/*.yml",
     "**/*.yaml",
-    "./scripts/**",
-    "./packages/**",
+    "scripts/**",
+    "packages/**",
   ]),
 
   {
@@ -41,7 +41,7 @@ export default defineConfig([
       parserOptions: {
         sourceType: "module",
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: path.resolve(import.meta.dirname, "../.."),
       },
     },
 

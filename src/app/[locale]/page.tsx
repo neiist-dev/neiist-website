@@ -43,7 +43,7 @@ async function HomePage({ params }: { params: LocaleParams }) {
       title={dict.hero.teaser_title}
       target="_blank"
       rel="noopener noreferrer"
-      href={`/${locale}/voting`}
+      href={"https://linktr.ee/neiist"}
       pulse={true}
     />
   );
