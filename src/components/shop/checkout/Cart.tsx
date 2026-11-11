@@ -10,6 +10,7 @@ import VariantTags from "@/components/shop/VariantTags";
 import {
   getCartItemVariant,
   getCartItemUnitPrice,
+  getProductStock,
   calculateCartSubtotal,
   getItemImage,
 } from "@/utils/shop/shopUtils";
@@ -75,12 +76,7 @@ export default function Cart({ dict, basePath }: CartProps) {
             const imageSrc = getItemImage(item.product, variantObj);
             const isEventTicket = item.product.product_type === "event_ticket";
 
-            const maxQty =
-              item.product.stock_type === "limited"
-                ? item.product.variants.length === 0
-                  ? (item.product.stock_quantity ?? 0)
-                  : (variantObj?.stock_quantity ?? 0)
-                : 99;
+            const stock = getProductStock(item.product, variantObj);
 
             return (
               <div
@@ -137,10 +133,7 @@ export default function Cart({ dict, basePath }: CartProps) {
                         size="sm"
                         className={styles.iconBtn}
                         onClick={() => handleQuantity(idx, 1)}
-                        disabled={
-                          isEventTicket ||
-                          (item.product.stock_type === "limited" && item.quantity >= maxQty)
-                        }>
+                        disabled={isEventTicket || (stock !== null && item.quantity >= stock)}>
                         <FiPlus size={12} />
                       </Button>
                     </div>

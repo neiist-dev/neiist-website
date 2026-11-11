@@ -8,17 +8,19 @@ import { Product, CartItem } from "@/types/shop/product";
 import styles from "@/styles/components/shop/catalog/ProductDetail.module.css";
 import {
   getColorFromOptions,
+  getProductStock,
   isColorKey,
   getProductUnavailableReason,
   isProductUpcoming,
   isProductDeadlinePassed,
-  getProductImages,
+  normalizeOptionValue,
 } from "@/utils/shop/shopUtils";
+import { useVariantSelection } from "@/hooks/shop/useVariantSelection";
 import SizeGuideOverlay from "@/components/shop/catalog/SizeGuideOverlay";
 import ReactMarkdown from "react-markdown";
 import { Alert } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { formatMoney, unitPriceMoney } from "@/utils/shop/moneyUtils";
+import { formatMoney } from "@/utils/shop/moneyUtils";
 
 interface ProductDetailProps {
   product: Product;
@@ -37,87 +39,17 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
     };
   }, [unavailableToastId]);
 
-  const normalize = (val?: string) => (val ? val.replace(/['"\\]/g, "").trim() : "");
-
-  const optionNames = useMemo(() => {
-    return Array.from(new Set(product.variants.flatMap((v) => Object.keys(v.options || {}))));
-  }, [product.variants]);
-
-  const [selected, setSelected] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    optionNames.forEach((name) => {
-      init[name] = normalize(product.variants[0]?.options?.[name]);
-    });
-    return init;
-  });
-
-  const availableValues = useMemo(() => {
-    const result: Record<string, string[]> = {};
-    optionNames.forEach((name, idx) => {
-      const priorOptions = optionNames.slice(0, idx);
-      const matching = product.variants.filter((v) =>
-        priorOptions.every((prior) => normalize(v.options?.[prior]) === normalize(selected[prior]))
-      );
-      const seen = new Set<string>();
-      const values: string[] = [];
-      matching.forEach((v) => {
-        const val = normalize(v.options?.[name]);
-        if (val && !seen.has(val)) {
-          seen.add(val);
-          values.push(val);
-        }
-      });
-      result[name] = values;
-    });
-    return result;
-  }, [product.variants, optionNames, selected]);
-
-  useEffect(() => {
-    setSelected((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      optionNames.forEach((name) => {
-        const vals = availableValues[name] ?? [];
-        if (vals.length > 0 && !vals.includes(prev[name])) {
-          next[name] = vals[0];
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
-    });
-  }, [availableValues, optionNames]);
-
-  const handleSelect = useCallback((optionName: string, value: string) => {
-    setSelected((prev) => ({ ...prev, [optionName]: value }));
-  }, []);
-
-  const selectedVariant = useMemo(() => {
-    if (optionNames.length === 0) return undefined;
-    return product.variants.find((v) =>
-      optionNames.every((name) => normalize(v.options?.[name]) === normalize(selected[name]))
-    );
-  }, [product.variants, optionNames, selected]);
-
-  const allImages = useMemo(() => getProductImages(product), [product]);
-
-  const getVariantImageIndex = useCallback(
-    (variant?: Product["variants"][0]): number => {
-      if (!variant?.images?.length) return 0;
-      const idx = allImages.indexOf(variant.images[0]);
-      return idx >= 0 ? idx : 0;
-    },
-    [allImages]
-  );
-
-  const [imgIndex, setImgIndex] = useState(() => getVariantImageIndex(product.variants[0]));
-
-  useEffect(() => {
-    setImgIndex(getVariantImageIndex(selectedVariant));
-  }, [selectedVariant, getVariantImageIndex]);
-
-  const price = useMemo(() => {
-    return unitPriceMoney(product.price, selectedVariant?.price_modifier);
-  }, [product.price, selectedVariant]);
+  const {
+    optionNames,
+    selected,
+    availableValues,
+    handleSelect,
+    selectedVariant,
+    allImages,
+    imgIndex,
+    setImgIndex,
+    price,
+  } = useVariantSelection(product);
 
   const isOrderNotStarted = isProductUpcoming(product);
   const isDeadlineExpired = isProductDeadlinePassed(product);
@@ -135,11 +67,11 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
 
   const canBuy = !unavailableReason;
 
-  const maxQty = useMemo(() => {
-    if (product.stock_type !== "limited") return 99;
-    if (product.variants.length === 0) return product.stock_quantity ?? 0;
-    return selectedVariant?.stock_quantity ?? 0;
-  }, [product, selectedVariant]);
+  const stock = useMemo(
+    () => getProductStock(product, selectedVariant),
+    [product, selectedVariant]
+  );
+  const maxQty = stock ?? Infinity;
 
   const [qty, setQty] = useState(1);
   useEffect(() => {
@@ -235,14 +167,18 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
                 <span className={styles.label}>{optionName}</span>
                 <div className={isColor ? styles.colorOptions : styles.options}>
                   {values.map((val) => {
-                    const isSelected = normalize(selected[optionName]) === normalize(val);
+                    const isSelected =
+                      normalizeOptionValue(selected[optionName]) === normalizeOptionValue(val);
                     const hasAvailable = product.variants.some((v) => {
                       const priorMatch = priorOptions.every(
-                        (prior) => normalize(v.options?.[prior]) === normalize(selected[prior])
+                        (prior) =>
+                          normalizeOptionValue(v.options?.[prior]) ===
+                          normalizeOptionValue(selected[prior])
                       );
                       return (
                         priorMatch &&
-                        normalize(v.options?.[optionName]) === normalize(val) &&
+                        normalizeOptionValue(v.options?.[optionName]) ===
+                          normalizeOptionValue(val) &&
                         isVariantAvailable(v)
                       );
                     });
@@ -295,7 +231,7 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
               <span>{qty}</span>
               <button
                 onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                disabled={isEventTicket || (product.stock_type === "limited" && qty >= maxQty)}>
+                disabled={isEventTicket || (stock !== null && qty >= stock)}>
                 +
               </button>
             </div>

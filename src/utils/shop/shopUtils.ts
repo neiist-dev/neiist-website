@@ -1,4 +1,9 @@
-import type { CartItem, Product, ProductVariant } from "@/types/shop/product";
+import type {
+  CartItem,
+  Product,
+  ProductInventoryStatus,
+  ProductVariant,
+} from "@/types/shop/product";
 import { Order, OrderItem } from "@/types/shop/order";
 import { PaymentMethod } from "@/types/shop/payment";
 import { unitPriceMoney, lineTotalMoney, addMoney } from "@/utils/shop/moneyUtils";
@@ -35,7 +40,7 @@ export function getItemImage(product: Product, variant?: ProductVariant | null):
   return variant?.images?.[0] ?? product.images?.[0] ?? null;
 }
 
-const normalizeOptionValue = (value?: string) => value?.replace(/["'\\]/g, "").trim() ?? "";
+export const normalizeOptionValue = (value?: string) => value?.replace(/["'\\]/g, "").trim() ?? "";
 
 /**
  * True when every selected key/value matches the variant's options.
@@ -47,6 +52,26 @@ export const matchesSelections = (
   Object.entries(selections).every(
     ([key, value]) => normalizeOptionValue(variantOptions[key]) === normalizeOptionValue(value)
   );
+
+export function getProductOptionNames(variants: ProductVariant[] = []): string[] {
+  return Array.from(new Set(variants.flatMap((v) => Object.keys(v.options || {}))));
+}
+
+export function getDistinctOptionValues(
+  variants: ProductVariant[] = [],
+  optionKey: string
+): string[] {
+  const seen = new Set<string>();
+  const values: string[] = [];
+  for (const v of variants) {
+    const val = normalizeOptionValue(v.options?.[optionKey]);
+    if (val && !seen.has(val)) {
+      seen.add(val);
+      values.push(val);
+    }
+  }
+  return values;
+}
 
 /**
  * Find variant by id or matching options
@@ -241,16 +266,20 @@ export function restoreVariantOptionOrder(
   }));
 }
 
-export function isProductUpcoming(product?: { order_start?: string | null } | null): boolean {
+export function isProductUpcoming(
+  product?: { order_start?: string | null } | null,
+  nowMs: number = Date.now()
+): boolean {
   if (!product?.order_start) return false;
-  return new Date(product.order_start).getTime() > Date.now();
+  return new Date(product.order_start).getTime() > nowMs;
 }
 
 export function isProductDeadlinePassed(
-  product?: { stock_type?: string; order_deadline?: string | null } | null
+  product?: { stock_type?: string; order_deadline?: string | null } | null,
+  nowMs: number = Date.now()
 ): boolean {
   if (!product?.order_deadline || product.stock_type !== "on_demand") return false;
-  return new Date(product.order_deadline).getTime() < Date.now();
+  return new Date(product.order_deadline).getTime() < nowMs;
 }
 
 export interface ProductTimingBadgeDict {
@@ -274,21 +303,36 @@ export function getProductTimingBadge(
   return null;
 }
 
+export function getProductStock(
+  product: Pick<Product, "stock_type" | "stock_quantity" | "variants">,
+  variant?: Pick<ProductVariant, "stock_quantity" | "active"> | null
+): number | null {
+  if (product.stock_type !== "limited") return null;
+
+  const entries = variant ? [variant] : product.variants;
+  if (entries?.length > 0)
+    return entries.reduce((sum, v) => sum + (v.active ? Math.max(0, v.stock_quantity ?? 0) : 0), 0);
+
+  return Math.max(0, product.stock_quantity ?? 0);
+}
+
+export function getInventoryStatus(
+  product: Pick<
+    Product,
+    "active" | "order_start" | "order_deadline" | "stock_type" | "stock_quantity" | "variants"
+  >
+): ProductInventoryStatus {
+  if (product.active === false) return "sales_disabled";
+  if (isProductUpcoming(product)) return "scheduled";
+  if (isProductDeadlinePassed(product)) return "closed";
+  if (getProductStock(product) === 0) return "sold_out";
+  return "on_sale";
+}
+
 export interface ProductUnavailableDict {
   error_upcoming: string;
   error_deadline: string;
   error_unavailable: string;
-}
-
-function isProductAvailable(product: Product, selectedVariant?: ProductVariant | null): boolean {
-  if (isProductUpcoming(product) || isProductDeadlinePassed(product)) {
-    return false;
-  }
-  return product.variants.length === 0
-    ? product.stock_type !== "limited" || (product.stock_quantity ?? 0) > 0
-    : !!selectedVariant &&
-        selectedVariant.active &&
-        (product.stock_type !== "limited" || (selectedVariant.stock_quantity ?? 0) > 0);
 }
 
 export function getProductUnavailableReason(
@@ -302,7 +346,10 @@ export function getProductUnavailableReason(
   }
   if (isProductDeadlinePassed(product)) return dict.error_deadline;
 
-  return isProductAvailable(product, selectedVariant) ? null : dict.error_unavailable;
+  if (product.variants.length > 0 && (!selectedVariant || !selectedVariant.active))
+    return dict.error_unavailable;
+
+  return getProductStock(product, selectedVariant) === 0 ? dict.error_unavailable : null;
 }
 
 export function getCompactProductsSummary(items: OrderItem[]): string[] {

@@ -2481,6 +2481,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Atomically adjust stock on products
+CREATE OR REPLACE FUNCTION neiist.change_product_stock(
+  p_product_id INTEGER,
+  p_variant_id INTEGER DEFAULT NULL,
+  p_delta INTEGER DEFAULT NULL,
+  p_set INTEGER DEFAULT NULL
+) RETURNS SETOF neiist.product_record AS $$
+DECLARE
+  v_stock_type neiist.shop_stock_type_enum;
+BEGIN
+  IF p_delta IS NULL AND p_set IS NULL THEN
+    RAISE EXCEPTION 'Either p_delta or p_set must be provided';
+  END IF;
+
+  SELECT stock_type INTO v_stock_type
+  FROM neiist.products
+  WHERE id = p_product_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Product % not found', p_product_id;
+  END IF;
+
+  IF v_stock_type <> 'limited' THEN
+    RAISE EXCEPTION 'Stock adjustment is only allowed for limited stock products (product %)', p_product_id;
+  END IF;
+
+  IF p_variant_id IS NULL THEN
+    UPDATE neiist.products
+    SET stock_quantity = GREATEST(0, COALESCE(p_set, COALESCE(stock_quantity, 0) + p_delta))
+    WHERE id = p_product_id;
+  ELSE
+    UPDATE neiist.product_variants
+    SET
+      stock_quantity = GREATEST(0, COALESCE(p_set, COALESCE(stock_quantity, 0) + p_delta)),
+      updated_at = NOW()
+    WHERE id = p_variant_id AND product_id = p_product_id;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Variant % not found for product %', p_variant_id, p_product_id;
+    END IF;
+  END IF;
+
+  RETURN QUERY SELECT * FROM neiist.get_products(p_product_id, NULL, TRUE);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Delete a product category
 CREATE OR REPLACE FUNCTION neiist.delete_category(p_category_id INTEGER)
 RETURNS BOOLEAN AS $$

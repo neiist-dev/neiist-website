@@ -34,7 +34,7 @@ export interface dbProduct {
   images: string[] | null;
   category: string | null;
   product_type?: string | null;
-  channels?: string[] | null;
+  channels?: string[] | string | null;
   stock_type: string;
   stock_quantity: number | null;
   event_id?: string | null;
@@ -71,13 +71,11 @@ export interface dbProductVariant {
 }
 
 export interface ProductVariantInput {
-  name?: string;
+  id?: number;
   sku?: string | null;
   images?: string[];
   options?: Record<string, string>;
-  price_offset?: number;
   price_modifier?: number;
-  stock?: number | null;
   stock_quantity?: number | null;
   active?: boolean;
 }
@@ -89,10 +87,32 @@ export type CreateProductInput = Partial<Product> & {
   active?: boolean;
 };
 
+export type ProductInventoryStatus =
+  "sales_disabled" | "scheduled" | "closed" | "sold_out" | "on_sale";
+
+export interface StockChangeInput {
+  variantId?: number | null;
+  delta?: number;
+  set?: number;
+}
+
 export interface CartItem {
   product: Product;
   variantId?: number;
   quantity: number;
+}
+
+function parseProductChannels(raw: string[] | string | null | undefined): ProductChannel[] {
+  const items = Array.isArray(raw)
+    ? raw
+    : typeof raw === "string"
+      ? raw
+          .replace(/^\{|\}$/g, "")
+          .split(",")
+          .map((s) => s.replace(/^"+|"+$/g, "").trim())
+      : [];
+  const channels = items.filter((c): c is ProductChannel => Boolean(c));
+  return channels.length > 0 ? channels : ["web", "pos"];
 }
 
 export function mapdbProductToProduct(row: dbProduct): Product {
@@ -115,7 +135,7 @@ export function mapdbProductToProduct(row: dbProduct): Product {
     images: (row.images ?? []).map(buildProductImageUrl),
     category: row.category ?? undefined,
     product_type: (row.product_type as ProductType) || "merchandise",
-    channels: (row.channels as ProductChannel[]) || ["web", "pos"],
+    channels: parseProductChannels(row.channels),
     stock_type: (row.stock_type as Product["stock_type"]) || "limited",
     stock_quantity: row.stock_quantity ?? undefined,
     event_id: row.event_id ?? undefined,

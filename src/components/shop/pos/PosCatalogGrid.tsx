@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Button, Tabs, Stack, EmptyState, ColorSwatch } from "@neiist/ui";
-import { FiArrowLeft } from "react-icons/fi";
+import { Tabs, EmptyState } from "@neiist/ui";
 import { Product } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import PosProductCard from "@/components/shop/pos/PosProductCard";
-import { isColorKey, splitNameHex, getItemImage } from "@/utils/shop/shopUtils";
-import styles from "@/styles/components/shop/pos/PosCatalogGrid.module.css";
+import VariantDrilldown from "@/components/shop/VariantDrilldown";
+import styles from "@/styles/components/shop/VariantDrilldown.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface PosCatalogGridProps {
@@ -101,87 +100,22 @@ export default function PosCatalogGrid({
   ]);
 
   if (activeVariantProduct) {
+    const isRoot = Object.keys(selectedVariantOptions).length === 0;
     return (
-      <Stack direction="column" gap="md">
-        <Stack direction="row" gap="sm" align="center" wrap>
-          <Button variant="ghost" size="sm" onClick={onVariantBack}>
-            <FiArrowLeft />
-            {Object.keys(selectedVariantOptions).length === 0
-              ? dict.back_to_catalog.replace("{product}", activeVariantProduct.name)
-              : dict.back}
-          </Button>
-
-          <Stack direction="row" gap="sm" align="center" wrap className={styles.variantBreadcrumbs}>
-            <strong>{activeVariantProduct.name}</strong>
-            {Object.entries(selectedVariantOptions).map(([key, val]) => {
-              const isColor = isColorKey(key);
-              const { name, hex } = isColor ? splitNameHex(val) : { name: val, hex: "" };
-              return (
-                <Stack key={key} direction="row" gap="sm" align="center">
-                  <span>›</span>
-                  {hex && (
-                    <ColorSwatch
-                      color={hex}
-                      size="sm"
-                      style={{ inlineSize: "0.75rem", blockSize: "0.75rem" }}
-                      ariaLabel={name || hex}
-                    />
-                  )}
-                  <span>{name || val}</span>
-                </Stack>
-              );
-            })}
-            {currentOptionKey && (
-              <>
-                <span>›</span>
-                <span className={styles.crumbCurrentLevel}>
-                  {dict.select_option.replace("{option}", currentOptionKey)}
-                </span>
-              </>
-            )}
-          </Stack>
-        </Stack>
-
-        <div className={styles.productGrid}>
-          {availableValuesForCurrentKey.map((val) => {
-            const isColor = currentOptionKey ? isColorKey(currentOptionKey) : false;
-            const colorName = isColor ? splitNameHex(val).name : val;
-
-            const sampleVariant = activeVariantProduct.variants?.find((v) => {
-              const matchesPrior = Object.entries(selectedVariantOptions).every(
-                ([k, priorVal]) => v.options?.[k] === priorVal
-              );
-              return (
-                matchesPrior && Boolean(currentOptionKey && v.options?.[currentOptionKey] === val)
-              );
-            });
-
-            const image = getItemImage(activeVariantProduct, sampleVariant);
-            const priceModifier = Number(sampleVariant?.price_modifier || 0);
-            const effectivePrice = Number(activeVariantProduct.price) + priceModifier;
-
-            const cardItem: Product = {
-              ...activeVariantProduct,
-              id: sampleVariant?.id || activeVariantProduct.id,
-              name: colorName || val,
-              price: effectivePrice,
-              images: image ? [image] : [],
-              stock_quantity: sampleVariant?.stock_quantity,
-              variants: [],
-            };
-
-            return (
-              <PosProductCard
-                key={val}
-                product={cardItem}
-                canOverride={canOverride}
-                onClick={() => onSelectVariantOptionValue(val)}
-                dict={dict}
-              />
-            );
-          })}
-        </div>
-      </Stack>
+      <VariantDrilldown
+        product={activeVariantProduct}
+        selectedOptions={selectedVariantOptions}
+        currentOptionKey={currentOptionKey}
+        availableValues={availableValuesForCurrentKey}
+        onSelectValue={onSelectVariantOptionValue}
+        onBack={onVariantBack}
+        backLabel={isRoot ? dict.back_to_catalog : dict.back}
+        currentLevelLabel={
+          currentOptionKey ? dict.select_option.replace("{option}", currentOptionKey) : undefined
+        }
+        canOverride={canOverride}
+        cardDict={dict}
+      />
     );
   }
 

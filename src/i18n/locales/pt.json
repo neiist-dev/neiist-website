@@ -65,7 +65,7 @@
       "posters": {
         "title": "Bug nos Posters",
         "text": "Consegues encontrar os bugs?",
-        "description": "Existem posters espalhados pelo jantar — alguns têm bugs escondidos. Descobre os posters com erro e mostra ao staff para receberes uma senha."
+        "description": "Existem posters espalhados pelo jantar, alguns têm bugs escondidos. Descobre os posters com erro e mostra ao staff para receberes uma senha."
       },
       "tux": {
         "title": "Encontra o Tux",
@@ -955,41 +955,85 @@
     }
   },
   "shop_management": {
-    "title": "Gestão da Loja",
+    "title": "Inventário",
+    "pos_management_link": "Gestão POS",
     "discounts_link": "Códigos de Desconto",
     "schedules_link": "Horários dos Campi",
     "add_product": "Adicionar Produto",
     "search_placeholder": "Pesquisar produto...",
-    "all_categories": "Todas categorias",
+    "filters_button": "Filtros",
+    "close_filters": "Fechar filtros",
+    "clear_filters": "Limpar filtros",
+    "clear": "Limpar",
+    "apply": "Aplicar",
     "no_image": "Sem Imagem",
+    "col_product": "Produto",
+    "col_category": "Categoria",
+    "col_type": "Tipo",
+    "col_channels": "Canais",
+    "col_price": "Preço",
+    "col_stock": "Stock",
+    "col_status": "Estado",
+    "actions_title": "Ações do produto",
+    "types": {
+      "merchandise": "Merchandising",
+      "event_ticket": "Bilhete de Evento",
+      "food_drink": "Comida & Bebida"
+    },
+    "channels": {
+      "web": "Web",
+      "pos": "POS",
+      "fast-pos": "Fast POS"
+    },
     "on_demand": "Sob Encomenda",
     "untracked_stock": "Ilimitado",
     "out_of_stock": "Sem stock",
-    "in_stock": "{count} em stock",
-    "edit": "Editar",
-    "archive": "Arquivar",
-    "restore": "Restaurar",
-    "delete": "Eliminar",
-    "view_active": "Ver ativos",
-    "archived": "Arquivados",
-    "archived_badge": "Arquivado",
-    "timing_badge": {
-      "coming_soon": "Brevemente",
-      "unavailable": "Indisponível"
+    "stock_filter_in_stock": "Em stock",
+    "status_on_sale": "Disponível",
+    "status_sold_out": "Esgotado",
+    "status_scheduled": "Agendado",
+    "status_closed": "Encerrado",
+    "status_sales_disabled": "Desativado",
+    "status_hints": {
+      "on_sale": "Disponível para compra nos canais ativos",
+      "sold_out": "Sem stock nas variantes ativas",
+      "scheduled": "Agendado para abrir numa data futura",
+      "closed": "Prazo de encomenda terminado",
+      "sales_disabled": "Vendas desativadas - oculto na loja e no POS"
     },
+    "edit": "Editar",
+    "manage_stock": "Gerir stock",
+    "disable_sales": "Desativar vendas",
+    "enable_sales": "Ativar vendas",
+    "delete": "Eliminar",
+    "delete_requires_disabled": "Desativa as vendas antes de eliminar definitivamente",
     "no_products_found": "Nenhum produto encontrado",
-    "adjust_filters": "Tenta ajustar os filtros ou a pesquisa",
-    "no_archived_products": "Sem produtos arquivados",
-    "no_archived_products_hint": "Produtos arquivados aparecerão aqui",
     "no_products": "Ainda não há produtos",
     "no_products_hint": "Clica em \"Adicionar Produto\" para começar",
-    "confirm_archive": "Tem a certeza que deseja arquivar este produto?",
-    "confirm_restore": "Tem a certeza que deseja restaurar este produto?",
+    "confirm_disable_sales": "Desativar as vendas deste produto? Deixará de estar disponível na loja e no POS.",
+    "confirm_enable_sales": "Ativar as vendas deste produto?",
     "confirm_permanent": "Tem a certeza que deseja eliminar definitivamente este produto? Esta ação não pode ser desfeita.",
     "error_generic": "Ocorreu um erro. Tenta novamente.",
     "confirm_dialog": {
       "confirm": "Confirmar",
       "cancel": "Cancelar"
+    },
+    "stock_drawer": {
+      "subtitle": "Pré-visualização e stock",
+      "total_active": "Total ativo: {count}",
+      "base_stock": "Stock do produto",
+      "on_hand": "Em stock",
+      "save_changes": "Guardar alterações",
+      "reset": "Repor",
+      "confirm_save_title": "Confirmar atualização de stock",
+      "confirm_save_intro": "Aplicar estas alterações de stock em {name}?",
+      "saved_toast": "Stock atualizado",
+      "stock_section": "Stock",
+      "back": "Voltar",
+      "variant_inactive_badge": "Desativada",
+      "on_demand_hint": "Sob encomenda - a quantidade em stock não é contabilizada.",
+      "untracked_hint": "Ilimitado - este produto não tem controlo de stock.",
+      "close": "Fechar"
     }
   },
   "campus_schedules_management": {
@@ -2060,10 +2104,10 @@
       "other": "Outro"
     },
     "reservation": {
-      "label": "Reserva — pagar na Banca",
+      "label": "Reserva - pagar na Banca",
       "pending_title": "Reserva Registada!",
       "pending_intro": "A tua reserva foi registada. Conclui o pagamento na Banca dentro do prazo.",
-      "pending_location": "Banca — {location}",
+      "pending_location": "Banca - {location}",
       "continue": "Continuar",
       "action_label": "Reservar e pagar na Banca",
       "switch_error": "Não foi possível converter o pagamento em reserva."
@@ -2181,7 +2225,7 @@
     },
     "catalog": {
       "empty": "Nenhum produto disponível nesta categoria.",
-      "back_to_catalog": "Voltar ao catálogo ({product})",
+      "back_to_catalog": "Voltar ao catálogo",
       "back": "Voltar atrás",
       "select_option": "Selecionar {option}",
       "all": "Todos",
@@ -2207,7 +2251,7 @@
       "cash_option": "Dinheiro (Numerário)",
       "tpa_option": "SumUp TPA (Terminal de Cartão)",
       "mbway_option": "MB WAY",
-      "reservation_option": "Reserva — pagar na Banca (POS)",
+      "reservation_option": "Reserva - pagar na Banca (POS)",
       "other_option": "Outro Método de Pagamento",
       "cash_received_label": "Valor Entregue pelo Cliente (€)",
       "shortcuts": "Atalhos de Valor",
@@ -2227,7 +2271,7 @@
       "tpa_paid_toast": "Pagamento efetuado no terminal!",
       "tpa_failed": "Transação cancelada ou recusada no leitor.",
       "tpa_failed_toast": "Pagamento cancelado ou recusado.",
-      "tpa_register_failed": "Pagamento confirmado no terminal, mas o registo da venda falhou. Usa \"Repetir registo\" — não voltes a cobrar o cliente.",
+      "tpa_register_failed": "Pagamento confirmado no terminal, mas o registo da venda falhou. Usa \"Repetir registo\" - não voltes a cobrar o cliente.",
       "tpa_register_failed_toast": "O registo da venda falhou após o pagamento no terminal.",
       "tpa_retry_failed": "O registo voltou a falhar. Tenta novamente.",
       "tpa_retry_failed_toast": "Falha ao registar venda.",

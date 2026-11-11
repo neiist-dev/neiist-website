@@ -60,8 +60,15 @@
   height: 100%;
 }
 
-.name {
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin: 0.75rem 0 0.15rem;
+}
+
+.name {
+  margin: 0;
   font-size: 1rem;
   color: var(--foreground-colour);
 }

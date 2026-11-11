@@ -4,23 +4,15 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import {
   addProduct,
-  addProductVariants,
+  changeProductStock,
   updateProduct,
   syncProductVariants,
   deleteProduct,
   getProduct,
+  getProductNoCache,
+  setProductSalesEnabled,
 } from "@/lib/db/repositories/shop.repository";
-import { Product } from "@/types/shop/product";
-
-export interface CreateProductVariantInput {
-  id?: number;
-  sku?: string | null;
-  images?: string[];
-  price_modifier?: number;
-  stock_quantity?: number | null;
-  active?: boolean;
-  options?: Record<string, string>;
-}
+import { Product, ProductVariantInput, StockChangeInput } from "@/types/shop/product";
 
 export interface SaveProductInput {
   name: string;
@@ -47,8 +39,18 @@ export interface SaveProductInput {
       stock_quantity: number;
     }
   >;
-  variants?: CreateProductVariantInput[];
+  variants?: ProductVariantInput[];
   variantsToDelete?: number[];
+}
+
+function revalidateProductCaches(id: number): void {
+  revalidateTag("products", "max");
+  revalidateTag(`product-${id}`, "max");
+  revalidatePath("/shop");
+  revalidatePath("/shop/manage");
+  revalidatePath("/[locale]/shop/manage", "page");
+  revalidatePath(`/shop/${id}`);
+  revalidatePath("/dinner");
 }
 
 export async function createProductAction(data: SaveProductInput): Promise<Product> {
@@ -106,15 +108,10 @@ export async function createProductAction(data: SaveProductInput): Promise<Produ
       });
     }
 
-    await addProductVariants(newProduct.id, processedVariants);
+    await syncProductVariants(newProduct.id, processedVariants);
   }
 
-  revalidateTag("products", "max");
-  revalidateTag(`product-${newProduct.id}`, "max");
-  revalidatePath("/shop");
-  revalidatePath("/shop/manage");
-  revalidatePath(`/shop/${newProduct.id}`);
-  revalidatePath("/dinner");
+  revalidateProductCaches(newProduct.id);
 
   const fullProduct = await getProduct(newProduct.id);
   return fullProduct || newProduct;
@@ -151,53 +148,60 @@ export async function updateProductAction(id: number, data: SaveProductInput): P
     await syncProductVariants(id, data.variants, data.variantsToDelete);
   }
 
-  revalidateTag("products", "max");
-  revalidateTag(`product-${id}`, "max");
-  revalidatePath("/shop");
-  revalidatePath("/shop/manage");
-  revalidatePath(`/shop/${id}`);
-  revalidatePath("/dinner");
+  revalidateProductCaches(id);
 
   const fullProduct = await getProduct(id);
   if (!fullProduct) throw new Error("Artigo não encontrado após atualização");
   return fullProduct;
 }
 
-export async function deleteProductAction(
-  id: number,
-  permanent = false
-): Promise<{ success: boolean }> {
+export async function deleteProductAction(id: number): Promise<{ success: boolean }> {
   await requirePermission("shop:write");
 
-  if (permanent) {
-    await deleteProduct(id);
-  } else {
-    const archived = await updateProduct(id, { active: false });
-    if (!archived) throw new Error("Artigo não encontrado para arquivar");
-  }
+  const existing = await getProductNoCache(id);
+  if (!existing) throw new Error("Artigo não encontrado");
+  if (existing.active !== false)
+    throw new Error("Desative as vendas antes de eliminar definitivamente");
 
-  revalidateTag("products", "max");
-  revalidateTag(`product-${id}`, "max");
-  revalidatePath("/shop");
-  revalidatePath("/shop/manage");
-  revalidatePath(`/shop/${id}`);
-  revalidatePath("/dinner");
+  await deleteProduct(id);
+  revalidateProductCaches(id);
 
   return { success: true };
 }
 
-export async function toggleProductActiveAction(id: number, active: boolean): Promise<Product> {
+export async function setProductSalesEnabledAction(id: number, enabled: boolean): Promise<Product> {
   await requirePermission("shop:write");
 
-  const updated = await updateProduct(id, { active });
+  const updated = await setProductSalesEnabled(id, enabled);
   if (!updated) throw new Error("Artigo não encontrado");
 
-  revalidateTag("products", "max");
-  revalidateTag(`product-${id}`, "max");
-  revalidatePath("/shop");
-  revalidatePath("/shop/manage");
-  revalidatePath(`/shop/${id}`);
-  revalidatePath("/dinner");
+  revalidateProductCaches(id);
+  return updated;
+}
 
+export async function changeProductStockAction(
+  productId: number,
+  changes: StockChangeInput[]
+): Promise<Product> {
+  await requirePermission("shop:write");
+
+  if (!Array.isArray(changes) || changes.length === 0)
+    throw new Error("Nenhuma alteração de stock especificada");
+
+  for (const item of changes) {
+    if (item.delta !== undefined && !Number.isInteger(item.delta))
+      throw new Error("Variação de stock inválida");
+
+    if (item.set !== undefined && (!Number.isInteger(item.set) || item.set < 0))
+      throw new Error("Quantidade de stock inválida");
+
+    if (item.delta === undefined && item.set === undefined)
+      throw new Error("Nenhuma alteração de stock especificada");
+  }
+
+  const updated = await changeProductStock(productId, changes);
+  if (!updated) throw new Error("Artigo não encontrado");
+
+  revalidateProductCaches(productId);
   return updated;
 }

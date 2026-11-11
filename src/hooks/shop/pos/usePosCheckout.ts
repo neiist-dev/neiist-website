@@ -187,7 +187,11 @@ export function usePosCheckout({
         return;
       }
 
-      const { isDeadlinePassed, isOutOfStock } = getProductPosAvailability(product);
+      const { isDeadlinePassed, isOutOfStock } = getProductPosAvailability(
+        product,
+        Date.now(),
+        variant
+      );
       if (isDeadlinePassed && !canOverride) {
         Alert.error(dict.alerts.deadline_expired);
         return;

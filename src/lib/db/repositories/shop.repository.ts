@@ -26,8 +26,8 @@ import {
   mapdbProductToProduct,
   Product,
   ProductChannel,
-  ProductVariant,
   ProductVariantInput,
+  StockChangeInput,
 } from "@/types/shop/product";
 import { encodeVariantOptionsForStorage } from "@/utils/shop/shopUtils";
 import { db_query } from "@/lib/db/connection";
@@ -117,21 +117,15 @@ export const addProduct = async (product: CreateProductInput): Promise<Product |
 
 export const syncProductVariants = async (
   productId: number,
-  variants?: Array<ProductVariantInput | (Partial<ProductVariant> & { id?: number })>,
+  variants?: ProductVariantInput[],
   variantsToDelete?: Array<number | string>
 ): Promise<Product | null> => {
   const encodedVariants = (variants ?? []).map((variant) => ({
-    id: "id" in variant && variant.id ? Number(variant.id) : undefined,
+    id: variant.id ? Number(variant.id) : undefined,
     sku: variant.sku ?? null,
     images: variant.images ?? [],
-    price_modifier:
-      ("price_modifier" in variant ? variant.price_modifier : undefined) ??
-      ("price_offset" in variant ? variant.price_offset : undefined) ??
-      0,
-    stock_quantity:
-      ("stock_quantity" in variant ? variant.stock_quantity : undefined) ??
-      ("stock" in variant ? variant.stock : undefined) ??
-      null,
+    price_modifier: variant.price_modifier ?? 0,
+    stock_quantity: variant.stock_quantity ?? null,
     active: variant.active ?? true,
     options: encodeVariantOptionsForStorage(variant.options ?? {}),
   }));
@@ -152,26 +146,6 @@ export const syncProductVariants = async (
   return result;
 };
 
-export const addProductVariants = async (
-  productId: number,
-  variants: ProductVariantInput[]
-): Promise<Product | null> => {
-  return syncProductVariants(productId, variants, []);
-};
-
-export const addProductVariant = async (
-  productId: number,
-  variant:
-    | ProductVariantInput
-    | (Partial<ProductVariant> & {
-        price_modifier?: number;
-        price_offset?: number;
-        stock?: number;
-      })
-): Promise<Product | null> => {
-  return syncProductVariants(productId, [variant], []);
-};
-
 export const updateProduct = async (
   productId: number,
   updates: Partial<Product>
@@ -183,6 +157,35 @@ export const updateProduct = async (
     JSON.stringify(updates),
   ]);
   const result = row ? mapdbProductToProduct(row) : null;
+  if (result) {
+    revalidateTag("products", "max");
+    revalidateTag(`product-${productId}`, "max");
+  }
+  return result;
+};
+
+export const setProductSalesEnabled = async (
+  productId: number,
+  enabled: boolean
+): Promise<Product | null> => {
+  return updateProduct(productId, { active: enabled });
+};
+
+export const changeProductStock = async (
+  productId: number,
+  changes: StockChangeInput[]
+): Promise<Product | null> => {
+  let latest: dbProduct | undefined;
+  for (const change of changes) {
+    const {
+      rows: [row],
+    } = await db_query<dbProduct>(
+      `SELECT * FROM neiist.change_product_stock($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::INTEGER)`,
+      [productId, change.variantId ?? null, change.delta ?? null, change.set ?? null]
+    );
+    if (row) latest = row;
+  }
+  const result = latest ? mapdbProductToProduct(latest) : null;
   if (result) {
     revalidateTag("products", "max");
     revalidateTag(`product-${productId}`, "max");

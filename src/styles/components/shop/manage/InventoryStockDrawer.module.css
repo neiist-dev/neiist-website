@@ -1,0 +1,133 @@
+.truncate {
+  min-width: 0;
+}
+
+.noMargin {
+  margin: 0;
+}
+
+.fullWidth {
+  inline-size: 100%;
+}
+
+.rowDisabled {
+  opacity: 0.55;
+}
+
+.previewHeader {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.previewThumbBtn {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid transparent;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+}
+
+.previewThumbBtn:hover {
+  border-color: #d1d5db;
+}
+
+.previewThumbBtn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.previewThumbActive {
+  border-color: var(--primary-colour);
+}
+
+.previewDescription {
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.previewDescription > * {
+  margin: 0;
+}
+
+.previewDescription > * + * {
+  margin-top: 0.5rem;
+}
+
+.previewDescription ul,
+.previewDescription ol {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.previewDescription ol {
+  list-style: decimal;
+}
+
+.previewDescription a {
+  color: var(--secondary-colour);
+  text-decoration: underline;
+}
+
+.quantityBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 0.15rem 0.35rem;
+  border-radius: 999px;
+}
+
+.quantityInput {
+  width: 3rem;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--foreground-colour);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.quantityInput::-webkit-outer-spin-button,
+.quantityInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.iconBtn {
+  padding: 0.25rem 0.4rem;
+  min-height: auto;
+}
+
+.confirmChangesList {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .previewHeader {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .previewGallery {
+    max-width: 200px;
+  }
+}

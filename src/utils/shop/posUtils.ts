@@ -1,5 +1,6 @@
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { CartItem, Product, ProductVariant } from "@/types/shop/product";
+import { getProductStock, isProductDeadlinePassed } from "@/utils/shop/shopUtils";
 
 export function formatShiftOpenedAt(
   openedAt: string | Date,
@@ -49,15 +50,13 @@ export function formatPosTimestamp(
   return `${d.toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}, ${timeStr}`;
 }
 
-export function getProductPosAvailability(product: Product, nowMs: number = Date.now()) {
-  const isDeadlinePassed = Boolean(
-    product.order_deadline && nowMs > new Date(product.order_deadline).getTime()
-  );
-  const isOutOfStock =
-    product.stock_type === "limited" &&
-    product.stock_quantity !== null &&
-    product.stock_quantity !== undefined &&
-    product.stock_quantity <= 0;
+export function getProductPosAvailability(
+  product: Product,
+  nowMs: number = Date.now(),
+  variant?: ProductVariant | null
+) {
+  const isDeadlinePassed = isProductDeadlinePassed(product, nowMs);
+  const isOutOfStock = getProductStock(product, variant) === 0;
 
   return { isDeadlinePassed, isOutOfStock };
 }

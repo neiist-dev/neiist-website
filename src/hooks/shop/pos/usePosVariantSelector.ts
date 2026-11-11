@@ -2,6 +2,12 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { Product } from "@/types/shop/product";
+import {
+  findItemVariant,
+  getDistinctOptionValues,
+  getProductOptionNames,
+  matchesSelections,
+} from "@/utils/shop/shopUtils";
 
 export function usePosVariantSelector(
   addToCart: (_product: Product, _variant: Product["variants"][0] | null) => void
@@ -22,14 +28,10 @@ export function usePosVariantSelector(
     [addToCart]
   );
 
-  const optionKeys = useMemo(() => {
-    if (!activeVariantProduct) return [];
-    const keys = new Set<string>();
-    activeVariantProduct.variants?.forEach((v) => {
-      if (v.options) Object.keys(v.options).forEach((k) => keys.add(k));
-    });
-    return Array.from(keys);
-  }, [activeVariantProduct]);
+  const optionKeys = useMemo(
+    () => (activeVariantProduct ? getProductOptionNames(activeVariantProduct.variants) : []),
+    [activeVariantProduct]
+  );
 
   const currentKeyIndex = Object.keys(selectedVariantOptions).length;
   const currentOptionKey = optionKeys[currentKeyIndex];
@@ -37,14 +39,10 @@ export function usePosVariantSelector(
   const availableValuesForCurrentKey = useMemo(() => {
     if (!activeVariantProduct || !currentOptionKey) return [];
     const activeVariants = activeVariantProduct.variants?.filter((v) => v.active !== false) || [];
-    const values = new Set<string>();
-    activeVariants.forEach((v) => {
-      const matchesPrior = Object.entries(selectedVariantOptions).every(
-        ([key, val]) => v.options?.[key] === val
-      );
-      if (matchesPrior && v.options?.[currentOptionKey]) values.add(v.options[currentOptionKey]);
-    });
-    return Array.from(values);
+    const matching = activeVariants.filter((v) =>
+      matchesSelections(v.options, selectedVariantOptions)
+    );
+    return getDistinctOptionValues(matching, currentOptionKey);
   }, [activeVariantProduct, currentOptionKey, selectedVariantOptions]);
 
   const handleSelectVariantOptionValue = (val: string) => {
@@ -55,9 +53,7 @@ export function usePosVariantSelector(
     };
 
     if (currentKeyIndex + 1 >= optionKeys.length) {
-      const matched = activeVariantProduct.variants?.find((v) =>
-        Object.entries(nextSelections).every(([k, vVal]) => v.options?.[k] === vVal)
-      );
+      const matched = findItemVariant(activeVariantProduct, { variant_options: nextSelections });
       addToCart(activeVariantProduct, matched || null);
       setActiveVariantProduct(null);
       setSelectedVariantOptions({});
@@ -72,8 +68,7 @@ export function usePosVariantSelector(
       setActiveVariantProduct(null);
       setSelectedVariantOptions({});
     } else {
-      const previous = Object.fromEntries(entries.slice(0, -1));
-      setSelectedVariantOptions(previous);
+      setSelectedVariantOptions(Object.fromEntries(entries.slice(0, -1)));
     }
   };
 
