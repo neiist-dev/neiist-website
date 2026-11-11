@@ -1,11 +1,16 @@
 .swatch {
+  display: inline-block;
+  flex-shrink: 0;
   border: 2px solid transparent;
   border-radius: 50%;
-  cursor: pointer;
   padding: 0;
   transition:
     transform 0.15s,
     box-shadow 0.15s;
+}
+
+button.swatch {
+  cursor: pointer;
 }
 
 .sm {
@@ -23,7 +28,7 @@
   block-size: 2.5rem;
 }
 
-.swatch:hover {
+button.swatch:hover {
   transform: scale(1.1);
 }
 
