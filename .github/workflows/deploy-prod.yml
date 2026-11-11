@@ -20,21 +20,46 @@ jobs:
     environment:
       name: production
       url: https://neiist.tecnico.ulisboa.pt
+    env:
+      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      # Installed before any secret is loaded, without lifecycle scripts.
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Configure Known Hosts
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          printf '%s\n' "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
       - name: Determine Deploy Ref
@@ -51,20 +76,8 @@ jobs:
           fi
           echo "REF=$REF" >> "$GITHUB_ENV"
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Next.js Cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ${{ github.workspace }}/.next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
@@ -78,7 +91,7 @@ jobs:
               -o ExitOnForwardFailure=yes \
               -o ServerAliveInterval=15 \
               -o ServerAliveCountMax=3 \
-              ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
+              "$SSH_USERNAME@$SSH_HOST"
 
       - name: Build Standalone Release
         env:
@@ -101,16 +114,16 @@ jobs:
         run: |
           rsync -avz --progress \
               release.tar.gz scripts/deploy_prod.sh \
-              ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+              "$SSH_USERNAME@$SSH_HOST:/home/neiist/"
+          ssh "$SSH_USERNAME@$SSH_HOST" \
               "chmod +x /home/neiist/deploy_prod.sh"
 
       - name: Deploy to Production
         run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+          ssh "$SSH_USERNAME@$SSH_HOST" \
               "su - neiist -c 'bash ~/deploy_prod.sh $REF /home/neiist/release.tar.gz'"
 
       - name: Confirm Production Deployment
         run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+          ssh "$SSH_USERNAME@$SSH_HOST" \
               "su - neiist -c 'export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; pm2 jlist'" | jq -r '.[] | select(.name=="blue" or .name=="green") | "🌿 " + .name + " → " + .pm2_env.status'
