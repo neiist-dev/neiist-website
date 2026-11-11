@@ -2,10 +2,6 @@
   cursor: pointer;
 }
 
-.rowSelectable {
-  --_card-header-end-pad: 2.75rem;
-}
-
 .emptyStateCell {
   text-align: center;
   padding-block: 3rem;
@@ -98,25 +94,7 @@
 }
 
 @container table-wrapper (max-width: 48rem) {
-  .checkboxCol,
-  .actionsCol {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-end: 0;
-    inline-size: 2.75rem;
-    block-size: 3rem;
-    min-block-size: 3rem;
-    padding: 0;
-    border: none;
-    border-block-end: none;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-  }
-
-  .emptyStateCell {
+  table[data-responsive="cards"] .emptyStateCell {
     display: block;
     padding-block: 2.5rem;
   }

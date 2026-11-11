@@ -67,6 +67,7 @@
 
 @container table-wrapper (max-width: 48rem) {
   .table[data-responsive="cards"] {
+    --_card-action-size: 2.75rem;
     display: block;
   }
 
@@ -123,9 +124,30 @@
 
   .table[data-responsive="cards"] .tr .td:last-child,
   .table[data-responsive="cards"] .tr .td:has(+ [data-actions]),
-  .table[data-responsive="cards"] .tr .td[data-actions] {
+  .table[data-responsive="cards"] .tr .td[data-actions],
+  .table[data-responsive="cards"] .tr .td[data-selection] {
     border: none;
     border-block-end: none;
+  }
+
+  .table[data-responsive="cards"] .tr .td[data-selection],
+  .table[data-responsive="cards"] .tr .td[data-actions] {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inline-size: var(--_card-action-size);
+    block-size: 3rem;
+    min-block-size: 3rem;
+    padding: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .table[data-responsive="cards"] .tr:has([data-actions]) .td[data-selection] {
+    inset-inline-end: var(--_card-action-size);
   }
 
   .table[data-responsive="cards"] .td:not(.cardHeaderCell)[data-label]::before {
@@ -136,10 +158,6 @@
     text-align: start;
     margin-inline-end: 1rem;
     flex-shrink: 0;
-  }
-
-  .table[data-responsive="cards"] .tr:has([data-actions]) .cardHeaderCell {
-    padding-inline-end: 3rem;
   }
 
   .table[data-responsive="cards"] .cardHeaderCell {
@@ -153,8 +171,16 @@
     font-weight: var(--ui-font-weight-bold);
     color: var(--ui-fg);
     padding: 0.75rem;
-    padding-inline-end: 3rem;
     border-block-end: 1px solid var(--ui-border);
     background: var(--ui-bg);
+  }
+
+  .table[data-responsive="cards"] .tr:has([data-actions]) .cardHeaderCell,
+  .table[data-responsive="cards"] .tr:has([data-selection]) .cardHeaderCell {
+    padding-inline-end: calc(var(--_card-action-size) + 0.25rem);
+  }
+
+  .table[data-responsive="cards"] .tr:has([data-actions]):has([data-selection]) .cardHeaderCell {
+    padding-inline-end: calc(var(--_card-action-size) * 2 + 0.25rem);
   }
 }

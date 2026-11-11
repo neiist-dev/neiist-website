@@ -8,7 +8,6 @@ import { Popover } from "../Popover/Popover";
 import { DropdownMenu } from "../DropdownMenu/DropdownMenu";
 import { Button } from "../Button/Button";
 import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
-import { cn } from "../../utils/cn";
 import dropdownStyles from "../DropdownMenu/DropdownMenu.module.css";
 import styles from "./DataTable.module.css";
 
@@ -273,13 +272,11 @@ export function DataTable<T>({
                       }
                     : undefined
                 }
-                className={cn(
-                  onRowClick && styles.rowClickable,
-                  enableRowSelection && styles.rowSelectable
-                )}>
+                className={onRowClick ? styles.rowClickable : undefined}>
                 {enableRowSelection && (
                   <TableCell
                     className={styles.checkboxCol}
+                    data-selection
                     onClick={(event) => event.stopPropagation()}>
                     <Checkbox
                       aria-label={`Select row ${rowId}`}
@@ -298,7 +295,7 @@ export function DataTable<T>({
                   return (
                     <TableCell
                       key={column.id}
-                      className={cn(column.className, column.id === "actions" && styles.actionsCol)}
+                      className={column.className}
                       data-actions={column.id === "actions" || undefined}
                       dataLabel={label}
                       isCardHeader={isHeader}
