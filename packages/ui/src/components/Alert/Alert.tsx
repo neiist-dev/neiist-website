@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 import styles from "./Alert.module.css";
@@ -65,9 +65,12 @@ function Toast({ id, title, description, variant, closeLabel = "Close" }: ToastP
   );
 }
 
+let syncToasterHost: (() => void) | null = null;
+
 function createToast(variant: AlertVariant) {
-  return (message: string, options?: AlertOptions) =>
-    sonnerToast.custom(
+  return (message: string, options?: AlertOptions) => {
+    syncToasterHost?.();
+    return sonnerToast.custom(
       (id) => (
         <Toast
           id={id}
@@ -82,6 +85,7 @@ function createToast(variant: AlertVariant) {
         style: { background: "transparent" },
       }
     );
+  };
 }
 
 export const Alert = {
@@ -100,31 +104,31 @@ export interface ToasterProps {
 }
 
 export function Toaster({ position = "top-right", offset }: ToasterProps) {
-  const [mounted, setMounted] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const el = document.createElement("div");
+    el.style.display = "contents";
 
-  useEffect(() => {
-    if (!mounted) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    const updateParent = () => {
+    const sync = () => {
       const openDialogs = document.querySelectorAll<HTMLElement>(
         "dialog[open]:not([data-closing])"
       );
-      const targetParent = openDialogs[openDialogs.length - 1] ?? document.body;
+      const target = openDialogs[openDialogs.length - 1] ?? document.body;
 
-      if (container.parentElement !== targetParent) targetParent.appendChild(container);
+      if (el.parentElement !== target) target.appendChild(el);
     };
 
-    updateParent();
+    sync();
+    syncToasterHost = sync;
+    setHost(el);
 
-    const observer = new MutationObserver(updateParent);
+    const observer = new MutationObserver((mutations) => {
+      if (!el.isConnected || mutations.some((m) => m.type === "attributes")) sync();
+    });
+
     observer.observe(document.body, {
+      childList: true,
       attributes: true,
       subtree: true,
       attributeFilter: ["open", "data-closing"],
@@ -132,17 +136,12 @@ export function Toaster({ position = "top-right", offset }: ToasterProps) {
 
     return () => {
       observer.disconnect();
-      if (container.parentElement && container.parentElement !== document.body)
-        document.body.appendChild(container);
+      if (syncToasterHost === sync) syncToasterHost = null;
+      el.remove();
     };
-  }, [mounted]);
+  }, []);
 
-  if (!mounted) return null;
+  if (!host) return null;
 
-  return createPortal(
-    <div ref={containerRef} style={{ display: "contents" }}>
-      <SonnerToaster position={position} offset={offset} />
-    </div>,
-    document.body
-  );
+  return createPortal(<SonnerToaster position={position} offset={offset} />, host);
 }

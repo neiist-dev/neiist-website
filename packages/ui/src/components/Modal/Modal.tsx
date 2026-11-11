@@ -129,6 +129,8 @@ export function ModalRoot({
     }
   }
 
+  const isVisible = open || isClosing;
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -139,17 +141,16 @@ export function ModalRoot({
 
     if (open) {
       if (!dialog.open) dialog.showModal();
-    } else if (isClosing && dialog.open) {
+      return;
+    }
+
+    if (isClosing) {
       const timer = setTimeout(() => {
-        setIsClosing(false);
         if (dialog.open) dialog.close();
+        setIsClosing(false);
       }, 200);
       return () => clearTimeout(timer);
     }
-
-    return () => {
-      if (dialog && dialog.open) dialog.close();
-    };
   }, [open, isClosing, mounted]);
 
   useEffect(() => {
@@ -163,7 +164,7 @@ export function ModalRoot({
 
     dialog.addEventListener("cancel", handleCancel);
     return () => dialog.removeEventListener("cancel", handleCancel);
-  }, [onClose]);
+  }, [onClose, mounted, isVisible]);
 
   const handleBackdropClick = (event: React.MouseEvent<HTMLDialogElement>) => {
     event.stopPropagation();
@@ -257,9 +258,7 @@ export function ModalRoot({
     }
   };
 
-  if (!mounted || typeof document === "undefined") return null;
-
-  const isVisible = open || isClosing;
+  if (!mounted || typeof document === "undefined" || !isVisible) return null;
 
   return createPortal(
     <dialog
@@ -268,42 +267,40 @@ export function ModalRoot({
       data-closing={isClosing ? "" : undefined}
       onClick={handleBackdropClick}
       {...props}>
-      {isVisible && (
-        <div
-          ref={contentRef}
-          className={cn(
-            styles.content,
-            styles[`size-${size}`],
-            isClosing && styles.closing,
-            className
-          )}
-          onClick={(event) => event.stopPropagation()}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerEnd}
-          onPointerCancel={handlePointerEnd}>
-          {draggable && (
-            <div className={styles.dragHandleBar} aria-hidden="true">
-              <div className={styles.dragHandlePill} />
-            </div>
-          )}
-          {title || subtitle || badge ? (
-            <>
-              <ModalHeader
-                title={title}
-                subtitle={subtitle}
-                badge={badge}
-                onClose={onClose}
-                showCloseButton={showCloseButton}
-                closeLabel={closeLabel}
-              />
-              <ModalBody>{children}</ModalBody>
-            </>
-          ) : (
-            children
-          )}
-        </div>
-      )}
+      <div
+        ref={contentRef}
+        className={cn(
+          styles.content,
+          styles[`size-${size}`],
+          isClosing && styles.closing,
+          className
+        )}
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}>
+        {draggable && (
+          <div className={styles.dragHandleBar} aria-hidden="true">
+            <div className={styles.dragHandlePill} />
+          </div>
+        )}
+        {title || subtitle || badge ? (
+          <>
+            <ModalHeader
+              title={title}
+              subtitle={subtitle}
+              badge={badge}
+              onClose={onClose}
+              showCloseButton={showCloseButton}
+              closeLabel={closeLabel}
+            />
+            <ModalBody>{children}</ModalBody>
+          </>
+        ) : (
+          children
+        )}
+      </div>
     </dialog>,
     document.body
   );

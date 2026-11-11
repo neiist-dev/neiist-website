@@ -1,10 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Popover.module.css";
 import { cn } from "../../utils/cn";
 import { Modal } from "../Modal/Modal";
+
+const subscribeMobile = (callback: () => void) => {
+  const mql = window.matchMedia("(max-width: 48rem)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+};
 
 export interface PopoverProps {
   isOpen: boolean;
@@ -43,18 +49,11 @@ export function Popover({
 }: PopoverProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<PopoverPosition | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const mql = window.matchMedia("(max-width: 48rem)");
-    const checkMobile = () => {
-      setIsMobile((prev) => (prev !== mql.matches ? mql.matches : prev));
-    };
-    checkMobile();
-    mql.addEventListener("change", checkMobile);
-    return () => mql.removeEventListener("change", checkMobile);
-  }, [isOpen]);
+  const isMobile = useSyncExternalStore(
+    subscribeMobile,
+    () => window.matchMedia("(max-width: 48rem)").matches,
+    () => false
+  );
 
   useEffect(() => {
     if (!isOpen || isMobile) {
@@ -158,7 +157,7 @@ export function Popover({
     };
   }, [isOpen, isMobile, anchorRef, onClose]);
 
-  if (typeof document === "undefined" || !isOpen) return null;
+  if (typeof document === "undefined") return null;
 
   if (isMobile) {
     return (
@@ -167,6 +166,8 @@ export function Popover({
       </Modal>
     );
   }
+
+  if (!isOpen) return null;
 
   const content = (
     <div
