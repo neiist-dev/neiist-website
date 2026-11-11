@@ -1677,7 +1677,7 @@
           },
           {
             "label": "Discount codes",
-            "text": "discount codes are personal or promotional, cannot be combined unless stated otherwise and cannot be exchanged for cash."
+            "text": "discount codes are personal or promotional, are not cumulative unless stated otherwise and cannot be exchanged for cash."
           },
           {
             "label": "Cancellation by NEIIST",
@@ -1717,7 +1717,7 @@
           },
           {
             "label": "Delivery times",
-            "text": "the estimated delivery time is shown on each product page and at checkout and is indicative only. For made-to-order items, it counts from the end of the ordering period. As a non-profit student association, NEIIST relies on external suppliers and on the volunteer work of its members, so delays may occur; we will always do our best to meet the stated dates. Unless a different period was stated and accepted by the customer when ordering, the order will be made available within a maximum of 30 days (Decree-Law no. 24/2014)."
+            "text": "the estimated delivery time is shown on each product page and at checkout and is indicative only. For made-to-order items, it counts from the end of the ordering period. As a non-profit student association, NEIIST relies on external suppliers and on the volunteer work of its members, so delays may occur; we will always do our best to meet the stated dates. Unless a different period was stated and accepted by the customer when ordering, the order will be made available within a maximum of 30 days from payment confirmation (Decree-Law no. 24/2014)."
           },
           {
             "label": "Ready notice",
@@ -1750,7 +1750,7 @@
           },
           {
             "label": "Returning items",
-            "text": "items must be returned to one of the NEIIST rooms within 14 days of your notice, unused, in good condition and, where possible, in their original packaging with tags."
+            "text": "items must be returned to one of the NEIIST rooms within 14 days of your notice, unused, unwashed and unaltered, in good condition and, where possible, in their original packaging with tags. The consumer is liable for any loss in value of the items resulting from handling beyond what is necessary to establish their nature and functioning."
           },
           {
             "label": "Refund",
@@ -1758,7 +1758,7 @@
           },
           {
             "label": "Exceptions",
-            "text": "the right of withdrawal does not apply to personalised items or items made to the consumer's specifications (for example, with a name or design chosen by the customer), under Article 17(1)(c) of Decree-Law no. 24/2014."
+            "text": "the right of withdrawal does not apply to personalised items or items made to the consumer's specifications, under Article 17(1)(c) of Decree-Law no. 24/2014. As most NEIIST items are made to order, specifically for each request and according to the quantities, sizes and models chosen by customers, these items are considered personalised and are not eligible for withdrawal. This information is shown on the product page and at checkout. Items available in stock (not made to order) remain covered by the right of withdrawal. Even so, if a customer wishes to return one of these items, the request is assessed case by case and the best solution is sought and agreed between the current NEIIST Board and the customer, without creating any obligation for NEIIST. In case of a defect, section 10 applies."
           }
         ]
       },
@@ -1777,8 +1777,9 @@
         "id": "warranty",
         "title": "10. Warranty and Conformity",
         "paragraphs": [
-          "All items benefit from the 3-year legal guarantee of conformity from delivery, under Decree-Law no. 84/2021.",
-          "In case of a defect or lack of conformity, the consumer is entitled to repair or replacement, a proportional price reduction, or termination of the contract, as provided by law. To do so, contact neiist@tecnico.ulisboa.pt with your order number and, if possible, photos of the defect."
+          "NEIIST does not offer any additional commercial warranty. Only the mandatory legal regime for the conformity of consumer goods (Decree-Law no. 84/2021) applies; it cannot be waived and its periods and conditions depend on the type of item.",
+          "Defects or lack of conformity are assessed case by case. To report one, contact neiist@tecnico.ulisboa.pt with your order number and photos of the problem. As a non-profit student association, we will always seek the most suitable solution as provided by law: repair, replacement, price reduction or termination of the contract.",
+          "The warranty does not cover normal wear and tear, improper use, washing or care contrary to the label instructions, or damage occurring after delivery."
         ]
       },
       {

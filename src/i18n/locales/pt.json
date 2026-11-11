@@ -1677,7 +1677,7 @@
           },
           {
             "label": "Códigos de desconto",
-            "text": "os códigos de desconto são pessoais ou promocionais, não são cumuláveis salvo indicação em contrário e não podem ser convertidos em dinheiro."
+            "text": "os códigos de desconto são pessoais ou promocionais, não são acumuláveis salvo indicação em contrário e não podem ser convertidos em dinheiro."
           },
           {
             "label": "Cancelamento pelo NEIIST",
@@ -1717,7 +1717,7 @@
           },
           {
             "label": "Prazos",
-            "text": "o prazo estimado de entrega é indicado na página de cada produto e no checkout e tem caráter indicativo. Para artigos produzidos por encomenda, o prazo conta a partir do fecho do período de encomendas. Enquanto associação de estudantes sem fins lucrativos, o NEIIST depende de fornecedores externos e do trabalho voluntário dos seus membros, pelo que podem ocorrer atrasos; faremos sempre o possível para cumprir os prazos indicados. Salvo prazo diferente indicado e aceite pelo cliente no momento da encomenda, a entrega será disponibilizada no prazo máximo de 30 dias (Decreto-Lei n.º 24/2014)."
+            "text": "o prazo estimado de entrega é indicado na página de cada produto e no checkout e tem caráter indicativo. Para artigos produzidos por encomenda, o prazo conta a partir do fecho do período de encomendas. Enquanto associação de estudantes sem fins lucrativos, o NEIIST depende de fornecedores externos e do trabalho voluntário dos seus membros, pelo que podem ocorrer atrasos; faremos sempre o possível para cumprir os prazos indicados. Salvo prazo diferente indicado e aceite pelo cliente no momento da encomenda, a entrega será disponibilizada no prazo máximo de 30 dias a contar da confirmação do pagamento (Decreto-Lei n.º 24/2014)."
           },
           {
             "label": "Aviso de disponibilidade",
@@ -1750,7 +1750,7 @@
           },
           {
             "label": "Devolução dos artigos",
-            "text": "os artigos devem ser entregues numa das salas do NEIIST no prazo de 14 dias após a comunicação, sem uso, em bom estado e, sempre que possível, na embalagem original e com etiquetas."
+            "text": "os artigos devem ser entregues numa das salas do NEIIST no prazo de 14 dias após a comunicação, sem uso, lavagem ou alteração, em bom estado e, sempre que possível, na embalagem original e com etiquetas. O consumidor é responsável pela diminuição do valor dos artigos resultante de manuseamento além do necessário para verificar a sua natureza e funcionamento."
           },
           {
             "label": "Reembolso",
@@ -1758,7 +1758,7 @@
           },
           {
             "label": "Exceções",
-            "text": "o direito de livre resolução não se aplica a artigos personalizados ou produzidos segundo especificações do consumidor (por exemplo, com nome ou design escolhido pelo cliente), nos termos do artigo 17.º, n.º 1, alínea c), do Decreto-Lei n.º 24/2014."
+            "text": "o direito de livre resolução não se aplica a artigos personalizados ou produzidos segundo especificações do consumidor, nos termos do artigo 17.º, n.º 1, alínea c), do Decreto-Lei n.º 24/2014. Como a maioria dos artigos do NEIIST é produzida por encomenda, especificamente para cada pedido e em função das quantidades, tamanhos e modelos escolhidos pelos clientes, esses artigos são considerados personalizados e não são passíveis de livre resolução. Esta informação é apresentada na página do produto e no checkout. Os artigos disponíveis em stock (não produzidos por encomenda) continuam abrangidos pelo direito de livre resolução. Ainda assim, caso o cliente pretenda devolver um destes artigos, o pedido é analisado caso a caso e a melhor solução é encontrada e acordada entre a Direção do NEIIST em funções e o cliente, sem que daí resulte qualquer obrigação para o NEIIST. Em caso de defeito, aplica-se a secção 10."
           }
         ]
       },
@@ -1777,8 +1777,9 @@
         "id": "warranty",
         "title": "10. Garantia e Conformidade",
         "paragraphs": [
-          "Todos os artigos beneficiam da garantia legal de conformidade de 3 anos a contar da entrega, nos termos do Decreto-Lei n.º 84/2021.",
-          "Em caso de defeito ou falta de conformidade, o consumidor tem direito à reparação ou substituição do artigo, à redução proporcional do preço ou à resolução do contrato, nos termos da lei. Para o efeito, contacte neiist@tecnico.ulisboa.pt com o número da encomenda e, se possível, fotografias do defeito."
+          "O NEIIST não oferece qualquer garantia comercial adicional. Aplica-se apenas o regime legal de conformidade dos bens de consumo (Decreto-Lei n.º 84/2021), que não pode ser afastado e cujos prazos e condições dependem do tipo de artigo.",
+          "As situações de defeito ou falta de conformidade são analisadas caso a caso. Para o efeito, contacte neiist@tecnico.ulisboa.pt com o número da encomenda e fotografias do problema. Sendo o NEIIST uma associação de estudantes sem fins lucrativos, procuraremos sempre a solução mais adequada, nos termos da lei: reparação, substituição, redução do preço ou resolução do contrato.",
+          "A garantia não cobre o desgaste normal, a utilização incorreta, a lavagem ou conservação contrária às instruções da etiqueta, nem danos causados após a entrega."
         ]
       },
       {
