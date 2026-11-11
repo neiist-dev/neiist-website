@@ -1,5 +1,39 @@
 # neiist
 
+## [4.7.0](https://github.com/neiist-dev/neiist-website/compare/v4.6.2...v4.7.0) (2026-11-11)
+
+
+### Features
+
+* **activities:** events/activities management Notion/DB independet ([e4f4ad3](https://github.com/neiist-dev/neiist-website/commit/e4f4ad30ef2973373c3ad9f906feca860efef5e1))
+* add terms of usage and a new legal component ([06cab95](https://github.com/neiist-dev/neiist-website/commit/06cab956914e74c8acb37c17f2099da76731e5a0))
+* **auth:** new RBAC permissions for new POS, SHOP and activities ([6f5caff](https://github.com/neiist-dev/neiist-website/commit/6f5caffa5fc6c4482a1acdbedb3cf06d6b90c4a9))
+* **db:** campus schedules, payments tables centralization, payment ([f7fe795](https://github.com/neiist-dev/neiist-website/commit/f7fe79513c1596ec03407242a3212f955aec5a3e))
+* **db:** update tables and functions for new image architeture ([53e5c2b](https://github.com/neiist-dev/neiist-website/commit/53e5c2b37f8c8a29419c34f500e307f694ef1a39))
+* **i18n:** update all dict for new pages and features accross shop, pos ([71267d7](https://github.com/neiist-dev/neiist-website/commit/71267d7c66858b47b687eadf155402ec39cc7aec))
+* **images:** unified image upload, and serving architecture ([2f32b56](https://github.com/neiist-dev/neiist-website/commit/2f32b56230d3e3f553ec65903aa6f5b901177d7b))
+* **legal:** update terms and conditios of use ([6b6aef4](https://github.com/neiist-dev/neiist-website/commit/6b6aef46e3342dfae63208e680323482d8b27ed1))
+* **payments:** add ifthenpay mbway support and SSE for payment ([621e33f](https://github.com/neiist-dev/neiist-website/commit/621e33f304e7473ff846ed8620dc6527a2f06b5d))
+* **pos:** pos system, checkout counter ([3861d29](https://github.com/neiist-dev/neiist-website/commit/3861d296a82b631cbb34525c81d1321ac7259bcc))
+* **redis:** setup dev env for redis container and redis shop struct ([1178dd8](https://github.com/neiist-dev/neiist-website/commit/1178dd8fea6f890e9afb1802d356a11fa536a9a8))
+* **shop:** product types, no special categories, campus schedules all ([f35ede3](https://github.com/neiist-dev/neiist-website/commit/f35ede38cbcf5b7c0246668e71e8fd904388ce50))
+* **shop:** redis TTL for checkout lifecycle, stock holds and mbway ([c7c9362](https://github.com/neiist-dev/neiist-website/commit/c7c9362480c6b20a6a121042835092a4cf70ef6b))
+* **ui:** add datatable filters and fix modal closing ([e05d424](https://github.com/neiist-dev/neiist-website/commit/e05d424723b8d15b5ab58d571ed318ff82c6abb4))
+* **ui:** data table row actions menu, popover close guard, tab disable ([98fc788](https://github.com/neiist-dev/neiist-website/commit/98fc788a8c3c489f13749820c4a15ca230a3c38e))
+* **ui:** data table with checkmark also shows 3dot menu on touchscreen ([988b896](https://github.com/neiist-dev/neiist-website/commit/988b896508c0a7cf81e3207fd5d9dd8ff959fb5e))
+
+
+### Bug Fixes
+
+* add seo tags and also small lighthouse complience fixes a11y ([42e6d5e](https://github.com/neiist-dev/neiist-website/commit/42e6d5e577cd538199a7b8cc95fffd591af9deba))
+* correct json en pt format for privacy policy and terms of usage ([281efca](https://github.com/neiist-dev/neiist-website/commit/281efca4f5dd383c9d2364bd0584ef39de55c4e5))
+* **db:** update orders and remove in-person (reservation) as a payment ([dd0bad4](https://github.com/neiist-dev/neiist-website/commit/dd0bad47c359b8caadaf38b1a874bd4371f2d396))
+* **permissions:** dev override and priority of parent urls (/voting vs ([8a62dae](https://github.com/neiist-dev/neiist-website/commit/8a62daefc0848bf91810aa76ad462d7854b6f95c))
+* **ui:** alert now fully respect dom hiearcky and mobile touch functions ([3e22857](https://github.com/neiist-dev/neiist-website/commit/3e22857e55cbb6573ae89bf214264f24602d19dd))
+* **ui:** scroll wheels with correct indexs to prevent execssieve renders ([f22b8ec](https://github.com/neiist-dev/neiist-website/commit/f22b8eca590f676b0616cb80068c2e2d0670e71c))
+* update dependencies and text on cloud announcements ([2fff7be](https://github.com/neiist-dev/neiist-website/commit/2fff7beb29feaf798e59dc5fb50191450b3e0221))
+* **user:** rebuild search index only when users cache changes ([#746](https://github.com/neiist-dev/neiist-website/issues/746)) ([4347fe5](https://github.com/neiist-dev/neiist-website/commit/4347fe5b776b849fa03d7405914a66d3228acaa2))
+
 ## [4.6.2](https://github.com/neiist-dev/neiist-website/compare/v4.6.1...v4.6.2) (2026-10-22)
 
 
