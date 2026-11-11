@@ -80,6 +80,17 @@ jobs:
               -o ServerAliveCountMax=3 \
               ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
 
+      - name: Migrate Production Database
+        env:
+          FLYWAY_URL: jdbc:postgresql://127.0.0.1:5432/neiist
+          FLYWAY_USER: ${{ secrets.PROD_DB_MIGRATOR_USER }}
+          FLYWAY_PASSWORD: ${{ secrets.PROD_DB_MIGRATOR_PASSWORD }}
+        run: |
+          docker run --rm --network host -v "$PWD/docker:/flyway/project:ro" \
+            -e FLYWAY_URL -e FLYWAY_USER -e FLYWAY_PASSWORD \
+            flyway/flyway:11.20-alpine -configFiles=/flyway/project/flyway.conf \
+            info validate migrate
+
       - name: Build Standalone Release
         env:
           DATABASE_URL: postgresql://neiist_readonly:${{ secrets.PROD_DB_READONLY_PASSWORD }}@127.0.0.1:5432/neiist
