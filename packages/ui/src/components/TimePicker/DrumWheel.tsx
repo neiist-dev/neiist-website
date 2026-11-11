@@ -29,10 +29,10 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
   const n = items.length;
   const index = Math.max(0, items.indexOf(value));
   const [rotation, setRotation] = useState(index * ITEM_ANGLE);
-  const rot = useRef(rotation);
-  const raf = useRef<number | null>(null);
-  const reported = useRef(value);
-  const drag = useRef({
+  const rotationRef = useRef(rotation);
+  const rafRef = useRef<number | null>(null);
+  const reportedRef = useRef(value);
+  const dragRef = useRef({
     active: false,
     moved: false,
     y: 0,
@@ -50,25 +50,25 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
   const wrap = (i: number) => (loop ? mod(i, n) : Math.max(0, Math.min(n - 1, i)));
 
   const turn = useCallback((r: number) => {
-    rot.current = r;
+    rotationRef.current = r;
     setRotation(r);
   }, []);
 
   const cancel = useCallback(() => {
-    if (raf.current) cancelAnimationFrame(raf.current);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
   }, []);
 
   const animateTo = useCallback(
     (target: number, ms = 200) => {
       cancel();
-      const from = rot.current;
+      const from = rotationRef.current;
       const t0 = performance.now();
       const frame = (now: number) => {
         const p = Math.min(1, (now - t0) / ms);
         turn(p < 1 ? from + (target - from) * (1 - (1 - p) ** 3) : target);
-        raf.current = p < 1 ? requestAnimationFrame(frame) : null;
+        rafRef.current = p < 1 ? requestAnimationFrame(frame) : null;
       };
-      raf.current = requestAnimationFrame(frame);
+      rafRef.current = requestAnimationFrame(frame);
     },
     [cancel, turn]
   );
@@ -76,7 +76,7 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
   const snapTo = useCallback(
     (target: number, ms: number) => {
       const item = items[mod(Math.round(target / ITEM_ANGLE), n)];
-      reported.current = item;
+      reportedRef.current = item;
       onChange(item);
       animateTo(target, ms);
     },
@@ -84,10 +84,10 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
   );
 
   useEffect(() => {
-    if (value === reported.current) return;
-    reported.current = value;
+    if (value === reportedRef.current) return;
+    reportedRef.current = value;
     const i = items.indexOf(value);
-    if (i !== -1) animateTo(rotationFor(i, rot.current, items.length, loop), 200);
+    if (i !== -1) animateTo(rotationFor(i, rotationRef.current, items.length, loop), 200);
   }, [value, items, loop, animateTo]);
 
   useEffect(() => cancel, [cancel]);
@@ -97,7 +97,10 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      snapTo(clamp((Math.round(rot.current / ITEM_ANGLE) + Math.sign(e.deltaY)) * ITEM_ANGLE), 160);
+      snapTo(
+        clamp((Math.round(rotationRef.current / ITEM_ANGLE) + Math.sign(e.deltaY)) * ITEM_ANGLE),
+        160
+      );
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
@@ -107,11 +110,11 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
     cancel();
     e.currentTarget.setPointerCapture?.(e.pointerId);
     const t = performance.now();
-    drag.current = {
+    dragRef.current = {
       active: true,
       moved: false,
       y: e.clientY,
-      rot: rot.current,
+      rot: rotationRef.current,
       lastY: e.clientY,
       lastT: t,
       v: 0,
@@ -119,7 +122,7 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
   };
 
   const move = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = drag.current;
+    const d = dragRef.current;
     if (!d.active) return;
     const dy = e.clientY - d.y;
     if (Math.abs(dy) > 3) d.moved = true;
@@ -133,12 +136,12 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
   };
 
   const up = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = drag.current;
+    const d = dragRef.current;
     if (!d.active) return;
     d.active = false;
     e.currentTarget.releasePointerCapture?.(e.pointerId);
     const v = performance.now() - d.lastT > 60 ? 0 : Math.max(-1.5, Math.min(1.5, d.v));
-    const target = clamp(Math.round((rot.current + v * 90) / ITEM_ANGLE) * ITEM_ANGLE);
+    const target = clamp(Math.round((rotationRef.current + v * 90) / ITEM_ANGLE) * ITEM_ANGLE);
     snapTo(target, Math.min(380, Math.max(180, Math.abs(v) * 160)));
   };
 
@@ -155,7 +158,7 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
     if (!(e.key in targets)) return;
     e.preventDefault();
     const next = wrap(targets[e.key]);
-    if (next !== index) snapTo(rotationFor(next, rot.current, n, loop), 180);
+    if (next !== index) snapTo(rotationFor(next, rotationRef.current, n, loop), 180);
   };
 
   const center = Math.round(rotation / ITEM_ANGLE);
@@ -193,7 +196,7 @@ export function DrumWheel({ label, items, value, onChange, loop = true }: DrumWh
                 opacity: Math.max(0.08, Math.cos((rotX * Math.PI) / 180) ** 2.2),
               }}
               onClick={() => {
-                if (!drag.current.moved) snapTo(clamp(slot * ITEM_ANGLE), 200);
+                if (!dragRef.current.moved) snapTo(clamp(slot * ITEM_ANGLE), 200);
               }}>
               {items[mod(slot, n)]}
             </div>

@@ -74,6 +74,10 @@ const HOURS = {
   "24h": Array.from({ length: 24 }, (_, i) => pad(i)),
 };
 const PERIODS = ["AM", "PM"];
+const RANGE_PARTS = [
+  { key: "start", index: 0, title: "Adjust start time" },
+  { key: "end", index: 1, title: "Adjust end time" },
+] as const;
 
 export function TimePicker(props: TimePickerProps) {
   const { format: fmt = "24h", minuteStep = 5, className } = props;
@@ -119,15 +123,15 @@ export function TimePicker(props: TimePickerProps) {
     <div className={cn(styles.container, className)}>
       {props.range && (
         <div className={styles.rangeHeader} role="group" aria-label="Time range">
-          {times.map((x, i) => (
-            <React.Fragment key={i}>
-              {i > 0 && <span className={styles.rangeArrow}>→</span>}
+          {RANGE_PARTS.map(({ key, index, title }) => (
+            <React.Fragment key={key}>
+              {index > 0 && <span className={styles.rangeArrow}>→</span>}
               <button
                 type="button"
-                className={cn(styles.rangeButton, part === i && styles.rangeButtonActive)}
-                onClick={() => setPart(i as 0 | 1)}
-                title={i ? "Adjust end time" : "Adjust start time"}>
-                {formatTime(x, fmt)}
+                className={cn(styles.rangeButton, part === index && styles.rangeButtonActive)}
+                onClick={() => setPart(index)}
+                title={title}>
+                {formatTime(times[index], fmt)}
               </button>
             </React.Fragment>
           ))}
