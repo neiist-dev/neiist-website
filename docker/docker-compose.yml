@@ -11,6 +11,7 @@ services:
     volumes:
       - ./pg_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./schema:/docker-entrypoint-initdb.d/schema:ro
 
   redis:
     container_name: neiist_redis
