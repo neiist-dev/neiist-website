@@ -1,28 +1,26 @@
 .headerTotalValue {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-colour, #0070f3);
+  color: var(--primary-colour);
 }
 
 .shortcutLabel {
   font-size: 0.75rem;
-  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .changeAmount {
   font-size: 1.35rem;
-  font-weight: 800;
   font-feature-settings: "tnum";
 }
 
-.centerText {
+.statusArea {
+  padding: 1.25rem 0.5rem;
   text-align: center;
 }
 
-.dangerBorderCard {
-  border-color: #ef4444;
+.noMarginText {
+  margin-block-end: 0;
 }
 
 .dangerTextCenter {
@@ -34,6 +32,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .processingStack {
