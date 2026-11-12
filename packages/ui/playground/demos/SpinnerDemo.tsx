@@ -3,8 +3,10 @@ import { DemoCard } from "../components/DemoCard";
 import { Spinner, Stack, Button } from "@neiist/ui";
 
 export const SpinnerDemo = () => {
-  const [cardState, setCardState] = useState<"loading" | "success">("loading");
-  const [standaloneState, setStandaloneState] = useState<"loading" | "success">("loading");
+  const [cardState, setCardState] = useState<"loading" | "success" | "error">("loading");
+  const [standaloneState, setStandaloneState] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
 
   const sizes: Array<{
     size: "sm" | "md" | "lg" | "xl";
@@ -16,6 +18,14 @@ export const SpinnerDemo = () => {
     { size: "lg", label: "Large (32px, Secondary)", color: "secondary" },
     { size: "xl", label: "Extra Large (48px, Neutral)", color: "neutral" },
   ];
+
+  const cycleState = (
+    current: "loading" | "success" | "error"
+  ): "loading" | "success" | "error" => {
+    if (current === "loading") return "success";
+    if (current === "success") return "error";
+    return "loading";
+  };
 
   return (
     <Stack gap="lg">
@@ -34,15 +44,28 @@ export const SpinnerDemo = () => {
 
       <DemoCard
         title="Morphing State Spinner"
-        description="Smoothly transitions between a spinning loader and a success checkmark.">
-        <Stack direction="row" gap="md" align="center">
+        description="Smoothly transitions between a spinning loader, a success checkmark, and an error cross.">
+        <Stack direction="row" gap="md" align="center" wrap>
           <Spinner size="lg" state={standaloneState} />
           <Button
             size="sm"
-            variant="outline"
-            onClick={() =>
-              setStandaloneState((state) => (state === "loading" ? "success" : "loading"))
-            }>
+            variant={standaloneState === "loading" ? "primary" : "outline"}
+            onClick={() => setStandaloneState("loading")}>
+            Loading
+          </Button>
+          <Button
+            size="sm"
+            variant={standaloneState === "success" ? "primary" : "outline"}
+            onClick={() => setStandaloneState("success")}>
+            Success
+          </Button>
+          <Button
+            size="sm"
+            variant={standaloneState === "error" ? "danger" : "outline"}
+            onClick={() => setStandaloneState("error")}>
+            Error
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setStandaloneState(cycleState)}>
             Toggle Morph ({standaloneState})
           </Button>
         </Stack>
@@ -54,16 +77,47 @@ export const SpinnerDemo = () => {
         <Stack align="center" style={{ width: "100%", padding: "1rem" }}>
           <Spinner
             state={cardState}
-            title={cardState === "loading" ? "A processar pagamento..." : "Pagamento Concluído!"}
-            subtitle="Por favor aguarde a confirmação dos detalhes."
-            actionLabel={cardState === "success" ? "Voltar ao Início" : undefined}
+            title={
+              cardState === "loading"
+                ? "A processar pagamento..."
+                : cardState === "success"
+                  ? "Pagamento Concluído!"
+                  : "Erro no Pagamento"
+            }
+            subtitle={
+              cardState === "loading"
+                ? "Por favor aguarde a confirmação dos detalhes."
+                : cardState === "success"
+                  ? "A tua encomenda foi processada com sucesso."
+                  : "Não foi possível processar a transação. Por favor tenta novamente."
+            }
+            actionLabel={
+              cardState === "success"
+                ? "Voltar ao Início"
+                : cardState === "error"
+                  ? "Tentar Novamente"
+                  : undefined
+            }
             onAction={() => {}}
           />
         </Stack>
-        <Stack direction="row" gap="md" justify="center" style={{ marginTop: "1rem" }}>
-          <Button onClick={() => setCardState((s) => (s === "loading" ? "success" : "loading"))}>
-            Alternar Estado ({cardState})
+        <Stack direction="row" gap="md" justify="center" wrap style={{ marginTop: "1rem" }}>
+          <Button
+            variant={cardState === "loading" ? "primary" : "outline"}
+            onClick={() => setCardState("loading")}>
+            Loading
           </Button>
+          <Button
+            variant={cardState === "success" ? "primary" : "outline"}
+            onClick={() => setCardState("success")}>
+            Success
+          </Button>
+          <Button
+            variant={cardState === "error" ? "danger" : "outline"}
+            onClick={() => setCardState("error")}>
+            Error
+          </Button>
+          <Button onClick={() => setCardState(cycleState)}>Alternar Estado ({cardState})</Button>
         </Stack>
       </DemoCard>
     </Stack>

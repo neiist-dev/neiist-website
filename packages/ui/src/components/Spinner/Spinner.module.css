@@ -7,6 +7,7 @@
 }
 
 .container {
+  position: relative;
   background-color: var(--ui-bg);
   border-radius: var(--ui-radius-lg);
   padding-block: clamp(2rem, 5cqi, 2.5rem);
@@ -61,6 +62,23 @@
   border-radius: 50%;
   background: var(--ui-primary);
   color: var(--ui-text-on-colour);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.errorIcon {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 50%;
+  background: var(--ui-danger);
+  color: var(--ui-surface);
   display: flex;
   align-items: center;
   justify-content: center;

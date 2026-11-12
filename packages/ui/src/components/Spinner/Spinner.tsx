@@ -1,5 +1,5 @@
 import React from "react";
-import { FaCheck, FaSpinner } from "react-icons/fa";
+import { FaCheck, FaSpinner, FaTimes } from "react-icons/fa";
 import styles from "./Spinner.module.css";
 import { cn } from "../../utils/cn";
 
@@ -9,7 +9,7 @@ export type SpinnerColor = "primary" | "secondary" | "neutral" | "current" | str
 export interface SpinnerProps extends Omit<React.ComponentPropsWithRef<"div">, "title"> {
   size?: SpinnerSize;
   color?: SpinnerColor;
-  state?: "loading" | "success";
+  state?: "loading" | "success" | "error";
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   actionLabel?: string;
@@ -42,6 +42,7 @@ export function Spinner({
   actionHref,
   onAction,
   label,
+  children,
   className,
   style,
   ref,
@@ -51,7 +52,8 @@ export function Spinner({
   const resolvedColor = colorMap[color] ?? color;
   const effectiveState = state ?? "loading";
   const isSuccess = effectiveState === "success";
-  const isCardMode = Boolean(title);
+  const isError = effectiveState === "error";
+  const isCardMode = Boolean(title || subtitle);
   const hasMorph = state !== undefined;
 
   const iconContent = hasMorph ? (
@@ -61,7 +63,16 @@ export function Spinner({
         style={{ inlineSize: pixelSize, blockSize: pixelSize }}>
         <FaCheck size={Math.max(12, Math.round(pixelSize * 0.5))} />
       </div>
-      <div className={cn(styles.spinnerLayer, !isSuccess ? styles.iconFadeIn : styles.iconFadeOut)}>
+      <div
+        className={cn(styles.errorIcon, isError ? styles.iconFadeIn : styles.iconFadeOut)}
+        style={{ inlineSize: pixelSize, blockSize: pixelSize }}>
+        <FaTimes size={Math.max(12, Math.round(pixelSize * 0.5))} />
+      </div>
+      <div
+        className={cn(
+          styles.spinnerLayer,
+          !isSuccess && !isError ? styles.iconFadeIn : styles.iconFadeOut
+        )}>
         <FaSpinner size={pixelSize} className={styles.spinner} style={{ color: resolvedColor }} />
       </div>
     </div>
@@ -93,9 +104,11 @@ export function Spinner({
       {...props}>
       <div className={styles.wrapper}>
         {iconContent}
-        <h2 className={styles.title}>{title}</h2>
+        {title ? <h2 className={styles.title}>{title}</h2> : null}
         {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
       </div>
+
+      {children}
 
       {actionLabel ? (
         onAction ? (
