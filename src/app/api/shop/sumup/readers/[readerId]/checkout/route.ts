@@ -50,7 +50,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ readerId: string }> }
 ) {
-  const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
+  const auth = await verifyPermission(["pos:access", "shop:write"], {
+    match: "any",
+  });
   if (auth.error) return auth.error;
 
   const credentialError = validateSumUpCredentials();
@@ -110,4 +112,27 @@ export async function POST(
     client_transaction_id: clientTransactionId,
     order_number: description,
   });
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ readerId: string }> }
+) {
+  const auth = await verifyPermission(["pos:access", "shop:write"], {
+    match: "any",
+  });
+  if (auth.error) return auth.error;
+
+  const credentialError = validateSumUpCredentials();
+  if (credentialError) return credentialError;
+
+  const { readerId } = await params;
+  if (!readerId) return sumupErrorResponse("readerId is required", 400);
+
+  try {
+    await withSumUp((client) => client.readers.terminateCheckout(SUMUP_MERCHANT_CODE!, readerId));
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return sumupErrorResponse(err);
+  }
 }

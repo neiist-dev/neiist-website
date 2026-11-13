@@ -117,9 +117,8 @@ function validateProductRules(
   const hasMerchandise = products.some((p) => p.product_type === "merchandise");
   const hasFoodDrink = products.some((p) => p.product_type === "food_drink");
 
-  if (hasTickets && (hasMerchandise || hasFoodDrink)) {
+  if (hasTickets && (hasMerchandise || hasFoodDrink))
     return "Bilhetes de eventos não podem ser encomendados juntamente com outros produtos";
-  }
 
   if (hasFoodDrink && !isFastPos) return "Produtos alimentares apenas disponíveis no balcão rápido";
 
@@ -203,8 +202,7 @@ async function checkFastPosIdempotency(body: OrderRequestBody): Promise<Order | 
 }
 
 async function resolveAndValidateProducts(
-  body: OrderRequestBody,
-  userIstid: string
+  body: OrderRequestBody
 ): Promise<
   { productsMap: Map<number, Product>; orderUserIstid?: string } | { error: NextResponse }
 > {
@@ -220,7 +218,20 @@ async function resolveAndValidateProducts(
   const products = fetchedProducts as Product[];
   const orderSource = parseOrderSource(body.order_source);
   const guestCheckout = body.guest_checkout === true;
-  const orderUserIstid = guestCheckout ? undefined : body.user_istid || userIstid;
+
+  if (orderSource === "pos" && !body.user_istid && !guestCheckout) {
+    return {
+      error: NextResponse.json(
+        {
+          error:
+            "É obrigatório associar um cliente (Aluno IST ou Cliente Externo) na venda de balcão.",
+        },
+        { status: 400 }
+      ),
+    };
+  }
+
+  const orderUserIstid = guestCheckout ? undefined : body.user_istid;
 
   const ruleError = validateProductRules(products, items, orderSource, orderUserIstid);
   if (ruleError) return { error: NextResponse.json({ error: ruleError }, { status: 400 }) };
@@ -388,7 +399,7 @@ export async function POST(request: NextRequest) {
   const contextError = validateOrderContext(body, user);
   if (contextError) return contextError;
 
-  const productResult = await resolveAndValidateProducts(body, user.istid);
+  const productResult = await resolveAndValidateProducts(body);
   if ("error" in productResult) return productResult.error;
 
   const orderSource = parseOrderSource(body.order_source);

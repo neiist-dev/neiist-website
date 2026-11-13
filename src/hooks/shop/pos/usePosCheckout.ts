@@ -349,7 +349,14 @@ export function usePosCheckout({
       }
     }
 
+    if (!isLoadedPending && !customer) {
+      Alert.error(dict.alerts.customer_required);
+      throw new Error(dict.alerts.customer_required);
+    }
+
     const isReservation = data.method === RESERVATION || data.paymentStatus === "pending";
+    if (isReservation && (!canOverride || isLoadedPending))
+      throw new Error(dict.payment.settle_error);
 
     const payload = {
       order_number: effectiveOrderNumber || undefined,
@@ -372,7 +379,7 @@ export function usePosCheckout({
         product_id: it.product.id,
         variant_id: it.variantId ?? null,
         quantity: it.quantity,
-        deliver_now: !isReservation && data.paymentStatus === "successful",
+        deliver_now: false,
       })),
       payment: isReservation
         ? undefined

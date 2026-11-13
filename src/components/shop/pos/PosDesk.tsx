@@ -210,6 +210,8 @@ export default function PosDesk({
           onClearCart={() => setCart([])}
           onClearPendingOrder={handleClearPendingOrder}
           onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+          isChargeDisabled={!customer && !pendingOrderNumber}
+          chargeDisabledReason={dict.alerts.customer_required}
           dict={dict.cart}
         />
       </div>

@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { FiClock } from "react-icons/fi";
-import ShopCheckoutOverlay from "@/components/shop/checkout/ShopCheckoutOverlay";
+import PaymentOverlay from "@/components/shop/PaymentOverlay";
+import CheckoutPaymentModal from "@/components/shop/checkout/CheckoutPaymentModal";
 import {
   Accordion,
   Alert,
@@ -15,7 +16,6 @@ import {
   Input,
   Radio,
   RadioGroup,
-  Spinner,
   Stack,
   Text,
   Textarea,
@@ -31,7 +31,6 @@ import {
   formatTimer,
 } from "@/utils/shop/shopUtils";
 import styles from "@/styles/components/shop/checkout/CheckoutForm.module.css";
-import overlayStyles from "@/styles/components/shop/checkout/ShopCheckoutOverlay.module.css";
 
 import { Campus } from "@/types/shop/order";
 import {
@@ -56,6 +55,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 
 interface CheckoutFormProps {
   user: User;
+  locale?: string;
   dict: Dictionary["checkout_form"];
   pendingPaymentDict: Dictionary["pending_payment"];
   checkoutOverlayDict: Dictionary["checkout_overlay"];
@@ -65,6 +65,7 @@ interface CheckoutFormProps {
 
 export default function CheckoutForm({
   user,
+  locale,
   dict,
   pendingPaymentDict,
   checkoutOverlayDict,
@@ -119,21 +120,28 @@ export default function CheckoutForm({
     }
   );
 
+  const [applePayResult, setApplePayResult] = useState<
+    { status: "success"; orderNumber: string } | { status: "error"; message: string } | null
+  >(null);
+
   const handleHoldEnded = useCallback(() => {
     setIsCheckoutCompleted(true);
     clearHold();
   }, [clearHold]);
+
+  const handleCancelOverlay = useCallback(() => {
+    setSubmittedPaymentMethod(null);
+    setOrderNumber(null);
+  }, []);
 
   useEffect(() => {
     setAppliedDiscount(null);
   }, [cart]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!window.isSecureContext) return;
-    if (typeof window.ApplePaySession === "undefined") return;
+    if (typeof window === "undefined" || !window.isSecureContext) return;
     try {
-      setApplePayAvailable(window.ApplePaySession.canMakePayments());
+      setApplePayAvailable(Boolean(window.ApplePaySession?.canMakePayments()));
     } catch {
       setApplePayAvailable(false);
     }
@@ -324,7 +332,10 @@ export default function CheckoutForm({
         session.completeMerchantValidation(merchantSession);
       } catch (error) {
         session.abort();
-        Alert.error(error instanceof Error ? error.message : dict.error_apple_pay_failed);
+        setApplePayResult({
+          status: "error",
+          message: error instanceof Error ? error.message : dict.error_apple_pay_failed,
+        });
         setLoading(false);
       }
     };
@@ -349,35 +360,48 @@ export default function CheckoutForm({
           setIsCheckoutCompleted(true);
           clearHold();
           clearClientCart();
-          router.push(
-            `${basePath || ""}/my-orders?orderId=${data.orderNumber || createdOrderNumber}`
-          );
+          setApplePayResult({
+            status: "success",
+            orderNumber: data.orderNumber || createdOrderNumber,
+          });
         } else {
           session.completePayment(ApplePaySession.STATUS_FAILURE);
-          Alert.error(data?.error || dict.error_apple_pay_failure);
+          setApplePayResult({
+            status: "error",
+            message: data?.error || dict.error_apple_pay_failure,
+          });
         }
       } catch (error) {
         session.completePayment(ApplePaySession.STATUS_FAILURE);
-        Alert.error(error instanceof Error ? error.message : dict.error_apple_pay_processing);
+        setApplePayResult({
+          status: "error",
+          message: error instanceof Error ? error.message : dict.error_apple_pay_processing,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     session.oncancel = () => {
+      if (checkoutId)
+        void fetch("/api/shop/sumup/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ checkoutId, orderNumber: createdOrderNumber }),
+        }).catch(() => {});
+
       setLoading(false);
     };
 
     session.begin();
   };
 
-  if (cart.length === 0 && !orderNumber) {
+  if (cart.length === 0 && !orderNumber && !applePayResult)
     return (
       <div className={styles.emptyCartContainer}>
         <EmptyState title={dict.empty_cart} />
       </div>
     );
-  }
 
   const pickupOptions = [
     { id: Campus._Alameda, label: dict.campus_alameda },
@@ -644,28 +668,63 @@ export default function CheckoutForm({
           )}
         </Stack>
       </div>
-      {loading && orderNumber === null && (
-        <div className={overlayStyles.overlay}>
-          <Spinner
-            state="loading"
-            title={dict.processing}
-            subtitle={checkoutOverlayDict.wait_moment}
-            size={48}
-          />
-        </div>
-      )}
-      {orderNumber !== null && (
-        <ShopCheckoutOverlay
-          orderNumber={orderNumber}
-          paymentMethod={submittedPaymentMethod}
-          customerPhone={phone.trim() || user.phone || undefined}
-          dict={checkoutOverlayDict}
-          pendingPaymentDict={pendingPaymentDict}
-          paymentsDict={paymentsDict}
-          onSwitchToReservation={switchToReservation}
-          onHoldEnded={handleHoldEnded}
-          basePath={basePath}
+      {applePayResult?.status === "success" ? (
+        <PaymentOverlay
+          state="success"
+          title={checkoutOverlayDict.payment_confirmed}
+          subtitle={checkoutOverlayDict.order_processed}
+          showCloseButton={false}
+          primaryAction={{
+            label: checkoutOverlayDict.view_my_orders,
+            onClick: () =>
+              router.push(
+                `${basePath || ""}/my-orders?orderId=${encodeURIComponent(applePayResult.orderNumber)}`
+              ),
+          }}
         />
+      ) : applePayResult?.status === "error" ? (
+        <PaymentOverlay
+          state="error"
+          title={checkoutOverlayDict.payment_error}
+          subtitle={applePayResult.message}
+          onClose={() => setApplePayResult(null)}
+          primaryAction={{
+            label: checkoutOverlayDict.retry,
+            onClick: () => {
+              setApplePayResult(null);
+              handleApplePayDirect();
+            },
+          }}
+          secondaryAction={{
+            label: checkoutOverlayDict.cancel,
+            onClick: () => setApplePayResult(null),
+          }}
+        />
+      ) : (
+        <>
+          {loading && orderNumber === null && (
+            <PaymentOverlay
+              state="loading"
+              title={dict.processing}
+              subtitle={checkoutOverlayDict.wait_moment}
+              showCloseButton={false}
+            />
+          )}
+          {orderNumber !== null && (
+            <CheckoutPaymentModal
+              orderNumber={orderNumber}
+              paymentMethod={submittedPaymentMethod}
+              customerPhone={phone.trim() || user.phone || undefined}
+              locale={locale}
+              dict={checkoutOverlayDict}
+              pendingPaymentDict={pendingPaymentDict}
+              paymentsDict={paymentsDict}
+              onCancel={handleCancelOverlay}
+              onHoldEnded={handleHoldEnded}
+              basePath={basePath}
+            />
+          )}
+        </>
       )}
     </div>
   );

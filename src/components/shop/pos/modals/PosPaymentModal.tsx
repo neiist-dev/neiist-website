@@ -8,15 +8,14 @@ import {
   Input,
   Field,
   Select,
-  Spinner,
   Card,
   Stack,
   Alert,
   Badge,
-  Heading,
   Text,
 } from "@neiist/ui";
 import { FiExternalLink, FiClock } from "react-icons/fi";
+import PaymentOverlay from "@/components/shop/PaymentOverlay";
 import { PAYMENT_METHODS_BY_CHANNEL, RESERVATION, type CheckoutChoice } from "@/types/shop/payment";
 import type { SumUpReader } from "@/types/shop/sumup";
 import {
@@ -27,9 +26,9 @@ import {
 import { useMbWayPayment } from "@/hooks/shop/useMbWayPayment";
 import { formatTimer, toCartOrderItems } from "@/utils/shop/shopUtils";
 import type { CreateOrderPaymentInput } from "@/types/shop/order";
-import styles from "@/styles/components/shop/pos/modals/PosPaymentModal.module.css";
 import { CartItem } from "@/types/shop/product";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/shop/pos/modals/PosPaymentModal.module.css";
 
 export interface PosPaymentConfirmData {
   method: CheckoutChoice;
@@ -136,6 +135,7 @@ export default function PosPaymentModal({
     state: mbwayState,
     setState: setMbwayState,
     statusText: mbwayStatusText,
+    setStatusText: setMbwayStatusText,
     timeLeft: mbwayTimeLeft,
     startPayment: startMbWayPayment,
     cancel: cancelMbWayPayment,
@@ -156,24 +156,21 @@ export default function PosPaymentModal({
         handlePaymentCompleted(result);
       } catch {
         setStep("payment");
-        Alert.error(dict.mbway_finalize_error);
+        setMbwayState("error");
+        setMbwayStatusText(dict.mbway_finalize_error);
         setIsSubmitting(false);
       }
     },
-    onDeclined: (msg) => {
-      Alert.error(msg || paymentsDict.mbway.declined);
+    onDeclined: () => {
       setIsSubmitting(false);
     },
-    onExpired: (msg) => {
-      Alert.error(msg || paymentsDict.mbway.expired);
+    onExpired: () => {
       setIsSubmitting(false);
     },
-    onFailed: (msg) => {
-      Alert.error(msg || paymentsDict.mbway.failed);
+    onFailed: () => {
       setIsSubmitting(false);
     },
-    onError: (msg) => {
-      Alert.error(msg);
+    onError: () => {
       setIsSubmitting(false);
     },
   });
@@ -317,7 +314,6 @@ export default function PosPaymentModal({
           setStep("payment");
           setTpaState("error");
           setTpaStatusText(dict.tpa_register_failed);
-          Alert.error(dict.tpa_register_failed_toast);
           setIsSubmitting(false);
         }
       });
@@ -326,7 +322,6 @@ export default function PosPaymentModal({
         closeSumUpSse();
         setTpaState("error");
         setTpaStatusText(dict.tpa_failed);
-        Alert.error(dict.tpa_failed_toast);
         setIsSubmitting(false);
       });
 
@@ -338,7 +333,6 @@ export default function PosPaymentModal({
       closeSumUpSse();
       setTpaState("error");
       setTpaStatusText(msg);
-      Alert.error(msg);
       setIsSubmitting(false);
     }
   };
@@ -360,7 +354,6 @@ export default function PosPaymentModal({
       setStep("payment");
       setTpaState("error");
       setTpaStatusText(dict.tpa_retry_failed);
-      Alert.error(dict.tpa_retry_failed_toast);
       setIsSubmitting(false);
     }
   };
@@ -392,6 +385,21 @@ export default function PosPaymentModal({
     } catch {
       setIsSubmitting(false);
     }
+  };
+
+  const cancelTpaCheckout = useCallback(() => {
+    closeSumUpSse();
+    if (selectedReaderId) {
+      void fetch(`/api/shop/sumup/readers/${encodeURIComponent(selectedReaderId)}/checkout`, {
+        method: "DELETE",
+      }).catch(() => {});
+    }
+  }, [closeSumUpSse, selectedReaderId]);
+
+  const handleCancelTpa = () => {
+    cancelTpaCheckout();
+    setTpaState("idle");
+    setIsSubmitting(false);
   };
 
   const handleCancelMbWay = () => {
@@ -441,6 +449,8 @@ export default function PosPaymentModal({
   const changeNum = Math.max(0, receivedNum - totalAmount);
   const changeDenominations = useMemo(() => calculateChangeDenominations(changeNum), [changeNum]);
 
+  const hasLoadedOrder = Boolean(orderNumber || (orderNumbers && orderNumbers.length > 0));
+
   const paymentOptions = useMemo(() => {
     type PosMethod = (typeof PAYMENT_METHODS_BY_CHANNEL.pos)[number];
 
@@ -458,19 +468,29 @@ export default function PosPaymentModal({
         label: labels[method],
         value: method,
       };
-      if (mode === "identified" && canOverride && method === "other")
+      if (mode === "identified" && canOverride && !hasLoadedOrder && method === "other")
         return [{ label: dict.reservation_option, value: RESERVATION }, option];
 
       return [option];
     });
-  }, [mode, canOverride, dict]);
+  }, [mode, canOverride, hasLoadedOrder, dict]);
 
-  const isBusy = isSubmitting || tpaState === "waiting" || mbwayState === "waiting";
+  const isBusy =
+    isSubmitting ||
+    tpaState === "waiting" ||
+    tpaState === "error" ||
+    mbwayState === "waiting" ||
+    mbwayState === "error";
 
   return (
     <>
-      <Modal open={open && step === "payment"} onClose={handleModalClose} size="md">
-        <Modal.Header>
+      <Modal
+        open={open && step === "payment"}
+        onClose={handleModalClose}
+        size="md"
+        closeOnBackdropClick={false}
+        draggable={false}>
+        <Modal.Header onClose={handleModalClose}>
           <Stack direction="row" justify="between" align="center" style={{ width: "100%" }}>
             <span>{dict.title}</span>
             <span className={styles.headerTotalValue}>{formatMoney(totalAmount)}</span>
@@ -479,14 +499,15 @@ export default function PosPaymentModal({
 
         <Modal.Body>
           <Stack gap="lg">
-            <Field label={dict.method_label}>
-              <Select
-                value={selectedMethod}
-                onChange={(val) => selectMethod(val as CheckoutChoice)}
-                options={paymentOptions}
-                disabled={isBusy}
-              />
-            </Field>
+            {!isBusy && (
+              <Field label={dict.method_label}>
+                <Select
+                  value={selectedMethod}
+                  onChange={(val) => selectMethod(val as CheckoutChoice)}
+                  options={paymentOptions}
+                />
+              </Field>
+            )}
 
             {selectedMethod === "cash" && (
               <Stack gap="md">
@@ -547,75 +568,55 @@ export default function PosPaymentModal({
 
             {selectedMethod === "sumup-tpa" && (
               <Stack gap="md">
-                <Field label={dict.reader_label}>
-                  <Select
-                    value={selectedReaderId}
-                    onChange={(val) => setSelectedReaderId(val)}
-                    options={
-                      readers.length > 0
-                        ? readers.map((r) => {
-                            const statusLabel =
-                              r.status === "online"
-                                ? dict.reader_online
-                                : r.status === "paired"
-                                  ? dict.reader_paired
-                                  : dict.reader_offline;
-                            return {
-                              label: `${r.name || dict.reader_default_name} (${statusLabel})`,
-                              value: r.id,
-                            };
-                          })
-                        : [
-                            {
-                              label: readersLoading ? dict.reader_searching : dict.reader_none,
-                              value: "",
-                            },
-                          ]
-                    }
-                    disabled={isSubmitting || tpaState === "waiting" || readersLoading}
-                  />
-                </Field>
-
-                {tpaState === "waiting" && (
-                  <Card>
-                    <Card.Body>
-                      <Stack align="center" gap="md">
-                        <Spinner size="md" />
-                        <div className={styles.centerText}>
-                          <strong>{tpaStatusText}</strong>
-                          <Text size="sm" variant="muted">
-                            Total: <strong>{formatMoney(totalAmount)}</strong>
-                          </Text>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            closeSumUpSse();
-                            setTpaState("idle");
-                            setIsSubmitting(false);
-                          }}>
-                          {dict.tpa_cancel_operation}
-                        </Button>
-                      </Stack>
-                    </Card.Body>
-                  </Card>
+                {tpaState === "idle" && (
+                  <Field label={dict.reader_label}>
+                    <Select
+                      value={selectedReaderId}
+                      onChange={(val) => setSelectedReaderId(val)}
+                      options={
+                        readers.length > 0
+                          ? readers.map((r) => {
+                              const statusLabel =
+                                r.status === "online"
+                                  ? dict.reader_online
+                                  : r.status === "paired"
+                                    ? dict.reader_paired
+                                    : dict.reader_offline;
+                              return {
+                                label: `${r.name || dict.reader_default_name} (${statusLabel})`,
+                                value: r.id,
+                              };
+                            })
+                          : [
+                              {
+                                label: readersLoading ? dict.reader_searching : dict.reader_none,
+                                value: "",
+                              },
+                            ]
+                      }
+                      disabled={isSubmitting || readersLoading}
+                    />
+                  </Field>
                 )}
 
-                {tpaState === "error" && !tpaSettlement && (
-                  <Card className={styles.dangerBorderCard}>
-                    <Card.Body>
-                      <Stack align="center" gap="sm">
-                        <Badge variant="danger" size="md">
-                          {dict.tpa_not_completed}
-                        </Badge>
-                        <Text className={styles.dangerTextCenter}>{tpaStatusText}</Text>
-                        <Button size="sm" variant="primary" onClick={handleInitiateTpa}>
-                          {dict.tpa_retry}
-                        </Button>
-                      </Stack>
-                    </Card.Body>
-                  </Card>
+                {tpaState === "waiting" && (
+                  <PaymentOverlay
+                    variant="inline"
+                    state="loading"
+                    iconSize={48}
+                    title={tpaStatusText}
+                    subtitle={dict.tpa_present_card}
+                  />
+                )}
+
+                {tpaState === "error" && (
+                  <PaymentOverlay
+                    variant="inline"
+                    state="error"
+                    iconSize={48}
+                    title={dict.payment_failed}
+                    subtitle={tpaStatusText || dict.tpa_failed}
+                  />
                 )}
               </Stack>
             )}
@@ -634,58 +635,35 @@ export default function PosPaymentModal({
                         autoFocus
                       />
                     </Field>
-                    <Text size="sm" variant="muted">
+                    <Text size="sm" variant="muted" className={styles.noMarginText}>
                       {dict.mbway_hint.replace("{amount}", formatMoney(totalAmount))}
                     </Text>
                   </>
                 )}
 
                 {mbwayState === "waiting" && (
-                  <Card>
-                    <Card.Body>
-                      <Stack align="center" gap="md">
-                        <Spinner size="md" />
-                        <Stack align="center" gap="sm" className={styles.centerText}>
-                          <strong>{mbwayStatusText}</strong>
-                          <Text size="sm" variant="muted">
-                            {dict.mbway_sent_to
-                              .replace("{phone}", mbWayPhone)
-                              .replace("{amount}", formatMoney(totalAmount))}
-                          </Text>
-                          <Badge variant="primary" size="md" className={styles.timerBadge}>
-                            <FiClock /> {formatTimer(mbwayTimeLeft)}
-                          </Badge>
-                        </Stack>
-                        <Button variant="outline" size="sm" onClick={handleCancelMbWay}>
-                          {dict.mbway_cancel}
-                        </Button>
-                      </Stack>
-                    </Card.Body>
-                  </Card>
+                  <PaymentOverlay
+                    variant="inline"
+                    state="loading"
+                    iconSize={48}
+                    title={mbwayStatusText || paymentsDict.mbway.title}
+                    subtitle={dict.mbway_sent_to.replace("{phone}", mbWayPhone)}
+                    badge={
+                      <Badge variant="primary" size="md" className={styles.timerBadge}>
+                        <FiClock /> {formatTimer(mbwayTimeLeft)}
+                      </Badge>
+                    }
+                  />
                 )}
 
                 {mbwayState === "error" && (
-                  <Card className={styles.dangerBorderCard}>
-                    <Card.Body>
-                      <Stack align="center" gap="sm">
-                        <Badge variant="danger" size="md">
-                          {dict.mbway_declined_badge}
-                        </Badge>
-                        <Text className={styles.dangerTextCenter}>{mbwayStatusText}</Text>
-                        <Stack direction="row" gap="sm">
-                          <Button size="sm" variant="primary" onClick={handleStartMbWay}>
-                            {dict.mbway_retry}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedMethod("cash")}>
-                            {dict.mbway_switch_cash}
-                          </Button>
-                        </Stack>
-                      </Stack>
-                    </Card.Body>
-                  </Card>
+                  <PaymentOverlay
+                    variant="inline"
+                    state="error"
+                    iconSize={48}
+                    title={dict.payment_failed}
+                    subtitle={mbwayStatusText || paymentsDict.mbway.failed}
+                  />
                 )}
               </Stack>
             )}
@@ -706,85 +684,118 @@ export default function PosPaymentModal({
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="outline" onClick={handleModalClose} disabled={isBusy}>
-            {dict.back}
-          </Button>
-
-          {selectedMethod === "cash" && (
-            <Button
-              variant="primary"
-              onClick={() => handleConfirmAction("successful")}
-              disabled={isSubmitting || receivedNum < totalAmount}>
-              {isSubmitting ? dict.registering : dict.confirm_payment}
+          {selectedMethod === "sumup-tpa" && tpaState === "waiting" ? (
+            <Button variant="outline" onClick={handleCancelTpa}>
+              {dict.cancel}
             </Button>
-          )}
-
-          {selectedMethod === "sumup-tpa" && tpaState === "idle" && (
-            <Button
-              variant="primary"
-              onClick={handleInitiateTpa}
-              disabled={isSubmitting || !selectedReaderId}>
-              {dict.tpa_send}
+          ) : selectedMethod === "mbway" && mbwayState === "waiting" ? (
+            <Button variant="outline" onClick={handleCancelMbWay}>
+              {dict.cancel}
             </Button>
-          )}
+          ) : (
+            <>
+              {selectedMethod === "cash" && (
+                <Button
+                  variant="primary"
+                  onClick={() => handleConfirmAction("successful")}
+                  disabled={isSubmitting || receivedNum < totalAmount}>
+                  {isSubmitting ? dict.registering : dict.confirm_payment}
+                </Button>
+              )}
 
-          {selectedMethod === "sumup-tpa" && tpaState === "error" && tpaSettlement && (
-            <Button variant="primary" onClick={handleRetryTpaSettlement} disabled={isSubmitting}>
-              {dict.tpa_retry_settlement}
-            </Button>
-          )}
+              {selectedMethod === "sumup-tpa" && tpaState === "idle" && (
+                <Button
+                  variant="primary"
+                  onClick={handleInitiateTpa}
+                  disabled={isSubmitting || !selectedReaderId}>
+                  {dict.tpa_send}
+                </Button>
+              )}
 
-          {selectedMethod === "mbway" && mbwayState === "idle" && (
-            <Button
-              variant="primary"
-              onClick={handleStartMbWay}
-              disabled={isSubmitting || !mbWayPhone.trim()}>
-              {dict.mbway_send}
-            </Button>
-          )}
+              {selectedMethod === "sumup-tpa" && tpaState === "error" && (
+                <Button
+                  variant="primary"
+                  onClick={tpaSettlement ? handleRetryTpaSettlement : () => setTpaState("idle")}
+                  disabled={isSubmitting}>
+                  {dict.tpa_retry}
+                </Button>
+              )}
 
-          {selectedMethod === RESERVATION && mode === "identified" && canOverride && (
-            <Button
-              variant="primary"
-              onClick={() => handleConfirmAction("pending")}
-              disabled={isSubmitting}>
-              {isSubmitting ? dict.reservation_creating : dict.reservation_create}
-            </Button>
-          )}
+              {selectedMethod === "mbway" && mbwayState === "idle" && (
+                <Button
+                  variant="primary"
+                  onClick={handleStartMbWay}
+                  disabled={isSubmitting || !mbWayPhone.trim()}>
+                  {dict.mbway_send}
+                </Button>
+              )}
 
-          {selectedMethod === "other" && mode === "identified" && (
-            <Button
-              variant="primary"
-              onClick={() => handleConfirmAction("successful")}
-              disabled={isSubmitting || !otherReference.trim()}>
-              {isSubmitting ? dict.registering : dict.register_sale}
-            </Button>
+              {selectedMethod === "mbway" && mbwayState === "error" && (
+                <Button variant="primary" onClick={resetMbWayPayment}>
+                  {dict.mbway_retry}
+                </Button>
+              )}
+
+              {selectedMethod === RESERVATION &&
+                mode === "identified" &&
+                canOverride &&
+                !hasLoadedOrder && (
+                  <Button
+                    variant="primary"
+                    onClick={() => handleConfirmAction("pending")}
+                    disabled={isSubmitting}>
+                    {isSubmitting ? dict.reservation_creating : dict.reservation_create}
+                  </Button>
+                )}
+
+              {selectedMethod === "other" && mode === "identified" && (
+                <Button
+                  variant="primary"
+                  onClick={() => handleConfirmAction("successful")}
+                  disabled={isSubmitting || !otherReference.trim()}>
+                  {isSubmitting ? dict.registering : dict.register_sale}
+                </Button>
+              )}
+            </>
           )}
         </Modal.Footer>
       </Modal>
 
-      <Modal open={open && step === "processing"} onClose={() => {}} size="sm">
+      <Modal
+        open={open && step === "processing"}
+        onClose={() => {}}
+        size="md"
+        closeOnBackdropClick={false}
+        draggable={false}>
         <Modal.Body>
-          <Stack align="center" gap="md" className={styles.processingStack}>
-            <Spinner size="lg" />
-            <strong>{dict.processing_sale}</strong>
-          </Stack>
+          <PaymentOverlay
+            variant="inline"
+            state="loading"
+            iconSize={48}
+            title={dict.processing_sale}
+            subtitle={dict.registering}
+          />
         </Modal.Body>
       </Modal>
 
-      <Modal open={open && step === "success"} onClose={handleFinishModal} size="md">
+      <Modal
+        open={open && step === "success"}
+        onClose={handleFinishModal}
+        size="md"
+        closeOnBackdropClick={false}
+        draggable={false}>
         <Modal.Body>
-          <Stack align="center" gap="md" className={styles.successStack}>
-            <Spinner size={72} state="success" />
-            <Heading level={3}>
-              {isReservation ? dict.success_reservation : dict.success_sale}
-            </Heading>
-            {completedOrderNumber && (
-              <Text variant="muted" size="lg">
-                <strong>{dict.order_number.replace("{number}", completedOrderNumber)}</strong>
-              </Text>
-            )}
-          </Stack>
+          <PaymentOverlay
+            variant="inline"
+            state="success"
+            iconSize={56}
+            title={isReservation ? dict.success_reservation : dict.success_sale}
+            subtitle={
+              completedOrderNumber
+                ? dict.order_number.replace("{number}", completedOrderNumber)
+                : undefined
+            }
+          />
         </Modal.Body>
         <Modal.Footer>
           {ordersBasePath && completedOrderNumber && (
@@ -812,7 +823,8 @@ export default function PosPaymentModal({
         isDestructive
         onCancel={() => setStep("payment")}
         onConfirm={() => {
-          closeSumUpSse();
+          if (tpaState === "waiting") cancelTpaCheckout();
+          else closeSumUpSse();
           closeMbWaySse();
           setTpaState("idle");
           setMbwayState("idle");

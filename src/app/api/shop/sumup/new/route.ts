@@ -20,7 +20,6 @@ import { verifyPermission } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
-const SUMUP_BUFFER_MS = 120_000;
 const MIN_REMAINING_SECONDS = 60;
 
 export async function POST(req: NextRequest) {
@@ -39,17 +38,13 @@ export async function POST(req: NextRequest) {
       return sumupErrorResponse("Invalid request body", 400);
     }
 
-    const credentialError = validateSumUpCredentials();
-    if (credentialError) return credentialError;
-
     const session = await getCheckoutSession(orderNumber);
     if (!session) {
       return sumupErrorResponse("A sessão de checkout expirou. Volta ao carrinho.", 410);
     }
 
-    if (session.user_istid && auth.user && session.user_istid !== auth.user.istid) {
+    if (session.user_istid && auth.user && session.user_istid !== auth.user.istid)
       return sumupErrorResponse("Not order owner", 403);
-    }
 
     const amount = Math.round(Number(session.total_amount) * 100) / 100;
     if (amount <= 0) return sumupErrorResponse("Invalid order amount", 400);
@@ -57,24 +52,36 @@ export async function POST(req: NextRequest) {
     const sessionExpiryMs = getSessionExpiryMs(session);
     const remainingSeconds = getRemainingSessionSeconds(session);
 
-    if (remainingSeconds < MIN_REMAINING_SECONDS) {
+    if (remainingSeconds < MIN_REMAINING_SECONDS)
       return sumupErrorResponse("A sessão de pagamento expirou ou está prestes a expirar.", 400);
+
+    const credentialError = validateSumUpCredentials();
+    if (credentialError) return credentialError;
+
+    if (session.reference) {
+      try {
+        const existing = await withSumUp((client) => client.checkouts.get(session.reference!));
+        if (existing?.status === "PENDING") {
+          return NextResponse.json({
+            checkoutId: session.reference,
+            amount,
+          } satisfies CreateCheckoutResponse);
+        }
+      } catch {
+        // If the existing checkout is expired, failed or deleted, create a fresh one below
+      }
     }
 
-    // Redis hold is master: SumUp checkout expires 2 minutes earlier (or at least 30s before Redis if under 3 min left)
-    const sumupExpiryMs = Math.min(
-      sessionExpiryMs - 30_000,
-      Math.max(sessionExpiryMs - SUMUP_BUFFER_MS, Date.now() + 60_000)
-    );
-    const validUntil = new Date(sumupExpiryMs).toISOString();
+    const validUntil = new Date(sessionExpiryMs).toISOString();
     const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shop/sumup/callback?orderNumber=${orderNumber}`;
     const description = `Encomenda ${session.order_number}`;
+    const checkoutReference = `${session.order_number}-${Date.now().toString(36)}`;
 
     const payload: SumUpCheckoutPayload = {
       merchant_code: SUMUP_MERCHANT_CODE!,
       amount,
       currency: "EUR" as const,
-      checkout_reference: session.order_number,
+      checkout_reference: checkoutReference,
       description,
       valid_until: validUntil,
       return_url: returnUrl,
@@ -102,12 +109,6 @@ export async function POST(req: NextRequest) {
     } catch (error) {
       if (error instanceof SumUpAuthError) return sumupErrorResponse(error);
       const message = error instanceof Error ? error.message : String(error);
-      if (message.includes("DUPLICATED_CHECKOUT") && session.reference) {
-        return NextResponse.json({
-          checkoutId: session.reference,
-          amount,
-        } satisfies CreateCheckoutResponse);
-      }
 
       console.error("Failed to create SumUp checkout", {
         orderNumber,

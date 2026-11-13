@@ -14,6 +14,7 @@ async function CheckoutContent({ params }: { params: LocaleParams }) {
   return (
     <CheckoutForm
       user={user}
+      locale={locale}
       dict={dict.checkout_form}
       pendingPaymentDict={dict.pending_payment}
       checkoutOverlayDict={dict.checkout_overlay}

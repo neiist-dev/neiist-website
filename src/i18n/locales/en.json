@@ -273,6 +273,7 @@
     "view_orders": "View Orders"
   },
   "checkout_overlay": {
+    "loading": "Loading payment details...",
     "or_pay_with": "or pay with",
     "pay_apple_pay": "Pay with Apple Pay",
     "verifying_payment": "Verifying payment…",
@@ -284,6 +285,8 @@
     "payment_error": "Payment Error",
     "default_payment_error": "An error occurred while processing the payment.",
     "retry": "Try Again",
+    "back": "Back",
+    "cancel": "Cancel",
     "cancel_order": "Cancel Order",
     "error_declined": "Payment declined by card issuer. Try again, use another card, or choose to reserve and pay at the Banca (POS).",
     "error_expired": "Authorization expired. Try again to generate a new payment session.",
@@ -1186,7 +1189,7 @@
     "payment_methods": {
       "cash": "Cash",
       "sumup-tpa": "Card SumUp Reader",
-      "sumup": "SumUp Online Card",
+      "sumup": "Debit/Credit Card",
       "apple-pay": "Apple Pay",
       "mbway": "MBWay",
       "other": "Other"
@@ -2286,7 +2289,7 @@
       "mbway_phone_placeholder": "912 345 678",
       "mbway_phone_error": "Enter the customer's phone number.",
       "mbway_hint": "The customer will receive a push notification in the MB WAY app to confirm the payment of {amount}.",
-      "mbway_sent_to": "Request sent to {phone} ({amount})",
+      "mbway_sent_to": "Request sent to {phone}",
       "mbway_cancel": "Cancel Request",
       "mbway_declined_badge": "Payment Declined / Expired",
       "mbway_retry": "Try Again",
@@ -2297,11 +2300,13 @@
       "other_reference_label": "Reference / Reason (required)",
       "other_reference_placeholder": "E.g. Bank transfer, protocol, subsidy...",
       "back": "Back",
+      "cancel": "Cancel",
       "registering": "Registering...",
       "confirm_payment": "Confirm Payment",
       "reservation_creating": "Creating reservation...",
       "reservation_create": "Create Reservation (72h)",
       "register_sale": "Register Sale",
+      "payment_failed": "Payment Failed",
       "processing_sale": "Registering the sale in the system...",
       "success_reservation": "Reservation Registered!",
       "success_sale": "Sale Completed Successfully!",
@@ -2317,6 +2322,7 @@
       "shift_required": "No cash shift is open."
     },
     "alerts": {
+      "customer_required": "Please select a student or external customer before checking out.",
       "processing_pending": "Processing pending reservation {number} at the desk.",
       "reservation_discarded": "Reservation operation discarded. Desk ready for a new sale.",
       "reservation_loaded": "Reservation {number} loaded for settlement.",

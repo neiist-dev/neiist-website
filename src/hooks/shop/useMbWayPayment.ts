@@ -4,23 +4,37 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import type { StockRequestItem } from "@/types/redis";
 import type { OrderSource } from "@/types/shop/order";
 
-export function useMbWayPayment(options: {
+export interface UseMbWayPaymentOptions {
   messages: Dictionary["payments"]["mbway"];
   onPaid?: (_data: { requestId: string; orderNumber: string }) => void | Promise<void>;
   onDeclined?: (_message?: string) => void;
   onExpired?: (_message?: string) => void;
   onFailed?: (_message?: string) => void;
   onError?: (_error: string) => void;
-}) {
+}
+
+export function useMbWayPayment(options: UseMbWayPaymentOptions) {
   const [state, setState] = useState<"idle" | "waiting" | "success" | "error">("idle");
   const [statusText, setStatusText] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<number>(240);
   const [requestId, setRequestId] = useState<string | null>(null);
 
+  const optionsRef = useRef(options);
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
+
   const eventSourceRef = useRef<EventSource | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const attemptIdRef = useRef(0);
 
   const closeSse = useCallback(() => {
+    attemptIdRef.current += 1;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
@@ -91,14 +105,19 @@ export function useMbWayPayment(options: {
       items?: StockRequestItem[];
     }) => {
       closeSse();
+      const attemptId = attemptIdRef.current;
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       setState("waiting");
-      setStatusText(options.messages.waiting);
+      setStatusText(optionsRef.current.messages.waiting);
       setTimeLeft(240);
 
       try {
         const res = await fetch("/api/shop/mbway/new", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
           body: JSON.stringify({
             orderNumber: params.orderNumber || undefined,
             orderNumbers: params.orderNumbers || undefined,
@@ -111,8 +130,10 @@ export function useMbWayPayment(options: {
         });
 
         const data = await res.json();
+        if (attemptId !== attemptIdRef.current) return null;
+
         if (!res.ok || !data.requestId)
-          throw new Error(data.error || options.messages.request_error);
+          throw new Error(data.error || optionsRef.current.messages.request_error);
 
         const reqId = String(data.requestId);
         const resolvedOrderNumber = String(data.orderNumber || params.orderNumber || "");
@@ -124,12 +145,25 @@ export function useMbWayPayment(options: {
         const es = new EventSource(sseUrl);
         eventSourceRef.current = es;
 
+        const handleTerminal = (
+          nextState: "success" | "error",
+          message: string,
+          callback?: (_msg?: string) => void
+        ) => {
+          if (attemptId !== attemptIdRef.current) return;
+          closeSse();
+          setState(nextState);
+          setStatusText(message);
+          callback?.(message);
+        };
+
         es.addEventListener("paid", async () => {
+          if (attemptId !== attemptIdRef.current) return;
           closeSse();
           setState("success");
-          setStatusText(options.messages.success);
-          if (options.onPaid) {
-            await options.onPaid({
+          setStatusText(optionsRef.current.messages.success);
+          if (optionsRef.current.onPaid) {
+            await optionsRef.current.onPaid({
               requestId: reqId,
               orderNumber: resolvedOrderNumber,
             });
@@ -137,27 +171,21 @@ export function useMbWayPayment(options: {
         });
 
         es.addEventListener("declined", () => {
-          closeSse();
-          setState("error");
-          const msg = options.messages.declined;
-          setStatusText(msg);
-          options.onDeclined?.(msg);
+          handleTerminal("error", optionsRef.current.messages.declined, (m) =>
+            optionsRef.current.onDeclined?.(m)
+          );
         });
 
         es.addEventListener("expired", () => {
-          closeSse();
-          setState("error");
-          const msg = options.messages.expired;
-          setStatusText(msg);
-          options.onExpired?.(msg);
+          handleTerminal("error", optionsRef.current.messages.expired, (m) =>
+            optionsRef.current.onExpired?.(m)
+          );
         });
 
         es.addEventListener("failed", () => {
-          closeSse();
-          setState("error");
-          const msg = options.messages.failed;
-          setStatusText(msg);
-          options.onFailed?.(msg);
+          handleTerminal("error", optionsRef.current.messages.failed, (m) =>
+            optionsRef.current.onFailed?.(m)
+          );
         });
 
         es.onerror = () => {
@@ -170,15 +198,21 @@ export function useMbWayPayment(options: {
           orderNumber: resolvedOrderNumber,
         };
       } catch (err: unknown) {
+        if (
+          (err instanceof Error && err.name === "AbortError") ||
+          attemptId !== attemptIdRef.current
+        ) {
+          return null;
+        }
         closeSse();
         setState("error");
-        const msg = err instanceof Error ? err.message : options.messages.service_error;
+        const msg = err instanceof Error ? err.message : optionsRef.current.messages.service_error;
         setStatusText(msg);
-        options.onError?.(msg);
+        optionsRef.current.onError?.(msg);
         throw err;
       }
     },
-    [closeSse, options]
+    [closeSse]
   );
 
   return {

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Badge, Button, Input, Card, Stack, EmptyState, Text } from "@neiist/ui";
+import { Badge, Button, Input, Card, Stack, EmptyState, Text, Tooltip } from "@neiist/ui";
 import { FiTrash2, FiMinus, FiPlus } from "react-icons/fi";
 import { CartItem } from "@/types/shop/product";
 import VariantTags from "@/components/shop/VariantTags";
@@ -34,6 +34,8 @@ interface PosCartSidebarProps {
   onOpenPaymentModal: () => void;
   footerSlot?: React.ReactNode;
   dict: Dictionary["pos"]["cart"];
+  isChargeDisabled?: boolean;
+  chargeDisabledReason?: string;
 }
 
 export default function PosCartSidebar({
@@ -54,6 +56,8 @@ export default function PosCartSidebar({
   onOpenPaymentModal,
   footerSlot,
   dict,
+  isChargeDisabled = false,
+  chargeDisabledReason,
 }: PosCartSidebarProps) {
   return (
     <Card variant="flat" className={styles.cartCard}>
@@ -250,14 +254,24 @@ export default function PosCartSidebar({
             </Stack>
           </Stack>
 
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            disabled={cart.length === 0}
-            onClick={onOpenPaymentModal}>
-            {dict.charge.replace("{amount}", formatMoney(totalAmount))}
-          </Button>
+          {cart.length > 0 && isChargeDisabled && chargeDisabledReason ? (
+            <Tooltip content={chargeDisabledReason} position="top">
+              <div style={{ width: "100%" }}>
+                <Button variant="primary" size="lg" fullWidth disabled>
+                  {dict.charge.replace("{amount}", formatMoney(totalAmount))}
+                </Button>
+              </div>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={cart.length === 0}
+              onClick={onOpenPaymentModal}>
+              {dict.charge.replace("{amount}", formatMoney(totalAmount))}
+            </Button>
+          )}
         </Stack>
       </Card.Footer>
     </Card>
