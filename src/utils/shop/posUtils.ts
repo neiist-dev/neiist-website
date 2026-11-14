@@ -95,3 +95,8 @@ export function updatePosCartItemQuantity(
   next[index] = { ...item, quantity: newQty };
   return next;
 }
+
+export function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || navigator.maxTouchPoints > 1;
+}

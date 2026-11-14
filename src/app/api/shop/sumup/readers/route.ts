@@ -1,31 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  validateSumUpCredentials,
-  withSumUp,
-  sumupErrorResponse,
-  getErrorStatus,
-  formatSumUpError,
-  SumUpAuthError,
-} from "@/lib/payments/sumup";
-import type { SumUpReadersListResponse } from "@/types/shop/sumup";
+import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
+import { getVirtualReadersForUser } from "@/lib/payments/sumupBridge";
+import { ENABLE_SUMUP_MOBILE_BRIDGE, type SumUpReadersListResponse } from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
-
-type SumUpProblem = {
-  type?: string;
-  title?: string;
-  status?: number;
-  detail?: string;
-  instance?: string;
-};
-
-function parseSumUpProblem(error: unknown): SumUpProblem | null {
-  if (!error || typeof error !== "object") return null;
-  const maybeError = error as { error?: SumUpProblem };
-  if (maybeError.error && typeof maybeError.error === "object") return maybeError.error;
-  return null;
-}
 
 export async function GET() {
   const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
@@ -38,7 +17,11 @@ export async function GET() {
     const data = (await withSumUp((client) =>
       client.readers.list(SUMUP_MERCHANT_CODE!)
     )) as SumUpReadersListResponse;
-    return NextResponse.json({ readers: data.items ?? [] });
+    const readers = [...(data.items ?? [])];
+    if (ENABLE_SUMUP_MOBILE_BRIDGE && auth.user?.istid)
+      readers.unshift(...getVirtualReadersForUser(auth.user.istid));
+
+    return NextResponse.json({ readers });
   } catch (err) {
     return sumupErrorResponse(err);
   }
@@ -72,12 +55,6 @@ export async function POST(req: NextRequest) {
     );
     return NextResponse.json({ success: true, reader }, { status: 201 });
   } catch (error) {
-    if (error instanceof SumUpAuthError) return sumupErrorResponse(error);
-    const status = getErrorStatus(error);
-    const problem = parseSumUpProblem(error);
-    const detail = problem?.detail || problem?.title;
-    return sumupErrorResponse(detail || "Failed to create reader", status, {
-      details: formatSumUpError(error),
-    });
+    return sumupErrorResponse(error);
   }
 }

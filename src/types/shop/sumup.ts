@@ -1,3 +1,5 @@
+export const ENABLE_SUMUP_MOBILE_BRIDGE = true;
+
 export interface SumUpCheckout {
   id?: string;
   status?: "PENDING" | "FAILED" | "PAID" | "EXPIRED" | null;
@@ -207,6 +209,34 @@ export type VerifyAndSettleSumUpResult =
   | { success: true; status: string; pending: true }
   | { success: false; status: "FAILED" | "EXPIRED"; transactionCode?: string }
   | { success: false; error: string; statusCode: number };
+
+export type SumUpBridgeMode = "relay" | "direct";
+
+export interface SumUpBridgeStatePayload {
+  jobId: string;
+  orderNumber: string;
+  orderNumbers: string[];
+  amountCents: number;
+  userId: string;
+  shiftId?: string | null;
+  mode: SumUpBridgeMode;
+  returnPath: string;
+  exp: number;
+}
+
+export interface SumUpBridgeRelayJob {
+  jobId: string;
+  sessionId: string;
+  userId: string;
+  orderNumber: string;
+  amount: number;
+  description: string;
+  deepLinkUrl: string;
+  status: "pending" | "paid" | "failed";
+  transactionCode?: string;
+  message?: string;
+  createdAt: number;
+}
 
 declare global {
   interface Window {

@@ -1,35 +1,29 @@
 import { NextRequest } from "next/server";
-import { validateSumUpCredentials, getReaderTransactionStatus } from "@/lib/payments/sumup";
+import {
+  validateSumUpCredentials,
+  getReaderTransactionStatus,
+  sumupErrorResponse,
+} from "@/lib/payments/sumup";
 import { paymentBroadcaster } from "@/lib/payments/broadcaster";
+import { getRelayJob } from "@/lib/payments/sumupBridge";
 import type { PaymentEventPayload } from "@/types/shop/payment";
+import { ENABLE_SUMUP_MOBILE_BRIDGE } from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
 import { finalizePaidOrder } from "@/lib/shop/orders";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ readerId: string }> }) {
   const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
-  if (auth.error)
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (auth.error) return auth.error;
 
   const credentialError = validateSumUpCredentials();
-  if (credentialError)
-    return new Response(JSON.stringify({ error: "Invalid SumUp credentials" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (credentialError) return credentialError;
 
   await params;
   const clientTransactionId = req.nextUrl.searchParams.get("client_transaction_id");
   const orderNumber =
     req.nextUrl.searchParams.get("orderNumber") || req.nextUrl.searchParams.get("order_number");
 
-  if (!clientTransactionId)
-    return new Response(JSON.stringify({ error: "client_transaction_id is required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (!clientTransactionId) return sumupErrorResponse("client_transaction_id is required", 400);
 
   const encoder = new TextEncoder();
   // Reverse proxies timeout idle streams so cap single SSE connection to 90s
@@ -117,6 +111,29 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ read
       sendEvent("connected", { clientTransactionId, orderNumber });
 
       const checkTransaction = async (): Promise<boolean> => {
+        if (ENABLE_SUMUP_MOBILE_BRIDGE) {
+          const job = getRelayJob(clientTransactionId);
+          if (job) {
+            if (
+              job.userId === auth.user.istid &&
+              (job.status === "paid" || job.status === "failed")
+            ) {
+              sendEvent(job.status, {
+                status: job.status === "paid" ? "PAID" : "FAILED",
+                id: job.transactionCode || clientTransactionId,
+                orderNumber: job.orderNumber || orderNumber || undefined,
+              });
+              safeClose();
+              return true;
+            }
+            sendEvent("pending", {
+              status: "PENDING",
+              elapsed: Math.round((Date.now() - startTime) / 1000),
+            });
+            return false;
+          }
+        }
+
         try {
           const tx = await getReaderTransactionStatus(clientTransactionId);
 

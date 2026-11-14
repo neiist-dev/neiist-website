@@ -2139,7 +2139,10 @@
       "identified_subtitle": "Standard orders with receipt and tracking",
       "fast_title": "Quick Sale",
       "fast_subtitle": "Drinks, food, and quick items",
-      "close_shift": "Close Shift"
+      "close_shift": "Close Shift",
+      "mobile_tpa_button": "SumUp App TPA",
+      "mobile_tpa_modal_title": "Connect SumUp App TPA",
+      "mobile_tpa_modal_subtitle": "Scan this QR code on your phone to use the SumUp App as a terminal."
     },
     "guard": {
       "blocked_heading": "Terminal Locked",
@@ -2285,6 +2288,9 @@
       "tpa_retry": "Try Again",
       "tpa_send": "Send to Terminal",
       "tpa_retry_settlement": "Retry sale registration",
+      "sumup_app_option": "SumUp App (Solo Lite / Tap to Pay)",
+      "sumup_app_success_toast": "Payment confirmed in SumUp App! Order #{number}",
+      "sumup_app_failed_toast": "SumUp App payment was not completed.",
       "mbway_phone_label": "Customer's MB WAY Phone Number",
       "mbway_phone_placeholder": "912 345 678",
       "mbway_phone_error": "Enter the customer's phone number.",
@@ -2421,6 +2427,17 @@
         "shift_closed": "Shift closed successfully"
       },
       "close": "Close"
+    },
+    "mobile_tpa": {
+      "waiting_title_prefix": "Waiting for",
+      "waiting_title_highlight": "payment",
+      "waiting_subtitle": "When you start a payment in the POS, the page will update automatically.",
+      "ready_title_prefix": "Ready to",
+      "ready_title_highlight": "charge",
+      "charge_button": "Charge {amount} in SumUp App",
+      "dismiss_button": "Back to waiting",
+      "paid_toast": "Order #{number} payment confirmed!",
+      "failed_toast": "Payment cancelled or declined."
     }
   }
 }

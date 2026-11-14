@@ -17,13 +17,14 @@ import {
 import { FiExternalLink, FiClock } from "react-icons/fi";
 import PaymentOverlay from "@/components/shop/PaymentOverlay";
 import { PAYMENT_METHODS_BY_CHANNEL, RESERVATION, type CheckoutChoice } from "@/types/shop/payment";
-import type { SumUpReader } from "@/types/shop/sumup";
+import { ENABLE_SUMUP_MOBILE_BRIDGE, type SumUpReader } from "@/types/shop/sumup";
 import {
   getCashShortcutAmounts,
   calculateChangeDenominations,
   formatMoney,
 } from "@/utils/shop/moneyUtils";
 import { useMbWayPayment } from "@/hooks/shop/useMbWayPayment";
+import { isMobileDevice } from "@/utils/shop/posUtils";
 import { formatTimer, toCartOrderItems } from "@/utils/shop/shopUtils";
 import type { CreateOrderPaymentInput } from "@/types/shop/order";
 import { CartItem } from "@/types/shop/product";
@@ -227,19 +228,30 @@ export default function PosPaymentModal({
 
   // Fetch SumUp readers when reader payment selected
   useEffect(() => {
-    if (!open || selectedMethod !== "sumup-tpa" || readers.length > 0) return;
+    if (!open || selectedMethod !== "sumup-tpa") return;
     const controller = new AbortController();
     setReadersLoading(true);
     fetch("/api/shop/sumup/readers", { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { readers?: SumUpReader[] } | null) => {
-        const list = Array.isArray(data?.readers) ? data.readers : [];
+        const fetched = Array.isArray(data?.readers) ? data.readers : [];
+        const isMobile = ENABLE_SUMUP_MOBILE_BRIDGE && isMobileDevice();
+        const list = isMobile
+          ? [
+              { id: "direct", name: dict.sumup_app_option, status: "app" },
+              ...fetched.filter((r) => r.status !== "app"),
+            ]
+          : fetched;
         setReaders(list);
-        const onlineReader = list.find((r) => r.status === "online" || r.status === "paired");
+        const onlineReader = list.find(
+          (r) => r.status === "app" || r.status === "online" || r.status === "paired"
+        );
         if (onlineReader) {
           setSelectedReaderId(onlineReader.id);
         } else if (list[0]) {
           setSelectedReaderId(list[0].id);
+        } else {
+          setSelectedReaderId("");
         }
       })
       .catch((err: unknown) => {
@@ -251,7 +263,7 @@ export default function PosPaymentModal({
     return () => {
       controller.abort();
     };
-  }, [open, selectedMethod, readers.length, dict.reader_load_error]);
+  }, [open, selectedMethod, dict.reader_load_error, dict.sumup_app_option]);
 
   const selectMethod = (method: CheckoutChoice) => {
     setSelectedMethod(method);
@@ -313,7 +325,15 @@ export default function PosPaymentModal({
       const res = await fetch(`/api/shop/sumup/readers/${selectedReaderId}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(hasLoadedOrder ? { orderId: orderNumber } : posCheckoutPayload),
+        body: JSON.stringify(
+          hasLoadedOrder
+            ? {
+                orderId: orderNumber,
+                orderNumbers: orderNumbers?.length ? orderNumbers : undefined,
+                shift_id: shiftId || undefined,
+              }
+            : posCheckoutPayload
+        ),
       });
 
       if (!res.ok) {
@@ -322,6 +342,11 @@ export default function PosPaymentModal({
       }
 
       const checkoutData = await res.json();
+      if (typeof checkoutData.deepLinkUrl === "string" && checkoutData.deepLinkUrl) {
+        window.location.href = checkoutData.deepLinkUrl;
+        return;
+      }
+
       const clientTxId = checkoutData.client_transaction_id;
       const resolvedOrderNumber =
         typeof checkoutData.order_number === "string" && !hasLoadedOrder
@@ -448,8 +473,8 @@ export default function PosPaymentModal({
 
   const cancelTpaCheckout = useCallback(() => {
     closeSumUpSse();
-    if (selectedReaderId) {
-      void fetch(`/api/shop/sumup/readers/${encodeURIComponent(selectedReaderId)}/checkout`, {
+    if (selectedReaderId && selectedReaderId !== "direct") {
+      void fetch(`/api/shop/sumup/readers/${selectedReaderId}/checkout`, {
         method: "DELETE",
       }).catch(() => {});
     }
@@ -633,6 +658,12 @@ export default function PosPaymentModal({
                       options={
                         readers.length > 0
                           ? readers.map((r) => {
+                              if (ENABLE_SUMUP_MOBILE_BRIDGE && r.status === "app") {
+                                return {
+                                  label: dict.sumup_app_option,
+                                  value: r.id,
+                                };
+                              }
                               const statusLabel =
                                 r.status === "online"
                                   ? dict.reader_online

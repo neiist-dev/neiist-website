@@ -17,6 +17,7 @@ import PosPaymentModal, {
 import PosShiftCloseModal from "@/components/shop/pos/modals/PosShiftCloseModal";
 import { usePosSession } from "@/hooks/shop/pos/usePosSession";
 import { usePosVariantSelector } from "@/hooks/shop/pos/usePosVariantSelector";
+import { useSumUpBridgeReturn } from "@/hooks/shop/pos/useSumUpBridgeReturn";
 import { upsertPosCartItem, updatePosCartItemQuantity } from "@/utils/shop/posUtils";
 import { calculateCartSubtotal } from "@/utils/shop/shopUtils";
 import styles from "@/styles/components/shop/pos/PosDesk.module.css";
@@ -41,6 +42,11 @@ export default function LivePos({
   const effectiveUser = currentUser ?? user;
   const canAccessPos = effectiveUser ? hasPermission(effectiveUser, "pos:access") : false;
   const canOverride = effectiveUser ? hasPermission(effectiveUser, "orders:override") : false;
+
+  useSumUpBridgeReturn({
+    successMessage: dict.payment.sumup_app_success_toast,
+    failedMessage: dict.payment.sumup_app_failed_toast,
+  });
 
   const session = usePosSession({
     stations,

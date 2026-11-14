@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
-import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/shop/sumup";
+import {
+  cancelRelayJobForSession,
+  createBridgePaymentAttempt,
+  hasActiveRelaySession,
+} from "@/lib/payments/sumupBridge";
+import {
+  ENABLE_SUMUP_MOBILE_BRIDGE,
+  type SumUpReaderCheckoutResponse,
+  type SumUpReaderCheckoutPayload,
+} from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
 import { resolvePaymentTarget } from "@/lib/shop/checkout";
 import { saveCheckoutSession } from "@/lib/redis/sessions";
@@ -64,11 +73,38 @@ export async function POST(
 
   if (!readerId) return sumupErrorResponse("readerId is required", 400);
 
+  const isDirectReader = ENABLE_SUMUP_MOBILE_BRIDGE && readerId === "direct";
+  const isRelayReader =
+    ENABLE_SUMUP_MOBILE_BRIDGE &&
+    !isDirectReader &&
+    hasActiveRelaySession(readerId, auth.user.istid);
+
   const target = await resolvePaymentTarget(body, auth.user, "sumup-tpa");
   if ("error" in target) return sumupErrorResponse(target.error, target.statusCode);
   const { orderNumber, totalAmount, description, redisSession } = target;
 
   if (!(totalAmount > 0)) return sumupErrorResponse("Invalid order amount", 400);
+
+  if (isRelayReader || isDirectReader) {
+    try {
+      const { jobId, deepLinkUrl } = await createBridgePaymentAttempt({
+        target,
+        body,
+        userId: auth.user.istid,
+        sessionId: isRelayReader ? readerId : undefined,
+        req,
+      });
+      return NextResponse.json({
+        success: true,
+        ...(isDirectReader
+          ? { deepLinkUrl }
+          : { clientTransactionId: jobId, client_transaction_id: jobId }),
+        order_number: orderNumber,
+      });
+    } catch (error) {
+      return sumupErrorResponse(error);
+    }
+  }
 
   const payload: SumUpReaderCheckoutPayload = {
     description,
@@ -118,6 +154,10 @@ export async function DELETE(
 
   const { readerId } = await params;
   if (!readerId) return sumupErrorResponse("readerId is required", 400);
+
+  if (ENABLE_SUMUP_MOBILE_BRIDGE && cancelRelayJobForSession(readerId, auth.user.istid)) {
+    return NextResponse.json({ success: true });
+  }
 
   try {
     await withSumUp((client) => client.readers.terminateCheckout(SUMUP_MERCHANT_CODE!, readerId));

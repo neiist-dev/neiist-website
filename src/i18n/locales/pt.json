@@ -2139,7 +2139,10 @@
       "identified_subtitle": "Vendas normais com fatura e registo",
       "fast_title": "Venda Rápida",
       "fast_subtitle": "Bebidas, comida e consumíveis",
-      "close_shift": "Fechar Turno"
+      "close_shift": "Fechar Turno",
+      "mobile_tpa_button": "SumUp App TPA",
+      "mobile_tpa_modal_title": "Ligar SumUp App TPA",
+      "mobile_tpa_modal_subtitle": "Lê este código QR no teu telemóvel para usar a SumUp App como terminal."
     },
     "guard": {
       "blocked_heading": "Terminal Bloqueado",
@@ -2285,6 +2288,9 @@
       "tpa_retry": "Tentar Novamente",
       "tpa_send": "Enviar para Terminal",
       "tpa_retry_settlement": "Repetir registo da venda",
+      "sumup_app_option": "SumUp App (Solo Lite / Tap to Pay)",
+      "sumup_app_success_toast": "Pagamento confirmado na SumUp App! Encomenda #{number}",
+      "sumup_app_failed_toast": "Pagamento na SumUp App não concluído.",
       "mbway_phone_label": "Número de Telemóvel MB WAY do Cliente",
       "mbway_phone_placeholder": "912 345 678",
       "mbway_phone_error": "Indica o número de telemóvel do cliente.",
@@ -2421,6 +2427,17 @@
         "shift_closed": "Turno fechado com sucesso"
       },
       "close": "Fechar"
+    },
+    "mobile_tpa": {
+      "waiting_title_prefix": "A aguardar",
+      "waiting_title_highlight": "pagamento",
+      "waiting_subtitle": "Quando iniciares um pagamento no POS, a página vai atualizar automaticamente.",
+      "ready_title_prefix": "Pronto para",
+      "ready_title_highlight": "cobrar",
+      "charge_button": "Cobrar {amount} na SumUp App",
+      "dismiss_button": "Voltar à espera",
+      "paid_toast": "Pagamento da encomenda #{number} confirmado!",
+      "failed_toast": "Pagamento cancelado ou recusado."
     }
   }
 }

@@ -59,6 +59,7 @@ export const CHECKOUT_HOLD_TTL_SECONDS = 15 * 60;
 export const CHECKOUT_SESSION_PREFIX = "checkout:session:";
 export const CHECKOUT_CART_PREFIX = "checkout:cart:";
 export const MBWAY_REQ_PREFIX = "mbway:req:";
+export const SUMUP_BRIDGE_REDEEMED_PREFIX = "sumup:bridge:redeemed:";
 
 export interface CheckoutSessionData extends Omit<
   CreateOrderInput,
