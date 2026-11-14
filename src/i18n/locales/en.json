@@ -65,7 +65,7 @@
       "posters": {
         "title": "Poster Bugs",
         "text": "Can you find the bugs?",
-        "description": "There are posters scattered around the venue — some have hidden bugs. Find posters with errors and show the staff to get a token."
+        "description": "There are posters scattered around the venue, some have hidden bugs. Find posters with errors and show the staff to get a token."
       },
       "tux": {
         "title": "Find Tux",
@@ -1002,7 +1002,7 @@
       "sold_out": "Out of stock across all active variants",
       "scheduled": "Scheduled to open on a future date",
       "closed": "Order deadline has passed",
-      "sales_disabled": "Sales disabled — hidden from shop and POS"
+      "sales_disabled": "Sales disabled, hidden from shop and POS"
     },
     "edit": "Edit",
     "manage_stock": "Manage stock",
@@ -1034,8 +1034,8 @@
       "stock_section": "Stock",
       "back": "Back",
       "variant_inactive_badge": "Disabled",
-      "on_demand_hint": "Made to order — stock quantity is not tracked.",
-      "untracked_hint": "Unlimited — stock tracking is disabled for this product.",
+      "on_demand_hint": "Made to order, stock quantity is not tracked.",
+      "untracked_hint": "Unlimited, stock tracking is disabled for this product.",
       "close": "Close"
     }
   },
@@ -1629,7 +1629,7 @@
   "terms_page": {
     "title": "Terms and Conditions",
     "last_updated_label": "Last updated",
-    "last_updated_date": "October 27, 2026",
+    "last_updated_date": "November 14, 2026",
     "intro": "These Terms and Conditions govern the use of this website and purchases made in the NEIIST (Núcleo Estudantil de Informática do IST) shop, including orders, payments, delivery, exchanges and returns, in accordance with Portuguese and European consumer protection law. In case of discrepancy, the Portuguese version prevails.",
     "sections": [
       {
@@ -1744,14 +1744,14 @@
           },
           {
             "label": "MB Way",
-            "text": "by transfer to the number shown after the order, including the order number in the description. The order remains pending until the payment is verified."
+            "text": "securely processed via IfThenPay to NEIIST's official account (via push notification in the MB Way app)."
           },
           {
             "label": "In person",
             "text": "in cash, MB Way or card terminal (POS) at the NEIIST rooms during opening hours."
           }
         ],
-        "outro": "If you need an invoice with your tax number (NIF), please provide it when placing the order."
+        "outro": "An invoice is always issued; if you want your tax number (NIF) included, please provide it when placing the order."
       },
       {
         "type": "list",
@@ -1764,7 +1764,7 @@
           },
           {
             "label": "Delivery times",
-            "text": "the estimated delivery time is shown on each product page and at checkout and is indicative only. For made-to-order items, it counts from the end of the ordering period. As a non-profit student association, NEIIST relies on external suppliers and on the volunteer work of its members, so delays may occur; we will always do our best to meet the stated dates. Unless a different period was stated and accepted by the customer when ordering, the order will be made available within a maximum of 30 days from payment confirmation (Decree-Law no. 24/2014)."
+            "text": "the estimated delivery time is shown on each product page and at checkout and is indicative only. For made-to-order items, it counts from the end of the ordering period. As a non-profit student association, NEIIST relies on external suppliers and on the volunteer work of its members, so delays may occur; we will always do our best to meet the stated dates. Unless a different period was stated and accepted by the customer when ordering, the order will be made available within a maximum of 30 days from payment confirmation (Article 9-B of Law no. 24/96 - Consumer Protection Law)."
           },
           {
             "label": "Ready notice",
@@ -1793,7 +1793,7 @@
         "items": [
           {
             "label": "How to withdraw",
-            "text": "send an email to neiist@tecnico.ulisboa.pt with your order number stating that you wish to withdraw, or use the model withdrawal form in the Annex to Decree-Law no. 24/2014."
+            "text": "send an email to neiist@tecnico.ulisboa.pt with your order number stating that you wish to withdraw, or use the model withdrawal form in the Annex to Decree-Law no. 24/2014 (available at /formulario-livre-resolucao.pdf)."
           },
           {
             "label": "Returning items",
@@ -1805,7 +1805,7 @@
           },
           {
             "label": "Exceptions",
-            "text": "the right of withdrawal does not apply to personalised items or items made to the consumer's specifications, under Article 17(1)(c) of Decree-Law no. 24/2014. As most NEIIST items are made to order, specifically for each request and according to the quantities, sizes and models chosen by customers, these items are considered personalised and are not eligible for withdrawal. This information is shown on the product page and at checkout. Items available in stock (not made to order) remain covered by the right of withdrawal. Even so, if a customer wishes to return one of these items, the request is assessed case by case and the best solution is sought and agreed between the current NEIIST Board and the customer, without creating any obligation for NEIIST. In case of a defect, section 10 applies."
+            "text": "the right of withdrawal does not apply to genuinely personalised items or items made to the consumer's individual specifications (such as items with a custom printed name or text), under Article 17(1)(c) of Decree-Law no. 24/2014. All other items including made-to-order items where the customer only selects standard catalogue options (such as size, colour or model) remain covered by the 14-day right of withdrawal. This information is shown on the product page and at checkout. Even so, if a customer wishes to return a personalised item, the request is assessed case by case and the best solution is sought and agreed between the current NEIIST Board and the customer, without creating any obligation for NEIIST. In case of a defect, section 10 applies."
           }
         ]
       },
@@ -1825,7 +1825,7 @@
         "title": "10. Warranty and Conformity",
         "paragraphs": [
           "NEIIST does not offer any additional commercial warranty. Only the mandatory legal regime for the conformity of consumer goods (Decree-Law no. 84/2021) applies; it cannot be waived and its periods and conditions depend on the type of item.",
-          "Defects or lack of conformity are assessed case by case. To report one, contact neiist@tecnico.ulisboa.pt with your order number and photos of the problem. As a non-profit student association, we will always seek the most suitable solution as provided by law: repair, replacement, price reduction or termination of the contract.",
+          "In the event of a defect or lack of conformity, contact neiist@tecnico.ulisboa.pt with your order number and photos of the problem. Under Decree-Law no. 84/2021, it is up to the consumer to choose the legally applicable remedy - between repair or replacement of the item, or, where applicable, a proportionate price reduction or termination of the contract - and NEIIST will endeavour to implement it promptly and transparently.",
           "The warranty does not cover normal wear and tear, improper use, washing or care contrary to the label instructions, or damage occurring after delivery."
         ]
       },
@@ -2277,7 +2277,7 @@
       "tpa_paid_toast": "Payment completed on the terminal!",
       "tpa_failed": "Transaction cancelled or declined on the reader.",
       "tpa_failed_toast": "Payment cancelled or declined.",
-      "tpa_register_failed": "Payment was confirmed on the terminal, but registering the sale failed. Use \"Retry sale\" — do not charge the customer again.",
+      "tpa_register_failed": "Payment was confirmed on the terminal, but registering the sale failed. Use \"Retry sale\" do not charge the customer again.",
       "tpa_register_failed_toast": "Registering the sale failed after the terminal payment.",
       "tpa_retry_failed": "Registration failed again. Please try again.",
       "tpa_retry_failed_toast": "Failed to register sale.",

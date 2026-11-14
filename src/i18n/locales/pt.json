@@ -1629,7 +1629,7 @@
   "terms_page": {
     "title": "Termos e Condições",
     "last_updated_label": "Última atualização",
-    "last_updated_date": "27 de outubro de 2026",
+    "last_updated_date": "14 de novembro de 2026",
     "intro": "Os presentes Termos e Condições regulam a utilização deste site e as compras efetuadas na loja do NEIIST (Núcleo Estudantil de Informática do IST), incluindo encomendas, pagamentos, entregas, trocas e devoluções, em conformidade com a legislação portuguesa e europeia de defesa do consumidor.",
     "sections": [
       {
@@ -1744,14 +1744,14 @@
           },
           {
             "label": "MB Way",
-            "text": "por transferência para o número indicado após a encomenda, incluindo o número da encomenda na descrição. A encomenda fica pendente até à verificação do pagamento."
+            "text": "processado de forma segura através da IfThenPay para a conta oficial do NEIIST (mediante notificação push na app MB Way)."
           },
           {
             "label": "Presencialmente",
             "text": "em numerário, MB Way ou terminal de pagamento (TPA) nas salas do NEIIST, durante o horário de atendimento."
           }
         ],
-        "outro": "Caso pretenda fatura com NIF, deverá indicá-lo no momento da encomenda."
+        "outro": "É sempre emitida fatura; se pretender NIF, indique-o na encomenda."
       },
       {
         "type": "list",
@@ -1764,7 +1764,7 @@
           },
           {
             "label": "Prazos",
-            "text": "o prazo estimado de entrega é indicado na página de cada produto e no checkout e tem caráter indicativo. Para artigos produzidos por encomenda, o prazo conta a partir do fecho do período de encomendas. Enquanto associação de estudantes sem fins lucrativos, o NEIIST depende de fornecedores externos e do trabalho voluntário dos seus membros, pelo que podem ocorrer atrasos; faremos sempre o possível para cumprir os prazos indicados. Salvo prazo diferente indicado e aceite pelo cliente no momento da encomenda, a entrega será disponibilizada no prazo máximo de 30 dias a contar da confirmação do pagamento (Decreto-Lei n.º 24/2014)."
+            "text": "o prazo estimado de entrega é indicado na página de cada produto e no checkout e tem caráter indicativo. Para artigos produzidos por encomenda, o prazo conta a partir do fecho do período de encomendas. Enquanto associação de estudantes sem fins lucrativos, o NEIIST depende de fornecedores externos e do trabalho voluntário dos seus membros, pelo que podem ocorrer atrasos; faremos sempre o possível para cumprir os prazos indicados. Salvo prazo diferente indicado e aceite pelo cliente no momento da encomenda, a entrega será disponibilizada no prazo máximo de 30 dias a contar da confirmação do pagamento (artigo 9.º-B da Lei n.º 24/96 - Lei de Defesa do Consumidor)."
           },
           {
             "label": "Aviso de disponibilidade",
@@ -1793,7 +1793,7 @@
         "items": [
           {
             "label": "Como exercer",
-            "text": "envie um email para neiist@tecnico.ulisboa.pt com o número da encomenda e a indicação de que pretende resolver o contrato, ou utilize o modelo de formulário de livre resolução constante do Anexo do Decreto-Lei n.º 24/2014."
+            "text": "envie um email para neiist@tecnico.ulisboa.pt com o número da encomenda e a indicação de que pretende resolver o contrato, ou utilize o modelo de formulário de livre resolução constante do Anexo do Decreto-Lei n.º 24/2014 (disponível em /formulario-livre-resolucao.pdf)."
           },
           {
             "label": "Devolução dos artigos",
@@ -1805,7 +1805,7 @@
           },
           {
             "label": "Exceções",
-            "text": "o direito de livre resolução não se aplica a artigos personalizados ou produzidos segundo especificações do consumidor, nos termos do artigo 17.º, n.º 1, alínea c), do Decreto-Lei n.º 24/2014. Como a maioria dos artigos do NEIIST é produzida por encomenda, especificamente para cada pedido e em função das quantidades, tamanhos e modelos escolhidos pelos clientes, esses artigos são considerados personalizados e não são passíveis de livre resolução. Esta informação é apresentada na página do produto e no checkout. Os artigos disponíveis em stock (não produzidos por encomenda) continuam abrangidos pelo direito de livre resolução. Ainda assim, caso o cliente pretenda devolver um destes artigos, o pedido é analisado caso a caso e a melhor solução é encontrada e acordada entre a Direção do NEIIST em funções e o cliente, sem que daí resulte qualquer obrigação para o NEIIST. Em caso de defeito, aplica-se a secção 10."
+            "text": "o direito de livre resolução não se aplica a artigos com personalização real ou produzidos segundo especificações individuais do consumidor (como, por exemplo, artigos com nome ou texto personalizado impresso), nos termos do artigo 17.º, n.º 1, alínea c), do Decreto-Lei n.º 24/2014. Os restantes artigos, incluindo artigos produzidos por encomenda em que o cliente apenas escolhe opções padrão disponíveis em catálogo (como tamanho, cor ou modelo) mantêm-se abrangidos pelo direito de livre resolução de 14 dias. Esta informação é apresentada na página do produto e no checkout. Ainda assim, caso o cliente pretenda devolver um artigo personalizado, o pedido é analisado caso a caso e a melhor solução é encontrada e acordada entre a Direção do NEIIST em funções e o cliente, sem que daí resulte qualquer obrigação para o NEIIST. Em caso de defeito, aplica-se a secção 10."
           }
         ]
       },
@@ -1825,7 +1825,7 @@
         "title": "10. Garantia e Conformidade",
         "paragraphs": [
           "O NEIIST não oferece qualquer garantia comercial adicional. Aplica-se apenas o regime legal de conformidade dos bens de consumo (Decreto-Lei n.º 84/2021), que não pode ser afastado e cujos prazos e condições dependem do tipo de artigo.",
-          "As situações de defeito ou falta de conformidade são analisadas caso a caso. Para o efeito, contacte neiist@tecnico.ulisboa.pt com o número da encomenda e fotografias do problema. Sendo o NEIIST uma associação de estudantes sem fins lucrativos, procuraremos sempre a solução mais adequada, nos termos da lei: reparação, substituição, redução do preço ou resolução do contrato.",
+          "Em caso de defeito ou falta de conformidade, contacte neiist@tecnico.ulisboa.pt com o número da encomenda e fotografias do problema. Nos termos do Decreto-Lei n.º 84/2021, cabe ao consumidor escolher a solução legalmente aplicável entre reparação ou substituição do artigo, ou, quando aplicável, redução proporcional do preço ou resolução do contrato, procurando o NEIIST assegurar a sua concretização de forma célere e transparente.",
           "A garantia não cobre o desgaste normal, a utilização incorreta, a lavagem ou conservação contrária às instruções da etiqueta, nem danos causados após a entrega."
         ]
       },

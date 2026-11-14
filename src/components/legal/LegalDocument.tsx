@@ -12,7 +12,9 @@ export interface LegalDocumentContent {
 }
 
 function renderTextWithLinks(text: string): React.ReactNode {
-  const parts = text.split(/(https?:\/\/[^\s)]+|neiist@tecnico\.ulisboa\.pt)/g);
+  const parts = text.split(
+    /(https?:\/\/[^\s)]+|neiist@tecnico\.ulisboa\.pt|\/[a-zA-Z0-9_-]+\.pdf)/g
+  );
   let keyCount = 0;
   return parts.map((part) => {
     keyCount += 1;
@@ -24,7 +26,7 @@ function renderTextWithLinks(text: string): React.ReactNode {
         </a>
       );
     }
-    if (part.startsWith("http")) {
+    if (part.startsWith("http") || part.startsWith("/")) {
       return (
         <a key={key} href={part} target="_blank" rel="noopener noreferrer" className={styles.link}>
           <strong>{part}</strong>
