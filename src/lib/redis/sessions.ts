@@ -1,9 +1,11 @@
 import { getRedisClient } from "@/lib/redis/client";
 import { releaseStockHolds } from "@/lib/redis/holds";
-import { CHECKOUT_HOLD_TTL_SECONDS, CheckoutSessionData } from "@/types/redis";
-
-const SESSION_PREFIX = "checkout:session:";
-const CART_PREFIX = "checkout:cart:";
+import {
+  CHECKOUT_CART_PREFIX,
+  CHECKOUT_HOLD_TTL_SECONDS,
+  CHECKOUT_SESSION_PREFIX,
+  CheckoutSessionData,
+} from "@/types/redis";
 
 export function getSessionExpiryMs(session: CheckoutSessionData): number {
   const parsed = session.expires_at ? Date.parse(session.expires_at) : NaN;
@@ -21,7 +23,7 @@ export async function saveCheckoutSession(
   ttlSeconds = CHECKOUT_HOLD_TTL_SECONDS
 ): Promise<void> {
   const redis = getRedisClient();
-  const key = `${SESSION_PREFIX}${session.order_number}`;
+  const key = `${CHECKOUT_SESSION_PREFIX}${session.order_number}`;
   if (!session.expires_at) {
     session.expires_at = new Date(Date.now() + ttlSeconds * 1000).toISOString();
   }
@@ -30,7 +32,7 @@ export async function saveCheckoutSession(
 
 export async function getCheckoutSession(orderNumber: string): Promise<CheckoutSessionData | null> {
   const redis = getRedisClient();
-  const key = `${SESSION_PREFIX}${orderNumber}`;
+  const key = `${CHECKOUT_SESSION_PREFIX}${orderNumber}`;
   const data = await redis.get(key);
   if (!data) return null;
   try {
@@ -42,7 +44,7 @@ export async function getCheckoutSession(orderNumber: string): Promise<CheckoutS
 
 export async function deleteCheckoutSession(orderNumber: string): Promise<void> {
   const redis = getRedisClient();
-  const key = `${SESSION_PREFIX}${orderNumber}`;
+  const key = `${CHECKOUT_SESSION_PREFIX}${orderNumber}`;
   await redis.del(key);
 }
 
@@ -63,7 +65,7 @@ export async function discardCheckoutSession(orderNumber: string): Promise<boole
 
 export async function getCartIdOrderNumber(cartId: string): Promise<string | null> {
   const redis = getRedisClient();
-  return redis.get(`${CART_PREFIX}${cartId}`);
+  return redis.get(`${CHECKOUT_CART_PREFIX}${cartId}`);
 }
 
 export async function setCartIdOrderNumber(
@@ -72,5 +74,5 @@ export async function setCartIdOrderNumber(
   ttlSeconds = 3600
 ): Promise<void> {
   const redis = getRedisClient();
-  await redis.set(`${CART_PREFIX}${cartId}`, orderNumber, "EX", ttlSeconds);
+  await redis.set(`${CHECKOUT_CART_PREFIX}${cartId}`, orderNumber, "EX", ttlSeconds);
 }

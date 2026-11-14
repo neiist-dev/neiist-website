@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getCheckoutSession } from "@/lib/redis/sessions";
-import { promoteRedisCheckoutSessionToReservation } from "@/utils/shop/orderFinalization";
+import { promoteRedisCheckoutSessionToReservation } from "@/lib/shop/orders";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(req: NextRequest) {

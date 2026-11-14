@@ -67,7 +67,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
   },
 
   async event_hook(job: EventHookJob) {
-    const { executeEventTicketHook } = await import("@/utils/shop/orderFinalization");
+    const { executeEventTicketHook } = await import("@/lib/shop/orders");
     await executeEventTicketHook(job);
   },
 

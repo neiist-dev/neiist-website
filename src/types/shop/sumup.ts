@@ -188,6 +188,26 @@ export interface ApplePaySessionConstructor {
   readonly STATUS_FAILURE: number;
 }
 
+export interface VerifyAndSettleSumUpOptions {
+  orderNumber: string;
+  checkoutId: string;
+  applePayToken?: ApplePayPaymentToken;
+  checkedBy?: string;
+  userIstid?: string | null;
+}
+
+export type VerifyAndSettleSumUpResult =
+  | {
+      success: true;
+      status: "PAID";
+      reference: string;
+      alreadyProcessed: boolean;
+      orderNumber: string;
+    }
+  | { success: true; status: string; pending: true }
+  | { success: false; status: "FAILED" | "EXPIRED"; transactionCode?: string }
+  | { success: false; error: string; statusCode: number };
+
 declare global {
   interface Window {
     SumUpCard?: SumUpCardGlobal;

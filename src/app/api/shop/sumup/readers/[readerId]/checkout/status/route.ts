@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { validateSumUpCredentials, getReaderTransactionStatus } from "@/lib/payments/sumup";
-import { paymentBroadcaster, type PaymentEventPayload } from "@/lib/payments/broadcaster";
+import { paymentBroadcaster } from "@/lib/payments/broadcaster";
+import type { PaymentEventPayload } from "@/types/shop/payment";
 import { verifyPermission } from "@/lib/auth";
+import { finalizePaidOrder } from "@/lib/shop/orders";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ readerId: string }> }) {
   const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
@@ -129,9 +131,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ read
             clientTransactionId;
 
           if (status === "SUCCESSFUL" || status === "PAID") {
+            if (orderNumber)
+              await finalizePaidOrder({
+                orderNumber,
+                paymentReference: txId,
+                paymentCheckedBy: "sumup-tpa",
+                paymentMethod: "sumup-tpa",
+              });
+
             sendEvent("paid", {
               status: "PAID",
               id: txId,
+              orderNumber: orderNumber || undefined,
               transaction: tx,
             });
             safeClose();

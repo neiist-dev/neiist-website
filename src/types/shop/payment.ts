@@ -1,3 +1,4 @@
+import type { CheckoutSessionData } from "@/types/redis";
 import type { OrderSource } from "@/types/shop/order";
 import { parseDbNumeric } from "@/utils/shop/moneyUtils";
 
@@ -122,6 +123,26 @@ export interface dbPayment {
   shift_id: string | null;
   created_at: string;
 }
+
+export interface PaymentEventPayload {
+  status: string;
+  orderNumber?: string;
+  requestId?: string;
+  clientTransactionId?: string;
+  message?: string;
+  raw?: unknown;
+}
+
+export interface PaymentTarget {
+  orderNumber: string;
+  orderNumbers: string[];
+  totalAmount: number;
+  description: string;
+  customerEmail?: string;
+  redisSession?: CheckoutSessionData;
+}
+
+export type ResolvePaymentTargetResult = PaymentTarget | { error: string; statusCode: number };
 
 export function mapdbPaymentToPayment(row: dbPayment): PaymentRecord {
   return {

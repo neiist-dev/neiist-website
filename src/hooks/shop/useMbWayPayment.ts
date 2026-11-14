@@ -103,6 +103,14 @@ export function useMbWayPayment(options: UseMbWayPaymentOptions) {
       phone: string;
       orderSource?: OrderSource;
       items?: StockRequestItem[];
+      shiftId?: string;
+      customerName?: string;
+      customerEmail?: string;
+      customerNif?: string;
+      campus?: string;
+      notes?: string;
+      cartId?: string;
+      stockOverride?: boolean;
     }) => {
       closeSse();
       const attemptId = attemptIdRef.current;
@@ -126,6 +134,14 @@ export function useMbWayPayment(options: UseMbWayPaymentOptions) {
             phone: params.phone,
             order_source: params.orderSource,
             items: params.items,
+            shift_id: params.shiftId || undefined,
+            customer_name: params.customerName || undefined,
+            customer_email: params.customerEmail || undefined,
+            customer_nif: params.customerNif || undefined,
+            campus: params.campus || undefined,
+            notes: params.notes || undefined,
+            cart_id: params.cartId || undefined,
+            stock_override: params.stockOverride || undefined,
           }),
         });
 

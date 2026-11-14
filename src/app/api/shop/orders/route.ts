@@ -16,15 +16,14 @@ import {
 } from "@/lib/db/repositories/shop.repository";
 import { getUser, updateUser } from "@/lib/db/repositories/user.repository";
 import { getShiftById, getActiveShiftForStation } from "@/lib/db/repositories/pos.repository";
-import { getCartIdOrderNumber, setCartIdOrderNumber } from "@/lib/redis/sessions";
+import { getCartIdOrderNumber } from "@/lib/redis/sessions";
+import { validateProductRules } from "@/lib/shop/pricing";
 import { withStock } from "@/lib/redis/holds";
 import {
-  enqueueEventTicketHooks,
-  sendOrderPaidEmails,
   buildOrderPaymentInput,
-  schedulePendingOrderExpiry,
-  sendPendingOrderEmail,
-} from "@/utils/shop/orderFinalization";
+  runPaidOrderSideEffects,
+  runPendingOrderSideEffects,
+} from "@/lib/shop/orders";
 import { verifyPermission } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import { revalidatePath } from "next/cache";
@@ -99,39 +98,6 @@ async function resolveShiftId(
   return resolved;
 }
 
-function validateProductRules(
-  products: Product[],
-  items: Array<{ quantity?: number }>,
-  orderSource: OrderSource,
-  orderUserIstid?: string
-): string | null {
-  const isFastPos = orderSource === "fast-pos";
-
-  if (products.some((p) => !p.channels?.includes(orderSource)))
-    return "Não é permitida a encomenda de produtos fora do canal selecionado";
-
-  if (isFastPos && products.some((p) => p.stock_type !== "untracked"))
-    return "Apenas produtos com stock untracked podem ser vendidos no balcão rápido";
-
-  const hasTickets = products.some((p) => p.product_type === "event_ticket");
-  const hasMerchandise = products.some((p) => p.product_type === "merchandise");
-  const hasFoodDrink = products.some((p) => p.product_type === "food_drink");
-
-  if (hasTickets && (hasMerchandise || hasFoodDrink))
-    return "Bilhetes de eventos não podem ser encomendados juntamente com outros produtos";
-
-  if (hasFoodDrink && !isFastPos) return "Produtos alimentares apenas disponíveis no balcão rápido";
-
-  if (hasTickets) {
-    if (!orderUserIstid) return "A compra de bilhetes requer a identificação do estudante (IST ID)";
-
-    const totalTickets = items.reduce((sum, it) => sum + (it.quantity ?? 1), 0);
-    if (totalTickets > 1) return "Apenas é permitido 1 bilhete por utilizador";
-  }
-
-  return null;
-}
-
 function validateOrderContext(body: OrderRequestBody, user: User): NextResponse | null {
   const orderSource = parseOrderSource(body.order_source);
   const isFastPos = orderSource === "fast-pos";
@@ -159,13 +125,13 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
     );
 
   if (isReservation) {
-    if (isFastPos) {
+    if (isFastPos)
       return NextResponse.json(
         { error: "Não são permitidas reservas no balcão rápido" },
         { status: 400 }
       );
-    }
-    if (isPos && (!canAccessPos || !canOverride)) {
+
+    if (isPos && (!canAccessPos || !canOverride))
       return NextResponse.json(
         {
           error:
@@ -173,7 +139,6 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
         },
         { status: 403 }
       );
-    }
   }
 
   if (!isReservation) {
@@ -181,12 +146,11 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
     if (!explicitMethod)
       return NextResponse.json({ error: "Método de pagamento obrigatório" }, { status: 400 });
 
-    if (!isPaymentMethodAllowedForChannel(orderSource, explicitMethod)) {
+    if (!isPaymentMethodAllowedForChannel(orderSource, explicitMethod))
       return NextResponse.json(
         { error: "Método de pagamento inválido para este canal" },
         { status: 400 }
       );
-    }
   }
 
   return null;
@@ -197,6 +161,14 @@ async function checkFastPosIdempotency(body: OrderRequestBody): Promise<Order | 
   if (orderSource === "fast-pos" && typeof body.cart_id === "string" && body.cart_id.trim()) {
     const existingOrderNumber = await getCartIdOrderNumber(body.cart_id.trim());
     if (existingOrderNumber) return (await getOrderByNumber(existingOrderNumber)) ?? null;
+  }
+  if (
+    (orderSource === "pos" || orderSource === "fast-pos") &&
+    typeof body.order_number === "string" &&
+    body.order_number.trim()
+  ) {
+    const existingByNumber = await getOrderByNumber(body.order_number.trim());
+    if (existingByNumber) return existingByNumber;
   }
   return null;
 }
@@ -219,7 +191,7 @@ async function resolveAndValidateProducts(
   const orderSource = parseOrderSource(body.order_source);
   const guestCheckout = body.guest_checkout === true;
 
-  if (orderSource === "pos" && !body.user_istid && !guestCheckout) {
+  if (orderSource === "pos" && !body.user_istid && !guestCheckout)
     return {
       error: NextResponse.json(
         {
@@ -229,11 +201,10 @@ async function resolveAndValidateProducts(
         { status: 400 }
       ),
     };
-  }
 
   const orderUserIstid = guestCheckout ? undefined : body.user_istid;
 
-  const ruleError = validateProductRules(products, items, orderSource, orderUserIstid);
+  const ruleError = validateProductRules(products, items, orderSource, { orderUserIstid });
   if (ruleError) return { error: NextResponse.json({ error: ruleError }, { status: 400 }) };
 
   return {
@@ -276,24 +247,19 @@ async function handlePostOrderSideEffects(
   customerPhone?: string,
   cartId?: string
 ) {
-  if (!paymentPayload) await schedulePendingOrderExpiry(order);
-
-  if (cartId && typeof cartId === "string" && cartId.trim())
-    await setCartIdOrderNumber(cartId.trim(), order.order_number);
-
   if (orderUserIstid && customerPhone) {
     const targetUser = await getUser(orderUserIstid);
     if (targetUser && targetUser.phone !== customerPhone)
       await updateUser(orderUserIstid, { phone: customerPhone });
   }
 
-  if (orderUserIstid && paymentPayload?.status === "successful")
-    await enqueueEventTicketHooks(order);
-
   if (paymentPayload?.status === "successful") {
-    sendOrderPaidEmails(order, paymentPayload.reference ?? undefined);
+    await runPaidOrderSideEffects(order, {
+      paymentReference: paymentPayload.reference ?? undefined,
+      cartId,
+    });
   } else {
-    await sendPendingOrderEmail(order, paymentMethod);
+    await runPendingOrderSideEffects(order, paymentMethod);
   }
 }
 

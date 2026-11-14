@@ -102,6 +102,12 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface ValidateProductRulesOptions {
+  orderUserIstid?: string | null;
+  enforceChannel?: boolean;
+  enforceTicketRules?: boolean;
+}
+
 function parseProductChannels(raw: string[] | string | null | undefined): ProductChannel[] {
   const items = Array.isArray(raw)
     ? raw

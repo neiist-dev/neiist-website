@@ -4,6 +4,7 @@ import { isPaymentMethod, isPaymentMethodAllowedForChannel } from "@/types/shop/
 import { generateOrderNumber } from "@/lib/db/repositories/shop.repository";
 import { CHECKOUT_HOLD_TTL_SECONDS, CheckoutSessionData, StockRequestItem } from "@/types/redis";
 import { reserveStockHolds, toStockRequests } from "@/lib/redis/holds";
+import { buildCheckoutSession } from "@/lib/shop/checkout";
 import {
   discardCheckoutSession,
   getCheckoutSession,
@@ -11,7 +12,7 @@ import {
   saveCheckoutSession,
 } from "@/lib/redis/sessions";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { validateAndPriceCartItems } from "@/utils/shop/orderFinalization";
+import { validateAndPriceCartItems } from "@/lib/shop/pricing";
 
 const getItemsSignature = (items: StockRequestItem[]) =>
   items
@@ -101,34 +102,28 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const pick = (field: string, fallback: string | null) =>
-      body[field] !== undefined ? body[field] || null : fallback;
+    const pick = (field: string, fallback: string | null | undefined) =>
+      body[field] !== undefined ? body[field] || null : (fallback ?? null);
 
-    const sessionData: CheckoutSessionData = {
-      order_number: orderNumber,
-      order_source: "web",
-      total_amount: finalTotal,
-      payment_method: paymentMethod ?? existing?.payment_method ?? null,
-      items:
-        existing?.items ??
-        itemsInput.map((it) => ({
-          product_id: it.product_id,
-          variant_id: it.variant_id ?? null,
-          quantity: it.quantity ?? 1,
-          deliver_now: false,
-        })),
-      user_istid: sessionUserIstid,
-      customer_name: body.customer_name || existing?.customer_name || user.name || null,
-      customer_email: body.customer_email || existing?.customer_email || user.email || null,
-      customer_phone: pick("customer_phone", existing?.customer_phone ?? null),
-      customer_nif: pick("customer_nif", existing?.customer_nif ?? null),
-      campus: pick("campus", existing?.campus ?? null),
-      notes: pick("notes", existing?.notes ?? null),
-      discount_code:
+    const sessionData = buildCheckoutSession({
+      orderNumber,
+      channel: "web",
+      totalAmount: finalTotal,
+      items: existing?.items ?? itemsInput,
+      paymentMethod: paymentMethod ?? existing?.payment_method ?? null,
+      userIstid: sessionUserIstid,
+      customerName: body.customer_name || existing?.customer_name || user.name || null,
+      customerEmail: body.customer_email || existing?.customer_email || user.email || null,
+      customerPhone: pick("customer_phone", existing?.customer_phone),
+      customerNif: pick("customer_nif", existing?.customer_nif),
+      campus: pick("campus", existing?.campus),
+      notes: pick("notes", existing?.notes),
+      discountCode:
         body.discount_code !== undefined ? discountCode || null : (existing?.discount_code ?? null),
-      created_at: existing?.created_at ?? new Date(now).toISOString(),
-      expires_at: expiresAt,
-    };
+      ttlSeconds: ttl,
+      createdAt: existing?.created_at,
+      expiresAt,
+    });
 
     await saveCheckoutSession(sessionData, ttl);
 

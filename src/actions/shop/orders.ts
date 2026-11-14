@@ -32,7 +32,7 @@ import {
   getStatusLabel,
   isTicketOrder,
 } from "@/utils/shop/orderStatusUtils";
-import { computeReservationExpiryMs, finalizePaidOrders } from "@/utils/shop/orderFinalization";
+import { computeReservationExpiryMs, finalizePaidOrders } from "@/lib/shop/orders";
 import { getDictionary } from "@/i18n/dictionaries";
 
 export async function getAllOrdersAction(): Promise<Order[]> {

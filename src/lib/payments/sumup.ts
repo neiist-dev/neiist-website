@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import SumUp from "@sumup/sdk";
-import type { ApplePayPaymentToken, SumUpCheckout } from "@/types/shop/sumup";
-import { getCheckoutSession } from "@/lib/redis/sessions";
+import type {
+  ApplePayPaymentToken,
+  SumUpCheckout,
+  VerifyAndSettleSumUpOptions,
+  VerifyAndSettleSumUpResult,
+} from "@/types/shop/sumup";
 import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
-import { finalizePaidOrder, promoteRedisCheckoutSession } from "@/utils/shop/orderFinalization";
+import { finalizePaidOrder } from "@/lib/shop/orders";
+import { getCheckoutSession } from "@/lib/redis/sessions";
+import { isSettledOrderStatus } from "@/utils/shop/orderStatusUtils";
 
 export class SumUpAuthError extends Error {
   constructor(message = "SumUp API key is invalid or expired") {
@@ -136,26 +142,6 @@ export async function getReaderTransactionStatus(clientTransactionId: string) {
   );
 }
 
-export interface VerifyAndSettleSumUpOptions {
-  orderNumber: string;
-  checkoutId: string;
-  applePayToken?: ApplePayPaymentToken;
-  checkedBy?: string;
-  userIstid?: string | null;
-}
-
-export type VerifyAndSettleSumUpResult =
-  | {
-      success: true;
-      status: "PAID";
-      reference: string;
-      alreadyProcessed: boolean;
-      orderNumber: string;
-    }
-  | { success: true; status: string; pending: true }
-  | { success: false; status: "FAILED" | "EXPIRED"; transactionCode?: string }
-  | { success: false; error: string; statusCode: number };
-
 type SumUpCheckOutcome =
   | { kind: "paid"; transactionCode?: string }
   | { kind: "pending"; status: string }
@@ -252,63 +238,15 @@ export async function verifyAndSettleSumUpCheckout({
   userIstid,
 }: VerifyAndSettleSumUpOptions): Promise<VerifyAndSettleSumUpResult> {
   const session = await getCheckoutSession(orderNumber);
+  const order = session ? null : await getOrderByNumber(orderNumber);
+  const target = session ?? order;
 
-  if (session) {
-    if (session.user_istid && userIstid && session.user_istid !== userIstid)
-      return { success: false, error: "Not order owner", statusCode: 403 };
+  if (!target) return { success: false, error: "Order not found", statusCode: 404 };
 
-    const outcome = await authorizeAndCheckSumUpCheckout({
-      checkoutId,
-      expectedAmount: Number(session.total_amount),
-      expectedReference: session.reference,
-      applePayToken,
-    });
-
-    if (outcome.kind === "error")
-      return {
-        success: false,
-        error: outcome.error,
-        statusCode: outcome.statusCode,
-      };
-
-    if (outcome.kind === "failed")
-      return {
-        success: false,
-        status: outcome.status,
-        transactionCode: outcome.transactionCode,
-      };
-
-    if (outcome.kind === "pending") return { success: true, status: outcome.status, pending: true };
-
-    const reference = String(outcome.transactionCode || checkoutId).trim();
-    const createdOrder = await promoteRedisCheckoutSession(
-      session,
-      reference,
-      applePayToken ? "apple-pay" : undefined
-    );
-    if (!createdOrder)
-      return {
-        success: false,
-        error: "Failed to promote order to database",
-        statusCode: 500,
-      };
-
-    return {
-      success: true,
-      status: "PAID",
-      reference,
-      alreadyProcessed: false,
-      orderNumber: createdOrder.order_number,
-    };
-  }
-
-  const order = await getOrderByNumber(orderNumber);
-  if (!order) return { success: false, error: "Order not found", statusCode: 404 };
-
-  if (order.user_istid && userIstid && order.user_istid !== userIstid)
+  if (target.user_istid && userIstid && target.user_istid !== userIstid)
     return { success: false, error: "Not order owner", statusCode: 403 };
 
-  if (["paid", "ready", "delivered"].includes(order.status))
+  if (order && isSettledOrderStatus(order.status))
     return {
       success: true,
       status: "PAID",
@@ -319,8 +257,8 @@ export async function verifyAndSettleSumUpCheckout({
 
   const outcome = await authorizeAndCheckSumUpCheckout({
     checkoutId,
-    expectedAmount: Number(order.total_amount),
-    expectedReference: order.payment_reference,
+    expectedAmount: Number(target.total_amount),
+    expectedReference: session ? session.reference : order!.payment_reference,
     applePayToken,
   });
 
@@ -342,10 +280,10 @@ export async function verifyAndSettleSumUpCheckout({
 
   const reference = String(outcome.transactionCode || checkoutId).trim();
   const result = await finalizePaidOrder({
-    orderNumber: order.order_number,
+    orderNumber: target.order_number,
     paymentReference: reference,
     paymentCheckedBy: checkedBy,
-    paymentMethod: applePayToken ? "apple-pay" : (order.payment_method ?? "sumup"),
+    paymentMethod: applePayToken ? "apple-pay" : (target.payment_method ?? "sumup"),
   });
 
   if (!result.success)
@@ -360,6 +298,6 @@ export async function verifyAndSettleSumUpCheckout({
     status: "PAID",
     reference,
     alreadyProcessed: result.alreadyProcessed ?? false,
-    orderNumber: order.order_number,
+    orderNumber: target.order_number,
   };
 }

@@ -257,6 +257,12 @@ export default function PosDesk({
           stationName={session.selectedStation?.name}
           cartItems={cart}
           customerPhone={customerPhone || customer?.phone || undefined}
+          customerName={customer?.name || undefined}
+          customerEmail={customer?.email || undefined}
+          customerNif={customerNif || undefined}
+          campus={selectedCampus || undefined}
+          notes={orderNotes || undefined}
+          shiftId={session.activeShift?.id}
           ordersBasePath={basePath}
           canOverride={canOverride}
           onConfirm={handleConfirmOrderPayment}

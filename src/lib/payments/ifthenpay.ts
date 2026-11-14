@@ -1,17 +1,39 @@
 import crypto from "crypto";
 import {
   MBWAY_STATUS,
+  type HandleMbWayStatusParams,
+  type HandleMbWayStatusResult,
   type MbWayPaymentRequest,
   type MbWayPaymentResponse,
   type MbWayStatusResponse,
 } from "@/types/shop/ifthenpay";
+import { MBWAY_REQ_PREFIX, type MbWayCachedRequest } from "@/types/redis";
 import { getRedisClient } from "@/lib/redis/client";
 import { paymentBroadcaster } from "@/lib/payments/broadcaster";
-import { getCheckoutSession } from "@/lib/redis/sessions";
-import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
-import { finalizePaidOrders, promoteRedisCheckoutSession } from "@/utils/shop/orderFinalization";
+import { finalizePaidOrders } from "@/lib/shop/orders";
 
 const IFTHENPAY_API_BASE = "https://api.ifthenpay.com/spg/payment";
+
+export async function getMbWayCachedRequest(requestId: string): Promise<MbWayCachedRequest | null> {
+  try {
+    const raw = await getRedisClient().get(`${MBWAY_REQ_PREFIX}${requestId}`);
+    return raw ? (JSON.parse(raw) as MbWayCachedRequest) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveMbWayCachedRequest(
+  data: MbWayCachedRequest,
+  ttlSeconds = 600
+): Promise<void> {
+  await getRedisClient().set(
+    `${MBWAY_REQ_PREFIX}${data.requestId}`,
+    JSON.stringify(data),
+    "EX",
+    ttlSeconds
+  );
+}
 
 export function getMbWayKey(): string {
   const key = process.env.IFTHENPAY_MBWAY_KEY;
@@ -133,21 +155,6 @@ export function verifyMbWayNotificationSignature(
   }
 }
 
-export interface HandleMbWayStatusParams {
-  requestId: string;
-  statusCode: string;
-  orderNumber?: string | null;
-  orderNumbers?: string[] | null;
-  shiftId?: string | null;
-  message?: string;
-  callerLabel?: string;
-}
-
-export interface HandleMbWayStatusResult {
-  status: "paid" | "declined" | "expired" | "failed" | "pending";
-  message: string;
-}
-
 /**
  * Centrally handles MB WAY status transitions across Webhook and SSE Status polling.
  * Promotes Redis sessions, settles PostgreSQL orders, sets Redis cache, and emits broadcast events.
@@ -156,26 +163,11 @@ export async function handleMbWayStatusUpdate(
   params: HandleMbWayStatusParams
 ): Promise<HandleMbWayStatusResult> {
   const { requestId, statusCode, callerLabel } = params;
-  const redis = getRedisClient();
+  const existingCached = await getMbWayCachedRequest(requestId);
 
-  let existingCached: Record<string, unknown> = {};
-  try {
-    const rawCached = await redis.get(`mbway:req:${requestId}`);
-    if (rawCached) {
-      existingCached = JSON.parse(rawCached) as Record<string, unknown>;
-    }
-  } catch {
-    // ignore cache parse errors
-  }
-
-  const orderNumber =
-    params.orderNumber ??
-    (typeof existingCached.orderNumber === "string" ? existingCached.orderNumber : null);
-  const orderNumbers =
-    params.orderNumbers ??
-    (Array.isArray(existingCached.orderNumbers) ? (existingCached.orderNumbers as string[]) : null);
-  const shiftId =
-    params.shiftId ?? (typeof existingCached.shiftId === "string" ? existingCached.shiftId : null);
+  const orderNumber = existingCached?.orderNumber || params.orderNumber || null;
+  const orderNumbers = params.orderNumbers ?? existingCached?.orderNumbers ?? null;
+  const shiftId = params.shiftId ?? existingCached?.shiftId ?? null;
 
   const normalizedOrderNumbers =
     Array.isArray(orderNumbers) && orderNumbers.length > 0
@@ -192,20 +184,15 @@ export async function handleMbWayStatusUpdate(
     status: "paid" | "declined" | "expired" | "failed",
     message: string
   ): Promise<HandleMbWayStatusResult> => {
-    await redis.set(
-      `mbway:req:${requestId}`,
-      JSON.stringify({
-        ...existingCached,
-        requestId,
-        status,
-        orderNumber: primaryOrderNumber,
-        orderNumbers: normalizedOrderNumbers.length > 0 ? normalizedOrderNumbers : undefined,
-        shiftId,
-        message,
-      }),
-      "EX",
-      600
-    );
+    await saveMbWayCachedRequest({
+      ...(existingCached ?? {}),
+      requestId,
+      status,
+      orderNumber: primaryOrderNumber,
+      orderNumbers: normalizedOrderNumbers.length > 0 ? normalizedOrderNumbers : undefined,
+      shiftId,
+      message,
+    });
     const payload = {
       status,
       orderNumber: primaryOrderNumber || undefined,
@@ -216,41 +203,20 @@ export async function handleMbWayStatusUpdate(
     for (const num of normalizedOrderNumbers) {
       paymentBroadcaster.emitPaymentUpdate(num, { ...payload, orderNumber: num });
     }
-    return { status, message };
+    return { status, message, orderNumber: primaryOrderNumber };
   };
 
   if (statusCode === MBWAY_STATUS.PAID) {
     const successMsg = params.message || "Pagamento confirmado!";
 
-    if (primaryOrderNumber) {
-      const lockKey = `mbway:lock:${primaryOrderNumber}`;
-      const lockAcquired = await redis.set(lockKey, "1", "EX", 60, "NX");
-
-      if (lockAcquired) {
-        try {
-          const session = await getCheckoutSession(primaryOrderNumber);
-          if (session) {
-            await promoteRedisCheckoutSession(session, requestId, "mbway");
-          } else if (normalizedOrderNumbers.length > 0) {
-            const existingOrders = (
-              await Promise.all(normalizedOrderNumbers.map((num) => getOrderByNumber(num)))
-            ).filter((ord): ord is NonNullable<typeof ord> => ord !== null);
-
-            if (existingOrders.length > 0) {
-              await finalizePaidOrders({
-                orderNumbers: existingOrders.map((o) => o.order_number),
-                paymentReference: requestId,
-                paymentCheckedBy: callerLabel || "ifthenpay-mbway",
-                paymentMethod: "mbway",
-                shiftId: shiftId ?? null,
-              });
-            }
-          }
-        } catch (err) {
-          await redis.del(lockKey).catch(() => {});
-          throw err;
-        }
-      }
+    if (normalizedOrderNumbers.length > 0) {
+      await finalizePaidOrders({
+        orderNumbers: normalizedOrderNumbers,
+        paymentReference: requestId,
+        paymentCheckedBy: callerLabel || "ifthenpay-mbway",
+        paymentMethod: "mbway",
+        shiftId: shiftId ?? null,
+      });
     }
 
     return cacheAndBroadcast("paid", successMsg);

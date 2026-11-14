@@ -45,3 +45,19 @@ export const MBWAY_STATUS = {
   EXPIRED: "101",
   FAILED: "122",
 } as const;
+
+export interface HandleMbWayStatusParams {
+  requestId: string;
+  statusCode: string;
+  orderNumber?: string | null;
+  orderNumbers?: string[] | null;
+  shiftId?: string | null;
+  message?: string;
+  callerLabel?: string;
+}
+
+export interface HandleMbWayStatusResult {
+  status: "paid" | "declined" | "expired" | "failed" | "pending";
+  message: string;
+  orderNumber?: string | null;
+}

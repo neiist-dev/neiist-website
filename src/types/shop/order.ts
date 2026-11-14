@@ -150,6 +150,36 @@ export interface dbOrder {
   status: string;
 }
 
+export interface BuildOrderPaymentParams {
+  method?: PaymentMethod | null;
+  status: "pending" | "successful";
+  shiftId?: string | null;
+  receivedBy?: string | null;
+  reference?: string | null;
+  amount?: number;
+}
+
+export interface RunPaidOrderSideEffectsOptions {
+  paymentReference?: string | null;
+  cartId?: string | null;
+}
+
+export interface FinalizePaidOrdersOptions {
+  orderNumbers: string[];
+  paymentReference?: string | null;
+  paymentCheckedBy: string;
+  paymentMethod: PaymentMethod;
+  shiftId?: string | null;
+}
+
+export type FinalizePaidOrdersResult =
+  | { success: true; orders: Order[]; alreadyProcessed?: boolean }
+  | { success: false; error: string; statusCode: number };
+
+export type FinalizePaidOrderResult =
+  | { success: true; alreadyProcessed?: boolean }
+  | { success: false; error: string; statusCode: number };
+
 export function mapdbOrderItemToOrderItem(
   item: dbOrderItem,
   fallbackOrderNumber?: string

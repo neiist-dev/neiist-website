@@ -52,6 +52,13 @@ export interface PosPaymentModalProps {
   discountCode?: string;
   userIstid?: string;
   customerPhone?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerNif?: string;
+  campus?: string;
+  notes?: string;
+  shiftId?: string;
+  cartId?: string;
   stationName?: string;
   cartItems?: CartItem[];
   ordersBasePath?: string;
@@ -74,7 +81,13 @@ export default function PosPaymentModal({
   discountCode,
   userIstid,
   customerPhone,
-  stationName = "Posto POS",
+  customerName,
+  customerEmail,
+  customerNif,
+  campus,
+  notes,
+  shiftId,
+  cartId,
   cartItems = [],
   ordersBasePath,
   canOverride = false,
@@ -248,6 +261,42 @@ export default function PosPaymentModal({
     closeMbWaySse();
   };
 
+  const hasLoadedOrder = Boolean(orderNumber || (orderNumbers && orderNumbers.length > 0));
+
+  const posCheckoutPayload = useMemo(
+    () => ({
+      order_source: mode === "fast" ? ("fast-pos" as const) : ("pos" as const),
+      items: !hasLoadedOrder && cartItems.length > 0 ? toCartOrderItems(cartItems) : undefined,
+      user_istid: userIstid || undefined,
+      discount_code: discountCode || undefined,
+      shift_id: shiftId || undefined,
+      customer_name: customerName || undefined,
+      customer_email: customerEmail || undefined,
+      customer_phone: customerPhone || undefined,
+      customer_nif: customerNif || undefined,
+      campus: campus || undefined,
+      notes: notes || undefined,
+      cart_id: cartId || undefined,
+      stock_override: canOverride || undefined,
+    }),
+    [
+      mode,
+      hasLoadedOrder,
+      cartItems,
+      userIstid,
+      discountCode,
+      shiftId,
+      customerName,
+      customerEmail,
+      customerPhone,
+      customerNif,
+      campus,
+      notes,
+      cartId,
+      canOverride,
+    ]
+  );
+
   // Initiate SumUp TPA Checkout via SSE
   const handleInitiateTpa = async () => {
     if (!selectedReaderId) {
@@ -264,11 +313,7 @@ export default function PosPaymentModal({
       const res = await fetch(`/api/shop/sumup/readers/${selectedReaderId}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalAmount,
-          currency: "EUR",
-          description: `POS ${activeOrderNumber || "Balcao"} - ${stationName}`,
-        }),
+        body: JSON.stringify(hasLoadedOrder ? { orderId: orderNumber } : posCheckoutPayload),
       });
 
       if (!res.ok) {
@@ -278,9 +323,14 @@ export default function PosPaymentModal({
 
       const checkoutData = await res.json();
       const clientTxId = checkoutData.client_transaction_id;
+      const resolvedOrderNumber =
+        typeof checkoutData.order_number === "string" && !hasLoadedOrder
+          ? checkoutData.order_number
+          : activeOrderNumber;
+      if (resolvedOrderNumber) setActiveOrderNumber(resolvedOrderNumber);
       setTpaStatusText(dict.tpa_present_card);
 
-      const sseUrl = `/api/shop/sumup/readers/${selectedReaderId}/checkout/status?client_transaction_id=${encodeURIComponent(clientTxId)}`;
+      const sseUrl = `/api/shop/sumup/readers/${selectedReaderId}/checkout/status?client_transaction_id=${encodeURIComponent(clientTxId)}${resolvedOrderNumber ? `&orderNumber=${encodeURIComponent(resolvedOrderNumber)}` : ""}`;
       const es = new EventSource(sseUrl);
       sumUpEventSourceRef.current = es;
 
@@ -291,9 +341,11 @@ export default function PosPaymentModal({
         Alert.success(dict.tpa_paid_toast);
 
         let reference = clientTxId;
+        let eventOrderNumber = resolvedOrderNumber;
         try {
           const parsed = JSON.parse(event.data);
           reference = parsed.id || clientTxId;
+          if (typeof parsed.orderNumber === "string") eventOrderNumber = parsed.orderNumber;
         } catch {
           // ignore
         }
@@ -306,7 +358,7 @@ export default function PosPaymentModal({
             method: "sumup-tpa",
             paymentStatus: "successful",
             reference,
-            orderNumber: activeOrderNumber || undefined,
+            orderNumber: eventOrderNumber || undefined,
           });
           setTpaSettlement(null);
           handlePaymentCompleted(result);
@@ -366,17 +418,24 @@ export default function PosPaymentModal({
       return;
     }
 
-    const hasExistingOrder = Boolean(orderNumber || (orderNumbers && orderNumbers.length > 0));
     setIsSubmitting(true);
     try {
       const res = await startMbWayPayment({
-        orderNumber: hasExistingOrder ? orderNumber : undefined,
+        orderNumber: hasLoadedOrder ? orderNumber : undefined,
         orderNumbers: orderNumbers && orderNumbers.length > 0 ? orderNumbers : undefined,
+        phone: targetPhone,
+        orderSource: posCheckoutPayload.order_source,
+        items: posCheckoutPayload.items,
         discountCode,
         userIstid,
-        phone: targetPhone,
-        orderSource: mode === "fast" ? "fast-pos" : "pos",
-        items: !hasExistingOrder ? toCartOrderItems(cartItems) : undefined,
+        shiftId,
+        customerName,
+        customerEmail,
+        customerNif,
+        campus,
+        notes,
+        cartId,
+        stockOverride: canOverride,
       });
 
       if (res?.orderNumber) {
@@ -448,8 +507,6 @@ export default function PosPaymentModal({
   const receivedNum = Number(cashReceived.replace(",", ".")) || 0;
   const changeNum = Math.max(0, receivedNum - totalAmount);
   const changeDenominations = useMemo(() => calculateChangeDenominations(changeNum), [changeNum]);
-
-  const hasLoadedOrder = Boolean(orderNumber || (orderNumbers && orderNumbers.length > 0));
 
   const paymentOptions = useMemo(() => {
     type PosMethod = (typeof PAYMENT_METHODS_BY_CHANNEL.pos)[number];

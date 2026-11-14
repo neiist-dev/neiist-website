@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  verifyMbWayNotificationSignature,
+  getMbWayCachedRequest,
   handleMbWayStatusUpdate,
+  verifyMbWayNotificationSignature,
 } from "@/lib/payments/ifthenpay";
-import { getRedisClient } from "@/lib/redis/client";
 import type { MbWayNotificationPayload } from "@/types/shop/ifthenpay";
 
 export async function POST(req: NextRequest) {
@@ -14,10 +14,9 @@ export async function POST(req: NextRequest) {
     const { RequestId, Status, Message } = payload;
     if (!RequestId) return NextResponse.json({ error: "Missing RequestId" }, { status: 400 });
 
-    const rawCache = await getRedisClient().get(`mbway:req:${RequestId}`);
-    const cached = rawCache ? JSON.parse(rawCache) : null;
+    const cached = await getMbWayCachedRequest(RequestId);
     const orderNumber = cached?.orderNumber || null;
-    const totalAmount = cached?.totalAmount || "0.00";
+    const totalAmount = cached?.totalAmount ?? "0.00";
 
     const signature = req.headers.get("X-Ifthenpay-Signature");
     if (signature && orderNumber) {
@@ -33,9 +32,6 @@ export async function POST(req: NextRequest) {
     await handleMbWayStatusUpdate({
       requestId: RequestId,
       statusCode: Status,
-      orderNumber,
-      orderNumbers: Array.isArray(cached?.orderNumbers) ? cached.orderNumbers : null,
-      shiftId: cached?.shiftId || null,
       message: Message,
       callerLabel: "ifthenpay-mbway",
     });

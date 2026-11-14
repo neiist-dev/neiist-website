@@ -1,13 +1,5 @@
 import { EventEmitter } from "events";
-
-export interface PaymentEventPayload {
-  status: string;
-  orderNumber?: string;
-  requestId?: string;
-  clientTransactionId?: string;
-  message?: string;
-  raw?: unknown;
-}
+import type { PaymentEventPayload } from "@/types/shop/payment";
 
 const emitter = new EventEmitter();
 

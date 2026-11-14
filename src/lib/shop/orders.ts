@@ -1,37 +1,41 @@
-import { sendEmail } from "@/lib/email";
+import { getDictionary } from "@/i18n/dictionaries";
+import { getActivityByIdNoCache, signUpToEvent } from "@/lib/db/repositories/event.repository";
+import {
+  createOrder,
+  getOrderByNumber,
+  getProductNoCache,
+  settleOrdersBatch,
+} from "@/lib/db/repositories/shop.repository";
+import { getUserNoCache } from "@/lib/db/repositories/user.repository";
+import { sendEmail, sendEventTicketEmail } from "@/lib/email";
 import {
   getPaidOrderEmailTemplate,
   getPendingOrderEmailTemplate,
 } from "@/lib/email/templates/shop";
 import {
-  getOrderByNumber,
-  settleOrdersBatch,
-  getProduct,
-  getProductNoCache,
-  validateDiscountCode,
-} from "@/lib/db/repositories/shop.repository";
-import { EventHookJob, CheckoutSessionData, StockRequestItem } from "@/types/redis";
+  discardCheckoutSession,
+  getCheckoutSession,
+  setCartIdOrderNumber,
+} from "@/lib/redis/sessions";
+import { getRedisClient } from "@/lib/redis/client";
 import { enqueueStreamJob, scheduleDelayedJob } from "@/lib/redis/queue";
+import type { CheckoutSessionData, EventHookJob } from "@/types/redis";
+import type {
+  BuildOrderPaymentParams,
+  CreateOrderPaymentInput,
+  FinalizePaidOrderResult,
+  FinalizePaidOrdersOptions,
+  FinalizePaidOrdersResult,
+  Order,
+  RunPaidOrderSideEffectsOptions,
+} from "@/types/shop/order";
+import type { PaymentMethod } from "@/types/shop/payment";
 import {
   getStatusLabel,
   isCashPayment,
   isSettledOrderStatus,
   isTicketOrder,
 } from "@/utils/shop/orderStatusUtils";
-import { getDictionary } from "@/i18n/dictionaries";
-import { getActivityByIdNoCache, signUpToEvent } from "@/lib/db/repositories/event.repository";
-import { PaymentMethod } from "@/types/shop/payment";
-import type { Order, CreateOrderPaymentInput } from "@/types/shop/order";
-import type { Product, ProductChannel } from "@/types/shop/product";
-import { lineTotalMoney, addMoney, subtractMoney } from "@/utils/shop/moneyUtils";
-
-export interface BuildOrderPaymentParams {
-  method?: PaymentMethod | null;
-  status: "pending" | "successful";
-  shiftId?: string | null;
-  receivedBy?: string | null;
-  reference?: string | null;
-}
 
 export function buildOrderPaymentInput(
   params: BuildOrderPaymentParams
@@ -44,15 +48,41 @@ export function buildOrderPaymentInput(
     shift_id: params.shiftId ?? null,
     received_by: params.status === "successful" ? (params.receivedBy ?? null) : null,
     reference: isCashPayment(params.method) ? null : (params.reference ?? null),
+    ...(params.amount !== undefined ? { amount: params.amount } : {}),
   };
+}
+
+/**
+ * Post payment side effects (cart idempotency mapping, event ticket hooks, paid emails).
+ */
+export async function runPaidOrderSideEffects(
+  order: Order,
+  options: RunPaidOrderSideEffectsOptions = {}
+): Promise<void> {
+  const cleanCartId = typeof options.cartId === "string" ? options.cartId.trim() : "";
+  if (cleanCartId) {
+    await setCartIdOrderNumber(cleanCartId, order.order_number);
+  }
+
+  await enqueueEventTicketHooks(order);
+  sendOrderPaidEmails(order, options.paymentReference ?? undefined);
+}
+
+/**
+ * Post reservation side effects (expiration scheduling and pending email dispatch).
+ */
+export async function runPendingOrderSideEffects(
+  order: Order,
+  paymentMethod?: PaymentMethod
+): Promise<void> {
+  await schedulePendingOrderExpiry(order);
+  await sendPendingOrderEmail(order, paymentMethod);
 }
 
 async function createOrderFromCheckoutSession(
   session: CheckoutSessionData,
   payment?: CreateOrderPaymentInput
 ): Promise<Order | null> {
-  const { createOrder } = await import("@/lib/db/repositories/shop.repository");
-
   return createOrder({
     order_number: session.order_number,
     order_source: session.order_source || "web",
@@ -64,6 +94,8 @@ async function createOrderFromCheckoutSession(
     campus: session.campus || null,
     notes: session.notes || null,
     discount_code: session.discount_code || undefined,
+    stock_override: session.stock_override,
+    created_by: session.created_by,
     items: session.items,
     payment,
   });
@@ -74,7 +106,6 @@ async function promoteCheckoutSession(
   payment?: CreateOrderPaymentInput,
   onCreated?: (_order: Order) => Promise<void>
 ): Promise<Order | null> {
-  const { discardCheckoutSession } = await import("@/lib/redis/sessions");
   const { revalidatePath } = await import("next/cache");
 
   const createdOrder = await createOrderFromCheckoutSession(session, payment);
@@ -89,7 +120,7 @@ async function promoteCheckoutSession(
   return createdOrder;
 }
 
-export async function promoteRedisCheckoutSession(
+async function promoteRedisCheckoutSession(
   session: CheckoutSessionData,
   reference: string,
   paymentMethodOverride?: PaymentMethod
@@ -99,39 +130,38 @@ export async function promoteRedisCheckoutSession(
 
   return promoteCheckoutSession(
     session,
-    {
+    buildOrderPaymentInput({
       method: effectiveMethod,
       status: "successful",
       reference,
       amount: session.total_amount,
-      shift_id: session.shift_id ?? undefined,
-    },
+      shiftId: session.shift_id ?? null,
+    }),
     async (createdOrder) => {
-      await enqueueEventTicketHooks(createdOrder);
-      sendOrderPaidEmails(createdOrder, reference);
+      await runPaidOrderSideEffects(createdOrder, {
+        paymentReference: reference,
+        cartId: session.cart_id,
+      });
     }
   );
 }
 
 /**
  * Converts an in-flight Redis checkout session into a pending reservation
- * without releasing its stock hold until PostgreSQL has the order
+ * without releasing its stock hold until PostgreSQL has the order.
  */
 export async function promoteRedisCheckoutSessionToReservation(
   session: CheckoutSessionData
 ): Promise<Order | null> {
-  return promoteCheckoutSession(session, undefined, async (createdOrder) => {
-    await schedulePendingOrderExpiry(createdOrder);
-    await sendPendingOrderEmail(createdOrder);
-  });
+  return promoteCheckoutSession(session, undefined, (createdOrder) =>
+    runPendingOrderSideEffects(createdOrder)
+  );
 }
 
 export async function executeEventTicketHook(job: EventHookJob): Promise<void> {
   // Registration failure propagates (job retries), only the email is best-effort.
   const ticket = await signUpToEvent(job.event_id, job.user_istid, job.order_number);
   try {
-    const { getUserNoCache } = await import("@/lib/db/repositories/user.repository");
-
     const [activity, user] = await Promise.all([
       getActivityByIdNoCache(job.event_id),
       getUserNoCache(job.user_istid),
@@ -145,7 +175,6 @@ export async function executeEventTicketHook(job: EventHookJob): Promise<void> {
     const start = activity.start || new Date();
     const end = activity.end || null;
 
-    const { sendEventTicketEmail } = await import("@/lib/email");
     await sendEventTicketEmail({
       eventId: activity.id,
       eventTitle: activity.title,
@@ -285,22 +314,6 @@ export function sendOrderPaidEmails(order: Order, paymentReference?: string): vo
   }).catch((err) => console.warn("Confirmation email couldn't be sent:", err));
 }
 
-export interface FinalizePaidOrdersOptions {
-  orderNumbers: string[];
-  paymentReference?: string | null;
-  paymentCheckedBy: string;
-  paymentMethod: PaymentMethod;
-  shiftId?: string | null;
-}
-
-export type FinalizePaidOrdersResult =
-  | { success: true; orders: Order[]; alreadyProcessed?: boolean }
-  | { success: false; error: string; statusCode: number };
-
-export type FinalizePaidOrderResult =
-  | { success: true; alreadyProcessed?: boolean }
-  | { success: false; error: string; statusCode: number };
-
 export async function finalizePaidOrders({
   orderNumbers,
   paymentReference,
@@ -332,55 +345,83 @@ export async function finalizePaidOrders({
     };
   }
 
-  // Inspect existing orders to detect already-settled items
-  const existingOrders: Order[] = [];
-  for (const num of orderNumbers) {
-    const ord = await getOrderByNumber(num);
-    if (!ord) {
+  const redis = getRedisClient();
+  const lockKey = `order:settle:lock:${orderNumbers[0]}`;
+  const lockAcquired = await redis.set(lockKey, "1", "EX", 60, "NX");
+  if (!lockAcquired) {
+    const settled = (await Promise.all(orderNumbers.map((num) => getOrderByNumber(num)))).filter(
+      (ord): ord is Order => ord !== null
+    );
+    return { success: true, orders: settled, alreadyProcessed: true };
+  }
+
+  try {
+    if (orderNumbers.length === 1 && !(await getOrderByNumber(orderNumbers[0]))) {
+      const session = await getCheckoutSession(orderNumbers[0]);
+      if (session) {
+        const promoted = await promoteRedisCheckoutSession(
+          session,
+          reference ?? "",
+          effectiveMethod
+        );
+        if (!promoted) {
+          return { success: false, error: "Failed to promote order", statusCode: 500 };
+        }
+        return { success: true, orders: [promoted], alreadyProcessed: false };
+      }
+    }
+
+    // Inspect existing orders to detect already-settled items
+    const existingOrders: Order[] = [];
+    for (const num of orderNumbers) {
+      const ord = await getOrderByNumber(num);
+      if (!ord) {
+        return {
+          success: false,
+          error: `Order ${num} not found`,
+          statusCode: 404,
+        };
+      }
+      existingOrders.push(ord);
+    }
+
+    const alreadySettled = existingOrders.filter((order) => isSettledOrderStatus(order.status));
+    const unsettled = existingOrders.filter((order) => !isSettledOrderStatus(order.status));
+
+    if (unsettled.length === 0)
+      return {
+        success: true,
+        orders: alreadySettled,
+        alreadyProcessed: true,
+      };
+
+    const unsettledNumbers = unsettled.map((order) => order.order_number);
+    const updatedOrders = await settleOrdersBatch(unsettledNumbers, effectiveMethod, {
+      shift_id: resolvedShiftId,
+      reference: isCashPayment(effectiveMethod) ? null : reference,
+      by: paymentCheckedBy,
+    });
+
+    if (!updatedOrders || updatedOrders.length === 0)
       return {
         success: false,
-        error: `Order ${num} not found`,
-        statusCode: 404,
+        error: "Failed to settle orders",
+        statusCode: 500,
       };
+
+    // Trigger post-settlement side effects for each settled order
+    for (const ord of updatedOrders) {
+      await runPaidOrderSideEffects(ord, { paymentReference: reference });
     }
-    existingOrders.push(ord);
-  }
 
-  const alreadySettled = existingOrders.filter((order) => isSettledOrderStatus(order.status));
-  const unsettled = existingOrders.filter((order) => !isSettledOrderStatus(order.status));
-
-  if (unsettled.length === 0)
     return {
       success: true,
-      orders: alreadySettled,
-      alreadyProcessed: true,
+      orders: [...alreadySettled, ...updatedOrders],
+      alreadyProcessed: alreadySettled.length > 0 && unsettled.length === 0,
     };
-
-  const unsettledNumbers = unsettled.map((order) => order.order_number);
-  const updatedOrders = await settleOrdersBatch(unsettledNumbers, effectiveMethod, {
-    shift_id: resolvedShiftId,
-    reference: isCashPayment(effectiveMethod) ? null : reference,
-    by: paymentCheckedBy,
-  });
-
-  if (!updatedOrders || updatedOrders.length === 0)
-    return {
-      success: false,
-      error: "Failed to settle orders",
-      statusCode: 500,
-    };
-
-  // Trigger post-settlement side effects for each settled order
-  for (const ord of updatedOrders) {
-    await enqueueEventTicketHooks(ord);
-    sendOrderPaidEmails(ord, reference ?? undefined);
+  } finally {
+    await redis.del(lockKey).catch(() => {});
   }
-
-  return {
-    success: true,
-    orders: [...alreadySettled, ...updatedOrders],
-    alreadyProcessed: alreadySettled.length > 0 && unsettled.length === 0,
-  };
 }
 
 export async function finalizePaidOrder({
@@ -410,108 +451,4 @@ export async function finalizePaidOrder({
   if (!res.success) return { success: false, error: res.error, statusCode: res.statusCode };
 
   return { success: true, alreadyProcessed: res.alreadyProcessed };
-}
-
-export async function validateAndPriceCartItems(
-  itemsInput: StockRequestItem[],
-  options: {
-    channel?: ProductChannel;
-    userIstid?: string | null;
-    discountCode?: string | null;
-    enforceChannel?: boolean;
-    enforceTicketRules?: boolean;
-  } = {}
-): Promise<
-  | { isValid: true; finalAmount: number; productsMap: Map<number, Product> }
-  | { isValid: false; error: string }
-> {
-  const {
-    channel = "web",
-    userIstid = null,
-    discountCode = null,
-    enforceChannel = true,
-    enforceTicketRules = true,
-  } = options;
-
-  if (!itemsInput || itemsInput.length === 0) {
-    return { isValid: false, error: "O carrinho está vazio." };
-  }
-
-  const productIds = new Set<number>(itemsInput.map((it) => it.product_id));
-  const fetchedProducts = await Promise.all([...productIds].map((id) => getProduct(id)));
-
-  if (fetchedProducts.some((p) => p == null)) {
-    return { isValid: false, error: "Produto inválido no pedido." };
-  }
-
-  const productsMap = new Map<number, Product>();
-  for (const p of fetchedProducts) {
-    if (!p) continue;
-    if (enforceChannel && p.channels && !p.channels.includes(channel)) {
-      return {
-        isValid: false,
-        error: `O produto "${p.name}" não está disponível para encomenda no canal ${channel}.`,
-      };
-    }
-    productsMap.set(p.id, p);
-  }
-
-  if (enforceTicketRules) {
-    const hasTickets = fetchedProducts.some((p) => p?.product_type === "event_ticket");
-    const hasMerchandise = fetchedProducts.some((p) => p?.product_type === "merchandise");
-    if (hasTickets && hasMerchandise) {
-      return {
-        isValid: false,
-        error: "Bilhetes de eventos não podem ser encomendados juntamente com outros produtos.",
-      };
-    }
-
-    for (const it of itemsInput) {
-      const prod = productsMap.get(it.product_id);
-      if (prod?.product_type === "event_ticket" && (it.quantity ?? 1) > 1) {
-        return {
-          isValid: false,
-          error: "Apenas é permitido 1 bilhete por utilizador.",
-        };
-      }
-    }
-  }
-
-  let calculatedTotal = 0;
-  for (const it of itemsInput) {
-    const prod = productsMap.get(it.product_id)!;
-    const variant = it.variant_id
-      ? (prod.variants?.find((v) => v.id === it.variant_id) ?? null)
-      : null;
-    const lineTotal = lineTotalMoney(prod.price, variant?.price_modifier ?? 0, it.quantity ?? 1);
-    calculatedTotal = addMoney(calculatedTotal, lineTotal);
-  }
-
-  let discountAmount = 0;
-  const cleanCode = typeof discountCode === "string" ? discountCode.trim() : "";
-  if (cleanCode) {
-    const validation = await validateDiscountCode(
-      cleanCode,
-      userIstid,
-      itemsInput.map((it) => ({
-        product_id: it.product_id,
-        variant_id: it.variant_id ?? null,
-        quantity: it.quantity ?? 1,
-      }))
-    );
-
-    if (!validation?.is_valid) {
-      return {
-        isValid: false,
-        error: validation?.error || "Invalid discount code.",
-      };
-    }
-    discountAmount = Math.min(calculatedTotal, Number(validation.discount_amount) || 0);
-  }
-
-  return {
-    isValid: true,
-    finalAmount: Math.max(0, subtractMoney(calculatedTotal, discountAmount)),
-    productsMap,
-  };
 }

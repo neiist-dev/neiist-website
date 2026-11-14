@@ -236,6 +236,10 @@ export default function LivePos({
         totalAmount={totalAmount}
         stationName={session.selectedStation?.name}
         cartItems={cart}
+        customerNif={customerNif.trim() || undefined}
+        shiftId={session.activeShift?.id}
+        cartId={cartId}
+        canOverride={canOverride}
         onConfirm={handleConfirmPayment}
         dict={dict.payment}
         paymentsDict={paymentsDict}

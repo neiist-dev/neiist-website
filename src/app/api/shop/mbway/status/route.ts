@@ -1,8 +1,12 @@
 import { NextRequest } from "next/server";
-import { checkMbWayStatus, handleMbWayStatusUpdate } from "@/lib/payments/ifthenpay";
-import { paymentBroadcaster, type PaymentEventPayload } from "@/lib/payments/broadcaster";
-import { getRedisClient } from "@/lib/redis/client";
+import {
+  checkMbWayStatus,
+  getMbWayCachedRequest,
+  handleMbWayStatusUpdate,
+} from "@/lib/payments/ifthenpay";
+import { paymentBroadcaster } from "@/lib/payments/broadcaster";
 import { MBWAY_STATUS } from "@/types/shop/ifthenpay";
+import type { PaymentEventPayload } from "@/types/shop/payment";
 
 const TERMINAL_CACHED_STATUSES = new Set(["paid", "declined", "expired", "failed"]);
 const TERMINAL_STATUS_CODES = new Set<string>([
@@ -112,31 +116,17 @@ export async function GET(req: NextRequest) {
       sendEvent("connected", { requestId, orderNumber });
 
       const checkPayment = async (): Promise<boolean> => {
-        // Read shiftId, orderNumbers, and cached status from Redis if present
-        let shiftId: string | null = null;
-        let cachedOrderNumber: string | null = null;
-        let cachedOrderNumbers: string[] | null = null;
-        try {
-          const cached = await getRedisClient().get(`mbway:req:${requestId}`);
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            shiftId = parsed.shiftId || null;
-            cachedOrderNumber = parsed.orderNumber || null;
-            cachedOrderNumbers = Array.isArray(parsed.orderNumbers) ? parsed.orderNumbers : null;
-            if (typeof parsed.status === "string" && TERMINAL_CACHED_STATUSES.has(parsed.status)) {
-              sendEvent(parsed.status, {
-                type: "status",
-                status: parsed.status.toUpperCase(),
-                orderNumber: cachedOrderNumber || orderNumber,
-                requestId,
-                message: parsed.message || "",
-              });
-              safeClose();
-              return true;
-            }
-          }
-        } catch {
-          // ignore cache parse error
+        const cached = await getMbWayCachedRequest(requestId);
+        if (cached?.status && TERMINAL_CACHED_STATUSES.has(cached.status)) {
+          sendEvent(cached.status, {
+            type: "status",
+            status: cached.status.toUpperCase(),
+            orderNumber: cached.orderNumber || orderNumber,
+            requestId,
+            message: cached.message || "",
+          });
+          safeClose();
+          return true;
         }
 
         const statusRes = await checkMbWayStatus(requestId);
@@ -146,16 +136,14 @@ export async function GET(req: NextRequest) {
           const result = await handleMbWayStatusUpdate({
             requestId,
             statusCode,
-            orderNumber: cachedOrderNumber || orderNumber,
-            orderNumbers: cachedOrderNumbers,
-            shiftId,
+            orderNumber,
             message: statusRes.Message,
             callerLabel: "ifthenpay-mbway",
           });
           sendEvent(result.status, {
             type: "status",
             status: result.status.toUpperCase(),
-            orderNumber: cachedOrderNumber || orderNumber,
+            orderNumber: result.orderNumber || orderNumber,
             requestId,
             message: result.message,
           });

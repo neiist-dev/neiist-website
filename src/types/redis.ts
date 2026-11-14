@@ -5,6 +5,7 @@ import type {
   CreateOrderInput,
 } from "@/types/shop/order";
 import type { PaymentMethod } from "@/types/shop/payment";
+import type { ProductChannel } from "@/types/shop/product";
 
 export interface StockHoldItem {
   productId: number;
@@ -55,6 +56,9 @@ export const DEAD_LETTER_KEY = "orders:hooks:dead_letter";
 export const CALENDAR_SYNC_PENDING_KEY = "events:sync:pending";
 export const CALENDAR_SYNC_LOCK_KEY = "events:sync:lock";
 export const CHECKOUT_HOLD_TTL_SECONDS = 15 * 60;
+export const CHECKOUT_SESSION_PREFIX = "checkout:session:";
+export const CHECKOUT_CART_PREFIX = "checkout:cart:";
+export const MBWAY_REQ_PREFIX = "mbway:req:";
 
 export interface CheckoutSessionData extends Omit<
   CreateOrderInput,
@@ -71,4 +75,39 @@ export interface CheckoutSessionData extends Omit<
   cart_id?: string;
   created_at: string;
   expires_at: string;
+}
+
+export interface BuildCheckoutSessionOptions {
+  orderNumber: string;
+  channel: ProductChannel;
+  totalAmount: number;
+  items: Array<StockRequestItem & { deliver_now?: boolean }>;
+  paymentMethod?: PaymentMethod | null;
+  userIstid?: string | null;
+  customerName?: string | null;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
+  customerNif?: string | null;
+  campus?: string | null;
+  notes?: string | null;
+  discountCode?: string | null;
+  shiftId?: string | null;
+  cartId?: string | null;
+  stockOverride?: boolean;
+  createdBy?: string | null;
+  ttlSeconds?: number;
+  createdAt?: string;
+  expiresAt?: string;
+}
+
+export interface MbWayCachedRequest {
+  requestId: string;
+  orderNumber?: string | null;
+  orderNumbers?: string[];
+  shiftId?: string | null;
+  totalAmount?: number | string;
+  phone?: string;
+  status?: string;
+  message?: string;
+  createdAt?: number;
 }

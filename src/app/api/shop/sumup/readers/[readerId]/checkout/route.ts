@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
 import type { SumUpReaderCheckoutResponse, SumUpReaderCheckoutPayload } from "@/types/shop/sumup";
-import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
 import { verifyPermission } from "@/lib/auth";
+import { resolvePaymentTarget } from "@/lib/shop/checkout";
+import { saveCheckoutSession } from "@/lib/redis/sessions";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
 
@@ -59,39 +60,22 @@ export async function POST(
   if (credentialError) return credentialError;
 
   const { readerId } = await params;
-  const body = (await req.json()) as {
-    orderId?: number | string;
-    amount?: number;
-    currency?: string;
-    description?: string;
-  };
+  const body = (await req.json()) as Record<string, unknown>;
 
   if (!readerId) return sumupErrorResponse("readerId is required", 400);
 
-  let amount = 0;
-  let description = "Venda POS";
+  const target = await resolvePaymentTarget(body, auth.user, "sumup-tpa");
+  if ("error" in target) return sumupErrorResponse(target.error, target.statusCode);
+  const { orderNumber, totalAmount, description, redisSession } = target;
 
-  if (body.orderId) {
-    const orderIdentifier = String(body.orderId).trim();
-    const order = await getOrderByNumber(orderIdentifier);
-    if (!order) return sumupErrorResponse("Order not found", 404);
-    amount = Number(order.total_amount ?? 0);
-    description = `Encomenda ${order.order_number}`;
-  } else if (body.amount != null) {
-    amount = Number(body.amount);
-    if (typeof body.description === "string" && body.description.trim()) {
-      description = body.description.trim();
-    }
-  }
-
-  if (!(amount > 0)) return sumupErrorResponse("Invalid order amount", 400);
+  if (!(totalAmount > 0)) return sumupErrorResponse("Invalid order amount", 400);
 
   const payload: SumUpReaderCheckoutPayload = {
     description,
     total_amount: {
       currency: "EUR",
       minor_unit: 2,
-      value: Math.round(amount * 100),
+      value: Math.round(totalAmount * 100),
     },
   };
 
@@ -106,11 +90,17 @@ export async function POST(
 
   const clientTransactionId = data.data?.client_transaction_id ?? null;
 
+  if (redisSession)
+    await saveCheckoutSession(
+      { ...redisSession, reference: clientTransactionId ?? undefined },
+      600
+    );
+
   return NextResponse.json({
     success: true,
     clientTransactionId,
     client_transaction_id: clientTransactionId,
-    order_number: description,
+    order_number: orderNumber,
   });
 }
 
