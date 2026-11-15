@@ -15,7 +15,7 @@ import {
   ConfirmDialog,
 } from "@neiist/ui";
 import { FaPlus, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { FiMoreVertical, FiFileText, FiTrash2, FiRotateCcw } from "react-icons/fi";
+import { FiFileText, FiTrash2, FiRotateCcw } from "react-icons/fi";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Description } from "@/types/memberships";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
@@ -148,8 +148,7 @@ export default function DepartmentsTab({
     const q = search.trim().toLowerCase();
     const filtered = departments.filter((d) => {
       if (q && !d.name.toLowerCase().includes(q)) return false;
-      if (!showInactive && !d.active) return false;
-      return true;
+      return !(!showInactive && !d.active);
     });
 
     return filtered.sort((a, b) => {
@@ -280,57 +279,45 @@ export default function DepartmentsTab({
           </Badge>
         ),
       },
-      {
-        id: "actions",
-        header: "",
-        width: 50,
-        cell: (row) => (
-          <DropdownMenu>
-            <DropdownMenu.Trigger>
-              <button
-                type="button"
-                className={styles.actionBtn}
-                aria-label={tDict.options_aria}
-                onClick={(event) => event.stopPropagation()}>
-                <FiMoreVertical size={16} />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" mobileTitle={tDict.options_title}>
-              <DropdownMenu.Item
-                icon={<FiFileText size={14} />}
-                onClick={() => setSelectedDepartment(row)}>
-                {tDict.view_details}
-              </DropdownMenu.Item>
-              {canManageDepartments && row.active && (
-                <DropdownMenu.Item
-                  icon={<FiTrash2 size={14} />}
-                  destructive
-                  onClick={() => setPendingAction({ dept: row, type: "deactivate" })}>
-                  {tDict.deactivate}
-                </DropdownMenu.Item>
-              )}
-              {canManageDepartments && !row.active && (
-                <>
-                  <DropdownMenu.Item
-                    icon={<FiRotateCcw size={14} />}
-                    onClick={() => setPendingAction({ dept: row, type: "reactivate" })}>
-                    {tDict.reactivate}
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Divider />
-                  <DropdownMenu.Item
-                    icon={<FiTrash2 size={14} />}
-                    destructive
-                    onClick={() => setPendingAction({ dept: row, type: "delete" })}>
-                    {tDict.delete}
-                  </DropdownMenu.Item>
-                </>
-              )}
-            </DropdownMenu.Content>
-          </DropdownMenu>
-        ),
-      },
     ],
     [orderedDeptNames, canManageDepartments, search, moveOrder, tDict]
+  );
+
+  const renderDepartmentActions = useCallback(
+    (row: DepartmentItem) => (
+      <>
+        <DropdownMenu.Item
+          icon={<FiFileText size={14} />}
+          onClick={() => setSelectedDepartment(row)}>
+          {tDict.view_details}
+        </DropdownMenu.Item>
+        {canManageDepartments && row.active && (
+          <DropdownMenu.Item
+            icon={<FiTrash2 size={14} />}
+            destructive
+            onClick={() => setPendingAction({ dept: row, type: "deactivate" })}>
+            {tDict.deactivate}
+          </DropdownMenu.Item>
+        )}
+        {canManageDepartments && !row.active && (
+          <>
+            <DropdownMenu.Item
+              icon={<FiRotateCcw size={14} />}
+              onClick={() => setPendingAction({ dept: row, type: "reactivate" })}>
+              {tDict.reactivate}
+            </DropdownMenu.Item>
+            <DropdownMenu.Divider />
+            <DropdownMenu.Item
+              icon={<FiTrash2 size={14} />}
+              destructive
+              onClick={() => setPendingAction({ dept: row, type: "delete" })}>
+              {tDict.delete}
+            </DropdownMenu.Item>
+          </>
+        )}
+      </>
+    ),
+    [canManageDepartments, tDict]
   );
 
   return (
@@ -372,6 +359,8 @@ export default function DepartmentsTab({
         columns={columns}
         getRowId={(row) => row.name}
         onRowClick={(row) => setSelectedDepartment(row)}
+        rowActions={renderDepartmentActions}
+        actionsTitle={tDict.options_title}
         emptyMessage={tDict.empty}
       />
 

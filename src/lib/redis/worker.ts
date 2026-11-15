@@ -17,6 +17,7 @@ import {
   EventHookJob,
   EventReminderJob,
   CalendarSyncJob,
+  OutlookSyncJob,
 } from "@/types/redis";
 
 declare global {
@@ -128,6 +129,9 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
       await redis.del(CALENDAR_SYNC_PENDING_KEY);
       const { fetchAllNotionEvents, syncNotionEventsToDb } = await import("@/utils/eventsUtils");
       const { getCalendarClient, syncAllEventsToCalendar } = await import("@/lib/google/calendar");
+      const { isM365Configured } = await import("@/lib/m365/graph");
+      const { syncAllEventsToOutlookCalendar } = await import("@/lib/m365/calendar");
+      const { getUserCalendarEmails } = await import("@/utils/calendarUtils");
       const { getAllUsersNoCache } = await import("@/lib/db/repositories/user.repository");
       const { getActivitiesEventsNoCache } = await import("@/lib/db/repositories/event.repository");
       const pLimit = (await import("p-limit")).default;
@@ -141,44 +145,70 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
         }
       }
 
+      const allUsers = await getAllUsersNoCache();
+      const allDbEvents = await getActivitiesEventsNoCache(false);
+
+      const calendarByIstid = new Map<string, string>();
       const calendarClient = getCalendarClient();
       if (calendarClient) {
         const calList = await calendarClient.calendarList.list();
-        const calendars = (calList.data.items || []).filter((calendar) =>
-          calendar.summary?.startsWith("NEIIST-")
-        );
-        const calendarByIstid = new Map<string, { id: string; summary: string }>();
-        calendars.forEach((calendar) => {
+        for (const calendar of calList.data.items || []) {
+          if (!calendar.summary?.startsWith("NEIIST-") || !calendar.id) continue;
           const match = calendar.description?.match(/istid:([a-zA-Z0-9]+)/);
-          if (match)
-            calendarByIstid.set(match[1], { id: calendar.id!, summary: calendar.summary! });
-        });
+          if (match) calendarByIstid.set(match[1], calendar.id);
+        }
+      }
 
-        const allUsers = await getAllUsersNoCache();
-        const usersWithCalendars = allUsers.filter(
-          (user) => user.email && user.istid && calendarByIstid.has(user.istid)
-        );
+      const m365Ready = isM365Configured();
+      const usersToSync = allUsers.filter(
+        (user) =>
+          user.email &&
+          user.istid &&
+          (calendarByIstid.has(user.istid) ||
+            (m365Ready && user.outlookCalendarSync && user.neiistEmail))
+      );
 
-        const allDbEvents = await getActivitiesEventsNoCache(false);
+      const limit = pLimit(2);
+      await Promise.all(
+        usersToSync.map((user) =>
+          limit(async () => {
+            await redis.expire(CALENDAR_SYNC_LOCK_KEY, CALENDAR_LOCK_TTL_SECONDS);
+            const googleCalId = calendarByIstid.get(user.istid);
+            const altEmail = user.alternativeEmailVerified
+              ? (user.alternativeEmail ?? undefined)
+              : undefined;
 
-        const limit = pLimit(2);
-        await Promise.all(
-          usersWithCalendars.map((user) =>
-            limit(async () => {
+            if (googleCalId) {
               try {
-                await redis.expire(CALENDAR_SYNC_LOCK_KEY, CALENDAR_LOCK_TTL_SECONDS);
-                const altEmail = user.alternativeEmailVerified
-                  ? (user.alternativeEmail ?? undefined)
-                  : undefined;
-                const calId = calendarByIstid.get(user.istid)!.id;
-                await syncAllEventsToCalendar(calId, allDbEvents, user.email!, altEmail);
+                await syncAllEventsToCalendar(
+                  googleCalId,
+                  allDbEvents,
+                  user.email!,
+                  altEmail,
+                  user.neiistEmail ?? undefined
+                );
               } catch (calErr) {
                 console.error(`[redis-worker] Error syncing calendar for ${user.istid}:`, calErr);
               }
-            })
-          )
-        );
-      }
+            }
+
+            if (m365Ready && user.outlookCalendarSync && user.neiistEmail) {
+              try {
+                await syncAllEventsToOutlookCalendar(
+                  user.neiistEmail,
+                  allDbEvents,
+                  getUserCalendarEmails(user)
+                );
+              } catch (calErr) {
+                console.error(
+                  `[redis-worker] Error syncing Outlook calendar for ${user.istid}:`,
+                  calErr
+                );
+              }
+            }
+          })
+        )
+      );
       console.warn("[redis-worker] Calendar sync successfully completed");
     } catch (syncError) {
       console.error("[redis-worker] Calendar sync failed:", syncError);
@@ -190,6 +220,33 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
       }
     }
   },
+  outlook_sync: async (job: OutlookSyncJob) => {
+    const { isM365Configured } = await import("@/lib/m365/graph");
+    if (!isM365Configured()) return;
+
+    const { getUserNoCache } = await import("@/lib/db/repositories/user.repository");
+    const user = await getUserNoCache(job.istid);
+    if (!user?.neiistEmail || !user.email) return;
+
+    // Skip stale toggle jobs if user's current preference no longer matches
+    if (Boolean(user.outlookCalendarSync) !== job.enabled) return;
+
+    const { deleteOutlookSyncedEvents, syncAllEventsToOutlookCalendar } =
+      await import("@/lib/m365/calendar");
+
+    if (job.enabled) {
+      const { getActivitiesEventsNoCache } = await import("@/lib/db/repositories/event.repository");
+      const { getUserCalendarEmails } = await import("@/utils/calendarUtils");
+      const allDbEvents = await getActivitiesEventsNoCache(false);
+      await syncAllEventsToOutlookCalendar(
+        user.neiistEmail,
+        allDbEvents,
+        getUserCalendarEmails(user)
+      );
+    } else {
+      await deleteOutlookSyncedEvents(user.neiistEmail);
+    }
+  },
 };
 
 export async function processJob(job: JobPayload): Promise<void> {
@@ -197,15 +254,15 @@ export async function processJob(job: JobPayload): Promise<void> {
 }
 
 function getDeadLetterKey(job: JobPayload, streamId: string): string {
-  if ("order_number" in job && "event_id" in job) {
+  if ("order_number" in job && "event_id" in job)
     return `${job.type}:${job.order_number}:${job.event_id}`;
-  }
-  if ("order_number" in job) {
-    return `${job.type}:${job.order_number}`;
-  }
-  if ("event_id" in job) {
-    return `${job.type}:${job.event_id}`;
-  }
+
+  if ("order_number" in job) return `${job.type}:${job.order_number}`;
+
+  if ("event_id" in job) return `${job.type}:${job.event_id}`;
+
+  if ("istid" in job) return `${job.type}:${job.istid}`;
+
   return `${job.type}:${streamId}`;
 }
 

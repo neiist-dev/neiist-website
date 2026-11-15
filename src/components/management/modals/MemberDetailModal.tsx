@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Alert,
   Modal,
-  Button,
   Badge,
   Card,
   DropdownMenu,
@@ -190,6 +189,10 @@ export default function MemberDetailModal({
                   <span>{user.alternativeEmail}</span>
                 </div>
               )}
+              <div className={detailStyles.gridItem}>
+                <span>{mDict.neiist_email_label}</span>
+                <span>{user?.neiistEmail || "—"}</span>
+              </div>
               {user?.phone && (
                 <div className={detailStyles.gridItem}>
                   <span>{mDict.phone}</span>
@@ -333,12 +336,6 @@ export default function MemberDetailModal({
             </div>
           </>
         )}
-
-        <div className={styles.modalActions}>
-          <Button type="button" variant="solid" color="primary" size="sm" onClick={onClose}>
-            {mDict.confirm_cancel}
-          </Button>
-        </div>
       </div>
     </Modal>
   );

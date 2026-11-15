@@ -3,6 +3,7 @@ import { PUMP_DELAYED_JOBS_LUA } from "@/lib/redis/scripts";
 import {
   EventReminderJob,
   CalendarSyncJob,
+  OutlookSyncJob,
   JobPayload,
   DELAYED_JOBS_KEY,
   STREAM_KEY,
@@ -83,6 +84,11 @@ export async function triggerDebouncedCalendarSync(
   await redis.set(CALENDAR_SYNC_PENDING_KEY, "1");
   const job: CalendarSyncJob = { type: "calendar_sync", source };
   await scheduleDelayedJob(job, Date.now() + debounceMs);
+}
+
+export async function enqueueOutlookCalendarSync(istid: string, enabled: boolean): Promise<void> {
+  const job: OutlookSyncJob = { type: "outlook_sync", istid, enabled };
+  await enqueueStreamJob(job);
 }
 
 /**

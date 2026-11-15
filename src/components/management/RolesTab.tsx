@@ -16,7 +16,7 @@ import {
   DropdownMenu,
 } from "@neiist/ui";
 import { FaPlus, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { FiMoreVertical, FiTrash2, FiSliders, FiRotateCcw } from "react-icons/fi";
+import { FiTrash2, FiSliders, FiRotateCcw } from "react-icons/fi";
 import { UserRole, RoleItem, mapAccessLabelToUserRole } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Membership } from "@/types/memberships";
@@ -277,57 +277,6 @@ export default function RolesTab({
           </span>
         ),
       },
-      {
-        id: "actions",
-        header: "",
-        width: 50,
-        cell: (row) => (
-          <DropdownMenu>
-            <DropdownMenu.Trigger>
-              <button
-                type="button"
-                className={styles.actionBtn}
-                aria-label={rDict.options_aria}
-                onClick={(event) => event.stopPropagation()}>
-                <FiMoreVertical size={16} />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" mobileTitle={rDict.options_title}>
-              <DropdownMenu.Item
-                icon={<FiSliders size={14} />}
-                onClick={() => setPermsTargetRole(row)}>
-                {rDict.manage_permissions}
-              </DropdownMenu.Item>
-              {canManageRoles && row.active && (
-                <DropdownMenu.Item
-                  icon={<FiTrash2 size={14} />}
-                  destructive
-                  onClick={() => setPendingRemove({ role: row, permanent: false })}>
-                  {rDict.deactivate_role}
-                </DropdownMenu.Item>
-              )}
-              {canManageRoles && !row.active && (
-                <>
-                  <DropdownMenu.Item
-                    icon={<FiRotateCcw size={14} />}
-                    onClick={() => {
-                      Alert.info(rDict.reactivate_hint);
-                    }}>
-                    {rDict.reactivate_role}
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Divider />
-                  <DropdownMenu.Item
-                    icon={<FiTrash2 size={14} />}
-                    destructive
-                    onClick={() => setPendingRemove({ role: row, permanent: true })}>
-                    {rDict.delete_role}
-                  </DropdownMenu.Item>
-                </>
-              )}
-            </DropdownMenu.Content>
-          </DropdownMenu>
-        ),
-      },
     ],
     [
       rolePositions,
@@ -338,6 +287,43 @@ export default function RolesTab({
       moveHierarchy,
       rDict,
     ]
+  );
+
+  const renderRoleActions = useCallback(
+    (row: RoleItem) => (
+      <>
+        <DropdownMenu.Item icon={<FiSliders size={14} />} onClick={() => setPermsTargetRole(row)}>
+          {rDict.manage_permissions}
+        </DropdownMenu.Item>
+        {canManageRoles && row.active && (
+          <DropdownMenu.Item
+            icon={<FiTrash2 size={14} />}
+            destructive
+            onClick={() => setPendingRemove({ role: row, permanent: false })}>
+            {rDict.deactivate_role}
+          </DropdownMenu.Item>
+        )}
+        {canManageRoles && !row.active && (
+          <>
+            <DropdownMenu.Item
+              icon={<FiRotateCcw size={14} />}
+              onClick={() => {
+                Alert.info(rDict.reactivate_hint);
+              }}>
+              {rDict.reactivate_role}
+            </DropdownMenu.Item>
+            <DropdownMenu.Divider />
+            <DropdownMenu.Item
+              icon={<FiTrash2 size={14} />}
+              destructive
+              onClick={() => setPendingRemove({ role: row, permanent: true })}>
+              {rDict.delete_role}
+            </DropdownMenu.Item>
+          </>
+        )}
+      </>
+    ),
+    [canManageRoles, rDict]
   );
 
   return (
@@ -391,6 +377,8 @@ export default function RolesTab({
         columns={columns}
         getRowId={(row) => `${selectedDept}-${row.role_name}`}
         onRowClick={(row) => setPermsTargetRole(row)}
+        rowActions={renderRoleActions}
+        actionsTitle={rDict.options_title}
         emptyMessage={rDict.empty_all}
       />
 

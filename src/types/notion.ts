@@ -18,8 +18,13 @@ export interface NotionPageProperties {
   Type?: {
     select: { name: string } | null;
   };
+  Team?: {
+    select?: { name: string } | null;
+    multi_select?: { name: string }[];
+  };
   Teams?: {
-    multi_select: { name: string }[];
+    select?: { name: string } | null;
+    multi_select?: { name: string }[];
   };
   Attendees?: {
     people: NotionPerson[];

@@ -3,8 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import {
   getOrCreateUserCalendar,
   getAddCalendarLink,
-  getCalendarWebLink,
-  syncEventsToCalendarBatched,
+  syncAllEventsToCalendar,
 } from "@/lib/google/calendar";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
@@ -33,6 +32,8 @@ export async function GET(
 
     const alternativeEmailRaw = user.alternativeEmailVerified ? user.alternativeEmail : undefined;
     const alternativeEmail = alternativeEmailRaw ?? undefined;
+    const neiistEmail = user.neiistEmail ?? undefined;
+    const calendarName = `NEIIST-${getFirstAndLastName(user.name)}`;
     const calendarId = await getOrCreateUserCalendar(
       user.email,
       istid,
@@ -40,26 +41,25 @@ export async function GET(
       alternativeEmail
     );
 
-    if (!calendarId) return NextResponse.json({ addCalendarLink: "", webViewLink: "" });
+    if (!calendarId) return NextResponse.json({ addCalendarLink: "" });
 
     const events = await getActivitiesEvents(false);
-    const synced = await syncEventsToCalendarBatched(
+    const syncStats = await syncAllEventsToCalendar(
       calendarId,
       events,
       user.email,
-      alternativeEmail
+      alternativeEmail,
+      neiistEmail
     );
 
     const addCalendarLink = await getAddCalendarLink(calendarId);
-    const webViewLink = await getCalendarWebLink(calendarId);
 
     const payload = {
       calendarId,
-      calendarName: `NEIIST-${getFirstAndLastName(user.name)}`,
+      calendarName,
       addCalendarLink,
-      webViewLink,
       sharedWith: [user.email, ...(alternativeEmail ? [alternativeEmail] : [])],
-      eventsSynced: synced,
+      eventsSynced: syncStats.updated + syncStats.deleted,
     };
 
     return NextResponse.json(payload);

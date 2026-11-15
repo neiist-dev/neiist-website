@@ -259,6 +259,8 @@ CREATE TABLE neiist.users (
   istid VARCHAR(10) PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
+  neiist_email TEXT UNIQUE,
+  outlook_calendar_sync BOOLEAN NOT NULL DEFAULT FALSE,
   github TEXT,
   linkedin TEXT
 );
@@ -795,6 +797,8 @@ CREATE OR REPLACE FUNCTION neiist.get_user(
   name TEXT,
   email TEXT,
   alt_email TEXT,
+  neiist_email TEXT,
+  outlook_calendar_sync BOOLEAN,
   phone TEXT,
   preferred_contact_method TEXT,
   courses TEXT[],
@@ -812,6 +816,8 @@ BEGIN
     u.name,
     u.email,
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'alt_email' LIMIT 1) AS alt_email,
+    u.neiist_email,
+    u.outlook_calendar_sync,
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
     (SELECT contact_type::TEXT FROM neiist.user_contacts WHERE user_istid = u.istid AND is_preferred = TRUE LIMIT 1) AS preferred_contact_method,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
@@ -896,6 +902,8 @@ CREATE OR REPLACE FUNCTION neiist.add_user(
   name TEXT,
   email TEXT,
   alt_email TEXT,
+  neiist_email TEXT,
+  outlook_calendar_sync BOOLEAN,
   phone TEXT,
   preferred_contact_method TEXT,
   courses TEXT[],
@@ -1202,6 +1210,8 @@ RETURNS TABLE (
   istid VARCHAR(10),
   name TEXT,
   email TEXT,
+  neiist_email TEXT,
+  outlook_calendar_sync BOOLEAN,
   phone TEXT,
   courses TEXT[],
   permissions TEXT[],
@@ -1217,6 +1227,8 @@ BEGIN
     u.istid,
     u.name,
     u.email,
+    u.neiist_email,
+    u.outlook_calendar_sync,
     (SELECT contact_value FROM neiist.user_contacts WHERE user_istid = u.istid AND contact_type = 'phone' LIMIT 1) AS phone,
     ARRAY(SELECT course_name FROM neiist.user_courses WHERE user_istid = u.istid) AS courses,
     COALESCE(derived_permissions.permissions_array, ARRAY[]::TEXT[]) AS permissions,
@@ -1296,6 +1308,8 @@ CREATE OR REPLACE FUNCTION neiist.update_user(
   name TEXT,
   email TEXT,
   alt_email TEXT,
+  neiist_email TEXT,
+  outlook_calendar_sync BOOLEAN,
   phone TEXT,
   preferred_contact_method TEXT,
   courses TEXT[],
@@ -1313,6 +1327,12 @@ BEGIN
   END IF;
   IF p_updates ? 'email' THEN
     UPDATE neiist.users SET email = p_updates->>'email' WHERE neiist.users.istid = p_istid;
+  END IF;
+  IF p_updates ? 'neiistEmail' THEN
+    UPDATE neiist.users SET neiist_email = NULLIF(p_updates->>'neiistEmail', '') WHERE neiist.users.istid = p_istid;
+  END IF;
+  IF p_updates ? 'outlookCalendarSync' THEN
+    UPDATE neiist.users SET outlook_calendar_sync = COALESCE((p_updates->>'outlookCalendarSync')::BOOLEAN, FALSE) WHERE neiist.users.istid = p_istid;
   END IF;
   IF p_updates ? 'github' THEN
     UPDATE neiist.users SET github = p_updates->>'github' WHERE neiist.users.istid = p_istid;

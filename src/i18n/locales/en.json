@@ -719,13 +719,18 @@
     },
     "sections": {
       "calendar": "Calendar",
-      "calendarDescription": "Add the NEIIST calendar to your Google Calendar so you don't miss anything!",
+      "calendarDescription": "Add the NEIIST calendar to your Google Calendar or Outlook so you don't miss anything!",
+      "calendarDescriptionGoogle": "Add the NEIIST calendar to your Google Calendar so you don't miss anything!",
+      "calendarTooltip": "Google Calendar is private to your primary or alternative email (Google account). Outlook syncs directly with your @neiist.pt email.",
+      "calendarTooltipGoogle": "Google Calendar is private to your primary or alternative email (Google account).",
       "cvbank": "CV Bank",
       "cvbankTooltip": "Information about the CV Bank."
     },
     "buttons": {
-      "view_calendar": "View Calendar",
       "open_in_google": "Open in Google Calendar",
+      "sync_outlook": "Sync with Outlook (@neiist.pt)",
+      "outlook_sync_enabled": "Outlook calendar sync enabled",
+      "outlook_sync_disabled": "Outlook calendar sync disabled",
       "download_cv": "Download CV",
       "remove_cv": "Remove CV"
     },
@@ -927,6 +932,12 @@
       "options_aria": "Mandate options",
       "options_title": "Mandate Options",
       "view_details": "View Details",
+      "edit_neiist_email": "Edit NEIIST Email",
+      "edit_neiist_email_title": "Edit NEIIST Email",
+      "neiist_email_label": "NEIIST Email (@neiist.pt)",
+      "neiist_email_updated": "NEIIST email updated successfully",
+      "neiist_email_error": "Failed to update NEIIST email",
+      "save": "Save",
       "conclude_mandate": "Conclude Mandate",
       "delete_mandate": "Delete Mandate",
       "confirm_conclude_title": "Conclude Mandate",
@@ -1497,12 +1508,16 @@
             "text": "identity and profile photo obtained at login. Técnico Lisboa's own privacy policy applies to this data."
           },
           {
-            "label": "Google (Gmail / Google Drive)",
-            "text": "used for transactional emails and CV storage, under Google's Data Processing Agreement (DPA)."
+            "label": "Microsoft 365 (Exchange Online / SharePoint)",
+            "text": "used for transactional emails, CV storage, and contest submissions, under Microsoft's Data Processing Addendum (DPA)."
           },
           {
-            "label": "Google Drive (backups)",
-            "text": "used to store database backups, under Google's DPA. All backups are encrypted locally with GPG (AES-256) before upload, so Google has no access to their contents."
+            "label": "Microsoft 365 / SharePoint (backups)",
+            "text": "used to store database backups, under Microsoft's DPA. All backups are encrypted locally with GPG (AES-256) before upload, so Microsoft has no access to their contents."
+          },
+          {
+            "label": "Google Calendar",
+            "text": "used optionally to sync member event calendars when requested by the member, under Google's Data Processing Agreement (DPA)."
           },
           {
             "label": "SumUp",
@@ -1521,7 +1536,7 @@
           {
             "title": "International Data Transfers",
             "paragraphs": [
-              "The use of some third-party services listed above (such as Google and Grafana Labs) may involve personal data transfers outside the European Economic Area (EEA), notably to the United States.",
+              "The use of some third-party services listed above (such as Microsoft, Google, and Grafana Labs) may involve personal data transfers outside the European Economic Area (EEA), notably to the United States.",
               "These international data transfers are fully safeguarded and strictly compliant with the GDPR, covered by appropriate safeguards:"
             ],
             "items": [

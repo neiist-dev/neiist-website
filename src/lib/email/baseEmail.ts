@@ -48,7 +48,7 @@ export function renderBaseEmailLayout({
   hideFooter = false,
 }: BaseEmailLayoutOptions): string {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
-  const logoUrl = `${baseUrl}/neiist_logo.svg`;
+  const logoUrl = `${baseUrl}/neiist_logo.png`;
 
   const footerHtml = hideFooter
     ? ""
@@ -58,8 +58,8 @@ export function renderBaseEmailLayout({
     `;
 
   return `
-    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333; max-width: 600px; margin: 0 auto; box-sizing: border-box;">
-      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; margin-bottom: 1.5rem; display: block;" />
+    <div style="font-family: 'Secular One', Arial, sans-serif; background: #F2F2F7; padding: 2rem; border-radius: 1rem; color: #333; width: 100%; box-sizing: border-box;">
+      <img src="${logoUrl}" alt="NEIIST Logo" style="height: 48px; width: auto; margin-bottom: 1.5rem; display: block;" />
       <div style="font-size: 1.05rem; line-height: 1.6;">
         ${content}
       </div>

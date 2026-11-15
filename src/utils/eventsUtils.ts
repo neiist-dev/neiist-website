@@ -54,7 +54,11 @@ export function parseNotionPageToEvent(page: NotionPage): NotionEvent {
     url: page.url,
     location: props.Location?.multi_select?.map((loc) => loc.name) ?? [],
     type: props.Type?.select?.name ?? null,
-    teams: props.Teams?.multi_select?.map((t) => t.name) ?? [],
+    teams:
+      props.Team?.multi_select?.map((t) => t.name) ??
+      (props.Team?.select?.name ? [props.Team.select.name] : null) ??
+      props.Teams?.multi_select?.map((t) => t.name) ??
+      (props.Teams?.select?.name ? [props.Teams.select.name] : []),
     attendees:
       props.Attendees?.people?.map((p: NotionPerson) => p.person?.email ?? "").filter(Boolean) ??
       [],

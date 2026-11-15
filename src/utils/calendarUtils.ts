@@ -1,4 +1,5 @@
 import type { Activity } from "@/types/events";
+import type { User } from "@/types/user";
 
 export const truncateToDay = (d: Date) => {
   const c = new Date(d);
@@ -45,4 +46,33 @@ export function formatEventDateTime(event: Activity): {
     endTime,
     isAllDay: Boolean(event.allDay),
   };
+}
+
+export function getUserCalendarEmails(
+  user: Pick<User, "email" | "alternativeEmail" | "alternativeEmailVerified" | "neiistEmail">
+): string[] {
+  const altEmail = user.alternativeEmailVerified ? user.alternativeEmail : undefined;
+  return [user.email, altEmail, user.neiistEmail].filter((e): e is string => Boolean(e?.trim()));
+}
+
+export function normalizeUserEmails(emails: Array<string | null | undefined>): Set<string> {
+  return new Set(
+    emails
+      .filter((email): email is string => Boolean(email?.trim()))
+      .map((email) => email.trim().toLowerCase())
+  );
+}
+
+export function shouldIncludeCalendarEvent(event: Activity, userEmailSet: Set<string>): boolean {
+  if (!event.start) return false;
+  if (event.type !== "Meeting") return true;
+  return event.attendees.some((email) => userEmailSet.has(email.trim().toLowerCase()));
+}
+
+export function getValidEventUrl(event: Activity): string | undefined {
+  return event.url && event.url.startsWith("http") ? event.url : undefined;
+}
+
+export function getEventLastEditedIso(event: Activity): string {
+  return event.lastEditedTime ? event.lastEditedTime.toISOString() : new Date().toISOString();
 }

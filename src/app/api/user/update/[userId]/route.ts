@@ -104,6 +104,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
         }
       }
 
+      if (updateData.neiistEmail !== undefined) {
+        const raw = typeof updateData.neiistEmail === "string" ? updateData.neiistEmail.trim() : "";
+        if (!raw) {
+          updates.neiistEmail = null;
+        } else {
+          const normalized = raw.toLowerCase();
+          if (isValidEmail(normalized) && normalized.endsWith("@neiist.pt")) {
+            updates.neiistEmail = normalized;
+          } else {
+            return NextResponse.json(
+              { error: "Email NEIIST inválido (deve terminar em @neiist.pt)" },
+              { status: 400 }
+            );
+          }
+        }
+      }
+
       if (updateData.courses !== undefined && Array.isArray(updateData.courses))
         updates.courses = updateData.courses;
     }

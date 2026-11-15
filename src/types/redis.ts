@@ -19,7 +19,7 @@ export interface StockRequestItem {
   quantity?: number;
 }
 
-export type JobType = "expire" | "event_hook" | "calendar_sync" | "event_reminder";
+export type JobType = "expire" | "event_hook" | "calendar_sync" | "outlook_sync" | "event_reminder";
 
 export interface ExpireJob {
   type: "expire";
@@ -41,13 +41,21 @@ export interface CalendarSyncJob {
   attempt?: number;
 }
 
+export interface OutlookSyncJob {
+  type: "outlook_sync";
+  istid: string;
+  enabled: boolean;
+  attempt?: number;
+}
+
 export interface EventReminderJob {
   type: "event_reminder";
   event_id: string;
   attempt?: number;
 }
 
-export type JobPayload = ExpireJob | EventHookJob | CalendarSyncJob | EventReminderJob;
+export type JobPayload =
+  ExpireJob | EventHookJob | CalendarSyncJob | OutlookSyncJob | EventReminderJob;
 
 export const DELAYED_JOBS_KEY = "jobs:delayed";
 export const STREAM_KEY = "jobs:stream";

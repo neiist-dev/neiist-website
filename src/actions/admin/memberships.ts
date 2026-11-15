@@ -149,6 +149,7 @@ export async function getMemberHistoryAction(istid: string): Promise<{
         name: fullUser.name,
         email: fullUser.email,
         alternativeEmail: fullUser.alternativeEmail,
+        neiistEmail: fullUser.neiistEmail,
         phone: fullUser.phone,
         courses: fullUser.courses,
         photo: fullUser.photo,

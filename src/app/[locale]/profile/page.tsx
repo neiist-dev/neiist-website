@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import ProfileClient from "@/components/Profile";
 import { requireUser } from "@/lib/auth";
-import { hasUserCV } from "@/lib/google/driveService";
+import { hasUserCV } from "@/lib/m365/sharepointService";
 import GlobalLoading from "@/app/loading";
 import styles from "@/styles/pages/ProfilePage.module.css";
 import { getDictionary } from "@/i18n/dictionaries";

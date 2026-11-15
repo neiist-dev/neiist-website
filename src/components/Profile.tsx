@@ -17,9 +17,8 @@ import {
 } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
-import { LuCalendarDays } from "react-icons/lu";
 import { getFirstAndLastName, logout } from "@/utils/userUtils";
-import { Alert, ConfirmDialog, ColorfulText } from "@neiist/ui";
+import { Alert, ConfirmDialog, ColorfulText, ToggleSwitch } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/Profile.module.css";
 
@@ -36,6 +35,10 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   const [hasCV, setHasCV] = useState<boolean>(initialHasCV);
   const [cvLoading, setCvLoading] = useState<boolean>(false);
   const [calendarLoading, setCalendarLoading] = useState<boolean>(false);
+  const [outlookSyncEnabled, setOutlookSyncEnabled] = useState<boolean>(
+    initialUser?.outlookCalendarSync ?? false
+  );
+  const [outlookSyncLoading, setOutlookSyncLoading] = useState<boolean>(false);
 
   const [altEmailDraft, setAltEmailDraft] = useState<string>(initialUser?.alternativeEmail ?? "");
   const [phoneDraft, setPhoneDraft] = useState<string>(initialUser?.phone ?? "");
@@ -51,13 +54,13 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
   } | null>(null);
   const [calendarData, setCalendarData] = useState<{
     addCalendarLink: string;
-    webViewLink: string;
   } | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
+  const hasOutlookSync = Boolean(isMember && user?.neiistEmail);
 
   const handleDeleteAccount = async () => {
     if (!user || deleteLoading) return;
@@ -172,7 +175,6 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       const data = await response.json();
       const links = {
         addCalendarLink: data.addCalendarLink,
-        webViewLink: data.webViewLink,
       };
       setCalendarData(links);
       Alert.dismiss(alertId);
@@ -198,17 +200,33 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
     }
   };
 
-  const handleViewCalendar = async () => {
-    if (!user?.istid || calendarLoading) return;
-    setCalendarLoading(true);
+  const handleToggleOutlookSync = async (enabled: boolean) => {
+    if (!user?.istid || !user?.neiistEmail || outlookSyncLoading) return;
+    setOutlookSyncLoading(true);
+    const alertId = Alert.loading(dict.labels.loading);
 
     try {
-      const data = await getCalendarData();
-      if (data?.webViewLink) {
-        window.open(data.webViewLink, "_blank");
+      const res = await fetch(`/api/calendar/${user.istid}/outlook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || dict.errors.update);
       }
+
+      setOutlookSyncEnabled(enabled);
+      setUser((prev) => ({ ...prev, outlookCalendarSync: enabled }));
+      Alert.dismiss(alertId);
+      Alert.success(
+        enabled ? dict.buttons.outlook_sync_enabled : dict.buttons.outlook_sync_disabled
+      );
+    } catch (e) {
+      Alert.dismiss(alertId);
+      Alert.error(e instanceof Error ? e.message : dict.errors.update);
     } finally {
-      setCalendarLoading(false);
+      setOutlookSyncLoading(false);
     }
   };
 
@@ -394,47 +412,52 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
           </div>
         </div>
         <div className={styles.right}>
-          {isMember && (
-            <>
-              <div className={styles.schedule}>
-                <div className={styles.sectionTitle}>
-                  <FiCalendar className={styles.icon} />
-                  <span>{dict.sections.calendar}</span>
-                </div>
-                <p className={styles.infoText}>{dict.sections.calendarDescription}</p>
-                <div className={styles.actionButtons}>
-                  <a
-                    className={styles.button}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleViewCalendar();
-                    }}
-                    href="#"
-                    style={{
-                      cursor: calendarLoading ? "not-allowed" : "pointer",
-                      opacity: calendarLoading ? 0.6 : 1,
-                    }}>
-                    <LuCalendarDays />{" "}
-                    {calendarLoading ? dict.labels.loading : dict.buttons.view_calendar}
-                  </a>
-                  <a
-                    className={styles.filledButton}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddCalendar();
-                    }}
-                    href="#"
-                    style={{
-                      cursor: calendarLoading ? "not-allowed" : "pointer",
-                      opacity: calendarLoading ? 0.6 : 1,
-                    }}>
-                    <IoOpenOutline />{" "}
-                    {calendarLoading ? dict.labels.loading : dict.buttons.open_in_google}
-                  </a>
+          <div className={styles.schedule}>
+            <div className={styles.sectionTitle}>
+              <FiCalendar className={styles.icon} />
+              <span>{dict.sections.calendar}</span>
+              <div className={styles.infoBubbleWrapper}>
+                <FiInfo className={styles.infoBubble} />
+                <div className={styles.tooltip}>
+                  {hasOutlookSync
+                    ? dict.sections.calendarTooltip
+                    : dict.sections.calendarTooltipGoogle}
                 </div>
               </div>
-            </>
-          )}
+            </div>
+            <p className={styles.infoText}>
+              {hasOutlookSync
+                ? dict.sections.calendarDescription
+                : dict.sections.calendarDescriptionGoogle}
+            </p>
+            <div className={styles.actionButtons}>
+              <a
+                className={styles.filledButton}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleAddCalendar();
+                }}
+                href="#"
+                style={{
+                  cursor: calendarLoading ? "not-allowed" : "pointer",
+                  opacity: calendarLoading ? 0.6 : 1,
+                }}>
+                <IoOpenOutline />{" "}
+                {calendarLoading ? dict.labels.loading : dict.buttons.open_in_google}
+              </a>
+            </div>
+            {hasOutlookSync && (
+              <div className={styles.outlookToggleRow}>
+                <ToggleSwitch
+                  checked={outlookSyncEnabled}
+                  onChange={handleToggleOutlookSync}
+                  disabled={outlookSyncLoading}
+                  aria-label={dict.buttons.sync_outlook}
+                />
+                <span className={styles.outlookToggleLabel}>{dict.buttons.sync_outlook}</span>
+              </div>
+            )}
+          </div>
           <div className={styles.cvbank}>
             <div className={styles.sectionTitle}>
               <FiUpload className={styles.icon} />

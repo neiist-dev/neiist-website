@@ -2,10 +2,16 @@ import { google } from "googleapis";
 import type { Activity } from "@/types/events";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getServiceAccount } from "@/lib/google/serviceAccount";
+import {
+  getEventLastEditedIso,
+  getValidEventUrl,
+  normalizeUserEmails,
+  shouldIncludeCalendarEvent,
+} from "@/utils/calendarUtils";
 
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
-const BATCH_SIZE = 50;
-const BATCH_DELAY_MS = 10;
+const BATCH_SIZE = 5;
+const BATCH_DELAY_MS = 250;
 
 let _calendarClient: ReturnType<typeof google.calendar> | null = null;
 
@@ -56,6 +62,53 @@ async function findCalendarByIstid(istid: string): Promise<string | null> {
   }
 }
 
+async function ensureWriterAcl(
+  calendar: NonNullable<ReturnType<typeof getCalendarClient>>,
+  calendarId: string,
+  email: string,
+  existingRules?: Array<{
+    id?: string | null;
+    role?: string | null;
+    scope?: { type?: string | null; value?: string | null } | null;
+  }>
+) {
+  try {
+    const normalized = email.trim().toLowerCase();
+    const userRule = existingRules?.find(
+      (rule) =>
+        rule.scope?.type === "user" && rule.scope?.value?.trim().toLowerCase() === normalized
+    );
+
+    if (userRule && userRule.role !== "writer") {
+      await calendar.acl.update({
+        calendarId,
+        ruleId: userRule.id!,
+        requestBody: {
+          role: "writer",
+          scope: {
+            type: "user",
+            value: email,
+          },
+        },
+      });
+    } else if (!userRule) {
+      await calendar.acl.insert({
+        calendarId,
+        requestBody: {
+          role: "writer",
+          scope: {
+            type: "user",
+            value: email,
+          },
+        },
+        sendNotifications: true,
+      });
+    }
+  } catch (error) {
+    console.error(`Failed to share calendar with ${email}:`, error);
+  }
+}
+
 export async function createUserCalendar(
   userEmail: string,
   istid: string,
@@ -76,45 +129,11 @@ export async function createUserCalendar(
 
   const calendarId = response.data.id!;
 
-  // Make calendar public with reader access
-  await calendar.acl.insert({
-    calendarId,
-    requestBody: {
-      role: "reader",
-      scope: { type: "default" },
-    },
-    sendNotifications: false,
-  });
-
-  // Share with user email as editor
-  await calendar.acl.insert({
-    calendarId,
-    requestBody: {
-      role: "writer",
-      scope: {
-        type: "user",
-        value: userEmail,
-      },
-    },
-    sendNotifications: true,
-  });
-
-  if (alternativeEmail && alternativeEmail !== userEmail) {
-    try {
-      await calendar.acl.insert({
-        calendarId,
-        requestBody: {
-          role: "writer",
-          scope: {
-            type: "user",
-            value: alternativeEmail,
-          },
-        },
-        sendNotifications: true,
-      });
-    } catch (error) {
-      console.error(`Failed to share calendar with alternative email ${alternativeEmail}:`, error);
-    }
+  const emailsToShare = Array.from(
+    new Set([userEmail, alternativeEmail].filter((e): e is string => Boolean(e)))
+  );
+  for (const email of emailsToShare) {
+    await ensureWriterAcl(calendar, calendarId, email);
   }
 
   return calendarId;
@@ -132,97 +151,21 @@ export async function getOrCreateUserCalendar(
   const existingCalendarId = await findCalendarByIstid(istid);
   if (existingCalendarId) {
     try {
-      // Ensure calendar is public
-      try {
-        await calendar.acl.update({
-          calendarId: existingCalendarId,
-          ruleId: "default",
-          requestBody: {
-            role: "reader",
-            scope: { type: "default" },
-          },
-        });
-      } catch (error) {
-        const err = error as { code?: number };
-        if (err?.code === 404) {
-          await calendar.acl.insert({
-            calendarId: existingCalendarId,
-            requestBody: {
-              role: "reader",
-              scope: { type: "default" },
-            },
-            sendNotifications: false,
-          });
-        }
-      }
-
-      // Update user email to writer if needed
       const aclList = await calendar.acl.list({ calendarId: existingCalendarId });
-      const userRule = aclList.data.items?.find(
-        (rule) => rule.scope?.type === "user" && rule.scope?.value === userEmail
-      );
+      const existingRules = aclList.data.items ?? [];
 
-      if (userRule && userRule.role !== "writer") {
-        await calendar.acl.update({
-          calendarId: existingCalendarId,
-          ruleId: userRule.id!,
-          requestBody: {
-            role: "writer",
-            scope: {
-              type: "user",
-              value: userEmail,
-            },
-          },
-        });
-      } else if (!userRule) {
-        await calendar.acl.insert({
-          calendarId: existingCalendarId,
-          requestBody: {
-            role: "writer",
-            scope: {
-              type: "user",
-              value: userEmail,
-            },
-          },
-          sendNotifications: true,
-        });
+      const defaultRule = existingRules.find((rule) => rule.scope?.type === "default");
+      if (defaultRule?.id) {
+        await calendar.acl
+          .delete({ calendarId: existingCalendarId, ruleId: defaultRule.id })
+          .catch(() => {});
       }
 
-      if (alternativeEmail && alternativeEmail !== userEmail) {
-        const hasAltEmailAccess = aclList.data.items?.some(
-          (rule) => rule.scope?.type === "user" && rule.scope?.value === alternativeEmail
-        );
-
-        if (!hasAltEmailAccess) {
-          await calendar.acl.insert({
-            calendarId: existingCalendarId,
-            requestBody: {
-              role: "writer",
-              scope: {
-                type: "user",
-                value: alternativeEmail,
-              },
-            },
-            sendNotifications: true,
-          });
-        } else {
-          const altRule = aclList.data.items?.find(
-            (rule) => rule.scope?.type === "user" && rule.scope?.value === alternativeEmail
-          );
-          if (altRule && altRule.role !== "writer") {
-            await calendar.acl.update({
-              calendarId: existingCalendarId,
-              ruleId: altRule.id!,
-              requestBody: {
-                role: "writer",
-                scope: {
-                  type: "user",
-                  value: alternativeEmail,
-                },
-              },
-            });
-          }
-        }
+      const emailsToShare = Array.from(
+        new Set([userEmail, alternativeEmail].filter((e): e is string => Boolean(e)))
+      );
+      for (const email of emailsToShare) {
+        await ensureWriterAcl(calendar, existingCalendarId, email, existingRules);
       }
     } catch (error) {
       console.error("Error updating calendar ACL:", error);
@@ -275,16 +218,14 @@ export async function syncEventToCalendar(
   event: Activity,
   userEmail: string,
   existingEventIds?: Set<string>,
-  alternativeEmail?: string
+  alternativeEmail?: string,
+  neiistEmail?: string
 ) {
   const calendar = getCalendarClient();
   if (!calendar) return;
 
-  const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
-  const shouldInclude =
-    event.start &&
-    (event.type !== "Meeting" ||
-      (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
+  const userEmailSet = normalizeUserEmails([userEmail, alternativeEmail, neiistEmail]);
+  const shouldInclude = shouldIncludeCalendarEvent(event, userEmailSet);
 
   const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
 
@@ -302,10 +243,8 @@ export async function syncEventToCalendar(
   const dates = buildGoogleCalendarDates(event);
   if (!dates) return;
 
-  const validUrl = event.url && event.url.startsWith("http") ? event.url : undefined;
-  const lastEditedIso = event.lastEditedTime
-    ? event.lastEditedTime.toISOString()
-    : new Date().toISOString();
+  const validUrl = getValidEventUrl(event);
+  const lastEditedIso = getEventLastEditedIso(event);
 
   const googleEvent = {
     id: googleEventId,
@@ -381,36 +320,12 @@ export async function syncEventToCalendar(
   }
 }
 
-export async function syncEventsToCalendarBatched(
-  calendarId: string,
-  events: Activity[],
-  userEmail: string,
-  alternativeEmail?: string
-) {
-  const existingEvents = await getExistingCalendarEvents(calendarId);
-  const existingEventIds = new Set(existingEvents.keys());
-
-  let synced = 0;
-  for (let i = 0; i < events.length; i += BATCH_SIZE) {
-    const batch = events.slice(i, i + BATCH_SIZE);
-    await Promise.all(
-      batch.map((event) =>
-        syncEventToCalendar(calendarId, event, userEmail, existingEventIds, alternativeEmail)
-      )
-    );
-    synced += batch.length;
-    if (i + BATCH_SIZE < events.length) {
-      await delay(BATCH_DELAY_MS);
-    }
-  }
-  return synced;
-}
-
 export async function syncAllEventsToCalendar(
   calendarId: string,
   events: Activity[],
   userEmail: string,
-  alternativeEmail?: string
+  alternativeEmail?: string,
+  neiistEmail?: string
 ) {
   const existingEvents = await getExistingCalendarEvents(calendarId);
 
@@ -418,13 +333,10 @@ export async function syncAllEventsToCalendar(
   const eventsToDelete: string[] = [];
   const existingEventIds = new Set(existingEvents.keys());
 
-  const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
+  const userEmailSet = normalizeUserEmails([userEmail, alternativeEmail, neiistEmail]);
 
   for (const event of events) {
-    const shouldInclude =
-      event.start &&
-      (event.type !== "Meeting" ||
-        (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
+    const shouldInclude = shouldIncludeCalendarEvent(event, userEmailSet);
 
     const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
 
@@ -452,6 +364,8 @@ export async function syncAllEventsToCalendar(
     eventsToDelete.push(eventId);
   }
 
+  const existingIdSet = new Set(existingEvents.keys());
+
   for (let i = 0; i < eventsToUpdate.length; i += BATCH_SIZE) {
     const batch = eventsToUpdate.slice(i, i + BATCH_SIZE);
     await Promise.all(
@@ -460,8 +374,9 @@ export async function syncAllEventsToCalendar(
           calendarId,
           event,
           userEmail,
-          new Set(existingEvents.keys()),
-          alternativeEmail
+          existingIdSet,
+          alternativeEmail,
+          neiistEmail
         )
       )
     );
@@ -504,9 +419,4 @@ export async function deleteEventFromCalendar(calendarId: string, eventId: strin
 export async function getAddCalendarLink(calendarId: string | null | undefined) {
   if (!calendarId) return "";
   return `https://calendar.google.com/calendar/u/0?cid=${encodeURIComponent(calendarId)}&mode=WEEK`;
-}
-
-export async function getCalendarWebLink(calendarId: string | null | undefined) {
-  if (!calendarId) return "";
-  return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}`;
 }

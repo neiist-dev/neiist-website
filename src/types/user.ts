@@ -9,6 +9,8 @@ export interface User {
   email: string;
   alternativeEmail?: string | null;
   alternativeEmailVerified: boolean;
+  neiistEmail?: string | null;
+  outlookCalendarSync?: boolean;
   phone?: string | null;
   preferredContactMethod?: "email" | "alternativeEmail" | "phone";
   photo: string;
@@ -25,7 +27,7 @@ export interface User {
 
 export type UserProfile = Pick<
   User,
-  "istid" | "name" | "email" | "alternativeEmail" | "phone" | "courses" | "photo"
+  "istid" | "name" | "email" | "alternativeEmail" | "neiistEmail" | "phone" | "courses" | "photo"
 >;
 
 export interface dbUser {
@@ -33,6 +35,8 @@ export interface dbUser {
   name: string;
   email: string;
   alt_email?: string;
+  neiist_email?: string | null;
+  outlook_calendar_sync?: boolean;
   phone?: string | null;
   preferred_contact_method?: "email" | "alternativeEmail" | "phone";
   courses?: string[];
@@ -88,6 +92,8 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     email: dbUser.email,
     alternativeEmail: dbUser.alt_email ?? undefined,
     alternativeEmailVerified: true,
+    neiistEmail: dbUser.neiist_email ?? undefined,
+    outlookCalendarSync: dbUser.outlook_calendar_sync ?? false,
     phone: dbUser.phone ?? undefined,
     preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
     photo: `/api/user/photo/${dbUser.istid}`,

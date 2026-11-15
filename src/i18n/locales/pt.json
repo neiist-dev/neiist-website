@@ -719,13 +719,18 @@
     },
     "sections": {
       "calendar": "Calendário",
-      "calendarDescription": "Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!",
+      "calendarDescription": "Adicione o calendário do NEIIST ao seu Google Calendar ou Outlook para não perder nada!",
+      "calendarDescriptionGoogle": "Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!",
+      "calendarTooltip": "O Google Calendar é privado para o teu email principal ou alternativo (conta Google). O Outlook sincroniza diretamente com o teu email @neiist.pt.",
+      "calendarTooltipGoogle": "O Google Calendar é privado para o teu email principal ou alternativo (conta Google).",
       "cvbank": "CV Bank",
       "cvbankTooltip": "Explicação sobre o CV-Bank."
     },
     "buttons": {
-      "view_calendar": "Ver Calendário",
       "open_in_google": "Abrir no Google Calendar",
+      "sync_outlook": "Sincronizar com Outlook (@neiist.pt)",
+      "outlook_sync_enabled": "Sincronização com Outlook ativada",
+      "outlook_sync_disabled": "Sincronização com Outlook desativada",
       "download_cv": "Descarregar o CV",
       "remove_cv": "Remover o CV"
     },
@@ -927,6 +932,12 @@
       "options_aria": "Opções de mandato",
       "options_title": "Opções de Mandato",
       "view_details": "Ver Detalhes",
+      "edit_neiist_email": "Editar Email NEIIST",
+      "edit_neiist_email_title": "Editar Email NEIIST",
+      "neiist_email_label": "Email NEIIST (@neiist.pt)",
+      "neiist_email_updated": "Email NEIIST atualizado com sucesso",
+      "neiist_email_error": "Falha ao atualizar email NEIIST",
+      "save": "Guardar",
       "conclude_mandate": "Concluir Mandato",
       "delete_mandate": "Eliminar Mandato",
       "confirm_conclude_title": "Concluir Mandato",
@@ -1497,12 +1508,16 @@
             "text": "identidade e fotografia de perfil obtidas no momento do login. Aplica-se a própria política de privacidade do Técnico Lisboa."
           },
           {
-            "label": "Google (Gmail / Google Drive)",
-            "text": "utilizado para envio de emails transacionais e armazenamento de CVs, ao abrigo do Acordo de Tratamento de Dados (DPA) da Google."
+            "label": "Microsoft 365 (Exchange Online / SharePoint)",
+            "text": "utilizado para envio de emails transacionais, armazenamento de CVs e submissões em concursos, ao abrigo do Acordo de Tratamento de Dados (DPA) da Microsoft."
           },
           {
-            "label": "Google Drive (cópias de segurança)",
-            "text": "utilizado para armazenar cópias de segurança da base de dados, ao abrigo do DPA da Google. Todas as cópias são cifradas localmente com GPG (AES-256) antes do envio, pelo que a Google não tem acesso ao seu conteúdo."
+            "label": "Microsoft 365 / SharePoint (cópias de segurança)",
+            "text": "utilizado para armazenar cópias de segurança da base de dados, ao abrigo do DPA da Microsoft. Todas as cópias são cifradas localmente com GPG (AES-256) antes do envio, pelo que a Microsoft não tem acesso ao seu conteúdo."
+          },
+          {
+            "label": "Google Calendar",
+            "text": "utilizado opcionalmente para sincronizar o calendário de eventos dos membros quando solicitado pelo próprio, ao abrigo do Acordo de Tratamento de Dados (DPA) da Google."
           },
           {
             "label": "SumUp",
@@ -1521,7 +1536,7 @@
           {
             "title": "Transferências Internacionais de Dados",
             "paragraphs": [
-              "A utilização de alguns dos serviços de terceiros acima indicados (como a Google e a Grafana Labs) pode implicar a transferência de dados pessoais para fora do Espaço Económico Europeu (EEE), designadamente para os Estados Unidos da América.",
+              "A utilização de alguns dos serviços de terceiros acima indicados (como a Microsoft, a Google e a Grafana Labs) pode implicar a transferência de dados pessoais para fora do Espaço Económico Europeu (EEE), designadamente para os Estados Unidos da América.",
               "Estas transferências internacionais de dados encontram-se devidamente salvaguardadas e em estrita conformidade com o RGPD, estando cobertas por garantias adequadas:"
             ],
             "items": [

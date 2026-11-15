@@ -1,7 +1,8 @@
-import nodemailer from "nodemailer";
+import { readFile } from "node:fs/promises";
 import ical from "ical-generator";
 import { getEventTicketEmailTemplate } from "@/lib/email/templates/events";
 import { generateTicketPNG } from "@/lib/ticketPng";
+import { getGraphClient, isM365MailConfigured } from "@/lib/m365/graph";
 
 export interface EmailAttachment {
   filename: string;
@@ -12,59 +13,68 @@ export interface EmailAttachment {
 }
 
 export interface EmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   attachments?: EmailAttachment[];
 }
 
-function isSMTPConfigured(): boolean {
-  return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
-}
-
-type MailTransporter = ReturnType<typeof nodemailer.createTransport>;
-
-const globalForEmail = globalThis as unknown as {
-  emailTransporter: MailTransporter | undefined;
-};
-
-function getTransporter(): MailTransporter {
-  if (!globalForEmail.emailTransporter) {
-    globalForEmail.emailTransporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+async function toGraphAttachment(att: EmailAttachment) {
+  let contentBytes = "";
+  if (Buffer.isBuffer(att.content)) {
+    contentBytes = att.content.toString("base64");
+  } else if (typeof att.content === "string") {
+    contentBytes = Buffer.from(att.content, "utf-8").toString("base64");
+  } else if (att.path) {
+    const fileBuf = await readFile(att.path);
+    contentBytes = fileBuf.toString("base64");
   }
-  return globalForEmail.emailTransporter;
+
+  return {
+    "@odata.type": "#microsoft.graph.fileAttachment",
+    name: att.filename,
+    contentType: att.contentType ?? "application/octet-stream",
+    contentBytes,
+    ...(att.cid ? { isInline: true, contentId: att.cid } : {}),
+  };
 }
 
 export async function sendEmail({
   to,
   subject,
   html,
-  attachments,
+  attachments = [],
 }: EmailOptions): Promise<boolean> {
-  if (!isSMTPConfigured()) {
-    console.warn("SMTP not configured. Email not sent:", { to, subject });
+  if (!isM365MailConfigured()) {
+    console.warn("M365 Mail not configured. Email not sent:", { to, subject });
     return false;
   }
 
   try {
-    const transporter = getTransporter();
+    const client = getGraphClient();
+    const sender = process.env.M365_SENDER_EMAIL!;
+    const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
+    if (recipients.length === 0) return false;
 
-    await transporter.sendMail({
-      from: `"NEIIST" <${process.env.SMTP_USER}>`,
-      to,
-      subject,
-      html,
-      attachments,
+    const graphAttachments = await Promise.all(attachments.map(toGraphAttachment));
+
+    await client.api(`/users/${encodeURIComponent(sender)}/sendMail`).post({
+      message: {
+        subject,
+        body: {
+          contentType: "HTML",
+          content: html,
+        },
+        toRecipients: recipients.map((address) => ({
+          emailAddress: { address },
+        })),
+        ...(graphAttachments.length > 0 ? { attachments: graphAttachments } : {}),
+      },
+      saveToSentItems: false,
     });
     return true;
   } catch (error) {
-    console.error("Failed to send email:", error);
+    console.error("Failed to send email via M365 Graph:", error);
     return false;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -17,7 +17,7 @@ import {
 import MemberAvatar from "@/components/layout/MemberAvatar";
 import { useSearch } from "@/hooks/useSearch";
 import { FaPlus } from "react-icons/fa";
-import { FiMoreVertical, FiCalendar, FiTrash2, FiFileText, FiCamera } from "react-icons/fi";
+import { FiCalendar, FiTrash2, FiFileText, FiCamera, FiMail } from "react-icons/fi";
 import type { RoleItem } from "@/types/roles";
 import { compareMandatePower } from "@/utils/membershipSortUtils";
 import type { Membership } from "@/types/memberships";
@@ -33,6 +33,12 @@ const AddMembershipModal = dynamic(
 );
 const MemberDetailModal = dynamic(
   () => import("@/components/management/modals/MemberDetailModal"),
+  {
+    ssr: false,
+  }
+);
+const EditNeiistEmailModal = dynamic(
+  () => import("@/components/management/modals/EditNeiistEmailModal"),
   {
     ssr: false,
   }
@@ -79,6 +85,7 @@ export default function MembershipsTab({
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
+  const [editingEmailMembership, setEditingEmailMembership] = useState<Membership | null>(null);
 
   const [pendingAction, setPendingAction] = useState<{
     membership: Membership;
@@ -304,58 +311,53 @@ export default function MembershipsTab({
           </Badge>
         ),
       },
-      {
-        id: "actions",
-        header: "",
-        width: 50,
-        cell: (row) => (
-          <DropdownMenu>
-            <DropdownMenu.Trigger>
-              <button
-                type="button"
-                className={styles.actionBtn}
-                aria-label={mDict.options_aria}
-                onClick={(event) => event.stopPropagation()}>
-                <FiMoreVertical size={16} />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" mobileTitle={mDict.options_title}>
-              <DropdownMenu.Item
-                icon={<FiFileText size={14} />}
-                onClick={() => setSelectedMembership(row)}>
-                {mDict.view_details}
-              </DropdownMenu.Item>
-              {canManagePhotos && (
-                <DropdownMenu.Item
-                  icon={<FiCamera size={14} />}
-                  disabled={isUploadingPhoto}
-                  onClick={() => triggerPhotoUpload(row.userNumber)}>
-                  {mDict.change_photo}
-                </DropdownMenu.Item>
-              )}
-              {canManageMemberships && row.isActive && (
-                <DropdownMenu.Item
-                  icon={<FiCalendar size={14} />}
-                  onClick={() => setPendingAction({ membership: row, action: "conclude" })}>
-                  {mDict.conclude_mandate}
-                </DropdownMenu.Item>
-              )}
-              {canManageMemberships && (
-                <>
-                  <DropdownMenu.Divider />
-                  <DropdownMenu.Item
-                    icon={<FiTrash2 size={14} />}
-                    destructive
-                    onClick={() => setPendingAction({ membership: row, action: "delete" })}>
-                    {mDict.delete_mandate}
-                  </DropdownMenu.Item>
-                </>
-              )}
-            </DropdownMenu.Content>
-          </DropdownMenu>
-        ),
-      },
     ],
+    [mDict]
+  );
+
+  const renderMembershipActions = useCallback(
+    (row: Membership) => (
+      <>
+        <DropdownMenu.Item
+          icon={<FiFileText size={14} />}
+          onClick={() => setSelectedMembership(row)}>
+          {mDict.view_details}
+        </DropdownMenu.Item>
+        {canManagePhotos && (
+          <DropdownMenu.Item
+            icon={<FiCamera size={14} />}
+            disabled={isUploadingPhoto}
+            onClick={() => triggerPhotoUpload(row.userNumber)}>
+            {mDict.change_photo}
+          </DropdownMenu.Item>
+        )}
+        {canManageMemberships && (
+          <DropdownMenu.Item
+            icon={<FiMail size={14} />}
+            onClick={() => setEditingEmailMembership(row)}>
+            {mDict.edit_neiist_email}
+          </DropdownMenu.Item>
+        )}
+        {canManageMemberships && row.isActive && (
+          <DropdownMenu.Item
+            icon={<FiCalendar size={14} />}
+            onClick={() => setPendingAction({ membership: row, action: "conclude" })}>
+            {mDict.conclude_mandate}
+          </DropdownMenu.Item>
+        )}
+        {canManageMemberships && (
+          <>
+            <DropdownMenu.Divider />
+            <DropdownMenu.Item
+              icon={<FiTrash2 size={14} />}
+              destructive
+              onClick={() => setPendingAction({ membership: row, action: "delete" })}>
+              {mDict.delete_mandate}
+            </DropdownMenu.Item>
+          </>
+        )}
+      </>
+    ),
     [canManageMemberships, canManagePhotos, isUploadingPhoto, mDict]
   );
 
@@ -423,6 +425,8 @@ export default function MembershipsTab({
         columns={columns}
         getRowId={(row) => row.id}
         onRowClick={(row) => setSelectedMembership(row)}
+        rowActions={renderMembershipActions}
+        actionsTitle={mDict.options_title}
         emptyMessage={mDict.empty}
       />
 
@@ -450,6 +454,14 @@ export default function MembershipsTab({
             setPendingAction({ membership: membership, action: "conclude" })
           }
           onDelete={(membership) => setPendingAction({ membership: membership, action: "delete" })}
+          dict={dict}
+        />
+      )}
+
+      {editingEmailMembership && (
+        <EditNeiistEmailModal
+          membership={editingEmailMembership}
+          onClose={() => setEditingEmailMembership(null)}
           dict={dict}
         />
       )}
