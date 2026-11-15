@@ -256,6 +256,12 @@ export default function ShopManagement({
     setSortDirection(direction);
   }, []);
 
+  const confirmTitles: Record<ConfirmAction["type"], string> = {
+    disable_sales: dict.disable_sales,
+    enable_sales: dict.enable_sales,
+    delete: dict.delete,
+  };
+
   const confirmMessages: Record<ConfirmAction["type"], string> = {
     disable_sales: dict.confirm_disable_sales,
     enable_sales: dict.confirm_enable_sales,
@@ -479,6 +485,7 @@ export default function ShopManagement({
     <>
       <ConfirmDialog
         open={Boolean(pendingAction)}
+        title={pendingAction ? confirmTitles[pendingAction.type] : undefined}
         message={pendingAction ? confirmMessages[pendingAction.type] : ""}
         confirmLabel={dict.confirm_dialog.confirm}
         cancelLabel={dict.confirm_dialog.cancel}
