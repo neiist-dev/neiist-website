@@ -5,9 +5,9 @@ import {
   getAddCalendarLink,
   syncAllEventsToCalendar,
 } from "@/lib/google/calendar";
+import { checkRoles, UserRole } from "@/types/roles";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
-import { getUser } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateIstId } from "@/utils/apiValidationUtils";
 
@@ -17,17 +17,16 @@ export async function GET(
 ) {
   const auth = await getAuthenticatedUser();
   if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  const jwtUser = auth.user;
+  const { user } = auth;
 
   const [istid, error] = validateIstId((await params).istid);
   if (error) return error;
 
-  if (jwtUser.istid !== istid)
+  if (user.istid !== istid)
     return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
 
   try {
-    const user = await getUser(istid);
-    if (!user || !user.email)
+    if (!user.email)
       return NextResponse.json({ error: "User not found or missing email" }, { status: 404 });
 
     const alternativeEmailRaw = user.alternativeEmailVerified ? user.alternativeEmail : undefined;
@@ -43,7 +42,8 @@ export async function GET(
 
     if (!calendarId) return NextResponse.json({ addCalendarLink: "" });
 
-    const events = await getActivitiesEvents(false);
+    const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
+    const events = await getActivitiesEvents(!isMember);
     const syncStats = await syncAllEventsToCalendar(
       calendarId,
       events,

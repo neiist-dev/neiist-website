@@ -132,6 +132,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
       const { isM365Configured } = await import("@/lib/m365/graph");
       const { syncAllEventsToOutlookCalendar } = await import("@/lib/m365/calendar");
       const { getUserCalendarEmails } = await import("@/utils/calendarUtils");
+      const { checkRoles, UserRole } = await import("@/types/roles");
       const { getAllUsersNoCache } = await import("@/lib/db/repositories/user.repository");
       const { getActivitiesEventsNoCache } = await import("@/lib/db/repositories/event.repository");
       const pLimit = (await import("p-limit")).default;
@@ -147,6 +148,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
 
       const allUsers = await getAllUsersNoCache();
       const allDbEvents = await getActivitiesEventsNoCache(false);
+      const publicDbEvents = allDbEvents.filter((event) => event.public);
 
       const calendarByIstid = new Map<string, string>();
       const calendarClient = getCalendarClient();
@@ -178,11 +180,18 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
               ? (user.alternativeEmail ?? undefined)
               : undefined;
 
+            const isMember = checkRoles(user, [
+              UserRole._MEMBER,
+              UserRole._COORDINATOR,
+              UserRole._ADMIN,
+            ]);
+            const userEvents = isMember ? allDbEvents : publicDbEvents;
+
             if (googleCalId) {
               try {
                 await syncAllEventsToCalendar(
                   googleCalId,
-                  allDbEvents,
+                  userEvents,
                   user.email!,
                   altEmail,
                   user.neiistEmail ?? undefined
@@ -196,7 +205,7 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
               try {
                 await syncAllEventsToOutlookCalendar(
                   user.neiistEmail,
-                  allDbEvents,
+                  userEvents,
                   getUserCalendarEmails(user)
                 );
               } catch (calErr) {
@@ -237,7 +246,9 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
     if (job.enabled) {
       const { getActivitiesEventsNoCache } = await import("@/lib/db/repositories/event.repository");
       const { getUserCalendarEmails } = await import("@/utils/calendarUtils");
-      const allDbEvents = await getActivitiesEventsNoCache(false);
+      const { checkRoles, UserRole } = await import("@/types/roles");
+      const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
+      const allDbEvents = await getActivitiesEventsNoCache(!isMember);
       await syncAllEventsToOutlookCalendar(
         user.neiistEmail,
         allDbEvents,

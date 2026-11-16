@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { getUser, updateUser } from "@/lib/db/repositories/user.repository";
+import { updateUser } from "@/lib/db/repositories/user.repository";
 import { isM365Configured } from "@/lib/m365/graph";
 import { enqueueOutlookCalendarSync } from "@/lib/redis/queue";
 import { handleApiError } from "@/utils/apiErrorUtils";
@@ -12,20 +12,19 @@ export async function POST(
 ) {
   const auth = await getAuthenticatedUser();
   if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  const jwtUser = auth.user;
+  const { user } = auth;
 
   const [istid, error] = validateIstId((await params).istid);
   if (error) return error;
 
-  if (jwtUser.istid !== istid)
+  if (user.istid !== istid)
     return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
 
   try {
     const body = await request.json();
     const enabled = Boolean(body?.enabled);
 
-    const user = await getUser(istid);
-    if (!user || !user.email)
+    if (!user.email)
       return NextResponse.json({ error: "User not found or missing email" }, { status: 404 });
 
     if (!user.neiistEmail)
