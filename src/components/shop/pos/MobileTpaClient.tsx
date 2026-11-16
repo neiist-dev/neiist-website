@@ -13,8 +13,23 @@ interface MobileTpaClientProps {
   dict: Dictionary["pos"]["mobile_tpa"];
 }
 
+const MOBILE_TPA_SESSION_KEY = "neiist_mobile_tpa_session_id";
+
+function getOrCreateSessionId(): string {
+  if (typeof window === "undefined") return crypto.randomUUID();
+  try {
+    const existing = localStorage.getItem(MOBILE_TPA_SESSION_KEY);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    localStorage.setItem(MOBILE_TPA_SESSION_KEY, created);
+    return created;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
 export default function MobileTpaClient({ dict }: MobileTpaClientProps) {
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId] = useState(getOrCreateSessionId);
   const [activeJob, setActiveJob] = useState<SumUpBridgeRelayJob | null>(null);
 
   useSumUpBridgeReturn({
@@ -23,7 +38,7 @@ export default function MobileTpaClient({ dict }: MobileTpaClientProps) {
   });
 
   useEffect(() => {
-    const es = new EventSource(
+    const eventSource = new EventSource(
       `/api/shop/sumup/bridge/stream?sessionId=${encodeURIComponent(sessionId)}`
     );
 
@@ -57,15 +72,21 @@ export default function MobileTpaClient({ dict }: MobileTpaClientProps) {
       setActiveJob(null);
     };
 
-    es.addEventListener("job", onJob);
-    es.addEventListener("job_updated", onJobUpdated);
-    es.addEventListener("job_cancelled", onJobCancelled);
+    const onReplaced = () => {
+      eventSource.close();
+    };
+
+    eventSource.addEventListener("job", onJob);
+    eventSource.addEventListener("job_updated", onJobUpdated);
+    eventSource.addEventListener("job_cancelled", onJobCancelled);
+    eventSource.addEventListener("replaced", onReplaced);
 
     return () => {
-      es.removeEventListener("job", onJob);
-      es.removeEventListener("job_updated", onJobUpdated);
-      es.removeEventListener("job_cancelled", onJobCancelled);
-      es.close();
+      eventSource.removeEventListener("job", onJob);
+      eventSource.removeEventListener("job_updated", onJobUpdated);
+      eventSource.removeEventListener("job_cancelled", onJobCancelled);
+      eventSource.removeEventListener("replaced", onReplaced);
+      eventSource.close();
     };
   }, [dict.failed_toast, dict.paid_toast, sessionId]);
 

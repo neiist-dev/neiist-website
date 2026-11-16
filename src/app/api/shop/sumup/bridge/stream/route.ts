@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
         }
       }, 15000);
 
-      unsubRelay = registerRelayConnection(sessionId, userId, sendEvent);
+      unsubRelay = registerRelayConnection(sessionId, userId, sendEvent, safeClose);
     },
     cancel() {
       if (cleanupRef) cleanupRef();

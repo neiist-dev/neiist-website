@@ -64,6 +64,7 @@ export interface PosPaymentModalProps {
   cartItems?: CartItem[];
   ordersBasePath?: string;
   canOverride?: boolean;
+  initialSuccessOrderNumber?: string | null;
   onConfirm: (_data: PosPaymentConfirmData) => Promise<PosPaymentResult | void>;
   onFinish?: () => void;
   dict: Dictionary["pos"]["payment"];
@@ -92,6 +93,7 @@ export default function PosPaymentModal({
   cartItems = [],
   ordersBasePath,
   canOverride = false,
+  initialSuccessOrderNumber,
   onConfirm,
   onFinish,
   dict,
@@ -200,7 +202,13 @@ export default function PosPaymentModal({
   // Sync state when modal opens
   useEffect(() => {
     if (open) {
-      setStep("payment");
+      if (initialSuccessOrderNumber) {
+        setCompletedOrderNumber(initialSuccessOrderNumber);
+        setIsReservation(false);
+        setStep("success");
+      } else {
+        setStep("payment");
+      }
       setSelectedMethod("cash");
       setIsSubmitting(false);
       setTpaState("idle");
@@ -221,6 +229,7 @@ export default function PosPaymentModal({
     shortcuts,
     orderNumber,
     customerPhone,
+    initialSuccessOrderNumber,
     closeSumUpSse,
     closeMbWaySse,
     resetMbWayPayment,

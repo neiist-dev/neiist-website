@@ -20,6 +20,7 @@ type RelayEventSender = (_event: string, _data: unknown) => void;
 interface RelaySessionEntry {
   userId: string;
   send: RelayEventSender;
+  close?: () => void;
 }
 
 interface SumUpBridgeMemoryStore {
@@ -216,10 +217,16 @@ export async function createBridgePaymentAttempt(params: {
 export function registerRelayConnection(
   sessionId: string,
   userId: string,
-  send: RelayEventSender
+  send: RelayEventSender,
+  close?: () => void
 ): () => void {
   const store = getBridgeStore();
-  store.activeSessions.set(sessionId, { userId, send });
+  const previous = store.activeSessions.get(sessionId);
+  if (previous && previous.send !== send) {
+    previous.send("replaced", {});
+    previous.close?.();
+  }
+  store.activeSessions.set(sessionId, { userId, send, close });
 
   const cutoff = Date.now() - BRIDGE_STATE_TTL_MS;
   for (const job of store.jobsById.values()) {

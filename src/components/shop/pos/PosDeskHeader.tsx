@@ -91,9 +91,6 @@ export default function PosDeskHeader({ title, subtitle, session, dict }: PosDes
             {qrDataUri && (
               <Image src={qrDataUri} alt={mobileTpaUrl} width={240} height={240} unoptimized />
             )}
-            <Text size="sm" variant="muted" style={{ textAlign: "center" }}>
-              {mobileTpaUrl}
-            </Text>
           </Stack>
         </Modal.Body>
       </Modal>

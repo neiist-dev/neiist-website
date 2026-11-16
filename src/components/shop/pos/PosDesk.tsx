@@ -51,9 +51,16 @@ export default function PosDesk({
   const canAccessPos = effectiveUser ? hasPermission(effectiveUser, "pos:access") : false;
   const canOverride = effectiveUser ? hasPermission(effectiveUser, "orders:override") : false;
 
+  const [bridgeSuccessOrder, setBridgeSuccessOrder] = useState<string | null>(null);
+  const handleBridgeSuccess = useCallback((order: string) => {
+    if (!order) return;
+    setBridgeSuccessOrder(order);
+  }, []);
+
   useSumUpBridgeReturn({
     successMessage: dict.payment.sumup_app_success_toast,
     failedMessage: dict.payment.sumup_app_failed_toast,
+    onSuccess: handleBridgeSuccess,
   });
 
   const session = usePosSession({
@@ -250,10 +257,13 @@ export default function PosDesk({
         dict={dict.pending}
       />
 
-      {isPaymentModalOpen && (
+      {(isPaymentModalOpen || Boolean(bridgeSuccessOrder)) && (
         <PosPaymentModal
-          open={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
+          open={isPaymentModalOpen || Boolean(bridgeSuccessOrder)}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setBridgeSuccessOrder(null);
+          }}
           mode="identified"
           totalAmount={totalAmount}
           orderNumber={pendingOrderNumber || undefined}
@@ -271,8 +281,12 @@ export default function PosDesk({
           shiftId={session.activeShift?.id}
           ordersBasePath={basePath}
           canOverride={canOverride}
+          initialSuccessOrderNumber={bridgeSuccessOrder}
           onConfirm={handleConfirmOrderPayment}
-          onFinish={handleFinishSale}
+          onFinish={() => {
+            setBridgeSuccessOrder(null);
+            handleFinishSale();
+          }}
           dict={dict.payment}
           paymentsDict={paymentsDict}
         />
