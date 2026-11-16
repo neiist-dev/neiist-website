@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { signJWTWebCrypto } from "@/lib/security/jwt";
 import { User } from "@/types/user";
 import { fenixPhotos } from "@/lib/imageStorage";
-import {
-  getUser,
-  createUser,
-  updateUser,
-  getEmailVerificationByUser,
-} from "@/lib/db/repositories/user.repository";
+import { getUser, createUser, updateUser } from "@/lib/db/repositories/user.repository";
 import { FenixPersonResponse } from "@/types/fenix";
 import { extractCourses } from "@/utils/userUtils";
 
@@ -75,16 +70,6 @@ async function cacheFenixPhoto(istid: string, photoData?: string) {
   }
 }
 
-async function attachEmailVerification(user: User) {
-  const notVerifiedEmail = await getEmailVerificationByUser(user.istid);
-  if (notVerifiedEmail) {
-    user.alternativeEmail = notVerifiedEmail.email;
-    user.alternativeEmailVerified = false;
-  } else {
-    user.alternativeEmailVerified = true;
-  }
-}
-
 /**
  * Fetches profile data from Fénix, creates or synchronizes the database user record.
  */
@@ -107,17 +92,17 @@ export async function syncFenixUserAndCreateSession(
     if (!user) return null;
 
     await cacheFenixPhoto(user.istid, info.photo?.data);
-    await attachEmailVerification(user);
+    const fullUser = (await getUser(user.istid)) ?? user;
 
     const jwtPayload = {
-      istid: user.istid,
-      roles: user.roles,
-      name: user.name,
-      email: user.email,
+      istid: fullUser.istid,
+      roles: fullUser.roles,
+      name: fullUser.name,
+      email: fullUser.email,
     };
     const sessionToken = await signJWTWebCrypto(jwtPayload);
 
-    return { user, sessionToken };
+    return { user: fullUser, sessionToken };
   } catch (err) {
     console.error("[Auth] Error synchronizing Fénix user session:", err);
     return null;

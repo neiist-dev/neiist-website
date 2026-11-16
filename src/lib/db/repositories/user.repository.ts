@@ -42,11 +42,13 @@ export const getUserNoCache = async (istid: string): Promise<User | null> => {
 
 export const getUser = async (istid: string): Promise<User | null> => {
   "use cache";
-  cacheTag("users", "memberships", "department_roles");
-  const user = await getUserNoCache(istid);
+  cacheTag("users", "memberships", "department_roles", "email_verifications");
+  const [user, memberships, pendingVerification] = await Promise.all([
+    getUserNoCache(istid),
+    getUserMemberships(istid, true),
+    getEmailVerificationByUser(istid),
+  ]);
   if (!user) return null;
-
-  const memberships = await getUserMemberships(istid, true);
 
   let positionName: string | null = null;
   if (memberships.length > 0) {
@@ -57,6 +59,8 @@ export const getUser = async (istid: string): Promise<User | null> => {
 
   return {
     ...user,
+    alternativeEmail: pendingVerification ? pendingVerification.email : user.alternativeEmail,
+    alternativeEmailVerified: !pendingVerification,
     positionName: positionName ?? undefined,
   };
 };

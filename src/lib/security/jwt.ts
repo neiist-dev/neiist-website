@@ -18,7 +18,7 @@ export interface JwtPayload {
 export function signJWTWebCrypto(
   payload: JwtPayload,
   secret: string = process.env.JWT_SECRET ?? "",
-  expiresInSeconds: number = 7 * 24 * 60 * 60
+  expiresInSeconds: number = 24 * 60 * 60
 ): string {
   if (!secret) throw new Error("JWT_SECRET is required to sign JWT");
 

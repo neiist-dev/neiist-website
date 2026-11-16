@@ -13,8 +13,6 @@ export function getRateLimitRule(pathname: string): RateLimitRule | null {
 
   if (pathname === "/api/auth/callback") return { limit: 20, windowMs: MIN };
 
-  if (pathname === "/api/auth/refresh") return { limit: 30, windowMs: MIN };
-
   if (pathname.startsWith("/api/user/verify-email/")) return { limit: 5, windowMs: 15 * MIN };
 
   if (pathname.startsWith("/api/admin/")) return { limit: 30, windowMs: MIN, useUser: true };

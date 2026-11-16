@@ -46,10 +46,18 @@ export async function GET(req: NextRequest) {
     }
 
     const data: FenixOAuthTokenResponse = await r.json();
-    const { access_token, refresh_token, expires_in } = data;
+    const { access_token } = data;
 
     if (!access_token) {
       const res = NextResponse.json({ error: "Access Token Missing" }, { status: 500 });
+      res.cookies.set(clearedStateCookie);
+      res.cookies.set(clearedRedirectCookie);
+      return res;
+    }
+
+    const sessionResult = await syncFenixUserAndCreateSession(access_token);
+    if (!sessionResult) {
+      const res = NextResponse.json({ error: "Failed to Synchronize Fénix User" }, { status: 500 });
       res.cookies.set(clearedStateCookie);
       res.cookies.set(clearedRedirectCookie);
       return res;
@@ -61,26 +69,7 @@ export async function GET(req: NextRequest) {
     const redirectUrl = new URL(safeDestination, baseUrl);
 
     const response = NextResponse.redirect(redirectUrl);
-
-    response.cookies.set("access_token", access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: Math.max(0, (Number(expires_in) || 3600) - 60),
-      path: "/",
-    });
-
-    if (refresh_token) {
-      response.cookies.set("refresh_token", refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 30,
-        path: "/",
-      });
-    }
-
-    const sessionResult = await syncFenixUserAndCreateSession(access_token);
-    if (sessionResult) setSessionCookie(response, sessionResult.sessionToken);
-
+    setSessionCookie(response, sessionResult.sessionToken);
     response.cookies.set(clearedStateCookie);
     response.cookies.set(clearedRedirectCookie);
     return response;
