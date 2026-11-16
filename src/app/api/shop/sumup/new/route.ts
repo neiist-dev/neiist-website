@@ -16,7 +16,7 @@ import {
   getSessionExpiryMs,
   saveCheckoutSession,
 } from "@/lib/redis/sessions";
-import { verifyPermission } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -24,8 +24,8 @@ const MIN_REMAINING_SECONDS = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await verifyPermission("orders:create");
-    if (auth.error) return auth.error;
+    const auth = await getAuthenticatedUser();
+    if (!auth) return sumupErrorResponse("Not authenticated", 401);
 
     let orderNumber = "";
     try {
@@ -39,9 +39,8 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await getCheckoutSession(orderNumber);
-    if (!session) {
+    if (!session)
       return sumupErrorResponse("A sessão de checkout expirou. Volta ao carrinho.", 410);
-    }
 
     if (session.user_istid && auth.user && session.user_istid !== auth.user.istid)
       return sumupErrorResponse("Not order owner", 403);

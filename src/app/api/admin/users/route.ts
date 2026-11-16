@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { getAllUsers, createUser } from "@/lib/db/repositories/user.repository";
 import { verifyPermission } from "@/lib/auth";
 import { searchUsers } from "@/lib/search/userSearch";
 
@@ -10,57 +9,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams;
-    const pageParam = searchParams.get("page");
-    const limitParam = searchParams.get("limit");
-    const searchParam = searchParams.get("search");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10) || 50));
+    const rawSearch = searchParams.get("search")?.trim() || "";
 
-    if (pageParam !== null || limitParam !== null || searchParam !== null) {
-      const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
-      const limit = Math.min(100, Math.max(1, parseInt(limitParam || "50", 10) || 50));
-      const rawSearch = searchParam?.trim() || "";
-
-      const result = await searchUsers(rawSearch, page, limit);
-      return NextResponse.json(result);
-    }
-
-    const users = await getAllUsers();
-    return NextResponse.json(users);
-  } catch (error) {
-    return handleApiError(error);
-  }
-}
-
-export async function POST(request: NextRequest) {
-  const auth = await verifyPermission("users:write");
-  if (auth.error) return auth.error;
-
-  try {
-    const body = await request.json();
-    const { istid, name, email } = body;
-
-    if (!istid || !name || !email) {
-      return NextResponse.json(
-        { error: "Missing required fields: istid, name, and email are required" },
-        { status: 400 }
-      );
-    }
-    const istIdPattern = /^ist\d+$/i;
-    if (!istIdPattern.test(istid.trim())) {
-      return NextResponse.json(
-        { error: "Invalid IST ID format. Must be in format: istXXXXXX" },
-        { status: 400 }
-      );
-    }
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email.trim())) {
-      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
-    }
-    const newUser = await createUser({
-      istid: istid.trim(),
-      name: name.trim(),
-      email: email.trim(),
-    });
-    return NextResponse.json(newUser, { status: 201 });
+    const result = await searchUsers(rawSearch, page, limit);
+    return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);
   }

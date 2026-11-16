@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import { Membership } from "@/types/memberships";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
@@ -31,19 +30,22 @@ async function ManagementContent({ params, searchParams }: PageProps) {
   const dict = getDictionary(locale);
   const { tab, year } = await searchParams;
 
-  const { user } = await requireUser();
-  const canAccessManagement =
-    hasPermission(user, "departments:read") ||
-    hasPermission(user, "roles:read") ||
-    hasPermission(user, "memberships:read") ||
-    hasPermission(user, "memberships:write_dept") ||
-    hasPermission(user, "memberships:write_global") ||
-    hasPermission(user, "photos:read") ||
-    hasPermission(user, "photos:write_dept") ||
-    hasPermission(user, "photos:write_global") ||
-    hasPermission(user, "users:read");
-
-  if (!canAccessManagement) redirect(`/${locale}/unauthorized`);
+  const { user } = await requirePermission(
+    [
+      "departments:read",
+      "departments:write",
+      "roles:read",
+      "roles:write",
+      "memberships:read",
+      "memberships:write_dept",
+      "memberships:write_global",
+      "photos:write_dept",
+      "photos:write_global",
+      "users:read",
+      "users:write",
+    ],
+    { match: "any" }
+  );
 
   const currentAcademicYear = getCurrentAcademicYear();
   const dbYears = await getAcademicYears();

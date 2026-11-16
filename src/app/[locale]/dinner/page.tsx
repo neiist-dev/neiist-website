@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import localFont from "next/font/local";
 import {
   FaBug,
@@ -21,6 +22,7 @@ import {
   getUserOrderedProductsInCategory,
 } from "@/lib/db/repositories/shop.repository";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { checkRoles, UserRole } from "@/types/roles";
 import { getDictionary, Dictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import GlobalLoading from "@/app/loading";
@@ -94,6 +96,8 @@ async function DinnerContent({ params }: { params: LocaleParams }) {
   const dict = getDictionary(locale).dinner;
 
   const session = await getAuthenticatedUser();
+  if (!checkRoles(session?.user, [UserRole._ADMIN])) redirect(`/${locale}/unauthorized`);
+
   const products = await getAllProducts(true);
   const unlockDate = new Date("2026-05-21T20:00:00+01:00");
   const now = new Date();

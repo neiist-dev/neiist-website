@@ -1,9 +1,8 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import OrdersTable from "@/components/shop/manage/OrdersTable";
 import OrderDetailOverlay from "@/components/shop/manage/modals/OrderDetailsOverlay";
 import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
-import { requireUser } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import { sanitizeOrder } from "@/utils/shop/shopUtils";
 import { isCurrentAcademicYear } from "@/utils/academicYearUtils";
 import GlobalLoading from "@/app/loading";
@@ -21,15 +20,10 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
   const [resolvedParams, resolvedSearch] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(resolvedParams.locale) ? resolvedParams.locale : defaultLocale;
 
-  const session = await requireUser();
+  const session = await requirePermission(["orders:read", "orders:deliver", "orders:write"], {
+    match: "any",
+  });
   const { user } = session;
-  if (
-    !hasPermission(user, "orders:read") &&
-    !hasPermission(user, "orders:deliver") &&
-    !hasPermission(user, "orders:write")
-  ) {
-    redirect(`/${locale}/unauthorized`);
-  }
 
   const isArchive = resolvedSearch.archive === "true";
   const selectedOrderId = resolvedSearch.orderId ? String(resolvedSearch.orderId).trim() : null;
@@ -38,7 +32,7 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
   const canReadCustomer = hasPermission(user, "orders:read_customer");
   const canEditOrder = hasPermission(user, "orders:write");
   const canDeliver = hasPermission(user, "orders:deliver") || canEditOrder;
-  const canOverride = hasPermission(user, "orders:override");
+  const canDeleteOrder = hasPermission(user, "orders:delete");
 
   const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
 
@@ -62,14 +56,14 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
         dict={dict.orders_table}
         basePath={`/${locale}`}
         isArchive={isArchive}
-        canOverride={canOverride}
+        canOverride={canDeleteOrder}
       />
       {selectedOrder && (
         <OrderDetailOverlay
           order={selectedOrder}
           canManage={canEditOrder}
           canDeliver={canDeliver}
-          canOverride={canOverride}
+          canOverride={canDeleteOrder}
           basePath={overlayBasePath}
           canEditNotes={canEditOrder}
           dict={dict.order_details}

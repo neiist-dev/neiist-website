@@ -18,6 +18,7 @@ import {
 import { RiContactsBook3Line } from "react-icons/ri";
 import { IoOpenOutline } from "react-icons/io5";
 import { getFirstAndLastName, logout } from "@/utils/userUtils";
+import { deleteUserAction } from "@/actions/admin/user";
 import { Alert, ConfirmDialog, ColorfulText, ToggleSwitch } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 import styles from "@/styles/components/Profile.module.css";
@@ -67,14 +68,9 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
     setDeleteLoading(true);
 
     try {
-      const res = await fetch(`/api/user/update/${user.istid}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || dict.delete_account.error_failed);
-      }
+      const result = await deleteUserAction(user.istid);
+      if (!result.success) throw new Error(result.message || dict.delete_account.error_failed);
+
       await logout();
     } catch (e: unknown) {
       Alert.error(e instanceof Error ? e.message : dict.delete_account.error_generic);
@@ -212,9 +208,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
         body: JSON.stringify({ enabled }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || dict.errors.update);
-      }
+      if (!res.ok) throw new Error(data.error || dict.errors.update);
 
       setOutlookSyncEnabled(enabled);
       setUser((prev) => ({ ...prev, outlookCalendarSync: enabled }));

@@ -894,7 +894,6 @@
         "memberships:write_global": "Gerir mandatos de todos os departamentos",
         "memberships:write_dept": "Gerir mandatos dos seus departamentos",
         "memberships:delete": "Remover registos de mandatos",
-        "photos:read": "Ver fotografias de membros",
         "photos:write_global": "Gerir fotos de todos os departamentos",
         "photos:write_dept": "Gerir fotos dos seus departamentos",
         "shop:read": "Ver catálogo da loja e stock",

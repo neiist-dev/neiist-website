@@ -1,17 +1,20 @@
 import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import React from "react";
 import { IconType } from "react-icons";
-import { GoSignOut, GoPerson, GoOrganization } from "react-icons/go";
 import {
-  LuFileText,
-  LuShoppingBag,
-  LuPackage,
-  LuVote,
-  LuMonitor,
-  LuTicket,
   LuCalendar,
+  LuFileText,
+  LuLogOut,
+  LuMonitor,
+  LuPackage,
+  LuShoppingBag,
+  LuTicket,
+  LuUser,
+  LuUsers,
+  LuVote,
 } from "react-icons/lu";
-import { UserMenuItem } from "@/components/layout/navbar/NavItem";
+import { DropdownMenu } from "@neiist/ui";
 import styles from "@/styles/components/layout/navbar/UserMenu.module.css";
 import { User } from "@/types/user";
 import { Permission } from "@/types/permissions";
@@ -30,76 +33,20 @@ interface MenuPage {
   href: string;
   label: string;
   icon: IconType;
-  permission?: Permission;
-  check?: (_user: User) => boolean;
+  permission?: Permission | Permission[];
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict, basePath }) => {
-  const [menuState, setMenuState] = useState<"closed" | "open" | "closing">("closed");
-  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const displayName = getFirstAndLastName(userData.name);
 
-  const closeMenu = React.useCallback(() => {
-    if (menuState === "open") {
-      setMenuState("closing");
-      setTimeout(() => setMenuState("closed"), 150);
-    }
-  }, [menuState]);
+  const personalPages: MenuPage[] = [
+    { href: `${basePath}/profile`, label: dict.profile, icon: LuUser },
+    { href: `${basePath}/my-orders`, label: dict.my_orders, icon: LuPackage },
+    { href: `${basePath}/my-tickets`, label: dict.my_tickets, icon: LuTicket },
+  ];
 
-  useEffect(() => {
-    if (menuState !== "open") return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        closeMenu();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuState, closeMenu]);
-
-  const toggleMenu = () => {
-    if (menuState === "open") {
-      closeMenu();
-    } else if (menuState === "closed") {
-      setMenuState("open");
-    }
-  };
-
-  const handleLogout = () => {
-    closeMenu();
-    setTimeout(logout, 100);
-  };
-
-  const menuPages: MenuPage[] = [
-    {
-      href: `${basePath}/profile`,
-      label: dict.profile,
-      icon: GoPerson,
-    },
-    {
-      href: `${basePath}/my-orders`,
-      label: dict.my_orders,
-      icon: LuPackage,
-    },
-    {
-      href: `${basePath}/my-tickets`,
-      label: dict.my_tickets,
-      icon: LuTicket,
-    },
-    {
-      href: `${basePath}/orders`,
-      label: dict.manage_orders,
-      icon: LuFileText,
-      permission: "orders:read",
-    },
-    {
-      href: `${basePath}/activities/manage`,
-      label: dict.manage_activities,
-      icon: LuCalendar,
-      check: (user) =>
-        hasPermission(user, "events:read") ||
-        hasPermission(user, "events:write") ||
-        hasPermission(user, "events:checkin"),
-    },
+  const managementPages: MenuPage[] = [
     {
       href: `${basePath}/shop/pos`,
       label: dict.pos,
@@ -107,78 +54,113 @@ const UserMenu: React.FC<UserMenuProps> = ({ userData, logout, dict, basePath })
       permission: "pos:access",
     },
     {
-      href: `${basePath}/management`,
-      label: dict.management,
-      icon: GoOrganization,
-      check: (user) =>
-        hasPermission(user, "memberships:read") ||
-        hasPermission(user, "memberships:write_dept") ||
-        hasPermission(user, "departments:read") ||
-        hasPermission(user, "roles:read"),
+      href: `${basePath}/orders`,
+      label: dict.manage_orders,
+      icon: LuFileText,
+      permission: ["orders:read", "orders:deliver", "orders:write"],
     },
     {
       href: `${basePath}/shop/manage`,
       label: dict.manage_shop,
       icon: LuShoppingBag,
-      permission: "shop:write",
+      permission: ["shop:read", "shop:write"],
+    },
+    {
+      href: `${basePath}/activities/manage`,
+      label: dict.manage_activities,
+      icon: LuCalendar,
+      permission: ["events:read", "events:write", "events:checkin"],
     },
     {
       href: `${basePath}/voting/manage`,
       label: dict.manage_voting,
       icon: LuVote,
-      permission: "voting:write",
+      permission: ["voting:read", "voting:write"],
+    },
+    {
+      href: `${basePath}/management`,
+      label: dict.management,
+      icon: LuUsers,
+      permission: [
+        "memberships:read",
+        "memberships:write_dept",
+        "memberships:write_global",
+        "photos:write_dept",
+        "photos:write_global",
+        "departments:read",
+        "departments:write",
+        "roles:read",
+        "roles:write",
+        "users:read",
+        "users:write",
+      ],
     },
   ];
 
-  const getAvailablePages = () => {
-    return menuPages.filter((permission) => {
-      if (permission.permission) return hasPermission(userData, permission.permission);
-      if (permission.check) return permission.check(userData);
-      return true;
-    });
-  };
-
-  const availablePages = getAvailablePages();
-  const isMenuVisible = menuState === "open" || menuState === "closing";
+  const visibleManagementPages = managementPages.filter((page) =>
+    page.permission ? hasPermission(userData, page.permission, { match: "any" }) : true
+  );
 
   return (
-    <div className={styles.userMenuContainer} ref={menuRef} onClick={toggleMenu}>
-      <Image
-        src={userData.photo}
-        alt={dict.user_photo_alt}
-        width={40}
-        height={40}
-        className={styles.userPhoto}
-      />
-      <div className={styles.userDetails}>
-        <span className={styles.userName}>{getFirstAndLastName(userData.name)}</span>
-        <span className={styles.userStatus}>{userData.positionName}</span>
-      </div>
-
-      {isMenuVisible && (
-        <div
-          className={`${styles.profileDropdown} ${menuState === "closing" ? styles.slideOut : ""}`}
-          onClick={(event) => event.stopPropagation()}>
-          {availablePages.map((page) => (
-            <UserMenuItem
-              key={page.href + page.label}
-              href={page.href}
-              label={page.label}
-              icon={page.icon}
-              onClick={closeMenu}
-            />
-          ))}
-          <div className={styles.divider} />
-          <UserMenuItem
-            href="#"
-            label={dict.logout}
-            icon={GoSignOut}
-            onClick={handleLogout}
-            className={styles.logoutButton}
+    <DropdownMenu>
+      <DropdownMenu.Trigger>
+        <button type="button" className={styles.userMenuTrigger}>
+          <Image
+            src={userData.photo}
+            alt={dict.user_photo_alt}
+            width={40}
+            height={40}
+            className={styles.userPhoto}
           />
-        </div>
-      )}
-    </div>
+          <div className={styles.userDetails}>
+            <span className={styles.userName}>{displayName}</span>
+            <span className={styles.userStatus}>{userData.positionName}</span>
+          </div>
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Content align="end" mobileTitle={displayName} className={styles.menuContent}>
+        {personalPages.map((page) => {
+          const Icon = page.icon;
+          return (
+            <DropdownMenu.Item
+              key={page.href}
+              className={styles.menuItem}
+              icon={<Icon size={18} />}
+              onClick={() => router.push(page.href)}>
+              {page.label}
+            </DropdownMenu.Item>
+          );
+        })}
+
+        {visibleManagementPages.length > 0 && (
+          <>
+            <DropdownMenu.Divider />
+            {visibleManagementPages.map((page) => {
+              const Icon = page.icon;
+              return (
+                <DropdownMenu.Item
+                  key={page.href}
+                  className={styles.menuItem}
+                  icon={<Icon size={18} />}
+                  onClick={() => router.push(page.href)}>
+                  {page.label}
+                </DropdownMenu.Item>
+              );
+            })}
+          </>
+        )}
+
+        <DropdownMenu.Divider />
+        <DropdownMenu.Item
+          className={styles.menuItem}
+          icon={<LuLogOut size={18} />}
+          destructive
+          onClick={logout}>
+          {dict.logout}
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu>
   );
 };
 

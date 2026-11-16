@@ -5,13 +5,13 @@ import {
   getRemainingSessionSeconds,
   saveCheckoutSession,
 } from "@/lib/redis/sessions";
-import { verifyPermission } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await verifyPermission("orders:create");
-    if (auth.error) return auth.error;
+    const auth = await getAuthenticatedUser();
+    if (!auth) return sumupErrorResponse("Not authenticated", 401);
 
     const credentialError = validateSumUpCredentials();
     if (credentialError) return credentialError;

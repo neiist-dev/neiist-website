@@ -14,7 +14,7 @@ interface PageProps {
 }
 
 async function ActivityManageDetailsContent({ params }: PageProps) {
-  await requirePermission("events:read");
+  await requirePermission(["events:read", "events:write", "events:checkin"], { match: "any" });
 
   const resolved = await params;
   const locale = isValidLocale(resolved.locale) ? resolved.locale : defaultLocale;

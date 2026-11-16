@@ -95,7 +95,9 @@ export default function ManagementConsole({
     if (
       hasPermission(currentUser, "memberships:read") ||
       hasPermission(currentUser, "memberships:write_dept") ||
-      hasPermission(currentUser, "memberships:write_global")
+      hasPermission(currentUser, "memberships:write_global") ||
+      hasPermission(currentUser, "photos:write_dept") ||
+      hasPermission(currentUser, "photos:write_global")
     ) {
       items.push({
         id: "memberships",

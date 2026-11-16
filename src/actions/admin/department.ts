@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { verifyPermission } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import {
   activateDepartment,
   addDepartment,
@@ -17,8 +17,7 @@ export async function addDepartmentAction(params: {
   type: "team" | "admin_body";
   description?: Description;
 }) {
-  const auth = await verifyPermission("departments:write");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("departments:write");
 
   const success = await addDepartment(params.name, params.type, params.description);
 
@@ -36,8 +35,7 @@ export async function updateTeamDescriptionAction(params: {
   name: string;
   description: Description;
 }) {
-  const auth = await verifyPermission("departments:write");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("departments:write");
 
   const success = await updateTeamDescription(params.name, params.description);
   if (!success) throw new Error("Failed to update team description");
@@ -49,8 +47,7 @@ export async function updateTeamDescriptionAction(params: {
 }
 
 export async function reorderDepartmentsAction(departments: string[]) {
-  const auth = await verifyPermission("departments:write");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("departments:write");
 
   const success = await setDepartmentDisplayOrder(departments);
   if (!success) throw new Error("Failed to update department order");
@@ -65,8 +62,7 @@ export async function reorderDepartmentsAction(departments: string[]) {
 }
 
 export async function deactivateDepartmentAction(name: string) {
-  const auth = await verifyPermission("departments:delete");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("departments:delete");
 
   const success = await removeDepartment(name);
   if (!success) throw new Error("Failed to deactivate department");
@@ -81,8 +77,7 @@ export async function deactivateDepartmentAction(name: string) {
 }
 
 export async function reactivateDepartmentAction(name: string) {
-  const auth = await verifyPermission("departments:write");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("departments:write");
 
   const success = await activateDepartment(name);
   if (!success) throw new Error("Failed to reactivate department");
@@ -97,8 +92,7 @@ export async function reactivateDepartmentAction(name: string) {
 }
 
 export async function deleteDepartmentAction(name: string) {
-  const auth = await verifyPermission("departments:delete");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("departments:delete");
 
   const success = await deleteDepartment(name);
   if (!success) throw new Error("Failed to permanently delete department");

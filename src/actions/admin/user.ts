@@ -1,10 +1,9 @@
 "use server";
 
-import fs from "fs/promises";
-import path from "path";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { deleteUser, getUser } from "@/lib/db/repositories/user.repository";
+import { userPhotos } from "@/lib/imageStorage";
 import { hasPermission } from "@/lib/security/permissions";
 import { sendEmail } from "@/lib/email";
 import { getAccountDeletionTemplate } from "@/lib/email/templates/auth";
@@ -21,7 +20,7 @@ export async function deleteUserAction(
 
   if (!isSelf && !canDeleteUsers) throw new Error("Insufficient permissions to delete user");
 
-  const existingUser = await getUser(istid);
+  const existingUser = isSelf ? currentUser : await getUser(istid);
   if (!existingUser) throw new Error("Target user not found");
 
   try {
@@ -37,15 +36,17 @@ export async function deleteUserAction(
   const { success, was_member: isMember } = await deleteUser(istid);
   if (!success) throw new Error("Failed to delete user in database");
 
-  if (!isMember) {
-    try {
-      const filePath = path.join(process.cwd(), "data", "user_photos", `${istid}.png`);
-      await fs.unlink(filePath);
-    } catch (unlinkError: unknown) {
-      if ((unlinkError as NodeJS.ErrnoException)?.code !== "ENOENT")
-        console.warn("Failed to delete user photo file:", unlinkError);
-    }
-  }
+  if (!isMember) await userPhotos.remove(istid);
+
+  console.warn(
+    JSON.stringify({
+      event: "user_deleted",
+      deleted_by: currentUser.istid,
+      was_member: isMember,
+      initiated_by: isSelf ? "self" : "admin",
+      at: new Date().toISOString(),
+    })
+  );
 
   revalidateTag("users", "max");
   revalidateTag("memberships", "max");

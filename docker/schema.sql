@@ -40,7 +40,6 @@ CREATE TYPE neiist.permission_enum AS ENUM (
   'memberships:write_global',
   'memberships:write_dept',
   'memberships:delete',
-  'photos:read',
   'photos:write_global',
   'photos:write_dept',
   'shop:read',

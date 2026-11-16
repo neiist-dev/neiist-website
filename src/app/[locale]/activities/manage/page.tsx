@@ -7,7 +7,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 async function ActivitiesManageContent({ params }: { params: LocaleParams }) {
-  await requirePermission("events:read");
+  await requirePermission(["events:read", "events:write", "events:checkin"], { match: "any" });
 
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;

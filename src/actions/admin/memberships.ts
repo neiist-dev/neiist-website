@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { verifyPermission } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import {
   addMembership,
   concludeMembership,
@@ -14,8 +14,7 @@ import type { Membership } from "@/types/memberships";
 import type { UserProfile } from "@/types/user";
 
 export async function getYearMembershipsAction(year: string) {
-  const auth = await verifyPermission("memberships:read");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission("memberships:read");
   return getMembershipsForAcademicYear(year);
 }
 
@@ -26,11 +25,10 @@ export async function addMembershipAction(params: {
   fromDate?: string;
   toDate?: string;
 }) {
-  const auth = await verifyPermission(["memberships:write_global", "memberships:write_dept"], {
+  await requirePermission(["memberships:write_global", "memberships:write_dept"], {
     department: params.departmentName,
     match: "any",
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const success = await addMembership(
     params.userNumber,
@@ -74,11 +72,10 @@ export async function concludeMembershipAction(params: {
   if (!userNumber || !departmentName || !roleName || !fromDate)
     throw new Error("Missing membership details to conclude");
 
-  const auth = await verifyPermission(["memberships:write_global", "memberships:write_dept"], {
+  await requirePermission(["memberships:write_global", "memberships:write_dept"], {
     department: departmentName,
     match: "any",
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const success = await concludeMembership(userNumber, departmentName, roleName, fromDate);
   if (!success) throw new Error("Failed to conclude membership");
@@ -115,10 +112,9 @@ export async function deleteMembershipAction(params: {
   if (!userNumber || !departmentName || !roleName || !fromDate)
     throw new Error("Missing membership details to delete");
 
-  const auth = await verifyPermission("memberships:delete", {
+  await requirePermission("memberships:delete", {
     department: departmentName,
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const success = await deleteMembership(userNumber, departmentName, roleName, fromDate);
   if (!success) throw new Error("Failed to delete membership");
@@ -135,8 +131,12 @@ export async function getMemberHistoryAction(istid: string): Promise<{
   user: UserProfile | null;
   memberships: Membership[];
 }> {
-  const auth = await verifyPermission("memberships:read");
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
+  await requirePermission(
+    ["memberships:read", "memberships:write_dept", "memberships:write_global"],
+    {
+      match: "any",
+    }
+  );
 
   const [fullUser, memberships] = await Promise.all([
     getUser(istid),

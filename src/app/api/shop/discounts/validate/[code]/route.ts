@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateDiscountCode } from "@/lib/db/repositories/shop.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
-import { verifyPermission } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
-  const auth = await verifyPermission(["orders:create", "pos:access"], { match: "any" });
-  if (auth.error) return auth.error;
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
   try {
     const { code: rawCode } = await params;

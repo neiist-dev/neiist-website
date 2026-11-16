@@ -113,8 +113,6 @@ const globalForBroadcaster = globalThis as unknown as {
 
 export const votingDbListener = globalForBroadcaster.votingDbListener ?? new DatabaseBroadcaster();
 
-export const dbBroadcaster = votingDbListener;
-
 if (!globalForBroadcaster.votingDbListener)
   globalForBroadcaster.votingDbListener = votingDbListener;
 

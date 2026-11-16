@@ -12,7 +12,6 @@ export const PERMISSIONS = {
   "memberships:write_global": { category: "memberships" },
   "memberships:write_dept": { category: "memberships" },
   "memberships:delete": { category: "memberships" },
-  "photos:read": { category: "photos" },
   "photos:write_global": { category: "photos" },
   "photos:write_dept": { category: "photos" },
   "shop:read": { category: "shop" },

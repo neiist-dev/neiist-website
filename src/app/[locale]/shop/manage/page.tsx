@@ -7,7 +7,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 
 async function ShopManageContent({ params }: { params: LocaleParams }) {
-  await requirePermission("shop:read");
+  await requirePermission(["shop:read", "shop:write"], { match: "any" });
 
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;

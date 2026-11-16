@@ -7,7 +7,9 @@ import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await verifyPermission("events:read");
+  const auth = await verifyPermission(["events:read", "events:write", "events:checkin"], {
+    match: "any",
+  });
   if (auth.error) return auth.error;
 
   const { id } = await params;

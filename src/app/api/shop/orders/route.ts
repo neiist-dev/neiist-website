@@ -352,7 +352,7 @@ async function executeOrderCreation(params: {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifyPermission("orders:create");
+  const auth = await verifyPermission("pos:access");
   if (auth.error) return auth.error;
   const { user } = auth;
 

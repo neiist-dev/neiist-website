@@ -271,7 +271,7 @@ async function buildOrdersWorkbook(orders: Order[]): Promise<Buffer> {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifyPermission("orders:read_customer");
+  const auth = await verifyPermission(["orders:read", "orders:write"], { match: "any" });
   if (auth.error) return auth.error;
 
   try {

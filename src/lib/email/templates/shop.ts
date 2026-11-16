@@ -63,8 +63,6 @@ export function formatPickupDeadline(pickupDeadline?: string | Date | null): str
   });
 }
 
-export const formatDeadline = formatPaymentDeadline;
-
 export function renderItemsTable(items: OrderEmailItem[], total: number): string {
   const itemsHtml = items
     .map((item) => {

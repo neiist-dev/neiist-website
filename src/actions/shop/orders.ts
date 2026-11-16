@@ -22,6 +22,7 @@ import {
 } from "@/types/shop/payment";
 import { sendEmail } from "@/lib/email";
 import {
+  formatPickupDeadline,
   getPaidOrderEmailTemplate,
   getPendingOrderEmailTemplate,
   getStatusUpdateOrderEmailTemplate,
@@ -157,14 +158,16 @@ export async function updateOrderAction(
   const updated = await updateOrder(order.order_number, filteredUpdates, false, user.istid);
   if (!updated) throw new Error("Failed to update order");
 
-  if (
+  const formattedDeadline =
     updates.pickup_deadline !== undefined &&
     updated.customer_email &&
     updated.pickup_deadline &&
     order.status !== "delivered" &&
     order.status !== "cancelled"
-  ) {
-    const formattedDeadline = new Date(updated.pickup_deadline).toLocaleDateString("pt-PT");
+      ? formatPickupDeadline(updated.pickup_deadline)
+      : null;
+
+  if (formattedDeadline && updated.customer_email) {
     const subject = `Encomenda ${updated.order_number} - Prazo Limite para Levantamento (${formattedDeadline})`;
     const ordersTableDict = getDictionary("pt").orders_table;
     const statusLabel = getStatusLabel(updated.status, ordersTableDict.status, {
@@ -195,6 +198,7 @@ export async function cancelOrderAction(orderNumber: string): Promise<boolean> {
   const session = await requireUser();
   const user = session.user;
   const canWrite = hasPermission(user, "orders:write");
+  const canDelete = hasPermission(user, "orders:delete");
   const canOverride = hasPermission(user, "orders:override");
   const canPos = hasPermission(user, "pos:access");
 
@@ -205,11 +209,11 @@ export async function cancelOrderAction(orderNumber: string): Promise<boolean> {
 
   const isOwner = order.user_istid === user.istid;
   if (order.status !== "pending") {
-    if (!canOverride)
-      throw new Error("Forbidden: orders:override required to cancel a non-pending order");
+    if (!canDelete)
+      throw new Error("Forbidden: orders:delete required to cancel a non-pending order");
   } else {
-    if (!canWrite && !canOverride && !canPos && !isOwner)
-      throw new Error("Forbidden: orders:write, orders:override, or pos:access required");
+    if (!canWrite && !canDelete && !canOverride && !canPos && !isOwner)
+      throw new Error("Forbidden: orders:write, orders:delete, or pos:access required");
   }
 
   await cancelOrder(orderNumber, user.istid);
@@ -229,6 +233,7 @@ export async function setOrderItemStatusAction(
   const session = await requireUser();
   const canOverride = hasPermission(session.user, "orders:override");
   const canWrite = hasPermission(session.user, "orders:write");
+  const canDelete = hasPermission(session.user, "orders:delete");
   const canDeliver = hasPermission(session.user, "orders:deliver");
 
   if (status === "cancelled") {
@@ -238,11 +243,11 @@ export async function setOrderItemStatusAction(
     if (item.status === "cancelled") throw new Error("Order item is already cancelled");
 
     if (item.status !== "pending") {
-      if (!canOverride)
-        throw new Error("Forbidden: orders:override required to cancel a non-pending order item");
+      if (!canDelete)
+        throw new Error("Forbidden: orders:delete required to cancel a non-pending order item");
     } else {
-      if (!canWrite && !canOverride)
-        throw new Error("Forbidden: orders:write or orders:override required to cancel item");
+      if (!canWrite && !canDelete && !canOverride)
+        throw new Error("Forbidden: orders:write or orders:delete required to cancel item");
     }
 
     const updatedOrder = await setOrderItemStatus(orderItemId, status, session.user.istid);

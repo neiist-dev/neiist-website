@@ -12,7 +12,7 @@ interface RouteParams {
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const auth = await verifyPermission("voting:read");
+  const auth = await verifyPermission(["voting:read", "voting:write"], { match: "any" });
   if (auth.error) return auth.error;
 
   const { sessionId: rawSessionId } = await params;

@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 async function VotingManageContent({ params, searchParams }: PageProps) {
-  await requirePermission("voting:read");
+  await requirePermission(["voting:read", "voting:write"], { match: "any" });
   const [{ locale: rawLocale }, searchParamsObj] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).voting_management;

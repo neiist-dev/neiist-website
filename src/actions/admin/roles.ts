@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { verifyPermission } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
 import {
   addValidDepartmentRole,
   deleteValidDepartmentRole,
@@ -18,10 +18,9 @@ export async function saveRolePermissionsAction(params: {
   roleName: string;
   permissions: Permission[];
 }) {
-  const auth = await verifyPermission("roles:write", {
+  await requirePermission("roles:write", {
     department: params.departmentName,
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const success = await setRolePermissions(
     params.departmentName,
@@ -44,10 +43,9 @@ export async function addRoleAction(params: {
   roleName: string;
   permissions: Permission[];
 }) {
-  const auth = await verifyPermission("roles:write", {
+  await requirePermission("roles:write", {
     department: params.departmentName,
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const accessLabel = deriveAccessLabel(params.permissions);
   const success = await addValidDepartmentRole(params.departmentName, params.roleName, accessLabel);
@@ -67,10 +65,9 @@ export async function removeRoleAction(params: {
   roleName: string;
   permanent?: boolean;
 }) {
-  const auth = await verifyPermission("roles:delete", {
+  await requirePermission("roles:delete", {
     department: params.departmentName,
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const success = params.permanent
     ? await deleteValidDepartmentRole(params.departmentName, params.roleName)
@@ -88,10 +85,9 @@ export async function reorderRoleHierarchyAction(params: {
   departmentName: string;
   roles: string[];
 }) {
-  const auth = await verifyPermission("roles:write", {
+  await requirePermission("roles:write", {
     department: params.departmentName,
   });
-  if (auth.error) throw new Error(auth.error.statusText || "Unauthorized");
 
   const success = await setDepartmentRoleOrder(params.departmentName, params.roles);
   if (!success) throw new Error("Failed to reorder roles");

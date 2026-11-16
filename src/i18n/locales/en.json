@@ -894,7 +894,6 @@
         "memberships:write_global": "Manage mandates across all departments",
         "memberships:write_dept": "Manage mandates within own departments",
         "memberships:delete": "Delete mandate records",
-        "photos:read": "View member photos",
         "photos:write_global": "Manage photos across all departments",
         "photos:write_dept": "Manage photos within own departments",
         "shop:read": "View shop catalog and stock",
