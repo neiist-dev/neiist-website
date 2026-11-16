@@ -1185,7 +1185,7 @@
     "error_save_notes": "Error saving notes.",
     "success_save_notes": "Notes saved successfully.",
     "pickup_toast": "Pickup deadline: {date}",
-    "payment_reference_label": "Payment reference:",
+    "payment_reference_label": "Payment reference",
     "register_payment": "Register Payment",
     "finalize_order": "Finalize Order",
     "discount_label": "Discount",

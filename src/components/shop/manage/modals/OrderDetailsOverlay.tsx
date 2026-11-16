@@ -284,9 +284,7 @@ export default function OrderDetailOverlay({
 
   const undeliveredPhysicalItems = physicalItems.filter((item) => item.status !== "delivered");
 
-  const hasTicketItems = isTicket;
-
-  const showActionsColumn = canManage || canDeliver || hasTicketItems;
+  const showActionsColumn = canManage || canDeliver || isTicket;
 
   const progressSteps: Array<{
     key: OrderStatus;
@@ -443,7 +441,7 @@ export default function OrderDetailOverlay({
           </div>
           {hasPaymentReference(order) && (
             <div className={styles.infoColumn}>
-              <div className={styles.infoItemInline}>
+              <div className={styles.infoItem}>
                 <Text size="sm" variant="muted">
                   {dict.payment_reference_label}
                 </Text>
