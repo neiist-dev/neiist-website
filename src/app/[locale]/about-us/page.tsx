@@ -51,15 +51,21 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
   const { year } = await searchParams;
 
   const dbYears = await getAcademicYears();
-  const allAcademicYears = dbYears.length > 0 ? dbYears : [getCurrentAcademicYear()];
+  const currentAcademicYear = getCurrentAcademicYear();
+  const allAcademicYears = dbYears.length > 0 ? dbYears : [currentAcademicYear];
   const selectedYear = year && allAcademicYears.includes(year) ? year : allAcademicYears[0];
+  const isCurrentYear = selectedYear === currentAcademicYear;
 
-  const [memberships, rawTeams, rawAdminBodies, departmentOrderList] = await Promise.all([
+  const [rawMemberships, rawTeams, rawAdminBodies, departmentOrderList] = await Promise.all([
     getMembershipsForAcademicYear(selectedYear),
     getAllTeams(),
     getAllAdminBodies(),
     getDepartmentDisplayOrder(),
   ]);
+
+  const memberships = isCurrentYear
+    ? rawMemberships.filter((membership) => membership.isActive)
+    : rawMemberships;
 
   const teams: Team[] = rawTeams.map((team) => ({
     name: team.name,
