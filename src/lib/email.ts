@@ -68,6 +68,7 @@ export async function sendEmail({
         toRecipients: recipients.map((address) => ({
           emailAddress: { address },
         })),
+        replyTo: [{ emailAddress: { address: "geral@neiist.pt", name: "NEIIST" } }],
         ...(graphAttachments.length > 0 ? { attachments: graphAttachments } : {}),
       },
       saveToSentItems: false,
