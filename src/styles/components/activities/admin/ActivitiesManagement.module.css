@@ -2,6 +2,8 @@
   margin: 2rem 4rem 4rem;
   padding: 0;
   min-height: calc(100vh - 6rem);
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
@@ -51,6 +53,7 @@
 .searchWrapper {
   position: relative;
   flex: 1;
+  min-width: 0;
   max-width: 28rem;
 }
 
@@ -90,15 +93,14 @@
 
   .headerActions {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.5rem;
   }
 
   .headerActions > * {
     width: 100%;
     justify-content: center;
-    white-space: nowrap;
   }
 
   .searchWrapper {
