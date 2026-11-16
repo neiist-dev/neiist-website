@@ -11,9 +11,40 @@ const BLOCKS: [number, [number, number][]][] = [
     ],
   ],
   [28, [[4, 15]]],
+  [
+    26,
+    [
+      [4, 13],
+      [1, 14],
+    ],
+  ],
+  [
+    26,
+    [
+      [4, 14],
+      [2, 15],
+    ],
+  ],
+  [
+    24,
+    [
+      [4, 12],
+      [4, 13],
+    ],
+  ],
 ];
 
-const ALIGN = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34]];
+const ALIGN = [
+  [],
+  [6, 18],
+  [6, 22],
+  [6, 26],
+  [6, 30],
+  [6, 34],
+  [6, 22, 38],
+  [6, 24, 42],
+  [6, 26, 46],
+];
 
 // GF(256) arithmetic for Reed-Solomon
 const EXP = new Uint8Array(510);
@@ -49,7 +80,7 @@ function codewords(text: string) {
   const bytes = [...new TextEncoder().encode(text)];
   const total = ([, g]: (typeof BLOCKS)[number]) => g.reduce((s, [n, d]) => s + n * d, 0);
   const v = BLOCKS.findIndex((b) => total(b) - 2 >= bytes.length);
-  if (v < 0) throw new RangeError("QR value too long (max 58 bytes)");
+  if (v < 0) throw new RangeError("QR value too long (max 98 bytes)");
   const [ecLen, groups] = BLOCKS[v];
   const byte = (b: number) => b.toString(2).padStart(8, "0");
   let bits = "0100" + byte(bytes.length) + bytes.map(byte).join("");
@@ -120,6 +151,18 @@ export function encodeQR(text: string): boolean[][] {
     set(...b, bit(i));
   }
   set(8, n - 8, true);
+  if (version >= 7) {
+    let vRem = version;
+    for (let i = 0; i < 12; i++) vRem = (vRem << 1) ^ ((vRem >>> 11) * 0x1f25);
+    const vBits = (version << 12) | vRem;
+    for (let i = 0; i < 18; i++) {
+      const dark = ((vBits >>> i) & 1) === 1;
+      const a = Math.floor(i / 3);
+      const b = n - 11 + (i % 3);
+      set(a, b, dark);
+      set(b, a, dark);
+    }
+  }
   const bits = out.flatMap((b) => Array.from({ length: 8 }, (_, i) => (b >> (7 - i)) & 1));
   let k = 0;
   for (let right = n - 1; right >= 1; right -= 2) {
