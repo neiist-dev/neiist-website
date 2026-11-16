@@ -1,5 +1,23 @@
 # neiist
 
+## [4.8.0](https://github.com/neiist-dev/neiist-website/compare/v4.7.0...v4.8.0) (2026-11-16)
+
+
+### Features
+
+* **calendar:** make google calendar available to all users ([88121b8](https://github.com/neiist-dev/neiist-website/commit/88121b8e3acae996f57c7ba00d95192e6a0cda7a))
+
+
+### Bug Fixes
+
+* **about-us:** enforce academic year filter ([b0c1dcd](https://github.com/neiist-dev/neiist-website/commit/b0c1dcd95c90e46721011629fcd7ae6d2693c03e))
+* **activities:** buttons horizontal overflow as no withd was set ([51eaf19](https://github.com/neiist-dev/neiist-website/commit/51eaf19c4ae7849d92bfab565c7fb8f90c3e2d24))
+* **email:** add reply to field ([f5228f9](https://github.com/neiist-dev/neiist-website/commit/f5228f909a4ec23b9c674bc44784eb16f055759a))
+* **pos:** mobile tpa bridge session force one per device, show correct ([3b1d16f](https://github.com/neiist-dev/neiist-website/commit/3b1d16fa75d177e90b84f05497368b3d457bd980))
+* **qrcode:** support 98 bytes max on the encoder ([fd00cee](https://github.com/neiist-dev/neiist-website/commit/fd00ceef1755bd8024904df0d4bd9ed07add584b))
+* **shop:** format payment refernces and action button on orders overlay ([6a29a55](https://github.com/neiist-dev/neiist-website/commit/6a29a558439ead96bd8f0eaeb21f0343c64dc909))
+* **ui:** confirm dialog ([22f4eb3](https://github.com/neiist-dev/neiist-website/commit/22f4eb308b90b820ea680046e091e7513b75d0af))
+
 ## [4.7.0](https://github.com/neiist-dev/neiist-website/compare/v4.6.2...v4.7.0) (2026-11-15)
 
 
