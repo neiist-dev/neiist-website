@@ -62,7 +62,7 @@
   }
 }
 
-@media (max-width: 440px) {
+@media (max-width: 640px) {
   .bottom {
     flex-direction: column;
     align-items: center;
@@ -76,5 +76,6 @@
   .copyright {
     order: 2;
     margin-top: 0;
+    text-align: center;
   }
 }
