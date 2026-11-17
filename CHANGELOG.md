@@ -1,5 +1,12 @@
 # neiist
 
+## [4.9.0](https://github.com/neiist-dev/neiist-website/compare/v4.8.0...v4.9.0) (2026-11-17)
+
+
+### Features
+
+* register ist user manualy from pos and add members ([0afe320](https://github.com/neiist-dev/neiist-website/commit/0afe320bcbed813f70ce7c11637abf78da8503ff))
+
 ## [4.8.0](https://github.com/neiist-dev/neiist-website/compare/v4.7.0...v4.8.0) (2026-11-16)
 
 
