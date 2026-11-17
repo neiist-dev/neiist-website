@@ -74,13 +74,3 @@ export function useUser() {
   if (!context) throw new Error("useUser must be used within a UserProvider");
   return context;
 }
-
-export function UserSessionSync({ serverUser }: { serverUser: User | null }) {
-  const { setUser } = useUser();
-
-  useEffect(() => {
-    setUser(serverUser);
-  }, [serverUser, setUser]);
-
-  return null;
-}

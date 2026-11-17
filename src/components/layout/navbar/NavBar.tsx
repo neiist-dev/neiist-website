@@ -34,6 +34,10 @@ export function AuthWidget({
 }) {
   const { user, setUser } = useUser();
 
+  useEffect(() => {
+    setUser(initialUser ?? null);
+  }, [initialUser, setUser]);
+
   const currentUser = user ?? initialUser;
 
   const handleLogout = async () => {
