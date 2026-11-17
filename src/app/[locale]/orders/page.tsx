@@ -56,6 +56,7 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
         dict={dict.orders_table}
         basePath={`/${locale}`}
         isArchive={isArchive}
+        canEdit={canEditOrder}
         canOverride={canDeleteOrder}
       />
       {selectedOrder && (
@@ -65,7 +66,6 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
           canDeliver={canDeliver}
           canOverride={canDeleteOrder}
           basePath={overlayBasePath}
-          canEditNotes={canEditOrder}
           dict={dict.order_details}
         />
       )}

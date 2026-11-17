@@ -8,6 +8,7 @@ import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
 import {
   getLocalizedOrderStatusLabel,
+  getOrderProgressSteps,
   getStatusLabel,
   canTransitionOrderStatus,
   isTicketOrder,
@@ -24,7 +25,6 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import {
   setOrderItemStatusAction,
   setOrderStatusAction,
-  updateOrderAction,
   cancelOrderAction,
   resendOrderEmailAction,
   retryOrderEventHookAction,
@@ -75,7 +75,6 @@ interface OrderDetailOverlayProps {
   canDeliver?: boolean;
   canOverride?: boolean;
   basePath: string;
-  canEditNotes?: boolean;
   dict: Dictionary["order_details"];
 }
 
@@ -85,7 +84,6 @@ export default function OrderDetailOverlay({
   canDeliver = false,
   canOverride = false,
   basePath,
-  canEditNotes = false,
   dict,
 }: OrderDetailOverlayProps) {
   const router = useRouter();
@@ -94,10 +92,6 @@ export default function OrderDetailOverlay({
   const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
   const [showPosRedirectModal, setShowPosRedirectModal] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
-
-  const [notesEditing, setNotesEditing] = useState(false);
-  const [notesDraft, setNotesDraft] = useState("");
-  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const [emailSending, setEmailSending] = useState(false);
@@ -111,7 +105,6 @@ export default function OrderDetailOverlay({
   }, [initialOrder]);
 
   useEffect(() => {
-    setNotesDraft(order?.notes ?? "");
     if (order?.notes && String(order.notes).trim() !== "") {
       setNotesOpen(true);
     } else {
@@ -149,19 +142,6 @@ export default function OrderDetailOverlay({
   const handleCloseImmediate = useCallback(() => {
     router.push(basePath, { scroll: false });
   }, [router, basePath]);
-
-  const attemptClose = useCallback(() => {
-    if (order && notesEditing && notesDraft !== (order.notes ?? "")) {
-      setShowSaveConfirm(true);
-    } else {
-      handleCloseImmediate();
-    }
-  }, [order, notesEditing, notesDraft, handleCloseImmediate]);
-
-  const handleCancelNotes = useCallback(() => {
-    if (notesDraft !== (order?.notes ?? "")) setShowSaveConfirm(true);
-    else setNotesEditing(false);
-  }, [notesDraft, order?.notes]);
 
   const handleStatusChange = async (status: OrderStatus) => {
     if (!order) return;
@@ -232,37 +212,9 @@ export default function OrderDetailOverlay({
   const handleItemStatusChange = async (itemId: number, newStatus: OrderStatus) => {
     setUpdatingItemId(itemId);
     try {
-      const res = await setOrderItemStatusAction(itemId, newStatus);
-      if (res?.success) {
-        setOrder((prev) => {
-          if (!prev) return null;
-          const updatedItems = prev.items.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  status: newStatus,
-                  delivered_at:
-                    newStatus === "delivered" ? new Date().toISOString() : item.delivered_at,
-                }
-              : item
-          );
-          const allDelivered =
-            updatedItems.length > 0 && updatedItems.every((i) => i.status === "delivered");
-          const allReadyOrDelivered =
-            updatedItems.length > 0 &&
-            updatedItems.every((i) => i.status === "ready" || i.status === "delivered");
-          let nextOrderStatus = prev.status;
-          if (allDelivered) {
-            nextOrderStatus = "delivered";
-          } else if (allReadyOrDelivered && prev.status === "paid") {
-            nextOrderStatus = "ready";
-          }
-          return {
-            ...prev,
-            items: updatedItems,
-            status: nextOrderStatus,
-          };
-        });
+      const updated = await setOrderItemStatusAction(itemId, newStatus);
+      if (updated) {
+        setOrder(updated);
         router.refresh();
         Alert.success(dict.item_updated);
       }
@@ -286,36 +238,18 @@ export default function OrderDetailOverlay({
 
   const showActionsColumn = canManage || canDeliver || isTicket;
 
-  const progressSteps: Array<{
-    key: OrderStatus;
-    activeStatuses: OrderStatus[];
-  }> = isTicket
-    ? [
-        { key: "pending", activeStatuses: ["pending", "paid"] },
-        { key: "paid", activeStatuses: ["paid"] },
-      ]
-    : [
-        {
-          key: "pending",
-          activeStatuses: ["pending", "paid", "ready", "delivered"],
-        },
-        { key: "paid", activeStatuses: ["paid", "ready", "delivered"] },
-        { key: "ready", activeStatuses: ["ready", "delivered"] },
-        { key: "delivered", activeStatuses: ["delivered"] },
-      ];
+  const progressSteps = getOrderProgressSteps(isTicket);
 
-  const getStepLabel = (step: { key: OrderStatus }) => {
-    if (isTicket && step.key === "paid") return dict.ticket_confirmed;
-    if (step.key === "pending") return dict.step_pending;
-    if (step.key === "paid") return dict.step_paid;
-    if (step.key === "ready") return dict.step_ready;
-    if (step.key === "delivered") return dict.step_delivered;
-    return dict.status[step.key];
+  const getStepLabel = (step: OrderStatus) => {
+    if (isTicket && step === "paid") return dict.ticket_confirmed;
+    if (step === "pending") return dict.step_pending;
+    if (step === "paid") return dict.step_paid;
+    if (step === "ready") return dict.step_ready;
+    if (step === "delivered") return dict.step_delivered;
+    return dict.status[step];
   };
 
-  const activeStepIndex = progressSteps.findLastIndex((step) =>
-    step.activeStatuses.includes(order.status)
-  );
+  const activeStepIndex = progressSteps.indexOf(order.status);
   const progressWidth =
     progressSteps.length > 0 && activeStepIndex >= 0
       ? `${((activeStepIndex + 1) / progressSteps.length) * 100}%`
@@ -339,30 +273,11 @@ export default function OrderDetailOverlay({
     (order.status === "pending" || canOverride);
   const userCanCancel = !canManage && !canOverride && order.status === "pending";
 
-  const saveNotes = async (): Promise<boolean> => {
-    if (!order) return false;
-    if ((order.notes ?? "") === notesDraft) {
-      setNotesEditing(false);
-      return true;
-    }
-    try {
-      const updated = await updateOrderAction(order.order_number, { notes: notesDraft });
-      setOrder(updated);
-      setNotesEditing(false);
-      router.refresh();
-      Alert.success(dict.success_save_notes);
-      return true;
-    } catch (err) {
-      Alert.error(err instanceof Error ? err.message : dict.error_save_notes);
-      return false;
-    }
-  };
-
   return (
     <>
       <Modal
         open={!!order}
-        onClose={attemptClose}
+        onClose={handleCloseImmediate}
         size="xl"
         title={dict.order_title}
         badge={
@@ -599,39 +514,7 @@ export default function OrderDetailOverlay({
             </summary>
 
             <div className={styles.notesText}>
-              {canEditNotes ? (
-                notesEditing ? (
-                  <textarea
-                    autoFocus
-                    className={styles.notesInput}
-                    value={notesDraft}
-                    onChange={(e) => setNotesDraft(e.target.value)}
-                    onBlur={handleCancelNotes}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleCancelNotes();
-                      }
-                    }}
-                  />
-                ) : (
-                  <div
-                    onClick={() => setNotesEditing(true)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setNotesEditing(true);
-                      }
-                    }}>
-                    {order.notes ? order.notes : dict.add_notes}
-                  </div>
-                )
-              ) : (
-                <div>{order.notes ? order.notes : dict.add_notes}</div>
-              )}
+              <div>{order.notes ? order.notes : "-"}</div>
             </div>
           </details>
         </div>
@@ -763,12 +646,12 @@ export default function OrderDetailOverlay({
               <div className={styles.progressContainer}>
                 <ul className={styles.progressbar} style={progressBarStyle}>
                   {progressSteps.map((step, index) => {
-                    const isStepActive = step.activeStatuses.includes(order.status);
-                    const isStepAlert = step.key === "ready" && isDeadlineNear && isStepActive;
+                    const isStepActive = activeStepIndex >= index;
+                    const isStepAlert = step === "ready" && isDeadlineNear && isStepActive;
 
                     return (
                       <li
-                        key={step.key}
+                        key={step}
                         className={`${styles.step0} ${isStepActive ? styles.active : ""} ${isStepAlert ? styles.stepAlert : ""}`}
                         id={`step${index + 1}`}>
                         <span className={styles.stepIcon}>
@@ -867,40 +750,6 @@ export default function OrderDetailOverlay({
               onClick={async () => {
                 setShowUserCancelConfirm(false);
                 await handleUserCancel();
-              }}>
-              {dict.confirm}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={showSaveConfirm}
-        onClose={() => setShowSaveConfirm(false)}
-        size="sm"
-        title={dict.notes_title}>
-        <div className={styles.modalBody}>
-          <Text size="sm" className={styles.modalText}>
-            {dict.confirm_save_notes}
-          </Text>
-          <div className={styles.modalActions}>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setShowSaveConfirm(false);
-                setNotesDraft(order.notes ?? "");
-                setNotesEditing(false);
-              }}>
-              {dict.back}
-            </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={async () => {
-                setShowSaveConfirm(false);
-                const ok = await saveNotes();
-                if (!ok) setNotesEditing(true);
               }}>
               {dict.confirm}
             </Button>

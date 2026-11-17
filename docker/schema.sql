@@ -4175,11 +4175,23 @@ CREATE OR REPLACE FUNCTION neiist.update_order_details(
   p_updates JSONB,
   p_user_istid TEXT DEFAULT NULL
 ) RETURNS SETOF neiist.order_record LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_status neiist.shop_order_status_enum;
 BEGIN
+  PERFORM 1 FROM neiist.orders WHERE order_number = p_order_number FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Order % not found', p_order_number;
+  END IF;
+
+  v_status := neiist.compute_order_status(p_order_number);
+  IF v_status = 'cancelled' THEN
+    RAISE EXCEPTION 'Cancelled order % cannot be updated', p_order_number;
+  END IF;
+
   UPDATE neiist.orders
-  SET customer_name = CASE WHEN p_updates ? 'customer_name' THEN NULLIF(BTRIM(p_updates->>'customer_name'), '') ELSE customer_name END,
-    customer_email = CASE WHEN p_updates ? 'customer_email' THEN NULLIF(BTRIM(p_updates->>'customer_email'), '') ELSE customer_email END,
-    customer_phone = CASE WHEN p_updates ? 'customer_phone' THEN NULLIF(BTRIM(p_updates->>'customer_phone'), '') ELSE customer_phone END,
+  SET customer_name = CASE WHEN user_istid IS NULL AND p_updates ? 'customer_name' THEN NULLIF(BTRIM(p_updates->>'customer_name'), '') ELSE customer_name END,
+    customer_email = CASE WHEN user_istid IS NULL AND p_updates ? 'customer_email' THEN NULLIF(BTRIM(p_updates->>'customer_email'), '') ELSE customer_email END,
+    customer_phone = CASE WHEN user_istid IS NULL AND p_updates ? 'customer_phone' THEN NULLIF(BTRIM(p_updates->>'customer_phone'), '') ELSE customer_phone END,
     nif = CASE WHEN p_updates ? 'customer_nif' THEN NULLIF(BTRIM(p_updates->>'customer_nif'), '')
       WHEN p_updates ? 'nif' THEN NULLIF(BTRIM(p_updates->>'nif'), '')
       ELSE nif END,
@@ -4189,10 +4201,6 @@ BEGIN
     updated_at = NOW(),
     updated_by = p_user_istid
   WHERE order_number = p_order_number;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Order % not found', p_order_number;
-  END IF;
 
   RETURN QUERY SELECT * FROM neiist.get_orders(p_order_number, NULL, NULL);
 END;

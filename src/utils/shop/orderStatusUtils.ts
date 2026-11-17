@@ -34,6 +34,10 @@ export function isTicketOrder(order: {
   return Boolean(order.items?.some(isTicketOrderItem));
 }
 
+export function getOrderProgressSteps(isTicket: boolean = false): readonly OrderStatus[] {
+  return isTicket ? ["pending", "paid"] : ["pending", "paid", "ready", "delivered"];
+}
+
 export function getAllowedOrderStatusTransitions(
   currentStatus: OrderStatus,
   isTicket: boolean = false

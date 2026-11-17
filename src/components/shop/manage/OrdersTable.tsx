@@ -16,6 +16,7 @@ import {
   FiTruck,
   FiXCircle,
   FiChevronDown,
+  FiEdit2,
 } from "react-icons/fi";
 import { TbFilter, TbTableExport } from "react-icons/tb";
 import { getCompactProductsSummary } from "@/utils/shop/shopUtils";
@@ -48,6 +49,7 @@ import {
 } from "@neiist/ui";
 import { pt } from "date-fns/locale";
 import EmailComposerModal from "@/components/general/EmailComposerModal";
+import EditOrderModal from "@/components/shop/manage/modals/EditOrderModal";
 import { sendCustomOrderEmailAction } from "@/actions/shop/orders";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -89,6 +91,7 @@ interface OrdersTableProps {
   dict: Dictionary["orders_table"];
   basePath: string;
   isArchive?: boolean;
+  canEdit?: boolean;
   canOverride?: boolean;
 }
 
@@ -105,9 +108,11 @@ export default function OrdersTable({
   dict,
   basePath,
   isArchive = false,
+  canEdit = false,
   canOverride = false,
 }: OrdersTableProps) {
   const router = useRouter();
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isPending, startTransition] = useTransition();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -293,6 +298,11 @@ export default function OrdersTable({
           onClick={() => handleRowClick(order.order_number)}>
           Ver Detalhes
         </DropdownMenu.Item>
+        {(canEdit || canOverride) && order.status !== "cancelled" && (
+          <DropdownMenu.Item icon={<FiEdit2 size={14} />} onClick={() => setEditingOrder(order)}>
+            {dict.edit_order}
+          </DropdownMenu.Item>
+        )}
         <DropdownMenu.Item
           icon={<FiMail size={14} />}
           onClick={() => handleOpenEmailModal([order])}>
@@ -353,7 +363,7 @@ export default function OrdersTable({
         )}
       </>
     ),
-    [dict, handleRowClick, canOverride, handleClearSinglePickupDeadline]
+    [dict, handleRowClick, canEdit, canOverride, handleClearSinglePickupDeadline]
   );
 
   function handleSetPickupDeadline(): void {
@@ -952,6 +962,13 @@ export default function OrdersTable({
           }}
         />
       )}
+
+      <EditOrderModal
+        order={editingOrder}
+        dict={dict}
+        onClose={() => setEditingOrder(null)}
+        onSaved={() => router.refresh()}
+      />
     </>
   );
 }

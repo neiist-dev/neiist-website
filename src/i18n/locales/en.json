@@ -209,7 +209,17 @@
     "error_update_order": "Failed to update order",
     "order_success": "Order updated successfully",
     "status_update_bulk": "Updating status of bulk order...",
-    "status_update_success": "Status updated successfully."
+    "status_update_success": "Status updated successfully.",
+    "edit_order": "Edit Order",
+    "edit_customer_name": "Customer Name",
+    "edit_customer_email": "Customer Email",
+    "edit_customer_phone": "Customer Phone",
+    "edit_campus": "Campus",
+    "edit_nif": "NIF",
+    "edit_pickup_deadline": "Pickup Deadline",
+    "edit_notes": "Notes",
+    "edit_save": "Save Changes",
+    "edit_cancel": "Cancel"
   },
   "cart": {
     "close_label": "Close Cart",

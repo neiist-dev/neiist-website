@@ -154,6 +154,12 @@ export async function updateOrderAction(
 
   if (updates.customer_nif !== undefined) filteredUpdates.nif = updates.customer_nif;
 
+  if (!order.user_istid) {
+    for (const guestKey of ["customer_name", "customer_email", "customer_phone"] as const) {
+      if (updates[guestKey] !== undefined) filteredUpdates[guestKey] = updates[guestKey];
+    }
+  }
+
   if (Object.keys(filteredUpdates).length === 0) throw new Error("No updatable fields provided");
 
   const updated = await updateOrder(order.order_number, filteredUpdates, false, user.istid);
@@ -230,7 +236,7 @@ export async function cancelOrderAction(orderNumber: string): Promise<boolean> {
 export async function setOrderItemStatusAction(
   orderItemId: number,
   status: OrderStatus
-): Promise<{ success: boolean; orderItemId: number; status: OrderStatus }> {
+): Promise<Order | null> {
   const session = await requireUser();
   const canOverride = hasPermission(session.user, "orders:override");
   const canWrite = hasPermission(session.user, "orders:write");
@@ -257,7 +263,7 @@ export async function setOrderItemStatusAction(
 
     revalidatePath("/orders");
     revalidatePath("/my-orders");
-    return { success: true, orderItemId, status };
+    return updatedOrder ?? null;
   }
 
   if (status === "delivered") {
@@ -275,7 +281,7 @@ export async function setOrderItemStatusAction(
   revalidatePath("/[locale]/orders", "page");
   revalidatePath("/my-orders");
   revalidatePath("/[locale]/my-orders", "page");
-  return { success: true, orderItemId, status };
+  return updatedOrder ?? null;
 }
 
 export async function batchSetOrderItemsStatusAction(

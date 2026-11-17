@@ -209,7 +209,17 @@
     "error_update_order": "Falha ao atualizar encomenda",
     "order_success": "Encomenda atualizada com sucesso",
     "status_update_bulk": "A atualizar estado de encomenda grande...",
-    "status_update_success": "Estado atualizado com sucesso."
+    "status_update_success": "Estado atualizado com sucesso.",
+    "edit_order": "Editar Encomenda",
+    "edit_customer_name": "Nome do Cliente",
+    "edit_customer_email": "Email do Cliente",
+    "edit_customer_phone": "Telefone do Cliente",
+    "edit_campus": "Campus",
+    "edit_nif": "NIF",
+    "edit_pickup_deadline": "Prazo de Levantamento",
+    "edit_notes": "Notas",
+    "edit_save": "Guardar Alterações",
+    "edit_cancel": "Cancelar"
   },
   "cart": {
     "close_label": "Fechar Carrinho",
