@@ -27,7 +27,7 @@ export function UserProvider({
 
   useEffect(() => {
     let mounted = true;
-    let lastFetch = initialUser ? Date.now() : 0;
+    let lastFetch = Date.now();
 
     const revalidate = async (force: boolean = false) => {
       const now = Date.now();
@@ -42,9 +42,6 @@ export function UserProvider({
         setUser(null);
       }
     };
-    if (!initialUser) {
-      revalidate(true);
-    }
 
     const onVisibility = () => {
       if (document.visibilityState === "visible") revalidate();

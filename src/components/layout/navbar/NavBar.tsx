@@ -35,8 +35,8 @@ export function AuthWidget({
   const { user, setUser } = useUser();
 
   useEffect(() => {
-    if (initialUser && !user) setUser(initialUser);
-  }, [initialUser, user, setUser]);
+    setUser(initialUser ?? null);
+  }, [initialUser, setUser]);
 
   const currentUser = user ?? initialUser;
 
