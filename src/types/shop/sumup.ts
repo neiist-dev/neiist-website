@@ -194,7 +194,7 @@ export interface VerifyAndSettleSumUpOptions {
   orderNumber: string;
   checkoutId: string;
   applePayToken?: ApplePayPaymentToken;
-  checkedBy?: string;
+  verifiedBy: string;
   userIstid?: string | null;
 }
 

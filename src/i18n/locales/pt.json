@@ -2453,5 +2453,27 @@
       "paid_toast": "Pagamento da encomenda #{number} confirmado!",
       "failed_toast": "Pagamento cancelado ou recusado."
     }
+  },
+  "pre_register_user": {
+    "trigger_button": "Novo Utilizador",
+    "title": "Pré-registar Aluno IST",
+    "confirm_title": "Confirmar Aluno IST",
+    "name_label": "Nome Completo",
+    "name_placeholder": "ex. João Silva",
+    "istid_label": "IST ID",
+    "istid_placeholder": "ex. ist1109687",
+    "email_label": "Email",
+    "email_placeholder": "ex. joao.silva@tecnico.ulisboa.pt",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "confirm_create": "Confirmar e Criar",
+    "confirm_badge": "Pré-registo",
+    "confirm_notice": "Verifica com atenção o IST ID e o email antes de criar. Os dados serão atualizados automaticamente pelo Fenix no primeiro login.",
+    "error_invalid_istid": "Introduz um IST ID válido (ex. ist1109687).",
+    "error_required": "Introduz um nome e um email válidos.",
+    "error_create": "Não foi possível pré-registar o utilizador.",
+    "created_success": "Utilizador IST pré-registado com sucesso.",
+    "already_exists": "O utilizador já existe e foi selecionado."
   }
 }

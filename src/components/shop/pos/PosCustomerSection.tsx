@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { MultiSelect, DetailCard, Badge, Button, Field, Input, Select, Stack } from "@neiist/ui";
 import { FiUserPlus, FiX } from "react-icons/fi";
 import { User } from "@/types/user";
 import MemberAvatar from "@/components/layout/MemberAvatar";
-import { searchUsersClient, formatSearchedUserLabel } from "@/utils/userUtils";
+import { searchUsersClient, formatSearchedUserLabel, IST_ID_REGEX } from "@/utils/userUtils";
 import styles from "@/styles/components/shop/pos/PosCustomerSection.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 
@@ -22,6 +22,8 @@ interface PosCustomerSectionProps {
   customer: CustomerProfile | null;
   onSelectUser: (_user: User | null) => void;
   onOpenGuestModal: () => void;
+  onOpenPreRegisterModal: (_query: string) => void;
+  preRegisterLabel: string;
   onClearCustomer: () => void;
   customerNif: string;
   onCustomerNifChange: (_nif: string) => void;
@@ -38,6 +40,8 @@ export default function PosCustomerSection({
   customer,
   onSelectUser,
   onOpenGuestModal,
+  onOpenPreRegisterModal,
+  preRegisterLabel,
   onClearCustomer,
   customerNif,
   onCustomerNifChange,
@@ -50,6 +54,18 @@ export default function PosCustomerSection({
   dict,
 }: PosCustomerSectionProps) {
   const customerSearchQueryRef = useRef("");
+  const [canPreRegister, setCanPreRegister] = useState(false);
+
+  const handleSearchUsers = useCallback(async (query: string, signal: AbortSignal) => {
+    const trimmed = query.trim();
+    customerSearchQueryRef.current = trimmed;
+    setCanPreRegister(false);
+    const results = await searchUsersClient(query, signal);
+    if (!signal.aborted)
+      setCanPreRegister(results.length === 0 && IST_ID_REGEX.test(trimmed.toLowerCase()));
+
+    return results;
+  }, []);
   const campusOptions = [
     { label: dict.campus_alameda, value: "alameda" },
     { label: dict.campus_taguspark, value: "taguspark" },
@@ -63,10 +79,7 @@ export default function PosCustomerSection({
             <MultiSelect<User>
               label={dict.search_label}
               multiSelect={false}
-              onSearch={(query, signal) => {
-                customerSearchQueryRef.current = query.trim();
-                return searchUsersClient(query, signal);
-              }}
+              onSearch={handleSearchUsers}
               getItemKey={(user) => user.istid}
               getItemLabel={(user) => formatSearchedUserLabel(user, customerSearchQueryRef.current)}
               placeholder={dict.search_placeholder}
@@ -81,6 +94,8 @@ export default function PosCustomerSection({
                 </Stack>
               )}
               onSelect={(user) => onSelectUser(user)}
+              onItemCreate={canPreRegister ? onOpenPreRegisterModal : undefined}
+              createLabel={preRegisterLabel}
             />
           </div>
           <Button

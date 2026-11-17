@@ -50,6 +50,7 @@ export interface CreateOrderPaymentInput {
   amount?: number;
   status?: "pending" | "successful";
   received_by?: string | null;
+  verified_by?: string | null;
   reference?: string | null;
 }
 
@@ -155,6 +156,7 @@ export interface BuildOrderPaymentParams {
   status: "pending" | "successful";
   shiftId?: string | null;
   receivedBy?: string | null;
+  verifiedBy?: string | null;
   reference?: string | null;
   amount?: number;
 }
@@ -167,7 +169,8 @@ export interface RunPaidOrderSideEffectsOptions {
 export interface FinalizePaidOrdersOptions {
   orderNumbers: string[];
   paymentReference?: string | null;
-  paymentCheckedBy: string;
+  receivedBy: string | null;
+  verifiedBy: string | null;
   paymentMethod: PaymentMethod;
   shiftId?: string | null;
 }

@@ -76,7 +76,8 @@ export async function GET(req: NextRequest) {
   const settled = await finalizePaidOrders({
     orderNumbers: state.orderNumbers,
     paymentReference: verified.transactionCode,
-    paymentCheckedBy: state.userId || "sumup-tpa",
+    receivedBy: state.userId,
+    verifiedBy: "sumup-bridge",
     paymentMethod: "sumup-tpa",
     shiftId: state.shiftId ?? null,
   });

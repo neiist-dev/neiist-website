@@ -1,6 +1,9 @@
 import type { User } from "@/types/user";
 import { clearClientCart, discardCheckoutHold } from "@/utils/shop/shopUtils";
 
+export const IST_ID_REGEX = /^ist\d{5,8}$/;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function searchUsersClient(query: string, signal?: AbortSignal): Promise<User[]> {
   try {
     const res = await fetch(`/api/admin/users?search=${encodeURIComponent(query)}&limit=20`, {

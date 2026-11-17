@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   await verifyAndSettleSumUpCheckout({
     orderNumber: orderIdentifier,
     checkoutId,
-    checkedBy: "sumup-return",
+    verifiedBy: "sumup-return",
   });
 
   const html = `<!doctype html>
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
   const result = await verifyAndSettleSumUpCheckout({
     orderNumber: orderIdentifier,
     checkoutId,
-    checkedBy: "sumup-webhook",
+    verifiedBy: "sumup-webhook",
   });
 
   if (!result.success) {

@@ -9,7 +9,6 @@ import { getRelayJob } from "@/lib/payments/sumupBridge";
 import type { PaymentEventPayload } from "@/types/shop/payment";
 import { ENABLE_SUMUP_MOBILE_BRIDGE } from "@/types/shop/sumup";
 import { verifyPermission } from "@/lib/auth";
-import { finalizePaidOrder } from "@/lib/shop/orders";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ readerId: string }> }) {
   const auth = await verifyPermission(["pos:access", "shop:write"], { match: "any" });
@@ -148,14 +147,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ read
             clientTransactionId;
 
           if (status === "SUCCESSFUL" || status === "PAID") {
-            if (orderNumber)
-              await finalizePaidOrder({
-                orderNumber,
-                paymentReference: txId,
-                paymentCheckedBy: "sumup-tpa",
-                paymentMethod: "sumup-tpa",
-              });
-
             sendEvent("paid", {
               status: "PAID",
               id: txId,

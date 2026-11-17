@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateSumUpCredentials, withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
+import {
+  validateSumUpCredentials,
+  withSumUp,
+  sumupErrorResponse,
+  saveSumUpReaderTx,
+} from "@/lib/payments/sumup";
 import {
   cancelRelayJobForSession,
   createBridgePaymentAttempt,
@@ -125,6 +130,19 @@ export async function POST(
   }
 
   const clientTransactionId = data.data?.client_transaction_id ?? null;
+  const shiftId =
+    typeof body.shiftId === "string"
+      ? body.shiftId.trim()
+      : typeof body.shift_id === "string"
+        ? body.shift_id.trim()
+        : (redisSession?.shift_id ?? null);
+
+  if (clientTransactionId)
+    await saveSumUpReaderTx(clientTransactionId, {
+      orderNumbers: target.orderNumbers,
+      shiftId,
+      operatorIstid: auth.user.istid,
+    });
 
   if (redisSession)
     await saveCheckoutSession(

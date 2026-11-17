@@ -162,7 +162,7 @@ export function verifyMbWayNotificationSignature(
 export async function handleMbWayStatusUpdate(
   params: HandleMbWayStatusParams
 ): Promise<HandleMbWayStatusResult> {
-  const { requestId, statusCode, callerLabel } = params;
+  const { requestId, statusCode, verifiedBy } = params;
   const existingCached = await getMbWayCachedRequest(requestId);
 
   const orderNumber = existingCached?.orderNumber || params.orderNumber || null;
@@ -209,32 +209,30 @@ export async function handleMbWayStatusUpdate(
   if (statusCode === MBWAY_STATUS.PAID) {
     const successMsg = params.message || "Pagamento confirmado!";
 
-    if (normalizedOrderNumbers.length > 0) {
+    if (normalizedOrderNumbers.length > 0)
       await finalizePaidOrders({
         orderNumbers: normalizedOrderNumbers,
         paymentReference: requestId,
-        paymentCheckedBy: callerLabel || "ifthenpay-mbway",
+        receivedBy: existingCached?.operatorIstid ?? null,
+        verifiedBy,
         paymentMethod: "mbway",
         shiftId: shiftId ?? null,
       });
-    }
 
     return cacheAndBroadcast("paid", successMsg);
   }
 
-  if (statusCode === MBWAY_STATUS.DECLINED) {
+  if (statusCode === MBWAY_STATUS.DECLINED)
     return cacheAndBroadcast(
       "declined",
       params.message || "Pagamento recusado pelo utilizador na app MB WAY."
     );
-  }
 
-  if (statusCode === MBWAY_STATUS.EXPIRED) {
+  if (statusCode === MBWAY_STATUS.EXPIRED)
     return cacheAndBroadcast(
       "expired",
       params.message || "Tempo de autorização MB WAY expirado (4 minutos)."
     );
-  }
 
   return cacheAndBroadcast("failed", params.message || "Pagamento MB WAY não concluído.");
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withSumUp, sumupErrorResponse } from "@/lib/payments/sumup";
+import { withSumUp, sumupErrorResponse, getSumUpReaderTx } from "@/lib/payments/sumup";
 import { paymentBroadcaster } from "@/lib/payments/broadcaster";
 import type { SumUpReaderCallbackPayload } from "@/types/shop/sumup";
 import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
@@ -68,11 +68,14 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      const cachedTx = clientTransactionId ? await getSumUpReaderTx(clientTransactionId) : null;
       const result = await finalizePaidOrder({
         orderNumber: targetOrderNumber,
         paymentReference: String(paymentReference ?? ""),
-        paymentCheckedBy: "sumup-tpa",
+        receivedBy: cachedTx?.operatorIstid ?? null,
+        verifiedBy: "sumup-reader-webhook",
         paymentMethod: "sumup-tpa",
+        shiftId: cachedTx?.shiftId ?? null,
       });
       if (!result.success) return sumupErrorResponse(result.error, result.statusCode);
 

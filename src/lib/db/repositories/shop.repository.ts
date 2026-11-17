@@ -290,19 +290,21 @@ export const settleOrdersBatch = async (
     shift_id?: string | null;
     by?: string | null;
     reference?: string | null;
+    verified_by?: string | null;
   } = {}
 ): Promise<Order[]> => {
   if (orderNumbers.length === 0) return [];
 
   const dbMethod = toDbPaymentMethod(method);
   const { rows } = await db_query<dbOrder>(
-    `SELECT * FROM neiist.settle_orders($1::TEXT[], $2::neiist.payment_method_enum, $3::UUID, $4, $5)`,
+    `SELECT * FROM neiist.settle_orders($1::TEXT[], $2::neiist.payment_method_enum, $3::UUID, $4, $5, $6)`,
     [
       orderNumbers,
       dbMethod,
       options.shift_id ?? null,
       options.by ?? null,
       options.reference ?? null,
+      options.verified_by ?? null,
     ]
   );
 

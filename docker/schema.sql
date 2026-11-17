@@ -663,6 +663,7 @@ CREATE TABLE neiist.payments (
   reference TEXT DEFAULT NULL,
   paid_at TIMESTAMPTZ DEFAULT NULL,
   received_by VARCHAR(10) REFERENCES neiist.users(istid),
+  verified_by TEXT DEFAULT NULL,
   shift_id UUID REFERENCES neiist.pos_shifts(id) ON DELETE RESTRICT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT chk_pos_payment_shift CHECK (
@@ -2888,6 +2889,7 @@ BEGIN
           'reference', p.reference,
           'paid_at', p.paid_at,
           'received_by', p.received_by,
+          'verified_by', p.verified_by,
           'shift_id', p.shift_id,
           'created_at', p.created_at
         )
@@ -2953,6 +2955,7 @@ DECLARE
   v_pay_status neiist.payment_status_enum;
   v_pay_shift_id UUID;
   v_pay_received_by TEXT;
+  v_pay_verified_by TEXT;
   v_pay_ref TEXT;
   v_order_start TIMESTAMPTZ;
   v_order_deadline TIMESTAMPTZ;
@@ -2987,6 +2990,7 @@ BEGIN
     v_pay_amount := COALESCE((v_pay->>'amount')::NUMERIC, 0.00);
     v_pay_status := COALESCE((v_pay->>'status')::neiist.payment_status_enum, 'pending');
     v_pay_received_by := NULLIF(v_pay->>'received_by', '');
+    v_pay_verified_by := NULLIF(v_pay->>'verified_by', '');
     v_pay_ref := CASE
       WHEN v_pay_method = 'cash'::neiist.payment_method_enum THEN NULL
       ELSE NULLIF(v_pay->>'reference', '')
@@ -3178,11 +3182,11 @@ BEGIN
 
   IF v_pay IS NOT NULL AND v_total_amount > 0 THEN
     INSERT INTO neiist.payments (
-      method, status, reference, paid_at, received_by, shift_id
+      method, status, reference, paid_at, received_by, verified_by, shift_id
     ) VALUES (
       v_pay_method, v_pay_status, v_pay_ref,
       CASE WHEN v_pay_status = 'successful' THEN NOW() END,
-      v_pay_received_by, v_pay_shift_id
+      v_pay_received_by, v_pay_verified_by, v_pay_shift_id
     ) RETURNING id INTO v_pay_id;
 
     INSERT INTO neiist.order_payments (payment_id, order_number, amount)
@@ -3757,7 +3761,8 @@ CREATE OR REPLACE FUNCTION neiist.settle_orders(
   p_method neiist.payment_method_enum,
   p_shift_id UUID DEFAULT NULL,
   p_by TEXT DEFAULT NULL,
-  p_reference TEXT DEFAULT NULL
+  p_reference TEXT DEFAULT NULL,
+  p_verified_by TEXT DEFAULT NULL
 ) RETURNS SETOF neiist.order_record LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_payment_id INTEGER;
@@ -3846,14 +3851,15 @@ BEGIN
           reference = v_effective_ref,
           paid_at = NOW(),
           received_by = p_by,
+          verified_by = COALESCE(p_verified_by, verified_by),
           shift_id = p_shift_id
         WHERE id = v_single_pending_payment_id;
         v_payment_id := v_single_pending_payment_id;
       ELSE
         INSERT INTO neiist.payments (
-          method, status, reference, paid_at, received_by, shift_id
+          method, status, reference, paid_at, received_by, verified_by, shift_id
         ) VALUES (
-          p_method, 'successful', v_effective_ref, NOW(), p_by, p_shift_id
+          p_method, 'successful', v_effective_ref, NOW(), p_by, p_verified_by, p_shift_id
         ) RETURNING id INTO v_payment_id;
       END IF;
     END IF;

@@ -43,6 +43,7 @@ async function ShopPosContent({ params, searchParams }: PageProps) {
       currentUser={session.user}
       dict={dict.pos}
       paymentsDict={dict.payments}
+      preRegisterDict={dict.pre_register_user}
     />
   );
 }

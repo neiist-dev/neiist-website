@@ -9,7 +9,38 @@ import type {
 import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
 import { finalizePaidOrder } from "@/lib/shop/orders";
 import { getCheckoutSession } from "@/lib/redis/sessions";
+import { getRedisClient } from "@/lib/redis/client";
+import type { SumUpReaderCachedTx } from "@/types/redis";
 import { isSettledOrderStatus } from "@/utils/shop/orderStatusUtils";
+
+const SUMUP_READER_TX_PREFIX = "sumup:reader:tx:";
+
+export async function saveSumUpReaderTx(
+  clientTransactionId: string,
+  data: SumUpReaderCachedTx,
+  ttlSeconds = 600
+): Promise<void> {
+  const redis = getRedisClient();
+  await redis.set(
+    `${SUMUP_READER_TX_PREFIX}${clientTransactionId}`,
+    JSON.stringify(data),
+    "EX",
+    ttlSeconds
+  );
+}
+
+export async function getSumUpReaderTx(
+  clientTransactionId: string
+): Promise<SumUpReaderCachedTx | null> {
+  const redis = getRedisClient();
+  const raw = await redis.get(`${SUMUP_READER_TX_PREFIX}${clientTransactionId}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as SumUpReaderCachedTx;
+  } catch {
+    return null;
+  }
+}
 
 export class SumUpAuthError extends Error {
   constructor(message = "SumUp API key is invalid or expired") {
@@ -234,7 +265,7 @@ export async function verifyAndSettleSumUpCheckout({
   orderNumber,
   checkoutId,
   applePayToken,
-  checkedBy = "sumup",
+  verifiedBy,
   userIstid,
 }: VerifyAndSettleSumUpOptions): Promise<VerifyAndSettleSumUpResult> {
   const session = await getCheckoutSession(orderNumber);
@@ -282,7 +313,8 @@ export async function verifyAndSettleSumUpCheckout({
   const result = await finalizePaidOrder({
     orderNumber: target.order_number,
     paymentReference: reference,
-    paymentCheckedBy: checkedBy,
+    receivedBy: null,
+    verifiedBy,
     paymentMethod: applePayToken ? "apple-pay" : (target.payment_method ?? "sumup"),
   });
 

@@ -12,6 +12,7 @@ import { hasPermission } from "@/lib/security/permissions";
 import PosPaymentModal from "./modals/PosPaymentModal";
 import PosGuestCustomerModal from "./modals/PosGuestCustomerModal";
 import PosPendingOrdersModal from "./modals/PosPendingOrdersModal";
+import PreRegisterUserModal from "@/components/general/PreRegisterUserModal";
 import PosShiftCloseModal from "./modals/PosShiftCloseModal";
 import PosDeskGuard from "./PosDeskGuard";
 import PosDeskHeader from "./PosDeskHeader";
@@ -34,6 +35,7 @@ interface PosDeskProps {
   currentUser?: User | null;
   dict: Dictionary["pos"];
   paymentsDict: Dictionary["payments"];
+  preRegisterDict: Dictionary["pre_register_user"];
 }
 
 export default function PosDesk({
@@ -45,8 +47,10 @@ export default function PosDesk({
   currentUser,
   dict,
   paymentsDict,
+  preRegisterDict,
 }: PosDeskProps) {
   const { user } = useUser();
+  const [preRegisterIstid, setPreRegisterIstid] = useState<string | null>(null);
   const effectiveUser = currentUser ?? user;
   const canAccessPos = effectiveUser ? hasPermission(effectiveUser, "pos:access") : false;
   const canOverride = effectiveUser ? hasPermission(effectiveUser, "orders:override") : false;
@@ -178,6 +182,8 @@ export default function PosDesk({
             customer={customer}
             onSelectUser={handleSelectUser}
             onOpenGuestModal={() => setIsGuestModalOpen(true)}
+            onOpenPreRegisterModal={(istid) => setPreRegisterIstid(istid)}
+            preRegisterLabel={preRegisterDict.trigger_button}
             onClearCustomer={() => setCustomer(null)}
             customerNif={customerNif}
             onCustomerNifChange={setCustomerNif}
@@ -237,6 +243,13 @@ export default function PosDesk({
           dict={dict.guest}
         />
       )}
+
+      <PreRegisterUserModal
+        defaultIstid={preRegisterIstid}
+        onClose={() => setPreRegisterIstid(null)}
+        onCreated={handleSelectUser}
+        dict={preRegisterDict}
+      />
 
       <PosShiftCloseModal
         open={session.isCloseModalOpen}

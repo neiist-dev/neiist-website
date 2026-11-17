@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
     await handleMbWayStatusUpdate({
       requestId: RequestId,
       statusCode: Status,
+      verifiedBy: "ifthenpay-webhook",
       message: Message,
-      callerLabel: "ifthenpay-mbway",
     });
 
     return NextResponse.json({ status: "ok" });

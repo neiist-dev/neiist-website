@@ -114,9 +114,16 @@ export interface MbWayCachedRequest {
   orderNumber?: string | null;
   orderNumbers?: string[];
   shiftId?: string | null;
+  operatorIstid?: string | null;
   totalAmount?: number | string;
   phone?: string;
   status?: string;
   message?: string;
   createdAt?: number;
+}
+
+export interface SumUpReaderCachedTx {
+  orderNumbers: string[];
+  shiftId: string | null;
+  operatorIstid: string;
 }

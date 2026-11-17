@@ -137,8 +137,8 @@ export async function GET(req: NextRequest) {
             requestId,
             statusCode,
             orderNumber,
+            verifiedBy: "ifthenpay-poll",
             message: statusRes.Message,
-            callerLabel: "ifthenpay-mbway",
           });
           sendEvent(result.status, {
             type: "status",

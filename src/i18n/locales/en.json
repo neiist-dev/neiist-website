@@ -2453,5 +2453,27 @@
       "paid_toast": "Order #{number} payment confirmed!",
       "failed_toast": "Payment cancelled or declined."
     }
+  },
+  "pre_register_user": {
+    "trigger_button": "New User",
+    "title": "Pre-register IST User",
+    "confirm_title": "Confirm IST User",
+    "name_label": "Full Name",
+    "name_placeholder": "e.g. João Silva",
+    "istid_label": "IST ID",
+    "istid_placeholder": "e.g. ist1109687",
+    "email_label": "Email",
+    "email_placeholder": "e.g. joao.silva@tecnico.ulisboa.pt",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "confirm_create": "Confirm & Create",
+    "confirm_badge": "Pre-registration",
+    "confirm_notice": "Please double-check the IST ID and email before creating. Details will auto-sync from Fenix on their first login.",
+    "error_invalid_istid": "Enter a valid IST ID (e.g. ist1109687).",
+    "error_required": "Enter a valid name and email.",
+    "error_create": "Failed to pre-register user.",
+    "created_success": "IST user pre-registered successfully.",
+    "already_exists": "User already exists and has been selected."
   }
 }

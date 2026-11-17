@@ -52,8 +52,8 @@ export interface HandleMbWayStatusParams {
   orderNumber?: string | null;
   orderNumbers?: string[] | null;
   shiftId?: string | null;
+  verifiedBy: string;
   message?: string;
-  callerLabel?: string;
 }
 
 export interface HandleMbWayStatusResult {

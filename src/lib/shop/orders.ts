@@ -47,6 +47,7 @@ export function buildOrderPaymentInput(
     status: params.status,
     shift_id: params.shiftId ?? null,
     received_by: params.status === "successful" ? (params.receivedBy ?? null) : null,
+    verified_by: params.status === "successful" ? (params.verifiedBy ?? null) : null,
     reference: isCashPayment(params.method) ? null : (params.reference ?? null),
     ...(params.amount !== undefined ? { amount: params.amount } : {}),
   };
@@ -123,7 +124,8 @@ async function promoteCheckoutSession(
 async function promoteRedisCheckoutSession(
   session: CheckoutSessionData,
   reference: string,
-  paymentMethodOverride?: PaymentMethod
+  paymentMethodOverride?: PaymentMethod,
+  verifiedBy: string | null = null
 ): Promise<Order | null> {
   const effectiveMethod = paymentMethodOverride ?? session.payment_method;
   if (!effectiveMethod) return null;
@@ -136,6 +138,7 @@ async function promoteRedisCheckoutSession(
       reference,
       amount: session.total_amount,
       shiftId: session.shift_id ?? null,
+      verifiedBy,
     }),
     async (createdOrder) => {
       await runPaidOrderSideEffects(createdOrder, {
@@ -317,7 +320,8 @@ export function sendOrderPaidEmails(order: Order, paymentReference?: string): vo
 export async function finalizePaidOrders({
   orderNumbers,
   paymentReference,
-  paymentCheckedBy,
+  receivedBy,
+  verifiedBy,
   paymentMethod,
   shiftId,
 }: FinalizePaidOrdersOptions): Promise<FinalizePaidOrdersResult> {
@@ -362,7 +366,8 @@ export async function finalizePaidOrders({
         const promoted = await promoteRedisCheckoutSession(
           session,
           reference ?? "",
-          effectiveMethod
+          effectiveMethod,
+          verifiedBy
         );
         if (!promoted) {
           return { success: false, error: "Failed to promote order", statusCode: 500 };
@@ -399,7 +404,8 @@ export async function finalizePaidOrders({
     const updatedOrders = await settleOrdersBatch(unsettledNumbers, effectiveMethod, {
       shift_id: resolvedShiftId,
       reference: isCashPayment(effectiveMethod) ? null : reference,
-      by: paymentCheckedBy,
+      by: receivedBy,
+      verified_by: verifiedBy,
     });
 
     if (!updatedOrders || updatedOrders.length === 0)
@@ -428,14 +434,16 @@ export async function finalizePaidOrder({
   orderNumber,
   orderId,
   paymentReference,
-  paymentCheckedBy,
+  receivedBy,
+  verifiedBy,
   paymentMethod,
   shiftId,
 }: {
   orderNumber?: string;
   orderId?: string | number;
   paymentReference?: string | null;
-  paymentCheckedBy: string;
+  receivedBy: string | null;
+  verifiedBy: string | null;
   paymentMethod: PaymentMethod;
   shiftId?: string | null;
 }): Promise<FinalizePaidOrderResult> {
@@ -443,7 +451,8 @@ export async function finalizePaidOrder({
   const res = await finalizePaidOrders({
     orderNumbers: [resolvedNumber],
     paymentReference,
-    paymentCheckedBy,
+    receivedBy,
+    verifiedBy,
     paymentMethod,
     shiftId,
   });

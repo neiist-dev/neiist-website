@@ -73,6 +73,14 @@ export const POS_PAYMENT_METHODS = [
   "other",
 ] as const satisfies ReadonlyArray<PaymentMethod>;
 
+export const POS_PAYMENT_VERIFIED_BY: Record<(typeof POS_PAYMENT_METHODS)[number], string | null> =
+  {
+    cash: null,
+    other: null,
+    "sumup-tpa": "sumup-reader-poll",
+    mbway: "ifthenpay-poll",
+  };
+
 export const FAST_POS_PAYMENT_METHODS = [
   "cash",
   "sumup-tpa",
@@ -107,6 +115,7 @@ export interface PaymentRecord {
   reference?: string | null;
   paid_at?: string | null;
   received_by?: string | null;
+  verified_by?: string | null;
   shift_id?: string | null;
   created_at: string;
 }
@@ -120,6 +129,7 @@ export interface dbPayment {
   reference: string | null;
   paid_at: string | null;
   received_by: string | null;
+  verified_by?: string | null;
   shift_id: string | null;
   created_at: string;
 }
@@ -154,6 +164,7 @@ export function mapdbPaymentToPayment(row: dbPayment): PaymentRecord {
     reference: row.reference ?? null,
     paid_at: row.paid_at ?? null,
     received_by: row.received_by ?? null,
+    verified_by: row.verified_by ?? null,
     shift_id: row.shift_id ?? null,
     created_at: row.created_at,
   };

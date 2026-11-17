@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
       orderNumber,
       orderNumbers,
       shiftId,
+      operatorIstid: shiftId ? (user?.istid ?? null) : null,
       totalAmount,
       phone: formatMbWayPhone(phone),
       status: "pending",

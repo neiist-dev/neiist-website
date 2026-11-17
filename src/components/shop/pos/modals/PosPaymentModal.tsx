@@ -555,6 +555,7 @@ export default function PosPaymentModal({
       mode === "fast" ? PAYMENT_METHODS_BY_CHANNEL["fast-pos"] : PAYMENT_METHODS_BY_CHANNEL.pos;
 
     return methods.flatMap((method) => {
+      if (method === "other" && !canOverride) return [];
       const option: { label: string; value: CheckoutChoice } = {
         label: labels[method],
         value: method,
@@ -845,7 +846,7 @@ export default function PosPaymentModal({
                   </Button>
                 )}
 
-              {selectedMethod === "other" && mode === "identified" && (
+              {selectedMethod === "other" && mode === "identified" && canOverride && (
                 <Button
                   variant="primary"
                   onClick={() => handleConfirmAction("successful")}

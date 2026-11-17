@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   isPaymentMethod,
   isPaymentMethodAllowedForChannel,
+  POS_PAYMENT_VERIFIED_BY,
   PaymentMethod,
 } from "@/types/shop/payment";
 import { Order, OrderSource, CreateOrderItemInput, CreateOrderInput } from "@/types/shop/order";
@@ -150,6 +151,15 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
       return NextResponse.json(
         { error: "Método de pagamento inválido para este canal" },
         { status: 400 }
+      );
+
+    if (isPos && explicitMethod === "other" && !canOverride)
+      return NextResponse.json(
+        {
+          error:
+            "Apenas operadores com permissão orders:override podem usar o método de pagamento Outro",
+        },
+        { status: 403 }
       );
   }
 
@@ -305,6 +315,9 @@ async function executeOrderCreation(params: {
         status: "successful",
         shiftId: resolvedShiftId,
         receivedBy: isPos ? user.istid : null,
+        verifiedBy: isPos
+          ? (POS_PAYMENT_VERIFIED_BY[paymentMethod as keyof typeof POS_PAYMENT_VERIFIED_BY] ?? null)
+          : null,
         reference: body.payment?.reference ?? body.payment_reference,
       })
     : undefined;

@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { Alert, Modal, Button, DateInput, Field, MultiSelect } from "@neiist/ui";
 import MemberAvatar from "@/components/layout/MemberAvatar";
+import PreRegisterUserModal from "@/components/general/PreRegisterUserModal";
 import { format, parse, isValid } from "date-fns";
 import { pt } from "date-fns/locale";
 import type { User } from "@/types/user";
 import type { RoleItem } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { searchUsersClient, formatSearchedUserLabel } from "@/utils/userUtils";
+import { searchUsersClient, formatSearchedUserLabel, IST_ID_REGEX } from "@/utils/userUtils";
 import { addMembershipAction } from "@/actions/admin/memberships";
 import styles from "@/styles/components/management/ManagementTabs.module.css";
 
@@ -44,7 +45,20 @@ export default function AddMembershipModal({
   const [fromDate, setFromDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [toDate, setToDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preRegisterIstid, setPreRegisterIstid] = useState<string | null>(null);
+  const [canPreRegister, setCanPreRegister] = useState(false);
   const memberSearchQueryRef = useRef("");
+
+  const handleSearchUsers = useCallback(async (query: string, signal: AbortSignal) => {
+    const trimmed = query.trim();
+    memberSearchQueryRef.current = trimmed;
+    setCanPreRegister(false);
+    const results = await searchUsersClient(query, signal);
+    if (!signal.aborted) {
+      setCanPreRegister(results.length === 0 && IST_ID_REGEX.test(trimmed.toLowerCase()));
+    }
+    return results;
+  }, []);
 
   const mDict = dict.admin.memberships_management;
 
@@ -93,10 +107,7 @@ export default function AddMembershipModal({
             multiSelect={false}
             selectedItem={selectedUser}
             onSelect={(user) => setSelectedUser(user)}
-            onSearch={(query, signal) => {
-              memberSearchQueryRef.current = query.trim();
-              return searchUsersClient(query, signal);
-            }}
+            onSearch={handleSearchUsers}
             getItemKey={(user) => user.istid}
             getItemLabel={(user) => formatSearchedUserLabel(user, memberSearchQueryRef.current)}
             placeholder={mDict.member_placeholder}
@@ -111,6 +122,8 @@ export default function AddMembershipModal({
                 <span className={styles.userOptionIstId}>{user.istid}</span>
               </div>
             )}
+            onItemCreate={canPreRegister ? (istid) => setPreRegisterIstid(istid) : undefined}
+            createLabel={dict.pre_register_user.trigger_button}
           />
 
           <div className={styles.formRow}>
@@ -196,6 +209,13 @@ export default function AddMembershipModal({
           </div>
         </form>
       </Modal>
+
+      <PreRegisterUserModal
+        defaultIstid={preRegisterIstid}
+        onClose={() => setPreRegisterIstid(null)}
+        onCreated={setSelectedUser}
+        dict={dict.pre_register_user}
+      />
     </>
   );
 }

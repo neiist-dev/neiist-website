@@ -17,6 +17,7 @@ import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
 import {
   PaymentMethod,
+  POS_PAYMENT_VERIFIED_BY,
   isPaymentMethod,
   isPaymentMethodAllowedForChannel,
 } from "@/types/shop/payment";
@@ -410,7 +411,10 @@ export async function settlePosOrdersBatchAction(payload: {
   const result = await finalizePaidOrders({
     orderNumbers: payload.orderNumbers,
     paymentReference: payload.paymentReference,
-    paymentCheckedBy: session.user.istid,
+    receivedBy: session.user.istid,
+    verifiedBy:
+      POS_PAYMENT_VERIFIED_BY[payload.paymentMethod as keyof typeof POS_PAYMENT_VERIFIED_BY] ??
+      null,
     paymentMethod: payload.paymentMethod,
     shiftId: payload.shiftId ?? null,
   });

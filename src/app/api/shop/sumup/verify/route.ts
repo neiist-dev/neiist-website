@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       orderNumber,
       checkoutId,
       applePayToken,
-      checkedBy: "sumup-verify",
+      verifiedBy: "sumup-verify",
       userIstid: auth.user?.istid,
     });
 
