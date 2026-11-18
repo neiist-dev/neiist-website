@@ -233,8 +233,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       one-terminal:
-        specifier: ^1.2.1
-        version: 1.2.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^2.0.0
+        version: 2.0.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       p-limit:
         specifier: ^7.3.3
         version: 7.3.3
@@ -2331,8 +2331,8 @@ packages:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
 
-  one-terminal@1.2.1:
-    resolution: {integrity: sha512-soajIyM6eUjUwDSB1agKMsK7XEKG4ZLKwpKtjUxvYWgimixgTm3NhsvygPdoMplTuCzFdhOvFeyRc/VS1TEMGA==}
+  one-terminal@2.0.0:
+    resolution: {integrity: sha512-T8d7yGv4aL+QCRi+zMynnDm/OojAqOUcE7DTbj9/sFfimm8sAM4HqM+Je5B4vgW03VLyau6Nuy+PQctqGsjvxg==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -4913,7 +4913,7 @@ snapshots:
 
   object-inspect@1.13.4: {}
 
-  one-terminal@1.2.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  one-terminal@2.0.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)

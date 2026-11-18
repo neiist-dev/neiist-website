@@ -1,11 +1,20 @@
 "use client";
 
-import { useMemo, useEffect, useRef } from "react";
-import { Terminal, type ExtraCommands } from "one-terminal";
+import { useMemo } from "react";
+import { Terminal } from "one-terminal";
+import type { ExtraCommands, NeofetchConfig } from "one-terminal";
 import { getTerminalVfs } from "./TerminalVfs";
 import styles from "@/styles/components/terminal/HeroTerminal.module.css";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/i18n-config";
+
+const NEIIST_ASCII_LOGO = [
+  "  _   _ _____ ___ ___ ____ _____",
+  " | \\ | | ____|_ _|_ _/ ___|_   _|",
+  " |  \\| |  _|  | | | |\\___ \\ | |",
+  " | |\\  | |___ | | | | ___) || |",
+  " |_| \\_|_____|___|___|____/ |_|",
+].join("\n");
 
 interface HeroTerminalProps {
   locale: Locale;
@@ -14,33 +23,44 @@ interface HeroTerminalProps {
 }
 
 export default function HeroTerminal({ locale, dict, onStartGame }: HeroTerminalProps) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const vfs = useMemo(() => getTerminalVfs(locale, dict), [locale, dict]);
 
-  useEffect(() => {
-    if (!wrapperRef.current) return;
-    const input = wrapperRef.current.querySelector("input");
-    if (input && !input.getAttribute("aria-label"))
-      input.setAttribute("aria-label", "Terminal input");
-  }, []);
+  const neofetch = useMemo<NeofetchConfig>(
+    () => ({
+      logo: NEIIST_ASCII_LOGO,
+      info: {
+        [dict.neofetch.labels.org]: dict.neofetch.values.org,
+        [dict.neofetch.labels.institute]: dict.neofetch.values.institute,
+        [dict.neofetch.labels.alameda]: dict.neofetch.values.alameda,
+        [dict.neofetch.labels.taguspark]: dict.neofetch.values.taguspark,
+        [dict.neofetch.labels.courses]: dict.neofetch.values.courses,
+        [dict.neofetch.labels.website]: dict.neofetch.values.website,
+        [dict.neofetch.labels.github]: dict.neofetch.values.github,
+      },
+    }),
+    [dict.neofetch]
+  );
 
   const extraCommands = useMemo<ExtraCommands>(
     () => ({
       game: {
+        description: dict.game_description,
         run: () => {
           onStartGame?.();
           return "Starting Campus Runner...";
         },
       },
     }),
-    [onStartGame]
+    [dict.game_description, onStartGame]
   );
 
   return (
-    <div ref={wrapperRef} className={styles.terminalWrapper}>
+    <div className={styles.terminalWrapper}>
       <Terminal
         fileStructure={vfs}
         startPath="/home/neiist"
+        hostname="neiist.tecnico.ulisboa.pt"
+        neofetch={neofetch}
         theme="dracula"
         windowChrome={["mac", { titleBarText: "Terminal" }]}
         prompt="guest@{cwd}:$ "

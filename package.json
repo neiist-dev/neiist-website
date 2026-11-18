@@ -44,7 +44,7 @@
     "minisearch": "^7.2.0",
     "next": "16.4.6",
     "next-themes": "^0.4.6",
-    "one-terminal": "^1.2.1",
+    "one-terminal": "^2.0.0",
     "p-limit": "^7.3.3",
     "pg": "^8.23.1",
     "react": "19.3.1",

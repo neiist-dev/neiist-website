@@ -428,6 +428,27 @@
       "github": "GitHub: @neiist-dev (https://github.com/neiist-dev)",
       "discord": "Discord e Links: https://linktr.ee/NEIIST",
       "linkedin": "LinkedIn: NEIIST (https://www.linkedin.com/company/neiist/)"
+    },
+    "game_description": "Jogar o minijogo Campus Runner",
+    "neofetch": {
+      "labels": {
+        "org": "Organização",
+        "institute": "Instituto",
+        "alameda": "Alameda",
+        "taguspark": "Taguspark",
+        "courses": "Cursos",
+        "website": "Website",
+        "github": "GitHub"
+      },
+      "values": {
+        "org": "NEIIST",
+        "institute": "Instituto Superior Técnico",
+        "alameda": "Informática I, Sala 3-03",
+        "taguspark": "Edifício Central, Sala 1-4.14",
+        "courses": "LEIC, MEIC, DEIC",
+        "website": "neiist.tecnico.ulisboa.pt",
+        "github": "github.com/neiist-dev"
+      }
     }
   },
   "sweats_contest": {
