@@ -1,5 +1,19 @@
 # neiist
 
+## [4.10.0](https://github.com/neiist-dev/neiist-website/compare/v4.9.0...v4.10.0) (2026-11-18)
+
+
+### Features
+
+* **orders:** new edit oder modal instead of inline edit ([2f51191](https://github.com/neiist-dev/neiist-website/commit/2f5119129d0aab1e7fac88ec64cb6136037d92a5))
+
+
+### Bug Fixes
+
+* **auth:** do not catch nextjs internal error ([0887dab](https://github.com/neiist-dev/neiist-website/commit/0887dabcba990a550f757d0c3589207344293362))
+* **footer:** center copyright text ([c256016](https://github.com/neiist-dev/neiist-website/commit/c25601673381234e23837807f9b905222acd4ac2))
+* prevent redundant client-side auth fetches on mount ([b7528f3](https://github.com/neiist-dev/neiist-website/commit/b7528f3fd6f40777e6d5318d2f5cc01d94de511b))
+
 ## [4.9.0](https://github.com/neiist-dev/neiist-website/compare/v4.8.0...v4.9.0) (2026-11-17)
 
 
