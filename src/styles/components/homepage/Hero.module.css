@@ -38,6 +38,16 @@
   display: none;
 }
 
+.terminalFallback {
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 12px;
+  background-color: #282a36;
+  box-shadow:
+    0 20px 40px -15px oklch(0% 0 0 / 0.35),
+    0 8px 16px -6px oklch(0% 0 0 / 0.2);
+}
+
 .campus {
   position: relative;
   margin: 0;

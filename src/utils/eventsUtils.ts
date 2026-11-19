@@ -5,7 +5,7 @@ import type { Activity } from "@/types/events";
 import {
   createActivitiesEvent,
   updateActivitiesEvent,
-  deleteActivitiesEvent,
+  deleteActivitiesEventNoCache,
   getActivitiesEventsNoCache,
 } from "@/lib/db/repositories/event.repository";
 import { scheduleEventReminder, cancelEventReminder } from "@/lib/redis/queue";
@@ -147,7 +147,7 @@ export async function syncNotionEventsToDb(prefetchedEvents?: NotionEvent[]): Pr
   }
   let deleted = 0;
   for (const deletedId of dbEventMap.keys()) {
-    await deleteActivitiesEvent(deletedId);
+    await deleteActivitiesEventNoCache(deletedId);
     await cancelEventReminder(deletedId);
     deleted++;
   }

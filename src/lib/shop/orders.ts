@@ -1,5 +1,8 @@
 import { getDictionary } from "@/i18n/dictionaries";
-import { getActivityByIdNoCache, signUpToEvent } from "@/lib/db/repositories/event.repository";
+import {
+  getActivityByIdNoCache,
+  signUpToEventNoCache,
+} from "@/lib/db/repositories/event.repository";
 import {
   createOrder,
   getOrderByNumber,
@@ -163,7 +166,7 @@ export async function promoteRedisCheckoutSessionToReservation(
 
 export async function executeEventTicketHook(job: EventHookJob): Promise<void> {
   // Registration failure propagates (job retries), only the email is best-effort.
-  const ticket = await signUpToEvent(job.event_id, job.user_istid, job.order_number);
+  const ticket = await signUpToEventNoCache(job.event_id, job.user_istid, job.order_number);
   try {
     const [activity, user] = await Promise.all([
       getActivityByIdNoCache(job.event_id),

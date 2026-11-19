@@ -144,6 +144,7 @@
 
 .overlayCard {
   position: relative;
+  container-type: inline-size;
   border-radius: var(--ui-radius-lg);
   aspect-ratio: 16 / 7;
   overflow: hidden;
@@ -177,20 +178,28 @@
   opacity: 0;
   transition: opacity 0.25s ease;
   text-align: center;
-  padding: 0.75rem 1.25rem;
+  padding: 1rem 1.25rem;
   box-sizing: border-box;
 }
 
-.overlayTitle,
-.overlayDescription {
+.overlayContent .overlayTitle,
+.overlayContent .overlayDescription {
   margin: 0;
   color: var(--ui-text-on-colour);
-  max-inline-size: 94%;
+  max-inline-size: 92%;
 }
 
-.overlayDescription {
+.overlayContent .overlayTitle {
+  font-size: clamp(1rem, 4.4cqi, 1.3rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.overlayContent .overlayDescription {
+  font-size: clamp(0.875rem, 3.6cqi, 1.05rem);
+  line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

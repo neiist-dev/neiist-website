@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { cacheLife } from "next/cache";
 import Image from "next/image";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import teamImage from "@/assets/team.png";
@@ -44,14 +45,22 @@ function renderMemberPhoto(photo?: string, name?: string) {
   );
 }
 
+async function getCachedCurrentAcademicYear(): Promise<string> {
+  "use cache";
+  cacheLife("days");
+  return getCurrentAcademicYear();
+}
+
 async function AboutUsContent({ params, searchParams }: PageProps) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).about_us_page;
   const { year } = await searchParams;
 
-  const dbYears = await getAcademicYears();
-  const currentAcademicYear = getCurrentAcademicYear();
+  const [dbYears, currentAcademicYear] = await Promise.all([
+    getAcademicYears(),
+    getCachedCurrentAcademicYear(),
+  ]);
   const allAcademicYears = dbYears.length > 0 ? dbYears : [currentAcademicYear];
   const selectedYear = year && allAcademicYears.includes(year) ? year : allAcademicYears[0];
   const isCurrentYear = selectedYear === currentAcademicYear;

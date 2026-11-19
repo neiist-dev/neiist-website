@@ -360,7 +360,7 @@ export const setOrderItemsStatusBatch = async (
   return rows.map((r) => r.order_number);
 };
 
-export const cancelOrder = async (
+export const cancelOrderNoCache = async (
   orderNumber: string,
   user_istid?: string,
   only_if_pending: boolean = false
@@ -372,13 +372,22 @@ export const cancelOrder = async (
     user_istid ?? null,
     only_if_pending,
   ]);
-  revalidateTag("orders", "max");
-  revalidateTag(`order-${orderNumber}`, "max");
   return Boolean(row?.cancel_order);
 };
 
+export const cancelOrder = async (
+  orderNumber: string,
+  user_istid?: string,
+  only_if_pending: boolean = false
+): Promise<boolean> => {
+  const cancelled = await cancelOrderNoCache(orderNumber, user_istid, only_if_pending);
+  revalidateTag("orders", "max");
+  revalidateTag(`order-${orderNumber}`, "max");
+  return cancelled;
+};
+
 export const cancelExpiredReservation = async (orderNumber: string): Promise<boolean> => {
-  return cancelOrder(orderNumber, "system-expiry", true);
+  return cancelOrderNoCache(orderNumber, "system-expiry", true);
 };
 
 export const setOrderState = async (

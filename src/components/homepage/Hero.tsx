@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { FiPlay } from "react-icons/fi";
 import { Button, cn, ColorfulText } from "@neiist/ui";
 import hero from "@/assets/homepage/hero.png";
@@ -42,7 +42,9 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
       </header>
 
       <aside className={styles.terminalSection} aria-label="Terminal">
-        <HeroTerminal locale={locale} dict={terminalDict} onStartGame={startGame} />
+        <Suspense fallback={<div className={styles.terminalFallback} aria-hidden="true" />}>
+          <HeroTerminal locale={locale} dict={terminalDict} onStartGame={startGame} />
+        </Suspense>
       </aside>
 
       <figure className={styles.campus}>

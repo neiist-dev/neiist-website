@@ -27,7 +27,6 @@ export const createActivitiesEvent = async (
       }),
     ]
   );
-  revalidateTag("activities", "max");
   return rows[0]?.create_activity ?? activity.id!;
 };
 
@@ -52,7 +51,6 @@ export const updateActivitiesEvent = async (
       source_type: "notion",
     }),
   ]);
-  revalidateTag("activities", "max");
 };
 
 export const upsertWebsiteActivity = async (data: {
@@ -115,7 +113,7 @@ export const upsertWebsiteActivity = async (data: {
   return activityId;
 };
 
-export const signUpToEvent = async (
+export const signUpToEventNoCache = async (
   eventId: string,
   istid: string,
   orderNumber?: string,
@@ -132,8 +130,25 @@ export const signUpToEvent = async (
       qrSignature ?? null,
     ]
   );
-  revalidateTag("activities", "max");
   return rows[0];
+};
+
+export const signUpToEvent = async (
+  eventId: string,
+  istid: string,
+  orderNumber?: string,
+  formResponses?: Record<string, unknown>,
+  qrSignature?: string
+): Promise<{ ticket_code: string; qr_signature: string }> => {
+  const result = await signUpToEventNoCache(
+    eventId,
+    istid,
+    orderNumber,
+    formResponses,
+    qrSignature
+  );
+  revalidateTag("activities", "max");
+  return result;
 };
 
 export const removeSignUpFromEvent = async (eventId: string, istid: string): Promise<boolean> => {
@@ -217,8 +232,12 @@ export const getActivityById = async (eventId: string): Promise<Activity | null>
   return getActivityByIdNoCache(eventId);
 };
 
-export const deleteActivitiesEvent = async (id: string): Promise<void> => {
+export const deleteActivitiesEventNoCache = async (id: string): Promise<void> => {
   await db_query(`SELECT neiist.delete_activity($1)`, [id]);
+};
+
+export const deleteActivitiesEvent = async (id: string): Promise<void> => {
+  await deleteActivitiesEventNoCache(id);
   revalidateTag("activities", "max");
 };
 
