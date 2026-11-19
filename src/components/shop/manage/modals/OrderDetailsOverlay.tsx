@@ -11,6 +11,7 @@ import {
   getOrderProgressSteps,
   getStatusLabel,
   canTransitionOrderStatus,
+  isCashPayment,
   isTicketOrder,
   isTicketOrderItem,
 } from "@/utils/shop/orderStatusUtils";
@@ -55,13 +56,6 @@ function getPaymentDisplay(order: Order, dict: Dictionary["order_details"]) {
   if (!order.payment_method) return "";
 
   return getPaymentLabel(order.payment_method, dict.payment_methods);
-}
-
-function hasPaymentReference(order: Order): boolean {
-  if (!order.payment_method) return false;
-
-  const methodsWithRef = ["sumup", "sumup-tpa", "other", "apple-pay"];
-  return methodsWithRef.includes(order.payment_method) && !!order.payment_reference?.trim();
 }
 
 function getPaymentButtonLabel(dict: Dictionary["order_details"], order?: Order | null): string {
@@ -354,16 +348,18 @@ export default function OrderDetailOverlay({
               <Text size="md">{order.customer_phone || "-"}</Text>
             </div>
           </div>
-          {hasPaymentReference(order) && (
-            <div className={styles.infoColumn}>
-              <div className={styles.infoItem}>
-                <Text size="sm" variant="muted">
-                  {dict.payment_reference_label}
-                </Text>
-                <Text size="md">{order.payment_reference?.trim()}</Text>
+          {order.payment_method &&
+            !isCashPayment(order.payment_method) &&
+            order.payment_reference?.trim() && (
+              <div className={styles.infoColumn}>
+                <div className={styles.infoItem}>
+                  <Text size="sm" variant="muted">
+                    {dict.payment_reference_label}
+                  </Text>
+                  <Text size="md">{order.payment_reference.trim()}</Text>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         <div className={styles.section}>
