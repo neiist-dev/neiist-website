@@ -1,10 +1,7 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect, useState, useMemo } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay } from "swiper/modules";
-import type { Swiper as SwiperType } from "swiper";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { useMemo } from "react";
+import { SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import styles from "@/styles/components/homepage/Activities.module.css";
@@ -23,11 +20,9 @@ import c from "@/assets/events/C.jpg";
 import assembly from "@/assets/events/assembly.jpg";
 import hashcode from "@/assets/events/hashcode.jpg";
 import lip from "@/assets/events/lip.jpg";
+import { Carousel } from "@/components/layout/Carousel";
 
-function Activities({ dict }: { dict: Dictionary["activities"] }) {
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [showArrows, setShowArrows] = useState(false);
-
+export default function Activities({ dict }: { dict: Dictionary["activities"] }) {
   const events: Event[] = useMemo(
     () => [
       {
@@ -112,83 +107,49 @@ function Activities({ dict }: { dict: Dictionary["activities"] }) {
     [dict]
   );
 
-  useEffect(() => {
-    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    const handleResize = () => {
-      setShowArrows(!isTouch);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <div className={styles.activities}>
       <h1>{dict.title}</h1>
+
       <div className={styles.container}>
         {events.length === 0 ? (
           <div className={styles.noEvents}>{dict.no_events}</div>
         ) : (
           <>
-            {showArrows && (
-              <>
-                <button
-                  className={`${styles.arrow} ${styles.left}`}
-                  onClick={() => swiperInstance?.slidePrev()}
-                  aria-label={dict.prev_label}>
-                  <IoIosArrowBack size={40} />
-                </button>
-                <button
-                  className={`${styles.arrow} ${styles.right}`}
-                  onClick={() => swiperInstance?.slideNext()}
-                  aria-label={dict.next_label}>
-                  <IoIosArrowForward size={40} />
-                </button>
-              </>
-            )}
-            <div
-              onMouseEnter={() => swiperInstance?.autoplay?.stop()}
-              onMouseLeave={() => swiperInstance?.autoplay?.start()}>
-              <Swiper
-                onSwiper={setSwiperInstance}
-                modules={[Navigation, Autoplay]}
-                navigation={false}
-                autoplay={{ delay: 1500, disableOnInteraction: false }}
-                loop={events.length > 1}
-                speed={500}
-                slidesPerView={3}
-                spaceBetween={20}
-                breakpoints={{
-                  1024: { slidesPerView: 3 },
-                  600: { slidesPerView: 2 },
-                  0: { slidesPerView: 1 },
-                }}
-                className={styles.slider}>
-                {events.map((event) => (
-                  <SwiperSlide key={event.id}>
-                    <div className={styles.card}>
-                      <Image
-                        src={event.image}
-                        alt={event.title}
-                        fill
-                        sizes="(min-width: 1024px) 33vw, (min-width: 600px) 50vw, 100vw"
-                        className={styles.image}
-                      />
-                      <div className={styles.label}>{event.title}</div>
-                      <div className={styles.overlay}>
-                        <h3 className={styles.eventTitle}>{event.title}</h3>
-                        <p className={styles.description}>{event.description}</p>
-                      </div>
+            <Carousel
+              variant="events"
+              items={events}
+              getKey={(event) => event.id}
+              slidesPerView={3}
+              breakpoints={{
+                1024: { slidesPerView: 3 },
+                600: { slidesPerView: 2 },
+                0: { slidesPerView: 1 },
+              }}
+              renderItem={(event) => (
+                <SwiperSlide key={event.id}>
+                  <div className={styles.card}>
+                    <Image
+                      src={event.image}
+                      alt={event.title}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 600px) 50vw, 100vw"
+                      className={styles.image}
+                    />
+
+                    <div className={styles.label}>{event.title}</div>
+
+                    <div className={styles.overlay}>
+                      <h3 className={styles.eventTitle}>{event.title}</h3>
+                      <p className={styles.description}>{event.description}</p>
                     </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
+                  </div>
+                </SwiperSlide>
+              )}
+            />
           </>
         )}
       </div>
     </div>
   );
 }
-
-export default Activities;

@@ -18,47 +18,6 @@
   position: relative;
 }
 
-.arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  z-index: 10;
-  transition: transform 0.2s ease-in-out;
-  border: none;
-  background: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  box-shadow: 0 2px 8px rgba(40, 99, 253, 0.12);
-}
-
-.arrow:hover {
-  transform: translateY(-50%) scale(1.15);
-}
-
-.arrow:active {
-  transform: translateY(-50%) scale(0.9);
-  color: lightgray;
-}
-
-.arrow.left {
-  left: 0.5rem;
-}
-
-.arrow.right {
-  right: 0.5rem;
-}
-
-.arrow svg {
-  width: 2rem;
-  height: 2rem;
-}
-
 .image {
   width: 100%;
   height: 100%;
