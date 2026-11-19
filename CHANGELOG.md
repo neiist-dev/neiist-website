@@ -1,5 +1,19 @@
 # neiist
 
+## [4.11.0](https://github.com/neiist-dev/neiist-website/compare/v4.10.0...v4.11.0) (2026-11-19)
+
+
+### Features
+
+* **ui:** carousel whit no dependencies and simpler logic ([64f33ae](https://github.com/neiist-dev/neiist-website/commit/64f33ae6056193f85e8854c4ef3ccbde4728cf32))
+* **ui:** clean bento grid with reveal and swap modes animation to ([e387614](https://github.com/neiist-dev/neiist-website/commit/e387614804bce82581961fc78c9cb64e5594bf36))
+
+
+### Bug Fixes
+
+* lazy load one-terminal and some cache and pre render components ([494240c](https://github.com/neiist-dev/neiist-website/commit/494240cc14ca07f889eed9919c1374eda3c4c7af))
+* **orders:** show all payment references on orders details ([b220ee1](https://github.com/neiist-dev/neiist-website/commit/b220ee12a30f02f8f55ca987a20e104258b5cc04))
+
 ## [4.10.0](https://github.com/neiist-dev/neiist-website/compare/v4.9.0...v4.10.0) (2026-11-18)
 
 
