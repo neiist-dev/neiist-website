@@ -40,6 +40,7 @@ export * from "./components/Divider/Divider";
 export * from "./components/Tabs/Tabs";
 export * from "./components/Accordion/Accordion";
 export * from "./components/FloatingActionBar/FloatingActionBar";
+export * from "./components/BentoGrid/BentoGrid";
 
 // Overlays & Feedback Modals
 export * from "./components/Modal/Modal";
@@ -71,3 +72,7 @@ export * from "./components/DetailCard/DetailCard";
 export * from "./components/SelectableCard/SelectableCard";
 export * from "./components/Calendar/Calendar";
 export * from "./components/TimePicker/TimePicker";
+export * from "./components/PageIndicator/PageIndicator";
+export * from "./components/Carousel/OverlayCard";
+export * from "./components/Carousel/FeatureCard";
+export * from "./components/Carousel/Carousel";

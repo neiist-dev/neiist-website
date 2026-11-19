@@ -43,6 +43,9 @@ import { ContextMenuDemo } from "./demos/ContextMenuDemo";
 import { ProgressDemo } from "./demos/ProgressDemo";
 import { FloatingActionBarDemo } from "./demos/FloatingActionBarDemo";
 import { SelectableCardDemo } from "./demos/SelectableCardDemo";
+import { CarouselDemo } from "./demos/CarouselDemo";
+import { BentoGridDemo } from "./demos/BentoGridDemo";
+import PageIndicatorDemo from "./demos/PageIndicatorDemo";
 
 export type ComponentCategory = "Primitives" | "Components";
 
@@ -74,6 +77,12 @@ export const COMPONENTS: ComponentEntry[] = [
   { id: "heading", label: "Heading", category: "Primitives", component: <HeadingDemo /> },
   { id: "input", label: "Input", category: "Primitives", component: <InputDemo /> },
   { id: "modal", label: "Modal", category: "Primitives", component: <ModalDemo /> },
+  {
+    id: "pageindicator",
+    label: "PageIndicator",
+    category: "Primitives",
+    component: <PageIndicatorDemo />,
+  },
   { id: "popover", label: "Popover", category: "Primitives", component: <PopoverDemo /> },
   { id: "progress", label: "Progress", category: "Primitives", component: <ProgressDemo /> },
   { id: "radio", label: "Radio & RadioGroup", category: "Primitives", component: <RadioDemo /> },
@@ -94,7 +103,9 @@ export const COMPONENTS: ComponentEntry[] = [
   // Components
   { id: "accordion", label: "Accordion", category: "Components", component: <AccordionDemo /> },
   { id: "alert", label: "Alert", category: "Components", component: <AlertDemo /> },
+  { id: "bentogrid", label: "BentoGrid", category: "Components", component: <BentoGridDemo /> },
   { id: "card", label: "Card", category: "Components", component: <CardDemo /> },
+  { id: "carousel", label: "Carousel", category: "Components", component: <CarouselDemo /> },
   {
     id: "colourpicker",
     label: "ColourPicker",
