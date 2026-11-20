@@ -413,16 +413,16 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
               <div className={styles.infoBubbleWrapper}>
                 <FiInfo className={styles.infoBubble} />
                 <div className={styles.tooltip}>
-                  {hasOutlookSync
-                    ? dict.sections.calendarTooltip
-                    : dict.sections.calendarTooltipGoogle}
+                  {isMember
+                    ? dict.sections.calendarTooltipMember
+                    : dict.sections.calendarTooltipPublic}
                 </div>
               </div>
             </div>
             <p className={styles.infoText}>
               {hasOutlookSync
-                ? dict.sections.calendarDescription
-                : dict.sections.calendarDescriptionGoogle}
+                ? dict.sections.calendarDescriptionMember
+                : dict.sections.calendarDescriptionPublic}
             </p>
             <div className={styles.actionButtons}>
               <a

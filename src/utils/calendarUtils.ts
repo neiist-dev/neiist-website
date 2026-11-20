@@ -1,27 +1,7 @@
 import type { Activity } from "@/types/events";
 import type { User } from "@/types/user";
 
-export const truncateToDay = (d: Date) => {
-  const c = new Date(d);
-  c.setHours(0, 0, 0, 0);
-  return c;
-};
-
-export const addDays = (d: Date, n: number) => {
-  const c = new Date(d);
-  c.setDate(c.getDate() + n);
-  return truncateToDay(c);
-};
-
-export const datesMatch = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
-
-export const formatTime = (date: Date) =>
-  `${String(date.getHours()).padStart(2, "0")}h${String(date.getMinutes()).padStart(2, "0")}`;
-
-export const formatDate = (d: Date) =>
+const formatDate = (d: Date) =>
   `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 
 export function formatEventDateTime(event: Activity): {
@@ -63,10 +43,14 @@ export function normalizeUserEmails(emails: Array<string | null | undefined>): S
   );
 }
 
-export function shouldIncludeCalendarEvent(event: Activity, userEmailSet: Set<string>): boolean {
+export function shouldIncludeCalendarEvent(event: Activity, userEmailSet?: Set<string>): boolean {
   if (!event.start) return false;
-  if (event.type !== "Meeting") return true;
-  return event.attendees.some((email) => userEmailSet.has(email.trim().toLowerCase()));
+  if (event.type === "Meeting") {
+    return Boolean(
+      userEmailSet && event.attendees.some((email) => userEmailSet.has(email.trim().toLowerCase()))
+    );
+  }
+  return userEmailSet ? true : event.public;
 }
 
 export function getValidEventUrl(event: Activity): string | undefined {

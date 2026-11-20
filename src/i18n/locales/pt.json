@@ -750,10 +750,10 @@
     },
     "sections": {
       "calendar": "Calendário",
-      "calendarDescription": "Adicione o calendário do NEIIST ao seu Google Calendar ou Outlook para não perder nada!",
-      "calendarDescriptionGoogle": "Adicione o calendário do NEIIST ao seu Google Calendar para não perder nada!",
-      "calendarTooltip": "O Google Calendar é privado para o teu email principal ou alternativo (conta Google). O Outlook sincroniza diretamente com o teu email @neiist.pt.",
-      "calendarTooltipGoogle": "O Google Calendar é privado para o teu email principal ou alternativo (conta Google).",
+      "calendarDescriptionMember": "Adiciona o calendário do NEIIST ao teu Google Calendar ou Outlook para não perderes nada!",
+      "calendarDescriptionPublic": "Adiciona o calendário do NEIIST ao teu Google Calendar para não perderes nada!",
+      "calendarTooltipMember": "Inclui todos os eventos do NEIIST e as tuas reuniões. Funciona com qualquer conta Google através do link, ou sincroniza diretamente com o teu calendário Outlook (@neiist.pt).",
+      "calendarTooltipPublic": "Subscreve o Calendário do NEIIST no teu Google Calendar.",
       "cvbank": "CV Bank",
       "cvbankTooltip": "Explicação sobre o CV-Bank."
     },

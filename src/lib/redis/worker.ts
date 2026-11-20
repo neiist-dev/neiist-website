@@ -128,7 +128,12 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
     try {
       await redis.del(CALENDAR_SYNC_PENDING_KEY);
       const { fetchAllNotionEvents, syncNotionEventsToDb } = await import("@/utils/eventsUtils");
-      const { getCalendarClient, syncAllEventsToCalendar } = await import("@/lib/google/calendar");
+      const {
+        PUBLIC_CALENDAR_MARKER,
+        getOrCreatePublicCalendar,
+        listServiceAccountCalendars,
+        syncAllEventsToCalendar,
+      } = await import("@/lib/google/calendar");
       const { isM365Configured } = await import("@/lib/m365/graph");
       const { syncAllEventsToOutlookCalendar } = await import("@/lib/m365/calendar");
       const { getUserCalendarEmails } = await import("@/utils/calendarUtils");
@@ -151,60 +156,58 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
       const publicDbEvents = allDbEvents.filter((event) => event.public);
 
       const calendarByIstid = new Map<string, string>();
-      const calendarClient = getCalendarClient();
-      if (calendarClient) {
-        const calList = await calendarClient.calendarList.list();
-        for (const calendar of calList.data.items || []) {
-          if (!calendar.summary?.startsWith("NEIIST-") || !calendar.id) continue;
-          const match = calendar.description?.match(/istid:([a-zA-Z0-9]+)/);
-          if (match) calendarByIstid.set(match[1], calendar.id);
+      let publicCalendarId: string | undefined;
+      for (const calendar of await listServiceAccountCalendars()) {
+        if (!calendar.id) continue;
+        if (calendar.description?.includes(PUBLIC_CALENDAR_MARKER)) {
+          publicCalendarId = calendar.id;
+          continue;
+        }
+        if (!calendar.summary?.startsWith("NEIIST-")) continue;
+        const match = calendar.description?.match(/istid:([a-zA-Z0-9]+)/);
+        if (match) calendarByIstid.set(match[1], calendar.id);
+      }
+
+      try {
+        const resolvedPublicCalId =
+          publicCalendarId ?? (await getOrCreatePublicCalendar())?.calendarId;
+        if (resolvedPublicCalId) {
+          await redis.expire(CALENDAR_SYNC_LOCK_KEY, CALENDAR_LOCK_TTL_SECONDS);
+          await syncAllEventsToCalendar(resolvedPublicCalId, publicDbEvents);
+        }
+      } catch (publicCalErr) {
+        console.error("[redis-worker] Error syncing public Google calendar:", publicCalErr);
+      }
+
+      const memberRoles = [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN];
+      for (const user of allUsers) {
+        if (!user.email || !user.istid || !checkRoles(user, memberRoles)) continue;
+        const googleCalId = calendarByIstid.get(user.istid);
+        if (!googleCalId) continue;
+
+        await redis.expire(CALENDAR_SYNC_LOCK_KEY, CALENDAR_LOCK_TTL_SECONDS);
+        try {
+          await syncAllEventsToCalendar(googleCalId, allDbEvents, getUserCalendarEmails(user));
+        } catch (calErr) {
+          console.error(`[redis-worker] Error syncing calendar for ${user.istid}:`, calErr);
         }
       }
 
       const m365Ready = isM365Configured();
-      const usersToSync = allUsers.filter(
-        (user) =>
-          user.email &&
-          user.istid &&
-          (calendarByIstid.has(user.istid) ||
-            (m365Ready && user.outlookCalendarSync && user.neiistEmail))
-      );
-
-      const limit = pLimit(2);
-      await Promise.all(
-        usersToSync.map((user) =>
-          limit(async () => {
-            await redis.expire(CALENDAR_SYNC_LOCK_KEY, CALENDAR_LOCK_TTL_SECONDS);
-            const googleCalId = calendarByIstid.get(user.istid);
-            const altEmail = user.alternativeEmailVerified
-              ? (user.alternativeEmail ?? undefined)
-              : undefined;
-
-            const isMember = checkRoles(user, [
-              UserRole._MEMBER,
-              UserRole._COORDINATOR,
-              UserRole._ADMIN,
-            ]);
-            const userEvents = isMember ? allDbEvents : publicDbEvents;
-
-            if (googleCalId) {
-              try {
-                await syncAllEventsToCalendar(
-                  googleCalId,
-                  userEvents,
-                  user.email!,
-                  altEmail,
-                  user.neiistEmail ?? undefined
-                );
-              } catch (calErr) {
-                console.error(`[redis-worker] Error syncing calendar for ${user.istid}:`, calErr);
-              }
-            }
-
-            if (m365Ready && user.outlookCalendarSync && user.neiistEmail) {
+      if (m365Ready) {
+        const outlookUsersToSync = allUsers.filter(
+          (user) => user.email && user.istid && user.outlookCalendarSync && user.neiistEmail
+        );
+        const limit = pLimit(2);
+        await Promise.all(
+          outlookUsersToSync.map((user) =>
+            limit(async () => {
+              await redis.expire(CALENDAR_SYNC_LOCK_KEY, CALENDAR_LOCK_TTL_SECONDS);
+              const isMember = checkRoles(user, memberRoles);
+              const userEvents = isMember ? allDbEvents : publicDbEvents;
               try {
                 await syncAllEventsToOutlookCalendar(
-                  user.neiistEmail,
+                  user.neiistEmail!,
                   userEvents,
                   getUserCalendarEmails(user)
                 );
@@ -214,10 +217,10 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
                   calErr
                 );
               }
-            }
-          })
-        )
-      );
+            })
+          )
+        );
+      }
       console.warn("[redis-worker] Calendar sync successfully completed");
     } catch (syncError) {
       console.error("[redis-worker] Calendar sync failed:", syncError);

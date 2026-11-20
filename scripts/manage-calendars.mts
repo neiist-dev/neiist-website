@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { google, type calendar_v3 } from "googleapis";
 import { loadEnvFile } from "node:process";
 import { multiselect, confirm, isCancel, cancel } from "@clack/prompts";
 
@@ -40,8 +40,15 @@ async function main() {
 
     console.log("Fetching calendars...");
 
-    const response = await calendar.calendarList.list();
-    const calendars = response.data.items || [];
+    const calendars: calendar_v3.Schema$CalendarListEntry[] = [];
+    let pageToken: string | undefined;
+
+    while (true) {
+      const { data } = await calendar.calendarList.list({ pageToken, maxResults: 250 });
+      if (data.items) calendars.push(...data.items);
+      if (!data.nextPageToken) break;
+      pageToken = data.nextPageToken;
+    }
 
     if (calendars.length === 0) {
       console.log("No calendars found for this service account.");
@@ -50,10 +57,14 @@ async function main() {
 
     const selectedIds = await multiselect({
       message: "Select calendars to DELETE (Space to select, Enter to confirm, Esc to exit)",
-      options: calendars.map((cal) => ({
-        label: `${cal.summary} (${cal.id})`,
-        value: cal.id!,
-      })),
+      options: calendars.map((cal) => {
+        const isPublic = cal.description?.includes("neiist:public");
+        const prefix = isPublic ? "[PUBLIC] " : "";
+        return {
+          label: `${prefix}${cal.summary} (${cal.id})`,
+          value: cal.id!,
+        };
+      }),
     });
 
     if (isCancel(selectedIds) || (selectedIds as string[]).length === 0) {
