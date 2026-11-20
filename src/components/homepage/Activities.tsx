@@ -1,3 +1,4 @@
+"use client";
 import Image, { type StaticImageData } from "next/image";
 import { Carousel, OverlayCard } from "@neiist/ui";
 import { Dictionary } from "@/i18n/dictionaries";
@@ -14,6 +15,7 @@ import c from "@/assets/events/C.jpg";
 import assembly from "@/assets/events/assembly.jpg";
 import hashcode from "@/assets/events/hashcode.jpg";
 import lip from "@/assets/events/lip.jpg";
+
 import styles from "@/styles/components/homepage/Activities.module.css";
 
 const EVENTS: ReadonlyArray<{
