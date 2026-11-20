@@ -4,6 +4,15 @@ import Partners from "@/components/news/Partners";
 import aoc from "@/assets/events/aoc.jpg";
 import sweats from "@/assets/events/sweats.jpg";
 import styles from "@/styles/components/news/News.module.css";
+import Image from "next/image";
+
+import { Suspense } from "react";
+import { connection } from "next/server";
+
+async function DynamicMarker() {
+  await connection();
+  return null;
+}
 
 async function NewsContent() {
   const news: CardItem[] = [
@@ -12,21 +21,21 @@ async function NewsContent() {
       title: "Noticia A: Nova parceria em breve",
       description:
         "Descrição da Noticia A: Uma breve descrição da empresa, da sua missão e da sua área de atuação",
-      image: aoc,
+      image: <Image src={aoc} alt=""></Image>,
       link1: "linkA",
     },
     {
       id: "2",
       title: "Noticia B",
       description: "Descrição da Noticia B",
-      image: aoc,
+      image: <Image src={sweats} alt=""></Image>,
       link1: "linkB",
     },
     {
       id: "3",
       title: "Noticia C",
       description: "Descrição da Noticia C",
-      image: aoc,
+      image: <Image src={aoc} alt=""></Image>,
       link1: "linkC",
     },
   ];
@@ -42,7 +51,7 @@ async function PartnersContent() {
       description:
         "Descrição da Noticia A: Uma breve descrição da empresa, da sua missão e da sua área de atuação",
       addInfo: ["12% desconto com o código NEIIST", "2 meses gratis", "acesso antecipado"],
-      image: sweats,
+      image: <Image src={aoc} alt=""></Image>,
       link1: "linkA",
     },
     {
@@ -50,14 +59,14 @@ async function PartnersContent() {
       title: "Noticia B",
       description: "Descrição da Noticia B",
       addInfo: ["12% desconto com o código NEIIST", "2 meses gratis", "acesso antecipado"],
-      image: aoc,
+      image: <Image src={sweats} alt=""></Image>,
       link1: "linkB",
     },
     {
       id: "3",
       title: "Noticia C",
       description: "Descrição da Noticia C",
-      image: sweats,
+      image: <Image src={sweats} alt=""></Image>,
       link1: "linkC",
     },
     {
@@ -66,14 +75,14 @@ async function PartnersContent() {
       description:
         "Descrição da Noticia A: Uma breve descrição da empresa, da sua missão e da sua área de atuação",
       addInfo: ["12% desconto com o código NEIIST", "2 meses gratis", "acesso antecipado"],
-      image: sweats,
+      image: <Image src={aoc} alt=""></Image>,
       link1: "linkA",
     },
     {
       id: "5",
       title: "Noticia E",
       description: "Descrição da Noticia B",
-      image: aoc,
+      image: <Image src={aoc} alt=""></Image>,
       link1: "linkB",
     },
     {
@@ -81,7 +90,7 @@ async function PartnersContent() {
       title: "Noticia F",
       description: "Descrição da Noticia C",
       addInfo: ["12% desconto com o código NEIIST", "2 meses gratis", "acesso antecipado"],
-      image: sweats,
+      image: <Image src={sweats} alt=""></Image>,
       link1: "linkC",
     },
   ];
@@ -99,6 +108,9 @@ export default function NewsPage() {
       <section className={styles.partners}>
         <PartnersContent />
       </section>
+      <Suspense>
+        <DynamicMarker />
+      </Suspense>
     </section>
   );
 }

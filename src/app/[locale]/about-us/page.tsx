@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { cacheLife } from "next/cache";
 import Image from "next/image";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import teamImage from "@/assets/team.png";
@@ -32,22 +33,48 @@ interface PageProps {
   searchParams: Promise<{ year?: string }>;
 }
 
+function renderMemberPhoto(photo?: string, name?: string) {
+  return (
+    <Image
+      src={photo || "/default_user.png"}
+      alt={`${name} photo`}
+      fill
+      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 250px"
+      style={{ objectFit: "cover" }}
+    />
+  );
+}
+
+async function getCachedCurrentAcademicYear(): Promise<string> {
+  "use cache";
+  cacheLife("days");
+  return getCurrentAcademicYear();
+}
+
 async function AboutUsContent({ params, searchParams }: PageProps) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).about_us_page;
   const { year } = await searchParams;
 
-  const dbYears = await getAcademicYears();
-  const allAcademicYears = dbYears.length > 0 ? dbYears : [getCurrentAcademicYear()];
+  const [dbYears, currentAcademicYear] = await Promise.all([
+    getAcademicYears(),
+    getCachedCurrentAcademicYear(),
+  ]);
+  const allAcademicYears = dbYears.length > 0 ? dbYears : [currentAcademicYear];
   const selectedYear = year && allAcademicYears.includes(year) ? year : allAcademicYears[0];
+  const isCurrentYear = selectedYear === currentAcademicYear;
 
-  const [memberships, rawTeams, rawAdminBodies, departmentOrderList] = await Promise.all([
+  const [rawMemberships, rawTeams, rawAdminBodies, departmentOrderList] = await Promise.all([
     getMembershipsForAcademicYear(selectedYear),
     getAllTeams(),
     getAllAdminBodies(),
     getDepartmentDisplayOrder(),
   ]);
+
+  const memberships = isCurrentYear
+    ? rawMemberships.filter((membership) => membership.isActive)
+    : rawMemberships;
 
   const teams: Team[] = rawTeams.map((team) => ({
     name: team.name,
@@ -129,17 +156,7 @@ async function AboutUsContent({ params, searchParams }: PageProps) {
                   key={member.id}
                   name={getFirstAndLastName(member.userName)}
                   role={roleName}
-                  image={
-                    member.userPhoto ? (
-                      <Image
-                        src={member.userPhoto}
-                        alt={`${member.userName} photo`}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 250px"
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : undefined
-                  }
+                  image={renderMemberPhoto(member.userPhoto, member.userName)}
                   githubUrl={member.github}
                   linkedinUrl={member.linkedin}
                   username={member.linkedin}

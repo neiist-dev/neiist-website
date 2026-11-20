@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { DatabaseError } from "@/types/errors";
+import { InsufficientStockError } from "@/lib/redis/holds";
 
 export function handleApiError(error: unknown) {
+  if (error instanceof InsufficientStockError)
+    return NextResponse.json({ error: error.message }, { status: 409 });
+
   if (error instanceof DatabaseError)
     return NextResponse.json(
       { error: error.userMessage, code: error.code },

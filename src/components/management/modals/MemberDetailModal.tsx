@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Alert,
   Modal,
-  Button,
   Badge,
   Card,
   DropdownMenu,
@@ -14,7 +13,7 @@ import {
 } from "@neiist/ui";
 import { FiMoreVertical, FiCalendar, FiTrash2, FiCamera } from "react-icons/fi";
 import MemberAvatar from "@/components/layout/MemberAvatar";
-import type { User } from "@/types/user";
+import type { UserProfile } from "@/types/user";
 import type { Membership } from "@/types/memberships";
 import type { RoleItem } from "@/types/roles";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -48,7 +47,7 @@ export default function MemberDetailModal({
   onDelete,
   dict,
 }: MemberDetailModalProps) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [mandates, setMandates] = useState<Membership[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -104,37 +103,29 @@ export default function MemberDetailModal({
     if (!file || !membership?.userNumber) return;
 
     setIsUploadingPhoto(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const base64 = (reader.result as string).split(",")[1];
-        const res = await fetch(`/api/user/update/${membership.userNumber}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photo: base64 }),
-        });
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch(`/api/user/photo/${membership.userNumber}`, { method: "POST", body });
 
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || mDict.photo_error || "Failed to update photo");
-        }
-
-        const newPhotoUrl = `/api/user/photo/${membership.userNumber}?custom&t=${Date.now()}`;
-        if (user) {
-          setUser({ ...user, photo: newPhotoUrl });
-        }
-        onPhotoUpdated?.(membership.userNumber, newPhotoUrl);
-        Alert.success(mDict.photo_updated || "Photo updated successfully");
-      } catch (err: unknown) {
-        Alert.error(
-          err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
-        );
-      } finally {
-        setIsUploadingPhoto(false);
-        if (photoInputRef.current) photoInputRef.current.value = "";
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || mDict.photo_error || "Failed to update photo");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const newPhotoUrl = `/api/user/photo/${membership.userNumber}?t=${Date.now()}`;
+      if (user) setUser({ ...user, photo: newPhotoUrl });
+
+      onPhotoUpdated?.(membership.userNumber, newPhotoUrl);
+      Alert.success(mDict.photo_updated || "Photo updated successfully");
+    } catch (err: unknown) {
+      Alert.error(
+        err instanceof Error ? err.message : mDict.photo_error || "Failed to update photo"
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
   };
 
   if (!membership) return null;
@@ -198,6 +189,10 @@ export default function MemberDetailModal({
                   <span>{user.alternativeEmail}</span>
                 </div>
               )}
+              <div className={detailStyles.gridItem}>
+                <span>{mDict.neiist_email_label}</span>
+                <span>{user?.neiistEmail || "—"}</span>
+              </div>
               {user?.phone && (
                 <div className={detailStyles.gridItem}>
                   <span>{mDict.phone}</span>
@@ -341,12 +336,6 @@ export default function MemberDetailModal({
             </div>
           </>
         )}
-
-        <div className={styles.modalActions}>
-          <Button type="button" variant="solid" color="primary" size="sm" onClick={onClose}>
-            {mDict.confirm_cancel}
-          </Button>
-        </div>
       </div>
     </Modal>
   );

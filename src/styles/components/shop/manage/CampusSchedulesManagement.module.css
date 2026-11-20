@@ -1,0 +1,154 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin: 2rem 4rem 4rem;
+  min-block-size: calc(100vh - 120px);
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin: 1.5rem 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin: 0;
+}
+
+.matrixWrapper {
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.matrixTable {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: transparent;
+  min-width: 640px;
+  overflow: hidden;
+}
+
+.daysHeaderRow {
+  display: grid;
+  grid-template-columns: 56px repeat(7, 1fr);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent;
+}
+
+.timeGutterCorner {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dayHeaderCell {
+  padding: 0.75rem 0.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground-colour);
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.dayHeaderCell:last-child {
+  border-right: none;
+}
+
+.matrixBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.hourRow {
+  display: grid;
+  grid-template-columns: 56px repeat(7, 1fr);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hourRow:last-child {
+  border-bottom: none;
+}
+
+.timeLabelCell {
+  padding: 0.25rem 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--light-foreground-colour);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  background: transparent;
+}
+
+.dayColumnSlotPair {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  min-height: 44px;
+  padding: 0 2px;
+}
+
+.dayColumnSlotPair:last-child {
+  border-right: none;
+}
+
+.halfHourSlot {
+  flex: 1;
+  min-height: 22px;
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 0.08s ease;
+}
+
+.halfHourSlot:first-child {
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
+}
+
+.halfHourSlot:hover:not(.slotSelected) {
+  background-color: var(--hover);
+}
+
+.slotSelected {
+  background-color: var(--secondary-colour);
+}
+
+.slotRoundTop {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  margin-top: 1px;
+}
+
+.slotRoundBottom {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  margin-bottom: 1px;
+}

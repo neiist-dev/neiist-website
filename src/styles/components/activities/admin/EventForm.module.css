@@ -1,0 +1,255 @@
+.container {
+  min-height: 95vh;
+}
+
+.header {
+  margin: 1rem 2rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 1.8rem;
+}
+
+.grid {
+  margin: 0 2rem 2.5rem;
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  color: var(--foreground-colour);
+  margin-top: 0.5rem;
+}
+
+.sectionTitle:first-child {
+  margin-top: 0;
+}
+
+.sectionTitleIcon {
+  color: var(--primary-colour);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.customIconTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  background: transparent;
+  border: 2px solid transparent;
+  color: var(--primary-colour);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.customIconTrigger:hover {
+  border-color: var(--primary-colour);
+  box-shadow: 0 0 0 1px var(--primary-colour);
+  background: rgba(0, 102, 204, 0.06);
+}
+
+.customIconTrigger:focus-visible {
+  outline: 2px solid var(--primary-colour);
+  outline-offset: 2px;
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dateTimeRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.dateTimeRow > div:first-child {
+  flex: 1;
+}
+
+.dateTimeRow > div:last-child {
+  width: 7.5rem;
+  flex-shrink: 0;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  cursor: pointer;
+  user-select: none;
+  width: fit-content;
+}
+
+.toggleLabel {
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+  cursor: pointer;
+}
+
+.customOptionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.customOptionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+}
+
+.customOptionRow:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.customOptionTop {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.customOptionTop > div:first-child {
+  flex: 1;
+}
+
+.customOptionTop > div:nth-child(2) {
+  width: 10rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .customOptionTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .customOptionTop > div:nth-child(2) {
+    width: 100%;
+  }
+}
+
+.customOptionBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.addOptionBtn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+.chipContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--background-colour);
+  min-height: 2.2rem;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.chipContainer:focus-within {
+  border-color: var(--primary-colour);
+  box-shadow: 0 0 0 1px var(--primary-colour);
+}
+
+.chip {
+  background: var(--background-colour);
+  color: var(--foreground-colour);
+  border-radius: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.chipRemoveBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--light-foreground-colour);
+  font-size: 1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.chipRemoveBtn:hover {
+  color: #ef4444;
+}
+
+.chipInput {
+  flex: 1;
+  min-width: 6.25rem;
+  border: none;
+  background: transparent;
+  padding: 0.2rem;
+  outline: none;
+  font-size: 0.85rem;
+  color: var(--foreground-colour);
+}
+
+.chipInput::placeholder {
+  color: var(--light-foreground-colour);
+}
+
+@media (max-width: 768px) {
+  .header {
+    margin: 1rem 1rem 1.25rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    margin: 0 1rem 2rem;
+    gap: 2rem;
+  }
+}

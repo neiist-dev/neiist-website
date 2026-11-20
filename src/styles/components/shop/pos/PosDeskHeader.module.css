@@ -1,0 +1,42 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1.6rem, 3vw, 2.15rem);
+  margin: 0;
+  color: var(--foreground-colour);
+  letter-spacing: -0.02em;
+}
+
+.stationRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stationSelectWrap {
+  min-width: 160px;
+}
+
+@media (max-width: 768px) {
+  .stationRow {
+    width: 100%;
+  }
+
+  .stationTooltip {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stationSelectWrap {
+    width: 100%;
+    min-width: 0;
+  }
+}

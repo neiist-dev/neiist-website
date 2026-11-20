@@ -1,135 +1,120 @@
-import { NextRequest } from "next/server";
-import { dbBroadcaster } from "@/lib/dbBroadcaster";
-import { GlobalVotingState, VotingSyncPayload } from "@/types/voting";
-import {
-  getVotingSessions,
-  getSessionNominees,
-  getSessionResults,
-} from "@/lib/db/repositories/voting.repository";
-import { verifyPermission } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { votingDbListener } from "@/lib/votingDbListener";
+import { VotingSyncPayload, VOTING_SYNC_EVENT_TYPES, DB_VOTING_UPDATE_TYPES } from "@/types/voting";
+import { getGlobalVotingState } from "@/lib/db/repositories/voting.repository";
+import { getAuthenticatedUser } from "@/lib/auth";
 
-let statePromise: Promise<GlobalVotingState> | null = null;
 let eventIdCounter = 0;
 
-async function fetchGlobalVotingState(): Promise<GlobalVotingState> {
-  const sessions = await getVotingSessions(20);
-  const now = new Date();
-
-  const activeVotingSessions = sessions.filter((session) => {
-    if (session.status !== "voting") return false;
-    if (session.startAt && new Date(session.startAt) > now) return false;
-    return !(session.endAt && new Date(session.endAt) <= now);
-  });
-
-  if (activeVotingSessions.length > 0) {
-    const activeSessions = await Promise.all(
-      activeVotingSessions.map(async (session) => {
-        const nominees = await getSessionNominees(session.id);
-        return {
-          sessionId: session.id,
-          sessionName: session.name,
-          sessionDescription: session.description,
-          nominees,
-        };
-      })
-    );
-    return { activeSessions };
-  }
-
-  const lastFinishedSession = sessions.find((s) => s.status === "finished");
-  if (lastFinishedSession) {
-    const lastResults = await getSessionResults(lastFinishedSession.id);
-    return {
-      activeSessions: [],
-      lastFinishedSession: {
-        id: lastFinishedSession.id,
-        name: lastFinishedSession.name,
-        description: lastFinishedSession.description,
-      },
-      lastResults: lastResults.slice(0, 4),
-    };
-  }
-
-  return { activeSessions: [] };
-}
-
-function getGlobalVotingState(): Promise<GlobalVotingState> {
-  if (statePromise) return statePromise;
-
-  statePromise = fetchGlobalVotingState().finally(() => {
-    statePromise = null;
-  });
-
-  return statePromise;
-}
-
 export async function GET(request: NextRequest) {
-  const auth = await verifyPermission("voting:read");
-  if (auth.error) return auth.error;
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  void votingDbListener.connect();
 
   const encoder = new TextEncoder();
+  let cleanupRef: (() => void) | null = null;
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let isCleanedUp = false;
       let heartbeatId: ReturnType<typeof setInterval> | null = null;
 
+      const cleanup = () => {
+        if (isCleanedUp) return;
+        isCleanedUp = true;
+
+        if (heartbeatId) {
+          clearInterval(heartbeatId);
+          heartbeatId = null;
+        }
+
+        votingDbListener.off("voting_update", onUpdate);
+        request.signal.removeEventListener("abort", cleanup);
+
+        try {
+          controller.close();
+        } catch {
+          // Controller might already be closed or errored
+        }
+      };
+
+      cleanupRef = cleanup;
+
+      if (request.signal.aborted) {
+        cleanup();
+        return;
+      }
+
+      request.signal.addEventListener("abort", cleanup);
+
+      const safeEnqueue = (chunk: string): boolean => {
+        if (isCleanedUp || request.signal.aborted) return false;
+        try {
+          controller.enqueue(encoder.encode(chunk));
+          return true;
+        } catch {
+          cleanup();
+          return false;
+        }
+      };
+
       const pushStateUpdate = async (updatedAt: string) => {
+        if (isCleanedUp || request.signal.aborted) return;
         try {
           const state = await getGlobalVotingState();
+          if (isCleanedUp || request.signal.aborted) return;
           eventIdCounter++;
-          const payload: VotingSyncPayload = { type: "STATE_UPDATE", updatedAt, state };
+          const payload: VotingSyncPayload = {
+            type: VOTING_SYNC_EVENT_TYPES.STATE_UPDATE,
+            updatedAt,
+            state,
+          };
           const data = JSON.stringify(payload);
-          controller.enqueue(encoder.encode(`id: ${eventIdCounter}\ndata: ${data}\n\n`));
+          safeEnqueue(`id: ${eventIdCounter}\ndata: ${data}\n\n`);
         } catch (error) {
           console.error("SSE Broadcast Error:", error);
+          if (request.signal.aborted) cleanup();
         }
       };
 
       const pushVotePing = (updatedAt: string) => {
+        if (isCleanedUp || request.signal.aborted) return;
         eventIdCounter++;
-        const payload: VotingSyncPayload = { type: "VOTE_PING", updatedAt };
+        const payload: VotingSyncPayload = {
+          type: VOTING_SYNC_EVENT_TYPES.VOTE_PING,
+          updatedAt,
+        };
         const data = JSON.stringify(payload);
-        controller.enqueue(encoder.encode(`id: ${eventIdCounter}\ndata: ${data}\n\n`));
+        safeEnqueue(`id: ${eventIdCounter}\ndata: ${data}\n\n`);
       };
 
       const onUpdate = (payload: { type?: string; updated_at: string }) => {
-        if (payload.type === "VOTE") {
+        if (isCleanedUp || request.signal.aborted) {
+          cleanup();
+          return;
+        }
+        if (payload.type === DB_VOTING_UPDATE_TYPES.VOTE) {
           pushVotePing(payload.updated_at);
         } else {
-          pushStateUpdate(payload.updated_at);
+          void pushStateUpdate(payload.updated_at);
         }
       };
 
-      // Send initial state to synchronize client
-      await pushStateUpdate(new Date().toISOString());
+      // Subscribe to DB listener
+      votingDbListener.on("voting_update", onUpdate);
 
-      // Subscribe
-      dbBroadcaster.on("voting_update", onUpdate);
-
-      // Heartbeat keep alive trough proxies
+      // Heartbeat keep alive through proxies
       heartbeatId = setInterval(() => {
-        try {
-          controller.enqueue(encoder.encode(": heartbeat\n\n"));
-        } catch {
-          // Ignore
-        }
+        safeEnqueue(": heartbeat\n\n");
       }, 15000);
 
-      request.signal.addEventListener("abort", () => {
-        dbBroadcaster.off("voting_update", onUpdate);
-        if (heartbeatId) clearInterval(heartbeatId);
-        try {
-          controller.close();
-        } catch {
-          // Ignore
-        }
-      });
+      // Advise browser EventSource reconnection delay (3s) and push initial state
+      safeEnqueue("retry: 3000\n\n");
+      await pushStateUpdate(new Date().toISOString());
     },
     cancel() {
-      try {
-        dbBroadcaster.setMaxListeners(Math.max(0, dbBroadcaster.getMaxListeners() - 1));
-      } catch {
-        // Ignore
-      }
+      if (cleanupRef) cleanupRef();
     },
   });
 

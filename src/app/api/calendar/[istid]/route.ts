@@ -1,68 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getAuthenticatedUser } from "@/lib/auth";
 import {
   getOrCreateUserCalendar,
   getAddCalendarLink,
-  getCalendarWebLink,
-  syncEventsToCalendarBatched,
+  syncAllEventsToCalendar,
 } from "@/lib/google/calendar";
+import { checkRoles, UserRole } from "@/types/roles";
 import { getFirstAndLastName } from "@/utils/userUtils";
-import { Client } from "@notionhq/client";
-import type { NotionPage, NotionApiResponse } from "@/types/notion";
-import { mapNotionResultToPage } from "@/types/notion";
-import type { NotionEvent } from "@/types/events";
-import { parseNotionPageToEvent } from "@/utils/eventsUtils";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
-import { getUser } from "@/lib/db/repositories/user.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateIstId } from "@/utils/apiValidationUtils";
-
-const NOTION_API_KEY = process.env.NOTION_API_KEY!;
-const DATABASE_ID = process.env.DATABASE_ID!;
-
-const notion = new Client({ auth: NOTION_API_KEY });
-
-async function fetchAllNotionEvents(): Promise<NotionEvent[]> {
-  const pages: NotionPage[] = [];
-  let cursor: string | undefined = undefined;
-  do {
-    const response = (await notion.dataSources.query({
-      data_source_id: DATABASE_ID,
-      start_cursor: cursor,
-    })) as unknown as NotionApiResponse;
-    const mappedPages = response.results.map(mapNotionResultToPage);
-    pages.push(...mappedPages);
-    cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
-  } while (cursor);
-
-  return pages.map(parseNotionPageToEvent);
-}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ istid: string }> }
 ) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("access_token")?.value;
-  if (!accessToken) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-
-  const sessionToken = cookieStore.get("session")?.value;
-  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
-  if (!jwtUser) return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const { user } = auth;
 
   const [istid, error] = validateIstId((await params).istid);
   if (error) return error;
 
-  if (jwtUser.istid !== istid)
+  if (user.istid !== istid)
     return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
 
   try {
-    const user = await getUser(istid);
-    if (!user || !user.email)
+    if (!user.email)
       return NextResponse.json({ error: "User not found or missing email" }, { status: 404 });
 
     const alternativeEmailRaw = user.alternativeEmailVerified ? user.alternativeEmail : undefined;
     const alternativeEmail = alternativeEmailRaw ?? undefined;
+    const neiistEmail = user.neiistEmail ?? undefined;
+    const calendarName = `NEIIST-${getFirstAndLastName(user.name)}`;
     const calendarId = await getOrCreateUserCalendar(
       user.email,
       istid,
@@ -70,26 +40,26 @@ export async function GET(
       alternativeEmail
     );
 
-    if (!calendarId) return NextResponse.json({ addCalendarLink: "", webViewLink: "" });
+    if (!calendarId) return NextResponse.json({ addCalendarLink: "" });
 
-    const events = await fetchAllNotionEvents();
-    const synced = await syncEventsToCalendarBatched(
+    const isMember = checkRoles(user, [UserRole._MEMBER, UserRole._COORDINATOR, UserRole._ADMIN]);
+    const events = await getActivitiesEvents(!isMember);
+    const syncStats = await syncAllEventsToCalendar(
       calendarId,
       events,
       user.email,
-      alternativeEmail
+      alternativeEmail,
+      neiistEmail
     );
 
     const addCalendarLink = await getAddCalendarLink(calendarId);
-    const webViewLink = await getCalendarWebLink(calendarId);
 
     const payload = {
       calendarId,
-      calendarName: `NEIIST-${getFirstAndLastName(user.name)}`,
+      calendarName,
       addCalendarLink,
-      webViewLink,
       sharedWith: [user.email, ...(alternativeEmail ? [alternativeEmail] : [])],
-      eventsSynced: synced,
+      eventsSynced: syncStats.updated + syncStats.deleted,
     };
 
     return NextResponse.json(payload);

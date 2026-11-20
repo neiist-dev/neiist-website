@@ -1,31 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
+import { getAuthenticatedUser } from "@/lib/auth";
 import {
   findUserCVFileId,
   removeUserCV,
   downloadUserCV,
   uploadUserCV,
-} from "@/lib/google/driveService";
-
-async function getUsernameFromCookies(): Promise<string | null> {
-  const reqCookies = await cookies();
-  const sessionToken = reqCookies.get("session")?.value;
-  if (!sessionToken) return null;
-  const jwtUser = await verifyJWTWebCrypto(sessionToken);
-  return jwtUser?.istid || null;
-}
+} from "@/lib/m365/sharepointService";
 
 export async function GET(request: NextRequest) {
   const isDownload = request.nextUrl.searchParams.has("download");
-  const username = await getUsernameFromCookies();
-  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const username = auth.user.istid;
 
   if (isDownload) {
     const buffer = await downloadUserCV(username);
-    if (!buffer) {
-      return NextResponse.json({ error: "CV not found" }, { status: 404 });
-    }
+    if (!buffer) return NextResponse.json({ error: "CV not found" }, { status: 404 });
+
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
@@ -42,16 +33,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE() {
-  const username = await getUsernameFromCookies();
-  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const removed = await removeUserCV(username);
+  const removed = await removeUserCV(auth.user.istid);
   return NextResponse.json({ removed });
 }
 
 export async function POST(request: NextRequest) {
-  const username = await getUsernameFromCookies();
-  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const username = auth.user.istid;
 
   const formData = await request.formData();
   const file = formData.get("file");

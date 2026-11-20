@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
       "@dnd-kit/core",
       "@dnd-kit/sortable",
       "sonner",
-      "swiper",
     ],
   },
   images: {

@@ -1,0 +1,23 @@
+.headerTotalValue {
+  font-size: 1.25rem;
+  color: var(--primary-colour);
+}
+
+.shortcutLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.changeAmount {
+  font-size: 1.35rem;
+  font-feature-settings: "tnum";
+}
+
+.noMarginText {
+  margin-block-end: 0;
+}
+
+.timerBadge {
+  font-variant-numeric: tabular-nums;
+}

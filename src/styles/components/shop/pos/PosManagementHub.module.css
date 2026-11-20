@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin: 2rem 4rem 4rem;
+  min-block-size: calc(100vh - 120px);
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.sectionBlock {
+  margin-top: 1rem;
+}
+
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchContainer {
+  flex: 1;
+  min-width: 0;
+  max-width: 24rem;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.detailsLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.variancePositive {
+  color: #16a34a;
+}
+
+.varianceNegative {
+  color: #dc2626;
+}
+
+.varianceZero {
+  color: var(--light-foreground-colour);
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin: 1.5rem 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
+}

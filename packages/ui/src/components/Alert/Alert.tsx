@@ -65,9 +65,12 @@ function Toast({ id, title, description, variant, closeLabel = "Close" }: ToastP
   );
 }
 
+let syncToasterHost: (() => void) | null = null;
+
 function createToast(variant: AlertVariant) {
-  return (message: string, options?: AlertOptions) =>
-    sonnerToast.custom(
+  return (message: string, options?: AlertOptions) => {
+    syncToasterHost?.();
+    return sonnerToast.custom(
       (id) => (
         <Toast
           id={id}
@@ -82,6 +85,7 @@ function createToast(variant: AlertVariant) {
         style: { background: "transparent" },
       }
     );
+  };
 }
 
 export const Alert = {
@@ -100,31 +104,44 @@ export interface ToasterProps {
 }
 
 export function Toaster({ position = "top-right", offset }: ToasterProps) {
-  const [target, setTarget] = useState<HTMLElement | null>(null);
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const updateTarget = () => {
-      const openDialogs = Array.from(
-        document.querySelectorAll<HTMLElement>("dialog[open]:not([data-closing])")
-      );
+    const el = document.createElement("div");
+    el.style.display = "contents";
 
-      const activeDialog = openDialogs[openDialogs.length - 1] ?? document.body;
-      setTarget((prev) => (prev === activeDialog ? prev : activeDialog));
+    const sync = () => {
+      const openDialogs = document.querySelectorAll<HTMLElement>(
+        "dialog[open]:not([data-closing])"
+      );
+      const target = openDialogs[openDialogs.length - 1] ?? document.body;
+
+      if (el.parentElement !== target) target.appendChild(el);
     };
 
-    updateTarget();
+    sync();
+    syncToasterHost = sync;
+    setHost(el);
 
-    const observer = new MutationObserver(updateTarget);
+    const observer = new MutationObserver((mutations) => {
+      if (!el.isConnected || mutations.some((m) => m.type === "attributes")) sync();
+    });
+
     observer.observe(document.body, {
+      childList: true,
       attributes: true,
       subtree: true,
       attributeFilter: ["open", "data-closing"],
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (syncToasterHost === sync) syncToasterHost = null;
+      el.remove();
+    };
   }, []);
 
-  if (!target) return null;
+  if (!host) return null;
 
-  return createPortal(<SonnerToaster position={position} offset={offset} />, target);
+  return createPortal(<SonnerToaster position={position} offset={offset} />, host);
 }

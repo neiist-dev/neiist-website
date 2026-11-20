@@ -39,6 +39,13 @@ import { RadioDemo } from "./demos/RadioDemo";
 import { SkeletonDemo } from "./demos/SkeletonDemo";
 import { DividerDemo } from "./demos/DividerDemo";
 import { PopoverDemo } from "./demos/PopoverDemo";
+import { ContextMenuDemo } from "./demos/ContextMenuDemo";
+import { ProgressDemo } from "./demos/ProgressDemo";
+import { FloatingActionBarDemo } from "./demos/FloatingActionBarDemo";
+import { SelectableCardDemo } from "./demos/SelectableCardDemo";
+import { CarouselDemo } from "./demos/CarouselDemo";
+import { BentoGridDemo } from "./demos/BentoGridDemo";
+import PageIndicatorDemo from "./demos/PageIndicatorDemo";
 
 export type ComponentCategory = "Primitives" | "Components";
 
@@ -70,7 +77,14 @@ export const COMPONENTS: ComponentEntry[] = [
   { id: "heading", label: "Heading", category: "Primitives", component: <HeadingDemo /> },
   { id: "input", label: "Input", category: "Primitives", component: <InputDemo /> },
   { id: "modal", label: "Modal", category: "Primitives", component: <ModalDemo /> },
+  {
+    id: "pageindicator",
+    label: "PageIndicator",
+    category: "Primitives",
+    component: <PageIndicatorDemo />,
+  },
   { id: "popover", label: "Popover", category: "Primitives", component: <PopoverDemo /> },
+  { id: "progress", label: "Progress", category: "Primitives", component: <ProgressDemo /> },
   { id: "radio", label: "Radio & RadioGroup", category: "Primitives", component: <RadioDemo /> },
   { id: "skeleton", label: "Skeleton", category: "Primitives", component: <SkeletonDemo /> },
   { id: "spinner", label: "Spinner", category: "Primitives", component: <SpinnerDemo /> },
@@ -89,7 +103,9 @@ export const COMPONENTS: ComponentEntry[] = [
   // Components
   { id: "accordion", label: "Accordion", category: "Components", component: <AccordionDemo /> },
   { id: "alert", label: "Alert", category: "Components", component: <AlertDemo /> },
+  { id: "bentogrid", label: "BentoGrid", category: "Components", component: <BentoGridDemo /> },
   { id: "card", label: "Card", category: "Components", component: <CardDemo /> },
+  { id: "carousel", label: "Carousel", category: "Components", component: <CarouselDemo /> },
   {
     id: "colourpicker",
     label: "ColourPicker",
@@ -110,8 +126,20 @@ export const COMPONENTS: ComponentEntry[] = [
     category: "Components",
     component: <DropdownMenuDemo />,
   },
+  {
+    id: "contextmenu",
+    label: "ContextMenu",
+    category: "Components",
+    component: <ContextMenuDemo />,
+  },
   { id: "emptystate", label: "EmptyState", category: "Components", component: <EmptyStateDemo /> },
   { id: "field", label: "Field", category: "Components", component: <FieldDemo /> },
+  {
+    id: "floatingactionbar",
+    label: "FloatingActionBar",
+    category: "Components",
+    component: <FloatingActionBarDemo />,
+  },
   {
     id: "inputdialog",
     label: "InputDialog",
@@ -137,6 +165,12 @@ export const COMPONENTS: ComponentEntry[] = [
     component: <SearchInputDemo />,
   },
   { id: "select", label: "Select", category: "Components", component: <SelectDemo /> },
+  {
+    id: "selectablecard",
+    label: "SelectableCard",
+    category: "Components",
+    component: <SelectableCardDemo />,
+  },
   { id: "table", label: "Table", category: "Components", component: <TableDemo /> },
   { id: "tabs", label: "Tabs", category: "Components", component: <TabsDemo /> },
   { id: "timeline", label: "Timeline", category: "Components", component: <TimelineDemo /> },

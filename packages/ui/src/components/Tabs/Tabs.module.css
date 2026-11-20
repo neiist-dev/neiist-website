@@ -82,8 +82,15 @@
   flex-shrink: 0;
 }
 
-.tabButton:hover {
+.tabButton:hover:not(:disabled) {
   background: var(--ui-bg-hover);
+}
+
+.tabButton:disabled,
+.disabledTab {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .activeTab {

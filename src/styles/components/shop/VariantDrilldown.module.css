@@ -1,0 +1,40 @@
+.crumbAncestor {
+  font-size: 0.875rem;
+  color: var(--light-foreground-colour);
+}
+
+.crumbButton {
+  padding-inline: 0.4rem;
+}
+
+.crumbCurrent {
+  font-size: 0.875rem;
+  color: var(--primary-colour);
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .productGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .productGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  .productGrid > * {
+    width: 100%;
+    max-width: 300px;
+  }
+}

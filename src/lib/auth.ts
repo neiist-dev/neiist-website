@@ -7,7 +7,7 @@ import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { User } from "@/types/user";
 import { UserRole } from "@/types/roles";
 import { Permission } from "@/types/permissions";
-import { hasPermission } from "@/lib/security/permissions";
+import { hasPermission, PermissionCheckOptions } from "@/lib/security/permissions";
 
 import { SESSION_COOKIE_NAME } from "@/lib/security/authSession";
 
@@ -19,13 +19,6 @@ export interface AuthSession {
 export type AuthResult =
   | { user: User; session: AuthSession; error?: undefined }
   | { error: NextResponse; user?: undefined; session?: undefined };
-
-export type PermissionMatchMode = "all" | "any";
-
-export interface VerifyPermissionOptions {
-  department?: string;
-  match?: PermissionMatchMode;
-}
 
 export const getAuthenticatedUser = cache(async (): Promise<AuthSession | null> => {
   await connection();
@@ -49,20 +42,13 @@ export const getAuthenticatedUser = cache(async (): Promise<AuthSession | null> 
 
 export async function verifyPermission(
   permission: Permission | Permission[],
-  options?: VerifyPermissionOptions
+  options?: PermissionCheckOptions
 ): Promise<AuthResult> {
   const session = await getAuthenticatedUser();
   if (!session)
     return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
 
-  const permissions = Array.isArray(permission) ? permission : [permission];
-  const isAuthorized = (p: Permission): boolean =>
-    hasPermission(session.user, p, { department: options?.department });
-
-  const authorized =
-    options?.match === "any" ? permissions.some(isAuthorized) : permissions.every(isAuthorized);
-
-  if (!authorized)
+  if (!hasPermission(session.user, permission, options))
     return { error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }) };
 
   return { user: session.user, session };
@@ -75,10 +61,13 @@ export async function requireUser(redirectPath = "/unauthorized"): Promise<AuthS
 }
 
 export async function requirePermission(
-  permission: Permission,
-  redirectPath = "/unauthorized"
+  permission: Permission | Permission[],
+  optionsOrRedirect?: PermissionCheckOptions | string
 ): Promise<AuthSession> {
-  const session = await requireUser();
-  if (!hasPermission(session.user, permission)) redirect(redirectPath);
+  const redirectPath = typeof optionsOrRedirect === "string" ? optionsOrRedirect : "/unauthorized";
+  const options = typeof optionsOrRedirect === "object" ? optionsOrRedirect : undefined;
+  const session = await requireUser(redirectPath);
+
+  if (!hasPermission(session.user, permission, options)) redirect(redirectPath);
   return session;
 }

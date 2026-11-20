@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import DiscountCodeManagement from "@/components/shop/DiscountCodeManagement";
+import DiscountCodeManagement from "@/components/shop/manage/DiscountCodeManagement";
 import { getAllDiscountCodes, getAllProductsAdmin } from "@/lib/db/repositories/shop.repository";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import { requirePermission } from "@/lib/auth";
@@ -8,7 +8,7 @@ import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
 
 async function DiscountCodesContent({ params }: { params: LocaleParams }) {
-  await requirePermission("shop:read");
+  await requirePermission(["shop:read", "shop:write"], { match: "any" });
 
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;

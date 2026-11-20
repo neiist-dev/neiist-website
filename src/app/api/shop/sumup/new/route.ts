@@ -4,75 +4,83 @@ import {
   withSumUp,
   sumupErrorResponse,
   SumUpAuthError,
-} from "@/lib/sumup";
+} from "@/lib/payments/sumup";
 import type {
   CreateCheckoutResponse,
   CreateCheckoutRequestBody,
   SumUpCheckoutPayload,
-} from "@/types/sumup";
-import { formatVariantLabel } from "@/lib/email";
-import { getOrderById, updateOrder } from "@/lib/db/repositories/shop.repository";
-import { verifyPermission } from "@/lib/auth";
+} from "@/types/shop/sumup";
+import {
+  getCheckoutSession,
+  getRemainingSessionSeconds,
+  getSessionExpiryMs,
+  saveCheckoutSession,
+} from "@/lib/redis/sessions";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
-const CHECKOUT_TTL_MINUTES = 15;
+const MIN_REMAINING_SECONDS = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await verifyPermission("orders:create");
-    if (auth.error) return auth.error;
+    const auth = await getAuthenticatedUser();
+    if (!auth) return sumupErrorResponse("Not authenticated", 401);
 
-    let orderId: number;
+    let orderNumber = "";
     try {
-      const body = (await req.json()) as CreateCheckoutRequestBody;
-      orderId = Number(body?.orderId);
-
-      if (!orderId || orderId <= 0) return sumupErrorResponse("Missing or invalid orderId", 400);
+      const body = (await req.json()) as CreateCheckoutRequestBody & {
+        orderId?: string | number;
+      };
+      orderNumber = String(body?.orderNumber ?? body?.orderId ?? "").trim();
+      if (!orderNumber) return sumupErrorResponse("Missing orderNumber", 400);
     } catch {
       return sumupErrorResponse("Invalid request body", 400);
     }
 
+    const session = await getCheckoutSession(orderNumber);
+    if (!session)
+      return sumupErrorResponse("A sessão de checkout expirou. Volta ao carrinho.", 410);
+
+    if (session.user_istid && auth.user && session.user_istid !== auth.user.istid)
+      return sumupErrorResponse("Not order owner", 403);
+
+    const amount = Math.round(Number(session.total_amount) * 100) / 100;
+    if (amount <= 0) return sumupErrorResponse("Invalid order amount", 400);
+
+    const sessionExpiryMs = getSessionExpiryMs(session);
+    const remainingSeconds = getRemainingSessionSeconds(session);
+
+    if (remainingSeconds < MIN_REMAINING_SECONDS)
+      return sumupErrorResponse("A sessão de pagamento expirou ou está prestes a expirar.", 400);
+
     const credentialError = validateSumUpCredentials();
     if (credentialError) return credentialError;
 
-    const order = await getOrderById(orderId);
-    if (!order) return sumupErrorResponse("Order not found", 404);
+    if (session.reference) {
+      try {
+        const existing = await withSumUp((client) => client.checkouts.get(session.reference!));
+        if (existing?.status === "PENDING") {
+          return NextResponse.json({
+            checkoutId: session.reference,
+            amount,
+          } satisfies CreateCheckoutResponse);
+        }
+      } catch {
+        // If the existing checkout is expired, failed or deleted, create a fresh one below
+      }
+    }
 
-    if (order.user_istid && auth.user && order.user_istid !== auth.user.istid)
-      return sumupErrorResponse("Not order owner", 403);
-
-    const amount = Math.round(Number(order.total_amount) * 100) / 100;
-    if (amount <= 0) return sumupErrorResponse("Invalid order amount", 400);
-
-    const validUntil = new Date(Date.now() + CHECKOUT_TTL_MINUTES * 60_000).toISOString();
-    const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shop/sumup/callback?orderId=${orderId}`;
-    const description =
-      order.items
-        ?.map(
-          (item: {
-            product_name?: string;
-            name?: string;
-            quantity?: number;
-            variant_label?: string;
-            variant_options?: unknown;
-          }) => {
-            const name = item.product_name || item.name || "Produto";
-            const qty = item.quantity || 1;
-            const variant = formatVariantLabel(
-              item.variant_label,
-              item.variant_options as Record<string, string> | undefined
-            );
-            return `${qty}x ${name}${variant ? " - " + variant : ""}`;
-          }
-        )
-        .join("\n") || `Encomenda ${order.order_number || orderId}`;
+    const validUntil = new Date(sessionExpiryMs).toISOString();
+    const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/shop/sumup/callback?orderNumber=${orderNumber}`;
+    const description = `Encomenda ${session.order_number}`;
+    const checkoutReference = `${session.order_number}-${Date.now().toString(36)}`;
 
     const payload: SumUpCheckoutPayload = {
       merchant_code: SUMUP_MERCHANT_CODE!,
       amount,
       currency: "EUR" as const,
-      checkout_reference: order.order_number,
+      checkout_reference: checkoutReference,
       description,
       valid_until: validUntil,
       return_url: returnUrl,
@@ -85,37 +93,24 @@ export async function POST(req: NextRequest) {
 
       if (!checkoutId) return sumupErrorResponse("Unexpected response from payment service", 502);
 
-      await updateOrder(
-        orderId,
+      await saveCheckoutSession(
         {
-          payment_reference: checkoutId,
-          updated_at: new Date().toISOString(),
+          ...session,
+          reference: checkoutId,
         },
-        false,
-        auth.user?.istid ?? "system"
-      ).catch((error) => console.warn("Failed to persist checkoutId on order:", error));
+        Math.max(1, remainingSeconds)
+      );
 
-      const response: CreateCheckoutResponse = { checkoutId };
-      return NextResponse.json(response);
+      return NextResponse.json({
+        checkoutId,
+        amount,
+      } satisfies CreateCheckoutResponse);
     } catch (error) {
       if (error instanceof SumUpAuthError) return sumupErrorResponse(error);
       const message = error instanceof Error ? error.message : String(error);
-      if (message.includes("DUPLICATED_CHECKOUT")) {
-        const latestOrder = await getOrderById(orderId);
-        const latestCheckoutId =
-          typeof latestOrder?.payment_reference === "string"
-            ? latestOrder.payment_reference.trim()
-            : "";
-
-        if (latestCheckoutId) {
-          return NextResponse.json({
-            checkoutId: latestCheckoutId,
-          } satisfies CreateCheckoutResponse);
-        }
-      }
 
       console.error("Failed to create SumUp checkout", {
-        orderId,
+        orderNumber,
         message,
         stack: error instanceof Error ? error.stack : undefined,
       });

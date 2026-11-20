@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
-import styles from "./DataTable.module.css";
-import { cn } from "../../utils/cn";
-import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
+import React, { useMemo, useRef, useState } from "react";
+import { FiFilter, FiMoreVertical } from "react-icons/fi";
+import { LuArrowUp, LuArrowDown, LuArrowUpDown } from "react-icons/lu";
 import { Checkbox } from "../Checkbox/Checkbox";
-import { FiFilter } from "react-icons/fi";
+import { Popover } from "../Popover/Popover";
+import { DropdownMenu } from "../DropdownMenu/DropdownMenu";
+import { Button } from "../Button/Button";
+import { Table, TableHead, TableBody, TableRow, TableCell, TableHeaderCell } from "./Table";
+import dropdownStyles from "../DropdownMenu/DropdownMenu.module.css";
+import styles from "./DataTable.module.css";
 
 export interface ColumnDef<T> {
   id: string;
@@ -14,6 +18,7 @@ export interface ColumnDef<T> {
   dataLabel?: string;
   isCardHeader?: boolean;
   hasFilter?: boolean;
+  sortable?: boolean;
   filterButtonAriaLabel?: string;
   onFilterClick?: (
     _event: React.MouseEvent<HTMLButtonElement>,
@@ -35,6 +40,11 @@ export interface DataTableProps<T> {
   columnOrder?: string[];
   responsive?: "cards" | "scroll";
   onRowClick?: (_row: T) => void;
+  rowActions?: (_row: T) => React.ReactNode;
+  actionsTitle?: string;
+  sortField?: string;
+  sortDirection?: "asc" | "desc";
+  onSortChange?: (_field: string, _direction: "asc" | "desc") => void;
   emptyMessage?: React.ReactNode;
   className?: string;
   wrapperClassName?: string;
@@ -77,17 +87,56 @@ export function DataTable<T>({
   columnOrder,
   responsive = "cards",
   onRowClick,
+  rowActions,
+  actionsTitle,
+  sortField,
+  sortDirection,
+  onSortChange,
   emptyMessage = "No data available",
   className,
   wrapperClassName,
 }: DataTableProps<T>) {
+  const [contextMenuState, setContextMenuState] = useState<{
+    row: T;
+    point: { x: number; y: number };
+  } | null>(null);
+
   const visibleColumns = useMemo(() => {
-    if (!columnOrder) return columns;
-    const colMap = new Map(columns.map((col) => [col.id, col]));
-    return columnOrder
-      .map((id) => colMap.get(id))
-      .filter((col): col is ColumnDef<T> => col !== undefined);
-  }, [columns, columnOrder]);
+    let cols = columns;
+    if (columnOrder) {
+      const colMap = new Map(columns.map((col) => [col.id, col]));
+      cols = columnOrder
+        .map((id) => colMap.get(id))
+        .filter((col): col is ColumnDef<T> => col !== undefined);
+    }
+    if (!rowActions) return cols;
+
+    const actionsCol: ColumnDef<T> = {
+      id: "actions",
+      header: "",
+      width: 50,
+      cell: (row: T) => (
+        <DropdownMenu align="end">
+          <DropdownMenu.Trigger>
+            <Button
+              type="button"
+              variant="ghost"
+              color="neutral"
+              size="icon"
+              aria-label={actionsTitle}
+              onClick={(e) => e.stopPropagation()}>
+              <FiMoreVertical size={16} />
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content align="end" mobileTitle={actionsTitle}>
+            {rowActions(row)}
+          </DropdownMenu.Content>
+        </DropdownMenu>
+      ),
+    };
+
+    return [...cols, actionsCol];
+  }, [columns, columnOrder, rowActions, actionsTitle]);
 
   const cardHeaderIndex = useMemo(() => {
     const idx = visibleColumns.findIndex((column) => column.isCardHeader);
@@ -118,7 +167,7 @@ export function DataTable<T>({
     onSelectionChange(next);
   };
 
-  return (
+  const table = (
     <Table className={className} wrapperClassName={wrapperClassName} responsive={responsive}>
       <TableHead>
         <TableRow>
@@ -137,6 +186,38 @@ export function DataTable<T>({
 
           {visibleColumns.map((column) => {
             const colWidth = column.width ?? column.minWidth;
+            const rawHeader =
+              typeof column.header === "function" ? column.header({ column }) : column.header;
+
+            const isSorted = Boolean(column.sortable && sortField === column.id);
+            const nextDirection: "asc" | "desc" =
+              isSorted && sortDirection === "asc" ? "desc" : "asc";
+
+            const renderedHeader = column.sortable ? (
+              <button
+                type="button"
+                className={styles.headerSortBtn}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSortChange?.(column.id, nextDirection);
+                }}>
+                <span>{rawHeader}</span>
+                <span className={styles.sortIconWrapper}>
+                  {isSorted ? (
+                    sortDirection === "asc" ? (
+                      <LuArrowUp size={14} className={styles.sortIconActive} />
+                    ) : (
+                      <LuArrowDown size={14} className={styles.sortIconActive} />
+                    )
+                  ) : (
+                    <LuArrowUpDown size={14} className={styles.sortIconInactive} />
+                  )}
+                </span>
+              </button>
+            ) : (
+              rawHeader
+            );
+
             return (
               <TableHeaderCell
                 key={column.id}
@@ -145,9 +226,7 @@ export function DataTable<T>({
                 style={colWidth ? { width: colWidth } : undefined}>
                 {column.hasFilter ? (
                   <div className={styles.headerWithFilter} data-align={column.align}>
-                    {typeof column.header === "function"
-                      ? column.header({ column })
-                      : column.header}
+                    {renderedHeader}
                     {column.onFilterClick && (
                       <FilterButton
                         onClick={column.onFilterClick}
@@ -155,10 +234,8 @@ export function DataTable<T>({
                       />
                     )}
                   </div>
-                ) : typeof column.header === "function" ? (
-                  column.header({ column })
                 ) : (
-                  column.header
+                  renderedHeader
                 )}
               </TableHeaderCell>
             );
@@ -184,13 +261,22 @@ export function DataTable<T>({
                 key={rowId}
                 selected={isSelected}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={cn(
-                  onRowClick && styles.rowClickable,
-                  enableRowSelection && styles.rowSelectable
-                )}>
+                onContextMenu={
+                  rowActions
+                    ? (event) => {
+                        event.preventDefault();
+                        setContextMenuState({
+                          row,
+                          point: { x: event.clientX, y: event.clientY },
+                        });
+                      }
+                    : undefined
+                }
+                className={onRowClick ? styles.rowClickable : undefined}>
                 {enableRowSelection && (
                   <TableCell
                     className={styles.checkboxCol}
+                    data-selection
                     onClick={(event) => event.stopPropagation()}>
                     <Checkbox
                       aria-label={`Select row ${rowId}`}
@@ -209,7 +295,7 @@ export function DataTable<T>({
                   return (
                     <TableCell
                       key={column.id}
-                      className={cn(column.className, column.id === "actions" && styles.actionsCol)}
+                      className={column.className}
                       data-actions={column.id === "actions" || undefined}
                       dataLabel={label}
                       isCardHeader={isHeader}
@@ -224,5 +310,28 @@ export function DataTable<T>({
         )}
       </TableBody>
     </Table>
+  );
+
+  if (!rowActions) return table;
+
+  return (
+    <>
+      {table}
+      {contextMenuState && (
+        <Popover
+          isOpen={true}
+          onClose={() => setContextMenuState(null)}
+          anchorPoint={contextMenuState.point}
+          mobileDrawerTitle={actionsTitle}
+          width="auto">
+          <div
+            role="menu"
+            className={dropdownStyles.menuList}
+            onClick={() => setContextMenuState(null)}>
+            {rowActions(contextMenuState.row)}
+          </div>
+        </Popover>
+      )}
+    </>
   );
 }

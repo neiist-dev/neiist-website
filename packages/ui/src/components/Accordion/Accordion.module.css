@@ -16,18 +16,23 @@
 
 .item {
   interpolate-size: allow-keywords;
+  transition: background-color var(--ui-transition);
 }
 
 .item:not(:last-child) {
   border-block-end: 1px solid var(--ui-border);
 }
 
-.accordion:not(.flush) .item {
-  transition: background-color var(--ui-transition);
-}
-
 .accordion:not(.flush) .item:hover {
   background-color: var(--ui-bg-hover);
+}
+
+.flush .item {
+  border-radius: var(--ui-radius-sm);
+}
+
+.flush .item:hover {
+  background-color: var(--ui-hover);
 }
 
 .trigger {
@@ -40,15 +45,6 @@
   font-weight: var(--ui-font-weight-semibold);
   color: var(--ui-fg);
   cursor: pointer;
-  transition: background-color var(--ui-transition);
-}
-
-.flush .trigger {
-  border-radius: var(--ui-radius-sm);
-}
-
-.flush .trigger:hover {
-  background-color: var(--ui-bg-hover);
 }
 
 .trigger:focus-visible {

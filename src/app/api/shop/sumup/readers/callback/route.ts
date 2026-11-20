@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withSumUp, sumupErrorResponse } from "@/lib/sumup";
-import type { SumUpReaderCallbackPayload } from "@/types/sumup";
-import { getOrderById } from "@/lib/db/repositories/shop.repository";
-import { finalizePaidOrder } from "@/utils/shop/orderFinalization";
+import { withSumUp, sumupErrorResponse, getSumUpReaderTx } from "@/lib/payments/sumup";
+import { paymentBroadcaster } from "@/lib/payments/broadcaster";
+import type { SumUpReaderCallbackPayload } from "@/types/shop/sumup";
+import { getOrderByNumber } from "@/lib/db/repositories/shop.repository";
+import { getCheckoutSession } from "@/lib/redis/sessions";
+import { finalizePaidOrder } from "@/lib/shop/orders";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
+
+function emitReaderStatus(
+  status: "PAID" | "FAILED",
+  orderNumber: string,
+  clientTransactionId?: string
+) {
+  const payload = { status, orderNumber, clientTransactionId };
+  if (clientTransactionId) paymentBroadcaster.emitPaymentUpdate(clientTransactionId, payload);
+  paymentBroadcaster.emitPaymentUpdate(orderNumber, payload);
+}
 
 export async function POST(req: NextRequest) {
   let body: SumUpReaderCallbackPayload;
@@ -14,28 +26,31 @@ export async function POST(req: NextRequest) {
     return sumupErrorResponse("Invalid payload", 400);
   }
 
-  const orderId = Number(body?.payload?.order_id);
+  const orderIdentifier = body?.payload?.order_id ? String(body.payload.order_id).trim() : null;
   const status = body?.event_type;
-
-  if (!Number.isInteger(orderId) || orderId <= 0)
-    return sumupErrorResponse("Invalid order_id", 400);
+  if (!orderIdentifier) return sumupErrorResponse("Invalid order identifier", 400);
 
   const clientTransactionId = body?.payload?.client_transaction_id;
   const checkoutId = body?.payload?.checkout_id;
 
   try {
-    const order = await getOrderById(orderId);
+    const order = await getOrderByNumber(orderIdentifier);
+    const redisSession = !order ? await getCheckoutSession(orderIdentifier) : null;
+    if (!order && !redisSession) return sumupErrorResponse("Order not found", 404);
 
-    if (!order) return sumupErrorResponse("Order not found", 404);
+    const targetOrderNumber = order ? order.order_number : redisSession!.order_number;
 
-    if (["paid", "ready", "delivered"].includes(order.status))
+    if (order && ["paid", "ready", "delivered"].includes(order.status)) {
+      emitReaderStatus("PAID", targetOrderNumber, clientTransactionId);
       return NextResponse.json({ success: true, alreadyProcessed: true });
+    }
 
-    if (!clientTransactionId || order.payment_reference !== clientTransactionId)
+    const expectedReference = order ? order.payment_reference : redisSession?.reference;
+    if (!clientTransactionId || expectedReference !== clientTransactionId)
       return sumupErrorResponse("Transaction id does not match order", 400);
 
     if (status === "successful") {
-      let paymentReference = clientTransactionId ?? checkoutId ?? order.payment_reference;
+      let paymentReference = clientTransactionId ?? checkoutId ?? expectedReference;
 
       if (clientTransactionId && SUMUP_MERCHANT_CODE && process.env.SUMUP_API_KEY) {
         try {
@@ -44,10 +59,8 @@ export async function POST(req: NextRequest) {
               client_transaction_id: clientTransactionId,
             })
           );
-
           if (transaction?.status !== "SUCCESSFUL")
             return sumupErrorResponse("Payment transaction is not successful", 400);
-
           if (transaction?.transaction_code) paymentReference = transaction.transaction_code;
         } catch (error) {
           console.error("Reader callback could not verify transaction with SumUp", error);
@@ -55,15 +68,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      const cachedTx = clientTransactionId ? await getSumUpReaderTx(clientTransactionId) : null;
       const result = await finalizePaidOrder({
-        orderId,
+        orderNumber: targetOrderNumber,
         paymentReference: String(paymentReference ?? ""),
-        paymentCheckedBy: "sumup-tpa",
+        receivedBy: cachedTx?.operatorIstid ?? null,
+        verifiedBy: "sumup-reader-webhook",
+        paymentMethod: "sumup-tpa",
+        shiftId: cachedTx?.shiftId ?? null,
       });
+      if (!result.success) return sumupErrorResponse(result.error, result.statusCode);
 
-      if (!result.success) {
-        return sumupErrorResponse(result.error, result.statusCode);
-      }
+      emitReaderStatus("PAID", targetOrderNumber, clientTransactionId);
+    } else if (status === "failed" || status === "cancelled") {
+      emitReaderStatus("FAILED", targetOrderNumber, clientTransactionId);
     }
 
     return NextResponse.json({ success: true });

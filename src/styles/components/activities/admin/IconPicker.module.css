@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-height: 48vh;
+  overflow-y: auto;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.iconButton {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-colour);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--foreground-colour);
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.iconButton:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--primary-colour);
+  color: var(--primary-colour);
+  transform: scale(1.05);
+}
+
+.iconButton.selected {
+  background: var(--primary-colour);
+  border-color: var(--primary-colour);
+  color: #ffffff;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

@@ -48,12 +48,8 @@ export function mapRoleToUserRole(role: string): UserRole {
   }
 }
 
-export function hasRequiredRole(userRoles: UserRole[], required: UserRole[]): boolean {
-  if (!required || required.length === 0) return true;
-  return userRoles.some((role) => required.includes(role));
-}
-
 export function checkRoles(user: User | null | undefined, required: UserRole[]): boolean {
   if (!required || required.length === 0) return true;
-  return hasRequiredRole(user?.roles ?? [UserRole._GUEST], required);
+  const userRoles = user?.roles ?? [UserRole._GUEST];
+  return userRoles.some((role) => required.includes(role));
 }

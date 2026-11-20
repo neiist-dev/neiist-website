@@ -2,12 +2,11 @@
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { FiPlay } from "react-icons/fi";
-import { Button, cn } from "@neiist/ui";
+import { Button, cn, ColorfulText } from "@neiist/ui";
 import hero from "@/assets/homepage/hero.png";
 import student from "@/assets/homepage/student.png";
-import ColorfulText from "@/components/ColorfulText";
 import HeroTerminal from "@/components/terminal/HeroTerminal";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/i18n-config";
@@ -43,7 +42,9 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
       </header>
 
       <aside className={styles.terminalSection} aria-label="Terminal">
-        <HeroTerminal locale={locale} dict={terminalDict} onStartGame={startGame} />
+        <Suspense fallback={<div className={styles.terminalFallback} aria-hidden="true" />}>
+          <HeroTerminal locale={locale} dict={terminalDict} onStartGame={startGame} />
+        </Suspense>
       </aside>
 
       <figure className={styles.campus}>
@@ -51,7 +52,14 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
           <CampusRunner dict={gameDict} onExit={exitGame} />
         ) : (
           <>
-            <Image src={hero} alt={dict.campus_alt} className={styles.campusImage} priority />
+            <Image
+              src={hero}
+              alt={dict.campus_alt}
+              className={styles.campusImage}
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 1024px) 100vw, 55vw"
+            />
 
             {announcement && <div className={styles.announcementSlot}>{announcement}</div>}
 
@@ -65,7 +73,12 @@ export default function Hero({ dict, terminalDict, gameDict, locale, announcemen
                 aria-label={gameDict.play_label}>
                 <FiPlay aria-hidden="true" /> {gameDict.play}
               </Button>
-              <Image src={student} alt={dict.student_alt} className={styles.student} priority />
+              <Image
+                src={student}
+                alt={dict.student_alt}
+                className={styles.student}
+                loading="lazy"
+              />
             </div>
           </>
         )}

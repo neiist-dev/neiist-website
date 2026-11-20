@@ -57,7 +57,7 @@ ON CONFLICT (department_name, role_name, permission_name) DO NOTHING;
 INSERT INTO neiist.role_permissions (department_name, role_name, permission_name)
 SELECT vdr.department_name, vdr.role_name, unnest(ARRAY[
   'departments:read', 'roles:read', 'memberships:read',
-  'memberships:write_dept', 'photos:read', 'photos:write_dept',
+  'memberships:write_dept', 'photos:write_dept',
   'orders:read', 'orders:read_customer', 'voting:read'
 ]::neiist.permission_enum[])
 FROM neiist.valid_department_roles vdr
@@ -75,7 +75,7 @@ ON CONFLICT (department_name, role_name, permission_name) DO NOTHING;
 -- Member roles receive member permissions
 INSERT INTO neiist.role_permissions (department_name, role_name, permission_name)
 SELECT vdr.department_name, vdr.role_name, unnest(ARRAY[
-  'orders:read_customer', 'orders:create', 'photos:read', 'voting:read'
+  'orders:read_customer', 'orders:deliver', 'orders:create', 'pos:access'
 ]::neiist.permission_enum[])
 FROM neiist.valid_department_roles vdr
 WHERE vdr.access_label IS NULL

@@ -18,8 +18,13 @@ export interface NotionPageProperties {
   Type?: {
     select: { name: string } | null;
   };
+  Team?: {
+    select?: { name: string } | null;
+    multi_select?: { name: string }[];
+  };
   Teams?: {
-    multi_select: { name: string }[];
+    select?: { name: string } | null;
+    multi_select?: { name: string }[];
   };
   Attendees?: {
     people: NotionPerson[];
@@ -57,4 +62,18 @@ export function mapNotionResultToPage(result: NotionPageResult): NotionPage {
     properties: result.properties as NotionPageProperties,
     last_edited_time: result.last_edited_time,
   };
+}
+
+export interface NotionEvent {
+  id: string;
+  title: string;
+  date: string | null;
+  end: string | null;
+  url: string;
+  location: string[];
+  type: string | null;
+  teams: string[];
+  attendees: string[];
+  lastEditedTime: string;
+  public: boolean;
 }

@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import OrdersTable from "@/components/shop/OrdersTable";
-import OrderDetailOverlay from "@/components/shop/OrderDetailsOverlay";
+import OrdersTable from "@/components/shop/manage/OrdersTable";
+import OrderDetailOverlay from "@/components/shop/manage/modals/OrderDetailsOverlay";
 import { getAllOrders, getAllProducts } from "@/lib/db/repositories/shop.repository";
 import { requirePermission } from "@/lib/auth";
 import { sanitizeOrder } from "@/utils/shop/shopUtils";
-import { isCurrentAcademicYear } from "@/utils/shop/orderFilterUtils";
+import { isCurrentAcademicYear } from "@/utils/academicYearUtils";
 import GlobalLoading from "@/app/loading";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, LocaleParams } from "@/i18n/i18n-config";
@@ -12,21 +12,27 @@ import { Order } from "@/types/shop/order";
 import { hasPermission } from "@/lib/security/permissions";
 
 interface PageProps {
-  params: Promise<LocaleParams>;
+  params: LocaleParams;
   searchParams: Promise<{ orderId?: string; archive?: string }>;
 }
 
 async function OrdersManagementContent({ params, searchParams }: PageProps) {
-  const { user } = await requirePermission("orders:read");
-
   const [resolvedParams, resolvedSearch] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(resolvedParams.locale) ? resolvedParams.locale : defaultLocale;
+
+  const session = await requirePermission(["orders:read", "orders:deliver", "orders:write"], {
+    match: "any",
+  });
+  const { user } = session;
+
   const isArchive = resolvedSearch.archive === "true";
-  const selectedOrderId = resolvedSearch.orderId ? Number(resolvedSearch.orderId) : null;
+  const selectedOrderId = resolvedSearch.orderId ? String(resolvedSearch.orderId).trim() : null;
   const dict = getDictionary(locale);
 
   const canReadCustomer = hasPermission(user, "orders:read_customer");
   const canEditOrder = hasPermission(user, "orders:write");
+  const canDeliver = hasPermission(user, "orders:deliver") || canEditOrder;
+  const canDeleteOrder = hasPermission(user, "orders:delete");
 
   const [allOrders, products] = await Promise.all([getAllOrders(), getAllProducts(true)]);
 
@@ -37,7 +43,7 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
 
   let selectedOrder: Order | null = null;
   if (selectedOrderId) {
-    const rawOrder = allOrders.find((o) => o.id === selectedOrderId);
+    const rawOrder = allOrders.find((o) => o.order_number === selectedOrderId);
     selectedOrder = rawOrder ? (canReadCustomer ? rawOrder : sanitizeOrder(rawOrder)) : null;
   }
   const overlayBasePath = `/${locale}/orders${isArchive ? "?archive=true" : ""}`;
@@ -48,24 +54,19 @@ async function OrdersManagementContent({ params, searchParams }: PageProps) {
         orders={orders}
         products={products}
         dict={dict.orders_table}
-        newOrderModalDict={dict.new_order_modal}
-        createUserModalDict={dict.create_user_modal}
-        posPaymentDict={dict.pos_payment}
         basePath={`/${locale}`}
         isArchive={isArchive}
+        canEdit={canEditOrder}
+        canOverride={canDeleteOrder}
       />
       {selectedOrder && (
         <OrderDetailOverlay
           order={selectedOrder}
-          canManage={canReadCustomer}
+          canManage={canEditOrder}
+          canDeliver={canDeliver}
+          canOverride={canDeleteOrder}
           basePath={overlayBasePath}
-          canEditNotes={canEditOrder}
-          canEditItems={canEditOrder}
-          products={products}
           dict={dict.order_details}
-          posPaymentDict={dict.pos_payment}
-          newOrderModalDict={dict.new_order_modal}
-          createUserModalDict={dict.create_user_modal}
         />
       )}
     </>

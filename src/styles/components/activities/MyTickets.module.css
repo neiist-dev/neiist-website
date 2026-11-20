@@ -1,0 +1,151 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin: 2rem 4rem 4rem;
+  min-block-size: calc(100vh - 120px);
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin: 1.5rem 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--foreground-colour);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--light-foreground-colour);
+  margin: 0;
+}
+
+.searchRow {
+  margin-block-end: 1rem;
+}
+
+.searchContainer {
+  position: relative;
+  max-width: 28rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.emptySearchResults {
+  color: var(--light-foreground-colour);
+  font-size: 1rem;
+  padding: 2rem 0;
+}
+
+.ticketsGrid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  width: 100%;
+}
+
+.ticketCard {
+  width: 100%;
+  max-width: 320px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: transform 0.15s ease;
+}
+
+.ticketCard:hover {
+  transform: translateY(-2px);
+}
+
+.ticketCardLink {
+  width: 100%;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: inherit;
+  cursor: pointer;
+}
+
+.orderImageWrapper {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.orderImageWrapperWithImage {
+  background: var(--background-colour);
+}
+
+.orderImageWrapperEmpty {
+  background: transparent;
+  border: 2px solid var(--primary-colour);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-colour);
+  box-sizing: border-box;
+}
+
+.orderImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.orderInfo {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.orderProduct {
+  font-size: 1.05rem;
+  color: var(--foreground-colour);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+}
+
+.orderStatus {
+  font-size: 0.875rem;
+  color: var(--light-foreground-colour);
+}
+
+@media (max-width: 640px) {
+  .ticketsGrid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .ticketCard {
+    margin-inline: auto;
+  }
+}

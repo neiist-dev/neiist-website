@@ -8,7 +8,7 @@ import { cn } from "../../utils/cn";
 
 export interface ConfirmDialogProps {
   open: boolean;
-  title?: string;
+  title?: React.ReactNode;
   message: React.ReactNode;
   confirmLabel: string;
   cancelLabel: string;
@@ -38,7 +38,7 @@ export function ConfirmDialog({
       className={cn(styles.dialog, className)}>
       <div className={styles.message}>{message}</div>
       <footer className={styles.actions}>
-        <Button variant="ghost" onClick={onCancel} type="button">
+        <Button variant="outline" onClick={onCancel} type="button">
           {cancelLabel}
         </Button>
         <Button variant={isDestructive ? "danger" : "primary"} onClick={onConfirm} type="button">

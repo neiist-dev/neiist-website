@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserRole } from "@/types/roles";
 import { verifyJWTWebCrypto } from "@/lib/security/jwt";
 import { rateLimit } from "@/lib/security/rateLimitUtils";
 import { getRateLimitRule } from "@/lib/security/rateLimitRules";
 import { isBot, getClientIdentifier } from "@/lib/security/botAgents";
 import { addSecurityHeaders } from "@/lib/security/securityHeaders";
-import { canAccess, protectedRoutes } from "@/lib/security/routePermissions";
 import { resolveLocaleRoute } from "@/i18n/i18n-config";
+
+const protectedRoutes = [
+  "/profile",
+  "/my-orders",
+  "/my-tickets",
+  "/shop/cart",
+  "/shop/checkout",
+  "/shop/pos",
+  "/shop/manage",
+  "/voting",
+  "/voting/manage",
+  "/orders",
+  "/management",
+  "/activities/manage",
+  "/dinner",
+];
 
 const MARKDOWN_SITE = `# NEIIST — Núcleo Estudantil de Informática do IST
 
@@ -20,6 +34,7 @@ Associação de estudantes de Informática do Instituto Superior Técnico, Lisbo
 - [Loja](https://neiist.tecnico.ulisboa.pt/shop)
 - [Jantar](https://neiist.tecnico.ulisboa.pt/dinner)
 - [Política de Privacidade](https://neiist.tecnico.ulisboa.pt/privacy)
+- [Termos e Condições](https://neiist.tecnico.ulisboa.pt/terms)
 `;
 
 export async function proxy(req: NextRequest) {
@@ -76,7 +91,10 @@ export async function proxy(req: NextRequest) {
     req.headers.get("x-purpose") === "prefetch" ||
     req.headers.has("next-router-prefetch");
 
-  if (!isAuthenticated && protectedRoutes.some((r) => routePath.startsWith(r))) {
+  if (
+    !isAuthenticated &&
+    protectedRoutes.some((r) => routePath === r || routePath.startsWith(`${r}/`))
+  ) {
     if (isPrefetch) return new NextResponse(null, { status: 204 });
 
     if (routePath !== "/api/auth/login") {
@@ -90,24 +108,6 @@ export async function proxy(req: NextRequest) {
     const response = NextResponse.next();
     addSecurityHeaders(response);
     return response;
-  }
-
-  if (isAuthenticated && jwtUser) {
-    const roles = jwtUser.roles || [UserRole._GUEST];
-
-    if (!canAccess(routePath, roles)) {
-      if (isPrefetch) {
-        return new NextResponse(null, { status: 204 });
-      }
-      if (routePath !== "/unauthorized") {
-        const response = NextResponse.redirect(new URL(`/${locale}/unauthorized`, baseUrl));
-        addSecurityHeaders(response);
-        return response;
-      }
-      const response = NextResponse.next();
-      addSecurityHeaders(response);
-      return response;
-    }
   }
 
   if (redirectResponse) {

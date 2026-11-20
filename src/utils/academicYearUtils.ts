@@ -25,17 +25,13 @@ export function parseAcademicYearRange(academicYear: string): AcademicYearRange 
 
 /**
  * Determines the academic year ('YYYY/YYYY+1') for a given date.
- * September through December, or late August (day >= 15), belongs to starting year YYYY.
- * January through early August belongs to starting year YYYY - 1.
+ * September (month >= 8) through December belongs to starting year YYYY.
+ * January through August belongs to starting year YYYY - 1.
  */
 export function getAcademicYearForDate(date: Date = new Date()): string {
   const year = date.getFullYear();
   const month = date.getMonth();
-  const day = date.getDate();
-
-  if (month >= 8 || (month === 7 && day >= 15)) {
-    return `${year}/${year + 1}`;
-  }
+  if (month >= 8) return `${year}/${year + 1}`;
   return `${year - 1}/${year}`;
 }
 
@@ -59,4 +55,15 @@ export function isMembershipInAcademicYear(
   const to = endDate ? new Date(endDate) : null;
 
   return from <= end && (to === null || to > start);
+}
+
+/**
+ * Checks if date is in the Current Academic Year
+ */
+export function isCurrentAcademicYear(dateInput: string | Date, now = new Date()): boolean {
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return false;
+  const currentYear = now.getFullYear();
+  const startOfSchoolYear = new Date(now.getMonth() >= 8 ? currentYear : currentYear - 1, 8, 1);
+  return date >= startOfSchoolYear;
 }

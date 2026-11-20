@@ -1,0 +1,30 @@
+.contentStack {
+  padding: 1rem 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.headerRow {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.th {
+  padding: 0.5rem;
+}
+
+.row {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.td {
+  padding: 0.5rem;
+}
+
+.helpText {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}

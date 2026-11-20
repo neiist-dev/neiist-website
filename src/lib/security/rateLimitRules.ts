@@ -13,14 +13,18 @@ export function getRateLimitRule(pathname: string): RateLimitRule | null {
 
   if (pathname === "/api/auth/callback") return { limit: 20, windowMs: MIN };
 
-  if (pathname === "/api/auth/refresh") return { limit: 30, windowMs: MIN };
-
   if (pathname.startsWith("/api/user/verify-email/")) return { limit: 5, windowMs: 15 * MIN };
 
   if (pathname.startsWith("/api/admin/")) return { limit: 30, windowMs: MIN, useUser: true };
 
-  if (pathname.startsWith("/api/user/photo/") || pathname.startsWith("/api/shop/photo/"))
+  if (
+    pathname.startsWith("/api/user/photo/") ||
+    pathname.startsWith("/api/shop/photo/") ||
+    pathname.startsWith("/api/voting/photo/")
+  )
     return null;
+
+  if (pathname === "/api/voting/sync") return { limit: 60, windowMs: MIN, useUser: true };
 
   if (pathname.startsWith("/api/")) return { limit: 60, windowMs: MIN };
 

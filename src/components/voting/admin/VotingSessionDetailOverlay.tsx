@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { VotingSession, SessionResult } from "@/types/voting";
+import { VotingSession, SessionResult, VOTING_STATUS } from "@/types/voting";
+import { Modal, Badge, Button, Text, Progress, ConfirmDialog, Alert } from "@neiist/ui";
+import { FiExternalLink, FiPlay, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
+import ReactMarkdown from "react-markdown";
 import {
   startVotingAction,
   finishVotingAction,
   deleteVotingSessionAction,
-} from "@/lib/votingSystem";
-import { FiX, FiTrash2 } from "react-icons/fi";
-import ConfirmDialog from "@/components/layout/ConfirmDialog";
-import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
+  togglePublishResultsAction,
+} from "@/actions/admin/voting";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/components/voting/admin/VotingSessionDetailOverlay.module.css";
 
 interface VotingSessionDetailOverlayProps {
   session: VotingSession;
@@ -32,7 +34,6 @@ export default function VotingSessionDetailOverlay({
 }: VotingSessionDetailOverlayProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [pendingAction, setPendingAction] = useState<"start" | "finish" | "delete" | null>(null);
 
   const handleClose = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -40,96 +41,115 @@ export default function VotingSessionDetailOverlay({
     router.push(`?${params.toString()}`);
   }, [router, searchParams]);
 
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") handleClose();
-    };
-
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [handleClose]);
-
-  const handleDelete = async () => {
-    const formData = new FormData();
-    formData.append("sessionId", String(session.id));
-    await deleteVotingSessionAction(formData);
-    handleClose();
+  const handleNavigateToDetails = () => {
+    window.location.href = `/${locale}/voting/manage/${session.id}`;
   };
 
-  const handleStartVoting = async () => {
-    const formData = new FormData();
-    formData.append("sessionId", String(session.id));
-    await startVotingAction(formData);
-    handleClose();
+  const [pendingAction, setPendingAction] = useState<"start" | "finish" | "delete" | null>(null);
+
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return;
+    const type = pendingAction;
+    setPendingAction(null);
+
+    try {
+      if (type === "start") await startVotingAction(session.id);
+      else if (type === "finish") await finishVotingAction(session.id);
+      else {
+        await deleteVotingSessionAction(session.id);
+        handleClose();
+      }
+
+      Alert.success(dict.details[`${type}_success`]);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details[`${type}_error`] || "Erro");
+    }
   };
 
-  const handleFinishVoting = async () => {
-    const formData = new FormData();
-    formData.append("sessionId", String(session.id));
-    await finishVotingAction(formData);
-    handleClose();
+  const handleTogglePublish = async () => {
+    const nextState = !session.showResults;
+    try {
+      await togglePublishResultsAction(session.id, nextState);
+      Alert.success(nextState ? dict.details.publish_success : dict.details.hide_success);
+      router.refresh();
+    } catch (err) {
+      Alert.error(err instanceof Error ? err.message : dict.details.toggle_publish_error);
+    }
   };
 
-  const totalVotes = results.reduce((acc, result) => acc + result.voteCount, 0);
+  const totalVoters = session.totalVotes;
   const topResults = results.slice(0, 3);
 
   return (
-    <div
-      className={styles.container}
-      onClick={(e) => e.target === e.currentTarget && handleClose()}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button
-          className={styles.closeButton}
-          onClick={handleClose}
-          aria-label={dict.details.close}>
-          <FiX size={32} />
-        </button>
-
-        <header className={styles.header}>
-          <h2>{dict.details.header}</h2>
-        </header>
-
-        <div className={styles.name}>{session.name}</div>
-
-        {session.description && <p className={styles.description}>{session.description}</p>}
-
-        <div className={styles.infoGrid}>
-          <div className={styles.infoItem}>
-            <label>{dict.details.status}</label>
-            <p>{dict.statuses[session.status]}</p>
+    <>
+      <Modal
+        open={true}
+        onClose={handleClose}
+        size="md"
+        title={session.name}
+        badge={
+          <Badge
+            variant={
+              session.status === VOTING_STATUS.VOTING
+                ? "primary"
+                : session.status === VOTING_STATUS.FINISHED
+                  ? "danger"
+                  : "outline"
+            }>
+            {dict.statuses[session.status]}
+          </Badge>
+        }>
+        {session.description && (
+          <div className={styles.description}>
+            <ReactMarkdown
+              components={{
+                a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+              }}>
+              {session.description}
+            </ReactMarkdown>
           </div>
-          <div className={styles.infoItem}>
-            <label>{dict.details.type}</label>
-            <p>{dict.types[session.type]}</p>
+        )}
+
+        {(session.startAt || session.endAt) && (
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>{dict.details.start}</span>
+              <span className={styles.infoValue}>{formatDate(session.startAt, locale)}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>{dict.details.end}</span>
+              <span className={styles.infoValue}>{formatDate(session.endAt, locale)}</span>
+            </div>
           </div>
-          <div className={styles.infoItem}>
-            <label>{dict.details.start}</label>
-            <p>{formatDate(session.startAt, locale)}</p>
-          </div>
-          <div className={styles.infoItem}>
-            <label>{dict.details.end}</label>
-            <p>{formatDate(session.endAt, locale)}</p>
-          </div>
-        </div>
+        )}
 
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h3>
+            <Text size="sm" variant="muted" className={styles.sectionTitle}>
               {dict.details.results}
-              {session.status === "voting" ? ` — ${dict.details.live}` : ""}{" "}
+              {session.status === VOTING_STATUS.VOTING ? ` — ${dict.details.live}` : ""}{" "}
               {results.length > 3 && dict.details.top_3}
-            </h3>
+            </Text>
+            <Button
+              type="button"
+              variant="ghost"
+              color="primary"
+              size="sm"
+              onClick={handleNavigateToDetails}>
+              <FiExternalLink size={14} />
+              {dict.details.view_full_details}
+            </Button>
           </div>
 
           {results.length === 0 ? (
-            <p>{dict.details.no_votes}</p>
+            <Text variant="muted" size="sm">
+              {dict.details.no_votes}
+            </Text>
           ) : (
             <div className={styles.candidateList}>
               {topResults.map((result) => {
-                const percentage = totalVotes > 0 ? (result.voteCount / totalVotes) * 100 : 0;
+                const percentage = totalVoters > 0 ? (result.voteCount / totalVoters) * 100 : 0;
                 return (
                   <div key={result.nomineeId} className={styles.candidate}>
                     <div className={styles.candidateInfo}>
@@ -138,85 +158,58 @@ export default function VotingSessionDetailOverlay({
                         {result.voteCount} {dict.details.votes}
                       </span>
                     </div>
-                    <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${percentage}%` }} />
-                    </div>
+                    <Progress value={percentage} max={100} />
                   </div>
                 );
               })}
               {results.length > 3 && (
-                <p className={styles.moreResults}>
+                <Text size="sm" variant="muted" className={styles.moreResults}>
                   {dict.details.more_results.replace("{count}", String(results.length - 3))}
-                </p>
+                </Text>
               )}
             </div>
           )}
         </section>
 
         <div className={styles.actionButtons}>
-          {session.status === "idle" && (
-            <button
-              type="button"
-              className={styles.buttonPrimary}
-              onClick={() => setPendingAction("start")}>
+          {session.status === VOTING_STATUS.IDLE && (
+            <Button type="button" variant="primary" onClick={() => setPendingAction("start")}>
+              <FiPlay size={16} />
               {dict.details.start_action}
-            </button>
+            </Button>
           )}
 
-          {session.status === "voting" && (
-            <button
-              type="button"
-              className={styles.buttonOutline}
-              onClick={() => setPendingAction("finish")}>
+          {session.status === VOTING_STATUS.VOTING && (
+            <Button type="button" variant="outline" onClick={() => setPendingAction("finish")}>
               {dict.details.finish_action}
-            </button>
+            </Button>
           )}
 
-          <button
-            type="button"
-            className={styles.buttonDanger}
-            onClick={() => setPendingAction("delete")}>
-            <FiTrash2 size={16} className={styles.buttonIcon} />
+          {session.status === VOTING_STATUS.FINISHED && (
+            <Button type="button" variant="outline" onClick={handleTogglePublish}>
+              {session.showResults ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              {session.showResults ? dict.details.hide_results : dict.details.publish_results}
+            </Button>
+          )}
+
+          <Button type="button" variant="danger" onClick={() => setPendingAction("delete")}>
+            <FiTrash2 size={16} />
             {dict.details.delete_action}
-          </button>
+          </Button>
         </div>
-      </div>
-
-      <ConfirmDialog
-        open={pendingAction === "start"}
-        message={dict.details.confirm_start}
-        confirmText={dict.details.confirm_yes}
-        cancelText={dict.details.confirm_cancel}
-        onConfirm={async () => {
-          setPendingAction(null);
-          await handleStartVoting();
-        }}
-        onCancel={() => setPendingAction(null)}
-      />
-
-      <ConfirmDialog
-        open={pendingAction === "finish"}
-        message={dict.details.confirm_finish}
-        confirmText={dict.details.confirm_yes}
-        cancelText={dict.details.confirm_cancel}
-        onConfirm={async () => {
-          setPendingAction(null);
-          await handleFinishVoting();
-        }}
-        onCancel={() => setPendingAction(null)}
-      />
-
-      <ConfirmDialog
-        open={pendingAction === "delete"}
-        message={dict.details.confirm_delete}
-        confirmText={dict.details.confirm_yes}
-        cancelText={dict.details.confirm_cancel}
-        onConfirm={async () => {
-          setPendingAction(null);
-          await handleDelete();
-        }}
-        onCancel={() => setPendingAction(null)}
-      />
-    </div>
+      </Modal>
+      {pendingAction && (
+        <ConfirmDialog
+          open
+          title={dict.details[`${pendingAction}_action`]}
+          message={dict.details[`confirm_${pendingAction}`]}
+          confirmLabel={dict.details.confirm_yes}
+          cancelLabel={dict.details.confirm_cancel}
+          isDestructive={pendingAction === "delete"}
+          onConfirm={handleConfirmAction}
+          onCancel={() => setPendingAction(null)}
+        />
+      )}
+    </>
   );
 }

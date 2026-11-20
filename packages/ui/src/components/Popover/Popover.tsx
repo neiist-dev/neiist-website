@@ -1,15 +1,22 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Popover.module.css";
 import { cn } from "../../utils/cn";
 import { Modal } from "../Modal/Modal";
 
+const subscribeMobile = (callback: () => void) => {
+  const mql = window.matchMedia("(max-width: 48rem)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+};
+
 export interface PopoverProps {
   isOpen: boolean;
   onClose: () => void;
-  anchorRef: React.RefObject<HTMLElement | null>;
+  anchorRef?: React.RefObject<HTMLElement | null>;
+  anchorPoint?: { x: number; y: number } | null;
   children: React.ReactNode;
   className?: string;
   width?: number | string;
@@ -31,27 +38,22 @@ export function Popover({
   isOpen,
   onClose,
   anchorRef,
+  anchorPoint,
   children,
   className,
   width = 280,
   offset = 8,
   matchAnchorWidth = false,
-  mobileDrawerTitle = "",
+  mobileDrawerTitle,
   align = "start",
 }: PopoverProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<PopoverPosition | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 48rem)");
-    const checkMobile = () => {
-      setIsMobile(mql.matches);
-    };
-    checkMobile();
-    mql.addEventListener("change", checkMobile);
-    return () => mql.removeEventListener("change", checkMobile);
-  }, []);
+  const isMobile = useSyncExternalStore(
+    subscribeMobile,
+    () => window.matchMedia("(max-width: 48rem)").matches,
+    () => false
+  );
 
   useEffect(() => {
     if (!isOpen || isMobile) {
@@ -60,11 +62,32 @@ export function Popover({
     }
 
     const updatePosition = () => {
-      if (!anchorRef.current) return;
-      const rect = anchorRef.current.getBoundingClientRect();
+      let rect: {
+        top: number;
+        bottom: number;
+        left: number;
+        right: number;
+        width: number;
+        height: number;
+      };
+      if (anchorRef?.current) {
+        rect = anchorRef.current.getBoundingClientRect();
+      } else if (anchorPoint) {
+        rect = {
+          top: anchorPoint.y,
+          bottom: anchorPoint.y,
+          left: anchorPoint.x,
+          right: anchorPoint.x,
+          width: 0,
+          height: 0,
+        };
+      } else {
+        return;
+      }
 
-      const targetWidth = matchAnchorWidth ? rect.width : width;
-      const actualWidth = matchAnchorWidth
+      const shouldMatchWidth = matchAnchorWidth && Boolean(anchorRef?.current);
+      const targetWidth = shouldMatchWidth ? rect.width : width;
+      const actualWidth = shouldMatchWidth
         ? rect.width
         : containerRef.current?.offsetWidth ||
           (typeof targetWidth === "number" ? targetWidth : rect.width);
@@ -103,22 +126,19 @@ export function Popover({
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
     };
-  }, [isOpen, isMobile, anchorRef, width, offset, matchAnchorWidth, align]);
+  }, [isOpen, isMobile, anchorRef, anchorPoint, width, offset, matchAnchorWidth, align]);
 
   useEffect(() => {
     if (!isOpen || isMobile) return;
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const isOutside =
-        containerRef.current &&
-        !containerRef.current.contains(target) &&
-        anchorRef.current &&
-        !anchorRef.current.contains(target);
+      const isOutsideContainer = containerRef.current
+        ? !containerRef.current.contains(target)
+        : true;
+      const isOutsideAnchor = anchorRef?.current ? !anchorRef.current.contains(target) : true;
 
-      if (isOutside) {
-        onClose();
-      }
+      if (isOutsideContainer && isOutsideAnchor) onClose();
     };
 
     const handleEscape = (event: KeyboardEvent) => {
@@ -168,6 +188,6 @@ export function Popover({
     </div>
   );
 
-  const target = anchorRef.current?.closest("dialog") || document.body;
+  const target = anchorRef?.current?.closest("dialog") || document.body;
   return createPortal(content, target);
 }

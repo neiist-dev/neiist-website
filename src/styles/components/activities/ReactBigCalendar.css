@@ -8,10 +8,12 @@
   font-family: var(--font-family) !important;
 }
 
-.rbc-month-view {
-  border-radius: 18px;
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+  border-radius: 16px;
   overflow: hidden;
-  background: white;
+  background: #ffffff;
   border: 1px solid #dadce0;
 }
 
@@ -23,7 +25,7 @@
   background: transparent;
   font-size: 0.9rem;
   font-weight: 500 !important;
-  color: #70757a;
+  color: var(--light-foreground-colour);
   border: none !important;
   border-left: none !important;
   border-right: 1px solid #dadce0 !important;
@@ -54,13 +56,13 @@
   position: relative;
   font-weight: 500;
   font-size: 0.85rem;
-  color: #3c4043;
+  color: var(--foreground-colour);
   margin: 0;
   float: none;
 }
 
 .rbc-date-cell.rbc-now .rbc-button-link {
-  color: white;
+  color: #ffffff;
   background: var(--primary-colour);
   border-radius: 50%;
   aspect-ratio: 1 / 1;
@@ -122,10 +124,25 @@
   margin: 1px 4px;
 }
 
-.rbc-event:hover {
+.rbc-event:hover,
+.rbc-event.rbc-event-hovered {
   background: color-mix(in srgb, var(--secondary-colour) 80%, black 20%) !important;
 }
 
 .rbc-past-event {
   opacity: 0.6;
+}
+
+.rbc-agenda-view table.rbc-agenda-table {
+  border-color: #dadce0;
+  color: var(--foreground-colour);
+}
+
+.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  border-color: #dadce0;
+}
+
+.rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  border-color: #dadce0;
+  color: var(--light-foreground-colour);
 }

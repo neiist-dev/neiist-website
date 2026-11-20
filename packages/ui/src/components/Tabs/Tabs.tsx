@@ -10,6 +10,7 @@ export interface TabItem {
   name: string;
   icon?: React.ReactNode;
   content: React.ReactNode;
+  disabled?: boolean;
 }
 
 export interface TabsClassNames {
@@ -75,14 +76,17 @@ export function Tabs({
               key={tab.id}
               role="tab"
               aria-selected={isActive}
+              aria-disabled={tab.disabled}
+              disabled={tab.disabled}
               className={cn(
                 styles.tabButton,
                 styles[`tabButton-${size}`],
                 isActive && styles.activeTab,
                 fullWidth && styles.tabButtonFullWidth,
+                tab.disabled && styles.disabledTab,
                 classNames?.tabButton
               )}
-              onClick={() => handleTabClick(tab.id)}>
+              onClick={() => !tab.disabled && handleTabClick(tab.id)}>
               {tab.icon && <span className={styles.tabIcon}>{tab.icon}</span>}
               <span>{tab.name}</span>
             </button>

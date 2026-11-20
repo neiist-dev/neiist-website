@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import type { Metadata } from "next";
 import Hero from "@/components/homepage/Hero";
 import Activities from "@/components/homepage/Activities";
 import Partnerships from "@/components/homepage/Partnerships";
@@ -6,13 +8,31 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, locales, LocaleParams } from "@/i18n/i18n-config";
 import CloudAnnouncement from "@/components/homepage/CloudAnnouncement";
 
-export const instant = false;
-
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-async function HomePage({ params }: { params: LocaleParams }) {
+export async function generateMetadata({ params }: { params: LocaleParams }): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const dict = getDictionary(locale);
+
+  const mainDesc =
+    `${dict.hero.title_prefix} ${dict.hero.title_highlight} ${dict.hero.title_suffix}`.trim();
+  const description = dict.hero.teaser_title ? `${mainDesc}. ${dict.hero.teaser_title}.` : mainDesc;
+
+  return {
+    description,
+    openGraph: {
+      description,
+    },
+    twitter: {
+      description,
+    },
+  };
+}
+
+async function HomePageContent({ params }: { params: LocaleParams }) {
   const { locale: rawLocale } = await params;
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale);
@@ -22,7 +42,7 @@ async function HomePage({ params }: { params: LocaleParams }) {
       title={dict.hero.teaser_title}
       target="_blank"
       rel="noopener noreferrer"
-      href="https://linktr.ee/neiist"
+      href={"https://linktr.ee/neiist"}
       pulse={true}
     />
   );
@@ -42,4 +62,10 @@ async function HomePage({ params }: { params: LocaleParams }) {
   );
 }
 
-export default HomePage;
+export default function HomePage(props: { params: LocaleParams }) {
+  return (
+    <Suspense fallback={null}>
+      <HomePageContent {...props} />
+    </Suspense>
+  );
+}

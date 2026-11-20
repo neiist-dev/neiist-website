@@ -56,3 +56,5 @@ export interface ParagraphsSection {
 }
 
 export type PrivacySection = ControllerSection | TableSection | ListSection | ParagraphsSection;
+
+export type LegalSection = PrivacySection;

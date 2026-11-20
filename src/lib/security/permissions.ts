@@ -14,13 +14,23 @@ export const ROLE_PRESETS: Record<UserRole, Permission[]> = {
     "roles:read",
     "memberships:read",
     "memberships:write_dept",
-    "photos:read",
     "photos:write_dept",
+    "shop:read",
+    "shop:write",
+    "pos:access",
+    "pos:manage",
     "orders:read",
     "orders:read_customer",
+    "orders:create",
+    "orders:write",
+    "orders:deliver",
+    "orders:override",
     "voting:read",
+    "events:read",
+    "events:write",
+    "events:checkin",
   ],
-  [UserRole._MEMBER]: ["orders:read_customer", "orders:create", "photos:read", "voting:read"],
+  [UserRole._MEMBER]: ["orders:read_customer", "orders:deliver", "orders:create", "pos:access"],
   [UserRole._GUEST]: [],
 };
 
@@ -32,9 +42,16 @@ const ADMIN_LEVEL_PERMISSIONS: Permission[] = [
   "roles:delete",
   "memberships:write_global",
   "memberships:delete",
+  "orders:delete",
+  "events:delete",
 ];
 
-const COORDINATOR_LEVEL_PERMISSIONS: Permission[] = ["memberships:write_dept", "photos:write_dept"];
+const COORDINATOR_LEVEL_PERMISSIONS: Permission[] = [
+  "memberships:write_dept",
+  "photos:write_dept",
+  "events:write",
+  "events:checkin",
+];
 
 export function deriveAccessLabel(permissions: Permission[]): "admin" | "coordinator" | null {
   const set = new Set(permissions);
@@ -43,19 +60,20 @@ export function deriveAccessLabel(permissions: Permission[]): "admin" | "coordin
   return null;
 }
 
-export function hasPermission(
-  user: User | null | undefined,
-  permission: Permission,
-  context?: { department?: string }
-): boolean {
-  if (!user) return false;
+export type PermissionMatchMode = "all" | "any";
 
+export interface PermissionCheckOptions {
+  department?: string;
+  match?: PermissionMatchMode;
+}
+
+function hasSinglePermission(user: User, permission: Permission, department?: string): boolean {
   // Global permission
   if (user.permissions?.includes(permission)) return true;
 
   // Explicit department context
-  if (context?.department) {
-    const deptPerms = user.departmentPermissions?.[context.department] ?? [];
+  if (department) {
+    const deptPerms = user.departmentPermissions?.[department] ?? [];
     return deptPerms.includes(permission);
   }
 
@@ -63,6 +81,19 @@ export function hasPermission(
     return Object.values(user.departmentPermissions).some((perms) => perms.includes(permission));
 
   return false;
+}
+
+export function hasPermission(
+  user: User | null | undefined,
+  permission: Permission | Permission[],
+  options?: PermissionCheckOptions
+): boolean {
+  if (!user) return false;
+  if (!Array.isArray(permission)) {
+    return hasSinglePermission(user, permission, options?.department);
+  }
+  const check = (p: Permission) => hasSinglePermission(user, p, options?.department);
+  return options?.match === "any" ? permission.some(check) : permission.every(check);
 }
 
 export function getDevOverridePermissions(devRole: string): Permission[] | undefined {

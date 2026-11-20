@@ -36,14 +36,26 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
+      - name: Configure Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Determine Deploy Ref
         id: deploy_ref
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          INPUT_TAG: ${{ github.event.inputs.tag }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "REF=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_ENV
-          else
-            echo "REF=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          if [ "$EVENT_NAME" = "workflow_run" ]; then REF="$HEAD_SHA"; else REF="$INPUT_TAG"; fi
+          if ! [[ "$REF" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            echo "Invalid ref: refusing to deploy" >&2
+            exit 1
           fi
+          echo "REF=$REF" >> "$GITHUB_ENV"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -67,13 +79,12 @@ jobs:
 
       - name: Open SSH Tunnel to Staging Database
         run: |
-          ssh -f -N -L 5432:127.0.0.1:5433 \
-              -o StrictHostKeyChecking=no \
+          ssh -M -S /tmp/ssh_staging_tunnel.sock -f -N \
+              -L 5432:127.0.0.1:5433 \
               -o ExitOnForwardFailure=yes \
               -o ServerAliveInterval=15 \
               -o ServerAliveCountMax=3 \
               ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
-          echo "SSH_TUNNEL_ACTIVE=true" >> $GITHUB_ENV
 
       - name: Build Standalone Release
         env:
@@ -84,7 +95,7 @@ jobs:
       - name: Close SSH Tunnel
         if: always()
         run: |
-          pkill -f "ssh -f -N -L 5432:127.0.0.1" || true
+          ssh -S /tmp/ssh_staging_tunnel.sock -O exit dummy 2>/dev/null || true
 
       - name: Package Standalone Artifact
         run: |
@@ -94,17 +105,18 @@ jobs:
 
       - name: Upload Artifacts to VPS
         run: |
-          scp -o StrictHostKeyChecking=no release-staging.tar.gz scripts/deploy_staging.sh \
+          rsync -avz --progress \
+              release-staging.tar.gz scripts/deploy_staging.sh \
               ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/neiist/
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
               "chmod +x /home/neiist/deploy_staging.sh"
 
       - name: Deploy to Staging
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c 'bash ~/deploy_staging.sh ${{ env.REF }} /home/neiist/release-staging.tar.gz'"
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+              "su - neiist -c 'bash ~/deploy_staging.sh $REF /home/neiist/release-staging.tar.gz'"
 
       - name: Confirm Staging Deployment
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
-          "su - neiist -c 'bash -lc \"pm2 jlist\"'" | jq -r '.[] | select(.name=="staging") | "🌿 " + .name + " → " + .pm2_env.status'
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+              "su - neiist -c 'export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; pm2 jlist'" | jq -r '.[] | select(.name=="staging") | "🌿 " + .name + " → " + .pm2_env.status'

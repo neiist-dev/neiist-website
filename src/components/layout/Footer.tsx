@@ -178,6 +178,10 @@ export default function Footer({ dict, basePath }: FooterProps) {
           {dict.copyright} ·{" "}
           <Link className={styles.link} href={`${basePath}/privacy`}>
             {dict.privacy_policy_link}
+          </Link>{" "}
+          ·{" "}
+          <Link className={styles.link} href={`${basePath}/terms`}>
+            {dict.terms_link}
           </Link>
         </p>
         <div className={styles.socialIcons}>

@@ -1,7 +1,8 @@
 import { Suspense } from "react";
-import ProductForm from "@/components/shop/ProductForm";
+import ProductForm from "@/components/shop/manage/ProductForm";
 import { redirect } from "next/navigation";
 import { getAllCategories, getProduct } from "@/lib/db/repositories/shop.repository";
+import { getActivitiesEvents } from "@/lib/db/repositories/event.repository";
 import { requirePermission } from "@/lib/auth";
 import GlobalLoading from "@/app/loading";
 import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
@@ -22,7 +23,11 @@ async function EditProductContent({ params }: PageProps) {
 
   if (!Number.isInteger(productId) || productId <= 0) redirect(`/${locale}/shop/manage`);
 
-  const [product, categories] = await Promise.all([getProduct(productId), getAllCategories(true)]);
+  const [product, categories, events] = await Promise.all([
+    getProduct(productId),
+    getAllCategories(),
+    getActivitiesEvents().catch(() => []),
+  ]);
 
   if (!product) redirect(`/${locale}/shop/manage`);
 
@@ -32,6 +37,7 @@ async function EditProductContent({ params }: PageProps) {
       isEdit={true}
       backHref={`/${locale}/shop/manage`}
       categories={categories}
+      events={events}
       dict={dict}
     />
   );

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { useState, useRef } from "react";
 
 import { CardItem } from "@/types/news";
@@ -67,9 +66,7 @@ export default function Partners({ items }: { items: CardItem[] }) {
             onMouseLeave={handleMouseLeave}
             onClick={(e) => handleClick(index, e.currentTarget)}>
             <Card className={styles.card}>
-              <Card.Body>
-                <Image src={partner.image} alt={partner.title} />
-              </Card.Body>
+              <Card.Body>{partner.image}</Card.Body>
 
               <Card.Header title={partner.title} description={partner.description} />
 

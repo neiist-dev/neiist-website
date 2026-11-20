@@ -328,7 +328,6 @@ export const getAllMemberships = async (): Promise<Membership[]> => {
     return mapdbMembershipToMembership({
       ...raw,
       user_email: user?.email ?? raw.user_email,
-      user_photo: user?.photo ?? raw.user_photo,
       user_github: user?.github ?? raw.user_github,
       user_linkedin: user?.linkedin ?? raw.user_linkedin,
     });

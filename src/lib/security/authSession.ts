@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { signJWTWebCrypto } from "@/lib/security/jwt";
 import { User } from "@/types/user";
-import {
-  getUser,
-  createUser,
-  updateUser,
-  getEmailVerificationByUser,
-} from "@/lib/db/repositories/user.repository";
-import { FenixPersonResponse, extractCourses } from "@/types/fenix";
+import { fenixPhotos } from "@/lib/imageStorage";
+import { getUser, createUser, updateUser } from "@/lib/db/repositories/user.repository";
+import { FenixPersonResponse } from "@/types/fenix";
+import { extractCourses } from "@/utils/userUtils";
 
 export const SESSION_COOKIE_NAME = "session";
 
@@ -65,25 +60,13 @@ async function syncOrCreateUser(params: {
   return user;
 }
 
-async function cacheFenixPhoto(istid: string, photoData?: string, isCustom = false) {
-  if (isCustom || !photoData) return;
+async function cacheFenixPhoto(istid: string, photoData?: string) {
+  if (!photoData) return;
   try {
     const photoBuffer = Buffer.from(photoData, "base64");
-    const fenixDir = path.join(process.cwd(), "data", "fenix_cache");
-    await fs.mkdir(fenixDir, { recursive: true });
-    await fs.writeFile(path.join(fenixDir, `${istid}.png`), photoBuffer);
+    await fenixPhotos.save(photoBuffer, istid);
   } catch (error) {
     console.warn(`[Auth] Failed to cache Fenix photo for ${istid}:`, error);
-  }
-}
-
-async function attachEmailVerification(user: User) {
-  const notVerifiedEmail = await getEmailVerificationByUser(user.istid);
-  if (notVerifiedEmail) {
-    user.alternativeEmail = notVerifiedEmail.email;
-    user.alternativeEmailVerified = false;
-  } else {
-    user.alternativeEmailVerified = true;
   }
 }
 
@@ -108,18 +91,18 @@ export async function syncFenixUserAndCreateSession(
     const user = await syncOrCreateUser({ istid, name, email, phone, courses });
     if (!user) return null;
 
-    await cacheFenixPhoto(user.istid, info.photo?.data, user.photo?.includes("?custom"));
-    await attachEmailVerification(user);
+    await cacheFenixPhoto(user.istid, info.photo?.data);
+    const fullUser = (await getUser(user.istid)) ?? user;
 
     const jwtPayload = {
-      istid: user.istid,
-      roles: user.roles,
-      name: user.name,
-      email: user.email,
+      istid: fullUser.istid,
+      roles: fullUser.roles,
+      name: fullUser.name,
+      email: fullUser.email,
     };
     const sessionToken = await signJWTWebCrypto(jwtPayload);
 
-    return { user, sessionToken };
+    return { user: fullUser, sessionToken };
   } catch (err) {
     console.error("[Auth] Error synchronizing Fénix user session:", err);
     return null;

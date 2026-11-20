@@ -27,18 +27,3 @@ export type FenixOAuthTokenResponse = {
   refresh_token?: string;
   expires_in: number | string;
 };
-
-export function extractCourses(registrations: FenixRegistration[] = []): string[] {
-  const courses = new Set<string>();
-  for (const reg of registrations) {
-    const degree = reg?.degree;
-    if (!degree) continue;
-    const rawName =
-      typeof degree.name === "object"
-        ? (degree.name?.["pt-PT"] ?? degree.name?.["en-GB"])
-        : degree.name;
-    const name = (rawName || degree.acronym)?.trim();
-    if (name) courses.add(name);
-  }
-  return Array.from(courses);
-}

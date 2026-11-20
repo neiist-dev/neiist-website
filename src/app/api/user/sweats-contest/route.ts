@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyJWTWebCrypto } from "@/lib/security/jwt";
-import { uploadSweatsSubmission } from "@/lib/google/driveService";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { uploadSweatsSubmission } from "@/lib/m365/sharepointService";
 
-const CONTEST_ACTIVE = true;
-
-async function getUsernameFromCookies(): Promise<string | null> {
-  const reqCookies = await cookies();
-  const sessionToken = reqCookies.get("session")?.value;
-  if (!sessionToken) return null;
-  const jwtUser = await verifyJWTWebCrypto(sessionToken);
-  return jwtUser?.istid || null;
-}
+const CONTEST_ACTIVE = false;
 
 export async function POST(request: NextRequest) {
   if (!CONTEST_ACTIVE) {
@@ -21,8 +12,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const username = await getUsernameFromCookies();
-  if (!username) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await getAuthenticatedUser();
+  if (!auth) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const username = auth.user.istid;
 
   const formData = await request.formData();
   const file = formData.get("file");

@@ -4,8 +4,6 @@ import {
   getVotingSessionById,
   getSessionResults,
 } from "@/lib/db/repositories/voting.repository";
-import { getActivitiesEventsFromDb } from "@/lib/db/repositories/event.repository";
-import { getAllUsers } from "@/lib/db/repositories/user.repository";
 import AdminVotingSync from "@/components/voting/AdminVotingSync";
 import VotingManagement from "@/components/voting/admin/VotingManagement";
 import VotingSessionDetailOverlay from "@/components/voting/admin/VotingSessionDetailOverlay";
@@ -20,18 +18,14 @@ interface PageProps {
 }
 
 async function VotingManageContent({ params, searchParams }: PageProps) {
-  await requirePermission("voting:read");
+  await requirePermission(["voting:read", "voting:write"], { match: "any" });
   const [{ locale: rawLocale }, searchParamsObj] = await Promise.all([params, searchParams]);
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const dict = getDictionary(locale).voting_management;
 
   const sessionId = searchParamsObj.sessionId ? parseInt(searchParamsObj.sessionId, 10) : undefined;
 
-  const [sessions, activities, users] = await Promise.all([
-    getVotingSessions(100),
-    getActivitiesEventsFromDb(),
-    getAllUsers(),
-  ]);
+  const sessions = await getVotingSessions(100);
 
   let selectedSession = null;
   let results = null;
@@ -47,8 +41,6 @@ async function VotingManageContent({ params, searchParams }: PageProps) {
       <AdminVotingSync />
       <VotingManagement
         initialSessions={sessions}
-        activities={activities}
-        users={users}
         dict={dict}
         locale={locale}
         basePath={`/${locale}`}

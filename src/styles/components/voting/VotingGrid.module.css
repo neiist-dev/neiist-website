@@ -27,10 +27,53 @@
 
 .description {
   margin: 0.8rem auto 0;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--light-foreground-colour);
   max-width: 40rem;
   line-height: 1.5;
+}
+
+.description > * {
+  margin: 0;
+}
+
+.description > * + * {
+  margin-top: 0.4rem;
+}
+
+.description strong {
+  color: var(--foreground-colour);
+}
+
+.description ul {
+  list-style: disc;
+  text-align: left;
+  display: inline-block;
+  padding-left: 1.25rem;
+}
+
+.description ol {
+  list-style: decimal;
+  text-align: left;
+  display: inline-block;
+  padding-left: 1.25rem;
+}
+
+.description li {
+  margin: 0.25rem 0;
+}
+
+.description a,
+.modalDescription a {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  word-break: break-word;
+  transition: opacity 0.2s ease;
+}
+
+.description a:hover,
+.modalDescription a:hover {
+  opacity: 0.8;
 }
 
 .toolbar {
@@ -47,32 +90,6 @@
   max-width: 32rem;
 }
 
-.searchInput {
-  width: 100%;
-  padding: 0.9rem 1.2rem;
-  border: 2px solid transparent;
-  background: #ffffff;
-  border-radius: 1rem;
-  font-family: inherit;
-  font-size: 1rem;
-  color: var(--foreground-colour);
-  outline: none;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.07);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-  box-sizing: border-box;
-}
-
-.searchInput:focus {
-  border-color: var(--primary-colour);
-  box-shadow: 0 0.25rem 1rem rgba(40, 99, 253, 0.15);
-}
-
-.searchInput::placeholder {
-  color: var(--light-foreground-colour);
-}
-
 .count {
   margin: 0;
   color: var(--light-foreground-colour);
@@ -80,116 +97,38 @@
   text-align: center;
 }
 
-.gridItem {
-  min-width: 0;
-  width: 100%;
-}
-
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 14rem));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 13.5rem));
+  gap: 2rem 1.5rem;
   width: 100%;
   justify-content: center;
-  align-content: center;
-}
-
-.card {
-  width: 100%;
-  border: none;
-  border-radius: 1.25rem;
-  background: #ffffff;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
-  font-family: inherit;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.card:hover {
-  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
-}
-
-.card:active {
-  transform: scale(0.97);
-}
-
-.selectedCard {
-  box-shadow:
-    0 0 0 3px var(--primary-colour),
-    0 0.5rem 1.5rem rgba(40, 99, 253, 0.2);
-}
-
-.selectedCard:hover {
-  box-shadow:
-    0 0 0 3px var(--primary-colour),
-    0 0.75rem 2rem rgba(40, 99, 253, 0.25);
-}
-
-.photoWrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  background: #eef0f4;
 }
 
 .photo {
   object-fit: cover;
-  transition: transform 0.3s ease;
 }
 
-.card:hover .photo {
-  transform: scale(1.04);
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 1rem;
-  background: linear-gradient(to top, rgba(40, 99, 253, 0.85) 0%, transparent 55%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.card:hover .overlay,
-.selectedCard .overlay {
-  opacity: 1;
-}
-
-.cta {
-  color: white;
-  font-size: 0.85rem;
-  letter-spacing: 0.06em;
-  text-align: center;
-  padding: 0 0.5rem;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-.nameWrapper {
-  padding: 0.85rem 0.5rem;
-  text-align: center;
+.modalImageWrapper {
+  position: relative;
   width: 100%;
-  box-sizing: border-box;
+  aspect-ratio: 16 / 9;
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  background: var(--background-colour-hover);
 }
 
-.name {
+.modalImage {
+  object-fit: cover;
+}
+
+.modalDescription {
   color: var(--foreground-colour);
-  font-size: 0.95rem;
-  margin: 0;
-  line-height: 1.2;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .actions {
@@ -222,46 +161,17 @@
   .title {
     font-size: clamp(1.2rem, 5vw, 2rem);
   }
-
-  .overlay {
-    opacity: 1;
-  }
 }
 
 @media (max-width: 600px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-  }
-
-  .card {
-    border-radius: 1rem;
-  }
-
-  .nameWrapper {
-    padding: 0.75rem 0.5rem;
-  }
-
-  .name {
-    font-size: 0.875rem;
-  }
-
-  .cta {
-    font-size: 0.775rem;
-    padding-bottom: 0.25rem;
+    gap: 1.25rem 0.75rem;
   }
 }
 
 @media (max-width: 380px) {
   .grid {
-    gap: 0.5rem;
-  }
-
-  .card {
-    border-radius: 0.75rem;
-  }
-
-  .name {
-    font-size: 0.9rem;
+    gap: 1rem 0.5rem;
   }
 }

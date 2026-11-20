@@ -30,9 +30,7 @@ export async function POST(req: NextRequest) {
     return res.cookies.set(name, "", { ...defaults, ...opts });
   };
 
-  del("access_token");
   del("session");
-  del("refresh_token");
   del("fenix_oauth_state");
 
   return res;

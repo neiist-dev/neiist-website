@@ -36,10 +36,10 @@ export default function YearSelector({
   const end = Math.min(start + v, total);
   const windowYears = years.slice(start, end);
 
-  const canPrev = idx < total - 1;
-  const canNext = idx > 0;
-  const prevYear = canPrev ? years[idx + 1] : undefined;
-  const nextYear = canNext ? years[idx - 1] : undefined;
+  const canPrev = idx > 0;
+  const canNext = idx < total - 1;
+  const prevYear = canPrev ? years[idx - 1] : undefined;
+  const nextYear = canNext ? years[idx + 1] : undefined;
 
   const hrefFor = (year: string) => ({ query: { year } });
 
@@ -47,6 +47,7 @@ export default function YearSelector({
     <nav className={styles.container} aria-label={dict.nav_label}>
       <Link
         href={prevYear ? hrefFor(prevYear) : "#"}
+        scroll={false}
         aria-label={dict.prev_label}
         aria-disabled={!canPrev}
         tabIndex={canPrev ? 0 : -1}
@@ -62,6 +63,7 @@ export default function YearSelector({
             <Link
               key={year}
               href={hrefFor(year)}
+              scroll={false}
               aria-current={isSelected ? "page" : undefined}
               className={`${styles.yearButton} ${isSelected ? styles.selected : ""}`}>
               <span className={styles.yearText}>
@@ -75,6 +77,7 @@ export default function YearSelector({
 
       <Link
         href={nextYear ? hrefFor(nextYear) : "#"}
+        scroll={false}
         aria-label={dict.next_label}
         aria-disabled={!canNext}
         tabIndex={canNext ? 0 : -1}

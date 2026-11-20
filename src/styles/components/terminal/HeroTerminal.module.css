@@ -3,7 +3,7 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  border-radius: var(--ui-radius-lg, 12px);
+  border-radius: 12px;
   overflow: hidden;
   box-shadow:
     0 20px 40px -15px oklch(0% 0 0 / 0.35),

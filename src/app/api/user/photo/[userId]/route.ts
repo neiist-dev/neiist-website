@@ -1,40 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
+import { revalidatePath } from "next/cache";
 import { validateIstId } from "@/utils/apiValidationUtils";
+import { ImageUploadError, serveUserPhoto, userPhotos } from "@/lib/imageStorage";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/security/permissions";
+import { getUser } from "@/lib/db/repositories/user.repository";
+import { handleApiError } from "@/utils/apiErrorUtils";
 
-export async function GET(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ userId: string }> }) {
   const [userId, error] = validateIstId((await context.params).userId, "userId");
   if (error) return error;
 
-  const isCustom = request.nextUrl.searchParams.has("custom");
+  return serveUserPhoto(userId);
+}
+
+export async function POST(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
+  const session = await getAuthenticatedUser();
+  if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  const [userId, error] = validateIstId((await context.params).userId, "userId");
+  if (error) return error;
 
   try {
-    if (isCustom) {
-      const customPath = path.join(process.cwd(), "data", "user_photos", `${userId}.png`);
-      try {
-        const imageBuffer = await fs.readFile(customPath);
-        return new NextResponse(new Uint8Array(imageBuffer), {
-          status: 200,
-          headers: { "Content-Type": "image/png" },
-        });
-      } catch {
-        return new NextResponse("Custom photo not found", { status: 404 });
-      }
-    }
+    const currentUser = session.user;
+    const targetUser = await getUser(userId);
+    if (!targetUser) return NextResponse.json({ error: "Target user not found" }, { status: 404 });
 
-    const fenixCachePath = path.join(process.cwd(), "data", "fenix_cache", `${userId}.png`);
-    try {
-      const imageBuffer = await fs.readFile(fenixCachePath);
-      return new NextResponse(new Uint8Array(imageBuffer), {
-        status: 200,
-        headers: { "Content-Type": "image/png" },
-      });
-    } catch {
-      return new NextResponse("Photo not found", { status: 404 });
-    }
+    const canWritePhoto =
+      hasPermission(currentUser, "photos:write_global") ||
+      (hasPermission(currentUser, "photos:write_dept") &&
+        targetUser.teams?.some((team) =>
+          hasPermission(currentUser, "photos:write_dept", { department: team })
+        ));
+    if (!canWritePhoto)
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+
+    const file = (await request.formData()).get("file");
+    if (!(file instanceof File))
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+
+    await userPhotos.save(file, userId);
+
+    revalidatePath("/about-us");
+    revalidatePath("/management");
+    revalidatePath("/profile");
+    return NextResponse.json({ success: true, photo: userPhotos.url(userId) });
   } catch (error) {
-    console.error("Error in photo API:", error);
-    return new NextResponse("Internal server error", { status: 500 });
+    if (error instanceof ImageUploadError)
+      return NextResponse.json({ error: error.message }, { status: 400 });
+
+    return handleApiError(error);
   }
 }

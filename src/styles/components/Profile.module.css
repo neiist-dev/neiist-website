@@ -138,6 +138,19 @@
   margin-left: 3rem;
 }
 
+.outlookToggleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 3rem;
+  margin-top: 1rem;
+}
+
+.outlookToggleLabel {
+  font-size: 0.9rem;
+  color: var(--foreground-colour);
+}
+
 .button,
 .filledButton {
   display: flex;
@@ -145,7 +158,6 @@
   justify-content: center;
   gap: 0.6rem;
   font-size: 0.95rem;
-  font-weight: 500;
   border-radius: 0.6rem;
   padding: 0.3rem 1rem;
   border: 2px solid var(--primary-colour);
@@ -328,6 +340,11 @@
   .cvUpload,
   .infoText,
   .actionButtons {
+    justify-content: center;
+    margin-left: 1rem;
+  }
+
+  .outlookToggleRow {
     justify-content: center;
     margin-left: 1rem;
   }

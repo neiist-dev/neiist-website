@@ -1,7 +1,9 @@
+import { parseDbNumeric } from "@/utils/shop/moneyUtils";
+
 export type DiscountType = "percentage" | "fixed";
 
 export interface DiscountRecipientInput {
-  istid: string;
+  istid?: string;
   name: string;
   email: string;
 }
@@ -87,18 +89,48 @@ export interface DiscountValidationResult {
   error?: string | null;
 }
 
+export interface dbDiscountValidationResult {
+  is_valid: boolean;
+  discount_code_id?: number | null;
+  discount_code?: string | null;
+  discount_type?: string | null;
+  discount_value?: string | number | null;
+  discount_amount?: string | number | null;
+  error?: string | null;
+}
+
+export function mapdbDiscountValidationResult(
+  row: dbDiscountValidationResult
+): DiscountValidationResult {
+  return {
+    is_valid: Boolean(row.is_valid),
+    discount_code_id: row.discount_code_id ?? null,
+    discount_code: row.discount_code ?? null,
+    discount_type: (row.discount_type as DiscountType | null) ?? null,
+    discount_value:
+      row.discount_value !== null && row.discount_value !== undefined
+        ? parseDbNumeric(row.discount_value)
+        : null,
+    discount_amount:
+      row.discount_amount !== null && row.discount_amount !== undefined
+        ? parseDbNumeric(row.discount_amount)
+        : null,
+    error: row.error ?? null,
+  };
+}
+
 export function mapdbDiscountCodeToDiscountCode(row: dbDiscountCode): DiscountCode {
   return {
     id: row.id,
     code: row.code,
     discount_type: row.discount_type as DiscountType,
-    discount_value: Number(row.discount_value),
-    valid_product_ids: row.valid_product_ids ?? [],
-    valid_istids: row.valid_istids ?? [],
-    max_uses: row.max_uses ?? null,
+    discount_value: parseDbNumeric(row.discount_value),
+    valid_product_ids: row.valid_product_ids || [],
+    valid_istids: row.valid_istids || [],
+    max_uses: row.max_uses,
     current_uses: row.current_uses,
-    expires_at: row.expires_at ?? null,
     active: row.active,
+    expires_at: row.expires_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

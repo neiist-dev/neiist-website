@@ -1,9 +1,6 @@
-"use client";
-
-import React, { useState } from "react";
 import Image from "next/image";
 import { Avatar } from "@neiist/ui";
-import styles from "./MemberAvatar.module.css";
+import styles from "@/styles/components/layout/MemberAvatar.module.css";
 
 interface MemberAvatarProps {
   name: string;
@@ -13,7 +10,6 @@ interface MemberAvatarProps {
 }
 
 export default function MemberAvatar({ name, photo, size = "sm", className }: MemberAvatarProps) {
-  const [hasError, setHasError] = useState(false);
   const initial = name?.trim()?.charAt(0)?.toUpperCase() || "M";
   const dimension = size === "lg" ? 96 : size === "md" ? 44 : 32;
 
@@ -23,14 +19,13 @@ export default function MemberAvatar({ name, photo, size = "sm", className }: Me
       size={size}
       className={className}
       image={
-        photo && !hasError ? (
+        photo ? (
           <Image
             src={photo}
             alt={name}
             width={dimension}
             height={dimension}
             className={styles.avatarImage}
-            onError={() => setHasError(true)}
             unoptimized
           />
         ) : undefined

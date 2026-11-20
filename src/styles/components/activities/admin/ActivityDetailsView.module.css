@@ -1,0 +1,206 @@
+.container {
+  margin: 2rem 4rem 4rem;
+  padding: 0;
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.backBtn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--light-foreground-colour);
+  padding: 0;
+}
+
+.backBtn:hover {
+  color: var(--foreground-colour);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 17.5rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.eventIcon {
+  font-size: 1.8rem;
+  color: var(--primary-colour);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  color: var(--light-foreground-colour);
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.actionsToolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 16rem));
+  gap: 1rem;
+}
+
+.metricCard {
+  background: var(--background-colour);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metricLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--light-foreground-colour);
+}
+
+.metricValue {
+  font-size: 1.5rem;
+  color: var(--foreground-colour);
+}
+
+.controlsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  flex: 1;
+  max-width: 28rem;
+  width: 100%;
+}
+
+.attendeeCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.attendeeInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.attendeeName {
+  color: var(--foreground-colour);
+}
+
+.attendeeEmail {
+  font-size: 0.8rem;
+  color: var(--light-foreground-colour);
+}
+
+.responsesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 25rem;
+  overflow-y: auto;
+}
+
+.responseItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.responseQuestion {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--foreground-colour);
+}
+
+.responseAnswer {
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+}
+
+.modalFooterActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    margin: 1.5rem 2rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .actionsToolbar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .actionsToolbar > * {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+}

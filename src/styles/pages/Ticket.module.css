@@ -1,0 +1,119 @@
+.container {
+  margin: 2rem 4rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--light-foreground-colour);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--foreground-colour);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 22rem;
+  gap: 3rem;
+  align-items: start;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+}
+
+.metaList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metaList span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--foreground-colour);
+}
+
+.metaList a {
+  color: var(--primary-colour);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.description {
+  margin: 0;
+  color: var(--light-foreground-colour);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.responses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+.responses h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.responsesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.75rem;
+}
+
+.responseCard {
+  background: var(--background-colour);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.responseLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--light-foreground-colour);
+}
+
+@media (max-width: 900px) {
+  .container {
+    margin: 1rem 1.5rem 2rem;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .layout > :last-child {
+    order: -1;
+  }
+}

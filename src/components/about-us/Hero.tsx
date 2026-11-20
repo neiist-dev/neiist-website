@@ -7,7 +7,7 @@ import { FiUsers } from "react-icons/fi";
 import styles from "@/styles/components/about-us/Hero.module.css";
 import { Team } from "@/types/memberships";
 import { Dictionary } from "@/i18n/dictionaries";
-import ColorfulText from "@/components/ColorfulText";
+import { ColorfulText } from "@neiist/ui";
 
 interface HeroProps {
   teams: Team[];

@@ -5,13 +5,13 @@
 .message {
   margin-block-end: 1.5rem;
   white-space: pre-line;
-  color: var(--ui-fg-light);
+  color: var(--ui-fg);
   font-size: 0.95rem;
   line-height: 1.5;
 }
 
 .actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: flex-end;
 }

@@ -132,31 +132,12 @@ async function configureFolder(targetEnvVar: string, friendlyName: string) {
 
 async function main() {
   console.log("==================================================");
-  console.log("      Google Service Accounts Env Setup          ");
+  console.log("      Google Calendar Service Account Setup       ");
   console.log("==================================================");
 
   await configureKey("GOOGLE_SERVICE_ACCOUNT_KEY", "Google Calendar");
-  const driveJson = await configureKey("GDRIVE_SERVICE_ACCOUNT_KEY", "Google Drive");
 
-  let serviceAccountEmail = "";
-
-  if (driveJson?.client_email) serviceAccountEmail = driveJson.client_email;
-
-  console.log("\n==================================================");
-  console.log("         Google Drive Folders Configuration       ");
-  console.log("==================================================");
-  console.log("\nPERMISSIONS REQUIRED:");
-  console.log("You must share the target Google Drive folders with the service account email.");
-  console.log(`1. Open the folder in Google Drive.`);
-  console.log(`2. Click "Share".`);
-  console.log(`3. Add the email below as an **Editor**:`);
-  console.log(`\x1b[36m${serviceAccountEmail}\x1b[0m\n`);
-
-  await configureFolder("GDRIVE_CV_FOLDER_ID", "CV Bank Folder");
-  await configureFolder("GDRIVE_SWEATS_FOLDER_ID", "Sweats Design Folder");
-  await configureFolder("GDRIVE_BACKUP_FOLDER_ID", "Database Backups Folder");
-
-  console.log("\nService Account & Google Drive setup complete!");
+  console.log("\nGoogle Calendar Service Account setup complete!");
 }
 
 main().catch((err) => {

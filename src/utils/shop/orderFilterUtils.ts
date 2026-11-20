@@ -1,6 +1,12 @@
 import { Order } from "@/types/shop/order";
 import { Product } from "@/types/shop/product";
-import { isColorKey, splitNameHex } from "@/utils/shop/shopUtils";
+import {
+  isColorKey,
+  splitNameHex,
+  matchesSelections,
+  decodeVariantOptionsFromStorage,
+} from "@/utils/shop/shopUtils";
+import { CascadeFilterOption, getCascadeLeafIds } from "@neiist/ui";
 
 export interface CascadeVariant {
   id: number;
@@ -22,16 +28,6 @@ export interface ProductFilter {
 
 const encode = (filter: ProductFilter): string => JSON.stringify(filter);
 const decode = (encoded: string): ProductFilter => JSON.parse(encoded) as ProductFilter;
-
-const normalize = (value?: string) => value?.replace(/["'\\]/g, "").trim() ?? "";
-
-export const matchesSelections = (
-  variantOptions: Record<string, string> = {},
-  selections: Record<string, string>
-) =>
-  Object.entries(selections).every(
-    ([key, value]) => normalize(variantOptions[key]) === normalize(value)
-  );
 
 type ProductEntry = { price?: number; variants: Map<string, CascadeVariant> };
 
@@ -55,7 +51,7 @@ export function buildProductCascadeList(
     const entry = getOrCreateEntry(map, product.name, product.price);
     if (product.price != null) entry.price = product.price;
     for (const variant of product.variants || []) {
-      const opts = variant.options || {};
+      const opts = decodeVariantOptionsFromStorage(variant.options || {});
       entry.variants.set(JSON.stringify(opts), {
         id: variant.id,
         label: variant.label || "",
@@ -68,7 +64,7 @@ export function buildProductCascadeList(
     for (const item of order.items) {
       if (!item.product_name) continue;
       const entry = getOrCreateEntry(map, item.product_name, item.unit_price);
-      const opts = item.variant_options || {};
+      const opts = decodeVariantOptionsFromStorage(item.variant_options || {});
       const key = JSON.stringify(opts);
       if (!entry.variants.has(key))
         entry.variants.set(key, {
@@ -98,18 +94,70 @@ export function buildProductCascadeList(
     });
 }
 
-export function getValuesForCascade(
-  product: ProductCascadeItem,
-  selections: Record<string, string>
-): string[] {
-  const nextKey = product.optionKeys[Object.keys(selections).length];
-  if (!nextKey) return [];
-  const values = new Set<string>();
-  for (const variant of product.variants) {
-    if (matchesSelections(variant.options, selections) && variant.options[nextKey])
-      values.add(variant.options[nextKey]);
-  }
-  return Array.from(values).sort();
+export function buildCascadeFilterTree(
+  orders: Order[] = [],
+  products: Product[] = []
+): CascadeFilterOption[] {
+  const productList = buildProductCascadeList(orders, products);
+
+  return productList.map((p) => {
+    if (p.optionKeys.length === 0 || p.variants.length === 0) {
+      return {
+        id: encode({ name: p.name, selections: {} }),
+        label: p.name,
+        price: p.price,
+      };
+    }
+
+    function buildLevel(
+      keyIndex: number,
+      currentSelections: Record<string, string>,
+      branchIdPrefix: string
+    ): CascadeFilterOption[] {
+      const currentKey = p.optionKeys[keyIndex];
+      if (!currentKey) return [];
+
+      const valuesSet = new Set<string>();
+      for (const variant of p.variants) {
+        if (matchesSelections(variant.options, currentSelections) && variant.options[currentKey]) {
+          valuesSet.add(variant.options[currentKey]);
+        }
+      }
+
+      const isLastKey = keyIndex === p.optionKeys.length - 1;
+      const nextKey = !isLastKey ? p.optionKeys[keyIndex + 1] : undefined;
+
+      return Array.from(valuesSet)
+        .sort((a, b) => a.localeCompare(b))
+        .map((val) => {
+          const nextSelections = { ...currentSelections, [currentKey]: val };
+          const cleanLabel = isColorKey(currentKey) ? splitNameHex(val).name || val : val;
+          const currentBranchId = `${branchIdPrefix}-${currentKey}-${val}`;
+
+          if (isLastKey) {
+            return {
+              id: encode({ name: p.name, selections: nextSelections }),
+              label: cleanLabel,
+            };
+          }
+
+          return {
+            id: currentBranchId,
+            label: cleanLabel,
+            levelLabel: nextKey,
+            children: buildLevel(keyIndex + 1, nextSelections, currentBranchId),
+          };
+        });
+    }
+
+    return {
+      id: p.name,
+      label: p.name,
+      price: p.price,
+      levelLabel: p.optionKeys[0],
+      children: buildLevel(0, {}, p.name),
+    };
+  });
 }
 
 export function matchesProductFilter(order: Order, selected: string[]): boolean {
@@ -124,77 +172,78 @@ export function matchesProductFilter(order: Order, selected: string[]): boolean 
   );
 }
 
-export function getProductFilterDisplayLabel(encoded: string): string {
-  const { name, selections } = decode(encoded);
-  const entries = Object.entries(selections);
-  if (!entries.length) return name;
-  const labels = entries.map(([key, value]) =>
-    isColorKey(key) ? splitNameHex(value).name || value : value
-  );
-  return `${name} (${labels.join(" › ")})`;
+export interface FilterSummaryItem {
+  id: string;
+  label: string;
+  leafIds: string[];
 }
 
-function isExactMatch(
-  filterSelections: Record<string, string>,
-  selections: Record<string, string>
-): boolean {
-  return (
-    matchesSelections(filterSelections, selections) &&
-    matchesSelections(selections, filterSelections)
-  );
-}
+export function summarizeProductFilterTags(
+  selectedLeafIds: string[],
+  cascadeTree: CascadeFilterOption[]
+): FilterSummaryItem[] {
+  if (!selectedLeafIds.length || !cascadeTree.length) return [];
 
-export function getCascadeSelectionState(
-  product: ProductCascadeItem,
-  selections: Record<string, string>,
-  selected: string[]
-): { isChecked: boolean; isIndeterminate: boolean } {
-  if (!selected.length) return { isChecked: false, isIndeterminate: false };
+  const selectedSet = new Set(selectedLeafIds);
+  const result: FilterSummaryItem[] = [];
 
-  const filtersForProduct = selected.map(decode).filter((filter) => filter.name === product.name);
+  for (const product of cascadeTree) {
+    const productLeaves = getCascadeLeafIds(product);
+    if (!productLeaves.length) continue;
 
-  const isFullyCovered = filtersForProduct.some(
-    (filter) =>
-      !Object.keys(filter.selections).length || isExactMatch(filter.selections, selections)
-  );
-  if (isFullyCovered) return { isChecked: true, isIndeterminate: false };
+    if (productLeaves.every((id) => selectedSet.has(id))) {
+      result.push({
+        id: product.id,
+        label: product.label,
+        leafIds: productLeaves,
+      });
+      continue;
+    }
 
-  const matchingVariants = product.variants.filter((variant) =>
-    matchesSelections(variant.options, selections)
-  );
-  if (!matchingVariants.length) return { isChecked: false, isIndeterminate: false };
+    if (!product.children?.length) {
+      if (productLeaves.some((id) => selectedSet.has(id))) {
+        result.push({
+          id: product.id,
+          label: product.label,
+          leafIds: productLeaves,
+        });
+      }
+      continue;
+    }
 
-  const checkedCount = matchingVariants.filter((variant) =>
-    filtersForProduct.some((filter) => matchesSelections(variant.options, filter.selections))
-  ).length;
+    for (const child of product.children) {
+      const childLeaves = getCascadeLeafIds(child);
+      if (!childLeaves.length) continue;
 
-  if (checkedCount === matchingVariants.length) return { isChecked: true, isIndeterminate: false };
-  if (checkedCount > 0) return { isChecked: false, isIndeterminate: true };
-  return { isChecked: false, isIndeterminate: false };
-}
+      if (childLeaves.every((id) => selectedSet.has(id))) {
+        result.push({
+          id: child.id,
+          label: `${product.label} (${child.label})`,
+          leafIds: childLeaves,
+        });
+        continue;
+      }
 
-export function toggleCascadeSelection(
-  product: ProductCascadeItem,
-  selections: Record<string, string>,
-  selected: string[]
-): string[] {
-  const { isChecked, isIndeterminate } = getCascadeSelectionState(product, selections, selected);
+      if (child.children?.length) {
+        for (const subChild of child.children) {
+          const subLeaves = getCascadeLeafIds(subChild);
+          if (subLeaves.every((id) => selectedSet.has(id))) {
+            result.push({
+              id: subChild.id,
+              label: `${product.label} (${child.label} › ${subChild.label})`,
+              leafIds: subLeaves,
+            });
+          }
+        }
+      } else if (childLeaves.some((id) => selectedSet.has(id))) {
+        result.push({
+          id: child.id,
+          label: `${product.label} (${child.label})`,
+          leafIds: childLeaves,
+        });
+      }
+    }
+  }
 
-  const next = selected.filter((encoded) => {
-    const filter = decode(encoded);
-    if (filter.name !== product.name) return true;
-    if (!Object.keys(selections).length) return false;
-    return !matchesSelections(filter.selections, selections);
-  });
-
-  if (!isChecked && !isIndeterminate) next.push(encode({ name: product.name, selections }));
-  return next;
-}
-
-export function isCurrentAcademicYear(dateInput: string | Date, now = new Date()): boolean {
-  const date = new Date(dateInput);
-  if (isNaN(date.getTime())) return false;
-  const currentYear = now.getFullYear();
-  const startOfSchoolYear = new Date(now.getMonth() >= 8 ? currentYear : currentYear - 1, 8, 1);
-  return date >= startOfSchoolYear;
+  return result;
 }

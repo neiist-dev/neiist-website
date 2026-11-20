@@ -1,11 +1,17 @@
 import { google } from "googleapis";
-import type { NotionEvent } from "@/types/events";
+import type { Activity } from "@/types/events";
 import { getFirstAndLastName } from "@/utils/userUtils";
 import { getServiceAccount } from "@/lib/google/serviceAccount";
+import {
+  getEventLastEditedIso,
+  getValidEventUrl,
+  normalizeUserEmails,
+  shouldIncludeCalendarEvent,
+} from "@/utils/calendarUtils";
 
 const SCOPES = ["https://www.googleapis.com/auth/calendar"];
-const BATCH_SIZE = 50;
-const BATCH_DELAY_MS = 10;
+const BATCH_SIZE = 5;
+const BATCH_DELAY_MS = 250;
 
 let _calendarClient: ReturnType<typeof google.calendar> | null = null;
 
@@ -19,67 +25,12 @@ export function getCalendarClient(): ReturnType<typeof google.calendar> | null {
   return _calendarClient;
 }
 
-function isDateOnly(s?: string | null) {
-  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
+function buildGoogleCalendarDates(event: Activity) {
+  if (!event.start || !event.end) return null;
 
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setUTCDate(d.getUTCDate() + days);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
-
-function addHours(date: Date, hours: number) {
-  const d = new Date(date);
-  d.setTime(d.getTime() + hours * 60 * 60 * 1000);
-  return d;
-}
-
-function buildICalDatesFromNotion(
-  event: NotionEvent
-): { start: Date; end: Date; allDay: boolean } | null {
-  if (!event.date) return null;
-
-  const startIsDateOnly = isDateOnly(event.date);
-  const endExists = !!event.end;
-  const endIsDateOnly = endExists && isDateOnly(event.end!);
-
-  if (startIsDateOnly && !endExists) {
-    const start = new Date(event.date + "T00:00:00Z");
-    const end = addDays(start, 1);
-    return { start, end, allDay: true };
-  }
-
-  if (startIsDateOnly && endIsDateOnly) {
-    const start = new Date(event.date + "T00:00:00Z");
-    const endDate = new Date(event.end! + "T00:00:00Z");
-    const end = addDays(endDate, 1);
-    return { start, end, allDay: true };
-  }
-
-  if (!startIsDateOnly && !endExists) {
-    const start = new Date(event.date);
-    const end = addHours(start, 1);
-    return { start, end, allDay: false };
-  }
-
-  if (!startIsDateOnly && endExists && !endIsDateOnly) {
-    const start = new Date(event.date);
-    const end = new Date(event.end!);
-    return { start, end, allDay: false };
-  }
-
-  return null;
-}
-
-function buildGoogleCalendarDates(event: NotionEvent) {
-  const dates = buildICalDatesFromNotion(event);
-  if (!dates) return null;
-
-  if (dates.allDay) {
-    const startDate = dates.start.toISOString().split("T")[0];
-    const endDate = dates.end.toISOString().split("T")[0];
+  if (event.allDay) {
+    const startDate = event.start.toISOString().split("T")[0];
+    const endDate = event.end.toISOString().split("T")[0];
     return {
       start: { date: startDate },
       end: { date: endDate },
@@ -87,8 +38,8 @@ function buildGoogleCalendarDates(event: NotionEvent) {
   }
 
   return {
-    start: { dateTime: dates.start.toISOString(), timeZone: "UTC" },
-    end: { dateTime: dates.end.toISOString(), timeZone: "UTC" },
+    start: { dateTime: event.start.toISOString(), timeZone: "UTC" },
+    end: { dateTime: event.end.toISOString(), timeZone: "UTC" },
   };
 }
 
@@ -108,6 +59,53 @@ async function findCalendarByIstid(istid: string): Promise<string | null> {
   } catch (error) {
     console.error("Error finding calendar:", error);
     return null;
+  }
+}
+
+async function ensureWriterAcl(
+  calendar: NonNullable<ReturnType<typeof getCalendarClient>>,
+  calendarId: string,
+  email: string,
+  existingRules?: Array<{
+    id?: string | null;
+    role?: string | null;
+    scope?: { type?: string | null; value?: string | null } | null;
+  }>
+) {
+  try {
+    const normalized = email.trim().toLowerCase();
+    const userRule = existingRules?.find(
+      (rule) =>
+        rule.scope?.type === "user" && rule.scope?.value?.trim().toLowerCase() === normalized
+    );
+
+    if (userRule && userRule.role !== "writer") {
+      await calendar.acl.update({
+        calendarId,
+        ruleId: userRule.id!,
+        requestBody: {
+          role: "writer",
+          scope: {
+            type: "user",
+            value: email,
+          },
+        },
+      });
+    } else if (!userRule) {
+      await calendar.acl.insert({
+        calendarId,
+        requestBody: {
+          role: "writer",
+          scope: {
+            type: "user",
+            value: email,
+          },
+        },
+        sendNotifications: true,
+      });
+    }
+  } catch (error) {
+    console.error(`Failed to share calendar with ${email}:`, error);
   }
 }
 
@@ -131,45 +129,11 @@ export async function createUserCalendar(
 
   const calendarId = response.data.id!;
 
-  // Make calendar public with reader access
-  await calendar.acl.insert({
-    calendarId,
-    requestBody: {
-      role: "reader",
-      scope: { type: "default" },
-    },
-    sendNotifications: false,
-  });
-
-  // Share with user email as editor
-  await calendar.acl.insert({
-    calendarId,
-    requestBody: {
-      role: "writer",
-      scope: {
-        type: "user",
-        value: userEmail,
-      },
-    },
-    sendNotifications: true,
-  });
-
-  if (alternativeEmail && alternativeEmail !== userEmail) {
-    try {
-      await calendar.acl.insert({
-        calendarId,
-        requestBody: {
-          role: "writer",
-          scope: {
-            type: "user",
-            value: alternativeEmail,
-          },
-        },
-        sendNotifications: true,
-      });
-    } catch (error) {
-      console.error(`Failed to share calendar with alternative email ${alternativeEmail}:`, error);
-    }
+  const emailsToShare = Array.from(
+    new Set([userEmail, alternativeEmail].filter((e): e is string => Boolean(e)))
+  );
+  for (const email of emailsToShare) {
+    await ensureWriterAcl(calendar, calendarId, email);
   }
 
   return calendarId;
@@ -187,97 +151,21 @@ export async function getOrCreateUserCalendar(
   const existingCalendarId = await findCalendarByIstid(istid);
   if (existingCalendarId) {
     try {
-      // Ensure calendar is public
-      try {
-        await calendar.acl.update({
-          calendarId: existingCalendarId,
-          ruleId: "default",
-          requestBody: {
-            role: "reader",
-            scope: { type: "default" },
-          },
-        });
-      } catch (error) {
-        const err = error as { code?: number };
-        if (err?.code === 404) {
-          await calendar.acl.insert({
-            calendarId: existingCalendarId,
-            requestBody: {
-              role: "reader",
-              scope: { type: "default" },
-            },
-            sendNotifications: false,
-          });
-        }
-      }
-
-      // Update user email to writer if needed
       const aclList = await calendar.acl.list({ calendarId: existingCalendarId });
-      const userRule = aclList.data.items?.find(
-        (rule) => rule.scope?.type === "user" && rule.scope?.value === userEmail
-      );
+      const existingRules = aclList.data.items ?? [];
 
-      if (userRule && userRule.role !== "writer") {
-        await calendar.acl.update({
-          calendarId: existingCalendarId,
-          ruleId: userRule.id!,
-          requestBody: {
-            role: "writer",
-            scope: {
-              type: "user",
-              value: userEmail,
-            },
-          },
-        });
-      } else if (!userRule) {
-        await calendar.acl.insert({
-          calendarId: existingCalendarId,
-          requestBody: {
-            role: "writer",
-            scope: {
-              type: "user",
-              value: userEmail,
-            },
-          },
-          sendNotifications: true,
-        });
+      const defaultRule = existingRules.find((rule) => rule.scope?.type === "default");
+      if (defaultRule?.id) {
+        await calendar.acl
+          .delete({ calendarId: existingCalendarId, ruleId: defaultRule.id })
+          .catch(() => {});
       }
 
-      if (alternativeEmail && alternativeEmail !== userEmail) {
-        const hasAltEmailAccess = aclList.data.items?.some(
-          (rule) => rule.scope?.type === "user" && rule.scope?.value === alternativeEmail
-        );
-
-        if (!hasAltEmailAccess) {
-          await calendar.acl.insert({
-            calendarId: existingCalendarId,
-            requestBody: {
-              role: "writer",
-              scope: {
-                type: "user",
-                value: alternativeEmail,
-              },
-            },
-            sendNotifications: true,
-          });
-        } else {
-          const altRule = aclList.data.items?.find(
-            (rule) => rule.scope?.type === "user" && rule.scope?.value === alternativeEmail
-          );
-          if (altRule && altRule.role !== "writer") {
-            await calendar.acl.update({
-              calendarId: existingCalendarId,
-              ruleId: altRule.id!,
-              requestBody: {
-                role: "writer",
-                scope: {
-                  type: "user",
-                  value: alternativeEmail,
-                },
-              },
-            });
-          }
-        }
+      const emailsToShare = Array.from(
+        new Set([userEmail, alternativeEmail].filter((e): e is string => Boolean(e)))
+      );
+      for (const email of emailsToShare) {
+        await ensureWriterAcl(calendar, existingCalendarId, email, existingRules);
       }
     } catch (error) {
       console.error("Error updating calendar ACL:", error);
@@ -299,13 +187,19 @@ async function getExistingCalendarEvents(calendarId: string): Promise<Map<string
       calendarId,
       maxResults: 2500,
       singleEvents: true,
+      showDeleted: false,
     });
 
     const events = response.data.items || [];
 
     for (const event of events) {
-      if (event.id && event.extendedProperties?.private?.notionLastEdited) {
-        eventMap.set(event.id, event.extendedProperties.private.notionLastEdited);
+      if (event.id) {
+        const lastEdited =
+          event.extendedProperties?.private?.notionLastEdited ||
+          event.extendedProperties?.private?.lastEdited ||
+          event.updated ||
+          "";
+        eventMap.set(event.id, lastEdited);
       }
     }
   } catch (error) {
@@ -321,19 +215,17 @@ function delay(ms: number) {
 
 export async function syncEventToCalendar(
   calendarId: string,
-  event: NotionEvent,
+  event: Activity,
   userEmail: string,
   existingEventIds?: Set<string>,
-  alternativeEmail?: string
+  alternativeEmail?: string,
+  neiistEmail?: string
 ) {
   const calendar = getCalendarClient();
   if (!calendar) return;
 
-  const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
-  const shouldInclude =
-    event.date &&
-    (event.type !== "Meeting" ||
-      (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
+  const userEmailSet = normalizeUserEmails([userEmail, alternativeEmail, neiistEmail]);
+  const shouldInclude = shouldIncludeCalendarEvent(event, userEmailSet);
 
   const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
 
@@ -351,24 +243,32 @@ export async function syncEventToCalendar(
   const dates = buildGoogleCalendarDates(event);
   if (!dates) return;
 
+  const validUrl = getValidEventUrl(event);
+  const lastEditedIso = getEventLastEditedIso(event);
+
   const googleEvent = {
     id: googleEventId,
     summary: event.title,
     description: [
-      event.url,
+      validUrl,
       event.attendees.length ? `Attendees: ${event.attendees.join(", ")}` : "",
     ]
       .filter(Boolean)
       .join("\n"),
     location: event.location.length ? event.location.join(", ") : undefined,
     ...dates,
-    source: {
-      title: "Notion",
-      url: event.url,
-    },
+    ...(validUrl
+      ? {
+          source: {
+            title: event.sourceType === "notion" ? "Notion" : "NEIIST",
+            url: validUrl,
+          },
+        }
+      : {}),
     extendedProperties: {
       private: {
-        notionLastEdited: event.lastEditedTime || new Date().toISOString(),
+        notionLastEdited: lastEditedIso,
+        lastEdited: lastEditedIso,
       },
     },
   };
@@ -380,8 +280,20 @@ export async function syncEventToCalendar(
         eventId: googleEventId,
         requestBody: googleEvent,
       });
-    } catch (error) {
-      console.error(`Error updating event ${googleEventId}:`, error);
+    } catch (error: unknown) {
+      const err = error as { status?: number; code?: number };
+      if (err?.status === 404 || err?.code === 404) {
+        try {
+          await calendar.events.insert({
+            calendarId,
+            requestBody: googleEvent,
+          });
+        } catch (insertErr) {
+          console.error(`Error inserting event after 404 ${googleEventId}:`, insertErr);
+        }
+      } else {
+        console.error(`Error updating event ${googleEventId}:`, error);
+      }
     }
   } else {
     try {
@@ -389,56 +301,42 @@ export async function syncEventToCalendar(
         calendarId,
         requestBody: googleEvent,
       });
-    } catch (error) {
-      console.error(`Error inserting event ${googleEventId}:`, error);
+    } catch (error: unknown) {
+      const err = error as { status?: number; code?: number };
+      if (err?.status === 409 || err?.code === 409) {
+        try {
+          await calendar.events.update({
+            calendarId,
+            eventId: googleEventId,
+            requestBody: googleEvent,
+          });
+        } catch (updateErr) {
+          console.error(`Error updating event after 409 ${googleEventId}:`, updateErr);
+        }
+      } else {
+        console.error(`Error inserting event ${googleEventId}:`, error);
+      }
     }
   }
-}
-
-export async function syncEventsToCalendarBatched(
-  calendarId: string,
-  events: NotionEvent[],
-  userEmail: string,
-  alternativeEmail?: string
-) {
-  const existingEvents = await getExistingCalendarEvents(calendarId);
-  const existingEventIds = new Set(existingEvents.keys());
-
-  let synced = 0;
-  for (let i = 0; i < events.length; i += BATCH_SIZE) {
-    const batch = events.slice(i, i + BATCH_SIZE);
-    await Promise.all(
-      batch.map((event) =>
-        syncEventToCalendar(calendarId, event, userEmail, existingEventIds, alternativeEmail)
-      )
-    );
-    synced += batch.length;
-    if (i + BATCH_SIZE < events.length) {
-      await delay(BATCH_DELAY_MS);
-    }
-  }
-  return synced;
 }
 
 export async function syncAllEventsToCalendar(
   calendarId: string,
-  events: NotionEvent[],
+  events: Activity[],
   userEmail: string,
-  alternativeEmail?: string
+  alternativeEmail?: string,
+  neiistEmail?: string
 ) {
   const existingEvents = await getExistingCalendarEvents(calendarId);
 
-  const eventsToUpdate: NotionEvent[] = [];
+  const eventsToUpdate: Activity[] = [];
   const eventsToDelete: string[] = [];
   const existingEventIds = new Set(existingEvents.keys());
 
-  const userEmails = [userEmail, ...(alternativeEmail ? [alternativeEmail] : [])];
+  const userEmailSet = normalizeUserEmails([userEmail, alternativeEmail, neiistEmail]);
 
   for (const event of events) {
-    const shouldInclude =
-      event.date &&
-      (event.type !== "Meeting" ||
-        (event.type === "Meeting" && event.attendees.some((email) => userEmails.includes(email))));
+    const shouldInclude = shouldIncludeCalendarEvent(event, userEmailSet);
 
     const googleEventId = event.id.replace(/-/g, "").substring(0, 64);
 
@@ -451,7 +349,11 @@ export async function syncAllEventsToCalendar(
 
     const existingLastEdited = existingEvents.get(googleEventId);
 
-    if (!existingLastEdited || new Date(event.lastEditedTime) > new Date(existingLastEdited)) {
+    if (
+      !existingLastEdited ||
+      (event.lastEditedTime &&
+        new Date(event.lastEditedTime).getTime() > new Date(existingLastEdited).getTime())
+    ) {
       eventsToUpdate.push(event);
     }
 
@@ -462,6 +364,8 @@ export async function syncAllEventsToCalendar(
     eventsToDelete.push(eventId);
   }
 
+  const existingIdSet = new Set(existingEvents.keys());
+
   for (let i = 0; i < eventsToUpdate.length; i += BATCH_SIZE) {
     const batch = eventsToUpdate.slice(i, i + BATCH_SIZE);
     await Promise.all(
@@ -470,8 +374,9 @@ export async function syncAllEventsToCalendar(
           calendarId,
           event,
           userEmail,
-          new Set(existingEvents.keys()),
-          alternativeEmail
+          existingIdSet,
+          alternativeEmail,
+          neiistEmail
         )
       )
     );
@@ -514,9 +419,4 @@ export async function deleteEventFromCalendar(calendarId: string, eventId: strin
 export async function getAddCalendarLink(calendarId: string | null | undefined) {
   if (!calendarId) return "";
   return `https://calendar.google.com/calendar/u/0?cid=${encodeURIComponent(calendarId)}&mode=WEEK`;
-}
-
-export async function getCalendarWebLink(calendarId: string | null | undefined) {
-  if (!calendarId) return "";
-  return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}`;
 }

@@ -1,5 +1,159 @@
 # neiist
 
+## [4.11.0](https://github.com/neiist-dev/neiist-website/compare/v4.10.0...v4.11.0) (2026-11-19)
+
+
+### Features
+
+* **ui:** carousel whit no dependencies and simpler logic ([64f33ae](https://github.com/neiist-dev/neiist-website/commit/64f33ae6056193f85e8854c4ef3ccbde4728cf32))
+* **ui:** clean bento grid with reveal and swap modes animation to ([e387614](https://github.com/neiist-dev/neiist-website/commit/e387614804bce82581961fc78c9cb64e5594bf36))
+
+
+### Bug Fixes
+
+* lazy load one-terminal and some cache and pre render components ([494240c](https://github.com/neiist-dev/neiist-website/commit/494240cc14ca07f889eed9919c1374eda3c4c7af))
+* **orders:** show all payment references on orders details ([b220ee1](https://github.com/neiist-dev/neiist-website/commit/b220ee12a30f02f8f55ca987a20e104258b5cc04))
+
+## [4.10.0](https://github.com/neiist-dev/neiist-website/compare/v4.9.0...v4.10.0) (2026-11-18)
+
+
+### Features
+
+* **orders:** new edit oder modal instead of inline edit ([2f51191](https://github.com/neiist-dev/neiist-website/commit/2f5119129d0aab1e7fac88ec64cb6136037d92a5))
+
+
+### Bug Fixes
+
+* **auth:** do not catch nextjs internal error ([0887dab](https://github.com/neiist-dev/neiist-website/commit/0887dabcba990a550f757d0c3589207344293362))
+* **footer:** center copyright text ([c256016](https://github.com/neiist-dev/neiist-website/commit/c25601673381234e23837807f9b905222acd4ac2))
+* prevent redundant client-side auth fetches on mount ([b7528f3](https://github.com/neiist-dev/neiist-website/commit/b7528f3fd6f40777e6d5318d2f5cc01d94de511b))
+
+## [4.9.0](https://github.com/neiist-dev/neiist-website/compare/v4.8.0...v4.9.0) (2026-11-17)
+
+
+### Features
+
+* register ist user manualy from pos and add members ([0afe320](https://github.com/neiist-dev/neiist-website/commit/0afe320bcbed813f70ce7c11637abf78da8503ff))
+
+## [4.8.0](https://github.com/neiist-dev/neiist-website/compare/v4.7.0...v4.8.0) (2026-11-16)
+
+
+### Features
+
+* **calendar:** make google calendar available to all users ([88121b8](https://github.com/neiist-dev/neiist-website/commit/88121b8e3acae996f57c7ba00d95192e6a0cda7a))
+
+
+### Bug Fixes
+
+* **about-us:** enforce academic year filter ([b0c1dcd](https://github.com/neiist-dev/neiist-website/commit/b0c1dcd95c90e46721011629fcd7ae6d2693c03e))
+* **activities:** buttons horizontal overflow as no withd was set ([51eaf19](https://github.com/neiist-dev/neiist-website/commit/51eaf19c4ae7849d92bfab565c7fb8f90c3e2d24))
+* **email:** add reply to field ([f5228f9](https://github.com/neiist-dev/neiist-website/commit/f5228f909a4ec23b9c674bc44784eb16f055759a))
+* **pos:** mobile tpa bridge session force one per device, show correct ([3b1d16f](https://github.com/neiist-dev/neiist-website/commit/3b1d16fa75d177e90b84f05497368b3d457bd980))
+* **qrcode:** support 98 bytes max on the encoder ([fd00cee](https://github.com/neiist-dev/neiist-website/commit/fd00ceef1755bd8024904df0d4bd9ed07add584b))
+* **shop:** format payment refernces and action button on orders overlay ([6a29a55](https://github.com/neiist-dev/neiist-website/commit/6a29a558439ead96bd8f0eaeb21f0343c64dc909))
+* **ui:** confirm dialog ([22f4eb3](https://github.com/neiist-dev/neiist-website/commit/22f4eb308b90b820ea680046e091e7513b75d0af))
+
+## [4.7.0](https://github.com/neiist-dev/neiist-website/compare/v4.6.2...v4.7.0) (2026-11-15)
+
+
+### Features
+
+* **activities:** events/activities management Notion/DB independet ([e4f4ad3](https://github.com/neiist-dev/neiist-website/commit/e4f4ad30ef2973373c3ad9f906feca860efef5e1))
+* add terms of usage and a new legal component ([06cab95](https://github.com/neiist-dev/neiist-website/commit/06cab956914e74c8acb37c17f2099da76731e5a0))
+* **auth:** new RBAC permissions for new POS, SHOP and activities ([6f5caff](https://github.com/neiist-dev/neiist-website/commit/6f5caffa5fc6c4482a1acdbedb3cf06d6b90c4a9))
+* **db:** campus schedules, payments tables centralization, payment ([f7fe795](https://github.com/neiist-dev/neiist-website/commit/f7fe79513c1596ec03407242a3212f955aec5a3e))
+* **db:** update tables and functions for new image architeture ([53e5c2b](https://github.com/neiist-dev/neiist-website/commit/53e5c2b37f8c8a29419c34f500e307f694ef1a39))
+* **i18n:** update all dict for new pages and features accross shop, pos ([71267d7](https://github.com/neiist-dev/neiist-website/commit/71267d7c66858b47b687eadf155402ec39cc7aec))
+* **images:** unified image upload, and serving architecture ([2f32b56](https://github.com/neiist-dev/neiist-website/commit/2f32b56230d3e3f553ec65903aa6f5b901177d7b))
+* **legal:** update terms and conditios of use ([6b6aef4](https://github.com/neiist-dev/neiist-website/commit/6b6aef46e3342dfae63208e680323482d8b27ed1))
+* migrate M365 email, SharePoint storage, ([93ffe78](https://github.com/neiist-dev/neiist-website/commit/93ffe7875c5071e44c1392ba7d1e2a467aee4ae6))
+* **payment:** refactor checkout to use neiist/ui, mbway support and ([84ccf8d](https://github.com/neiist-dev/neiist-website/commit/84ccf8dab20939cbeac8a40071ebfd659e9e081a))
+* **payment:** reorganization of the api routes and types ([176f1c5](https://github.com/neiist-dev/neiist-website/commit/176f1c52cb9da391559942e0f3cc069f41c96937))
+* **payments:** add ifthenpay mbway support and SSE for payment ([621e33f](https://github.com/neiist-dev/neiist-website/commit/621e33f304e7473ff846ed8620dc6527a2f06b5d))
+* **payments:** sumup app with payment switch deep links as bridge to ([edddcb6](https://github.com/neiist-dev/neiist-website/commit/edddcb6451a405cd439f99c930f98108bb8c61da))
+* **pos:** pos system, checkout counter ([3861d29](https://github.com/neiist-dev/neiist-website/commit/3861d296a82b631cbb34525c81d1321ac7259bcc))
+* **redis:** setup dev env for redis container and redis shop struct ([1178dd8](https://github.com/neiist-dev/neiist-website/commit/1178dd8fea6f890e9afb1802d356a11fa536a9a8))
+* **shop:** inventory data table, preview stock drawer, and shared variant drilldown ([1562ef1](https://github.com/neiist-dev/neiist-website/commit/1562ef1b5764a4fc6f8ad3193ceb08de1af11a6f))
+* **shop:** product types, no special categories, campus schedules all ([f35ede3](https://github.com/neiist-dev/neiist-website/commit/f35ede38cbcf5b7c0246668e71e8fd904388ce50))
+* **shop:** redis TTL for checkout lifecycle, stock holds and mbway ([c7c9362](https://github.com/neiist-dev/neiist-website/commit/c7c9362480c6b20a6a121042835092a4cf70ef6b))
+* **ui:** add datatable filters and fix modal closing ([e05d424](https://github.com/neiist-dev/neiist-website/commit/e05d424723b8d15b5ab58d571ed318ff82c6abb4))
+* **ui:** add error to spinner ([0de2b24](https://github.com/neiist-dev/neiist-website/commit/0de2b24714dac142f6c176a910083407e51732f3))
+* **ui:** data table row actions menu, popover close guard, tab disable ([98fc788](https://github.com/neiist-dev/neiist-website/commit/98fc788a8c3c489f13749820c4a15ca230a3c38e))
+* **ui:** data table with checkmark also shows 3dot menu on touchscreen ([988b896](https://github.com/neiist-dev/neiist-website/commit/988b896508c0a7cf81e3207fd5d9dd8ff959fb5e))
+
+
+### Bug Fixes
+
+* add seo tags and also small lighthouse complience fixes a11y ([42e6d5e](https://github.com/neiist-dev/neiist-website/commit/42e6d5e577cd538199a7b8cc95fffd591af9deba))
+* block postinstall scripts for pnpm, npm and yarnv1 ([a74e731](https://github.com/neiist-dev/neiist-website/commit/a74e731f2b2944e6fa8420529ef9930670a5dec3))
+* correct json en pt format for privacy policy and terms of usage ([281efca](https://github.com/neiist-dev/neiist-website/commit/281efca4f5dd383c9d2364bd0584ef39de55c4e5))
+* **db:** update orders and remove in-person (reservation) as a payment ([dd0bad4](https://github.com/neiist-dev/neiist-website/commit/dd0bad47c359b8caadaf38b1a874bd4371f2d396))
+* **legal:** small correction to terms and contitions of use ([3125842](https://github.com/neiist-dev/neiist-website/commit/3125842d05c9cafb61d29b117a8f81ad363717bc))
+* **legal:** updated terms and conditions ([a4f8563](https://github.com/neiist-dev/neiist-website/commit/a4f85630a4ea9426024fd91c0f7273211c7ac348))
+* **permissions:** dev override and priority of parent urls (/voting vs ([8a62dae](https://github.com/neiist-dev/neiist-website/commit/8a62daefc0848bf91810aa76ad462d7854b6f95c))
+* **ui:** alert now fully respect dom hiearcky and mobile touch functions ([3e22857](https://github.com/neiist-dev/neiist-website/commit/3e22857e55cbb6573ae89bf214264f24602d19dd))
+* **ui:** color swatch now properly handles not being a button ([b73cd97](https://github.com/neiist-dev/neiist-website/commit/b73cd970baf6824a65c1f8cf600b99584748bc2c))
+* **ui:** scroll wheels with correct indexs to prevent execssieve renders ([f22b8ec](https://github.com/neiist-dev/neiist-website/commit/f22b8eca590f676b0616cb80068c2e2d0670e71c))
+* update dependencies and text on cloud announcements ([2fff7be](https://github.com/neiist-dev/neiist-website/commit/2fff7beb29feaf798e59dc5fb50191450b3e0221))
+* **user:** rebuild search index only when users cache changes ([#746](https://github.com/neiist-dev/neiist-website/issues/746)) ([4347fe5](https://github.com/neiist-dev/neiist-website/commit/4347fe5b776b849fa03d7405914a66d3228acaa2))
+
+## [4.6.2](https://github.com/neiist-dev/neiist-website/compare/v4.6.1...v4.6.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **voting:** submit floating action bar wont show up when changing vote ([8e574f6](https://github.com/neiist-dev/neiist-website/commit/8e574f619ba922897b679dc8dd74e9d1b0717688))
+
+## [4.6.1](https://github.com/neiist-dev/neiist-website/compare/v4.6.0...v4.6.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **cve:** update nextjs with patch for RCE cve and deploy worflows ([43a6ee7](https://github.com/neiist-dev/neiist-website/commit/43a6ee721a102f9a06f88aa9e8b58472a9f838b6))
+* **deploy:** use nvm correctly and safe parse of github env on action ([f550a8f](https://github.com/neiist-dev/neiist-website/commit/f550a8ffff028c8bdfdb3b25e64fad4ae25ffaf2))
+* **ui:** button on action bar floating ([5bd6a34](https://github.com/neiist-dev/neiist-website/commit/5bd6a346679d94e3b5f9edca404e646e3d43f067))
+
+## [4.6.0](https://github.com/neiist-dev/neiist-website/compare/v4.5.1...v4.6.0) (2026-10-20)
+
+
+### Features
+
+* **ui:** progress bar, floating action bar and selectedble card and ([58da377](https://github.com/neiist-dev/neiist-website/commit/58da3775fab9b971dd47388b2a5506f007f563dd))
+* **voting:** multipe options per user UI from neiist/ui ([096f8d9](https://github.com/neiist-dev/neiist-website/commit/096f8d9273915da4524d09bf54ce60dc4e18e663))
+* **voting:** support multiple options voting ([7f1568f](https://github.com/neiist-dev/neiist-website/commit/7f1568fe5f727464f91dfc67922f69e7cca67a4a))
+
+
+### Bug Fixes
+
+* **cloud:** add sweat contest votes link on the annoucements cloud ([ad92c0f](https://github.com/neiist-dev/neiist-website/commit/ad92c0f4d99b2e5f30c4db8d4a1914b9c4b2ebc9))
+* **components:** fix year selector navigation logic ([97f9285](https://github.com/neiist-dev/neiist-website/commit/97f9285678b3b43498ba1a9fb4f44de2e324fbf1))
+* **shop:** restore order cancellation restock trigger in schema.sql ([c3af0f4](https://github.com/neiist-dev/neiist-website/commit/c3af0f4ce6b05d3feefb66e8c311eaa1d40312aa))
+* **user:** role ranking and order on label, activity cascade delete ([3d589d4](https://github.com/neiist-dev/neiist-website/commit/3d589d4a9fd42e54a7ffd61f031456893eaaf27d))
+* **voting:** permissions all user can vote ([6a5e3bb](https://github.com/neiist-dev/neiist-website/commit/6a5e3bbfd3939e6a7c734ba81619faa490d3ce2f))
+* **voting:** query columns, count distinct voters and update result percentages ([8ef3035](https://github.com/neiist-dev/neiist-website/commit/8ef3035cb417af2df5728257814690cffacad503))
+* **year-selector:** add scroll behavior to year navigation links ([1db3a57](https://github.com/neiist-dev/neiist-website/commit/1db3a57c0eb13b1999748c1f2519dd15dbca2a14))
+
+## [4.5.1](https://github.com/neiist-dev/neiist-website/compare/v4.5.0...v4.5.1) (2026-10-17)
+
+
+### Bug Fixes
+
+* **voting:** reactmarkdown descprition styles ([5ed599c](https://github.com/neiist-dev/neiist-website/commit/5ed599c516c7f60fb31141e4165131875752fcc5))
+* **voting:** voting grid number of itens and order item creation ([13dcd97](https://github.com/neiist-dev/neiist-website/commit/13dcd971f7fc1834bca76b5dcc82b88ce59cc47e))
+
+## [4.5.0](https://github.com/neiist-dev/neiist-website/compare/v4.4.0...v4.5.0) (2026-10-16)
+
+
+### Features
+
+* **voting:** add images to other options SSE refactor ([41341a1](https://github.com/neiist-dev/neiist-website/commit/41341a1885f12f82eabef48053ea9f2c44a212e5))
+
+
+### Bug Fixes
+
+* **voting:** enfoce start and end date at db business logic ([6368c87](https://github.com/neiist-dev/neiist-website/commit/6368c87ef787fbee6c5cc7cc53128a083f03cd7c))
+* **voting:** form not reseting and multiple images and markdown support ([feedaad](https://github.com/neiist-dev/neiist-website/commit/feedaad9f1aaedf806db90b44636be014e91460b))
+
 ## [4.4.0](https://github.com/neiist-dev/neiist-website/compare/v4.3.0...v4.4.0) (2026-10-15)
 
 

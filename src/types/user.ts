@@ -1,5 +1,5 @@
 import { devOverrideRole } from "@/utils/userUtils";
-import { getDevOverridePermissions } from "@/lib/security/permissions";
+import { getDevOverridePermissions, deriveAccessLabel } from "@/lib/security/permissions";
 import { Permission } from "@/types/permissions";
 import { UserRole, mapRoleToUserRole, mapAccessLabelToUserRole } from "@/types/roles";
 
@@ -9,6 +9,8 @@ export interface User {
   email: string;
   alternativeEmail?: string | null;
   alternativeEmailVerified: boolean;
+  neiistEmail?: string | null;
+  outlookCalendarSync?: boolean;
   phone?: string | null;
   preferredContactMethod?: "email" | "alternativeEmail" | "phone";
   photo: string;
@@ -22,14 +24,21 @@ export interface User {
   linkedin?: string;
   isAnonymized?: boolean;
 }
+
+export type UserProfile = Pick<
+  User,
+  "istid" | "name" | "email" | "alternativeEmail" | "neiistEmail" | "phone" | "courses" | "photo"
+>;
+
 export interface dbUser {
   istid: string;
   name: string;
   email: string;
   alt_email?: string;
+  neiist_email?: string | null;
+  outlook_calendar_sync?: boolean;
   phone?: string | null;
   preferred_contact_method?: "email" | "alternativeEmail" | "phone";
-  photo_path?: string;
   courses?: string[];
   permissions?: Permission[];
   access_label?: "admin" | "coordinator" | null;
@@ -39,16 +48,7 @@ export interface dbUser {
   linkedin?: string;
 }
 
-function getDevOverrides(dbUser: dbUser, initialRoles: UserRole[]) {
-  const devRole = devOverrideRole(dbUser.istid);
-  if (!devRole) {
-    return {
-      roles: initialRoles,
-      permissions: dbUser.permissions ?? [],
-      departmentPermissions: dbUser.department_permissions ?? {},
-    };
-  }
-
+function resolveDevAccess(dbUser: dbUser, devRole: string) {
   const roles = [mapRoleToUserRole(devRole)];
   let permissions = getDevOverridePermissions(devRole) ?? dbUser.permissions ?? [];
   let departmentPermissions = dbUser.department_permissions ?? {};
@@ -68,10 +68,23 @@ function getDevOverrides(dbUser: dbUser, initialRoles: UserRole[]) {
   return { roles, permissions, departmentPermissions };
 }
 
-export function mapdbUserToUser(dbUser: dbUser): User {
+function resolveUserAccess(dbUser: dbUser) {
+  const devRole = devOverrideRole(dbUser.istid);
+  if (devRole) return resolveDevAccess(dbUser, devRole);
+
   const hasActiveMembership = (dbUser.teams ?? []).length > 0;
-  const initialRoles = [mapAccessLabelToUserRole(dbUser.access_label, hasActiveMembership)];
-  const { roles, permissions, departmentPermissions } = getDevOverrides(dbUser, initialRoles);
+  const accessLabel = dbUser.access_label ?? deriveAccessLabel(dbUser.permissions ?? []);
+  const role = mapAccessLabelToUserRole(accessLabel, hasActiveMembership);
+
+  return {
+    roles: [role],
+    permissions: dbUser.permissions ?? [],
+    departmentPermissions: dbUser.department_permissions ?? {},
+  };
+}
+
+export function mapdbUserToUser(dbUser: dbUser): User {
+  const { roles, permissions, departmentPermissions } = resolveUserAccess(dbUser);
 
   return {
     istid: dbUser.istid,
@@ -79,9 +92,11 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     email: dbUser.email,
     alternativeEmail: dbUser.alt_email ?? undefined,
     alternativeEmailVerified: true,
+    neiistEmail: dbUser.neiist_email ?? undefined,
+    outlookCalendarSync: dbUser.outlook_calendar_sync ?? false,
     phone: dbUser.phone ?? undefined,
     preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
-    photo: dbUser.photo_path ?? `/api/user/photo/${dbUser.istid}`,
+    photo: `/api/user/photo/${dbUser.istid}`,
     courses: dbUser.courses ?? [],
     roles,
     permissions,

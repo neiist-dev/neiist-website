@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { sendEmail, getEmailVerificationTemplate } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
+import { getEmailVerificationTemplate } from "@/lib/email/templates/auth";
 import { addEmailVerification } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAuthenticatedUser } from "@/lib/auth";

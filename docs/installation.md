@@ -69,7 +69,7 @@ This guide will help you get a local copy up and running follow these simple ste
       ```
       pnpm setup:service-accounts
       ```
-      This automatically parses, convert to base64 and assign your service accounts JSON contents to GOOGLE_SERVICE_ACCOUNT_KEY and GDRIVE_SERVICE_ACCOUNT_KEY inside .env.
+      This automatically parses, converts to base64, and assigns your service account JSON contents to `GOOGLE_SERVICE_ACCOUNT_KEY` inside `.env`.
 
 7. **Notion Integration (Optional — for event sync):** To sync events from Notion to Google Calendar and Activities Page:
    1. Go to [Notion Integrations](https://www.notion.so/my-integrations).
@@ -98,30 +98,21 @@ This guide will help you get a local copy up and running follow these simple ste
       pnpm setup:notion
       ```
 
-8. **Google Drive Integration (Optional — for file uploads):**To enable file uploads to Google Drive (used by the CV Bank and Sweats Design features), you need a service account:
-   1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project (or use existing).
-   2. Enable the **Google Drive API** for your project.
-   3. Create a **Service Account**:
-      - Go to "IAM & Admin" → "Service Accounts"
-      - Click "Create Service Account"
-      - Give it a name (e.g., "neiist-drive")
-      - Click "Done"
-   4. Generate a key for the service account:
-      - Click on the service account
-      - Go to "Keys" tab
-      - Click "Add Key" → "Create new key"
-      - Choose JSON format
-      - Download the key file
-   5. Place the JSON key file on the root of the app folder.
-   6. **Permissions:** You must share the target Google Drive folders with the service account email.
-      - Open the folder in Google Drive.
-      - Click "Share".
-      - Add the service account email (e.g., `neiist-drive@project-id.iam.gserviceaccount.com`) as an **Editor**.
-   7. Run the setup script for service accounts:
+8. **Microsoft 365 Integration (Optional — for email, SharePoint file uploads & Outlook Calendar sync):** To enable transactional emails (Microsoft Graph `sendMail`), file uploads (CV Bank and Sweats Contest in a SharePoint Document Library), and direct Outlook Calendar sync for members (`@neiist.pt`):
+   1. Register a Single-Tenant App in the [Microsoft Entra admin center](https://entra.microsoft.com/) and create a client secret.
+   2. Configure Exchange Online RBAC for Applications to scope `Application Mail.Send` to your shared sender mailbox (`M365_SENDER_EMAIL`).
+   3. Grant `Sites.Selected` (Application permission) with admin consent, assign `write` permission on your dedicated SharePoint site, and retrieve the Document Library `driveId`.
+   4. Grant `Calendars.ReadWrite` (Application permission) with admin consent to allow syncing events directly to members' `@neiist.pt` Outlook calendars.
+   5. Add to your `.env`:
+      ```env
+      M365_TENANT_ID="your-tenant-id"
+      M365_CLIENT_ID="your-client-id"
+      M365_CLIENT_SECRET="your-client-secret"
+      M365_SENDER_EMAIL="noreply@yourdomain.com"
+      M365_SHAREPOINT_DRIVE_ID="b!your-drive-id..."
+      M365_CV_FOLDER_PATH="cv-bank"
+      M365_SWEATS_FOLDER_PATH="sweats-contest"
       ```
-      pnpm setup:service-accounts
-      ```
-      This automatically parses, convert to base64 and assign your service accounts JSON contents GDRIVE_SERVICE_ACCOUNT_KEY inside .env and adds the correct folder IDs.
 
 ## Database Management
 

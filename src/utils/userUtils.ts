@@ -1,3 +1,29 @@
+import type { User } from "@/types/user";
+import { clearClientCart, discardCheckoutHold } from "@/utils/shop/shopUtils";
+
+export const IST_ID_REGEX = /^ist\d{5,8}$/;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export async function searchUsersClient(query: string, signal?: AbortSignal): Promise<User[]> {
+  try {
+    const res = await fetch(`/api/admin/users?search=${encodeURIComponent(query)}&limit=20`, {
+      signal,
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.users || (Array.isArray(data) ? data : []);
+  } catch {
+    return [];
+  }
+}
+
+export function formatSearchedUserLabel(user: User, currentQuery?: string): string {
+  const q = currentQuery?.trim().toLowerCase();
+  if (q && user.istid.toLowerCase() === q) return currentQuery!.trim();
+
+  return `${user.name} (${user.istid})`;
+}
+
 export const login = (customReturnUrl?: string | unknown) => {
   const target =
     typeof customReturnUrl === "string" && customReturnUrl.trim()
@@ -8,9 +34,9 @@ export const login = (customReturnUrl?: string | unknown) => {
 };
 
 export const logout = async () => {
+  await discardCheckoutHold();
   await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-  localStorage.removeItem("cart");
-  window.dispatchEvent(new Event("cartUpdated"));
+  clearClientCart();
   window.location.href = "/";
 };
 
@@ -50,10 +76,25 @@ export function devOverrideRole(dbIstid: string): string | undefined {
     const match = devIstidRaw.match(/^([^[]+)\[([A-Z]+)]$/i);
     if (match) {
       const [, istid, role] = match;
-      if (dbIstid === istid) {
-        return role;
-      }
+      if (dbIstid === istid) return role;
     }
   }
   return undefined;
+}
+
+export function extractCourses(
+  registrations: import("@/types/fenix").FenixRegistration[] = []
+): string[] {
+  const courses = new Set<string>();
+  for (const reg of registrations) {
+    const degree = reg?.degree;
+    if (!degree) continue;
+    const rawName =
+      typeof degree.name === "object"
+        ? (degree.name?.["pt-PT"] ?? degree.name?.["en-GB"])
+        : degree.name;
+    const name = (rawName || degree.acronym)?.trim();
+    if (name) courses.add(name);
+  }
+  return Array.from(courses);
 }

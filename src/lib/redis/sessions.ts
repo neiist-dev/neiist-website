@@ -1,0 +1,78 @@
+import { getRedisClient } from "@/lib/redis/client";
+import { releaseStockHolds } from "@/lib/redis/holds";
+import {
+  CHECKOUT_CART_PREFIX,
+  CHECKOUT_HOLD_TTL_SECONDS,
+  CHECKOUT_SESSION_PREFIX,
+  CheckoutSessionData,
+} from "@/types/redis";
+
+export function getSessionExpiryMs(session: CheckoutSessionData): number {
+  const parsed = session.expires_at ? Date.parse(session.expires_at) : NaN;
+  return Number.isFinite(parsed) ? parsed : Date.now() + CHECKOUT_HOLD_TTL_SECONDS * 1000;
+}
+
+export function getRemainingSessionSeconds(session: CheckoutSessionData): number {
+  const parsed = session.expires_at ? Date.parse(session.expires_at) : NaN;
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.floor((parsed - Date.now()) / 1000);
+}
+
+export async function saveCheckoutSession(
+  session: CheckoutSessionData,
+  ttlSeconds = CHECKOUT_HOLD_TTL_SECONDS
+): Promise<void> {
+  const redis = getRedisClient();
+  const key = `${CHECKOUT_SESSION_PREFIX}${session.order_number}`;
+  if (!session.expires_at) {
+    session.expires_at = new Date(Date.now() + ttlSeconds * 1000).toISOString();
+  }
+  await redis.set(key, JSON.stringify(session), "EX", ttlSeconds);
+}
+
+export async function getCheckoutSession(orderNumber: string): Promise<CheckoutSessionData | null> {
+  const redis = getRedisClient();
+  const key = `${CHECKOUT_SESSION_PREFIX}${orderNumber}`;
+  const data = await redis.get(key);
+  if (!data) return null;
+  try {
+    return JSON.parse(data) as CheckoutSessionData;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteCheckoutSession(orderNumber: string): Promise<void> {
+  const redis = getRedisClient();
+  const key = `${CHECKOUT_SESSION_PREFIX}${orderNumber}`;
+  await redis.del(key);
+}
+
+export async function discardCheckoutSession(orderNumber: string): Promise<boolean> {
+  const session = await getCheckoutSession(orderNumber);
+  if (!session) return false;
+
+  if (Array.isArray(session.items) && session.items.length > 0) {
+    const holdItems = session.items.map((it) => ({
+      productId: it.product_id,
+      variantId: it.variant_id ?? null,
+    }));
+    await releaseStockHolds(orderNumber, holdItems);
+  }
+  await deleteCheckoutSession(orderNumber);
+  return true;
+}
+
+export async function getCartIdOrderNumber(cartId: string): Promise<string | null> {
+  const redis = getRedisClient();
+  return redis.get(`${CHECKOUT_CART_PREFIX}${cartId}`);
+}
+
+export async function setCartIdOrderNumber(
+  cartId: string,
+  orderNumber: string,
+  ttlSeconds = 3600
+): Promise<void> {
+  const redis = getRedisClient();
+  await redis.set(`${CHECKOUT_CART_PREFIX}${cartId}`, orderNumber, "EX", ttlSeconds);
+}

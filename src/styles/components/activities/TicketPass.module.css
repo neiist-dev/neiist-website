@@ -1,0 +1,61 @@
+.card {
+  border-radius: 1.5rem;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.qrWrapper {
+  width: 100%;
+  max-width: 16rem;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  color: var(--light-foreground-colour);
+}
+
+.code {
+  font-size: 1.25rem;
+  letter-spacing: 0.125rem;
+  font-family: monospace;
+  color: var(--foreground-colour);
+  line-height: 1.2;
+  margin: 0;
+  user-select: all;
+}
+
+.instructions {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  line-height: 1.4;
+  margin: 0.25rem 0 0;
+  max-width: 16rem;
+}
+
+.validation {
+  font-size: 0.85rem;
+  color: var(--light-foreground-colour);
+  margin-top: 0.5rem;
+  text-align: center;
+}

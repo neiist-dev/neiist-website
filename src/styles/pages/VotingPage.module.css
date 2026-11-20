@@ -1,9 +1,9 @@
 .activeSessions {
   width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2rem 1.5rem 5rem;
   box-sizing: border-box;
-  min-height: 85vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -57,7 +57,6 @@
   background: transparent;
   color: var(--foreground-colour);
   font-size: 0.95rem;
-  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
@@ -203,6 +202,17 @@
   color: var(--light-foreground-colour);
 }
 
+.sessionDescription a {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  word-break: break-word;
+  transition: opacity 0.2s ease;
+}
+
+.sessionDescription a:hover {
+  opacity: 0.8;
+}
+
 .backButton {
   position: absolute;
   left: 0;
@@ -213,15 +223,15 @@
   border-radius: 0.6rem;
   font-size: 0.95rem;
   padding: 0.6rem 1.2rem;
-  background: #f3f4f6;
-  color: #555d6d;
+  background: var(--background-colour-hover);
+  color: var(--foreground-colour);
   transition:
     background 0.2s ease,
     transform 0.2s ease;
 }
 
 .backButton:hover {
-  background: #e5e7eb;
+  background: color-mix(in srgb, var(--foreground-colour) 8%, var(--background-colour-hover));
 }
 
 @media (max-width: 768px) {
@@ -254,6 +264,10 @@
   justify-content: center;
   padding: 1rem;
   animation: fadeIn 0.15s ease;
+}
+
+.reviewActionWrapper {
+  margin-top: 1.5rem;
 }
 
 @keyframes fadeIn {

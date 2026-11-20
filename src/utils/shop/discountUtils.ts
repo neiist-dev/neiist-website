@@ -1,3 +1,5 @@
+import { parseDbNumeric } from "@/utils/shop/moneyUtils";
+
 export interface DiscountCartItem {
   product_id: number;
   variant_id?: number | null;
@@ -16,27 +18,37 @@ export interface DiscountValidationApiResponse {
 
 export async function validateDiscount({
   code,
-  userIstid,
   cartItems,
+  targetIstid,
 }: {
   code: string;
-  userIstid?: string | null;
   cartItems: DiscountCartItem[];
+  targetIstid?: string | null;
 }): Promise<DiscountValidationApiResponse> {
-  const response = await fetch("/api/shop/discounts/validate", {
+  const response = await fetch(`/api/shop/discounts/validate/${encodeURIComponent(code)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      code,
-      user_istid: userIstid ?? null,
       cart_items: cartItems,
+      target_istid: targetIstid || undefined,
     }),
   });
 
   const data = (await response.json().catch(() => null)) as DiscountValidationApiResponse | null;
-  if (!response.ok) {
+  if (!response.ok)
     throw new Error(data?.error || "Não foi possível validar o código de desconto.");
-  }
 
-  return data ?? { valid: false, error: "Não foi possível validar o código de desconto." };
+  if (!data)
+    return {
+      valid: false,
+      error: "Não foi possível validar o código de desconto.",
+    };
+
+  return {
+    ...data,
+    discount_value:
+      data.discount_value !== undefined ? parseDbNumeric(data.discount_value) : undefined,
+    discount_amount:
+      data.discount_amount !== undefined ? parseDbNumeric(data.discount_amount) : undefined,
+  };
 }

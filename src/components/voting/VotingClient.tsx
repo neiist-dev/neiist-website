@@ -1,24 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { FaArrowLeft } from "react-icons/fa";
 import Link from "next/link";
-import { GlobalVotingState, VotingSyncPayload } from "@/types/voting";
-import { submitVoteAction } from "@/lib/votingSystem";
+import {
+  FinishedVotingSession,
+  GlobalVotingState,
+  VotingSyncPayload,
+  VOTING_SYNC_EVENT_TYPES,
+} from "@/types/voting";
+import { submitVotesAction } from "@/actions/voting";
+import { Button, Alert, ColorfulText, Spinner } from "@neiist/ui";
 import VotingGrid from "@/components/voting/VotingGrid";
 import WinnerCard from "@/components/voting/WinnerCard";
-import ColorfulText from "@/components/ColorfulText";
-import PaymentProcessingSpinner from "@/components/shop/PaymentProcessingSpinner";
-import styles from "@/styles/pages/VotingPage.module.css";
+import ReactMarkdown from "react-markdown";
 import type { Dictionary } from "@/i18n/dictionaries";
+import styles from "@/styles/pages/VotingPage.module.css";
 
 interface VotingClientProps {
   initialGlobalState: GlobalVotingState;
-  initialUserVotes: Record<number, string | null>;
+  initialUserVotes: Record<number, string[]>;
   showLastResult: boolean;
   dict: Dictionary["voting"];
 }
+
+const EMPTY_VOTES: string[] = [];
 
 const ConnectingView = ({
   status,
@@ -41,35 +48,88 @@ const ConnectingView = ({
 );
 
 const LastResultsView = ({
-  session,
-  results = [],
+  sessions = [],
   dict,
 }: {
-  session: { name: string; description?: string | null };
-  results: GlobalVotingState["lastResults"];
+  sessions: FinishedVotingSession[];
   dict: Dictionary["voting"];
-}) => (
-  <div className={styles.resultPage}>
-    <div className={styles.resultHeader}>
-      <Link href="?" scroll={false} className={styles.backButton}>
-        <FaArrowLeft /> {dict.back}
-      </Link>
-      <ColorfulText
-        as="h1"
-        className={styles.resultTitle}
-        text={dict.last_results_title}
-        chunk={true}
-      />
-    </div>
-    <div className={styles.resultContent}>
-      <div className={styles.sessionInfo}>
-        <h2 className={styles.sessionTitle}>{session.name}</h2>
-        {session.description && <p className={styles.sessionDescription}>{session.description}</p>}
+}) => {
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const currentSession = sessions[selectedIdx] || sessions[0];
+
+  if (!currentSession) return null;
+
+  return (
+    <div className={styles.resultPage}>
+      <div className={styles.resultHeader}>
+        <Link href="?" scroll={false} className={styles.backButton}>
+          <FaArrowLeft /> {dict.back}
+        </Link>
+        <ColorfulText
+          as="h1"
+          className={styles.resultTitle}
+          text={dict.last_results_title}
+          chunk={true}
+        />
       </div>
-      <WinnerCard results={results.slice(0, 4)} dict={dict} />
+
+      {sessions.length > 1 && (
+        <nav className={styles.sessionSelector} aria-label={dict.previous_sessions_aria}>
+          <button
+            type="button"
+            className={styles.arrowButton}
+            onClick={() => setSelectedIdx((prev) => Math.max(0, prev - 1))}
+            disabled={selectedIdx === 0}
+            aria-label={dict.previous_session_aria}>
+            <FiChevronLeft />
+          </button>
+
+          <div className={styles.sessionList}>
+            {sessions.map((session, idx) => (
+              <button
+                key={session.id}
+                type="button"
+                className={`${styles.sessionTab} ${idx === selectedIdx ? styles.selectedTab : ""}`}
+                onClick={() => setSelectedIdx(idx)}>
+                {session.name || dict.session_default_name.replace("{number}", String(idx + 1))}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className={styles.arrowButton}
+            onClick={() => setSelectedIdx((prev) => Math.min(sessions.length - 1, prev + 1))}
+            disabled={selectedIdx >= sessions.length - 1}
+            aria-label={dict.next_session_aria}>
+            <FiChevronRight />
+          </button>
+        </nav>
+      )}
+
+      <div className={styles.resultContent}>
+        <div className={styles.sessionInfo}>
+          <h2 className={styles.sessionTitle}>{currentSession.name}</h2>
+          {currentSession.description && (
+            <div className={styles.sessionDescription}>
+              <ReactMarkdown
+                components={{
+                  a: ({ ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+                }}>
+                {currentSession.description}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+        <WinnerCard
+          results={currentSession.results || []}
+          sessionType={currentSession.type}
+          dict={dict}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const WaitingForNextSessionView = ({
   hasLastSession,
@@ -98,12 +158,25 @@ const WaitingForNextSessionView = ({
   </div>
 );
 
-const VotesSubmittedView = ({ dict }: { dict: Dictionary["voting"] }) => (
+const VotesSubmittedView = ({
+  dict,
+  onReview,
+}: {
+  dict: Dictionary["voting"];
+  onReview?: () => void;
+}) => (
   <div className={styles.waitingPage}>
     <h1 className={styles.waitingTitle}>
       {dict.votes_submitted_prefix} <span>{dict.votes_submitted_highlight}</span>
     </h1>
     <p className={styles.waitingSubtitle}>{dict.votes_submitted_subtitle}</p>
+    {onReview && (
+      <div className={styles.reviewActionWrapper}>
+        <Button variant="solid" color="primary" onClick={onReview}>
+          {dict.change_vote}
+        </Button>
+      </div>
+    )}
   </div>
 );
 
@@ -114,115 +187,124 @@ export default function VotingClient({
   dict,
 }: VotingClientProps) {
   const [globalState, setGlobalState] = useState<GlobalVotingState>(initialGlobalState);
-  const [userVotes, setUserVotes] = useState<Record<number, string | null>>(initialUserVotes);
+  const [userVotes, setUserVotes] = useState<Record<number, string[]>>(initialUserVotes);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
+  const [reviewMode, setReviewMode] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">(
-    "connecting"
+    "connected"
   );
   const [voteFlowState, setVoteFlowState] = useState<{
     status: "processing" | "success";
-    nomineeName?: string;
   } | null>(null);
+
+  const voteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const source = new EventSource("/api/voting/sync");
+
     source.onopen = () => setConnectionStatus("connected");
+
     source.onmessage = (event) => {
       try {
         const payload = JSON.parse(event.data) as VotingSyncPayload;
-        if (payload.type === "STATE_UPDATE") setGlobalState(payload.state);
+        if (payload.type === VOTING_SYNC_EVENT_TYPES.STATE_UPDATE) {
+          setGlobalState(payload.state);
+        }
         setConnectionStatus("connected");
       } catch (err) {
         console.error("Failed to parse SSE payload", err);
       }
     };
+
     source.onerror = (err) => {
       console.error("VotingSync SSE Error:", err);
-      setConnectionStatus("error");
+      if (source.readyState === EventSource.CLOSED) {
+        setConnectionStatus("error");
+      }
     };
-    return () => source.close();
+
+    return () => {
+      if (voteTimeoutRef.current) clearTimeout(voteTimeoutRef.current);
+      source.close();
+    };
   }, []);
 
   const activeVotingSessions = globalState.activeSessions || [];
-  const unvotedSessions = activeVotingSessions.filter((s) => !userVotes[s.sessionId]);
-  const lastFinishedSession = globalState.lastFinishedSession;
-  const lastResults = globalState.lastResults || [];
+  const unvotedSessions = activeVotingSessions.filter(
+    (session) => !userVotes[session.sessionId] || userVotes[session.sessionId].length === 0
+  );
+  const finishedSessions = globalState.finishedSessions || [];
 
-  const safeSessionIndex = Math.min(selectedSessionIndex, Math.max(0, unvotedSessions.length - 1));
+  const displaySessions = reviewMode ? activeVotingSessions : unvotedSessions;
+  const safeSessionIndex = Math.min(selectedSessionIndex, Math.max(0, displaySessions.length - 1));
 
-  const handleVote = async (sessionId: number, nomineeId: string) => {
-    const session = activeVotingSessions.find((s) => s.sessionId === sessionId);
-    const nominee = session?.nominees.find((n) => n.id === nomineeId);
-
-    setVoteFlowState({ status: "processing", nomineeName: nominee?.name });
+  const handleVote = async (sessionId: number, nomineeIds: string[]) => {
+    setVoteFlowState({ status: "processing" });
 
     try {
-      const formData = new FormData();
-      formData.append("sessionId", sessionId.toString());
-      formData.append("nomineeId", nomineeId);
-      await submitVoteAction(formData);
+      await submitVotesAction(sessionId, nomineeIds);
 
-      setVoteFlowState({ status: "success", nomineeName: nominee?.name });
+      setVoteFlowState({ status: "success" });
 
-      setTimeout(() => {
-        setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeId }));
+      if (voteTimeoutRef.current) clearTimeout(voteTimeoutRef.current);
+      voteTimeoutRef.current = setTimeout(() => {
+        voteTimeoutRef.current = null;
+        setUserVotes((prev) => ({ ...prev, [sessionId]: nomineeIds }));
         setVoteFlowState(null);
+        setReviewMode(false);
       }, 800);
     } catch (error) {
       console.error("Failed to submit vote:", error);
       setVoteFlowState(null);
+      Alert.error(error instanceof Error ? error.message : dict.vote_error);
     }
   };
 
-  if (connectionStatus !== "connected")
-    return <ConnectingView status={connectionStatus} dict={dict} />;
+  if (connectionStatus === "error") return <ConnectingView status="error" dict={dict} />;
 
   if (activeVotingSessions.length === 0) {
-    if (showLastResult && lastFinishedSession)
-      return <LastResultsView session={lastFinishedSession} results={lastResults} dict={dict} />;
-    return <WaitingForNextSessionView hasLastSession={!!lastFinishedSession} dict={dict} />;
+    if (showLastResult && finishedSessions.length > 0)
+      return <LastResultsView sessions={finishedSessions} dict={dict} />;
+    return <WaitingForNextSessionView hasLastSession={finishedSessions.length > 0} dict={dict} />;
   }
 
-  if (unvotedSessions.length === 0) return <VotesSubmittedView dict={dict} />;
+  if (unvotedSessions.length === 0 && !reviewMode)
+    return <VotesSubmittedView dict={dict} onReview={() => setReviewMode(true)} />;
 
-  const currentSession = unvotedSessions[safeSessionIndex];
+  const currentSession = displaySessions[safeSessionIndex];
 
   return (
     <div className={styles.activeSessions}>
       {voteFlowState && (
         <div className={styles.voteOverlayBackdrop}>
-          <PaymentProcessingSpinner
-            flowState={voteFlowState.status}
-            title={
-              voteFlowState.status === "success"
-                ? (dict.vote_success ?? "Voto registado com sucesso!")
-                : (dict.submitting_vote ?? "A submeter o teu voto...")
-            }
-            subtitle={voteFlowState.nomineeName}
+          <Spinner
+            state={voteFlowState.status === "success" ? "success" : "loading"}
+            title={voteFlowState.status === "success" ? dict.vote_success : dict.submitting_vote}
             size={voteFlowState.status === "success" ? 56 : 48}
           />
         </div>
       )}
 
-      {unvotedSessions.length > 1 && (
-        <nav className={styles.sessionSelector} aria-label="Sessões de votação">
+      {displaySessions.length > 1 && (
+        <nav className={styles.sessionSelector} aria-label={dict.voting_sessions_aria}>
           <button
             type="button"
             className={styles.arrowButton}
             onClick={() => setSelectedSessionIndex((prev) => Math.max(0, prev - 1))}
             disabled={safeSessionIndex === 0}
-            aria-label="Sessão anterior">
+            aria-label={dict.previous_session_aria}>
             <FiChevronLeft />
           </button>
 
           <div className={styles.sessionList}>
-            {unvotedSessions.map((session, idx) => (
+            {displaySessions.map((session, idx) => (
               <button
                 key={session.sessionId}
                 type="button"
                 className={`${styles.sessionTab} ${idx === safeSessionIndex ? styles.selectedTab : ""}`}
                 onClick={() => setSelectedSessionIndex(idx)}>
-                {session.sessionName || `Sessão ${idx + 1}`}
+                {session.sessionName ||
+                  dict.session_default_name.replace("{number}", String(idx + 1))}
               </button>
             ))}
           </div>
@@ -231,10 +313,10 @@ export default function VotingClient({
             type="button"
             className={styles.arrowButton}
             onClick={() =>
-              setSelectedSessionIndex((prev) => Math.min(unvotedSessions.length - 1, prev + 1))
+              setSelectedSessionIndex((prev) => Math.min(displaySessions.length - 1, prev + 1))
             }
-            disabled={safeSessionIndex >= unvotedSessions.length - 1}
-            aria-label="Próxima sessão">
+            disabled={safeSessionIndex >= displaySessions.length - 1}
+            aria-label={dict.next_session_aria}>
             <FiChevronRight />
           </button>
         </nav>
@@ -246,8 +328,11 @@ export default function VotingClient({
           sessionId={currentSession.sessionId}
           sessionName={currentSession.sessionName}
           sessionDescription={currentSession.sessionDescription}
+          sessionType={currentSession.sessionType}
+          maxChoices={currentSession.maxChoices ?? 1}
           nominees={currentSession.nominees}
-          onVote={(nomineeId) => handleVote(currentSession.sessionId, nomineeId)}
+          selectedNomineeIds={userVotes[currentSession.sessionId] ?? EMPTY_VOTES}
+          onVote={(nomineeIds) => handleVote(currentSession.sessionId, nomineeIds)}
           dict={dict}
         />
       )}
