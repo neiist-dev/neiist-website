@@ -108,6 +108,14 @@
   cursor: pointer;
 }
 
+.cascadeItemContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
 .cascadeItemLabel {
   font-size: var(--ui-font-sm);
   font-weight: var(--ui-font-weight-medium);

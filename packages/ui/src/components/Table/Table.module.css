@@ -32,7 +32,7 @@
 
 .td {
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .th[data-align="center"],
@@ -114,6 +114,7 @@
     padding-inline: 0.75rem;
     padding-block: 0.625rem;
     white-space: normal;
+    overflow-wrap: anywhere;
     text-align: end;
     min-block-size: 2.75rem;
   }

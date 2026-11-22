@@ -16,7 +16,7 @@ export function TableRoot({
   ...props
 }: TableProps) {
   return (
-    <div className={cn(styles.wrapper, wrapperClassName)}>
+    <div className={cn(styles.wrapper, "ui-scrollbar", wrapperClassName)}>
       <table
         ref={ref}
         data-responsive={responsive}

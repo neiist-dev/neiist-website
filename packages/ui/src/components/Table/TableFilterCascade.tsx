@@ -132,31 +132,31 @@ export function TableFilterCascade({
 
             return (
               <li key={option.id} className={styles.cascadeItem}>
-                <div
+                <Checkbox
                   className={styles.cascadeItemLeft}
-                  onClick={() => toggleOptionSelection(option)}>
-                  <Checkbox
-                    checked={isChecked}
-                    indeterminate={isIndeterminate}
-                    onChange={() => toggleOptionSelection(option)}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={option.label}
-                  />
-                  <span className={styles.cascadeItemLabel}>{option.label}</span>
-                  {option.price != null && (
-                    <span className={styles.cascadeSubtitle}>
-                      {formatPrice
-                        ? formatPrice(option.price)
-                        : new Intl.NumberFormat(undefined, {
-                            style: "currency",
-                            currency: "EUR",
-                          }).format(option.price)}
+                  checked={isChecked}
+                  indeterminate={isIndeterminate}
+                  onChange={() => toggleOptionSelection(option)}
+                  aria-label={option.label}
+                  label={
+                    <span className={styles.cascadeItemContent}>
+                      <span className={styles.cascadeItemLabel}>{option.label}</span>
+                      {option.price != null && (
+                        <span className={styles.cascadeSubtitle}>
+                          {formatPrice
+                            ? formatPrice(option.price)
+                            : new Intl.NumberFormat(undefined, {
+                                style: "currency",
+                                currency: "EUR",
+                              }).format(option.price)}
+                        </span>
+                      )}
+                      {option.subtitle && (
+                        <span className={styles.cascadeSubtitle}>{option.subtitle}</span>
+                      )}
                     </span>
-                  )}
-                  {option.subtitle && (
-                    <span className={styles.cascadeSubtitle}>{option.subtitle}</span>
-                  )}
-                </div>
+                  }
+                />
 
                 {hasChildren && (
                   <button

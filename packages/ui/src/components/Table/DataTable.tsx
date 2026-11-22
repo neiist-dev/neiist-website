@@ -185,7 +185,13 @@ export function DataTable<T>({
           )}
 
           {visibleColumns.map((column) => {
-            const colWidth = column.width ?? column.minWidth;
+            const colStyle: React.CSSProperties | undefined =
+              column.width !== undefined || column.minWidth !== undefined
+                ? {
+                    ...(column.width !== undefined ? { width: column.width } : {}),
+                    ...(column.minWidth !== undefined ? { minWidth: column.minWidth } : {}),
+                  }
+                : undefined;
             const rawHeader =
               typeof column.header === "function" ? column.header({ column }) : column.header;
 
@@ -223,7 +229,7 @@ export function DataTable<T>({
                 key={column.id}
                 className={column.className}
                 data-align={column.align}
-                style={colWidth ? { width: colWidth } : undefined}>
+                style={colStyle}>
                 {column.hasFilter ? (
                   <div className={styles.headerWithFilter} data-align={column.align}>
                     {renderedHeader}

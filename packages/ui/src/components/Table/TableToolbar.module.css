@@ -1,0 +1,86 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  flex-wrap: wrap;
+  transition:
+    background-color var(--ui-transition),
+    border-color var(--ui-transition);
+}
+
+.toolbarSelected {
+  background: color-mix(in srgb, var(--ui-primary) 6%, var(--ui-bg));
+  border-color: color-mix(in srgb, var(--ui-primary) 25%, var(--ui-border));
+}
+
+.group,
+.selection,
+.filters,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  min-inline-size: 0;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--ui-font-sm);
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-fg);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.pill {
+  background: color-mix(in srgb, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
+  border-color: color-mix(in srgb, var(--ui-primary) 25%, transparent);
+}
+
+.countBadge {
+  font-weight: var(--ui-font-weight-bold);
+  min-inline-size: 1.625rem;
+}
+
+.divider {
+  inline-size: 1px;
+  block-size: 1.5rem;
+  background: var(--ui-border);
+  flex-shrink: 0;
+}
+
+.filtersLabel {
+  font-size: var(--ui-font-sm);
+  font-weight: var(--ui-font-weight-semibold);
+  color: var(--ui-fg-light);
+  white-space: nowrap;
+  user-select: none;
+}
+
+@media (max-width: 48rem) {
+  .toolbar,
+  .group,
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selection {
+    justify-content: space-between;
+  }
+
+  .divider {
+    inline-size: 100%;
+    block-size: 1px;
+  }
+}

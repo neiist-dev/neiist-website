@@ -1,4 +1,6 @@
 .header {
+  max-inline-size: 90rem;
+  margin-inline: auto;
   margin-block-end: 3rem;
 }
 

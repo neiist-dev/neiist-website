@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Heading, Text, SearchInput, Container, Drawer } from "@neiist/ui";
+import { Heading, Text, SearchInput, Drawer } from "@neiist/ui";
 import { COMPONENTS, CATEGORIES } from "./registry";
 import { FiMenu } from "react-icons/fi";
 import styles from "./App.module.css";
@@ -117,7 +117,6 @@ export default function App() {
 
   return (
     <div className={styles.layout}>
-      {/* MOBILE HEADER */}
       <header className={styles.mobileHeader}>
         <button
           className={styles.hamburgerBtn}
@@ -130,12 +129,10 @@ export default function App() {
         </Heading>
       </header>
 
-      {/* DESKTOP SIDEBAR */}
       <aside className={styles.sidebar}>
         <SidebarContent {...sidebarProps} />
       </aside>
 
-      {/* MOBILE DRAWER */}
       <Drawer
         open={mobileDrawerOpen}
         onClose={() => setMobileDrawerOpen(false)}
@@ -145,12 +142,7 @@ export default function App() {
         <SidebarContent {...sidebarProps} />
       </Drawer>
 
-      {/* MAIN CONTENT */}
-      <main className={styles.mainContent}>
-        <Container size="lg" style={{ padding: 0 }}>
-          {activeComponent.component}
-        </Container>
-      </main>
+      <main className={styles.mainContent}>{activeComponent.component}</main>
     </div>
   );
 }

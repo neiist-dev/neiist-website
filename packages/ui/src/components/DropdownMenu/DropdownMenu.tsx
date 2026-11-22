@@ -73,6 +73,7 @@ export function DropdownMenuTrigger({
 
 export interface DropdownMenuItemProps extends React.ComponentPropsWithRef<"button"> {
   icon?: React.ReactNode;
+  endIcon?: React.ReactNode;
   destructive?: boolean;
   shortcut?: string;
   closeOnSelect?: boolean;
@@ -81,6 +82,7 @@ export interface DropdownMenuItemProps extends React.ComponentPropsWithRef<"butt
 export function DropdownMenuItem({
   children,
   icon,
+  endIcon,
   destructive = false,
   shortcut,
   closeOnSelect = true,
@@ -109,6 +111,7 @@ export function DropdownMenuItem({
       {icon && <span className={styles.itemIcon}>{icon}</span>}
       <span>{children}</span>
       {shortcut && <span className={styles.itemShortcut}>{shortcut}</span>}
+      {endIcon && <span className={styles.itemEndIcon}>{endIcon}</span>}
     </button>
   );
 }
