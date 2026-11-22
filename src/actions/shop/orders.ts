@@ -41,14 +41,14 @@ export async function getAllOrdersAction(): Promise<Order[]> {
   const session = await requirePermission("orders:read");
   const orders = await getAllOrders();
   const canReadCustomer = hasPermission(session.user, "orders:read_customer");
-  if (!canReadCustomer) {
+  if (!canReadCustomer)
     return orders.map((order) => ({
       ...order,
       customer_email: undefined,
       customer_phone: undefined,
       customer_nif: undefined,
     }));
-  }
+
   return orders;
 }
 
@@ -131,6 +131,8 @@ export async function updateOrderAction(
 
   const order = await getOrderByNumber(orderNumber);
   if (!order) throw new Error("Order not found");
+  if (updates.pickup_deadline !== undefined && order.status === "cancelled")
+    throw new Error("Cannot set pickup deadline on a cancelled order");
 
   const allowedFields = [
     "delivered_at",

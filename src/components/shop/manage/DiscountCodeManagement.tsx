@@ -15,11 +15,10 @@ import {
   Badge,
   SearchInput,
   ColorfulText,
-  TableSelectionBar,
+  TableToolbar,
   TableFilterMultiSelect,
   TableFilterDate,
   TableFiltersDrawer,
-  TableActiveFilters,
   DropdownMenu,
   ConfirmDialog,
 } from "@neiist/ui";
@@ -425,13 +424,16 @@ export default function DiscountCodeManagement({
         </div>
       </div>
 
-      <div className={styles.desktopOnly}>
-        <TableActiveFilters
-          dateRange={filters.dateRange}
-          onRemoveDateRange={() =>
-            setFilters((p) => ({ ...p, dateRange: { start: null, end: null } }))
-          }
-          filterGroups={[
+      <TableToolbar
+        filters={{
+          dateFilter: {
+            ...filters.dateRange,
+            locale: "pt-PT",
+            fromPrefix: "Desde",
+            untilPrefix: "Até",
+            onRemove: () => setFilters((p) => ({ ...p, dateRange: { start: null, end: null } })),
+          },
+          filterGroups: [
             {
               id: "type",
               label: dict.col_type,
@@ -462,52 +464,55 @@ export default function DiscountCodeManagement({
                 }
               },
             },
-          ]}
-          onRemoveValue={(groupId, value) => {
+          ],
+          onRemoveValue: (groupId, value) => {
             setFilters((prev) => ({
               ...prev,
               [groupId]: (prev[groupId as keyof FilterState] as string[]).filter(
                 (x) => x !== value
               ),
             }));
-          }}
-          onClearAll={handleClearAll}
-          clearLabel="Limpar filtros"
-        />
-      </div>
-
-      {selected.size > 0 && (
-        <TableSelectionBar
-          count={selected.size}
-          label={`${selected.size !== 1 ? dict.selected_plural : dict.selected_singular}`}
-          onClear={() => setSelected(new Set())}
-          clearLabel="Limpar">
-          <Button
-            size="sm"
-            variant="solid"
-            color="primary"
-            disabled={isBulkProcessing}
-            onClick={() => bulkUpdate(!allSelectedActive)}>
-            {allSelectedActive ? (
-              <>
-                <FiToggleLeft className={styles.btnIcon} /> {dict.deactivate}
-              </>
-            ) : (
-              <>
-                <FiToggleRight className={styles.btnIcon} /> {dict.activate}
-              </>
-            )}
-          </Button>
-          <Button
-            size="sm"
-            variant="solid"
-            color="danger"
-            disabled={isBulkProcessing}
-            onClick={() => setIsConfirmingBulkDelete(true)}>
-            <FiTrash2 className={styles.btnIcon} /> {dict.delete}
-          </Button>
-        </TableSelectionBar>
-      )}
+          },
+          onClearAll: handleClearAll,
+          label: "Filtros",
+          clearLabel: "Limpar filtros",
+          collapsedLabel: (count) => `Filtros (${count})`,
+        }}
+        selection={{
+          count: selected.size,
+          label: `${selected.size !== 1 ? dict.selected_plural : dict.selected_singular}`,
+          onClear: () => setSelected(new Set()),
+          clearLabel: "Limpar",
+          actions: (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                color="primary"
+                disabled={isBulkProcessing}
+                onClick={() => bulkUpdate(!allSelectedActive)}>
+                {allSelectedActive ? (
+                  <>
+                    <FiToggleLeft className={styles.btnIcon} /> {dict.deactivate}
+                  </>
+                ) : (
+                  <>
+                    <FiToggleRight className={styles.btnIcon} /> {dict.activate}
+                  </>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                color="danger"
+                disabled={isBulkProcessing}
+                onClick={() => setIsConfirmingBulkDelete(true)}>
+                <FiTrash2 className={styles.btnIcon} /> {dict.delete}
+              </Button>
+            </>
+          ),
+        }}
+      />
 
       <div className={styles.tableWrap}>
         <DataTable

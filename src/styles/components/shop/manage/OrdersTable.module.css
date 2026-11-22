@@ -71,8 +71,8 @@
   text-decoration: underline;
 }
 
-.desktopOnly {
-  display: flex;
+.toolbar {
+  margin-block-end: 1rem;
 }
 
 @media (max-width: 1024px) {
@@ -84,10 +84,6 @@
 @media (max-width: 768px) {
   .container {
     margin: 0 1rem 2rem;
-  }
-
-  .desktopOnly {
-    display: none;
   }
 
   .mobileFilterBtn {

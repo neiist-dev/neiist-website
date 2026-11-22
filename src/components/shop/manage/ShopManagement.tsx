@@ -27,7 +27,7 @@ import {
   EmptyState,
   SearchInput,
   Stack,
-  TableActiveFilters,
+  TableToolbar,
   TableFilterMultiSelect,
   TableFiltersDrawer,
 } from "@neiist/ui";
@@ -570,22 +570,26 @@ export default function ShopManagement({
             </div>
 
             <div className={styles.desktopOnly}>
-              <TableActiveFilters
-                filterGroups={(Object.keys(filterConfigs) as FilterKey[]).map((key) => ({
-                  id: key,
-                  label: filterConfigs[key].title,
-                  values: filters[key],
-                  getDisplayValue: filterConfigs[key].getLabel,
-                }))}
-                onRemoveValue={(groupId, value) => {
-                  const key = groupId as FilterKey;
-                  setFilters((prev) => ({
-                    ...prev,
-                    [key]: prev[key].filter((item) => item !== value),
-                  }));
+              <TableToolbar
+                filters={{
+                  filterGroups: (Object.keys(filterConfigs) as FilterKey[]).map((key) => ({
+                    id: key,
+                    label: filterConfigs[key].title,
+                    values: filters[key],
+                    getDisplayValue: filterConfigs[key].getLabel,
+                  })),
+                  onRemoveValue: (groupId, value) => {
+                    const key = groupId as FilterKey;
+                    setFilters((prev) => ({
+                      ...prev,
+                      [key]: prev[key].filter((item) => item !== value),
+                    }));
+                  },
+                  onClearAll: () => setFilters(EMPTY_FILTERS),
+                  label: dict.filters_button,
+                  clearLabel: dict.clear_filters,
+                  collapsedLabel: (count) => `${dict.filters_button} (${count})`,
                 }}
-                onClearAll={() => setFilters(EMPTY_FILTERS)}
-                clearLabel={dict.clear_filters}
               />
             </div>
 

@@ -40,10 +40,6 @@
   position: relative;
 }
 
-.desktopOnly {
-  display: block;
-}
-
 .tableWrap {
   width: 100%;
 }
@@ -61,10 +57,6 @@
 @media (max-width: 768px) {
   .container {
     margin: 1rem 1.5rem 2rem;
-  }
-
-  .desktopOnly {
-    display: none;
   }
 
   .header {

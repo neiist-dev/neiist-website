@@ -36,9 +36,8 @@ import {
   TableFilterDate,
   TableFilterMultiSelect,
   TableFilterCascade,
-  TableActiveFilters,
   TableFiltersDrawer,
-  TableSelectionBar,
+  TableToolbar,
   Badge,
   Button,
   SearchInput,
@@ -254,6 +253,7 @@ export default function OrdersTable({
   }
 
   function handleOpenSinglePickupDeadline(order: Order): void {
+    if (order.status === "cancelled") return;
     setSelectedOrders(new Set([order.order_number]));
     setPickupInput(
       order.pickup_deadline ? new Date(order.pickup_deadline).toISOString().slice(0, 10) : ""
@@ -308,26 +308,27 @@ export default function OrdersTable({
           onClick={() => handleOpenEmailModal([order])}>
           Enviar Email
         </DropdownMenu.Item>
-        {order.pickup_deadline ? (
-          <>
+        {order.status !== "cancelled" &&
+          (order.pickup_deadline ? (
+            <>
+              <DropdownMenu.Item
+                icon={<FiClock size={14} />}
+                onClick={() => handleOpenSinglePickupDeadline(order)}>
+                {dict.edit_pickup_deadline || "Alterar Prazo"}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                icon={<FiClock size={14} />}
+                onClick={() => void handleClearSinglePickupDeadline(order)}>
+                {dict.clear_pickup_deadline || "Limpar Prazo"}
+              </DropdownMenu.Item>
+            </>
+          ) : (
             <DropdownMenu.Item
               icon={<FiClock size={14} />}
               onClick={() => handleOpenSinglePickupDeadline(order)}>
-              {dict.edit_pickup_deadline || "Alterar Prazo"}
+              {dict.set_pickup_deadline || "Definir Prazo"}
             </DropdownMenu.Item>
-            <DropdownMenu.Item
-              icon={<FiClock size={14} />}
-              onClick={() => void handleClearSinglePickupDeadline(order)}>
-              {dict.clear_pickup_deadline || "Limpar Prazo"}
-            </DropdownMenu.Item>
-          </>
-        ) : (
-          <DropdownMenu.Item
-            icon={<FiClock size={14} />}
-            onClick={() => handleOpenSinglePickupDeadline(order)}>
-            {dict.set_pickup_deadline || "Definir Prazo"}
-          </DropdownMenu.Item>
-        )}
+          ))}
         <DropdownMenu.Divider />
         {order.status === "pending" && (
           <DropdownMenu.Item
@@ -366,15 +367,22 @@ export default function OrdersTable({
     [dict, handleRowClick, canEdit, canOverride, handleClearSinglePickupDeadline]
   );
 
+  const selectedOrdersList = useMemo(
+    () => orders.filter((o) => selectedOrders.has(o.order_number)),
+    [orders, selectedOrders]
+  );
+
+  const hasCancelledSelected = selectedOrdersList.some((o) => o.status === "cancelled");
+
   function handleSetPickupDeadline(): void {
-    if (selectedOrders.size === 0) return;
+    if (selectedOrders.size === 0 || hasCancelledSelected) return;
     setPickupInput("");
     setShowPickupDialog(true);
   }
 
   async function confirmSetPickupDeadline(value: string | null): Promise<void> {
     setShowPickupDialog(false);
-    if (value === null) return;
+    if (value === null || hasCancelledSelected) return;
 
     let iso: string | null = null;
     if (value.trim()) {
@@ -659,16 +667,21 @@ export default function OrdersTable({
           </div>
         </div>
 
-        <div className={styles.desktopOnly}>
-          <TableActiveFilters
-            dateRange={filters.dateRange}
-            onRemoveDateRange={() =>
-              setFilters((p) => ({
-                ...p,
-                dateRange: { start: null, end: null },
-              }))
-            }
-            filterGroups={[
+        <TableToolbar
+          className={styles.toolbar}
+          filters={{
+            dateFilter: {
+              ...filters.dateRange,
+              locale: "pt-PT",
+              fromPrefix: "Desde",
+              untilPrefix: "Até",
+              onRemove: () =>
+                setFilters((p) => ({
+                  ...p,
+                  dateRange: { start: null, end: null },
+                })),
+            },
+            filterGroups: [
               {
                 id: "campuses",
                 label: dict.filter_campus,
@@ -680,8 +693,8 @@ export default function OrdersTable({
                 values: filters.statuses,
                 getDisplayValue: (s) => dict.status[s as OrderStatus] ?? s,
               },
-            ]}
-            customTags={productFilterSummaries.map((item) => ({
+            ],
+            customTags: productFilterSummaries.map((item) => ({
               id: item.id,
               label: item.label,
               onRemove: () =>
@@ -689,96 +702,97 @@ export default function OrdersTable({
                   ...p,
                   products: p.products.filter((id) => !item.leafIds.includes(id)),
                 })),
-            }))}
-            onRemoveValue={(groupId, value) => {
+            })),
+            onRemoveValue: (groupId, value) => {
               setFilters((prev) => ({
                 ...prev,
                 [groupId]: (prev[groupId as keyof FilterState] as string[]).filter(
                   (x) => x !== value
                 ),
               }));
-            }}
-            onClearAll={handleClearAll}
-            clearLabel="Limpar filtros"
-          />
-        </div>
-
-        {selectedOrders.size > 0 && (
-          <TableSelectionBar
-            count={selectedOrders.size}
-            label={`${selectedOrders.size !== 1 ? dict.order_plural : dict.order_singular} ${
+            },
+            onClearAll: handleClearAll,
+            label: "Filtros",
+            clearLabel: "Limpar filtros",
+            collapsedLabel: (count) => `Filtros (${count})`,
+          }}
+          selection={{
+            count: selectedOrders.size,
+            label: `${selectedOrders.size !== 1 ? dict.order_plural : dict.order_singular} ${
               selectedOrders.size !== 1 ? dict.selected_plural : dict.selected_singular
-            }`}
-            onClear={() => setSelectedOrders(new Set())}
-            clearLabel="Limpar">
-            <Button
-              size="sm"
-              variant="solid"
-              color="primary"
-              onClick={handleBulkEmail}
-              disabled={bulkLoading}
-              title={dict.send_email_selected}>
-              <FiMail /> {dict.send_email}
-            </Button>
-            <Button
-              size="sm"
-              variant="solid"
-              color="primary"
-              onClick={handleSetPickupDeadline}
-              disabled={bulkLoading}
-              title={dict.set_pickup_deadline_title}>
-              <FiClock /> {dict.set_pickup_deadline}
-            </Button>
-            <InputDateDialog
-              open={showPickupDialog}
-              title={dict.pickup_dialog_title}
-              initialValue={pickupInput ?? ""}
-              onConfirm={(val) => confirmSetPickupDeadline(val)}
-              onCancel={() => setShowPickupDialog(false)}
-            />
-            <DropdownMenu align="end">
-              <DropdownMenu.Trigger>
-                <Button size="sm" variant="solid" color="primary" disabled={bulkLoading}>
-                  {bulkLoading ? dict.processing : "Alterar Estado..."} <FiChevronDown />
+            }`,
+            onClear: () => setSelectedOrders(new Set()),
+            clearLabel: "Limpar",
+            actions: (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  color="primary"
+                  onClick={handleBulkEmail}
+                  disabled={bulkLoading}
+                  title={dict.send_email_selected}>
+                  <FiMail /> {dict.send_email}
                 </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content align="end" mobileTitle="Alterar Estado">
-                <DropdownMenu.Item
-                  icon={<FiCheckCircle size={14} />}
-                  onClick={() => handleBulkStatusChange("paid")}>
-                  {dict.mark_paid}
-                </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  icon={<FiPackage size={14} />}
-                  onClick={() => handleBulkStatusChange("ready")}>
-                  {dict.mark_ready}
-                </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  icon={<FiTruck size={14} />}
-                  onClick={() => handleBulkStatusChange("delivered")}>
-                  {dict.mark_delivered}
-                </DropdownMenu.Item>
-                {Array.from(selectedOrders).some(
-                  (num) => orders.find((o) => o.order_number === num)?.status !== "cancelled"
-                ) &&
-                  (canOverride ||
-                    Array.from(selectedOrders).every(
-                      (num) => orders.find((o) => o.order_number === num)?.status === "pending"
-                    )) && (
-                    <>
-                      <DropdownMenu.Divider />
-                      <DropdownMenu.Item
-                        destructive
-                        icon={<FiXCircle size={14} />}
-                        onClick={() => handleBulkStatusChange("cancelled")}>
-                        {dict.cancel_orders}
-                      </DropdownMenu.Item>
-                    </>
-                  )}
-              </DropdownMenu.Content>
-            </DropdownMenu>
-          </TableSelectionBar>
-        )}
+                {!hasCancelledSelected && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    color="primary"
+                    onClick={handleSetPickupDeadline}
+                    disabled={bulkLoading}
+                    title={dict.set_pickup_deadline_title}>
+                    <FiClock /> {dict.set_pickup_deadline}
+                  </Button>
+                )}
+                <DropdownMenu align="end">
+                  <DropdownMenu.Trigger>
+                    <Button size="sm" variant="solid" color="primary" disabled={bulkLoading}>
+                      {bulkLoading ? dict.processing : "Alterar Estado..."} <FiChevronDown />
+                    </Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content align="end" mobileTitle="Alterar Estado">
+                    <DropdownMenu.Item
+                      icon={<FiCheckCircle size={14} />}
+                      onClick={() => handleBulkStatusChange("paid")}>
+                      {dict.mark_paid}
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      icon={<FiPackage size={14} />}
+                      onClick={() => handleBulkStatusChange("ready")}>
+                      {dict.mark_ready}
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
+                      icon={<FiTruck size={14} />}
+                      onClick={() => handleBulkStatusChange("delivered")}>
+                      {dict.mark_delivered}
+                    </DropdownMenu.Item>
+                    {selectedOrdersList.some((o) => o.status !== "cancelled") &&
+                      (canOverride || selectedOrdersList.every((o) => o.status === "pending")) && (
+                        <>
+                          <DropdownMenu.Divider />
+                          <DropdownMenu.Item
+                            destructive
+                            icon={<FiXCircle size={14} />}
+                            onClick={() => handleBulkStatusChange("cancelled")}>
+                            {dict.cancel_orders}
+                          </DropdownMenu.Item>
+                        </>
+                      )}
+                  </DropdownMenu.Content>
+                </DropdownMenu>
+              </>
+            ),
+          }}
+        />
+
+        <InputDateDialog
+          open={showPickupDialog}
+          title={dict.pickup_dialog_title}
+          initialValue={pickupInput ?? ""}
+          onConfirm={(val) => confirmSetPickupDeadline(val)}
+          onCancel={() => setShowPickupDialog(false)}
+        />
 
         <DataTable
           data={filtered}

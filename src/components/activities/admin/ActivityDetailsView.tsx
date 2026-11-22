@@ -11,7 +11,7 @@ import {
   Modal,
   SearchInput,
   EmptyState,
-  TableSelectionBar,
+  TableToolbar,
   DropdownMenu,
   ColorfulText,
 } from "@neiist/ui";
@@ -404,24 +404,26 @@ export default function ActivityDetailsView({
         </div>
       </div>
 
-      {selectedISTids.size > 0 && (
-        <TableSelectionBar
-          count={selectedISTids.size}
-          label={selectedISTids.size === 1 ? d.selected_count : d.selected_count_plural}
-          onClear={() => setSelectedISTids(new Set())}
-          clearLabel={d.clear_selection}>
-          <Button
-            type="button"
-            variant="solid"
-            color="primary"
-            size="sm"
-            onClick={() =>
-              setEmailTargetISTids(selectedISTids.size > 0 ? Array.from(selectedISTids) : "all")
-            }>
-            <FiMail size={14} /> {d.send_email_selected}
-          </Button>
-        </TableSelectionBar>
-      )}
+      <TableToolbar
+        selection={{
+          count: selectedISTids.size,
+          label: selectedISTids.size === 1 ? d.selected_count : d.selected_count_plural,
+          onClear: () => setSelectedISTids(new Set()),
+          clearLabel: d.clear_selection,
+          actions: (
+            <Button
+              type="button"
+              variant="solid"
+              color="primary"
+              size="sm"
+              onClick={() =>
+                setEmailTargetISTids(selectedISTids.size > 0 ? Array.from(selectedISTids) : "all")
+              }>
+              <FiMail size={14} /> {d.send_email_selected}
+            </Button>
+          ),
+        }}
+      />
 
       <DataTable
         data={filteredAttendees}

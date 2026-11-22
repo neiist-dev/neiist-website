@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   SearchInput,
   Button,
-  TableActiveFilters,
+  TableToolbar,
   TableFilterMultiSelect,
   TableFilterDate,
   TableFiltersDrawer,
@@ -128,36 +128,42 @@ export default function VotingManagement({
           </Button>
         </div>
 
-        <TableActiveFilters
-          dateRange={filters.dateRange}
-          onRemoveDateRange={() =>
-            setFilters((p) => ({ ...p, dateRange: { start: null, end: null } }))
-          }
-          filterGroups={[
-            {
-              id: "type",
-              label: dict.filter_type,
-              values: filters.type,
-              getDisplayValue: (t) => dict.types[t as VotingType],
+        <TableToolbar
+          filters={{
+            dateFilter: {
+              ...filters.dateRange,
+              locale: locale === "en" ? "en-GB" : "pt-PT",
+              fromPrefix: locale === "en" ? "From" : "Desde",
+              untilPrefix: locale === "en" ? "Until" : "Até",
+              onRemove: () => setFilters((p) => ({ ...p, dateRange: { start: null, end: null } })),
             },
-            {
-              id: "status",
-              label: dict.filter_status,
-              values: filters.status,
-              getDisplayValue: (s) => dict.statuses[s as VotingStatus],
+            filterGroups: [
+              {
+                id: "type",
+                label: dict.filter_type,
+                values: filters.type,
+                getDisplayValue: (t) => dict.types[t as VotingType],
+              },
+              {
+                id: "status",
+                label: dict.filter_status,
+                values: filters.status,
+                getDisplayValue: (s) => dict.statuses[s as VotingStatus],
+              },
+            ],
+            onRemoveValue: (groupId, value) => {
+              setFilters((prev) => ({
+                ...prev,
+                [groupId]: (prev[groupId as keyof FilterState] as string[]).filter(
+                  (x) => x !== value
+                ),
+              }));
             },
-          ]}
-          onRemoveValue={(groupId, value) => {
-            setFilters((prev) => ({
-              ...prev,
-              [groupId]: (prev[groupId as keyof FilterState] as string[]).filter(
-                (x) => x !== value
-              ),
-            }));
+            onClearAll: handleClearAll,
+            label: dict.filter_labels.filters,
+            clearLabel: dict.filter_labels.clear_all,
+            collapsedLabel: (count) => `${dict.filter_labels.filters} (${count})`,
           }}
-          onClearAll={handleClearAll}
-          label={dict.filter_labels.filters}
-          clearLabel={dict.filter_labels.clear_all}
         />
 
         <VotingSessionsTable

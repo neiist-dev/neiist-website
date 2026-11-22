@@ -17,7 +17,7 @@ import {
   DropdownMenu,
   TableFilterDate,
   TableFilterMultiSelect,
-  TableActiveFilters,
+  TableToolbar,
   Alert,
   ColorfulText,
   Stack,
@@ -537,24 +537,27 @@ export default function PosManagementHub({
                   </div>
                 </div>
 
-                {(shiftFilterGroups.length > 0 ||
-                  shiftFilters.dateRange.start ||
-                  shiftFilters.dateRange.end) && (
-                  <TableActiveFilters
-                    filterGroups={shiftFilterGroups}
-                    dateRange={shiftFilters.dateRange}
-                    onRemoveDateRange={() =>
-                      setShiftFilters((prev) => ({
-                        ...prev,
-                        dateRange: { start: null, end: null },
-                      }))
-                    }
-                    onRemoveValue={handleRemoveShiftFilterValue}
-                    onClearAll={handleClearAllShiftFilters}
-                    label={t.filters_active}
-                    clearLabel={t.clear_all}
-                  />
-                )}
+                <TableToolbar
+                  filters={{
+                    filterGroups: shiftFilterGroups,
+                    dateFilter: {
+                      ...shiftFilters.dateRange,
+                      locale: locale === "en" ? "en-US" : "pt-PT",
+                      fromPrefix: locale === "en" ? "From" : "Desde",
+                      untilPrefix: locale === "en" ? "Until" : "Até",
+                      onRemove: () =>
+                        setShiftFilters((prev) => ({
+                          ...prev,
+                          dateRange: { start: null, end: null },
+                        })),
+                    },
+                    onRemoveValue: handleRemoveShiftFilterValue,
+                    onClearAll: handleClearAllShiftFilters,
+                    label: t.filters_active,
+                    clearLabel: t.clear_all,
+                    collapsedLabel: (count) => `${t.filters_active} (${count})`,
+                  }}
+                />
 
                 <DataTable
                   data={filteredShifts}

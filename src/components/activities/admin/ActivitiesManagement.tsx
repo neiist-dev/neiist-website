@@ -12,7 +12,7 @@ import {
   ConfirmDialog,
   EmptyState,
   DropdownMenu,
-  TableActiveFilters,
+  TableToolbar,
   TableFilterMultiSelect,
   TableFilterDate,
   TableFiltersDrawer,
@@ -374,47 +374,55 @@ export default function ActivitiesManagement({
         </div>
       </div>
 
-      <TableActiveFilters
-        dateRange={filters.dateRange}
-        onRemoveDateRange={() =>
-          setFilters((p) => ({ ...p, dateRange: { start: null, end: null } }))
-        }
-        filterGroups={[
-          {
-            id: "type",
-            label: "Tipo",
-            values: filters.type,
-            getDisplayValue: (t) => t,
+      <TableToolbar
+        filters={{
+          dateFilter: {
+            ...filters.dateRange,
+            locale: locale === "en" ? "en-US" : "pt-PT",
+            fromPrefix: locale === "en" ? "From" : "Desde",
+            untilPrefix: locale === "en" ? "Until" : "Até",
+            onRemove: () => setFilters((p) => ({ ...p, dateRange: { start: null, end: null } })),
           },
-          {
-            id: "visibility",
-            label: "Visibilidade",
-            values: filters.visibility,
-            getDisplayValue: (v) => (v === "public" ? "Público" : "Interno"),
+          filterGroups: [
+            {
+              id: "type",
+              label: "Tipo",
+              values: filters.type,
+              getDisplayValue: (t) => t,
+            },
+            {
+              id: "visibility",
+              label: "Visibilidade",
+              values: filters.visibility,
+              getDisplayValue: (v) => (v === "public" ? "Público" : "Interno"),
+            },
+            {
+              id: "status",
+              label: "Inscrições",
+              values: filters.status,
+              getDisplayValue: (s) => (s === "open" ? "Abertas" : "Fechadas"),
+            },
+          ],
+          onRemoveValue: (groupId, value) => {
+            setFilters((prev) => ({
+              ...prev,
+              [groupId]: (prev[groupId as keyof FilterState] as string[]).filter(
+                (x) => x !== value
+              ),
+            }));
           },
-          {
-            id: "status",
-            label: "Inscrições",
-            values: filters.status,
-            getDisplayValue: (s) => (s === "open" ? "Abertas" : "Fechadas"),
+          onClearAll: () => {
+            setFilters({
+              type: [],
+              visibility: [],
+              status: [],
+              dateRange: { start: null, end: null },
+            });
           },
-        ]}
-        onRemoveValue={(groupId, value) => {
-          setFilters((prev) => ({
-            ...prev,
-            [groupId]: (prev[groupId as keyof FilterState] as string[]).filter((x) => x !== value),
-          }));
+          label: dict.table.filter_label,
+          clearLabel: dict.table.clear_all,
+          collapsedLabel: (count) => `${dict.table.filter_label} (${count})`,
         }}
-        onClearAll={() => {
-          setFilters({
-            type: [],
-            visibility: [],
-            status: [],
-            dateRange: { start: null, end: null },
-          });
-        }}
-        label={dict.table.filter_label}
-        clearLabel={dict.table.clear_all}
       />
 
       <DataTable
