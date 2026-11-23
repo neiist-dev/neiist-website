@@ -1,20 +1,18 @@
-import React from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 import { FiGithub, FiLinkedin } from "react-icons/fi";
 import styles from "./MemberCard.module.css";
 import { cn } from "../../utils/cn";
 
-export interface MemberCardProps extends React.ComponentPropsWithRef<"article"> {
+export interface MemberCardProps extends ComponentPropsWithRef<"article"> {
   name: string;
   role: string;
-  image?: React.ReactNode | string;
-  imageAlt?: string;
+  image?: ReactNode;
   username?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   githubLabel?: string;
   linkedinLabel?: string;
-  actions?: React.ReactNode;
-  renderImage?: (_src: string, _alt: string, _className: string) => React.ReactNode;
+  actions?: ReactNode;
 }
 
 export const toGithubUrl = (url?: string) =>
@@ -27,14 +25,12 @@ export function MemberCard({
   name,
   role,
   image,
-  imageAlt,
   username,
   githubUrl,
   linkedinUrl,
   githubLabel = "GitHub profile",
   linkedinLabel = "LinkedIn profile",
   actions,
-  renderImage,
   className,
   ref,
   ...props
@@ -45,15 +41,7 @@ export function MemberCard({
   return (
     <article ref={ref} className={cn(styles.container, className)} {...props}>
       <div className={styles.imageCard}>
-        {React.isValidElement(image) ? (
-          image
-        ) : typeof image === "string" && renderImage ? (
-          renderImage(image, imageAlt || "", styles.cardImage)
-        ) : typeof image === "string" ? (
-          <img src={image} alt={imageAlt} className={styles.cardImage} loading="lazy" />
-        ) : (
-          (image as React.ReactNode)
-        )}
+        {image}
 
         <div className={styles.overlay}>
           <div className={styles.actions}>

@@ -1,30 +1,27 @@
-import React from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 import styles from "./DetailCard.module.css";
 import { cn } from "../../utils/cn";
 
 export interface DetailCardMetaItem {
   id?: string;
-  label: React.ReactNode;
-  value: React.ReactNode;
+  label: ReactNode;
+  value: ReactNode;
 }
 
-export interface DetailCardProps extends Omit<React.ComponentPropsWithRef<"article">, "title"> {
-  avatar?: React.ReactNode;
-  image?: React.ReactNode | string;
-  imageAlt?: string;
-  title: React.ReactNode;
-  identifier?: React.ReactNode;
-  badge?: React.ReactNode;
-  actions?: React.ReactNode;
+export interface DetailCardProps extends Omit<ComponentPropsWithRef<"article">, "title"> {
+  avatar?: ReactNode;
+  image?: ReactNode;
+  title: ReactNode;
+  identifier?: ReactNode;
+  badge?: ReactNode;
+  actions?: ReactNode;
   metadata?: DetailCardMetaItem[];
-  tags?: React.ReactNode;
-  renderImage?: (_src: string, _alt: string, _className: string) => React.ReactNode;
+  tags?: ReactNode;
 }
 
 export function DetailCard({
   avatar,
   image,
-  imageAlt,
   title,
   identifier,
   badge,
@@ -32,7 +29,6 @@ export function DetailCard({
   metadata,
   tags,
   children,
-  renderImage,
   className,
   onClick,
   ref,
@@ -46,21 +42,7 @@ export function DetailCard({
       className={cn(styles.card, isClickable && styles.clickable, className)}
       onClick={onClick}
       {...props}>
-      {(avatar || image) && (
-        <div className={styles.avatarContainer}>
-          {avatar ? (
-            avatar
-          ) : React.isValidElement(image) ? (
-            image
-          ) : typeof image === "string" && renderImage ? (
-            renderImage(image, imageAlt ?? "", styles.avatarImage)
-          ) : typeof image === "string" ? (
-            <img src={image} alt={imageAlt} className={styles.avatarImage} loading="lazy" />
-          ) : (
-            (image as React.ReactNode)
-          )}
-        </div>
-      )}
+      {(avatar || image) && <div className={styles.avatarContainer}>{avatar ?? image}</div>}
 
       <div className={styles.content}>
         <header className={styles.header}>

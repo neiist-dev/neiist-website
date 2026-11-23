@@ -49,8 +49,7 @@
   background-color: var(--ui-bg-hover);
 }
 
-.imageWrapper :where(img, svg, picture),
-.cardImage {
+.imageWrapper :where(img, svg, picture) {
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;

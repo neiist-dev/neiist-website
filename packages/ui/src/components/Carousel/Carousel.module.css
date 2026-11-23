@@ -129,13 +129,8 @@
   inset-inline-end: 0.5rem;
 }
 
-.overlayCard > img,
-.overlayCard > svg,
-.overlayCard > picture,
-.featureImageWrapper > img,
-.featureImageWrapper > svg,
-.featureImageWrapper > picture,
-.cardImage {
+.overlayCard > :where(img, svg, picture),
+.featureImageWrapper > :where(img, svg, picture) {
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;

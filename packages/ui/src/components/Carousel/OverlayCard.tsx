@@ -1,16 +1,14 @@
-import React from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 import styles from "./Carousel.module.css";
 import { cn } from "../../utils/cn";
 import { Heading } from "../Heading/Heading";
 import { Stack } from "../Stack/Stack";
 import { Text } from "../Text/Text";
 
-export interface OverlayCardProps extends Omit<React.ComponentPropsWithRef<"article">, "title"> {
-  title: React.ReactNode;
-  description?: React.ReactNode;
-  image?: React.ReactNode | string;
-  imageAlt?: string;
-  renderImage?: (_src: string, _alt: string, _className: string) => React.ReactNode;
+export interface OverlayCardProps extends Omit<ComponentPropsWithRef<"article">, "title"> {
+  title: ReactNode;
+  description?: ReactNode;
+  image?: ReactNode;
   href?: string;
   target?: string;
   rel?: string;
@@ -20,8 +18,6 @@ export function OverlayCard({
   title,
   description,
   image,
-  imageAlt,
-  renderImage,
   href,
   target,
   rel,
@@ -29,20 +25,11 @@ export function OverlayCard({
   ref,
   ...props
 }: OverlayCardProps) {
-  const resolvedAlt = imageAlt ?? (typeof title === "string" ? title : "");
   const resolvedRel = rel ?? (target === "_blank" ? "noopener noreferrer" : undefined);
 
   return (
     <article ref={ref} className={cn(styles.overlayCard, className)} {...props}>
-      {React.isValidElement(image) ? (
-        image
-      ) : typeof image === "string" && renderImage ? (
-        renderImage(image, resolvedAlt, styles.cardImage)
-      ) : typeof image === "string" ? (
-        <img src={image} alt={resolvedAlt} className={styles.cardImage} loading="lazy" />
-      ) : (
-        (image as React.ReactNode)
-      )}
+      {image}
 
       <div className={styles.overlayPill}>{title}</div>
 
@@ -63,7 +50,7 @@ export function OverlayCard({
           target={target}
           rel={resolvedRel}
           className={styles.stretchedLink}
-          aria-label={typeof title === "string" ? title : resolvedAlt || "Open item"}
+          aria-label={typeof title === "string" ? title : "Open item"}
         />
       )}
     </article>

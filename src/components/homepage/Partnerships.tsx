@@ -79,7 +79,6 @@ function Partnerships({ dict }: { dict: Dictionary["partnerships"] }) {
             description={item.description}
             image={item.image}
             actions={item.actions}
-            className={styles.bentoCard}
           />
         ))}
       </BentoGrid>

@@ -32,7 +32,7 @@
   margin-block-start: 0.125rem;
 }
 
-.avatarImage {
+.avatarContainer > :where(img, svg, picture) {
   inline-size: 3rem;
   block-size: 3rem;
   border-radius: 50%;

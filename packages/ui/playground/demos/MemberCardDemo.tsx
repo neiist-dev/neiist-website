@@ -1,4 +1,3 @@
-import React from "react";
 import { DemoCard } from "../components/DemoCard";
 import { MemberCard, DetailCard, Badge, DropdownMenu } from "@neiist/ui";
 import { FiMoreVertical, FiUserCheck, FiFileText, FiTrash2, FiEdit2 } from "react-icons/fi";
@@ -11,7 +10,13 @@ const MEMBERS = [
     username: "raposo",
     githubUrl: "https://github.com/miguelraposo",
     linkedinUrl: "https://linkedin.com/in/miguel-raposo",
-    image: "https://avatars.githubusercontent.com/u/10000000?v=4",
+    image: (
+      <img
+        src="https://avatars.githubusercontent.com/u/10000000?v=4"
+        alt="Miguel Raposo"
+        loading="lazy"
+      />
+    ),
   },
   {
     name: "Inês Pereira",
@@ -19,7 +24,13 @@ const MEMBERS = [
     username: "inespereira",
     githubUrl: "https://github.com",
     linkedinUrl: "https://linkedin.com",
-    image: "https://avatars.githubusercontent.com/u/20000000?v=4",
+    image: (
+      <img
+        src="https://avatars.githubusercontent.com/u/20000000?v=4"
+        alt="Inês Pereira"
+        loading="lazy"
+      />
+    ),
   },
 ];
 
@@ -40,11 +51,16 @@ export const MemberCardDemo = () => {
         title="DetailCard (Membros Ativos & Ex-Membros)"
         description="Administrative cards with custom Action Dropdown menus and membership role history.">
         <div className={styles.cardsLayout}>
-          {/* Active Member Card (Matching Image 5) */}
           <DetailCard
             title="Inês Figueiredo Caldeira Belo Cachola"
             identifier="ist1106953"
-            image="https://avatars.githubusercontent.com/u/20000000?v=4"
+            image={
+              <img
+                src="https://avatars.githubusercontent.com/u/20000000?v=4"
+                alt="Inês Figueiredo Caldeira Belo Cachola"
+                loading="lazy"
+              />
+            }
             actions={
               <DropdownMenu>
                 <DropdownMenu.Trigger>
@@ -85,12 +101,17 @@ export const MemberCardDemo = () => {
             ]}
           />
 
-          {/* Ex-Member Card (Showing Past Roles & History Intervals) */}
           <DetailCard
             title="Rodrigo Santos"
             identifier="ist198421"
             badge={<Badge variant="danger">Ex-Membro</Badge>}
-            image="https://avatars.githubusercontent.com/u/30000000?v=4"
+            image={
+              <img
+                src="https://avatars.githubusercontent.com/u/30000000?v=4"
+                alt="Rodrigo Santos"
+                loading="lazy"
+              />
+            }
             actions={
               <DropdownMenu>
                 <DropdownMenu.Trigger>

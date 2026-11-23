@@ -17,7 +17,7 @@
   cursor: pointer;
 }
 
-.cardImage {
+.imageCard > :where(img, svg, picture) {
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
@@ -44,8 +44,8 @@
   pointer-events: auto;
 }
 
-.imageCard:hover .cardImage,
-.imageCard:focus-within .cardImage {
+.imageCard:hover > :where(img, svg, picture),
+.imageCard:focus-within > :where(img, svg, picture) {
   opacity: 0;
 }
 

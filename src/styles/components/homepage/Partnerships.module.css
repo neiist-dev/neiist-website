@@ -4,13 +4,6 @@
   margin-inline: auto;
 }
 
-@container (width >= 40rem) {
-  .partnerships .bentoCard {
-    block-size: 14.5rem;
-    min-block-size: 14.5rem;
-  }
-}
-
 .containImage {
   object-fit: contain;
   padding: 1.25rem;
