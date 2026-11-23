@@ -1,174 +1,141 @@
-.news {
-  background-color: #fafaf9;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 3rem;
-  padding: 4rem;
-  box-sizing: border-box;
-}
-
-.news header {
-  border: none;
-}
-
-.news h4 {
-  line-height: 1.2;
-  font-size: clamp(2rem, 3vw, 3.5rem);
-}
-
-.image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  object-fit: cover;
-}
-
-@media (max-width: 768px) {
-  .news {
-    grid-template-columns: 1fr;
-    padding: 2rem;
-  }
-
-  .news header {
-    grid-column: 1 / -1;
-  }
-}
-
-.text h1 {
-  padding: 3rem 0 0 4rem;
-}
-
-.partners {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: start;
-  padding: 2rem 2rem 8rem;
-  gap: 4rem 3rem;
-  width: 100%;
-  box-sizing: border-box;
-  transition: grid-template-columns 2s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-/* Desktop */
-@media (min-width: 1025px) {
-  .partners:has(> .cardWrapper:nth-child(3n + 1).expanded) {
-    grid-template-columns: 1.75fr 0.85fr 0.85fr;
-  }
-
-  .partners:has(> .cardWrapper:nth-child(3n + 2).expanded) {
-    grid-template-columns: 0.85fr 1.75fr 0.85fr;
-  }
-
-  .partners:has(> .cardWrapper:nth-child(3n).expanded) {
-    grid-template-columns: 0.85fr 0.85fr 1.75fr;
-  }
-}
-
-@media (max-width: 1024px) and (min-width: 769px) {
-  .partners {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .partners:has(> .cardWrapper:nth-child(2n + 1).expanded) {
-    grid-template-columns: 1.7fr 0.85fr;
-  }
-
-  .partners:has(> .cardWrapper:nth-child(2n).expanded) {
-    grid-template-columns: 0.85fr 1.7fr;
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .partners {
-    grid-template-columns: 1fr;
-  }
-}
-
-.cardWrapper {
-  height: 100%;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.card {
+.container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: 2.5rem;
+  margin: clamp(1rem, 2.5vw, 2rem) clamp(1.25rem, 4vw, 4rem);
+}
+
+.title {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr));
+  gap: 2rem;
+  padding-block: 1rem 2rem;
+}
+
+.flipScene {
+  position: relative;
+  perspective: 2000px;
+  min-inline-size: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flipScene:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.flipScene:is(:hover, :focus-within) {
+  z-index: 2;
+}
+
+.flipInner {
+  position: relative;
+  display: grid;
+  block-size: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.flipScene:is(:hover, :focus-within) .flipInner {
+  transform: rotateY(180deg);
+}
+
+.front,
+.back {
+  backface-visibility: hidden;
+}
+
+.front {
   overflow: hidden;
+  transform: translateZ(1px);
+}
+
+.flipInner .back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: clamp(1.125rem, 2vw, 1.5rem);
   box-sizing: border-box;
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  overflow: hidden auto;
+  transform: rotateY(180deg) translateZ(1px);
+  border-color: color-mix(in srgb, var(--primary-colour) 35%, transparent);
+  box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--primary-colour) 20%, transparent);
 }
 
-.cardWrapper:hover .card {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+.flipScene:is(:hover, :focus-within) .cardActions {
+  pointer-events: auto;
 }
 
-.cardWrapper.expanded .card {
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--background-colour-hover);
 }
 
-/* Imagem com altura fixa para não saltar na vertical quando a largura expande */
-.card > div:first-child {
-  width: 100%;
-  height: 180px;
-  padding: 0;
-}
-
-.card > div:first-child img {
-  display: block;
-  width: 100%;
-  height: 100%;
+.imageWrapper :where(img) {
   object-fit: cover;
 }
 
-.card > header {
-  border: none;
-  width: 100%;
-  box-sizing: border-box;
+.cardBody {
+  padding: 1.25rem;
 }
 
-.cardWrapper.expanded .extraInfo {
-  grid-template-rows: 1fr;
-  padding: 1rem;
-  opacity: 1;
+.cardBody .cardReset,
+.back .cardReset {
+  margin: 0;
 }
 
-.cardWrapper.expanded .extraInfo li {
-  padding: 1rem;
+.backDescription {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--light-foreground-colour);
+  overflow-wrap: anywhere;
 }
 
-.partners:has(.expanded) > .cardWrapper:not(.expanded) {
-  align-self: start;
-  height: var(--locked-height, auto);
+.backDescription p {
+  margin-block: 0 0.5rem;
 }
 
-.extraInfo {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition: grid-template-rows 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+.backDescription ul {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  list-style: disc;
+  font-size: inherit;
 }
 
-.extraInfo > div {
-  overflow: hidden;
+.backDescription li {
+  color: inherit;
 }
 
-.extraInfo > div > a {
-  display: inline-block;
-  text-decoration: none;
-  background-image: linear-gradient(black, black);
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  background-size: 0% 2px;
-  padding-bottom: 2px;
-  transition: background-size 0.25s ease;
+.backDescription strong {
+  color: var(--foreground-colour);
 }
 
-.extraInfo > div > a:hover {
-  background-size: 100% 2px;
+.cardActions {
+  margin-block-start: auto;
+  padding-block-start: 0.5rem;
+}
+
+.actionLink {
+  display: inline-flex;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flipInner {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .flipScene:is(:hover, :focus-within) .back {
+    pointer-events: auto;
+  }
 }
