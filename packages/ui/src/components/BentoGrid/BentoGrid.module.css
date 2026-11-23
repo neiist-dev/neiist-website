@@ -1,7 +1,7 @@
 .grid {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
-  inline-size: 100%;
 }
 
 .gap-sm {
@@ -18,46 +18,23 @@
 
 .row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
   gap: inherit;
-}
-
-.row:where(:nth-child(even)) {
-  grid-template-columns: 1fr 2fr;
-}
-
-.row:where(:has(> :only-child)) {
-  grid-template-columns: 1fr;
-}
-
-.swap .row {
-  transition: grid-template-columns 0.55s cubic-bezier(0.22, 1.12, 0.36, 1);
-}
-
-.swap .row:where(:nth-child(odd):has(> :nth-child(2):is(:hover, :focus-within, :target))) {
-  grid-template-columns: 1fr 2fr;
-}
-
-.swap .row:where(:nth-child(even):has(> :first-child:is(:hover, :focus-within, :target))) {
-  grid-template-columns: 2fr 1fr;
 }
 
 .item {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
+  justify-content: flex-end;
   min-inline-size: 0;
-  min-block-size: 21.5rem;
+  min-block-size: 0;
+  overflow: hidden;
   scroll-margin-top: 5rem;
   outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     border-color 0.25s ease,
     box-shadow 0.25s ease;
-}
-
-.item:is(:hover, :focus-within, :target) {
-  border-color: var(--ui-primary);
-  box-shadow: var(--ui-shadow-md);
 }
 
 .item:focus-visible {
@@ -65,30 +42,42 @@
 }
 
 .imageWrapper {
-  position: relative;
-  inline-size: 100%;
-  flex: 1 1 0;
-  min-block-size: 5rem;
-  margin-block-end: 1rem;
-  border-radius: var(--ui-radius-md);
+  position: absolute;
+  inset-inline: 0;
+  inset-block: 0 3.5rem;
   overflow: hidden;
   background-color: var(--ui-bg-hover);
 }
 
-.imageWrapper > img,
-.imageWrapper > svg,
-.imageWrapper > picture,
+.imageWrapper :where(img, svg, picture),
 .cardImage {
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
 }
 
-.item:is(:hover, :focus-within) .cardImage,
-.item:is(:hover, :focus-within) .imageWrapper > img {
-  transform: scale(1.03);
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  min-block-size: 3.5rem;
+  max-block-size: 100%;
+  overflow-y: auto;
+  padding: 0.75rem 1.5rem;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--ui-bg) 92%, transparent);
+  backdrop-filter: blur(24px);
+  border-block-start: 1px solid transparent;
+  transition:
+    border-color 0.25s ease,
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.item .title {
+  margin: 0;
 }
 
 .reveal {
@@ -97,7 +86,8 @@
   opacity: 0;
   transition:
     grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.25s ease;
+    opacity 0.25s ease,
+    margin-block-start 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .revealInner {
@@ -106,38 +96,36 @@
   transition: overflow 0s allow-discrete 0s;
 }
 
-.item:is(:hover, :focus-within, :target) .reveal,
-.swap .item:only-child .reveal,
-.swap
-  .row:nth-child(odd):not(:has(> :nth-child(2):is(:hover, :focus-within, :target)))
-  > :first-child
-  .reveal,
-.swap
-  .row:nth-child(even):not(:has(> :first-child:is(:hover, :focus-within, :target)))
-  > :nth-child(2)
-  .reveal {
-  grid-template-rows: 1fr;
-  opacity: 1;
+.item:is(:hover, :focus-within, :target) {
+  border-color: var(--ui-primary);
+  box-shadow: var(--ui-shadow-md);
 }
 
-.item:is(:hover, :focus-within, :target) .revealInner,
-.swap .item:only-child .revealInner,
-.swap
-  .row:nth-child(odd):not(:has(> :nth-child(2):is(:hover, :focus-within, :target)))
-  > :first-child
-  .revealInner,
-.swap
-  .row:nth-child(even):not(:has(> :first-child:is(:hover, :focus-within, :target)))
-  > :nth-child(2)
-  .revealInner {
-  overflow: visible;
-  transition: overflow 0s allow-discrete 0.35s;
+.item:is(:hover, :focus-within, :target),
+.swap .row:nth-child(odd):not(:has(:hover, :focus-within, :target)) > .item:first-child,
+.swap .row:nth-child(even):not(:has(:hover, :focus-within, :target)) > .item:last-child {
+  & .content {
+    padding-block: 1rem 1.25rem;
+    border-block-start-color: var(--ui-border);
+  }
+
+  & .reveal {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-block-start: 0.5rem;
+  }
+
+  & .revealInner {
+    overflow: visible;
+    transition: overflow 0s allow-discrete 0.35s;
+  }
 }
 
 .description {
   font-size: var(--ui-font-sm);
   color: var(--ui-fg-light);
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .description a {
@@ -157,8 +145,61 @@
   padding-inline-start: 1.25rem;
 }
 
-@media (max-width: 768px) {
-  .grid .row {
+@container (width < 40rem) {
+  .row {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 22rem 10rem;
+    transition: grid-template-rows 0.55s cubic-bezier(0.22, 1.12, 0.36, 1);
+  }
+
+  .row:nth-child(even) {
+    grid-template-rows: 10rem 22rem;
+  }
+
+  .row:has(> .item:only-child) {
+    grid-template-rows: 22rem;
+  }
+
+  .row:nth-child(odd):has(> .item:nth-child(2):is(:hover, :focus-within, :target)) {
+    grid-template-rows: 10rem 22rem;
+  }
+
+  .row:nth-child(even):has(
+      > .item:first-child:not(:only-child):is(:hover, :focus-within, :target)
+    ) {
+    grid-template-rows: 22rem 10rem;
+  }
+}
+
+@container (width >= 40rem) {
+  .row {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .row:nth-child(even) {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .row:has(> .item:only-child) {
+    grid-template-columns: 1fr;
+  }
+
+  .swap .row {
+    transition: grid-template-columns 0.55s cubic-bezier(0.22, 1.12, 0.36, 1);
+  }
+
+  .swap .row:nth-child(odd):has(> .item:nth-child(2):is(:hover, :focus-within, :target)) {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .swap
+    .row:nth-child(even):has(
+      > .item:first-child:not(:only-child):is(:hover, :focus-within, :target)
+    ) {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .item {
+    min-block-size: 21.5rem;
   }
 }

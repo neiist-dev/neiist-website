@@ -72,25 +72,33 @@ export function BentoGridItem({
         )}
       </div>
 
-      {title && <Heading level={5}>{title}</Heading>}
+      {(title || hasReveal) && (
+        <div className={styles.content}>
+          {title && (
+            <Heading level={5} className={styles.title}>
+              {title}
+            </Heading>
+          )}
 
-      {hasReveal && (
-        <div className={styles.reveal}>
-          <div className={styles.revealInner}>
-            {isTextBody ? (
-              <Text size="sm" variant="muted">
-                {bodyContent}
-              </Text>
-            ) : (
-              bodyContent && <div className={styles.description}>{bodyContent}</div>
-            )}
+          {hasReveal && (
+            <div className={styles.reveal}>
+              <div className={styles.revealInner}>
+                {isTextBody ? (
+                  <Text size="sm" variant="muted">
+                    {bodyContent}
+                  </Text>
+                ) : (
+                  bodyContent && <div className={styles.description}>{bodyContent}</div>
+                )}
 
-            {actions && (
-              <Stack direction="row" gap="sm" wrap>
-                {actions}
-              </Stack>
-            )}
-          </div>
+                {actions && (
+                  <Stack direction="row" gap="sm" wrap>
+                    {actions}
+                  </Stack>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </Card>
@@ -207,9 +215,6 @@ export function BentoGridRoot({
     </Stack>
   );
 }
-
-export const BentoCard = BentoGridItem;
-export type BentoCardProps = BentoGridItemProps;
 
 export const BentoGrid = Object.assign(BentoGridRoot, {
   Item: BentoGridItem,

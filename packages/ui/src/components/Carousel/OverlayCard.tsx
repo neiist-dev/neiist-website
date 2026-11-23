@@ -16,8 +16,6 @@ export interface OverlayCardProps extends Omit<React.ComponentPropsWithRef<"arti
   rel?: string;
 }
 
-export type CarouselOverlayCardProps = OverlayCardProps;
-
 export function OverlayCard({
   title,
   description,
@@ -71,5 +69,3 @@ export function OverlayCard({
     </article>
   );
 }
-
-export const CarouselOverlayCard = OverlayCard;

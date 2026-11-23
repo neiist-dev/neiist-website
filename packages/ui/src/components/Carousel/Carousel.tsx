@@ -75,8 +75,8 @@ export function CarouselRoot({
   nextLabel = "Next slide",
   emptyState,
   className,
-  onMouseEnter,
-  onMouseLeave,
+  onPointerEnter,
+  onPointerLeave,
   onKeyDown,
   ref,
   ...props
@@ -117,6 +117,7 @@ export function CarouselRoot({
     active: false,
     decided: false,
     moved: false,
+    pointerId: -1,
     startX: 0,
     startY: 0,
     startPosition: 0,
@@ -268,7 +269,7 @@ export function CarouselRoot({
     if (!shouldLoop && currentLogical >= maxIndex) return;
 
     const intervalId = window.setInterval(() => {
-      stepBy(1);
+      if (!dragRef.current.active) stepBy(1);
     }, autoplayDelay);
     return () => window.clearInterval(intervalId);
   }, [
@@ -295,6 +296,7 @@ export function CarouselRoot({
       active: true,
       decided: event.pointerType === "mouse",
       moved: false,
+      pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       startPosition: positionRef.current,
@@ -306,7 +308,7 @@ export function CarouselRoot({
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
-    if (!drag.active || stepPx <= 0) return;
+    if (!drag.active || drag.pointerId !== event.pointerId || stepPx <= 0) return;
     if (event.pointerType === "mouse" && (event.buttons & 1) === 0) {
       handlePointerUp(event);
       return;
@@ -342,7 +344,7 @@ export function CarouselRoot({
 
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
-    if (!drag.active) return;
+    if (!drag.active || drag.pointerId !== event.pointerId) return;
     drag.active = false;
     setDragging(false);
 
@@ -426,13 +428,13 @@ export function CarouselRoot({
         resolvedPlacement === "outside" && styles.placementOutside,
         className
       )}
-      onMouseEnter={(event) => {
-        setHovered(true);
-        onMouseEnter?.(event);
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") setHovered(true);
+        onPointerEnter?.(event);
       }}
-      onMouseLeave={(event) => {
-        setHovered(false);
-        onMouseLeave?.(event);
+      onPointerLeave={(event) => {
+        if (event.pointerType === "mouse") setHovered(false);
+        onPointerLeave?.(event);
       }}
       onKeyDown={handleKeyDown}
       {...props}>
@@ -463,7 +465,9 @@ export function CarouselRoot({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          onLostPointerCapture={handlePointerUp}
+          onLostPointerCapture={(event) => {
+            if (event.target === event.currentTarget) handlePointerUp(event);
+          }}
           onDragStart={(event) => event.preventDefault()}
           onClickCapture={handleClickCapture}>
           <div className={styles.track} style={{ transform: `translate3d(${translateX}px, 0, 0)` }}>

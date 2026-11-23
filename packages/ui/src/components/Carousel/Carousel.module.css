@@ -240,10 +240,19 @@
   background-color: var(--ui-bg-hover);
 }
 
+.featureCard .featureSubtitle {
+  margin: 0;
+}
+
 .featureDescription {
   color: var(--ui-fg-light);
   font-size: var(--ui-font-md);
   line-height: 1.6;
+}
+
+.featureDescription strong {
+  color: var(--ui-fg);
+  font-weight: var(--ui-font-weight-semibold);
 }
 
 .featureDescription a {
@@ -261,6 +270,12 @@
 .featureDescription ol {
   margin-block: 0.25rem 0.65rem;
   padding-inline-start: 1.25rem;
+  list-style: revert;
+  font-size: inherit;
+}
+
+.featureDescription li {
+  color: inherit;
 }
 
 @media (min-width: 768px) {

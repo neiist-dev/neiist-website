@@ -17,8 +17,6 @@ export interface FeatureCardProps extends Omit<React.ComponentPropsWithRef<"arti
   imagePosition?: "left" | "right";
 }
 
-export type CarouselFeatureCardProps = FeatureCardProps;
-
 export function FeatureCard({
   title,
   subtitle,
@@ -64,7 +62,7 @@ export function FeatureCard({
           <Stack direction="row" gap="sm" align="center" wrap>
             {badge}
             {subtitle && (
-              <Text size="sm" variant="muted">
+              <Text size="sm" variant="muted" className={styles.featureSubtitle}>
                 {subtitle}
               </Text>
             )}
@@ -88,5 +86,3 @@ export function FeatureCard({
     </article>
   );
 }
-
-export const CarouselFeatureCard = FeatureCard;
