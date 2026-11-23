@@ -65,6 +65,7 @@ export default function NavBar({ dict, basePath, currentLocale, authSlot }: NavB
     { name: dict.activities, href: `${basePath}/activities` },
     /*{ name: "Blog", href: `${basePath}/blog` },*/
     { name: dict.shop, href: `${basePath}/shop` },
+    { name: dict.news, href: `${basePath}/news` },
     /* { name: dict.dinner, href: `${basePath}/dinner` },*/
   ];
 

@@ -1,97 +1,89 @@
-import React from "react";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
+import { BentoCard, BentoGrid, Button, Text } from "@neiist/ui";
+import { FiExternalLink } from "react-icons/fi";
+import lisbonNightLife from "@/assets/partnerships/lisbon_night_life.png";
+import vitalBraining from "@/assets/partnerships/vital_braining.png";
 import styles from "@/styles/components/homepage/Partnerships.module.css";
 import { Dictionary } from "@/i18n/dictionaries";
-/*
-import auren from "@/assets/partnerships/monetary/auren.png";
-import deloitte from "@/assets/partnerships/monetary/deloitte.png";
-import basedInLisbon from "@/assets/partnerships/monetary/based_in_lisbon.png";
-
-// Non-Monetary Partners
-import lage2 from "@/assets/partnerships/non-monetary/lage2.png";
-import aiesec from "@/assets/partnerships/non-monetary/aiesec.png";
-import magma from "@/assets/partnerships/non-monetary/magma.png";
-*/
-import nightLifeLisbon from "@/assets/partnerships/lisbon_night_life.png";
 
 function Partnerships({ dict }: { dict: Dictionary["partnerships"] }) {
-  /*
-  const monetaryPartners = [
-    { href: "https://auren.com/pt/", src: auren, alt: "Auren", scale: "1.0" },
+  const items = [
     {
-      href: "https://www.deloitte.com/",
-      src: deloitte,
-      alt: "Deloitte",
-      scale: "1.0",
-    },
-    {
-      href: "https://www.basedinlisbon.xyz/",
-      src: basedInLisbon,
-      alt: "Based in Lisbon",
-      scale: "0.9",
-    },
-  ];
-
-  const nonMonetaryPartners = [
-    {
-      href: "https://lage2.ist.utl.pt/",
-      src: lage2,
-      alt: "LAGE2",
-      scale: "0.75",
-    },
-    { href: "https://aiesec.org/", src: aiesec, alt: "AIESEC", scale: "1.0" },
-    {
-      href: "https://magmastudio.pt/",
-      src: magma,
-      alt: "Magma Studio",
-      scale: "1.0",
-    },
-  ];
-*/
-  const partnerships = [
-    {
-      href: "https://3cket.com/event/falloween/NEIIST",
-      src: nightLifeLisbon,
-      alt: "Night Life Lisbon",
-      scale: "1.2",
-    },
-  ];
-
-  const renderPartners = (
-    partners: {
-      href: string;
-      src: StaticImageData;
-      alt: string;
-      scale: string;
-    }[]
-  ) =>
-    partners.map((partner) => (
-      <a
-        key={partner.href}
-        href={partner.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={partner.alt}>
+      id: "night_life_lisbon",
+      title: dict.items.night_life_lisbon.title,
+      description: dict.items.night_life_lisbon.description,
+      image: (
         <Image
-          src={partner.src}
-          alt={partner.alt}
-          style={{ transform: `scale(${partner.scale})` }}
-          className={styles.logo}
+          src={lisbonNightLife}
+          alt={dict.items.night_life_lisbon.title}
+          fill
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className={styles.containImage}
         />
-      </a>
-    ));
+      ),
+      actions: (
+        <a
+          href="https://www.nightlifelisbon.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.actionLink}>
+          <Button size="sm" variant="solid">
+            {dict.visit_partner} <FiExternalLink />
+          </Button>
+        </a>
+      ),
+    },
+    {
+      id: "vital_braining",
+      title: dict.items.vital_braining.title,
+      description: (
+        <Text size="sm" variant="muted">
+          {dict.items.vital_braining.description}{" "}
+          <a href="/vital_braining.pdf" target="_blank" rel="noopener noreferrer">
+            {dict.items.vital_braining.details_link}
+          </a>
+          .
+        </Text>
+      ),
+      image: (
+        <Image
+          src={vitalBraining}
+          alt={dict.items.vital_braining.title}
+          fill
+          sizes="(min-width: 768px) 50vw, 100vw"
+        />
+      ),
+      actions: (
+        <a
+          href="https://www.vitalmindclinic.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.actionLink}>
+          <Button size="sm" variant="solid">
+            {dict.visit_partner} <FiExternalLink />
+          </Button>
+        </a>
+      ),
+    },
+  ];
 
   return (
-    <div className={styles.partnerships}>
-      <h1 className={styles.title}>{dict.title}</h1>
-      {/*
-      <h2>Parcerias Monetárias</h2>
-      <div className={styles.row}>{renderPartners(monetaryPartners)}</div>
-      <h2>Parcerias Não Monetárias</h2>
-      <div className={styles.row}>{renderPartners(nonMonetaryPartners)}</div>
-      */}
-      <div className={styles.row}>{renderPartners(partnerships)}</div>
-    </div>
+    <section className={styles.partnerships}>
+      <h1>{dict.title}</h1>
+      <BentoGrid>
+        {items.map((item) => (
+          <BentoCard
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            description={item.description}
+            image={item.image}
+            actions={item.actions}
+            className={styles.bentoCard}
+          />
+        ))}
+      </BentoGrid>
+    </section>
   );
 }
 

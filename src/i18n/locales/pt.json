@@ -3,6 +3,7 @@
     "about_us": "Sobre Nós",
     "activities": "Atividades",
     "shop": "Loja",
+    "news": "Notícias",
     "menu": {
       "profile": "Perfil",
       "my_orders": "As Minhas Encomendas",
@@ -648,7 +649,88 @@
     }
   },
   "partnerships": {
-    "title": "Parcerias"
+    "title": "Parcerias",
+    "visit_partner": "Visitar Parceiro",
+    "items": {
+      "vital_braining": {
+        "title": "Vital:Braining Clinic",
+        "description": "Consultas de psicologia online com até 20% de desconto e pacotes mensais para estudantes do IST. Vê as condições",
+        "details_link": "em detalhe"
+      },
+      "night_life_lisbon": {
+        "title": "Night Life Lisbon",
+        "description": "Acesso e vantagens exclusivas para estudantes do IST nos maiores eventos académicos em Lisboa."
+      }
+    }
+  },
+  "news": {
+    "actions": {
+      "view_on_instagram": "Ver no Instagram",
+      "view_activities": "Ver Atividades",
+      "view_in_shop": "Ver na Loja",
+      "go_to_shop": "Ir para a Loja",
+      "about_neiist": "Conhecer o NEIIST"
+    },
+    "featured": {
+      "sweats_preorder": {
+        "badge": "Pré-venda",
+        "subtitle": "Edição 2026/2027",
+        "title": "Pré-venda das Sweats Oficiais de EIC",
+        "lead": "Garante já a tua sweat de Engenharia Informática e de Computadores para o ano letivo 2026/2027.",
+        "layout_label": "Edição especial:",
+        "layout_value": "«It's Not a Bug, It's a Feature» em azul e castanho",
+        "colors_label": "Cores clássicas:",
+        "colors_value": "Bordeaux, Castanho e Roxo",
+        "footer_prefix": "Escolhe o teu tamanho na",
+        "shop_link": "loja online do NEIIST",
+        "footer_mid": "e acompanha as novidades no",
+        "instagram_link": "Instagram oficial"
+      },
+      "colors_found": {
+        "title": "Colors Found: Cores Vencedoras das Sweats",
+        "lead": "Obrigado a todos os que votaram nas cores desta edição! O pódio já está fechado e a pré-venda está quase a arrancar.",
+        "first_label": "1.º lugar:",
+        "first_value": "Bordeaux",
+        "second_label": "2.º lugar:",
+        "second_value": "Castanho",
+        "third_label": "3.º lugar:",
+        "third_value": "Roxo"
+      }
+    },
+    "older": {
+      "design_found": {
+        "badge": "Concurso",
+        "subtitle": "3.ª Edição • Concurso de Layout",
+        "title": "200: Design Found",
+        "lead": "Temos vencedora da 3.ª edição do concurso de layout das sweats oficiais de EIC!",
+        "winner_label": "Vencedora:",
+        "winner_value": "Matilde Santos",
+        "design_label": "Design:",
+        "design_value": "«It's Not a Bug, It's a Feature» (azul e castanho)"
+      },
+      "google_deepmind": {
+        "badge": "Palestra",
+        "subtitle": "7 de Outubro • Anfiteatro FA3",
+        "title": "Google DeepMind",
+        "lead": "Junta-te a nós para a palestra «From AI Research to Real-World Application» com Joana Carrasqueira (Compute Lead, Google AI Studio na Google DeepMind).",
+        "date_label": "Data:",
+        "date_value": "7 de outubro, 14h30 – 16h30",
+        "location_label": "Local:",
+        "location_value": "Anfiteatro FA3 (Pavilhão de Informática III)",
+        "entry_label": "Entrada:",
+        "entry_value": "Livre, sem inscrição (lotação de 95 lugares)"
+      },
+      "recrutamento": {
+        "badge": "Recrutamento",
+        "subtitle": "Até 30 de Setembro",
+        "title": "Recrutamento NEIIST 26/27",
+        "lead": "Estão abertas as candidaturas para o NEIIST 26/27! Participa ativamente no curso, organiza eventos e desenvolve projetos reais.",
+        "teams_label": "Equipas:",
+        "teams_value": "Logistics, Dev Team, HR, Marketing & Design e External Relations",
+        "deadline_label": "Prazo:",
+        "deadline_value": "Candidaturas abertas até 30 de setembro"
+      }
+    }
   },
   "footer": {
     "title_neiist": "NEIIST",

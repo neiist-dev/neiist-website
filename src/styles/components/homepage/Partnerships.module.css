@@ -1,46 +1,20 @@
 .partnerships {
-  text-align: center;
-  padding-block: 1.5rem 0.25rem;
+  padding-block: 1.5rem 2.5rem;
   padding-inline: 1.5rem;
+  margin-inline: auto;
+}
+
+.bentoCard {
+  block-size: 14.5rem;
+  min-block-size: 14.5rem;
+}
+
+.containImage {
+  object-fit: contain;
+  padding: 1.25rem;
   box-sizing: border-box;
 }
 
-.title {
-  text-align: left;
-  margin: 0;
-}
-
-.logo {
-  width: 17vw;
-  height: auto;
-}
-
-.row {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6em;
-  margin-bottom: 2rem;
-}
-
-@media (max-width: 768px) {
-  .row {
-    gap: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .title {
-    text-align: center;
-  }
-
-  .row {
-    flex-direction: column;
-    gap: 2em;
-  }
-
-  .logo {
-    width: 40vw;
-  }
+.actionLink {
+  display: inline-flex;
 }

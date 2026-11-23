@@ -3,6 +3,7 @@
     "about_us": "About Us",
     "activities": "Activities",
     "shop": "Shop",
+    "news": "News",
     "menu": {
       "profile": "Profile",
       "my_orders": "My Orders",
@@ -648,7 +649,93 @@
     }
   },
   "partnerships": {
-    "title": "Partnerships"
+    "title": "Partnerships",
+    "visit_partner": "Visit Partner",
+    "items": {
+      "vital_braining": {
+        "title": "Vital:Braining Clinic",
+        "description": "Online psychology consultations with up to 20% off and monthly packages for IST students. See the terms",
+        "details_link": "in detail"
+      },
+      "night_life_lisbon": {
+        "title": "Night Life Lisbon",
+        "description": "Exclusive access and perks for IST students at Lisbon's biggest academic events."
+      }
+    }
+  },
+  "news": {
+    "actions": {
+      "view_on_instagram": "View on Instagram",
+      "view_activities": "View Activities",
+      "view_in_shop": "View in Shop",
+      "go_to_shop": "Go to Shop",
+      "about_neiist": "About NEIIST"
+    },
+    "featured": {
+      "sweats_preorder": {
+        "badge": "Pre-order",
+        "subtitle": "2026/2027 Edition",
+        "title": "Official CS Sweatshirts Pre-order",
+        "lead": "Reserve your Computer Science and Engineering sweatshirt for the 2026/2027 academic year.",
+        "layout_label": "Special edition:",
+        "layout_value": "«It's Not a Bug, It's a Feature» in blue and brown",
+        "colors_label": "Classic colours:",
+        "colors_value": "Burgundy, Brown, and Purple",
+        "footer_prefix": "Pick your size in",
+        "shop_link": "NEIIST's online shop",
+        "footer_mid": "and follow updates on our",
+        "instagram_link": "official Instagram"
+      },
+      "colors_found": {
+        "badge": "Poll",
+        "subtitle": "October 28",
+        "title": "Colors Found: Winning Sweatshirt Colours",
+        "lead": "Thank you to everyone who voted on this edition's colours! The podium is locked in and pre-orders are about to open.",
+        "first_label": "1st place:",
+        "first_value": "Burgundy",
+        "second_label": "2nd place:",
+        "second_value": "Brown",
+        "third_label": "3rd place:",
+        "third_value": "Purple"
+      }
+    },
+    "older": {
+      "design_found": {
+        "badge": "Contest",
+        "subtitle": "3rd Edition • Layout Contest",
+        "title": "200: Design Found",
+        "lead": "We have a winner for the 3rd edition of the official CS sweatshirt layout contest!",
+        "winner_label": "Winner:",
+        "winner_value": "Matilde Santos",
+        "design_label": "Design:",
+        "design_value": "«It's Not a Bug, It's a Feature» (blue and brown)",
+        "availability_label": "Available:",
+        "availability_prefix": "2026/2027 special collection in",
+        "shop_link": "NEIIST's shop"
+      },
+      "google_deepmind": {
+        "badge": "Talk",
+        "subtitle": "October 7 • FA3 Amphitheatre",
+        "title": "Google DeepMind",
+        "lead": "Join us for the talk «From AI Research to Real-World Application» with Joana Carrasqueira (Compute Lead, Google AI Studio at Google DeepMind).",
+        "date_label": "Date:",
+        "date_value": "October 7, 2:30 PM – 4:30 PM",
+        "location_label": "Location:",
+        "location_value": "FA3 Amphitheatre (Informatics III Building)",
+        "entry_label": "Admission:",
+        "entry_value": "Free, no registration required (95 seats)"
+      },
+      "recrutamento": {
+        "badge": "Recruitment",
+        "subtitle": "Until September 30",
+        "title": "NEIIST 26/27 Recruitment",
+        "lead": "Applications are open for NEIIST 26/27! Take an active role in your degree, organize events, and build real-world projects.",
+        "teams_label": "Teams:",
+        "teams_value": "Logistics, Dev Team, HR, Marketing & Design, and External Relations",
+        "deadline_label": "Deadline:",
+        "deadline_value": "Applications open until September 30"
+      }
+    }
   },
   "footer": {
     "title_neiist": "NEIIST",

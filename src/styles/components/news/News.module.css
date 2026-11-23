@@ -1,0 +1,141 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin: clamp(1rem, 2.5vw, 2rem) clamp(1.25rem, 4vw, 4rem);
+}
+
+.title {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr));
+  gap: 2rem;
+  padding-block: 1rem 2rem;
+}
+
+.flipScene {
+  position: relative;
+  perspective: 2000px;
+  min-inline-size: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flipScene:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.flipScene:is(:hover, :focus-within) {
+  z-index: 2;
+}
+
+.flipInner {
+  position: relative;
+  display: grid;
+  block-size: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.flipScene:is(:hover, :focus-within) .flipInner {
+  transform: rotateY(180deg);
+}
+
+.front,
+.back {
+  backface-visibility: hidden;
+}
+
+.front {
+  overflow: hidden;
+  transform: translateZ(1px);
+}
+
+.flipInner .back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: clamp(1.125rem, 2vw, 1.5rem);
+  box-sizing: border-box;
+  overflow: hidden auto;
+  transform: rotateY(180deg) translateZ(1px);
+  border-color: color-mix(in srgb, var(--primary-colour) 35%, transparent);
+  box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--primary-colour) 20%, transparent);
+}
+
+.flipScene:is(:hover, :focus-within) .cardActions {
+  pointer-events: auto;
+}
+
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--background-colour-hover);
+}
+
+.imageWrapper :where(img) {
+  object-fit: cover;
+}
+
+.cardBody {
+  padding: 1.25rem;
+}
+
+.cardBody .cardReset,
+.back .cardReset {
+  margin: 0;
+}
+
+.backDescription {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--light-foreground-colour);
+  overflow-wrap: anywhere;
+}
+
+.backDescription p {
+  margin-block: 0 0.5rem;
+}
+
+.backDescription ul {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  list-style: disc;
+  font-size: inherit;
+}
+
+.backDescription li {
+  color: inherit;
+}
+
+.backDescription strong {
+  color: var(--foreground-colour);
+}
+
+.cardActions {
+  margin-block-start: auto;
+  padding-block-start: 0.5rem;
+}
+
+.actionLink {
+  display: inline-flex;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flipInner {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .flipScene:is(:hover, :focus-within) .back {
+    pointer-events: auto;
+  }
+}

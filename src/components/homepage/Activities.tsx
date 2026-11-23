@@ -41,7 +41,7 @@ export default function Activities({ dict }: { dict: Dictionary["activities"] })
       <h1>{dict.title}</h1>
       <Carousel
         slidesPerView={3}
-        autoplay={1500}
+        autoplay={4000}
         loop
         prevLabel={dict.prev_label}
         nextLabel={dict.next_label}>
