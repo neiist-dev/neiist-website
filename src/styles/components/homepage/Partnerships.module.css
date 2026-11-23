@@ -4,9 +4,11 @@
   margin-inline: auto;
 }
 
-.bentoCard {
-  block-size: 14.5rem;
-  min-block-size: 14.5rem;
+@container (width >= 40rem) {
+  .partnerships .bentoCard {
+    block-size: 14.5rem;
+    min-block-size: 14.5rem;
+  }
 }
 
 .containImage {

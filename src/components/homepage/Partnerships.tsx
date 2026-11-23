@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { BentoCard, BentoGrid, Button, Text } from "@neiist/ui";
+import { BentoGrid, Button, Text } from "@neiist/ui";
 import { FiExternalLink } from "react-icons/fi";
 import lisbonNightLife from "@/assets/partnerships/lisbon_night_life.png";
 import vitalBraining from "@/assets/partnerships/vital_braining.png";
@@ -72,7 +72,7 @@ function Partnerships({ dict }: { dict: Dictionary["partnerships"] }) {
       <h1>{dict.title}</h1>
       <BentoGrid>
         {items.map((item) => (
-          <BentoCard
+          <BentoGrid.Item
             key={item.id}
             id={item.id}
             title={item.title}
