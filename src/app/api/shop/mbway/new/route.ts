@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { resolvePaymentTarget } from "@/lib/shop/checkout";
+import { hasAcceptedWebTerms, resolvePaymentTarget } from "@/lib/shop/checkout";
 import { getRemainingSessionSeconds, saveCheckoutSession } from "@/lib/redis/sessions";
 import {
   formatMbWayPhone,
@@ -35,6 +35,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: target.error }, { status: target.statusCode });
 
     const { orderNumber, orderNumbers, totalAmount, customerEmail, redisSession } = target;
+
+    if (redisSession && !hasAcceptedWebTerms(redisSession))
+      return NextResponse.json(
+        { error: "Tens de aceitar os Termos e Condições antes de pagar." },
+        { status: 400 }
+      );
 
     if (!orderNumber || totalAmount <= 0)
       return NextResponse.json(

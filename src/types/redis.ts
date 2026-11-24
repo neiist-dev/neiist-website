@@ -6,6 +6,7 @@ import type {
 } from "@/types/shop/order";
 import type { PaymentMethod } from "@/types/shop/payment";
 import type { ProductChannel } from "@/types/shop/product";
+import type { Locale } from "@/i18n/i18n-config";
 
 export interface StockHoldItem {
   productId: number;
@@ -82,6 +83,9 @@ export interface CheckoutSessionData extends Omit<
   shift_id?: string | null;
   attempt?: number;
   cart_id?: string;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
+  locale?: Locale;
   created_at: string;
   expires_at: string;
 }
@@ -104,6 +108,9 @@ export interface BuildCheckoutSessionOptions {
   cartId?: string | null;
   stockOverride?: boolean;
   createdBy?: string | null;
+  termsAcceptedAt?: string | null;
+  termsVersion?: string | null;
+  locale?: Locale;
   ttlSeconds?: number;
   createdAt?: string;
   expiresAt?: string;

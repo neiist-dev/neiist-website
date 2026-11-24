@@ -4,7 +4,7 @@ import { isPaymentMethod, isPaymentMethodAllowedForChannel } from "@/types/shop/
 import { generateOrderNumber } from "@/lib/db/repositories/shop.repository";
 import { CHECKOUT_HOLD_TTL_SECONDS, CheckoutSessionData, StockRequestItem } from "@/types/redis";
 import { reserveStockHolds, toStockRequests } from "@/lib/redis/holds";
-import { buildCheckoutSession } from "@/lib/shop/checkout";
+import { buildCheckoutSession, CURRENT_TERMS_VERSION } from "@/lib/shop/checkout";
 import {
   discardCheckoutSession,
   getCheckoutSession,
@@ -13,6 +13,7 @@ import {
 } from "@/lib/redis/sessions";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { validateAndPriceCartItems } from "@/lib/shop/pricing";
+import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 
 const getItemsSignature = (items: StockRequestItem[]) =>
   items
@@ -105,6 +106,18 @@ export async function POST(req: NextRequest) {
     const pick = (field: string, fallback: string | null | undefined) =>
       body[field] !== undefined ? body[field] || null : (fallback ?? null);
 
+    const locale = isValidLocale(body.locale) ? body.locale : (existing?.locale ?? defaultLocale);
+
+    let termsAcceptedAt: string | null = existing?.terms_accepted_at ?? null;
+    let termsVersion: string | null = existing?.terms_version ?? null;
+    if (body.terms_accepted === true) {
+      termsAcceptedAt = existing?.terms_accepted_at ?? new Date().toISOString();
+      termsVersion = CURRENT_TERMS_VERSION;
+    } else if (body.terms_accepted === false) {
+      termsAcceptedAt = null;
+      termsVersion = null;
+    }
+
     const sessionData = buildCheckoutSession({
       orderNumber,
       channel: "web",
@@ -120,6 +133,9 @@ export async function POST(req: NextRequest) {
       notes: pick("notes", existing?.notes),
       discountCode:
         body.discount_code !== undefined ? discountCode || null : (existing?.discount_code ?? null),
+      termsAcceptedAt,
+      termsVersion,
+      locale,
       ttlSeconds: ttl,
       createdAt: existing?.created_at,
       expiresAt,

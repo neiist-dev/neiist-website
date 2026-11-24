@@ -57,6 +57,12 @@ async function buildOrdersWorkbook(orders: Order[]): Promise<Buffer> {
   const ordersSheet = orders.map((o) => {
     const primaryPayment = o.payments?.[0];
     const txId = (primaryPayment?.reference || o.payment_reference || "").split(";")[0].trim();
+    const termsAcceptedLabel = [
+      o.terms_version,
+      o.terms_accepted_at && new Date(o.terms_accepted_at).toLocaleString("pt-PT"),
+    ]
+      .filter(Boolean)
+      .join(" — ");
 
     return {
       Estado: getStatusLabel(o.status, ordersTableDict.status, {
@@ -75,6 +81,7 @@ async function buildOrdersWorkbook(orders: Order[]): Promise<Buffer> {
       "ID Transação (Pagamento)": txId,
       "Total (€)": o.total_amount,
       Notas: o.notes || "",
+      "Termos Aceites": termsAcceptedLabel,
       Origem: o.order_source || "web",
       Produtos: (o.items || [])
         .map((it) => {

@@ -7,6 +7,7 @@ import type {
 import { Order, OrderItem } from "@/types/shop/order";
 import { PaymentMethod } from "@/types/shop/payment";
 import { unitPriceMoney, lineTotalMoney, addMoney } from "@/utils/shop/moneyUtils";
+import type { Locale } from "@/i18n/i18n-config";
 
 /**
  * Converts stored image id or full URL to canonical /api/shop/photo/[id] URL.
@@ -381,9 +382,15 @@ export function sanitizeOrder(order: Order): Order {
   };
 }
 
-const CAMPUS_LOCATIONS: Record<string, string> = {
-  alameda: "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)",
-  taguspark: "Sala do NEIIST Taguspark (1 - 4.14)",
+const CAMPUS_LOCATIONS: Record<Locale, Record<string, string>> = {
+  pt: {
+    alameda: "Sala do NEIIST Alameda (Pavilhão de Informática I 3.03)",
+    taguspark: "Sala do NEIIST Taguspark (1 - 4.14)",
+  },
+  en: {
+    alameda: "NEIIST Room Alameda (Computer Science Pavilion I 3.03)",
+    taguspark: "NEIIST Room Taguspark (1 - 4.14)",
+  },
 };
 
 export function formatCampus(campus?: string): string {
@@ -395,10 +402,15 @@ export function formatCampus(campus?: string): string {
     .join(" ");
 }
 
-export function getCampusLocation(campus?: string): string {
-  if (!campus) return "uma banca NEIIST";
+export function getCampusLocation(campus?: string, locale: Locale = "pt"): string {
+  if (!campus) return locale === "en" ? "a NEIIST desk" : "uma banca NEIIST";
   const normalizedCampus = campus.trim().toLowerCase();
-  return CAMPUS_LOCATIONS[normalizedCampus] || `banca NEIIST em ${formatCampus(campus)}`;
+  return (
+    CAMPUS_LOCATIONS[locale][normalizedCampus] ||
+    (locale === "en"
+      ? `NEIIST desk at ${formatCampus(campus)}`
+      : `banca NEIIST em ${formatCampus(campus)}`)
+  );
 }
 
 export function formatTimer(secs: number): string {

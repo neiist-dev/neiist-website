@@ -127,6 +127,11 @@ CREATE TYPE neiist.discount_type_enum AS ENUM (
   'fixed'
 );
 
+CREATE TYPE neiist.locale_enum AS ENUM (
+  'pt',
+  'en'
+);
+
 -- COMPOSITE RECORD TYPES
 CREATE TYPE neiist.activity_record AS (
   id TEXT,
@@ -232,7 +237,10 @@ CREATE TYPE neiist.order_record AS (
   updated_by TEXT,
   status neiist.shop_order_status_enum,
   items JSONB,
-  payments JSONB
+  payments JSONB,
+  terms_accepted_at TIMESTAMPTZ,
+  terms_version TEXT,
+  locale neiist.locale_enum
 );
 
 CREATE TYPE neiist.pos_shift_record AS (
@@ -608,6 +616,9 @@ CREATE TABLE neiist.orders (
   pickup_deadline TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_by TEXT,
+  terms_accepted_at TIMESTAMPTZ,
+  terms_version TEXT,
+  locale neiist.locale_enum NOT NULL DEFAULT 'pt'::neiist.locale_enum,
   CONSTRAINT orders_identity_mode_chk CHECK (
     user_istid IS NULL
     OR (customer_name IS NULL AND customer_email IS NULL AND customer_phone IS NULL)
@@ -2388,7 +2399,15 @@ BEGIN
       ELSE stock_quantity
     END,
     order_start = CASE WHEN p_data ? 'order_start' THEN NULLIF(p_data->>'order_start', '')::TIMESTAMPTZ ELSE order_start END,
-    order_deadline = CASE WHEN p_data ? 'order_deadline' THEN NULLIF(p_data->>'order_deadline', '')::TIMESTAMPTZ ELSE order_deadline END,
+    order_deadline = CASE
+      WHEN (CASE
+        WHEN (CASE WHEN p_data ? 'product_type' THEN (p_data->>'product_type')::neiist.product_type_enum ELSE product_type END) = 'food_drink' THEN 'untracked'::neiist.shop_stock_type_enum
+        WHEN p_data ? 'stock_type' THEN (p_data->>'stock_type')::neiist.shop_stock_type_enum
+        ELSE stock_type
+      END) = 'limited' THEN NULL
+      WHEN p_data ? 'order_deadline' THEN NULLIF(p_data->>'order_deadline', '')::TIMESTAMPTZ
+      ELSE order_deadline
+    END,
     estimated_delivery = CASE WHEN p_data ? 'estimated_delivery' THEN NULLIF(p_data->>'estimated_delivery', '') ELSE estimated_delivery END,
     size_guide = CASE WHEN p_data ? 'size_guide' THEN NULLIF(p_data->>'size_guide', '') ELSE size_guide END,
     active = CASE WHEN p_data ? 'active' THEN (p_data->>'active')::BOOLEAN ELSE active END,
@@ -2898,7 +2917,10 @@ BEGIN
       FROM neiist.payments p
       JOIN neiist.order_payments op ON op.payment_id = p.id
       WHERE op.order_number = o.order_number
-    ) AS payments
+    ) AS payments,
+    o.terms_accepted_at,
+    o.terms_version,
+    o.locale
   FROM neiist.orders o
   LEFT JOIN neiist.users u ON u.istid = o.user_istid
   WHERE (p_order_number IS NULL OR o.order_number = p_order_number)
@@ -2929,6 +2951,9 @@ DECLARE
   v_total_amount NUMERIC(10,2) := 0.00;
   v_created_by TEXT;
   v_stock_override BOOLEAN := FALSE;
+  v_terms_accepted_at TIMESTAMPTZ;
+  v_terms_version TEXT;
+  v_locale neiist.locale_enum;
   it JSONB;
   v_pid INTEGER;
   v_vid INTEGER;
@@ -2978,6 +3003,9 @@ BEGIN
   v_discount_code := NULLIF(p_order->>'discount_code', '');
   v_created_by := NULLIF(p_order->>'created_by', '');
   v_stock_override := COALESCE((p_order->>'stock_override')::BOOLEAN, FALSE);
+  v_terms_accepted_at := NULLIF(BTRIM(p_order->>'terms_accepted_at'), '')::TIMESTAMPTZ;
+  v_terms_version := NULLIF(BTRIM(p_order->>'terms_version'), '');
+  v_locale := CASE WHEN LOWER(BTRIM(COALESCE(p_order->>'locale', ''))) = 'en' THEN 'en'::neiist.locale_enum ELSE 'pt'::neiist.locale_enum END;
 
   v_pay := p_order->'payment';
   IF v_pay IS NOT NULL AND v_pay->>'method' IS NULL THEN
@@ -3015,11 +3043,11 @@ BEGIN
   INSERT INTO neiist.orders (
     order_number, user_istid, customer_name, customer_email, customer_phone,
     nif, campus, notes, discount_code, discount_amount, total_amount,
-    order_source, created_by
+    order_source, created_by, terms_accepted_at, terms_version, locale
   ) VALUES (
     v_order_number, v_user_istid, v_cust_name, v_cust_email, v_cust_phone,
     v_nif, v_campus, v_notes, v_discount_code, v_discount_amount, 0.00,
-    v_source, v_created_by
+    v_source, v_created_by, v_terms_accepted_at, v_terms_version, v_locale
   );
 
   FOR it IN
@@ -3051,7 +3079,7 @@ BEGIN
       IF v_order_start IS NOT NULL AND NOW() < v_order_start THEN
         RAISE EXCEPTION 'Orders have not started yet for product %', v_pname;
       END IF;
-      IF v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
+      IF v_stock_type <> 'limited' AND v_order_deadline IS NOT NULL AND NOW() > v_order_deadline THEN
         RAISE EXCEPTION 'Order deadline has passed for product %', v_pname;
       END IF;
     END IF;

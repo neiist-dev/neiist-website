@@ -1,8 +1,7 @@
 .container {
   min-height: 90vh;
   box-sizing: border-box;
-  margin: 2rem 4rem;
-  margin-bottom: 0rem;
+  margin: 2rem 4rem 0;
 }
 
 .breadcrumbs {
@@ -191,6 +190,14 @@
 .description ul,
 .description ol {
   padding-left: 1.25rem;
+}
+
+.description ul {
+  list-style-type: disc;
+}
+
+.description ol {
+  list-style-type: decimal;
 }
 
 .description li {

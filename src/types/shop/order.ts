@@ -9,6 +9,7 @@ import {
 import { OrderStatus } from "@/types/shop/orderStatus";
 import { decodeVariantOptionsFromStorage } from "@/utils/shop/shopUtils";
 import { parseDbNumeric } from "@/utils/shop/moneyUtils";
+import { defaultLocale, isValidLocale, type Locale } from "@/i18n/i18n-config";
 
 export enum Campus {
   _Alameda = "alameda",
@@ -67,6 +68,9 @@ export interface CreateOrderInput {
   discount_code?: string | null;
   created_by?: string | null;
   stock_override?: boolean;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
+  locale?: Locale;
   items: Array<CreateOrderItemInput | OrderItem>;
   payment?: CreateOrderPaymentInput | null;
 }
@@ -119,6 +123,9 @@ export interface Order {
   created_at: string;
   updated_at?: string;
   updated_by?: string;
+  terms_accepted_at?: string;
+  terms_version?: string;
+  locale?: Locale;
   status: OrderStatus;
 }
 
@@ -148,6 +155,9 @@ export interface dbOrder {
   created_at: string;
   updated_at: string | null;
   updated_by: string | null;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
+  locale?: string | null;
   status: string;
 }
 
@@ -249,6 +259,9 @@ export function mapdbOrderToOrder(row: dbOrder): Order {
     created_at: row.created_at,
     updated_at: row.updated_at ?? undefined,
     updated_by: row.updated_by ?? undefined,
+    terms_accepted_at: row.terms_accepted_at ?? undefined,
+    terms_version: row.terms_version ?? undefined,
+    locale: isValidLocale(row.locale) ? row.locale : defaultLocale,
     status: row.status as OrderStatus,
   };
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getCheckoutSession } from "@/lib/redis/sessions";
+import { hasAcceptedWebTerms } from "@/lib/shop/checkout";
 import { promoteRedisCheckoutSessionToReservation } from "@/lib/shop/orders";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
@@ -24,6 +25,12 @@ export async function POST(req: NextRequest) {
 
     if (!checkoutSession.user_istid || checkoutSession.user_istid !== session.user.istid)
       return NextResponse.json({ error: "Sem permissão para esta encomenda." }, { status: 403 });
+
+    if (!hasAcceptedWebTerms(checkoutSession))
+      return NextResponse.json(
+        { error: "Tens de aceitar os Termos e Condições antes de finalizar a encomenda." },
+        { status: 400 }
+      );
 
     const order = await promoteRedisCheckoutSessionToReservation(checkoutSession);
     if (!order)

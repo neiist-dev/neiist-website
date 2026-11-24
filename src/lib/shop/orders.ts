@@ -1,4 +1,5 @@
 import { getDictionary } from "@/i18n/dictionaries";
+import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 import {
   getActivityByIdNoCache,
   signUpToEventNoCache,
@@ -100,6 +101,9 @@ async function createOrderFromCheckoutSession(
     discount_code: session.discount_code || undefined,
     stock_override: session.stock_override,
     created_by: session.created_by,
+    terms_accepted_at: session.terms_accepted_at ?? null,
+    terms_version: session.terms_version ?? null,
+    locale: session.locale ?? "pt",
     items: session.items,
     payment,
   });
@@ -276,20 +280,25 @@ export async function sendPendingOrderEmail(
   if (!order.customer_email) return;
 
   try {
+    const orderLocale = isValidLocale(order.locale) ? order.locale : defaultLocale;
     const { customDeadlineIso } = await computeReservationExpiryMs(order);
     await sendEmail({
       to: order.customer_email,
-      subject: `Encomenda ${order.order_number} - Pendente`,
+      subject:
+        orderLocale === "en"
+          ? `Order ${order.order_number} - Pending`
+          : `Encomenda ${order.order_number} - Pendente`,
       html: getPendingOrderEmailTemplate(
         order.order_number,
-        order.customer_name || "Cliente",
+        order.customer_name,
         order.items,
         Number(order.total_amount),
         order.campus ?? undefined,
         paymentMethod,
         customDeadlineIso,
         undefined,
-        isTicketOrder(order)
+        isTicketOrder(order),
+        orderLocale
       ),
     });
   } catch (emailErr) {
@@ -299,23 +308,30 @@ export async function sendPendingOrderEmail(
 
 export function sendOrderPaidEmails(order: Order, paymentReference?: string): void {
   if (!order.customer_email || order.order_source === "fast-pos") return;
-  const ordersTableDict = getDictionary("pt").orders_table;
+  const orderLocale = isValidLocale(order.locale) ? order.locale : defaultLocale;
+  const ordersTableDict = getDictionary(orderLocale).orders_table;
+  const orderPrefix = orderLocale === "en" ? "Order" : "Encomenda";
   sendEmail({
     to: order.customer_email,
-    subject: `Encomenda ${order.order_number} - ${getStatusLabel("paid", ordersTableDict.status, {
-      isTicket: isTicketOrder(order),
-      ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
-    })}`,
+    subject: `${orderPrefix} ${order.order_number} - ${getStatusLabel(
+      "paid",
+      ordersTableDict.status,
+      {
+        isTicket: isTicketOrder(order),
+        ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
+      }
+    )}`,
     html: getPaidOrderEmailTemplate(
       order.order_number,
-      order.customer_name ?? "Cliente",
+      order.customer_name,
       order.items,
       Number(order.total_amount),
       order.campus ?? undefined,
       order.payment_method ?? undefined,
       isCashPayment(order.payment_method) ? undefined : paymentReference,
       undefined,
-      order.pickup_deadline ?? undefined
+      order.pickup_deadline ?? undefined,
+      orderLocale
     ),
   }).catch((err) => console.warn("Confirmation email couldn't be sent:", err));
 }

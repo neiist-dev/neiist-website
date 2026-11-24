@@ -29,8 +29,32 @@
   transition: opacity 0.25s ease;
 }
 
-.applePayStandaloneButton:hover {
+.applePayStandaloneButton:hover:not(:disabled) {
   opacity: 0.92;
+}
+
+.applePayStandaloneButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.termsLink {
+  color: var(--primary-colour);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.termsLink:hover {
+  opacity: 0.85;
+}
+
+.deliveryList {
+  margin: 0;
+  padding-inline-start: 1rem;
+  list-style-type: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .rightColumn {

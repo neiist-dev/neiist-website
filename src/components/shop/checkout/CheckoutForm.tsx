@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiClock } from "react-icons/fi";
 import PaymentOverlay from "@/components/shop/PaymentOverlay";
@@ -9,6 +10,7 @@ import {
   Accordion,
   Alert,
   Button,
+  Checkbox,
   Divider,
   EmptyState,
   Field,
@@ -92,6 +94,7 @@ export default function CheckoutForm({
   const [phone, setPhone] = useState(user.phone || "");
   const [nif, setNif] = useState("");
   const [notes, setNotes] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
     const load = () => {
@@ -165,6 +168,8 @@ export default function CheckoutForm({
     campus,
     notes: notes || undefined,
     discount_code: appliedDiscount?.code ?? undefined,
+    terms_accepted: termsAccepted,
+    locale: locale === "en" ? "en" : "pt",
   });
 
   const handleApplyDiscount = async () => {
@@ -231,6 +236,11 @@ export default function CheckoutForm({
       Alert.error(dict.error_no_payment);
       return;
     }
+
+    if (!termsAccepted) {
+      Alert.error(dict.error_terms_required);
+      return;
+    }
     setLoading(true);
     try {
       const effectivePhone = phone.trim() || user.phone || "";
@@ -259,6 +269,11 @@ export default function CheckoutForm({
   const handleApplePayDirect = () => {
     if (!campus) {
       Alert.error(dict.error_no_campus);
+      return;
+    }
+
+    if (!termsAccepted) {
+      Alert.error(dict.error_terms_required);
       return;
     }
 
@@ -424,6 +439,23 @@ export default function CheckoutForm({
   const isApplePayAllowed = applePayAvailable && ONLINE_PAYMENT_METHODS.includes("apple-pay");
   const showApplePay = isApplePayAllowed && !hasSelectedPayMethod;
 
+  const deliveryMap = new Map<number, { id: number; name: string; estimate: string }>();
+  for (const item of cart) {
+    const estimate = item.product.estimated_delivery?.trim();
+    if (estimate && !deliveryMap.has(item.product.id)) {
+      deliveryMap.set(item.product.id, {
+        id: item.product.id,
+        name: item.product.name,
+        estimate,
+      });
+    }
+  }
+  const deliveryProducts = Array.from(deliveryMap.values());
+  const uniqueDeliveryEstimates = Array.from(new Set(deliveryProducts.map((p) => p.estimate)));
+  const deliveryAccordionTitle =
+    uniqueDeliveryEstimates.length === 1 ? uniqueDeliveryEstimates[0] : dict.delivery_estimate;
+  const [termsBefore, termsAfter] = dict.terms_checkbox.split("{terms}");
+
   return (
     <div className={styles.container}>
       <Stack direction="column" gap="lg" className={styles.leftColumn}>
@@ -518,6 +550,26 @@ export default function CheckoutForm({
           </Stack>
         </Field>
 
+        <Checkbox
+          id="accept-terms"
+          checked={termsAccepted}
+          onChange={(e) => setTermsAccepted(e.target.checked)}
+          label={
+            <>
+              {termsBefore}
+              <Link
+                href={`${basePath || ""}/terms`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.termsLink}
+                onClick={(e) => e.stopPropagation()}>
+                {dict.terms_link_label}
+              </Link>
+              {termsAfter}
+            </>
+          }
+        />
+
         {isSelectedPaymentAllowed && (
           <Button
             type="button"
@@ -526,8 +578,12 @@ export default function CheckoutForm({
             fullWidth
             loading={loading}
             onClick={() => handleSubmit()}
-            disabled={isAcquiring}>
-            {loading ? dict.processing : dict.submit}
+            disabled={isAcquiring || !termsAccepted}>
+            {loading
+              ? dict.processing
+              : payment === RESERVATION
+                ? dict.submit_reservation
+                : dict.submit}
           </Button>
         )}
 
@@ -535,7 +591,7 @@ export default function CheckoutForm({
           <button
             className={styles.applePayStandaloneButton}
             onClick={handleApplePayDirect}
-            disabled={loading || isAcquiring}
+            disabled={loading || isAcquiring || !termsAccepted}
             aria-label={dict.apple_pay_label}
           />
         )}
@@ -656,12 +712,25 @@ export default function CheckoutForm({
               </Accordion.Item>
               <Accordion.Item value="delivery">
                 <Accordion.Trigger className={styles.accordionTrigger}>
-                  {dict.delivery_estimate}
+                  {deliveryAccordionTitle}
                 </Accordion.Trigger>
                 <Accordion.Content>
-                  <Text size="sm" variant="muted" className={styles.accordionDetail}>
-                    {dict.delivery_detail}
-                  </Text>
+                  <Stack direction="column" gap="sm">
+                    {uniqueDeliveryEstimates.length > 1 && (
+                      <ul className={styles.deliveryList}>
+                        {deliveryProducts.map((p) => (
+                          <li key={p.id}>
+                            <Text size="sm" variant="muted" className={styles.accordionDetail}>
+                              <strong>{p.name}:</strong> {p.estimate}
+                            </Text>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <Text size="sm" variant="muted" className={styles.accordionDetail}>
+                      {dict.delivery_detail}
+                    </Text>
+                  </Stack>
                 </Accordion.Content>
               </Accordion.Item>
             </Accordion>

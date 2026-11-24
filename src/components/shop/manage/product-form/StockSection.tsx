@@ -61,7 +61,12 @@ export function StockSection({
             const st = val as StockType;
             onUpdate({
               stock_type: st,
-              ...(st === "limited" && !hasVariants ? { stock_quantity: 0 } : {}),
+              ...(st === "limited"
+                ? {
+                    order_deadline: undefined,
+                    ...(!hasVariants ? { stock_quantity: 0 } : {}),
+                  }
+                : {}),
             });
           }}
         />

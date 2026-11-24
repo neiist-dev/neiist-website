@@ -52,14 +52,20 @@ const jobHandlers: { [K in JobType]: JobHandler<Extract<JobPayload, { type: K }>
 
     const { sendEmail } = await import("@/lib/email");
     const { getAutoCancelledOrderEmailTemplate } = await import("@/lib/email/templates/shop");
+    const { defaultLocale, isValidLocale } = await import("@/i18n/i18n-config");
+    const orderLocale = isValidLocale(order.locale) ? order.locale : defaultLocale;
     try {
       await sendEmail({
         to: order.customer_email,
-        subject: `Encomenda ${order.order_number} - Cancelada por expiração`,
+        subject:
+          orderLocale === "en"
+            ? `Order ${order.order_number} - Cancelled due to expiration`
+            : `Encomenda ${order.order_number} - Cancelada por expiração`,
         html: getAutoCancelledOrderEmailTemplate(
           order.order_number,
-          order.customer_name ?? "Cliente",
-          order.campus ?? undefined
+          order.customer_name,
+          order.campus ?? undefined,
+          orderLocale
         ),
       });
     } catch (emailErr) {

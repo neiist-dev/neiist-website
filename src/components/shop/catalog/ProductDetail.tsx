@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { FiChevronDown, FiImage } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Product, CartItem } from "@/types/shop/product";
@@ -79,6 +80,9 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
   }, [selectedVariant]);
 
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [sizeGuideBefore, sizeGuideAfter] = dict.size_guide_text.split("{link}");
+  const [returnsBeforeEmail, returnsAfterEmail = ""] = dict.returns_text.split("{email}");
+  const [returnsMiddle, returnsAfterLink] = returnsAfterEmail.split("{link}");
 
   const addToCart = () => {
     if (unavailableReason) {
@@ -252,7 +256,7 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
             </div>
           </div>
 
-          {(product.size_guide || product.estimated_delivery) && (
+          {(product.size_guide || product.estimated_delivery || !isEventTicket) && (
             <div className={styles.asideDetails}>
               {product.size_guide && (
                 <>
@@ -262,7 +266,7 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
                       <FiChevronDown className={styles.detailIcon} aria-hidden />
                     </summary>
                     <p>
-                      {dict.size_guide_text.split("{link}")[0]}
+                      {sizeGuideBefore}
                       <a
                         href="#"
                         className={styles.sizeGuideLink}
@@ -272,7 +276,7 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
                         }}>
                         {dict.size_guide_link}
                       </a>
-                      {dict.size_guide_text.split("{link}")[1]}
+                      {sizeGuideAfter}
                     </p>
                   </details>
                   <SizeGuideOverlay
@@ -291,6 +295,28 @@ export default function ProductDetail({ product, dict, basePath }: ProductDetail
                     <FiChevronDown className={styles.detailIcon} aria-hidden />
                   </summary>
                   <p>{product.estimated_delivery}</p>
+                </details>
+              )}
+
+              {!isEventTicket && (
+                <details className={styles.detailsBlock}>
+                  <summary>
+                    <span>{dict.returns_title}</span>
+                    <FiChevronDown className={styles.detailIcon} aria-hidden />
+                  </summary>
+                  <p>
+                    {returnsBeforeEmail}
+                    <a href="mailto:neiist@tecnico.ulisboa.pt" className={styles.sizeGuideLink}>
+                      neiist@tecnico.ulisboa.pt
+                    </a>
+                    {returnsMiddle}
+                    <Link
+                      href={`${basePath || ""}/terms#withdrawal`}
+                      className={styles.sizeGuideLink}>
+                      {dict.returns_terms_link}
+                    </Link>
+                    {returnsAfterLink}
+                  </p>
                 </details>
               )}
             </div>

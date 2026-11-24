@@ -17,6 +17,7 @@ import {
   saveCheckoutSession,
 } from "@/lib/redis/sessions";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { hasAcceptedWebTerms } from "@/lib/shop/checkout";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
 const SUMUP_MERCHANT_CODE = process.env.SUMUP_MERCHANT_CODE;
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
 
     if (session.user_istid && auth.user && session.user_istid !== auth.user.istid)
       return sumupErrorResponse("Not order owner", 403);
+
+    if (!hasAcceptedWebTerms(session))
+      return sumupErrorResponse("Tens de aceitar os Termos e Condições antes de pagar.", 400);
 
     const amount = Math.round(Number(session.total_amount) * 100) / 100;
     if (amount <= 0) return sumupErrorResponse("Invalid order amount", 400);

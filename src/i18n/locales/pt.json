@@ -242,16 +242,20 @@
     "section_notes": "Notas (Opcional)",
     "notes_placeholder": "Adicione notas sobre o seu pedido...",
     "processing": "A processar...",
-    "submit": "Concluir Compra",
+    "submit": "Encomendar e pagar",
+    "submit_reservation": "Reservar encomenda",
     "apple_pay_label": "Pagar com Apple Pay",
     "summary_title": "Resumo do Pedido",
     "subtotal": "Subtotal",
     "iva": "IVA (23%)",
     "total": "Total",
-    "tax_info": "Taxas incluídas. Envio calculado no checkout.",
-    "tax_info_detail": "As taxas são calculadas automaticamente com base na sua localização.",
-    "delivery_estimate": "Entrega estimada: 15-20 dias úteis",
-    "delivery_detail": "O tempo de entrega pode variar dependendo da localização de levantamento escolhida.",
+    "tax_info": "Taxas incluídas. Sem custos de envio.",
+    "tax_info_detail": "Os preços incluem IVA à taxa legal em vigor. Não são efetuados envios, a encomenda tem de ser recolhida no campus selecionado.",
+    "delivery_estimate": "Prazo de entrega estimado informado no momento da compra.",
+    "delivery_detail": "O tempo de entrega pode variar dependendo da localização de levantamento escolhida. Sendo uma associação de estudantes, tentamos fazer o nosso melhor.",
+    "terms_checkbox": "Li e aceito os {terms}",
+    "terms_link_label": "Termos e Condições",
+    "error_terms_required": "Por favor, lê e aceita os Termos e Condições para continuar.",
     "campus_alameda": "Alameda",
     "campus_taguspark": "Taguspark",
     "discount_label": "Código de Desconto",
@@ -482,6 +486,9 @@
     "size_guide_link": "Guia de Tamanhos",
     "size_guide_text": "Vê o nosso {link} para mais detalhes.",
     "delivery_title": "Prazos de Entrega",
+    "returns_title": "Trocas e Devoluções",
+    "returns_text": "Tens 14 dias a contar do levantamento para desistir da compra, sem dares justificação e sem custos: envia um email para {email} com o número da encomenda. O artigo tem de ser devolvido numa das nossas salas, sem uso, sem lavagem e com etiqueta. Devolvemos o valor pago pelo mesmo meio de pagamento. Pedidos de troca de tamanho são analisados caso a caso, conforme a disponibilidade. {link}",
+    "returns_terms_link": "Ver Termos e Condições",
     "error_upcoming": "As encomendas para este produto abrem a {date}.",
     "error_deadline": "O prazo de encomenda deste produto já terminou.",
     "error_unavailable": "Este produto já não está disponível para compra.",
@@ -1756,7 +1763,7 @@
   "terms_page": {
     "title": "Termos e Condições",
     "last_updated_label": "Última atualização",
-    "last_updated_date": "14 de novembro de 2026",
+    "last_updated_date": "24 de novembro de 2026",
     "intro": "Os presentes Termos e Condições regulam a utilização deste site e as compras efetuadas na loja do NEIIST (Núcleo Estudantil de Informática do IST), incluindo encomendas, pagamentos, entregas, trocas e devoluções, em conformidade com a legislação portuguesa e europeia de defesa do consumidor.",
     "sections": [
       {
@@ -1934,7 +1941,8 @@
             "label": "Exceções",
             "text": "o direito de livre resolução não se aplica a artigos com personalização real ou produzidos segundo especificações individuais do consumidor (como, por exemplo, artigos com nome ou texto personalizado impresso), nos termos do artigo 17.º, n.º 1, alínea c), do Decreto-Lei n.º 24/2014. Os restantes artigos, incluindo artigos produzidos por encomenda em que o cliente apenas escolhe opções padrão disponíveis em catálogo (como tamanho, cor ou modelo) mantêm-se abrangidos pelo direito de livre resolução de 14 dias. Esta informação é apresentada na página do produto e no checkout. Ainda assim, caso o cliente pretenda devolver um artigo personalizado, o pedido é analisado caso a caso e a melhor solução é encontrada e acordada entre a Direção do NEIIST em funções e o cliente, sem que daí resulte qualquer obrigação para o NEIIST. Em caso de defeito, aplica-se a secção 10."
           }
-        ]
+        ],
+        "outro": "Pode usar o seguinte modelo, embora não seja obrigatório: \"Pela presente comunico que desisto do contrato de compra do(s) seguinte(s) bem(ns): [artigo], encomenda n.º [número], levantada em [data]. Nome: [...]. Data: [...].\""
       },
       {
         "type": "paragraphs",
@@ -1943,6 +1951,7 @@
         "paragraphs": [
           "Enquanto associação de estudantes sem fins lucrativos, o NEIIST não garante a possibilidade de troca de artigos. Os pedidos de troca (por exemplo, de tamanho ou modelo) são analisados caso a caso e acordados entre a Direção do NEIIST em funções e o cliente.",
           "O pedido deve ser feito por email para neiist@tecnico.ulisboa.pt no prazo máximo de 14 dias após a entrega, indicando o número da encomenda e o motivo. As condições da troca, nomeadamente a disponibilidade de artigos, o estado do artigo a devolver e a forma e local de entrega, são definidas por acordo entre as partes. O NEIIST fará o possível para encontrar uma solução, mas nem sempre será possível efetuar a troca.",
+          "Em alternativa, dentro dos 14 dias, pode sempre desistir da compra (secção 8) e fazer uma nova encomenda no tamanho pretendido, enquanto houver disponibilidade.",
           "Esta política de trocas não prejudica o direito de livre resolução (secção 8) nem a garantia legal de conformidade (secção 10)."
         ]
       },
@@ -1951,7 +1960,7 @@
         "id": "warranty",
         "title": "10. Garantia e Conformidade",
         "paragraphs": [
-          "O NEIIST não oferece qualquer garantia comercial adicional. Aplica-se apenas o regime legal de conformidade dos bens de consumo (Decreto-Lei n.º 84/2021), que não pode ser afastado e cujos prazos e condições dependem do tipo de artigo.",
+          "O NEIIST não oferece qualquer garantia comercial adicional. Aplica-se apenas o regime legal de conformidade dos bens de consumo (Decreto-Lei n.º 84/2021), que não pode ser afastado e que, para bens novos, é de 3 anos a contar da entrega.",
           "Em caso de defeito ou falta de conformidade, contacte neiist@tecnico.ulisboa.pt com o número da encomenda e fotografias do problema. Nos termos do Decreto-Lei n.º 84/2021, cabe ao consumidor escolher a solução legalmente aplicável entre reparação ou substituição do artigo, ou, quando aplicável, redução proporcional do preço ou resolução do contrato, procurando o NEIIST assegurar a sua concretização de forma célere e transparente.",
           "A garantia não cobre o desgaste normal, a utilização incorreta, a lavagem ou conservação contrária às instruções da etiqueta, nem danos causados após a entrega."
         ]

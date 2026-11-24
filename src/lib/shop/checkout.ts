@@ -13,6 +13,14 @@ import type { ProductChannel } from "@/types/shop/product";
 import type { User } from "@/types/user";
 import { addMoney } from "@/utils/shop/moneyUtils";
 
+export const CURRENT_TERMS_VERSION = "24/11/2026";
+
+export function hasAcceptedWebTerms(session: CheckoutSessionData): boolean {
+  return (
+    session.order_source !== "web" || Boolean(session.terms_accepted_at && session.terms_version)
+  );
+}
+
 /**
  * Redis CheckoutSessionData payload across Web, POS, and Fast-POS channels.
  */
@@ -45,6 +53,9 @@ export function buildCheckoutSession(opts: BuildCheckoutSessionOptions): Checkou
     created_by: opts.createdBy,
     shift_id: opts.shiftId,
     cart_id: opts.cartId ?? undefined,
+    terms_accepted_at: opts.termsAcceptedAt ?? null,
+    terms_version: opts.termsVersion ?? null,
+    locale: opts.locale ?? "pt",
     created_at: opts.createdAt ?? new Date(nowMs).toISOString(),
     expires_at: opts.expiresAt ?? new Date(nowMs + ttlSeconds * 1000).toISOString(),
   };

@@ -35,6 +35,7 @@ import {
   isTicketOrder,
 } from "@/utils/shop/orderStatusUtils";
 import { computeReservationExpiryMs, finalizePaidOrders } from "@/lib/shop/orders";
+import { defaultLocale, isValidLocale } from "@/i18n/i18n-config";
 import { getDictionary } from "@/i18n/dictionaries";
 
 export async function getAllOrdersAction(): Promise<Order[]> {
@@ -93,19 +94,22 @@ export async function setOrderStatusAction(
   if (!updated) throw new Error("Failed to update order status");
 
   if (updated.customer_email) {
-    const ordersTableDict = getDictionary("pt").orders_table;
+    const orderLocale = isValidLocale(updated.locale) ? updated.locale : defaultLocale;
+    const ordersTableDict = getDictionary(orderLocale).orders_table;
     const statusLabel = getStatusLabel(updated.status, ordersTableDict.status, {
       isTicket: isTicketOrder(updated),
       ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
     });
-    const subject = `Encomenda ${updated.order_number} - ${statusLabel}`;
+    const orderPrefix = orderLocale === "en" ? "Order" : "Encomenda";
+    const subject = `${orderPrefix} ${updated.order_number} - ${statusLabel}`;
     const html = getStatusUpdateOrderEmailTemplate(
       updated.order_number,
-      updated.customer_name ?? "Cliente",
+      updated.customer_name,
       updated.status,
       statusLabel,
       updated.campus ?? undefined,
-      updated.pickup_deadline ?? undefined
+      updated.pickup_deadline ?? undefined,
+      orderLocale
     );
     void sendEmail({ to: updated.customer_email, subject, html }).catch(() => {});
   }
@@ -167,29 +171,34 @@ export async function updateOrderAction(
   const updated = await updateOrder(order.order_number, filteredUpdates, false, user.istid);
   if (!updated) throw new Error("Failed to update order");
 
+  const orderLocale = isValidLocale(updated.locale) ? updated.locale : defaultLocale;
   const formattedDeadline =
     updates.pickup_deadline !== undefined &&
     updated.customer_email &&
     updated.pickup_deadline &&
     order.status !== "delivered" &&
     order.status !== "cancelled"
-      ? formatPickupDeadline(updated.pickup_deadline)
+      ? formatPickupDeadline(updated.pickup_deadline, orderLocale)
       : null;
 
   if (formattedDeadline && updated.customer_email) {
-    const subject = `Encomenda ${updated.order_number} - Prazo Limite para Levantamento (${formattedDeadline})`;
-    const ordersTableDict = getDictionary("pt").orders_table;
+    const subject =
+      orderLocale === "en"
+        ? `Order ${updated.order_number} - Pickup Deadline (${formattedDeadline})`
+        : `Encomenda ${updated.order_number} - Prazo Limite para Levantamento (${formattedDeadline})`;
+    const ordersTableDict = getDictionary(orderLocale).orders_table;
     const statusLabel = getStatusLabel(updated.status, ordersTableDict.status, {
       isTicket: isTicketOrder(updated),
       ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
     });
     const html = getStatusUpdateOrderEmailTemplate(
       updated.order_number,
-      updated.customer_name ?? "Cliente",
+      updated.customer_name,
       updated.status,
       statusLabel,
       updated.campus ?? undefined,
-      updated.pickup_deadline
+      updated.pickup_deadline,
+      orderLocale
     );
     void sendEmail({ to: updated.customer_email, subject, html }).catch(() => {});
   }
@@ -308,47 +317,61 @@ export async function resendOrderEmailAction(orderNumber: string): Promise<{ suc
   if (!order) throw new Error("Order not found");
   if (!order.customer_email) throw new Error("Cliente não possui email associado");
 
-  const ordersTableDict = getDictionary("pt").orders_table;
+  const orderLocale = isValidLocale(order.locale) ? order.locale : defaultLocale;
+  const ordersTableDict = getDictionary(orderLocale).orders_table;
+  const orderPrefix = orderLocale === "en" ? "Order" : "Encomenda";
+  const customerName = order.customer_name;
   const statusLabel = getStatusLabel(order.status, ordersTableDict.status, {
     isTicket: isTicketOrder(order),
     ticketConfirmedLabel: ordersTableDict.ticket_confirmed,
   });
-  let subject = `Encomenda ${order.order_number} - ${statusLabel}`;
+  let subject = `${orderPrefix} ${order.order_number} - ${statusLabel}`;
   let html: string;
 
   if (order.status === "paid" || order.status === "delivered") {
-    subject = `Encomenda ${order.order_number} - Pagamento Confirmado`;
+    subject =
+      orderLocale === "en"
+        ? `Order ${order.order_number} - Payment Confirmed`
+        : `Encomenda ${order.order_number} - Pagamento Confirmado`;
     html = getPaidOrderEmailTemplate(
       order.order_number,
-      order.customer_name ?? "Cliente",
+      customerName,
       order.items,
       Number(order.total_amount),
       order.campus ?? undefined,
       order.payment_method ?? undefined,
-      order.payment_reference ?? undefined
+      order.payment_reference ?? undefined,
+      isTicketOrder(order),
+      order.pickup_deadline ?? undefined,
+      orderLocale
     );
   } else if (order.status === "pending") {
     const { customDeadlineIso } = await computeReservationExpiryMs(order);
-    subject = `Encomenda ${order.order_number} - Aguardar Pagamento`;
+    subject =
+      orderLocale === "en"
+        ? `Order ${order.order_number} - Awaiting Payment`
+        : `Encomenda ${order.order_number} - Aguardar Pagamento`;
     html = getPendingOrderEmailTemplate(
       order.order_number,
-      order.customer_name ?? "Cliente",
+      customerName,
       order.items,
       Number(order.total_amount),
       order.campus ?? undefined,
       order.payment_method ?? undefined,
       customDeadlineIso,
       undefined,
-      isTicketOrder(order)
+      isTicketOrder(order),
+      orderLocale
     );
   } else {
     html = getStatusUpdateOrderEmailTemplate(
       order.order_number,
-      order.customer_name ?? "Cliente",
+      customerName,
       order.status,
       statusLabel,
       order.campus ?? undefined,
-      order.pickup_deadline ?? undefined
+      order.pickup_deadline ?? undefined,
+      orderLocale
     );
   }
 

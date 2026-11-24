@@ -242,16 +242,20 @@
     "section_notes": "Notes (Optional)",
     "notes_placeholder": "Add notes about your order...",
     "processing": "Processing...",
-    "submit": "Complete Purchase",
+    "submit": "Order and pay",
+    "submit_reservation": "Reserve order",
     "apple_pay_label": "Pay with Apple Pay",
     "summary_title": "Order Summary",
     "subtotal": "Subtotal",
     "iva": "VAT (23%)",
     "total": "Total",
-    "tax_info": "Taxes included. Shipping calculated at checkout.",
-    "tax_info_detail": "Taxes are automatically calculated based on your location.",
-    "delivery_estimate": "Estimated delivery: 15-20 business days",
-    "delivery_detail": "Delivery time may vary depending on the chosen pickup location.",
+    "tax_info": "Taxes included. No shipping costs.",
+    "tax_info_detail": "Prices include VAT at the statutory rate in force. No shipping is provided; orders must be picked up at the selected campus.",
+    "delivery_estimate": "Estimated delivery time informed at the time of purchase.",
+    "delivery_detail": "Delivery time may vary depending on the chosen pickup location. As a student association, we do our best to meet all estimates.",
+    "terms_checkbox": "I have read and accept the {terms}",
+    "terms_link_label": "Terms and Conditions",
+    "error_terms_required": "Please read and accept the Terms and Conditions to continue.",
     "campus_alameda": "Alameda",
     "campus_taguspark": "Taguspark",
     "discount_label": "Discount Code",
@@ -482,6 +486,9 @@
     "size_guide_link": "Size Guide",
     "size_guide_text": "Check our {link} for more details.",
     "delivery_title": "Delivery Deadlines",
+    "returns_title": "Exchanges and Returns",
+    "returns_text": "You have 14 days from pickup to withdraw from your purchase, without giving any reason and at no cost: send an email to {email} with your order number. The item must be returned to one of our rooms, unused, unwashed and with tags. We refund the amount paid using the same payment method. Size exchange requests are assessed case by case, subject to availability. {link}",
+    "returns_terms_link": "View Terms and Conditions",
     "error_upcoming": "Orders for this product open on {date}.",
     "error_deadline": "The ordering deadline for this product has ended.",
     "error_unavailable": "This product is no longer available for purchase.",
@@ -1761,7 +1768,7 @@
   "terms_page": {
     "title": "Terms and Conditions",
     "last_updated_label": "Last updated",
-    "last_updated_date": "November 14, 2026",
+    "last_updated_date": "November 24, 2026",
     "intro": "These Terms and Conditions govern the use of this website and purchases made in the NEIIST (Núcleo Estudantil de Informática do IST) shop, including orders, payments, delivery, exchanges and returns, in accordance with Portuguese and European consumer protection law. In case of discrepancy, the Portuguese version prevails.",
     "sections": [
       {
@@ -1939,7 +1946,8 @@
             "label": "Exceptions",
             "text": "the right of withdrawal does not apply to genuinely personalised items or items made to the consumer's individual specifications (such as items with a custom printed name or text), under Article 17(1)(c) of Decree-Law no. 24/2014. All other items including made-to-order items where the customer only selects standard catalogue options (such as size, colour or model) remain covered by the 14-day right of withdrawal. This information is shown on the product page and at checkout. Even so, if a customer wishes to return a personalised item, the request is assessed case by case and the best solution is sought and agreed between the current NEIIST Board and the customer, without creating any obligation for NEIIST. In case of a defect, section 10 applies."
           }
-        ]
+        ],
+        "outro": "You may use the following model form, although it is not mandatory: \"I hereby give notice that I withdraw from my contract of sale of the following good(s): [item], order no. [number], collected on [date]. Name: [...]. Date: [...].\""
       },
       {
         "type": "paragraphs",
@@ -1948,6 +1956,7 @@
         "paragraphs": [
           "As a non-profit student association, NEIIST does not guarantee that items can be exchanged. Exchange requests (for example, for a different size or model) are assessed case by case and agreed between the current NEIIST Board and the customer.",
           "Requests must be sent by email to neiist@tecnico.ulisboa.pt within 14 days of delivery at the latest, stating the order number and the reason. The terms of the exchange, including item availability, the condition of the returned item, and how and where it is handed over, are agreed between both parties. NEIIST will do its best to find a solution, but an exchange may not always be possible.",
+          "Alternatively, within 14 days, you can always withdraw from the purchase (section 8) and place a new order in the desired size, subject to availability.",
           "This exchange policy does not affect the right of withdrawal (section 8) or the legal guarantee of conformity (section 10)."
         ]
       },
@@ -1956,7 +1965,7 @@
         "id": "warranty",
         "title": "10. Warranty and Conformity",
         "paragraphs": [
-          "NEIIST does not offer any additional commercial warranty. Only the mandatory legal regime for the conformity of consumer goods (Decree-Law no. 84/2021) applies; it cannot be waived and its periods and conditions depend on the type of item.",
+          "NEIIST does not offer any additional commercial warranty. Only the mandatory legal regime for the conformity of consumer goods (Decree-Law no. 84/2021) applies; it cannot be waived and, for new goods, is 3 years from delivery.",
           "In the event of a defect or lack of conformity, contact neiist@tecnico.ulisboa.pt with your order number and photos of the problem. Under Decree-Law no. 84/2021, it is up to the consumer to choose the legally applicable remedy - between repair or replacement of the item, or, where applicable, a proportionate price reduction or termination of the contract - and NEIIST will endeavour to implement it promptly and transparently.",
           "The warranty does not cover normal wear and tear, improper use, washing or care contrary to the label instructions, or damage occurring after delivery."
         ]

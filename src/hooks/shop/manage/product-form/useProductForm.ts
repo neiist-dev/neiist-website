@@ -378,7 +378,8 @@ export function useProductForm({
         variants: variantsPayload,
         variantsToDelete,
         order_start: form.order_start?.toISOString() ?? null,
-        order_deadline: form.order_deadline?.toISOString() ?? null,
+        order_deadline:
+          form.stock_type === "limited" ? null : (form.order_deadline?.toISOString() ?? null),
         estimated_delivery: form.estimated_delivery.trim() || null,
         size_guide: form.size_guide.trim() || null,
       };
