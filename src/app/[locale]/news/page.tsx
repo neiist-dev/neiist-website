@@ -14,7 +14,7 @@ import {
 import NewsCard, { type NewsCardProps } from "@/components/news/NewsCard";
 import { getDictionary } from "@/i18n/dictionaries";
 import { defaultLocale, isValidLocale, locales, type LocaleParams } from "@/i18n/i18n-config";
-import sweats from "@/assets/events/sweats.jpg";
+import sweats from "@/assets/news/all_sweats.png";
 import colorsFound from "@/assets/news/colours_found.png";
 import designFound from "@/assets/news/design_found.png";
 import googleDeepMind from "@/assets/news/google_deepmind.png";
