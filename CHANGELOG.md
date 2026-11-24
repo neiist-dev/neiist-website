@@ -1,5 +1,13 @@
 # neiist
 
+## [4.12.1](https://github.com/neiist-dev/neiist-website/compare/v4.12.0...v4.12.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* news page with sweats image ([c8baa45](https://github.com/neiist-dev/neiist-website/commit/c8baa454f42729394874cadea067a6a6ee0e29d8))
+* **ui:** colour picker re render loop ([baa2cf2](https://github.com/neiist-dev/neiist-website/commit/baa2cf240f131478230c8b399f3ac648c0967bac))
+
 ## [4.12.0](https://github.com/neiist-dev/neiist-website/compare/v4.11.0...v4.12.0) (2026-11-24)
 
 
