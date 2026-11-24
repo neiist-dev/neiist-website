@@ -4,12 +4,6 @@
   margin-inline: auto;
 }
 
-.containImage {
-  object-fit: contain;
-  padding: 1.25rem;
-  box-sizing: border-box;
-}
-
 .actionLink {
   display: inline-flex;
 }
