@@ -1,5 +1,24 @@
 # neiist
 
+## [4.12.0](https://github.com/neiist-dev/neiist-website/compare/v4.11.0...v4.12.0) (2026-11-24)
+
+
+### Features
+
+* **news:** add news page and partnes grid to home page ([9f365b1](https://github.com/neiist-dev/neiist-website/commit/9f365b178add459716092f5d0cef328486f18303))
+* **ui:** new TableToolbar and clean primitives for table construction ([a0e5584](https://github.com/neiist-dev/neiist-website/commit/a0e55840a0db08242cbde2ebb565e34f7502e685))
+
+
+### Bug Fixes
+
+* **calendar:** public o(1) calendar sync and private calendar read only ([c9c5b6a](https://github.com/neiist-dev/neiist-website/commit/c9c5b6a2fc3f18328c3eec50f40121a0c01cf28c))
+* imports and format on partnerships ([897066c](https://github.com/neiist-dev/neiist-website/commit/897066cbf6e216c2661b365e182358f22e964051))
+* **orders:** disable pickup deadline for cancelled orders ([4254df3](https://github.com/neiist-dev/neiist-website/commit/4254df3d97702b4d778be30daaf4c8d3719abf05))
+* **partnerships:** croped images and transparent logos ([a401149](https://github.com/neiist-dev/neiist-website/commit/a401149c802a92194d05b9253cf1e3c4f5cdf3e3))
+* **ui:** bento grid image sizes ([06c3dea](https://github.com/neiist-dev/neiist-website/commit/06c3deafcd14f8d9988a0e3809c19808174f9a6c))
+* **ui:** image agnostic ui support for image as react node ([ea736dd](https://github.com/neiist-dev/neiist-website/commit/ea736dd038df4a2376a6c73c8fa42589daab833d))
+* **ui:** mobile carousel touch drag and bento grid card imnage over ([c86ef69](https://github.com/neiist-dev/neiist-website/commit/c86ef693985563fe7bd0bc489ff9bd3922c1c645))
+
 ## [4.11.0](https://github.com/neiist-dev/neiist-website/compare/v4.10.0...v4.11.0) (2026-11-19)
 
 
