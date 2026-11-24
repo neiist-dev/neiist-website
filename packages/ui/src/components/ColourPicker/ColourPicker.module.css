@@ -18,21 +18,25 @@
   border-radius: var(--ui-radius-md);
   cursor: crosshair;
   position: relative;
+  touch-action: none;
+  user-select: none;
+  background:
+    linear-gradient(to top, #000, transparent, #fff),
+    linear-gradient(to left, hsl(var(--cp-hue), 100%, 50%), #808080);
 }
 
 .selector {
   position: absolute;
+  inset-inline-start: var(--cp-s);
+  inset-block-start: calc(100% - var(--cp-l));
   inline-size: 1.25rem;
   block-size: 1.25rem;
   border-radius: 50%;
   border: 4px solid var(--ui-bg);
   box-shadow: 0 0 0 1px var(--ui-bg-hover);
   transform: translate(-50%, -50%);
-  cursor: grab;
-}
-
-.selector:active {
-  cursor: grabbing;
+  background: hsl(var(--cp-hue), var(--cp-s), var(--cp-l));
+  pointer-events: none;
 }
 
 .hueSlider {
@@ -96,4 +100,5 @@
   block-size: 1.75rem;
   border-radius: var(--ui-radius-sm);
   border: 1px solid var(--ui-fg-light);
+  background: hsl(var(--cp-hue), var(--cp-s), var(--cp-l));
 }

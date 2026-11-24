@@ -1,46 +1,31 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
-import styles from "./ColourPicker.module.css";
-import { FiHash } from "react-icons/fi";
 
-export interface HSL {
+import React, { type CSSProperties, useEffect, useRef, useState } from "react";
+import { FiHash } from "react-icons/fi";
+import styles from "./ColourPicker.module.css";
+
+const DEFAULT_HEX = "#1C9488";
+
+interface HSL {
   hue: number;
   saturation: number;
   lightness: number;
 }
-export interface HexObj {
+
+interface Color extends HSL {
   hex: string;
-}
-export type Color = HSL & HexObj;
-
-export interface ColorChangeHandler {
-  (_updates: Partial<Color>): void;
-}
-
-export interface CanvasProps extends HSL {
-  handleChange: ColorChangeHandler;
 }
 
 function sanitizeHex(val: string) {
-  return val.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  return val.replace(/[^0-9a-fA-F]/g, "").toUpperCase();
 }
-function expandShortHex(hex: string) {
-  if (hex.length === 3)
-    return hex
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  return hex;
-}
-function normalizeHexOut(raw?: string | null) {
+
+function normalizeHex(raw?: string | null): string | null {
   if (!raw) return null;
-  let s = raw.replace(/^#/, "");
-  s = sanitizeHex(s);
-  if (!s) return null;
-  if (s.length === 3) s = expandShortHex(s);
-  if (s.length === 5) s = s.padEnd(6, "0");
-  if (s.length < 6) return null;
-  return `#${s.slice(0, 6)}`;
+  const s = sanitizeHex(raw);
+  if (s.length === 3) return `#${s[0]}${s[0]}${s[1]}${s[1]}${s[2]}${s[2]}`;
+  if (s.length === 6) return `#${s}`;
+  return null;
 }
 
 function hslToHex({ hue, saturation, lightness }: HSL) {
@@ -56,22 +41,15 @@ function hslToHex({ hue, saturation, lightness }: HSL) {
   return `${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`.toUpperCase();
 }
 
-function hexToHsl({ hex }: HexObj): HSL {
-  hex = hex.replace(/^#/, "");
-  if (hex.length === 3)
-    hex = hex
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  while (hex.length < 6) hex += "0";
+function hexToHsl(hex: string): HSL {
   const red = parseInt(hex.slice(0, 2), 16) / 255;
   const green = parseInt(hex.slice(2, 4), 16) / 255;
   const blue = parseInt(hex.slice(4, 6), 16) / 255;
 
-  const max = Math.max(red, green, blue),
-    min = Math.min(red, green, blue);
-  let hue = 0,
-    saturation = 0;
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  let hue = 0;
+  let saturation = 0;
   const lightness = (max + min) / 2;
 
   if (max !== min) {
@@ -90,101 +68,96 @@ function hexToHsl({ hex }: HexObj): HSL {
   };
 }
 
-const DraggableColorCanvas = ({ hue, saturation, lightness, handleChange }: CanvasProps) => {
-  const [dragging, setDragging] = useState(false);
-  const colorAreaRef = React.useRef<HTMLDivElement | null>(null);
-
-  const calculate = useCallback(
-    (x: number, y: number) => {
-      if (!colorAreaRef.current) return;
-      const rect = colorAreaRef.current.getBoundingClientRect();
-      const sx = Math.max(0, Math.min(x - rect.left, rect.width));
-      const sy = Math.max(0, Math.min(y - rect.top, rect.height));
-      handleChange({
-        saturation: Math.round((sx / rect.width) * 100),
-        lightness: 100 - Math.round((sy / rect.height) * 100),
-      });
-    },
-    [handleChange]
-  );
-
-  React.useEffect(() => {
-    const move = (event: MouseEvent) => dragging && calculate(event.clientX, event.clientY);
-    const up = () => setDragging(false);
-    window.addEventListener("mousemove", move);
-    window.addEventListener("mouseup", up);
-    return () => {
-      window.removeEventListener("mousemove", move);
-      window.removeEventListener("mouseup", up);
-    };
-  }, [dragging, calculate]);
-
-  return (
-    <div
-      ref={colorAreaRef}
-      className={styles.canvas}
-      style={{
-        background: `linear-gradient(to top, #000, transparent, #fff), linear-gradient(to left, hsl(${hue},100%,50%), #bbb)`,
-      }}
-      onMouseDown={(event) => {
-        setDragging(true);
-        calculate(event.clientX, event.clientY);
-      }}>
-      <div
-        className={styles.selector}
-        style={{
-          left: `${saturation}%`,
-          top: `${100 - lightness}%`,
-          background: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-        }}
-      />
-    </div>
-  );
-};
-
 export interface ColourPickerProps {
   value?: string;
   default_value?: string;
   onChange?: (_hexWithHash: string) => void;
 }
 
-export const ColourPicker = ({ value, default_value = "#1C9488", onChange }: ColourPickerProps) => {
-  const initialHex = normalizeHexOut(value ?? default_value) ?? "#1C9488";
-  const hexNoHash = initialHex.replace(/^#/, "");
-  const [color, setColor] = useState<Color>(() => {
-    return { ...hexToHsl({ hex: hexNoHash }), hex: hexNoHash };
-  });
+export const ColourPicker = ({
+  value,
+  default_value = DEFAULT_HEX,
+  onChange,
+}: ColourPickerProps) => {
+  const normalizedProp = normalizeHex(value);
+  const initialHex = (normalizedProp ?? normalizeHex(default_value) ?? DEFAULT_HEX).slice(1);
+  const [color, setColor] = useState<Color>(() => ({ ...hexToHsl(initialHex), hex: initialHex }));
+  const [hexInput, setHexInput] = useState(initialHex);
+  const lastHexRef = useRef(initialHex);
 
   useEffect(() => {
-    const propNorm = normalizeHexOut(value);
-    const internalNorm = normalizeHexOut(color.hex);
-    if (!propNorm) return;
-    if (propNorm === internalNorm) return;
-    const hex = propNorm.replace(/^#/, "");
-    setColor({ ...hexToHsl({ hex }), hex });
-  }, [value, color.hex]);
+    if (!normalizedProp) return;
+    const hex = normalizedProp.slice(1);
+    if (hex === lastHexRef.current) return;
+    lastHexRef.current = hex;
+    setColor({ ...hexToHsl(hex), hex });
+    setHexInput(hex);
+  }, [normalizedProp]);
 
-  useEffect(() => {
-    if (!onChange) return;
-    const out = normalizeHexOut(color.hex);
-    const propNorm = normalizeHexOut(value);
-    if (!out) return;
-    if (propNorm === out) return;
-    onChange(out);
-  }, [color.hex, onChange, value]);
+  const commitColor = (next: Color) => {
+    const changed = next.hex !== lastHexRef.current;
+    lastHexRef.current = next.hex;
+    setColor(next);
+    setHexInput(next.hex);
+    if (changed) onChange?.(`#${next.hex}`);
+  };
+
+  const updateHsl = (partial: Partial<HSL>) => {
+    const next: HSL = {
+      hue: partial.hue ?? color.hue,
+      saturation: partial.saturation ?? color.saturation,
+      lightness: partial.lightness ?? color.lightness,
+    };
+    commitColor({ ...next, hex: hslToHex(next) });
+  };
+
+  const pickFromPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const sx = Math.max(0, Math.min(event.clientX - rect.left, rect.width));
+    const sy = Math.max(0, Math.min(event.clientY - rect.top, rect.height));
+    updateHsl({
+      saturation: Math.round((sx / rect.width) * 100),
+      lightness: 100 - Math.round((sy / rect.height) * 100),
+    });
+  };
+
+  const commitHexInput = () => {
+    const normalized = normalizeHex(hexInput);
+    if (!normalized) {
+      setHexInput(color.hex);
+      return;
+    }
+    const hex = normalized.slice(1);
+    commitColor({ ...hexToHsl(hex), hex });
+  };
 
   return (
-    <div className={styles.wrapper}>
-      <DraggableColorCanvas
-        {...{ hue: color.hue, saturation: color.saturation, lightness: color.lightness }}
-        handleChange={(partial) =>
-          setColor((prev) => {
-            const next = { ...prev, ...partial };
-            const hex = hslToHex(next);
-            return { ...next, hex };
-          })
-        }
-      />
+    <div
+      className={styles.wrapper}
+      style={
+        {
+          "--cp-hue": color.hue,
+          "--cp-s": `${color.saturation}%`,
+          "--cp-l": `${color.lightness}%`,
+        } as CSSProperties
+      }>
+      <div
+        className={styles.canvas}
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          event.currentTarget.setPointerCapture(event.pointerId);
+          pickFromPointer(event);
+        }}
+        onPointerMove={(event) => {
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) pickFromPointer(event);
+        }}
+        onPointerUp={(event) => {
+          if (event.currentTarget.hasPointerCapture(event.pointerId))
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }}>
+        <div className={styles.selector} />
+      </div>
       <input
         type="range"
         min={0}
@@ -192,34 +165,30 @@ export const ColourPicker = ({ value, default_value = "#1C9488", onChange }: Col
         value={color.hue}
         aria-label="Hue"
         className={styles.hueSlider}
-        onChange={(event) =>
-          setColor((prev) => {
-            const base = { ...prev, hue: event.target.valueAsNumber };
-            return { ...base, hex: hslToHex(base) };
-          })
-        }
+        onChange={(event) => updateHsl({ hue: event.target.valueAsNumber })}
       />
       <div className={styles.hexRow}>
         <FiHash className={styles.hashIcon} />
         <input
-          value={color.hex}
+          value={hexInput}
           aria-label="Hex color"
           className={styles.hexInput}
           onChange={(event) => {
-            const raw = sanitizeHex(event.target.value);
-            const expanded = expandShortHex(raw);
-            try {
-              const newHsl = hexToHsl({ hex: expanded });
-              setColor({ ...newHsl, hex: expanded });
-            } catch {
-              setColor((prev) => ({ ...prev, hex: expanded }));
+            const raw = sanitizeHex(event.target.value).slice(0, 6);
+            setHexInput(raw);
+            if (raw.length === 6) {
+              commitColor({ ...hexToHsl(raw), hex: raw });
+            }
+          }}
+          onBlur={commitHexInput}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              commitHexInput();
             }
           }}
         />
-        <div
-          className={styles.colorPreview}
-          style={{ background: `hsl(${color.hue},${color.saturation}%,${color.lightness}%)` }}
-        />
+        <div className={styles.colorPreview} />
       </div>
     </div>
   );
