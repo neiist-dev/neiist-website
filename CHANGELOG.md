@@ -1,5 +1,17 @@
 # neiist
 
+## [4.13.0](https://github.com/neiist-dev/neiist-website/compare/v4.12.1...v4.13.0) (2026-11-24)
+
+
+### Features
+
+* **shop:** update checkout with accept term checkbox, terms and returns ([92a1158](https://github.com/neiist-dev/neiist-website/commit/92a1158046718754ae78b6bb215da54375265438))
+
+
+### Bug Fixes
+
+* **i18n:** small shop correction ([f6255c1](https://github.com/neiist-dev/neiist-website/commit/f6255c1d6ae38ca6caa4b8428062bb1dd7e8e524))
+
 ## [4.12.1](https://github.com/neiist-dev/neiist-website/compare/v4.12.0...v4.12.1) (2026-11-24)
 
 
