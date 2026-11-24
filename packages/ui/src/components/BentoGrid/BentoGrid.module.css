@@ -46,7 +46,7 @@
   inset-inline: 0;
   inset-block: 0 3.5rem;
   overflow: hidden;
-  background-color: var(--ui-bg-hover);
+  background: var(--bento-image-bg, var(--ui-bg-hover));
 }
 
 .imageWrapper :where(img, svg, picture) {
@@ -54,6 +54,12 @@
   block-size: 100%;
   object-fit: cover;
   display: block;
+}
+
+.imageContain :where(img, svg, picture) {
+  object-fit: contain;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .content {

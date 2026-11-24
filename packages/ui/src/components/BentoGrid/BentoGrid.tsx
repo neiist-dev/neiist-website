@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, ReactNode } from "react";
+import type { ComponentPropsWithRef, CSSProperties, ReactNode } from "react";
 import styles from "./BentoGrid.module.css";
 import { cn } from "../../utils/cn";
 import { Card } from "../Card/Card";
@@ -13,6 +13,8 @@ export interface BentoGridItemProps extends Omit<ComponentPropsWithRef<"article"
   title?: ReactNode;
   description?: ReactNode;
   image?: ReactNode;
+  imageFit?: "cover" | "contain";
+  imageBackground?: string;
   actions?: ReactNode;
 }
 
@@ -20,6 +22,8 @@ function BentoGridItem({
   title,
   description,
   image,
+  imageFit = "cover",
+  imageBackground,
   actions,
   children,
   className,
@@ -37,7 +41,13 @@ function BentoGridItem({
       variant="elevated"
       className={cn(styles.item, className)}
       {...props}>
-      <div className={styles.imageWrapper}>{image}</div>
+      <div
+        className={cn(styles.imageWrapper, imageFit === "contain" && styles.imageContain)}
+        style={
+          imageBackground ? ({ "--bento-image-bg": imageBackground } as CSSProperties) : undefined
+        }>
+        {image}
+      </div>
 
       {(title || hasReveal) && (
         <div className={styles.content}>
