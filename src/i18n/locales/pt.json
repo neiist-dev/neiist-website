@@ -303,7 +303,7 @@
     "back": "Voltar",
     "cancel": "Cancelar",
     "cancel_order": "Cancelar Encomenda",
-    "error_declined": "Pagamento recusado pelo emissor do cartão. Tenta novamente, usa outro cartão, ou escolhe reservar e pagar na Banca (POS).",
+    "error_declined": "Pagamento recusado pelo emissor do cartão. Tenta novamente, usa outro cartão, ou escolhe reservar e pagar na Banca.",
     "error_expired": "A autorização expirou. Tenta novamente para gerar uma nova sessão de pagamento.",
     "error_unconfirmed": "Não foi possível confirmar o pagamento após autorização bancária.",
     "error_invalid_card": "Verifica os dados do cartão e tenta novamente.",
@@ -1018,7 +1018,7 @@
         "photos:write_dept": "Gerir fotos dos seus departamentos",
         "shop:read": "Ver catálogo da loja e stock",
         "shop:write": "Gerir produtos, categorias e stock",
-        "pos:access": "Operar terminais de ponto de venda (POS)",
+        "pos:access": "Operar terminais de ponto de venda",
         "pos:manage": "Gerir postos, turnos e caixas de POS",
         "orders:read": "Ver encomendas e histórico de compras",
         "orders:read_customer": "Ver encomendas próprias de cliente",
@@ -1279,7 +1279,7 @@
     "error_resend_email": "Erro ao reenviar email.",
     "confirm": "Confirmar",
     "back": "Voltar",
-    "pay_in_pos": "Cobrar na Banca (POS)",
+    "pay_in_pos": "Cobrar na Banca",
     "resend_email": "Reenviar Email de Confirmação",
     "col_status": "Estado",
     "col_actions": "Ações",
@@ -2484,7 +2484,7 @@
       "ticket_locked": "Não podes adicionar artigos normais a um carrinho com bilhetes."
     },
     "management": {
-      "title": "Gestão de Postos & Turnos (POS)",
+      "title": "Gestão de Postos & Turnos",
       "subtitle": "Configuração de postos, abertura e fecho de turnos em tempo real e leitores SumUp.",
       "tabs": {
         "stations": "Postos & Turnos Ativos",

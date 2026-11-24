@@ -303,7 +303,7 @@
     "back": "Back",
     "cancel": "Cancel",
     "cancel_order": "Cancel Order",
-    "error_declined": "Payment declined by card issuer. Try again, use another card, or choose to reserve and pay at the Banca (POS).",
+    "error_declined": "Payment declined by card issuer. Try again, use another card, or choose to reserve and pay at the Banca.",
     "error_expired": "Authorization expired. Try again to generate a new payment session.",
     "error_unconfirmed": "Could not confirm payment after bank authorization.",
     "error_invalid_card": "Check your card details and try again.",
@@ -1887,7 +1887,7 @@
           },
           {
             "label": "In person",
-            "text": "in cash, MB Way or card terminal (POS) at the NEIIST rooms during opening hours."
+            "text": "in cash, MB Way or card terminal at the NEIIST rooms during opening hours."
           }
         ],
         "outro": "An invoice is always issued; if you want your tax number (NIF) included, please provide it when placing the order."
