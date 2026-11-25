@@ -69,6 +69,12 @@ export function parseDatabaseError(error: unknown): DatabaseError {
     );
   }
 
+  if (message.includes("chk_other_payment_reference"))
+    return new DatabaseError("Referência / justificação obrigatória para o método Outro", 400);
+
+  if (message.includes("Zero-amount payment is only allowed for cash or other payment methods"))
+    return new DatabaseError("Pagamentos de valor 0€ só são permitidos em numerário ou Outro", 400);
+
   if (
     message.includes("Active shift") &&
     (message.includes("not found or closed") || message.includes("not found"))

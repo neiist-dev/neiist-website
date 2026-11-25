@@ -152,9 +152,10 @@ export function createImageStore({
     await fs.mkdir(dir, { recursive: true });
 
     const existing = await find(id);
-    if (existing) await fs.rm(existing.fullPath, { force: true });
+    const newPath = path.join(dir, `${id}${extension}`);
+    await fs.writeFile(newPath, buffer);
 
-    await fs.writeFile(path.join(dir, `${id}${extension}`), buffer);
+    if (existing && existing.fullPath !== newPath) await fs.rm(existing.fullPath, { force: true });
     onMutate?.();
 
     return { id, url: url(id) };
@@ -210,7 +211,7 @@ export async function serveUserPhoto(
   const fenix = await fenixPhotos.find(userId);
   if (fenix) return fenixPhotos.serve(userId, cacheControl);
 
-  const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const response = NextResponse.redirect(new URL("/default_user.png", base), 307);
   response.headers.set("Cache-Control", cacheControl);
   return response;

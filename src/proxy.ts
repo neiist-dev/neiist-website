@@ -10,12 +10,10 @@ const protectedRoutes = [
   "/profile",
   "/my-orders",
   "/my-tickets",
-  "/shop/cart",
   "/shop/checkout",
   "/shop/pos",
   "/shop/manage",
   "/voting",
-  "/voting/manage",
   "/orders",
   "/management",
   "/activities/manage",
@@ -45,15 +43,15 @@ export async function proxy(req: NextRequest) {
   if (!path.startsWith("/api/") && (req.headers.get("accept") ?? "").includes("text/markdown")) {
     return new NextResponse(MARKDOWN_SITE, {
       status: 200,
-      headers: { "Content-Type": "text/markdown; charset=utf-8" },
+      headers: { "Content-Type": "text/markdown; charset=utf-8", Vary: "Accept" },
     });
   }
 
   if (path.startsWith("/api/")) {
-    const rule = getRateLimitRule(path);
+    const rule = getRateLimitRule(path, req.method);
     if (rule) {
       const sessionToken = req.cookies.get("session")?.value;
-      const jwtUser = await verifyJWTWebCrypto(sessionToken);
+      const jwtUser = verifyJWTWebCrypto(sessionToken);
       const userKey = rule.useUser ? jwtUser?.istid : undefined;
       const identifier = getClientIdentifier(req, userKey);
       const bucketKey = `${path.split("/").slice(0, 4).join("/")}:${identifier}`;
@@ -83,7 +81,7 @@ export async function proxy(req: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.url;
 
   const sessionToken = req.cookies.get("session")?.value;
-  const jwtUser = sessionToken ? await verifyJWTWebCrypto(sessionToken) : null;
+  const jwtUser = sessionToken ? verifyJWTWebCrypto(sessionToken) : null;
   const isAuthenticated = !!jwtUser;
 
   const isPrefetch =
@@ -97,15 +95,10 @@ export async function proxy(req: NextRequest) {
   ) {
     if (isPrefetch) return new NextResponse(null, { status: 204 });
 
-    if (routePath !== "/api/auth/login") {
-      const returnUrl = `/${locale}${routePath}${req.nextUrl.search}`;
-      const loginUrl = new URL("/api/auth/login", baseUrl);
-      loginUrl.searchParams.set("returnUrl", returnUrl);
-      const response = NextResponse.redirect(loginUrl);
-      addSecurityHeaders(response);
-      return response;
-    }
-    const response = NextResponse.next();
+    const returnUrl = `/${locale}${routePath}${req.nextUrl.search}`;
+    const loginUrl = new URL("/api/auth/login", baseUrl);
+    loginUrl.searchParams.set("returnUrl", returnUrl);
+    const response = NextResponse.redirect(loginUrl);
     addSecurityHeaders(response);
     return response;
   }

@@ -184,15 +184,6 @@ importers:
       '@sumup/sdk':
         specifier: ^0.2.5
         version: 0.2.5
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
-      '@types/pg':
-        specifier: ^8.23.1
-        version: 8.23.1
-      '@types/react-big-calendar':
-        specifier: ^1.16.3
-        version: 1.16.3
       baseline-browser-mapping:
         specifier: ^2.11.39
         version: 2.11.39
@@ -214,9 +205,6 @@ importers:
       ioredis:
         specifier: ^6.0.0
         version: 6.0.0
-      jsonwebtoken:
-        specifier: ^9.0.3
-        version: 9.0.3
       linkify-react:
         specifier: ^4.4.0
         version: 4.4.0(linkifyjs@4.4.0)(react@19.3.1)
@@ -232,6 +220,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      node-cron:
+        specifier: ^4.6.0
+        version: 4.6.0
       one-terminal:
         specifier: ^2.0.0
         version: 2.0.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -290,9 +281,15 @@ importers:
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
+      '@types/react-big-calendar':
+        specifier: ^1.16.3
+        version: 1.16.3
       '@types/react-dom':
         specifier: 19.3.0
         version: 19.3.0(@types/react@19.3.0)
@@ -311,9 +308,6 @@ importers:
       lint-staged:
         specifier: ^17.6.1
         version: 17.6.1
-      node-cron:
-        specifier: ^4.6.0
-        version: 4.6.0
       prettier:
         specifier: ^3.10.1
         version: 3.10.1
@@ -1218,9 +1212,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/jsonwebtoken@9.0.10':
-    resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
 
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
@@ -3659,11 +3650,6 @@ snapshots:
       '@types/unist': 3.0.3
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/jsonwebtoken@9.0.10':
-    dependencies:
-      '@types/ms': 2.1.0
-      '@types/node': 26.6.6
 
   '@types/mdast@4.0.4':
     dependencies:

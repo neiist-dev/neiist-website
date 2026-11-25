@@ -309,15 +309,21 @@ export function startShopWorker(): void {
   }, 5000);
   pumpTimer.unref();
 
-  const handleShutdown = () => {
+  const stop = () => {
     globalThis.__neiistShopWorkerRunning = false;
     clearInterval(pumpTimer);
+  };
+
+  const handleShutdown = () => {
+    stop();
     try {
       dedicatedClient.disconnect();
     } catch {
       // ignore
     }
   };
+  process.once("SIGTERM", stop);
+  process.once("SIGINT", stop);
 
   const handleEntries = async (messages: Array<[string, string[]]>): Promise<void> => {
     for (const [id, fields] of messages) {

@@ -1,4 +1,3 @@
-import { cache } from "react";
 import crypto from "crypto";
 import { UserRole } from "@/types/roles";
 
@@ -42,47 +41,48 @@ export function signJWTWebCrypto(
 /**
  * Cryptographically verifies an HS256 JWT using constant-time native HMAC verification.
  */
-export const verifyJWTWebCrypto = cache(async function verifyJWTWebCrypto(
+export function verifyJWTWebCrypto(
   token: string | undefined | null,
   secret: string = process.env.JWT_SECRET ?? ""
-): Promise<JwtPayload | null> {
-  if (!token || typeof token !== "string" || !secret) return null;
+): JwtPayload | null {
+  if (!token || typeof token !== "string" || token.length > 4096 || !secret) return null;
 
-  const parts = token.trim().split(".");
+  const parts = token.split(".");
   if (parts.length !== 3) return null;
 
   const [headerB64, payloadB64, signatureB64] = parts;
   if (!headerB64 || !payloadB64 || !signatureB64) return null;
 
   try {
+    const dataToVerify = `${headerB64}.${payloadB64}`;
+    const expectedSig = crypto.createHmac("sha256", secret).update(dataToVerify).digest();
+    const sigBuffer = Buffer.from(signatureB64, "base64url");
+
+    if (
+      sigBuffer.length !== expectedSig.length ||
+      !crypto.timingSafeEqual(sigBuffer, expectedSig)
+    ) {
+      return null;
+    }
+
     const headerJson = JSON.parse(Buffer.from(headerB64, "base64url").toString("utf8"));
     if (headerJson?.alg !== "HS256") return null;
 
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8")) as JwtPayload;
-    if (!payload || typeof payload !== "object") return null;
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      typeof payload.istid !== "string" ||
+      !Array.isArray(payload.roles)
+    )
+      return null;
 
     const nowSeconds = Math.floor(Date.now() / 1000);
-    if (typeof payload.exp === "number" && payload.exp <= nowSeconds) return null;
+    if (typeof payload.exp !== "number" || payload.exp <= nowSeconds) return null;
     if (typeof payload.nbf === "number" && payload.nbf > nowSeconds) return null;
 
-    const dataToVerify = `${headerB64}.${payloadB64}`;
-    const expectedSig = crypto
-      .createHmac("sha256", secret)
-      .update(dataToVerify)
-      .digest("base64url");
-
-    const sigBuffer = Buffer.from(signatureB64);
-    const expectedBuffer = Buffer.from(expectedSig);
-
-    if (
-      sigBuffer.length === expectedBuffer.length &&
-      crypto.timingSafeEqual(sigBuffer, expectedBuffer)
-    ) {
-      return payload;
-    }
-
-    return null;
+    return payload;
   } catch {
     return null;
   }
-});
+}

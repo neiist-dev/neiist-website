@@ -25,12 +25,12 @@ export function interpolateEmailVariables(
 ): string {
   let result = template;
   for (const [key, val] of Object.entries(variables)) {
-    const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, "gi");
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}}`, "gi");
     let strVal = val != null ? String(val) : "";
-    if (key.toLowerCase() === "name") {
-      strVal = getFirstAndLastName(strVal) || strVal;
-    }
-    result = result.replace(regex, strVal);
+    if (key.toLowerCase() === "name") strVal = getFirstAndLastName(strVal) || strVal;
+
+    result = result.replace(regex, () => strVal);
   }
   return result;
 }

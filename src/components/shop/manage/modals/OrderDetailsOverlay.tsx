@@ -1,8 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useRef, useMemo, type CSSProperties } from "react";
-import { Alert, Badge, Button, Heading, Modal, Table, Text } from "@neiist/ui";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import { Alert, Badge, Button, ConfirmDialog, Heading, Modal, Table, Text } from "@neiist/ui";
 import styles from "@/styles/components/shop/manage/modals/OrderDetailsOverlay.module.css";
 import { Order } from "@/types/shop/order";
 import { OrderStatus } from "@/types/shop/orderStatus";
@@ -82,9 +90,12 @@ export default function OrderDetailOverlay({
 }: OrderDetailOverlayProps) {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(initialOrder);
-  const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
-  const [showUserCancelConfirm, setShowUserCancelConfirm] = useState(false);
-  const [showPosRedirectModal, setShowPosRedirectModal] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    title: string;
+    message: ReactNode;
+    isDestructive?: boolean;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
   const [notesOpen, setNotesOpen] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
@@ -165,7 +176,6 @@ export default function OrderDetailOverlay({
 
   const handleRedirectToPos = () => {
     if (!order) return;
-    setShowPosRedirectModal(false);
     router.push(`/${locale}/shop/pos?orderNumber=${encodeURIComponent(order.order_number)}`);
   };
 
@@ -252,6 +262,20 @@ export default function OrderDetailOverlay({
     "--progress-width": progressWidth,
   } as CSSProperties;
 
+  const confirmOrderStatus = (status: OrderStatus) => {
+    const statusLabel = getStatusLabel(status, dict.status, {
+      isTicket,
+      ticketConfirmedLabel: dict.ticket_confirmed,
+    });
+    const statusPrompt = dict.confirm_status.replace("{status}", statusLabel);
+    setPendingConfirm({
+      title: status === "cancelled" ? dict.cancel_order : statusPrompt,
+      message: status === "cancelled" ? dict.confirm_cancel : statusPrompt,
+      isDestructive: status === "cancelled",
+      onConfirm: () => handleStatusChange(status),
+    });
+  };
+
   const canSetPaid = canManage && canTransitionOrderStatus(order.status, "paid", isTicket);
   const canSetReady =
     canManage && !isTicket && canTransitionOrderStatus(order.status, "ready", isTicket);
@@ -266,6 +290,8 @@ export default function OrderDetailOverlay({
     (canTransitionOrderStatus(order.status, "cancelled", isTicket) || canOverride) &&
     (order.status === "pending" || canOverride);
   const userCanCancel = !canManage && !canOverride && order.status === "pending";
+
+  const paymentDisplay = getPaymentDisplay(order, dict);
 
   return (
     <>
@@ -284,8 +310,12 @@ export default function OrderDetailOverlay({
         }>
         <div className={styles.orderNumber}>
           {order.order_number}
-          <FaArrowRightLong />
-          {getPaymentDisplay(order, dict)}
+          {paymentDisplay && (
+            <>
+              <FaArrowRightLong />
+              {paymentDisplay}
+            </>
+          )}
         </div>
 
         <div className={styles.infoGrid}>
@@ -457,7 +487,15 @@ export default function OrderDetailOverlay({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleItemStatusChange(item.id!, "ready")}
+                                onClick={() =>
+                                  setPendingConfirm({
+                                    title: dict.mark_ready,
+                                    message: dict.confirm_item_status
+                                      .replace("{product}", item.product_name)
+                                      .replace("{status}", dict.status.ready),
+                                    onConfirm: () => handleItemStatusChange(item.id!, "ready"),
+                                  })
+                                }
                                 disabled={updatingItemId === item.id}>
                                 {updatingItemId === item.id ? dict.saving : dict.mark_ready_short}
                               </Button>
@@ -465,7 +503,15 @@ export default function OrderDetailOverlay({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleItemStatusChange(item.id!, "delivered")}
+                                onClick={() =>
+                                  setPendingConfirm({
+                                    title: dict.mark_delivered,
+                                    message: dict.confirm_item_status
+                                      .replace("{product}", item.product_name)
+                                      .replace("{status}", dict.status.delivered),
+                                    onConfirm: () => handleItemStatusChange(item.id!, "delivered"),
+                                  })
+                                }
                                 disabled={updatingItemId === item.id}>
                                 {updatingItemId === item.id ? dict.saving : dict.deliver}
                               </Button>
@@ -569,7 +615,13 @@ export default function OrderDetailOverlay({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={handleResendEmail}
+                    onClick={() =>
+                      setPendingConfirm({
+                        title: dict.resend_email,
+                        message: dict.confirm_resend_email,
+                        onConfirm: handleResendEmail,
+                      })
+                    }
                     disabled={emailSending}>
                     <FiMail className={styles.btnIcon} />
                     {emailSending ? dict.saving : dict.resend_email}
@@ -579,10 +631,16 @@ export default function OrderDetailOverlay({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleRetryHook}
+                      onClick={() =>
+                        setPendingConfirm({
+                          title: dict.retry_registration,
+                          message: dict.confirm_retry_registration,
+                          onConfirm: handleRetryHook,
+                        })
+                      }
                       disabled={retryingHook}>
                       <FiRefreshCw className={styles.btnIcon} />
-                      {retryingHook ? dict.saving : "Reprocessar Inscrição"}
+                      {retryingHook ? dict.saving : dict.retry_registration}
                     </Button>
                   )}
                 </>
@@ -595,7 +653,7 @@ export default function OrderDetailOverlay({
                   size="sm"
                   variant="outline"
                   color="danger"
-                  onClick={() => setPendingStatus("cancelled")}>
+                  onClick={() => confirmOrderStatus("cancelled")}>
                   {dict.cancel_order}
                 </Button>
               )}
@@ -605,24 +663,36 @@ export default function OrderDetailOverlay({
                     <Button
                       size="sm"
                       variant="primary"
-                      onClick={() => setShowPosRedirectModal(true)}>
+                      onClick={() =>
+                        setPendingConfirm({
+                          title: dict.pay_in_pos,
+                          message: (
+                            <>
+                              {dict.confirm_pay_in_pos.split("{number}")[0]}
+                              <strong>{order.order_number}</strong>
+                              {dict.confirm_pay_in_pos.split("{number}")[1]}
+                            </>
+                          ),
+                          onConfirm: handleRedirectToPos,
+                        })
+                      }>
                       {dict.pay_in_pos}
                     </Button>
                   )
                 : canSetPaid && (
-                    <Button size="sm" variant="primary" onClick={() => setPendingStatus("paid")}>
+                    <Button size="sm" variant="primary" onClick={() => confirmOrderStatus("paid")}>
                       {paymentButtonLabel}
                     </Button>
                   )}
 
               {canSetReady && (
-                <Button size="sm" variant="primary" onClick={() => setPendingStatus("ready")}>
+                <Button size="sm" variant="primary" onClick={() => confirmOrderStatus("ready")}>
                   {dict.mark_ready}
                 </Button>
               )}
 
               {canSetDelivered && (
-                <Button size="sm" variant="primary" onClick={() => setPendingStatus("delivered")}>
+                <Button size="sm" variant="primary" onClick={() => confirmOrderStatus("delivered")}>
                   {dict.mark_delivered}
                 </Button>
               )}
@@ -631,7 +701,7 @@ export default function OrderDetailOverlay({
         ) : canDeliver && canSetDelivered ? (
           <div className={styles.modalFooter}>
             <div className={styles.footerRight}>
-              <Button size="sm" variant="primary" onClick={() => setPendingStatus("delivered")}>
+              <Button size="sm" variant="primary" onClick={() => confirmOrderStatus("delivered")}>
                 {dict.mark_delivered}
               </Button>
             </div>
@@ -671,7 +741,14 @@ export default function OrderDetailOverlay({
                   size="sm"
                   variant="outline"
                   color="danger"
-                  onClick={() => setShowUserCancelConfirm(true)}>
+                  onClick={() =>
+                    setPendingConfirm({
+                      title: dict.cancel_order,
+                      message: dict.confirm_cancel,
+                      isDestructive: true,
+                      onConfirm: handleUserCancel,
+                    })
+                  }>
                   {dict.cancel_order}
                 </Button>
               )}
@@ -680,100 +757,22 @@ export default function OrderDetailOverlay({
         )}
       </Modal>
 
-      {pendingStatus && (
-        <Modal
-          open={!!pendingStatus}
-          onClose={() => setPendingStatus(null)}
-          size="sm"
-          title={
-            pendingStatus === "cancelled"
-              ? dict.cancel_order
-              : dict.confirm_status.replace(
-                  "{status}",
-                  getStatusLabel(pendingStatus, dict.status, {
-                    isTicket,
-                    ticketConfirmedLabel: dict.ticket_confirmed,
-                  })
-                )
-          }>
-          <div className={styles.modalBody}>
-            <Text size="sm" className={styles.modalText}>
-              {pendingStatus === "cancelled"
-                ? dict.confirm_cancel
-                : dict.confirm_status.replace(
-                    "{status}",
-                    getStatusLabel(pendingStatus, dict.status, {
-                      isTicket,
-                      ticketConfirmedLabel: dict.ticket_confirmed,
-                    })
-                  )}
-            </Text>
-            <div className={styles.modalActions}>
-              <Button size="sm" variant="outline" onClick={() => setPendingStatus(null)}>
-                {dict.back}
-              </Button>
-              <Button
-                size="sm"
-                variant={pendingStatus === "cancelled" ? "danger" : "primary"}
-                onClick={async () => {
-                  const statusToChange = pendingStatus;
-                  setPendingStatus(null);
-                  await handleStatusChange(statusToChange);
-                }}>
-                {dict.confirm}
-              </Button>
-            </div>
-          </div>
-        </Modal>
+      {pendingConfirm && (
+        <ConfirmDialog
+          open={!!pendingConfirm}
+          title={pendingConfirm.title}
+          message={pendingConfirm.message}
+          confirmLabel={dict.confirm}
+          cancelLabel={dict.back}
+          isDestructive={pendingConfirm.isDestructive}
+          onConfirm={async () => {
+            const action = pendingConfirm.onConfirm;
+            setPendingConfirm(null);
+            await action();
+          }}
+          onCancel={() => setPendingConfirm(null)}
+        />
       )}
-
-      <Modal
-        open={showUserCancelConfirm}
-        onClose={() => setShowUserCancelConfirm(false)}
-        size="sm"
-        title={dict.cancel_order}>
-        <div className={styles.modalBody}>
-          <Text size="sm" className={styles.modalText}>
-            {dict.confirm_cancel}
-          </Text>
-          <div className={styles.modalActions}>
-            <Button size="sm" variant="outline" onClick={() => setShowUserCancelConfirm(false)}>
-              {dict.back}
-            </Button>
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={async () => {
-                setShowUserCancelConfirm(false);
-                await handleUserCancel();
-              }}>
-              {dict.confirm}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={showPosRedirectModal}
-        onClose={() => setShowPosRedirectModal(false)}
-        size="sm"
-        title={dict.pay_in_pos}>
-        <div className={styles.modalBody}>
-          <Text size="sm" className={styles.modalText}>
-            {dict.confirm_pay_in_pos.split("{number}")[0]}
-            <strong>{order?.order_number}</strong>
-            {dict.confirm_pay_in_pos.split("{number}")[1]}
-          </Text>
-          <div className={styles.modalActions}>
-            <Button size="sm" variant="outline" onClick={() => setShowPosRedirectModal(false)}>
-              {dict.back}
-            </Button>
-            <Button size="sm" variant="primary" onClick={handleRedirectToPos}>
-              {dict.confirm}
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       <CampusScheduleOverlay
         open={showScheduleModal}

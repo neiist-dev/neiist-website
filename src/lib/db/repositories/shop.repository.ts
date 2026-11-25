@@ -232,6 +232,8 @@ export const createOrder = async (order: CreateOrderInput): Promise<Order | null
 
   const result = mapdbOrderToOrder(row);
   revalidateTag("orders", "max");
+  revalidateTag("products", "max");
+  if (order.discount_code) revalidateTag("discount_codes", "max");
   return result;
 };
 
@@ -382,6 +384,7 @@ export const cancelOrder = async (
 ): Promise<boolean> => {
   const cancelled = await cancelOrderNoCache(orderNumber, user_istid, only_if_pending);
   revalidateTag("orders", "max");
+  revalidateTag("products", "max");
   revalidateTag(`order-${orderNumber}`, "max");
   return cancelled;
 };

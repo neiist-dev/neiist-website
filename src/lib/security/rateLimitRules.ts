@@ -6,7 +6,7 @@ export interface RateLimitRule {
 
 const MIN = 60_000;
 
-export function getRateLimitRule(pathname: string): RateLimitRule | null {
+export function getRateLimitRule(pathname: string, method?: string): RateLimitRule | null {
   if (process.env.NODE_ENV === "development") return null;
 
   if (pathname === "/api/auth/login") return { limit: 60, windowMs: MIN };
@@ -18,9 +18,10 @@ export function getRateLimitRule(pathname: string): RateLimitRule | null {
   if (pathname.startsWith("/api/admin/")) return { limit: 30, windowMs: MIN, useUser: true };
 
   if (
-    pathname.startsWith("/api/user/photo/") ||
-    pathname.startsWith("/api/shop/photo/") ||
-    pathname.startsWith("/api/voting/photo/")
+    (!method || method.toUpperCase() === "GET") &&
+    (pathname.startsWith("/api/user/photo/") ||
+      pathname.startsWith("/api/shop/photo/") ||
+      pathname.startsWith("/api/voting/photo/"))
   )
     return null;
 

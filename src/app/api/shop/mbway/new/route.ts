@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || "";
+    const appUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
     const notificationUrl = appUrl
       ? `${appUrl.replace(/\/$/, "")}/api/shop/mbway/webhook`
       : undefined;

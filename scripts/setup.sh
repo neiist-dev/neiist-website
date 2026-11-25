@@ -80,7 +80,12 @@ setup_environment_variables() {
     else
       jwt_secret=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64)
     fi
-    echo "JWT_SECRET=$jwt_secret" >> .env
+    if grep -q '^JWT_SECRET=' .env; then
+      awk -v secret="$jwt_secret" 'BEGIN { replaced = 0 } /^JWT_SECRET=/ && !replaced { print "JWT_SECRET=" secret; replaced = 1; next } { print }' .env > .env.tmp && mv .env.tmp .env
+    else
+      [ -s .env ] && [ "$(tail -c 1 .env | wc -l)" -eq 0 ] && echo "" >> .env
+      echo "JWT_SECRET=$jwt_secret" >> .env
+    fi
     log_success "Injected random JWT_SECRET into .env"
     log_warn "PLEASE FILL OUT THE REST OF THE API KEYS IN .env"
   fi
@@ -91,6 +96,9 @@ setup_environment_variables() {
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 POSTGRES_DB=neiist
+REDIS_ADMIN_PASSWORD=CHANGE_ME_ADMIN_PASSWORD
+REDIS_APP_PASSWORD=CHANGE_ME_APP_PASSWORD
+REDIS_READONLY_PASSWORD=CHANGE_ME_READONLY_PASSWORD
 EOF
     log_success "docker/.env created successfully."
   else

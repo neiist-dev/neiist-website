@@ -6,7 +6,7 @@ import {
 } from "@/utils/shop/shopUtils";
 import type { PaymentMethod } from "@/types/shop/payment";
 import type { Locale } from "@/i18n/i18n-config";
-import { renderBaseEmailLayout } from "@/lib/email/baseEmail";
+import { escapeHtml, renderBaseEmailLayout } from "@/lib/email/baseEmail";
 
 const SHOP_EMAIL_COPY: Record<
   Locale,
@@ -354,7 +354,7 @@ export function formatVariantForEmail(variantOptions?: Record<string, string>): 
 
   const optionParts: string[] = [];
   for (const [key, value] of Object.entries(variantOptions)) {
-    if (!isColorKey(key)) optionParts.push(`${key}: ${value}`);
+    if (!isColorKey(key)) optionParts.push(`${escapeHtml(key)}: ${escapeHtml(value)}`);
   }
   if (optionParts.length > 0) parts.push(optionParts.join(" "));
 
@@ -418,7 +418,7 @@ export function renderItemsTable(
       return `
         <tr>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef;">
-            ${item.product_name}${variantText}
+            ${escapeHtml(item.product_name)}${variantText}
           </td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: center;">${item.quantity}</td>
           <td style="padding: 0.5rem; border-bottom: 1px solid #e9ecef; text-align: right;">€${item.unit_price.toFixed(2)}</td>
@@ -463,19 +463,20 @@ export function getOrderPendingTemplate(
 ): string {
   const copy = SHOP_EMAIL_COPY[locale];
   const p = copy.pending;
-  const greetingName = customerName?.trim() || copy.defaultCustomer;
+  const greetingName = escapeHtml(customerName?.trim() || copy.defaultCustomer);
+  const safeOrderNumber = escapeHtml(orderNumber);
   const scheduleLink = orderId
     ? ` ${p.scheduleLabel} <a href="${getBaseUrl()}/${locale}/my-orders?orderId=${orderId}" target="_blank" rel="noopener noreferrer" style="color: #2863FD; text-decoration: underline;">${p.scheduleLinkText}</a>`
     : "";
 
-  const campusLocation = getCampusLocation(campus, locale);
+  const campusLocation = escapeHtml(getCampusLocation(campus, locale));
   const deadlineText = formatPaymentDeadline(paymentDeadline, locale);
   const isReservation = !paymentMethod;
 
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">${isReservation ? p.reservationTitle : p.orderTitle}</h2>
     <p style="font-size: 1.1rem;">${copy.greeting(greetingName)}</p>
-    <p>${isReservation ? p.reservationIntro(orderNumber) : p.orderIntro(orderNumber)}</p>
+    <p>${isReservation ? p.reservationIntro(safeOrderNumber) : p.orderIntro(safeOrderNumber)}</p>
     <p><strong>${p.noteLabel}</strong> ${isReservation ? p.reservationNote : p.orderNote}</p>
     <p><strong>${p.whereToPayLabel}</strong> ${
       paymentMethod
@@ -488,7 +489,7 @@ export function getOrderPendingTemplate(
 
     ${renderItemsTable(items, total, locale)}
 
-    ${campus ? `<p><strong>${p.pickupCampusLabel}</strong> ${formatCampus(campus)}</p>` : ""}
+    ${campus ? `<p><strong>${p.pickupCampusLabel}</strong> ${escapeHtml(formatCampus(campus))}</p>` : ""}
 
     ${renderTermsFooterNotice(locale, "withdrawal")}
   `;
@@ -509,8 +510,9 @@ export function getOrderPaidTemplate(
 ): string {
   const copy = SHOP_EMAIL_COPY[locale];
   const p = copy.paid;
-  const greetingName = customerName?.trim() || copy.defaultCustomer;
-  const counterText = p.counterText(getCampusLocation(campus, locale));
+  const greetingName = escapeHtml(customerName?.trim() || copy.defaultCustomer);
+  const safeOrderNumber = escapeHtml(orderNumber);
+  const counterText = p.counterText(escapeHtml(getCampusLocation(campus, locale)));
   const paymentMethodText = paymentMethod
     ? paymentMethod === "cash" || paymentMethod === "other"
       ? counterText
@@ -521,13 +523,13 @@ export function getOrderPaidTemplate(
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">${p.title}</h2>
     <p style="font-size: 1.1rem;">${copy.greeting(greetingName)}</p>
-    <p>${p.intro(orderNumber)}</p>
+    <p>${p.intro(safeOrderNumber)}</p>
 
     ${renderItemsTable(items, total, locale)}
 
-    ${campus ? `<p><strong>${p.pickupCampusLabel}</strong> ${formatCampus(campus)}</p>` : ""}
+    ${campus ? `<p><strong>${p.pickupCampusLabel}</strong> ${escapeHtml(formatCampus(campus))}</p>` : ""}
     ${paymentMethodText ? `<p><strong>${p.paymentMethodLabel}</strong> ${paymentMethodText}</p>` : ""}
-    ${paymentReference ? `<p><strong>${p.paymentReferenceLabel}</strong> ${paymentReference}</p>` : ""}
+    ${paymentReference ? `<p><strong>${p.paymentReferenceLabel}</strong> ${escapeHtml(paymentReference)}</p>` : ""}
     ${formattedPickup ? `<p><strong>${p.pickupDeadlineLabel}</strong> ${formattedPickup}</p>` : ""}
 
     <p style="margin-top: 1.25rem;">${p.readyNotice}</p>
@@ -549,22 +551,23 @@ export function getEventTicketPaidTemplate(
 ): string {
   const copy = SHOP_EMAIL_COPY[locale];
   const tp = copy.ticketPaid;
-  const greetingName = customerName?.trim() || copy.defaultCustomer;
+  const greetingName = escapeHtml(customerName?.trim() || copy.defaultCustomer);
+  const safeOrderNumber = escapeHtml(orderNumber);
   const ticketItem =
     items.find(
       (i) => (i as { product_type?: string }).product_type === "event_ticket" || i.event_id
     ) || items[0];
-  const eventTitle = ticketItem?.product_name || tp.defaultTitle;
+  const eventTitle = escapeHtml(ticketItem?.product_name || tp.defaultTitle);
 
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">${tp.titlePrefix} - ${eventTitle}</h2>
     <p style="font-size: 1.1rem;">${copy.greeting(greetingName)}</p>
-    <p>${tp.intro(orderNumber, eventTitle)}</p>
+    <p>${tp.intro(safeOrderNumber, eventTitle)}</p>
 
     ${renderItemsTable(items, total, locale)}
 
-    ${campus ? `<p><strong>${tp.selectedCampusLabel}</strong> ${formatCampus(campus)}</p>` : ""}
-    ${paymentReference ? `<p><strong>${tp.paymentReferenceLabel}</strong> ${paymentReference}</p>` : ""}
+    ${campus ? `<p><strong>${tp.selectedCampusLabel}</strong> ${escapeHtml(formatCampus(campus))}</p>` : ""}
+    ${paymentReference ? `<p><strong>${tp.paymentReferenceLabel}</strong> ${escapeHtml(paymentReference)}</p>` : ""}
 
     <div style="background: #ffffff; border-radius: 0.75rem; padding: 1.25rem; margin: 1.5rem 0; border-left: 4px solid #2863FD;">
       <p style="margin: 0; font-weight: bold; color: #1e293b;">${tp.issuedTitle}</p>
@@ -598,14 +601,15 @@ export function getEventTicketPendingTemplate(
 ): string {
   const copy = SHOP_EMAIL_COPY[locale];
   const tp = copy.ticketPending;
-  const greetingName = customerName?.trim() || copy.defaultCustomer;
+  const greetingName = escapeHtml(customerName?.trim() || copy.defaultCustomer);
+  const safeOrderNumber = escapeHtml(orderNumber);
   const deadlineText = formatPaymentDeadline(paymentDeadline, locale);
-  const campusLocation = getCampusLocation(campus, locale);
+  const campusLocation = escapeHtml(getCampusLocation(campus, locale));
 
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">${tp.title}</h2>
     <p style="font-size: 1.1rem;">${copy.greeting(greetingName)}</p>
-    <p>${tp.intro(orderNumber)}</p>
+    <p>${tp.intro(safeOrderNumber)}</p>
     <p>
       <strong>${tp.paymentLabel}</strong> ${tp.paymentLocation(campusLocation)}
     </p>
@@ -613,7 +617,7 @@ export function getEventTicketPendingTemplate(
 
     ${renderItemsTable(items, total, locale)}
 
-    ${campus ? `<p><strong>${tp.selectedCampusLabel}</strong> ${formatCampus(campus)}</p>` : ""}
+    ${campus ? `<p><strong>${tp.selectedCampusLabel}</strong> ${escapeHtml(formatCampus(campus))}</p>` : ""}
 
     ${renderTermsFooterNotice(locale, "events")}
   `;
@@ -632,10 +636,12 @@ export function getStatusUpdateOrderEmailTemplate(
 ): string {
   const copy = SHOP_EMAIL_COPY[locale];
   const su = copy.statusUpdate;
-  const greetingName = customerName?.trim() || copy.defaultCustomer;
-  const message = su.messages[status] || su.defaultMessage(statusLabel);
+  const greetingName = escapeHtml(customerName?.trim() || copy.defaultCustomer);
+  const safeOrderNumber = escapeHtml(orderNumber);
+  const safeStatusLabel = escapeHtml(statusLabel);
+  const message = su.messages[status] || su.defaultMessage(safeStatusLabel);
 
-  const campusLocation = getCampusLocation(campus, locale);
+  const campusLocation = escapeHtml(getCampusLocation(campus, locale));
   const formattedPickup =
     status !== "delivered" && status !== "cancelled"
       ? formatPickupDeadline(pickupDeadline, locale)
@@ -663,8 +669,8 @@ export function getStatusUpdateOrderEmailTemplate(
     <h2 style="color: #2863FD; margin-bottom: 1rem;">${su.title}</h2>
     <p style="font-size: 1.1rem;">${copy.greeting(greetingName)}</p>
     <p>${message}</p>
-    <p><strong>${su.orderNumberLabel}</strong> ${orderNumber}</p>
-    <p><strong>${su.currentStatusLabel}</strong> ${statusLabel}</p>
+    <p><strong>${su.orderNumberLabel}</strong> ${safeOrderNumber}</p>
+    <p><strong>${su.currentStatusLabel}</strong> ${safeStatusLabel}</p>
 
     ${pickupNotice}
 
@@ -682,14 +688,15 @@ export function getAutoCancelledOrderEmailTemplate(
 ): string {
   const copy = SHOP_EMAIL_COPY[locale];
   const ac = copy.autoCancelled;
-  const greetingName = customerName?.trim() || copy.defaultCustomer;
+  const greetingName = escapeHtml(customerName?.trim() || copy.defaultCustomer);
+  const safeOrderNumber = escapeHtml(orderNumber);
 
   const content = `
     <h2 style="color: #2863FD; margin-bottom: 1rem;">${ac.title}</h2>
     <p style="font-size: 1.1rem;">${copy.greeting(greetingName)}</p>
-    <p>${ac.intro(orderNumber)}</p>
+    <p>${ac.intro(safeOrderNumber)}</p>
     <p>${ac.reorderNote}</p>
-    ${campus ? `<p><strong>${ac.selectedCampusLabel}</strong> ${formatCampus(campus)}</p>` : ""}
+    ${campus ? `<p><strong>${ac.selectedCampusLabel}</strong> ${escapeHtml(formatCampus(campus))}</p>` : ""}
   `;
 
   return renderBaseEmailLayout({ content });

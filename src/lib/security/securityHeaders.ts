@@ -9,7 +9,7 @@ export function addSecurityHeaders(response: NextResponse): void {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  response.headers.set("Permissions-Policy", "camera=(self), microphone=(), geolocation=()");
   response.headers.append("Link", `</sitemap.xml>; rel="sitemap"`);
   if (!isDev)
     response.headers.set(

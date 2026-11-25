@@ -679,6 +679,9 @@ CREATE TABLE neiist.payments (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT chk_pos_payment_shift CHECK (
     status <> 'successful' OR method NOT IN ('cash'::neiist.payment_method_enum, 'tpa'::neiist.payment_method_enum) OR shift_id IS NOT NULL
+  ),
+  CONSTRAINT chk_other_payment_reference CHECK (
+    method <> 'other'::neiist.payment_method_enum OR NULLIF(BTRIM(reference), '') IS NOT NULL
   )
 );
 
@@ -686,7 +689,7 @@ CREATE TABLE neiist.payments (
 CREATE TABLE neiist.order_payments (
   payment_id INTEGER NOT NULL REFERENCES neiist.payments(id) ON DELETE CASCADE,
   order_number TEXT NOT NULL REFERENCES neiist.orders(order_number) ON UPDATE CASCADE ON DELETE CASCADE,
-  amount NUMERIC(10,2) NOT NULL CHECK (amount > 0),
+  amount NUMERIC(10,2) NOT NULL CHECK (amount >= 0),
   PRIMARY KEY (payment_id, order_number)
 );
 
@@ -3208,7 +3211,10 @@ BEGIN
       total_amount = v_total_amount
   WHERE orders.order_number = v_order_number;
 
-  IF v_pay IS NOT NULL AND v_total_amount > 0 THEN
+  IF v_pay IS NOT NULL THEN
+    IF v_total_amount = 0 AND v_pay_method NOT IN ('cash'::neiist.payment_method_enum, 'other'::neiist.payment_method_enum) THEN
+      RAISE EXCEPTION 'Zero-amount payment is only allowed for cash or other payment methods';
+    END IF;
     INSERT INTO neiist.payments (
       method, status, reference, paid_at, received_by, verified_by, shift_id
     ) VALUES (

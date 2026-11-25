@@ -26,10 +26,10 @@ export const getAuthenticatedUser = cache(async (): Promise<AuthSession | null> 
   if (!token) return null;
 
   try {
-    const payload = await verifyJWTWebCrypto(token);
+    const payload = verifyJWTWebCrypto(token);
     if (!payload?.istid) return null;
 
-    const user = await getUser(payload.istid as string);
+    const user = await getUser(payload.istid);
     if (!user) return null;
 
     const roles = user.roles && user.roles.length > 0 ? user.roles : [UserRole._GUEST];

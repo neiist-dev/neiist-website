@@ -1,32 +1,20 @@
 import { parseDatabaseError } from "@/lib/db/errorMapper";
 import { Pool, QueryResult, QueryResultRow } from "pg";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+const globalForDb = globalThis as unknown as { __neiistDbPool?: Pool };
 
-let isShuttingDown = false;
-const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
-
-const gracefulShutdown = async (signal: string) => {
-  if (isShuttingDown) return;
-  isShuttingDown = true;
-  if (!isBuildPhase)
-    console.warn(`[DB Pool] Received ${signal}. Closing database connection pool...`);
-
-  try {
-    await pool.end();
-    if (!isBuildPhase) console.warn("[DB Pool] Database pool closed successfully.");
-  } catch (err) {
-    console.error("[DB Pool] Error closing database pool:", err);
-  }
+const createPool = () => {
+  const p = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  });
+  p.on("error", (err) => console.error("[DB Pool] Idle client error:", err));
+  return p;
 };
 
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+const pool = (globalForDb.__neiistDbPool ??= createPool());
 
 export const db_query = async <T extends QueryResultRow>(
   text: string,

@@ -71,14 +71,14 @@ export function getClientIdentifier(request: NextRequest, userIdentifier?: strin
   if (userIdentifier) return `user:${userIdentifier.trim()}`;
 
   const ip = getClientIp(request);
-  const ua = request.headers.get("user-agent")?.slice(0, 48) ?? "";
-  const lang = request.headers.get("accept-language")?.split(",")[0]?.slice(0, 10) ?? "";
 
   if (ip === "unknown" || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("::/64")) {
     const sessionCookie = request.cookies.get("session")?.value;
     if (sessionCookie) return `cookie:${sessionCookie.slice(-16)}`;
+    const ua = request.headers.get("user-agent")?.slice(0, 48) ?? "";
+    const lang = request.headers.get("accept-language")?.split(",")[0]?.slice(0, 10) ?? "";
     return `fallback:${ua}#${lang}`;
   }
 
-  return `${ip}#${ua}#${lang}`;
+  return ip;
 }

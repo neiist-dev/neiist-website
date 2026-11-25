@@ -51,11 +51,7 @@ function getBridgeSigningSecret(): string {
 }
 
 export function resolveBridgeBaseUrl(req: NextRequest): string {
-  const configured = (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    ""
-  ).trim();
+  const configured = (process.env.NEXT_PUBLIC_BASE_URL || "").trim();
   if (configured) return configured.replace(/\/$/, "");
 
   const forwardedHost = req.headers.get("x-forwarded-host");
