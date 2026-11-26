@@ -14,6 +14,7 @@ import {
 } from "@/types/voting";
 
 import { db_query } from "@/lib/db/connection";
+import { withUserPhotos } from "@/lib/imageStorage";
 
 export const addVotingSession = async (
   input: Partial<VotingSession>
@@ -66,7 +67,7 @@ export const getSessionNominees = async (sessionId: number): Promise<VotingNomin
     `SELECT * FROM neiist.get_session_nominees($1)`,
     [sessionId]
   );
-  return rows.map(mapDbVotingNominee);
+  return withUserPhotos(rows.map(mapDbVotingNominee), (n) => n.id, "userPhoto");
 };
 
 export const startVoting = async (sessionId: number): Promise<void> => {
@@ -97,7 +98,7 @@ export const getSessionResults = async (sessionId: number): Promise<SessionResul
   const { rows } = await db_query<DbSessionResult>(`SELECT * FROM neiist.get_session_results($1)`, [
     sessionId,
   ]);
-  return rows.map(mapDbSessionResult);
+  return withUserPhotos(rows.map(mapDbSessionResult), (r) => r.nomineeId, "nomineeUserPhoto");
 };
 
 export const getUserVotes = async (sessionId: number, voterIstid: string): Promise<string[]> => {

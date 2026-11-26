@@ -113,7 +113,7 @@ export default function MemberDetailModal({
         throw new Error(data.error || mDict.photo_error || "Failed to update photo");
       }
 
-      const newPhotoUrl = `/api/user/photo/${membership.userNumber}?t=${Date.now()}`;
+      const { photo: newPhotoUrl } = (await res.json()) as { photo: string };
       if (user) setUser({ ...user, photo: newPhotoUrl });
 
       onPhotoUpdated?.(membership.userNumber, newPhotoUrl);

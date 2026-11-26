@@ -93,6 +93,7 @@ export default function VotingSessionDetailsView({
         nomineeId: id,
         nomineeName: nom?.name || res?.nomineeName || id,
         nomineePhotoPath: nom?.photoPath ?? res?.nomineePhotoPath ?? null,
+        nomineeUserPhoto: nom?.userPhoto ?? res?.nomineeUserPhoto,
         description: nom?.description ?? res?.description ?? null,
         voteCount: res ? res.voteCount : 0,
       };
@@ -121,7 +122,7 @@ export default function VotingSessionDetailsView({
         cell: (row) => {
           const isUserType = isUserVotingType(session.type);
           const photoUrl = isUserType
-            ? `/api/user/photo/${row.nomineeId}`
+            ? (row.nomineeUserPhoto ?? `/api/user/photo/${row.nomineeId}`)
             : row.nomineePhotoPath || "/default_user.png";
           return (
             <div className={styles.nomineeCell}>

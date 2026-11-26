@@ -86,6 +86,7 @@ export interface Ticket {
   istid: string;
   name: string;
   email?: string;
+  photo?: string;
   attendee_istid?: string;
   attendee_name?: string;
 

@@ -226,7 +226,11 @@ export default function ActivityDetailsView({
         isCardHeader: true,
         cell: (row) => (
           <div className={styles.attendeeCell}>
-            <MemberAvatar name={row.name} photo={`/api/user/photo/${row.istid}`} size="sm" />
+            <MemberAvatar
+              name={row.name}
+              photo={row.photo ?? `/api/user/photo/${row.istid}`}
+              size="sm"
+            />
             <div className={styles.attendeeInfo}>
               <span className={styles.attendeeName}>{row.name}</span>
               <span className={styles.attendeeEmail}>{row.email}</span>

@@ -1,9 +1,15 @@
 import { User, dbUser, mapdbUserToUser } from "@/types/user";
 
 import { db_query } from "@/lib/db/connection";
+import { getUserPhotoUrl, withUserPhotos } from "@/lib/imageStorage";
 import { cacheTag, revalidateTag } from "next/cache";
 import { getUserMemberships, getAllDepartmentRoles } from "./team.repository";
 import { compareMandatePower } from "@/utils/membershipSortUtils";
+
+const withPhoto = async (user: User): Promise<User> => ({
+  ...user,
+  photo: await getUserPhotoUrl(user.istid),
+});
 
 export const createUser = async (user: Partial<User>): Promise<User | null> => {
   if (!user.istid || !user.name || !user.email) return null;
@@ -14,7 +20,7 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
     [user.istid, user.name, user.email, user.alternativeEmail, user.phone, user.courses]
   );
   if (!newUser) return null;
-  const result = newUser ? mapdbUserToUser(newUser) : null;
+  const result = await withPhoto(mapdbUserToUser(newUser));
   if (result) revalidateTag("users", "max");
   return result;
 };
@@ -27,7 +33,7 @@ export const updateUser = async (istid: string, updates: Partial<User>): Promise
     JSON.stringify(updates),
   ]);
   if (!updatedUser) return null;
-  const result = mapdbUserToUser(updatedUser);
+  const result = await withPhoto(mapdbUserToUser(updatedUser));
   revalidateTag("users", "max");
   return result;
 };
@@ -37,7 +43,7 @@ export const getUserNoCache = async (istid: string): Promise<User | null> => {
     rows: [user],
   } = await db_query<dbUser>("SELECT * FROM neiist.get_user($1::VARCHAR(10))", [istid]);
   if (!user) return null;
-  return mapdbUserToUser(user);
+  return withPhoto(mapdbUserToUser(user));
 };
 
 export const getUser = async (istid: string): Promise<User | null> => {
@@ -67,7 +73,7 @@ export const getUser = async (istid: string): Promise<User | null> => {
 
 export const getAllUsersNoCache = async (): Promise<User[]> => {
   const { rows } = await db_query<dbUser>("SELECT * FROM neiist.get_all_users()");
-  return rows.map(mapdbUserToUser);
+  return withUserPhotos(rows.map(mapdbUserToUser), (u) => u.istid, "photo");
 };
 
 export const getAllUsers = async (): Promise<User[]> => {

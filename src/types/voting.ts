@@ -113,12 +113,14 @@ export interface VotingNominee {
   photoPath: string | null;
   descriptionPhotoPath?: string | null;
   description?: string | null;
+  userPhoto?: string;
 }
 
 export interface SessionResult {
   nomineeId: string;
   nomineeName: string;
   nomineePhotoPath: string | null;
+  nomineeUserPhoto?: string;
   voteCount: number;
   description?: string | null;
 }

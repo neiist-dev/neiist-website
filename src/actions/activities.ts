@@ -5,6 +5,7 @@ import { requirePermission, requireUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import {
   getEventAttendanceRoster,
+  getEventAttendanceRosterWithPhotos,
   getActivityById,
   upsertWebsiteActivity,
   updateActivityProperties,
@@ -193,5 +194,5 @@ export async function getEventRosterAction(id: string): Promise<Ticket[]> {
   ) {
     throw new Error("Unauthorized");
   }
-  return getEventAttendanceRoster(id);
+  return getEventAttendanceRosterWithPhotos(id);
 }

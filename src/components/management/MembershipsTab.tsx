@@ -132,7 +132,7 @@ export default function MembershipsTab({
         throw new Error(data.error || mDict.photo_error || "Failed to update photo");
       }
 
-      const newPhotoUrl = `/api/user/photo/${editingPhotoIstid}?t=${Date.now()}`;
+      const { photo: newPhotoUrl } = (await res.json()) as { photo: string };
       handlePhotoUpdated(editingPhotoIstid, newPhotoUrl);
       Alert.success(mDict.photo_updated || "Photo updated successfully");
     } catch (err: unknown) {
