@@ -2488,6 +2488,10 @@
       "fast_sale_success": "Sale completed! Order #{number}",
       "deadline_expired": "Order deadline has passed for this item.",
       "out_of_stock": "Item sold out.",
+      "exceeds_stock": "Only {available} unit(s) available in stock.",
+      "override_confirm_title": "Confirm Override",
+      "override_confirm_message": "{item} — {reason} Proceed with override?",
+      "override_confirm_action": "Proceed",
       "ticket_single": "Only 1 ticket is allowed per sale.",
       "ticket_mixed": "Tickets cannot be combined with clothing or other items.",
       "ticket_locked": "You cannot add regular items to a cart containing tickets."

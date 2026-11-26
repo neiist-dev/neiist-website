@@ -107,6 +107,8 @@ export function VariantsSection({
 
   const removeGroupImage = (g: (typeof groupKeys)[0], slot: GroupSlot, i: number) => {
     const isExisting = i < slot.existing.length;
+    const removed = isExisting ? slot.existing[i] : slot.newFiles[i - slot.existing.length];
+
     setGroupImages((p) => ({
       ...p,
       [g.key]: isExisting
@@ -120,8 +122,8 @@ export function VariantsSection({
       p.map((v) => {
         if (!optValMatches(g.type, v.options[g.type] ?? "", g.val)) return v;
         return isExisting
-          ? { ...v, existingImages: v.existingImages.filter((img) => img !== slot.existing[i]) }
-          : { ...v, newImages: v.newImages.filter((_, k) => k !== i - slot.existing.length) };
+          ? { ...v, existingImages: v.existingImages.filter((img) => img !== removed) }
+          : { ...v, newImages: v.newImages.filter((img) => img !== removed) };
       })
     );
   };

@@ -221,6 +221,10 @@ export function useProductForm({
   const [groupImages, setGroupImages] = useState<GroupImages>(() =>
     buildInitialGroupImages(product?.variants)
   );
+  const groupImagesRef = useRef<GroupImages>(groupImages);
+  useEffect(() => {
+    groupImagesRef.current = groupImages;
+  }, [groupImages]);
 
   const categoryOptions = useMemo(() => allCategories.map((c) => c.name).sort(), [allCategories]);
   const hasVariants = variants.length > 0;
@@ -232,13 +236,6 @@ export function useProductForm({
   const allGlobalImages = useMemo(
     () => [...productImages.existing, ...productImages.new.map((f) => f.preview)],
     [productImages]
-  );
-
-  const hasAnyVariantSpecificImage = useMemo(
-    () =>
-      variants.some((v) => v.existingImages.length > 0 || v.newImages.length > 0) ||
-      Object.values(groupImages).some((s) => s.existing.length > 0 || s.newFiles.length > 0),
-    [variants, groupImages]
   );
 
   // Sync variants when definitions change
@@ -275,16 +272,22 @@ export function useProductForm({
         });
 
         return newCombos.map((opts) => {
-          const key = getOptsKey(opts);
-          const existing = prevMap.get(key);
+          const existing = prevMap.get(getOptsKey(opts));
           if (existing) return existing;
+
+          const slots = Object.entries(opts)
+            .map(([t, v]) => groupImagesRef.current[groupKeyFromOption(t, v)])
+            .filter(Boolean);
+
           return {
             options: opts,
-            price_modifier: 0,
+            price_modifier: slots.find((s) => s.price_modifier)?.price_modifier ?? 0,
             stock_quantity: 0,
             active: true,
-            existingImages: [],
-            newImages: [],
+            existingImages: Array.from(new Set(slots.flatMap((s) => s.existing))),
+            newImages: Array.from(
+              new Map(slots.flatMap((s) => s.newFiles).map((f) => [f.file, f])).values()
+            ),
           };
         });
       });
@@ -320,9 +323,22 @@ export function useProductForm({
         (id) => !currentVariantIds.has(id)
       );
 
+      const uploadCache = new Map<File, Promise<string>>();
+      const uploadOnce = (files: File[]) =>
+        Promise.all(
+          files.map((file) => {
+            let p = uploadCache.get(file);
+            if (!p) {
+              p = uploadShopFiles([file]).then((paths) => paths[0]);
+              uploadCache.set(file, p);
+            }
+            return p;
+          })
+        );
+
       const variantsPayload = [];
       for (const variant of variants) {
-        const newVariantPaths = await uploadShopFiles(variant.newImages.map((img) => img.file));
+        const newVariantPaths = await uploadOnce(variant.newImages.map((img) => img.file));
 
         variantsPayload.push({
           id: variant.id,
@@ -346,7 +362,7 @@ export function useProductForm({
       ][] = [];
 
       for (const [key, slot] of Object.entries(groupImages)) {
-        const newGroupPaths = await uploadShopFiles(slot.newFiles.map((f) => f.file));
+        const newGroupPaths = await uploadOnce(slot.newFiles.map((f) => f.file));
         groupUploadsEntries.push([
           key,
           {
@@ -417,7 +433,6 @@ export function useProductForm({
     hasVariants,
     totalVariantStock,
     allGlobalImages,
-    hasAnyVariantSpecificImage,
     uploading,
     handleSubmit,
     router,

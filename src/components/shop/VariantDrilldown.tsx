@@ -154,8 +154,7 @@ export default function VariantDrilldown({
               name: name || val,
               price: unitPriceMoney(product.price, sampleVariant?.price_modifier),
               images,
-              stock_quantity: sampleVariant?.stock_quantity,
-              variants: [],
+              variants: matchingVariants,
             };
 
             const titlePrefix = hex ? (

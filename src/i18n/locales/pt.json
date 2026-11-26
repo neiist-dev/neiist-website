@@ -2483,6 +2483,10 @@
       "fast_sale_success": "Venda concluída! Encomenda #{number}",
       "deadline_expired": "Prazo de encomenda expirado para este artigo.",
       "out_of_stock": "Artigo esgotado.",
+      "exceeds_stock": "Apenas {available} unidade(s) disponível(eis) em stock.",
+      "override_confirm_title": "Confirmar Override",
+      "override_confirm_message": "{item} — {reason} Continuar com override?",
+      "override_confirm_action": "Continuar",
       "ticket_single": "Apenas é permitido 1 bilhete por venda.",
       "ticket_mixed": "Bilhetes não podem ser combinados com vestuário ou outros artigos.",
       "ticket_locked": "Não podes adicionar artigos normais a um carrinho com bilhetes."

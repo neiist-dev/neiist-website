@@ -52,7 +52,6 @@ export default function ProductForm({
     hasVariants,
     totalVariantStock,
     allGlobalImages,
-    hasAnyVariantSpecificImage,
     uploading,
     handleSubmit,
     router,
@@ -63,9 +62,6 @@ export default function ProductForm({
     categories,
     dict,
   });
-
-  const showGlobalImages =
-    !hasVariants || allGlobalImages.length > 0 || !hasAnyVariantSpecificImage;
 
   return (
     <div className={styles.container}>
@@ -143,14 +139,12 @@ export default function ProductForm({
               dict={dict}
             />
 
-            {showGlobalImages && (
-              <ImagesSection
-                productImages={productImages}
-                setProductImages={setProductImages}
-                allGlobalImages={allGlobalImages}
-                dict={dict}
-              />
-            )}
+            <ImagesSection
+              productImages={productImages}
+              setProductImages={setProductImages}
+              allGlobalImages={allGlobalImages}
+              dict={dict}
+            />
           </div>
         </div>
       </form>

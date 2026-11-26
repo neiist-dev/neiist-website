@@ -18,7 +18,12 @@ import {
   upsertPosCartItem,
   updatePosCartItemQuantity,
 } from "@/utils/shop/posUtils";
-import { calculateCartSubtotal, toCartOrderItems } from "@/utils/shop/shopUtils";
+import {
+  calculateCartSubtotal,
+  formatVariantSimple,
+  getCartItemVariant,
+  toCartOrderItems,
+} from "@/utils/shop/shopUtils";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface UsePosCheckoutProps {
@@ -58,6 +63,10 @@ export function usePosCheckout({
   );
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [pendingOverride, setPendingOverride] = useState<{
+    message: string;
+    apply: () => void;
+  } | null>(null);
 
   const [discountCodeInput, setDiscountCodeInput] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<{
@@ -159,6 +168,7 @@ export function usePosCheckout({
     setOrderNotes("");
     setAppliedDiscount(null);
     setDiscountCodeInput("");
+    setPendingOverride(null);
   }, []);
 
   const handleClearPendingOrder = () => {
@@ -180,24 +190,43 @@ export function usePosCheckout({
     Alert.success(dict.alerts.guest_selected.replace("{name}", guest.name));
   };
 
+  const runWithOverride = useCallback(
+    (product: Product, variant: ProductVariant | null, targetQty: number, apply: () => void) => {
+      const { isDeadlinePassed, isOutOfStock, exceedsStock, availableStock } =
+        getProductPosAvailability(product, Date.now(), variant, targetQty);
+      const reason = isDeadlinePassed
+        ? dict.alerts.deadline_expired
+        : isOutOfStock
+          ? dict.alerts.out_of_stock
+          : exceedsStock
+            ? dict.alerts.exceeds_stock.replace("{available}", String(availableStock ?? 0))
+            : null;
+
+      if (!reason) return apply();
+      if (!canOverride) return Alert.error(reason);
+
+      const { text } = variant ? formatVariantSimple(variant.options, variant.label) : { text: "" };
+      const item = text ? `${product.name} (${text})` : product.name;
+      setPendingOverride({
+        message: dict.alerts.override_confirm_message
+          .replace("{item}", item)
+          .replace("{reason}", reason),
+        apply,
+      });
+    },
+    [
+      canOverride,
+      dict.alerts.deadline_expired,
+      dict.alerts.out_of_stock,
+      dict.alerts.exceeds_stock,
+      dict.alerts.override_confirm_message,
+    ]
+  );
+
   const addToCart = useCallback(
     (product: Product, variant: ProductVariant | null) => {
       if (pendingOrderNumber) {
         Alert.error(dict.alerts.reservation_locked_cart);
-        return;
-      }
-
-      const { isDeadlinePassed, isOutOfStock } = getProductPosAvailability(
-        product,
-        Date.now(),
-        variant
-      );
-      if (isDeadlinePassed && !canOverride) {
-        Alert.error(dict.alerts.deadline_expired);
-        return;
-      }
-      if (isOutOfStock && !canOverride) {
-        Alert.error(dict.alerts.out_of_stock);
         return;
       }
 
@@ -219,15 +248,20 @@ export function usePosCheckout({
         }
       }
 
-      setCart((prev) => upsertPosCartItem(prev, product, variant));
+      const existingQty =
+        cart.find(
+          (it) => it.product.id === product.id && (it.variantId ?? null) === (variant?.id ?? null)
+        )?.quantity ?? 0;
+
+      runWithOverride(product, variant, existingQty + 1, () => {
+        setCart((prev) => upsertPosCartItem(prev, product, variant));
+      });
     },
     [
       cart,
       pendingOrderNumber,
-      canOverride,
+      runWithOverride,
       dict.alerts.reservation_locked_cart,
-      dict.alerts.deadline_expired,
-      dict.alerts.out_of_stock,
       dict.alerts.ticket_locked,
       dict.alerts.ticket_mixed,
       dict.alerts.ticket_single,
@@ -237,6 +271,14 @@ export function usePosCheckout({
   const updateQuantity = (index: number, delta: number) => {
     if (pendingOrderNumber) {
       Alert.error(dict.alerts.reservation_quantity_locked);
+      return;
+    }
+    if (delta > 0) {
+      const item = cart[index];
+      if (!item) return;
+      runWithOverride(item.product, getCartItemVariant(item) ?? null, item.quantity + delta, () => {
+        setCart((prev) => updatePosCartItemQuantity(prev, index, delta));
+      });
       return;
     }
     setCart((prev) => updatePosCartItemQuantity(prev, index, delta));
@@ -483,5 +525,7 @@ export function usePosCheckout({
     handleConfirmOrderPayment,
     handleFinishSale,
     handleSelectUser,
+    pendingOverride,
+    setPendingOverride,
   };
 }

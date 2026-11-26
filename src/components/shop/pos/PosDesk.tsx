@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { Alert } from "@neiist/ui";
+import { Alert, ConfirmDialog } from "@neiist/ui";
 import { Product, ProductVariant } from "@/types/shop/product";
 import { Category } from "@/types/shop/category";
 import { PosStation } from "@/types/shop/pos";
@@ -111,6 +111,8 @@ export default function PosDesk({
     handleConfirmOrderPayment,
     handleFinishSale,
     handleSelectUser,
+    pendingOverride,
+    setPendingOverride,
   } = usePosCheckout({
     products,
     initialPendingOrder,
@@ -268,6 +270,19 @@ export default function PosDesk({
         onClose={() => setPendingOrdersPrompt([])}
         onLoadOrders={(ords) => loadPendingOrdersToCart(ords)}
         dict={dict.pending}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingOverride)}
+        title={dict.alerts.override_confirm_title}
+        message={pendingOverride?.message ?? ""}
+        confirmLabel={dict.alerts.override_confirm_action}
+        cancelLabel={dict.payment.cancel}
+        onConfirm={() => {
+          pendingOverride?.apply();
+          setPendingOverride(null);
+        }}
+        onCancel={() => setPendingOverride(null)}
       />
 
       {(isPaymentModalOpen || Boolean(bridgeSuccessOrder)) && (

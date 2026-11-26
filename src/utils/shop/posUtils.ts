@@ -53,12 +53,16 @@ export function formatPosTimestamp(
 export function getProductPosAvailability(
   product: Product,
   nowMs: number = Date.now(),
-  variant?: ProductVariant | null
+  variant?: ProductVariant | null,
+  requestedQty: number = 1
 ) {
   const isDeadlinePassed = isProductDeadlinePassed(product, nowMs);
-  const isOutOfStock = getProductStock(product, variant) === 0;
+  const availableStock = getProductStock(product, variant);
+  const isOutOfStock = availableStock === 0;
+  const exceedsStock =
+    availableStock !== null && availableStock > 0 && requestedQty > availableStock;
 
-  return { isDeadlinePassed, isOutOfStock };
+  return { isDeadlinePassed, isOutOfStock, exceedsStock, availableStock };
 }
 
 export function upsertPosCartItem(
