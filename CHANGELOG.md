@@ -1,5 +1,14 @@
 # neiist
 
+## [4.13.1](https://github.com/neiist-dev/neiist-website/compare/v4.13.0...v4.13.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* logout clean all httpOnlyCookies, user profile remove alt_email and ([1cf1027](https://github.com/neiist-dev/neiist-website/commit/1cf1027e0b003d23977a8571570464ae34532370))
+* shop order enforece confirmation on all changes and other payment ([3c38101](https://github.com/neiist-dev/neiist-website/commit/3c38101718485275a6a61ccad26297004a6100ca))
+* **shop:** shop override with confirm dialog, and image deduplication ([f11d5b8](https://github.com/neiist-dev/neiist-website/commit/f11d5b8bb42f9450bc9273b6a24cd1001af8a472))
+
 ## [4.13.0](https://github.com/neiist-dev/neiist-website/compare/v4.12.1...v4.13.0) (2026-11-24)
 
 
