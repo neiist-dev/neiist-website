@@ -22,13 +22,13 @@ export const createUser = async (user: Partial<User>): Promise<User | null> => {
 export const updateUser = async (istid: string, updates: Partial<User>): Promise<User | null> => {
   const {
     rows: [updatedUser],
-  } = await db_query<User>("SELECT * FROM neiist.update_user($1::VARCHAR(10), $2::JSONB)", [
+  } = await db_query<dbUser>("SELECT * FROM neiist.update_user($1::VARCHAR(10), $2::JSONB)", [
     istid,
     JSON.stringify(updates),
   ]);
   if (!updatedUser) return null;
-  const result = updatedUser ? mapdbUserToUser(updatedUser) : null;
-  if (result) revalidateTag("users", "max");
+  const result = mapdbUserToUser(updatedUser);
+  revalidateTag("users", "max");
   return result;
 };
 

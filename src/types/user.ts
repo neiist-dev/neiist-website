@@ -20,8 +20,8 @@ export interface User {
   departmentPermissions?: Record<string, Permission[]>;
   positionName?: string;
   teams?: string[];
-  github?: string;
-  linkedin?: string;
+  github?: string | null;
+  linkedin?: string | null;
   isAnonymized?: boolean;
 }
 
@@ -38,7 +38,7 @@ export interface dbUser {
   neiist_email?: string | null;
   outlook_calendar_sync?: boolean;
   phone?: string | null;
-  preferred_contact_method?: "email" | "alternativeEmail" | "phone";
+  preferred_contact_method?: "email" | "alt_email" | "phone";
   courses?: string[];
   permissions?: Permission[];
   access_label?: "admin" | "coordinator" | null;
@@ -95,7 +95,10 @@ export function mapdbUserToUser(dbUser: dbUser): User {
     neiistEmail: dbUser.neiist_email ?? undefined,
     outlookCalendarSync: dbUser.outlook_calendar_sync ?? false,
     phone: dbUser.phone ?? undefined,
-    preferredContactMethod: dbUser.preferred_contact_method ?? undefined,
+    preferredContactMethod:
+      dbUser.preferred_contact_method === "alt_email"
+        ? "alternativeEmail"
+        : (dbUser.preferred_contact_method ?? undefined),
     photo: `/api/user/photo/${dbUser.istid}`,
     courses: dbUser.courses ?? [],
     roles,

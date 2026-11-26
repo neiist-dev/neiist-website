@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/email";
 import { getEmailVerificationTemplate } from "@/lib/email/templates/auth";
-import { addEmailVerification } from "@/lib/db/repositories/user.repository";
+import {
+  addEmailVerification,
+  deleteEmailVerification,
+} from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
@@ -27,11 +30,16 @@ export async function POST(request: Request) {
 
     await addEmailVerification(istid, alternativeEmail, token, expiresAt);
     const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/verify-email/confirm?token=${token}`;
-    await sendEmail({
+    const sent = await sendEmail({
       to: alternativeEmail,
       subject: "Verifique o seu email alternativo",
       html: getEmailVerificationTemplate(verifyUrl),
     });
+
+    if (!sent) {
+      await deleteEmailVerification(token);
+      return NextResponse.json({ error: "Falha ao enviar email de verificação" }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

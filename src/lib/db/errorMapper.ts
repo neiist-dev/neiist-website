@@ -128,6 +128,9 @@ export function parseDatabaseError(error: unknown): DatabaseError {
   if (message.includes("Invalid nominee")) return new DatabaseError("Opção inválida", 400);
 
   // User/Auth errors
+  if (message.includes("Cannot delete user with active membership"))
+    return new DatabaseError("Não é possível eliminar um utilizador com mandato ativo", 400);
+
   if (message.includes("Email already in use"))
     return new DatabaseError("Este email já está em uso", 409);
 

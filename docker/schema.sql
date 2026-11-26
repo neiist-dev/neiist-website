@@ -1382,7 +1382,13 @@ BEGIN
     UPDATE neiist.user_contacts SET is_preferred = FALSE WHERE user_istid = p_istid;
     UPDATE neiist.user_contacts
     SET is_preferred = TRUE
-    WHERE user_istid = p_istid AND contact_type = (p_updates->>'preferredContactMethod')::neiist.contact_method_enum;
+    WHERE user_istid = p_istid
+      AND contact_type = (
+        CASE WHEN p_updates->>'preferredContactMethod' = 'alternativeEmail'
+          THEN 'alt_email'
+          ELSE p_updates->>'preferredContactMethod'
+        END
+      )::neiist.contact_method_enum;
   END IF;
 
   -- Update courses in user_courses
@@ -3696,6 +3702,14 @@ BEGIN
     RETURN;
   END IF;
 
+  IF EXISTS (
+    SELECT 1 FROM neiist.membership
+    WHERE user_istid = p_istid
+      AND (to_date IS NULL OR to_date >= CURRENT_DATE)
+  ) THEN
+    RAISE EXCEPTION 'Cannot delete user with active membership';
+  END IF;
+
   SELECT EXISTS (
     SELECT 1 FROM neiist.membership WHERE user_istid = p_istid
   ) INTO v_is_member;
@@ -3717,6 +3731,8 @@ BEGIN
   IF v_is_member THEN
     UPDATE neiist.users
     SET email = 'deleted-' || gen_random_uuid() || '@deleted.neiist.pt',
+      neiist_email = NULL,
+      outlook_calendar_sync = FALSE,
       github = NULL,
       linkedin = NULL
     WHERE istid = p_istid;
@@ -3736,10 +3752,17 @@ BEGIN
   SET customer_name = 'Guest',
     customer_email = 'deleted-' || gen_random_uuid() || '@deleted.neiist.pt',
     customer_phone = NULL,
-    nif = NULL
+    nif = NULL,
+    notes = NULL
   WHERE user_istid IS NULL
     AND created_at < NOW() - INTERVAL '10 years'
-    AND customer_name IS DISTINCT FROM 'Guest';
+    AND (
+      customer_name IS DISTINCT FROM 'Guest'
+      OR (customer_email IS NOT NULL AND customer_email NOT LIKE 'deleted-%@deleted.neiist.pt')
+      OR customer_phone IS NOT NULL
+      OR nif IS NOT NULL
+      OR notes IS NOT NULL
+    );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

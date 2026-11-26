@@ -26,17 +26,16 @@ export async function POST(request: NextRequest) {
   if (file.type !== "application/zip" && file.type !== "application/x-zip-compressed")
     return NextResponse.json({ error: "Only ZIP files allowed" }, { status: 400 });
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  if (buffer.slice(0, 2).toString("ascii") !== "PK")
-    return NextResponse.json({ error: "Only ZIP files allowed" }, { status: 400 });
-
-  if (buffer.length > 15 * 1024 * 1024) {
+  if (file.size > 15 * 1024 * 1024)
     return NextResponse.json(
       { error: "O ficheiro é demasiado grande (máx 15MB)" },
       { status: 413 }
     );
-  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (buffer.slice(0, 2).toString("ascii") !== "PK")
+    return NextResponse.json({ error: "Only ZIP files allowed" }, { status: 400 });
 
   try {
     const result = await uploadSweatsSubmission(username, buffer, shareName);

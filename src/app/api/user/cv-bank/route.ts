@@ -53,16 +53,15 @@ export async function POST(request: NextRequest) {
   if (file.type !== "application/pdf")
     return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  if (buffer.slice(0, 4).toString("ascii") !== "%PDF")
-    return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
-
-  if (buffer.length > 10 * 1024 * 1024) {
+  if (file.size > 10 * 1024 * 1024)
     return NextResponse.json(
       { error: "O ficheiro é demasiado grande (máx 10MB)" },
       { status: 413 }
     );
-  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (buffer.slice(0, 4).toString("ascii") !== "%PDF")
+    return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
 
   try {
     const result = await uploadUserCV(username, buffer);

@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
       path: "/",
       maxAge: 60 * 10,
     });
+  } else {
+    res.cookies.delete("post_login_redirect");
   }
 
   return res;

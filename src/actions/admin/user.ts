@@ -3,7 +3,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { deleteUser, getUser } from "@/lib/db/repositories/user.repository";
-import { userPhotos } from "@/lib/imageStorage";
+import { fenixPhotos, userPhotos } from "@/lib/imageStorage";
 import { hasPermission } from "@/lib/security/permissions";
 import { sendEmail } from "@/lib/email";
 import { getAccountDeletionTemplate } from "@/lib/email/templates/auth";
@@ -23,6 +23,12 @@ export async function deleteUserAction(
   const existingUser = isSelf ? currentUser : await getUser(istid);
   if (!existingUser) throw new Error("Target user not found");
 
+  const { success, was_member: isMember } = await deleteUser(istid);
+  if (!success) throw new Error("Failed to delete user in database");
+
+  await fenixPhotos.remove(istid);
+  if (!isMember) await userPhotos.remove(istid);
+
   try {
     await sendEmail({
       to: existingUser.email,
@@ -32,11 +38,6 @@ export async function deleteUserAction(
   } catch (emailError) {
     console.warn("Failed to send account deletion email:", emailError);
   }
-
-  const { success, was_member: isMember } = await deleteUser(istid);
-  if (!success) throw new Error("Failed to delete user in database");
-
-  if (!isMember) await userPhotos.remove(istid);
 
   console.warn(
     JSON.stringify({

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/utils/apiErrorUtils";
 import { verifyPermission } from "@/lib/auth";
+import { hasPermission } from "@/lib/security/permissions";
 import { searchUsers } from "@/lib/search/userSearch";
 import { createUser, getUserNoCache } from "@/lib/db/repositories/user.repository";
 import { IST_ID_REGEX, EMAIL_REGEX } from "@/utils/userUtils";
+import type { UserProfile } from "@/types/user";
 
 export async function GET(request: NextRequest) {
   const auth = await verifyPermission(["users:read", "pos:access"], { match: "any" });
@@ -16,6 +18,19 @@ export async function GET(request: NextRequest) {
     const rawSearch = searchParams.get("search")?.trim() || "";
 
     const result = await searchUsers(rawSearch, page, limit);
+    if (!hasPermission(auth.user, "users:read")) {
+      const users: UserProfile[] = result.users.map((u) => ({
+        istid: u.istid,
+        name: u.name,
+        email: u.email,
+        alternativeEmail: u.alternativeEmail,
+        neiistEmail: u.neiistEmail,
+        phone: u.phone,
+        courses: u.courses,
+        photo: u.photo,
+      }));
+      return NextResponse.json({ ...result, users });
+    }
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

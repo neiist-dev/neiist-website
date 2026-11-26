@@ -14,9 +14,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
   const [targetUserId, error] = validateIstId((await params).userId, "userId");
   if (error) return error;
 
-  const updateData = await request.json();
-
   try {
+    const updateData = await request.json();
     const currentUser = session.user;
     const isSelfUpdate = currentUser.istid === targetUserId;
     const existingUser = isSelfUpdate ? currentUser : await getUser(targetUserId);
@@ -40,12 +39,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
 
     if (isSelfUpdate || canWriteUsers) {
       if (updateData.alternativeEmail !== undefined) {
-        let email: string | null = updateData.alternativeEmail;
-        if (typeof email !== "string") email = null;
-
-        email = email?.trim?.() ?? null;
+        const rawEmail = updateData.alternativeEmail;
+        const email = typeof rawEmail === "string" ? rawEmail.trim() : null;
         if (email === null || email === "") {
           updates.alternativeEmail = null;
+        } else if (!canWriteUsers) {
+          return NextResponse.json(
+            { error: "A alteração do email alternativo requer verificação" },
+            { status: 403 }
+          );
         } else if (isValidEmail(email)) {
           updates.alternativeEmail = email;
         } else {
@@ -54,10 +56,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
       }
 
       if (updateData.phone !== undefined) {
-        let phone: string | null = updateData.phone;
-        if (typeof phone !== "string") phone = null;
-
-        phone = phone?.trim?.() ?? null;
+        const rawPhone = updateData.phone;
+        const phone = typeof rawPhone === "string" ? rawPhone.trim() : null;
         if (phone === null || phone === "") {
           updates.phone = null;
         } else if (isValidPhone(phone)) {
@@ -68,21 +68,27 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
       }
 
       if (updateData.preferredContactMethod !== undefined) {
-        const validMethods = ["email", "alternativeEmail", "phone"];
-        if (validMethods.includes(updateData.preferredContactMethod)) {
-          let dbContactMethod = updateData.preferredContactMethod;
-          if (updateData.preferredContactMethod === "alternativeEmail")
-            dbContactMethod = "alternative_email";
-
-          updates.preferredContactMethod = dbContactMethod;
+        const validMethods = ["email", "alternativeEmail", "phone"] as const;
+        if (
+          typeof updateData.preferredContactMethod === "string" &&
+          (validMethods as readonly string[]).includes(updateData.preferredContactMethod)
+        ) {
+          updates.preferredContactMethod =
+            updateData.preferredContactMethod as User["preferredContactMethod"];
         } else {
           return NextResponse.json({ error: "Método de contacto inválido" }, { status: 400 });
         }
       }
 
-      if (updateData.github !== undefined) updates.github = updateData.github?.trim() || null;
+      if (updateData.github !== undefined) {
+        updates.github =
+          typeof updateData.github === "string" ? updateData.github.trim() || null : null;
+      }
 
-      if (updateData.linkedin !== undefined) updates.linkedin = updateData.linkedin?.trim() || null;
+      if (updateData.linkedin !== undefined) {
+        updates.linkedin =
+          typeof updateData.linkedin === "string" ? updateData.linkedin.trim() || null : null;
+      }
     }
 
     if (canWriteUsers || canManageTargetMembership) {
@@ -106,7 +112,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
 
     if (canWriteUsers) {
       if (updateData.name !== undefined) {
-        const name = updateData.name.trim();
+        const name = typeof updateData.name === "string" ? updateData.name.trim() : "";
         if (name.length > 0) {
           updates.name = name;
         } else {
@@ -115,7 +121,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ user
       }
 
       if (updateData.email !== undefined) {
-        const email = updateData.email.trim();
+        const email = typeof updateData.email === "string" ? updateData.email.trim() : "";
         if (isValidEmail(email)) {
           updates.email = email;
         } else {

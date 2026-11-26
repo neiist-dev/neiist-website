@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const forwardedHost = req.headers.get("x-forwarded-host") || req.headers.get("host");
-  const forwardedProto = req.headers.get("x-forwarded-proto") || "https";
-  const headerOrigin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : null;
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    headerOrigin ||
-    req.nextUrl.origin ||
-    "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin || "http://localhost:3000";
 
   const redirectUrl = new URL("/", baseUrl);
   redirectUrl.searchParams.set("t", Date.now().toString());
 
-  const res = NextResponse.redirect(redirectUrl);
+  const res = NextResponse.redirect(redirectUrl, 303);
   res.headers.set("Cache-Control", "no-store");
 
   type CookieOptions = Parameters<typeof res.cookies.set>[2];
@@ -32,6 +24,7 @@ export async function POST(req: NextRequest) {
 
   del("session");
   del("fenix_oauth_state");
+  del("post_login_redirect");
 
   return res;
 }

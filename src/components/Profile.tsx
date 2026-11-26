@@ -122,7 +122,7 @@ export default function ProfileClient({ initialUser, initialHasCV, dict }: Profi
       const { field } = pendingChange;
       const value = pendingChange.value.trim();
 
-      if (field === "alternativeEmail") {
+      if (field === "alternativeEmail" && value) {
         const res = await fetch("/api/user/verify-email/request", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
