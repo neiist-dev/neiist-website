@@ -7,8 +7,12 @@ import {
 import { Permission } from "@/types/permissions";
 import { db_query } from "@/lib/db/connection";
 import { getAllUsers } from "@/lib/db/repositories/user.repository";
+import { withUserPhotos } from "@/lib/imageStorage";
 
 import { cacheTag, revalidateTag } from "next/cache";
+
+const withMembershipPhotos = (memberships: Membership[]) =>
+  withUserPhotos(memberships, (m) => m.userNumber, "userPhoto");
 
 export const getDepartmentDisplayOrder = async (): Promise<
   Array<{ name: string; department_type: string; active: boolean; display_order: number }>
@@ -244,7 +248,7 @@ export const getMembershipsForAcademicYear = async (
     "SELECT * FROM neiist.get_memberships_for_academic_year($1)",
     [academicYear]
   );
-  return rows.map(mapdbMembershipToMembership);
+  return withMembershipPhotos(rows.map(mapdbMembershipToMembership));
 };
 
 export const addMembership = async (
@@ -312,7 +316,7 @@ export const getUserMemberships = async (
     "SELECT * FROM neiist.get_user_memberships($1::VARCHAR(10), $2::BOOLEAN)",
     [istid, activeOnly]
   );
-  return rows.map(mapdbMembershipToMembership);
+  return withMembershipPhotos(rows.map(mapdbMembershipToMembership));
 };
 
 export const getAllMemberships = async (): Promise<Membership[]> => {
@@ -325,12 +329,13 @@ export const getAllMemberships = async (): Promise<Membership[]> => {
   const userMap = new Map(users.map((u) => [u.istid, u]));
   return dbMemberships.map((raw) => {
     const user = userMap.get(raw.user_istid);
-    return mapdbMembershipToMembership({
+    const membership = mapdbMembershipToMembership({
       ...raw,
       user_email: user?.email ?? raw.user_email,
       user_github: user?.github ?? raw.user_github,
       user_linkedin: user?.linkedin ?? raw.user_linkedin,
     });
+    return user ? { ...membership, userPhoto: user.photo } : membership;
   });
 };
 

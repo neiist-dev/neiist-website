@@ -224,7 +224,7 @@ export default function VotingGrid({
               media={
                 isUserType ? (
                   <Image
-                    src={`/api/user/photo/${nominee.id}`}
+                    src={nominee.userPhoto ?? `/api/user/photo/${nominee.id}`}
                     alt={nominee.name}
                     fill
                     className={styles.photo}

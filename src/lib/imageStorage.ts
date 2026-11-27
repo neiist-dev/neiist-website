@@ -24,6 +24,38 @@ export interface ImageStoreOptions {
   onMutate?: () => void;
 }
 
+const sha256 = (buffer: Buffer) => crypto.createHash("sha256").update(buffer).digest("hex");
+
+/**
+ * Content hashes keyed by absolute path. The `mtimeMs`/`size` pair only decides when to
+ * re-read the file; the version itself is always the SHA-256 of the bytes, so copies or
+ * restores that touch mtime just cost one rehash and yield the same hash.
+ */
+type HashEntry = { mtimeMs: number; size: number; hash: string };
+const globalForHashes = globalThis as unknown as { imageHashes?: Map<string, HashEntry> };
+const hashCache = (globalForHashes.imageHashes ??= new Map());
+
+/**
+ * Computes the SHA-256 of a file on disk, reusing the cached value while unchanged.
+ *
+ * @param fullPath - absolute path of the file
+ * @returns hex digest, or `null` if the file can't be read
+ */
+export async function hashFile(fullPath: string): Promise<string | null> {
+  try {
+    const { mtimeMs, size } = await fs.stat(fullPath);
+    const cached = hashCache.get(fullPath);
+    if (cached && cached.mtimeMs === mtimeMs && cached.size === size) return cached.hash;
+
+    const hash = sha256(await fs.readFile(fullPath));
+    hashCache.set(fullPath, { mtimeMs, size, hash });
+    return hash;
+  } catch {
+    hashCache.delete(fullPath);
+    return null;
+  }
+}
+
 const exists = (filePath: string) =>
   fs.access(filePath).then(
     () => true,
@@ -152,8 +184,14 @@ export function createImageStore({
     await fs.mkdir(dir, { recursive: true });
 
     const existing = await find(id);
+    const unchanged =
+      existing?.ext === extension && (await hashFile(existing.fullPath)) === sha256(buffer);
+    if (unchanged) return { id, url: url(id) };
+
     const newPath = path.join(dir, `${id}${extension}`);
     await fs.writeFile(newPath, buffer);
+    const { mtimeMs, size } = await fs.stat(newPath);
+    hashCache.set(newPath, { mtimeMs, size, hash: sha256(buffer) });
 
     if (existing && existing.fullPath !== newPath) await fs.rm(existing.fullPath, { force: true });
     onMutate?.();
@@ -183,33 +221,93 @@ export const votingImages = createImageStore({
   publicUrlPrefix: "/api/voting/photo",
 });
 
+const USER_PHOTO_PREFIX = "/api/user/photo";
+const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+
+/** User and membership objects embed the versioned photo URL, so both caches must drop it. */
+const revalidateUserPhotos = () => {
+  revalidateTag("users", "max");
+  revalidateTag("memberships", "max");
+};
+
 export const userPhotos = createImageStore({
   subDirectory: "user_photos",
-  publicUrlPrefix: "/api/user/photo",
-  onMutate: () => revalidateTag("users", "max"),
+  publicUrlPrefix: USER_PHOTO_PREFIX,
+  onMutate: revalidateUserPhotos,
 });
 
 export const fenixPhotos = createImageStore({
   subDirectory: "fenix_cache",
-  publicUrlPrefix: "/api/user/photo",
+  publicUrlPrefix: USER_PHOTO_PREFIX,
+  onMutate: revalidateUserPhotos,
 });
+
+/** Finds the photo that is served for a user: custom upload first, then the Fenix cache. */
+async function resolveUserPhoto(userId: string) {
+  for (const store of [userPhotos, fenixPhotos]) {
+    const found = await store.find(userId);
+    if (found) return { store, found };
+  }
+  return null;
+}
+
+/**
+ * Builds the public URL of a user's photo, versioned by the SHA-256 of its contents so it
+ * changes whenever the photo does and can be cached forever.
+ *
+ * @param userId - user istid
+ * @returns `/api/user/photo/<id>?v=<hash>`, or the unversioned URL if the user has no photo
+ */
+export async function getUserPhotoUrl(userId: string): Promise<string> {
+  const id = safeId(userId);
+  if (!id) return "";
+
+  const resolved = await resolveUserPhoto(id);
+  const hash = resolved && (await hashFile(resolved.found.fullPath));
+  return hash ? `${USER_PHOTO_PREFIX}/${id}?v=${hash}` : `${USER_PHOTO_PREFIX}/${id}`;
+}
+
+/**
+ * Attaches the versioned photo URL to each row.
+ *
+ * @param rows - rows identified by a user istid
+ * @param getId - extracts the istid from a row
+ * @param key - property that receives the URL
+ */
+export function withUserPhotos<T, K extends string>(
+  rows: T[],
+  getId: (_row: T) => string,
+  key: K
+): Promise<(T & Record<K, string>)[]> {
+  return Promise.all(
+    rows.map(
+      async (row) => ({ ...row, [key]: await getUserPhotoUrl(getId(row)) }) as T & Record<K, string>
+    )
+  );
+}
 
 /**
  * Serves a user photo, fenix cache or custom photo if existent.
  *
+ * Requests carrying the current content hash (`?v=`) are cached as immutable; anything else
+ * (unversioned or stale hash) falls back to a short cache so it can't pin an old image.
+ *
  * @param userId - user istid
- * @param cacheControl - cache-control header value, defaults to 1 hour with 1 day stale-while-revalidate
+ * @param version - content hash from the `v` query parameter, if any
+ * @param cacheControl - cache-control header for unversioned requests
  * @returns Next.js response with the image binary and headers
  */
 export async function serveUserPhoto(
   userId: string,
+  version?: string | null,
   cacheControl = "public, max-age=3600, stale-while-revalidate=86400"
 ): Promise<NextResponse> {
-  const custom = await userPhotos.find(userId);
-  if (custom) return userPhotos.serve(userId, cacheControl);
-
-  const fenix = await fenixPhotos.find(userId);
-  if (fenix) return fenixPhotos.serve(userId, cacheControl);
+  const resolved = await resolveUserPhoto(userId);
+  if (resolved) {
+    const current = version ? await hashFile(resolved.found.fullPath) : null;
+    const isCurrent = current !== null && current === version;
+    return resolved.store.serve(userId, isCurrent ? IMMUTABLE_CACHE : cacheControl);
+  }
 
   const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const response = NextResponse.redirect(new URL("/default_user.png", base), 307);

@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { validateIstId } from "@/utils/apiValidationUtils";
-import { ImageUploadError, serveUserPhoto, userPhotos } from "@/lib/imageStorage";
+import { ImageUploadError, getUserPhotoUrl, serveUserPhoto, userPhotos } from "@/lib/imageStorage";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/security/permissions";
 import { getUser } from "@/lib/db/repositories/user.repository";
 import { handleApiError } from "@/utils/apiErrorUtils";
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ userId: string }> }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
   const [userId, error] = validateIstId((await context.params).userId, "userId");
   if (error) return error;
 
-  return serveUserPhoto(userId);
+  return serveUserPhoto(userId, request.nextUrl.searchParams.get("v"));
 }
 
 export async function POST(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ us
     revalidatePath("/about-us");
     revalidatePath("/management");
     revalidatePath("/profile");
-    return NextResponse.json({ success: true, photo: userPhotos.url(userId) });
+    return NextResponse.json({ success: true, photo: await getUserPhotoUrl(userId) });
   } catch (error) {
     if (error instanceof ImageUploadError)
       return NextResponse.json({ error: error.message }, { status: 400 });

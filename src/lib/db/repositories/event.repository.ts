@@ -2,6 +2,7 @@ import { Activity, DbActivity, Ticket, CheckinResult, mapDbRowToActivity } from 
 
 import { db_query } from "@/lib/db/connection";
 import { cacheTag, revalidateTag } from "next/cache";
+import { withUserPhotos } from "@/lib/imageStorage";
 
 export const createActivitiesEvent = async (
   activity: Partial<Activity> & { id?: string }
@@ -186,6 +187,9 @@ export const getEventAttendanceRoster = async (eventId: string): Promise<Ticket[
   );
   return rows;
 };
+
+export const getEventAttendanceRosterWithPhotos = async (eventId: string): Promise<Ticket[]> =>
+  withUserPhotos(await getEventAttendanceRoster(eventId), (t) => t.istid, "photo");
 
 export const getEventSubscribers = async (
   eventId: string
