@@ -54,6 +54,9 @@ export default function PosDesk({
   const effectiveUser = currentUser ?? user;
   const canAccessPos = effectiveUser ? hasPermission(effectiveUser, "pos:access") : false;
   const canOverride = effectiveUser ? hasPermission(effectiveUser, "orders:override") : false;
+  const canGuestCheckout = effectiveUser
+    ? hasPermission(effectiveUser, "pos:guest_checkout")
+    : false;
 
   const [bridgeSuccessOrder, setBridgeSuccessOrder] = useState<string | null>(null);
   const handleBridgeSuccess = useCallback((order: string) => {
@@ -183,7 +186,7 @@ export default function PosDesk({
           <PosCustomerSection
             customer={customer}
             onSelectUser={handleSelectUser}
-            onOpenGuestModal={() => setIsGuestModalOpen(true)}
+            onOpenGuestModal={canGuestCheckout ? () => setIsGuestModalOpen(true) : undefined}
             onOpenPreRegisterModal={(istid) => setPreRegisterIstid(istid)}
             preRegisterLabel={preRegisterDict.trigger_button}
             onClearCustomer={() => setCustomer(null)}
@@ -237,7 +240,7 @@ export default function PosDesk({
         />
       </div>
 
-      {isGuestModalOpen && (
+      {canGuestCheckout && isGuestModalOpen && (
         <PosGuestCustomerModal
           open={isGuestModalOpen}
           onClose={() => setIsGuestModalOpen(false)}

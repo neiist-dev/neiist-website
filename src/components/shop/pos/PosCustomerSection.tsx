@@ -21,7 +21,7 @@ export interface CustomerProfile {
 interface PosCustomerSectionProps {
   customer: CustomerProfile | null;
   onSelectUser: (_user: User | null) => void;
-  onOpenGuestModal: () => void;
+  onOpenGuestModal?: () => void;
   onOpenPreRegisterModal: (_query: string) => void;
   preRegisterLabel: string;
   onClearCustomer: () => void;
@@ -98,13 +98,15 @@ export default function PosCustomerSection({
               createLabel={preRegisterLabel}
             />
           </div>
-          <Button
-            variant="outline"
-            size="md"
-            onClick={onOpenGuestModal}
-            className={styles.externalClientBtn}>
-            <FiUserPlus /> {dict.external_client}
-          </Button>
+          {onOpenGuestModal && (
+            <Button
+              variant="outline"
+              size="md"
+              onClick={onOpenGuestModal}
+              className={styles.externalClientBtn}>
+              <FiUserPlus /> {dict.external_client}
+            </Button>
+          )}
         </div>
       ) : (
         <DetailCard

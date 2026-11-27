@@ -106,7 +106,7 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
 
   const canAccessPos = hasPermission(user, "pos:access");
   const canOverride = hasPermission(user, "orders:override");
-  const canWriteUsers = hasPermission(user, "users:write");
+  const canGuestCheckout = hasPermission(user, "pos:guest_checkout");
 
   if (isPos && !canAccessPos)
     return NextResponse.json({ error: "Sem permissão de acesso ao terminal POS" }, { status: 403 });
@@ -115,8 +115,14 @@ function validateOrderContext(body: OrderRequestBody, user: User): NextResponse 
     return NextResponse.json({ error: "No items in order" }, { status: 400 });
 
   const guestCheckout = body.guest_checkout === true;
-  if (guestCheckout && (!isPos || !canWriteUsers || !canOverride))
-    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+  if (guestCheckout && (!isPos || !canGuestCheckout))
+    return NextResponse.json(
+      {
+        error:
+          "Apenas operadores com permissão pos:guest_checkout podem efetuar vendas a clientes externos",
+      },
+      { status: 403 }
+    );
 
   const isReservation = body.is_reservation === true;
   if (!isPos)

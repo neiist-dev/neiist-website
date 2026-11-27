@@ -18,6 +18,7 @@ export const PERMISSIONS = {
   "shop:write": { category: "shop" },
   "pos:access": { category: "shop" },
   "pos:manage": { category: "shop" },
+  "pos:guest_checkout": { category: "shop" },
   "orders:read": { category: "orders" },
   "orders:read_customer": { category: "orders" },
   "orders:create": { category: "orders" },

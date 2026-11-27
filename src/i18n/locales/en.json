@@ -1025,6 +1025,7 @@
         "shop:write": "Manage products, categories, and stock",
         "pos:access": "Operate point of sale terminals",
         "pos:manage": "Manage POS stations, shifts, and cash drawers",
+        "pos:guest_checkout": "Allow guest (external customer) checkout at POS",
         "orders:read": "View orders and purchase history",
         "orders:read_customer": "View personal customer orders",
         "orders:create": "Create new orders",

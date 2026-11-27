@@ -1020,6 +1020,7 @@
         "shop:write": "Gerir produtos, categorias e stock",
         "pos:access": "Operar terminais de ponto de venda",
         "pos:manage": "Gerir postos, turnos e caixas de POS",
+        "pos:guest_checkout": "Permitir vendas a clientes externos (sem IST ID) no POS",
         "orders:read": "Ver encomendas e histórico de compras",
         "orders:read_customer": "Ver encomendas próprias de cliente",
         "orders:create": "Criar novas encomendas",

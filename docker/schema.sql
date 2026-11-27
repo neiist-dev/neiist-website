@@ -53,6 +53,7 @@ CREATE TYPE neiist.permission_enum AS ENUM (
   'orders:override',
   'pos:access',
   'pos:manage',
+  'pos:guest_checkout',
   'voting:read',
   'voting:write',
   'events:read',
@@ -2006,7 +2007,7 @@ BEGIN
 
   LOOP
     v_ticket_code := UPPER(SUBSTRING(MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT) FROM 1 FOR 6));
-    EXIT WHEN NOT EXISTS (SELECT 1 FROM neiist.activities_sign_up WHERE ticket_code = v_ticket_code);
+    EXIT WHEN NOT EXISTS (SELECT 1 FROM neiist.activities_sign_up es WHERE es.ticket_code = v_ticket_code);
   END LOOP;
   v_qr_signature := COALESCE(p_qr_signature, MD5(p_event_id || ':' || p_user_istid || ':' || v_ticket_code || ':' || CLOCK_TIMESTAMP()::TEXT));
 
@@ -4347,7 +4348,7 @@ CREATE OR REPLACE FUNCTION neiist.set_campus_schedule_slots(
   updated_at TIMESTAMPTZ
 ) LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  DELETE FROM neiist.campus_schedule_slots WHERE campus = p_campus;
+  DELETE FROM neiist.campus_schedule_slots s WHERE s.campus = p_campus;
 
   IF p_slots IS NOT NULL AND jsonb_array_length(p_slots) > 0 THEN
     INSERT INTO neiist.campus_schedule_slots (campus, day_of_week, start_time, end_time)

@@ -19,6 +19,7 @@ export const ROLE_PRESETS: Record<UserRole, Permission[]> = {
     "shop:write",
     "pos:access",
     "pos:manage",
+    "pos:guest_checkout",
     "orders:read",
     "orders:read_customer",
     "orders:create",
@@ -30,7 +31,13 @@ export const ROLE_PRESETS: Record<UserRole, Permission[]> = {
     "events:write",
     "events:checkin",
   ],
-  [UserRole._MEMBER]: ["orders:read_customer", "orders:deliver", "orders:create", "pos:access"],
+  [UserRole._MEMBER]: [
+    "orders:read_customer",
+    "orders:deliver",
+    "orders:create",
+    "pos:access",
+    "pos:guest_checkout",
+  ],
   [UserRole._GUEST]: [],
 };
 
