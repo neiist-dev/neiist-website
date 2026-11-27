@@ -12,6 +12,11 @@
   color: var(--ui-fg);
 }
 
+.required {
+  color: var(--ui-primary);
+  margin-inline-start: 0.25rem;
+}
+
 .textarea {
   box-sizing: border-box;
   inline-size: 100%;

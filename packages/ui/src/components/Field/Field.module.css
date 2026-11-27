@@ -12,6 +12,13 @@
   color: var(--ui-fg);
 }
 
+.field[data-required] > .label::after,
+.field:has([required]) > .label::after {
+  content: "*";
+  color: var(--ui-primary);
+  margin-inline-start: 0.25rem;
+}
+
 .error {
   font-size: 0.75rem;
   color: var(--ui-danger);

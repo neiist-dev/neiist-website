@@ -5,6 +5,7 @@ import { cn } from "../../utils/cn";
 export interface FieldProps extends ComponentPropsWithRef<"div"> {
   label: string;
   htmlFor?: string;
+  required?: boolean;
   error?: string;
   description?: string;
   children: ReactNode;
@@ -14,6 +15,7 @@ export interface FieldProps extends ComponentPropsWithRef<"div"> {
 export function Field({
   label,
   htmlFor,
+  required,
   error,
   description,
   children,
@@ -22,7 +24,11 @@ export function Field({
   ...props
 }: FieldProps) {
   return (
-    <div ref={ref} className={cn(styles.field, className)} {...props}>
+    <div
+      ref={ref}
+      data-required={required || undefined}
+      className={cn(styles.field, className)}
+      {...props}>
       <label htmlFor={htmlFor} className={styles.label}>
         {label}
       </label>
