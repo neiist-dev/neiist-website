@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Button, InputDialog, InputDateDialog, Stack } from "@neiist/ui";
 import { pt } from "date-fns/locale";
@@ -11,7 +12,12 @@ export const InputDialogDemo = () => {
   const [dateValue, setDateValue] = useState("");
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="InputDialog"
+        description="Documentation and examples for the InputDialog and InputDateDialog components."
+      />
+
       <DemoCard title="Text Input Dialog">
         <Stack direction="row" gap="md" align="center" wrap>
           <Button onClick={() => setOpenText(true)}>Rename Folder</Button>
@@ -51,6 +57,6 @@ export const InputDialogDemo = () => {
           }}
         />
       </DemoCard>
-    </Stack>
+    </>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Calendar, Stack, Button, type CalendarDateRange } from "@neiist/ui";
 import { pt } from "date-fns/locale";
@@ -12,7 +13,12 @@ export const CalendarDemo = () => {
   });
 
   return (
-    <Stack gap="lg" direction="column">
+    <>
+      <PageHeader
+        title="Calendar"
+        description="Documentation and examples for the Calendar component."
+      />
+
       <DemoCard
         title='Single Selection (mode="single")'
         description="Select a single date using month and year dropdown navigation.">
@@ -60,6 +66,6 @@ export const CalendarDemo = () => {
           )}
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

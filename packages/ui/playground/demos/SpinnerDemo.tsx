@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Spinner, Stack, Button } from "@neiist/ui";
 
@@ -28,7 +29,12 @@ export const SpinnerDemo = () => {
   };
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Spinner"
+        description="Documentation and examples for the Spinner component."
+      />
+
       <DemoCard
         title="Standalone Spinners"
         description="Lightweight, accessible loading spinners with size and color variants.">
@@ -120,6 +126,6 @@ export const SpinnerDemo = () => {
           <Button onClick={() => setCardState(cycleState)}>Alternar Estado ({cardState})</Button>
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

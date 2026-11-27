@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { TimePicker, Stack, Button, type TimeRangeValue } from "@neiist/ui";
 import styles from "./TimePickerDemo.module.css";
@@ -11,7 +12,12 @@ export const TimePickerDemo = () => {
   });
 
   return (
-    <Stack gap="lg" direction="column">
+    <>
+      <PageHeader
+        title="TimePicker"
+        description="Documentation and examples for the TimePicker component."
+      />
+
       <DemoCard
         title="Single Selection (Inline)"
         description="Select a single time using the infinite 3D iOS drum wheel.">
@@ -53,7 +59,7 @@ export const TimePickerDemo = () => {
           </Button>
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };
 

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import {
   ContextMenu,
   DataTable,
   ColumnDef,
   Badge,
-  Stack,
   Text,
   Alert,
   useKeyboardShortcut,
@@ -93,7 +93,12 @@ export const ContextMenuDemo = () => {
   ];
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="ContextMenu"
+        description="Documentation and examples for the ContextMenu component."
+      />
+
       {lastAction && (
         <div
           style={{
@@ -197,6 +202,6 @@ export const ContextMenuDemo = () => {
           actionsTitle="Ações"
         />
       </DemoCard>
-    </Stack>
+    </>
   );
 };

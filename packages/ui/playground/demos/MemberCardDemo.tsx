@@ -1,3 +1,4 @@
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { MemberCard, DetailCard, Badge, DropdownMenu } from "@neiist/ui";
 import { FiMoreVertical, FiUserCheck, FiFileText, FiTrash2, FiEdit2 } from "react-icons/fi";
@@ -37,6 +38,11 @@ const MEMBERS = [
 export const MemberCardDemo = () => {
   return (
     <>
+      <PageHeader
+        title="MemberCard"
+        description="Documentation and examples for the MemberCard and DetailCard components."
+      />
+
       <DemoCard
         title="MemberCard"
         description="Exact visual styling from about-us with interactive social overlay on hover.">

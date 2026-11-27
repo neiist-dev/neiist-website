@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
-import { Radio, RadioGroup, Stack } from "@neiist/ui";
+import { Radio, RadioGroup } from "@neiist/ui";
 
 const CAMPUSES: Array<{
   value: string;
@@ -33,7 +34,12 @@ export const RadioDemo = () => {
   const [paymentMethod, setPaymentMethod] = useState("mbway");
 
   return (
-    <Stack gap="md" direction="column">
+    <>
+      <PageHeader
+        title="Radio & RadioGroup"
+        description="Documentation and examples for the Radio and RadioGroup components."
+      />
+
       <DemoCard
         title="Radio Group (Column)"
         description="Controlled radio selection with descriptive subtitles.">
@@ -58,6 +64,6 @@ export const RadioDemo = () => {
           ))}
         </RadioGroup>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

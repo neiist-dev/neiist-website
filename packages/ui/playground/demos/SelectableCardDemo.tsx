@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { SelectableCard, Modal, Stack, Button, Text } from "@neiist/ui";
 
@@ -92,7 +93,12 @@ export const SelectableCardDemo = () => {
   };
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="SelectableCard"
+        description="Documentation and examples for the SelectableCard component."
+      />
+
       <DemoCard
         title="Single Selection Mode (Voting Grid Style)"
         description="Single-select mode: selected card maintains the top-right check badge and primary ring. On hover, the badge inverts colors (white background with blue checkmark) against the primary overlay. Cards with details display 'Ver detalhes' on hover and open the details modal.">
@@ -207,6 +213,6 @@ export const SelectableCardDemo = () => {
           </Modal.Footer>
         </Modal>
       )}
-    </Stack>
+    </>
   );
 };

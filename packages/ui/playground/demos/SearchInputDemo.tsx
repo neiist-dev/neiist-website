@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { SearchInput, Text, Stack } from "@neiist/ui";
 
@@ -6,7 +7,12 @@ export const SearchInputDemo = () => {
   const [value, setValue] = useState("");
 
   return (
-    <Stack gap="md">
+    <>
+      <PageHeader
+        title="SearchInput"
+        description="Documentation and examples for the SearchInput component."
+      />
+
       <DemoCard title="Search Input">
         <Stack gap="md" style={{ width: "18.75rem" }}>
           <SearchInput value={value} onChange={setValue} placeholder="Search users..." />
@@ -15,6 +21,6 @@ export const SearchInputDemo = () => {
           Current search query: <strong>{value || "None"}</strong>
         </Text>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

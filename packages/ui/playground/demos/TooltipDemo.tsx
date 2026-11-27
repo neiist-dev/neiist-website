@@ -1,4 +1,5 @@
 import React from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Tooltip, Button, Stack } from "@neiist/ui";
 
@@ -6,7 +7,12 @@ export const TooltipDemo = () => {
   const positions = ["top", "bottom", "left", "right"] as const;
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Tooltip"
+        description="Documentation and examples for the Tooltip component."
+      />
+
       <DemoCard title="Tooltip Positions">
         <Stack direction="row" gap="md" wrap justify="center" style={{ padding: "2rem" }}>
           {positions.map((position) => (
@@ -21,6 +27,6 @@ export const TooltipDemo = () => {
           ))}
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

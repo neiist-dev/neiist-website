@@ -1,6 +1,7 @@
 import React from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
-import { Tabs, Text, Stack } from "@neiist/ui";
+import { Tabs, Text } from "@neiist/ui";
 import { FiUsers, FiSettings, FiInfo } from "react-icons/fi";
 
 export const TabsDemo = () => {
@@ -26,10 +27,12 @@ export const TabsDemo = () => {
   ];
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader title="Tabs" description="Documentation and examples for the Tabs component." />
+
       <DemoCard title="Admin Dashboard Tabs">
         <Tabs tabs={adminTabs} />
       </DemoCard>
-    </Stack>
+    </>
   );
 };

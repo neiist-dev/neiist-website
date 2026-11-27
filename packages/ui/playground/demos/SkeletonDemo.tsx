@@ -1,10 +1,16 @@
 import React from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Skeleton, Stack } from "@neiist/ui";
 
 export const SkeletonDemo = () => {
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Skeleton"
+        description="Documentation and examples for the Skeleton component."
+      />
+
       <DemoCard
         title="Skeleton Placeholders"
         description="Pulsing placeholders for content loading states.">
@@ -22,6 +28,6 @@ export const SkeletonDemo = () => {
           <Skeleton variant="text" width="70%" />
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

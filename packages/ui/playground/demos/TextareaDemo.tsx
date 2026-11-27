@@ -1,24 +1,18 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Textarea, Stack } from "@neiist/ui";
 
 export const TextareaDemo = () => {
   const [val, setVal] = useState("");
 
-  const TEXTAREA_ITEMS: Array<{
-    label: string;
-    placeholder?: string;
-    helperText?: string;
-    error?: string;
-    disabled?: boolean;
-    value?: string;
-    defaultValue?: string;
-    onChange?: (_e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  }> = [
+  const TEXTAREA_ITEMS: Array<React.ComponentProps<typeof Textarea>> = [
     {
       label: "Mensagem de Contacto",
       placeholder: "Escreve a tua mensagem aqui...",
       helperText: "Máximo de 500 caracteres",
+      required: true,
+      requiredMessage: "A mensagem é obrigatória.",
       value: val,
       onChange: (e) => setVal(e.target.value),
     },
@@ -36,7 +30,12 @@ export const TextareaDemo = () => {
   ];
 
   return (
-    <Stack gap="md">
+    <>
+      <PageHeader
+        title="Textarea"
+        description="Documentation and examples for the Textarea component."
+      />
+
       <DemoCard
         title="Textarea"
         description="Multi-line accessible input with helper text and validation states.">
@@ -46,6 +45,6 @@ export const TextareaDemo = () => {
           ))}
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

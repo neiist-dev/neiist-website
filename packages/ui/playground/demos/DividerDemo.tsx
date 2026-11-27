@@ -1,4 +1,5 @@
 import React from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Divider, Button, Stack } from "@neiist/ui";
 
@@ -6,7 +7,12 @@ const BREADCRUMB_ITEMS = ["Início", "Atividades", "Sócios"];
 
 export const DividerDemo = () => {
   return (
-    <Stack gap="md">
+    <>
+      <PageHeader
+        title="Divider"
+        description="Documentation and examples for the Divider component."
+      />
+
       <DemoCard
         title="Horizontal Divider"
         description="Clean separators with optional middle text label.">
@@ -33,6 +39,6 @@ export const DividerDemo = () => {
           ))}
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

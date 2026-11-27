@@ -1,4 +1,5 @@
 import React from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { DropdownMenu, Button, Stack } from "@neiist/ui";
 import { FiEdit2, FiTrash2, FiCopy, FiShare2, FiMoreVertical } from "react-icons/fi";
@@ -29,7 +30,12 @@ const SECONDARY_MENU_ITEMS: MenuItemConfig[] = [
 
 export const DropdownMenuDemo = () => {
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="DropdownMenu"
+        description="Documentation and examples for the DropdownMenu component."
+      />
+
       <DemoCard
         title="Action Dropdown Menu"
         description="Floating contextual menu positioned relative to any trigger element.">
@@ -77,6 +83,6 @@ export const DropdownMenuDemo = () => {
           </DropdownMenu>
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

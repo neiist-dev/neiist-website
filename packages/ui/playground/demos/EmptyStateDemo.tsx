@@ -1,11 +1,11 @@
 import React from "react";
 import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
-import { EmptyState, Button, Stack } from "@neiist/ui";
+import { EmptyState, Button } from "@neiist/ui";
 
 export default function EmptyStateDemo() {
   return (
-    <Stack gap="md">
+    <>
       <PageHeader
         title="EmptyState"
         description="Documentation and examples for the EmptyState component."
@@ -18,6 +18,6 @@ export default function EmptyStateDemo() {
           action={<Button variant="primary">Create Entry</Button>}
         />
       </DemoCard>
-    </Stack>
+    </>
   );
 }

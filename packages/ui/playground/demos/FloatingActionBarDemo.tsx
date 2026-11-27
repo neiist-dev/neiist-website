@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { FloatingActionBar, SelectableCard, Button, Stack, Text, Alert } from "@neiist/ui";
 
@@ -43,7 +44,12 @@ export const FloatingActionBarDemo = () => {
   };
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="FloatingActionBar"
+        description="Documentation and examples for the FloatingActionBar component."
+      />
+
       <DemoCard
         title="Floating Action Bar"
         description="Sticky bottom pill toolbar matching the voting grid layout. Clica nas opções abaixo para adicionar escolhas e interagir com a barra flutuante.">
@@ -115,6 +121,6 @@ export const FloatingActionBarDemo = () => {
           />
         )}
       </DemoCard>
-    </Stack>
+    </>
   );
 };

@@ -1,6 +1,7 @@
 import React from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
-import { Accordion, Stack } from "@neiist/ui";
+import { Accordion } from "@neiist/ui";
 
 interface AccordionItemData {
   value: string;
@@ -46,7 +47,12 @@ const MULTIPLE_ACCORDION_ITEMS: AccordionItemData[] = [
 
 export const AccordionDemo = () => {
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Accordion"
+        description="Documentation and examples for the Accordion component."
+      />
+
       <DemoCard
         title="Single Accordion"
         description="Only one panel can be open at a time with smooth CSS Grid row transition.">
@@ -72,6 +78,6 @@ export const AccordionDemo = () => {
           ))}
         </Accordion>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

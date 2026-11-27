@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Button, ConfirmDialog, Stack } from "@neiist/ui";
 
@@ -8,7 +9,12 @@ export const ConfirmDialogDemo = () => {
   const [statusMsg, setStatusMsg] = useState("");
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="ConfirmDialog"
+        description="Documentation and examples for the ConfirmDialog component."
+      />
+
       <DemoCard title="Standard Confirmation">
         <Stack direction="row" gap="md" align="center" wrap>
           <Button onClick={() => setOpenStd(true)}>Open Confirm Dialog</Button>
@@ -48,6 +54,6 @@ export const ConfirmDialogDemo = () => {
           }}
         />
       </DemoCard>
-    </Stack>
+    </>
   );
 };

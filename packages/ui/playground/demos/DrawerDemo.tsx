@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Button, Drawer, Badge, Stack, Text } from "@neiist/ui";
 
@@ -20,7 +21,12 @@ export const DrawerDemo = () => {
   const [size, setSize] = useState<"sm" | "md" | "lg">("md");
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Drawer"
+        description="Documentation and examples for the Drawer component."
+      />
+
       <DemoCard
         title="Responsive Drawer / Slide-Over"
         description="Responsive panel that slides in from the edge with compound Header, Body, and Footer sub-components.">
@@ -98,6 +104,6 @@ export const DrawerDemo = () => {
           </Drawer.Body>
         </Drawer>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

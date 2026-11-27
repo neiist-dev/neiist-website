@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Progress, Stack, Text, Button } from "@neiist/ui";
 
@@ -6,7 +7,12 @@ export const ProgressDemo = () => {
   const [value, setValue] = useState(65);
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Progress"
+        description="Documentation and examples for the Progress component."
+      />
+
       <DemoCard
         title="Progress Bar"
         description="Linear HTML5 <progress> element with cross-browser styling, smooth CSS transitions, and optional value display.">
@@ -34,6 +40,6 @@ export const ProgressDemo = () => {
           <Progress value={value} showValue />
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

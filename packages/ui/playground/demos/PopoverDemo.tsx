@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Popover, Button, Text, Heading, Stack, Input, Badge } from "@neiist/ui";
 
@@ -64,7 +65,12 @@ export const PopoverDemo = () => {
   const [tag, setTag] = useState("");
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Popover"
+        description="Documentation and examples for the Popover component."
+      />
+
       <DemoCard
         title="Basic Popover"
         description="Floating contextual container anchored to a trigger element on desktop, and rendered as a Drawer on mobile.">
@@ -162,6 +168,6 @@ export const PopoverDemo = () => {
           </Popover>
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };

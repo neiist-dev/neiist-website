@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PageHeader } from "../components/PageHeader";
 import { DemoCard } from "../components/DemoCard";
 import { Timeline, TimelineItem, Button, Stack } from "@neiist/ui";
 import { FaExclamationTriangle } from "react-icons/fa";
@@ -60,7 +61,12 @@ export const TimelineDemo = () => {
   const progress = (step / totalSteps) * 100;
 
   return (
-    <Stack gap="lg">
+    <>
+      <PageHeader
+        title="Timeline"
+        description="Documentation and examples for the Timeline and TimelineItem components."
+      />
+
       <DemoCard
         title="Order Progress Tracker (my-orders Flows)"
         description="Tracks multi-step order progression supporting Normal Shop orders, Jantar de Curso, and deadline alerts.">
@@ -122,6 +128,6 @@ export const TimelineDemo = () => {
           )}
         </Stack>
       </DemoCard>
-    </Stack>
+    </>
   );
 };
