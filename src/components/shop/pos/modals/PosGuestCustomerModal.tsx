@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Modal, Field, Input, Button, Alert, Stack } from "@neiist/ui";
+import { Modal, Input, Button, Alert, Stack } from "@neiist/ui";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 interface PosGuestCustomerModalProps {
@@ -41,41 +41,43 @@ export default function PosGuestCustomerModal({
       <Modal.Header title={dict.title} onClose={onClose} />
       <Modal.Body>
         <Stack direction="column" gap="md">
-          <Field label={dict.name_label}>
-            <Input
-              placeholder={dict.name_placeholder}
-              value={guestName}
-              onChange={(e) => setGuestName(e.target.value)}
-              autoFocus
-              required
-            />
-          </Field>
+          <Input
+            label={dict.name_label}
+            placeholder={dict.name_placeholder}
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            autoFocus
+            required
+            requiredMessage={dict.error_required}
+          />
 
-          <Field label={dict.email_label}>
-            <Input
-              type="email"
-              placeholder={dict.email_placeholder}
-              value={guestEmail}
-              onChange={(e) => setGuestEmail(e.target.value)}
-              required
-            />
-          </Field>
+          <Input
+            label={dict.email_label}
+            type="email"
+            placeholder={dict.email_placeholder}
+            value={guestEmail}
+            onChange={(e) => setGuestEmail(e.target.value)}
+            required
+            requiredMessage={dict.error_required}
+          />
 
-          <Field label={dict.phone_label}>
-            <Input
-              type="tel"
-              placeholder={dict.phone_placeholder}
-              value={guestPhone}
-              onChange={(e) => setGuestPhone(e.target.value)}
-            />
-          </Field>
+          <Input
+            label={dict.phone_label}
+            type="tel"
+            placeholder={dict.phone_placeholder}
+            value={guestPhone}
+            onChange={(e) => setGuestPhone(e.target.value)}
+          />
         </Stack>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline" onClick={onClose}>
           {dict.cancel}
         </Button>
-        <Button variant="primary" onClick={handleConfirm}>
+        <Button
+          variant="primary"
+          onClick={handleConfirm}
+          disabled={!guestName.trim() || !guestEmail.trim()}>
           {dict.confirm}
         </Button>
       </Modal.Footer>

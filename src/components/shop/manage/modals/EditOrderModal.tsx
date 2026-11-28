@@ -114,6 +114,7 @@ export default function EditOrderModal({ order, dict, onClose, onSaved }: EditOr
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     required
+                    requiredMessage={dict.field_required}
                   />
                 </Field>
                 <Field label={dict.edit_customer_email}>

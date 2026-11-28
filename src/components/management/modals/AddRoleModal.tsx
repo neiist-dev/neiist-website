@@ -99,6 +99,7 @@ export default function AddRoleModal({
             onChange={(event) => setRoleName(event.target.value)}
             placeholder={rDict.role_name_placeholder}
             required
+            requiredMessage={rDict.role_name_required}
           />
         </div>
 

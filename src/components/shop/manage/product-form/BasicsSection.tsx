@@ -39,6 +39,7 @@ export function BasicsSection({
           onChange={(e) => onUpdate({ name: e.target.value })}
           placeholder={dict.product_name_placeholder}
           required
+          requiredMessage={dict.field_required}
         />
       </Field>
 
@@ -70,6 +71,7 @@ export function BasicsSection({
           step="0.01"
           min="0"
           required
+          requiredMessage={dict.field_required}
         />
       </Field>
     </div>

@@ -78,6 +78,7 @@ export default function DepartmentModal({ open, onClose, onSuccess, dict }: Depa
             type === "team" ? tDict.dept_name_placeholder_team : tDict.dept_name_placeholder_body
           }
           required
+          requiredMessage={tDict.field_required}
         />
 
         {type === "team" && (
@@ -89,6 +90,7 @@ export default function DepartmentModal({ open, onClose, onSuccess, dict }: Depa
               placeholder={tDict.desc_pt_placeholder}
               rows={3}
               required
+              requiredMessage={tDict.field_required}
             />
             <Textarea
               label={tDict.desc_en_label}

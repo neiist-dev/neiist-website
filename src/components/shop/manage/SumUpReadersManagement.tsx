@@ -372,6 +372,7 @@ export default function SumUpReadersManagement({ dict }: SumUpReadersManagementP
                     placeholder={dict.pairing_code_placeholder}
                     autoFocus
                     required
+                    requiredMessage={dict.pairing_code_required}
                   />
                 </Field>
                 <Field label={dict.reader_name_label}>
@@ -381,6 +382,7 @@ export default function SumUpReadersManagement({ dict }: SumUpReadersManagementP
                     onChange={(e) => setName(e.target.value)}
                     placeholder={dict.reader_name_placeholder}
                     required
+                    requiredMessage={dict.pairing_code_required}
                   />
                 </Field>
               </Stack>

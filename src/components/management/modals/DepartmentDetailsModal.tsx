@@ -107,6 +107,7 @@ export default function DepartmentDetailsModal({
                 placeholder={tDict.desc_pt_placeholder}
                 rows={5}
                 required
+                requiredMessage={tDict.field_required}
               />
               <Textarea
                 label={tDict.desc_en_label}

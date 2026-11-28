@@ -19,6 +19,7 @@ export interface EmailComposerProps {
   sectionTitle?: string;
   previewTitle?: string;
   variablesHintLabel?: string;
+  requiredMessage?: string;
   sampleData?: Record<string, string>;
   className?: string;
 }
@@ -36,6 +37,7 @@ export default function EmailComposer({
   sectionTitle = "Email a Enviar",
   previewTitle = "Pré-visualização",
   variablesHintLabel = "Variáveis:",
+  requiredMessage = "Campo obrigatório.",
   sampleData = {},
   className = "",
 }: EmailComposerProps) {
@@ -67,6 +69,7 @@ export default function EmailComposer({
           onChange={(e) => onSubjectChange(e.target.value)}
           placeholder={subjectPlaceholder}
           required
+          requiredMessage={requiredMessage}
         />
       </Field>
 
@@ -77,6 +80,7 @@ export default function EmailComposer({
           onChange={(e) => onBodyChange(e.target.value)}
           placeholder={bodyPlaceholder}
           required
+          requiredMessage={requiredMessage}
         />
       </Field>
 

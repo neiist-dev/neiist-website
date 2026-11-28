@@ -435,6 +435,7 @@ export default function CheckoutForm({
       : []),
   ];
   const isSelectedPaymentAllowed = payment !== null;
+  const isMbWayMissingPhone = payment === "mbway" && !phone.trim();
   const hasSelectedPayMethod = payment !== null && payment !== "apple-pay";
   const isApplePayAllowed = applePayAvailable && ONLINE_PAYMENT_METHODS.includes("apple-pay");
   const showApplePay = isApplePayAllowed && !hasSelectedPayMethod;
@@ -468,6 +469,8 @@ export default function CheckoutForm({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={dict.phone_placeholder}
+              required={payment === "mbway"}
+              requiredMessage={paymentsDict.phone_required}
             />
             {!hasTickets && (
               <Input
@@ -504,7 +507,11 @@ export default function CheckoutForm({
             name="payment"
             direction="row"
             value={payment ?? ""}
-            onChange={(val) => setPayment(val as CheckoutChoice)}>
+            onChange={(val) => {
+              const next = val as CheckoutChoice;
+              setPayment(next);
+              if (next === "mbway" && !phone.trim()) Alert.warning(paymentsDict.phone_required);
+            }}>
             {paymentOptions.map((opt) => (
               <Radio
                 key={opt.id}
@@ -578,7 +585,7 @@ export default function CheckoutForm({
             fullWidth
             loading={loading}
             onClick={() => handleSubmit()}
-            disabled={isAcquiring || !termsAccepted}>
+            disabled={isAcquiring || !termsAccepted || isMbWayMissingPhone}>
             {loading
               ? dict.processing
               : payment === RESERVATION

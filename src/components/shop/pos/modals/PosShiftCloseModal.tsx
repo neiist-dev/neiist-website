@@ -76,6 +76,7 @@ export default function PosShiftCloseModal({
               onChange={(e) => onCountedChange(e.target.value)}
               autoFocus
               required
+              requiredMessage={dict.error_invalid_count}
             />
           </Field>
         </Stack>

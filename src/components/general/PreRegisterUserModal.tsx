@@ -96,6 +96,7 @@ export default function PreRegisterUserModal({
                   onChange={(e) => setIstid(e.target.value)}
                   autoFocus
                   required
+                  requiredMessage={dict.error_required}
                 />
               </Field>
 
@@ -105,6 +106,7 @@ export default function PreRegisterUserModal({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  requiredMessage={dict.error_required}
                 />
               </Field>
 
@@ -115,6 +117,7 @@ export default function PreRegisterUserModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  requiredMessage={dict.error_required}
                 />
               </Field>
             </Stack>

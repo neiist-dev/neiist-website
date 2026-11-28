@@ -348,6 +348,7 @@ export default function EventForm({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              requiredMessage={dict.form.field_required}
               placeholder={dict.form.title_placeholder}
             />
           </Field>

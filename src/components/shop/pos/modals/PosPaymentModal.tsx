@@ -280,6 +280,7 @@ export default function PosPaymentModal({
     setMbwayState("idle");
     closeSumUpSse();
     closeMbWaySse();
+    if (method === "mbway" && !mbWayPhone.trim()) Alert.warning(dict.mbway_phone_error);
   };
 
   const hasLoadedOrder = Boolean(orderNumber || (orderNumbers && orderNumbers.length > 0));
@@ -723,16 +724,17 @@ export default function PosPaymentModal({
               <Stack gap="md">
                 {mbwayState === "idle" && (
                   <>
-                    <Field label={dict.mbway_phone_label}>
-                      <Input
-                        type="tel"
-                        placeholder={dict.mbway_phone_placeholder}
-                        value={mbWayPhone}
-                        onChange={(e) => setMbWayPhone(e.target.value)}
-                        disabled={isSubmitting}
-                        autoFocus
-                      />
-                    </Field>
+                    <Input
+                      type="tel"
+                      label={dict.mbway_phone_label}
+                      placeholder={dict.mbway_phone_placeholder}
+                      value={mbWayPhone}
+                      onChange={(e) => setMbWayPhone(e.target.value)}
+                      disabled={isSubmitting}
+                      required
+                      requiredMessage={dict.mbway_phone_error}
+                      autoFocus
+                    />
                     <Text size="sm" variant="muted" className={styles.noMarginText}>
                       {dict.mbway_hint.replace("{amount}", formatMoney(totalAmount))}
                     </Text>
@@ -767,16 +769,16 @@ export default function PosPaymentModal({
             )}
 
             {selectedMethod === "other" && mode === "identified" && (
-              <Field label={dict.other_reference_label}>
-                <Input
-                  placeholder={dict.other_reference_placeholder}
-                  value={otherReference}
-                  onChange={(e) => setOtherReference(e.target.value)}
-                  disabled={isSubmitting}
-                  autoFocus
-                  required
-                />
-              </Field>
+              <Input
+                label={dict.other_reference_label}
+                placeholder={dict.other_reference_placeholder}
+                value={otherReference}
+                onChange={(e) => setOtherReference(e.target.value)}
+                disabled={isSubmitting}
+                autoFocus
+                required
+                requiredMessage={dict.other_reference_error}
+              />
             )}
           </Stack>
         </Modal.Body>

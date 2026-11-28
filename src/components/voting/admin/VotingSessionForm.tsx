@@ -420,6 +420,7 @@ export default function VotingSessionForm({
                       onChange={(e) => updateCustomOption(index, { name: e.target.value })}
                       placeholder={dict.option_title_placeholder}
                       required
+                      requiredMessage={dict.field_required}
                     />
                   </Field>
 
@@ -623,6 +624,7 @@ export default function VotingSessionForm({
               value={name}
               onChange={(e) => set("name", e.target.value)}
               required
+              requiredMessage={dict.field_required}
               placeholder={dict.title_placeholder}
             />
           </Field>
