@@ -10,7 +10,7 @@ import {
   getProductNoCache,
   settleOrdersBatch,
 } from "@/lib/db/repositories/shop.repository";
-import { getUserNoCache } from "@/lib/db/repositories/user.repository";
+import { getUserNoCache, updateUser } from "@/lib/db/repositories/user.repository";
 import { sendEmail, sendEventTicketEmail } from "@/lib/email";
 import {
   getPaidOrderEmailTemplate,
@@ -57,6 +57,13 @@ export function buildOrderPaymentInput(
   };
 }
 
+async function syncUserPhoneFromOrder(order: Order): Promise<void> {
+  const phone = order.customer_phone?.trim();
+  if (!order.user_istid || !phone) return;
+  const targetUser = await getUserNoCache(order.user_istid);
+  if (targetUser && targetUser.phone !== phone) await updateUser(order.user_istid, { phone });
+}
+
 /**
  * Post payment side effects (cart idempotency mapping, event ticket hooks, paid emails).
  */
@@ -69,6 +76,7 @@ export async function runPaidOrderSideEffects(
     await setCartIdOrderNumber(cleanCartId, order.order_number);
   }
 
+  await syncUserPhoneFromOrder(order);
   await enqueueEventTicketHooks(order);
   sendOrderPaidEmails(order, options.paymentReference ?? undefined);
 }
@@ -80,6 +88,7 @@ export async function runPendingOrderSideEffects(
   order: Order,
   paymentMethod?: PaymentMethod
 ): Promise<void> {
+  await syncUserPhoneFromOrder(order);
   await schedulePendingOrderExpiry(order);
   await sendPendingOrderEmail(order, paymentMethod);
 }

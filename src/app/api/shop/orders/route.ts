@@ -15,7 +15,6 @@ import {
   getOrderByNumber,
   generateOrderNumber,
 } from "@/lib/db/repositories/shop.repository";
-import { getUser, updateUser } from "@/lib/db/repositories/user.repository";
 import { getShiftById, getActiveShiftForStation } from "@/lib/db/repositories/pos.repository";
 import { getCartIdOrderNumber } from "@/lib/redis/sessions";
 import { validateProductRules } from "@/lib/shop/pricing";
@@ -259,16 +258,8 @@ async function handlePostOrderSideEffects(
   order: Order,
   paymentPayload: ReturnType<typeof buildOrderPaymentInput>,
   paymentMethod: PaymentMethod | undefined,
-  orderUserIstid?: string,
-  customerPhone?: string,
   cartId?: string
 ) {
-  if (orderUserIstid && customerPhone) {
-    const targetUser = await getUser(orderUserIstid);
-    if (targetUser && targetUser.phone !== customerPhone)
-      await updateUser(orderUserIstid, { phone: customerPhone });
-  }
-
   if (paymentPayload?.status === "successful") {
     await runPaidOrderSideEffects(order, {
       paymentReference: paymentPayload.reference ?? undefined,
@@ -362,8 +353,6 @@ async function executeOrderCreation(params: {
     order,
     paymentPayload,
     paymentMethod,
-    orderUserIstid,
-    customerPhone,
     isFastPos ? body.cart_id : undefined
   );
 
