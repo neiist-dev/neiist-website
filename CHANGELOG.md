@@ -1,5 +1,20 @@
 # neiist
 
+## [4.14.0](https://github.com/neiist-dev/neiist-website/compare/v4.13.1...v4.14.0) (2026-11-28)
+
+
+### Features
+
+* **shop:** separated guest checkout permissions ([a3602c2](https://github.com/neiist-dev/neiist-website/commit/a3602c21ef1f7fa14656f76f17703f370f60f38a))
+* **ui:** add demo playground for required fields and fix demo card ([b23d3a3](https://github.com/neiist-dev/neiist-website/commit/b23d3a36844a594e73b0ebc55e938df73acb0a97))
+* **ui:** required indicator and validation on chanhe with error msg and ([82aadf3](https://github.com/neiist-dev/neiist-website/commit/82aadf38cbc22fb3271453606f14370c93846235))
+
+
+### Bug Fixes
+
+* **shop:** user phone used on mbway synced to profile and correct save ([c334e22](https://github.com/neiist-dev/neiist-website/commit/c334e228634faeee409a7e4d7e4c7b7ec3630063))
+* use new ui lib required api to enforce required fields on froms ([7fd9659](https://github.com/neiist-dev/neiist-website/commit/7fd96593875ce6b5b00e1458ecc3b97f386f7e68))
+
 ## [4.13.1](https://github.com/neiist-dev/neiist-website/compare/v4.13.0...v4.13.1) (2026-11-26)
 
 
